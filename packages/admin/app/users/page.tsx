@@ -19,6 +19,10 @@ interface User {
   status?: string;
 }
 
+import { DataTable } from '@/components/ui/DataTable';
+import { Button } from '@/components/ui/Button';
+import { StatCard } from '@/components/ui/StatCard';
+
 export default function UsersPage() {
   const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,145 +83,153 @@ export default function UsersPage() {
     return user.roles || ['user'];
   };
 
+  const columns = [
+    {
+      header: 'User',
+      id: 'user',
+      accessor: (user: User) => (
+        <div className="flex items-center gap-4">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 overflow-hidden flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/20">
+            {getInitials(user)}
+          </div>
+          <div>
+            <div className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{getDisplayName(user)}</div>
+            <div className="text-xs text-slate-500 flex items-center gap-1">
+              <FrameworkIcons.Mail size={12} /> {user.email}
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Roles',
+      id: 'roles',
+      accessor: (user: User) => (
+        <div className="flex flex-wrap gap-1">
+          {getRoles(user).map(role => (
+            <Badge key={role} variant={role === 'admin' ? 'purple' : 'blue'}>
+              {role}
+            </Badge>
+          ))}
+        </div>
+      )
+    },
+    {
+      header: 'Status',
+      id: 'status',
+      accessor: (user: User) => (
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span className="font-bold text-emerald-500 text-[11px] uppercase tracking-widest">Active</span>
+        </div>
+      )
+    },
+    {
+      header: 'Joined',
+      id: 'createdAt',
+      accessor: (user: User) => (
+        <div className="flex items-center gap-2 font-medium text-slate-500">
+          <FrameworkIcons.Calendar size={14} className="opacity-50" />
+          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Initial'}
+        </div>
+      )
+    }
+  ];
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            Identity Management
-          </h1>
-          <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-            Manage system users, roles and permissions.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Slot name="admin.users.list.header.actions" />
-          <button className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all transform hover:scale-[1.02] shadow-lg shadow-indigo-600/20">
-            <FrameworkIcons.Plus size={18} />
-            <span>Invite User</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { label: 'Total Users', value: stats.total.toLocaleString(), icon: <FrameworkIcons.Users size={20} className="text-indigo-500" /> },
-          { label: 'Recently Active', value: stats.active.toLocaleString(), icon: <FrameworkIcons.UserCheck size={20} className="text-green-500" /> },
-          { label: 'Role Groups', value: stats.roles.toLocaleString(), icon: <FrameworkIcons.Shield size={20} className="text-amber-500" /> },
-        ].map((stat) => (
-          <Card key={stat.label} className="py-4 px-6 flex items-center justify-between">
+    <div className="flex flex-col h-full -mx-8 -mt-8 overflow-hidden bg-slate-50/20 dark:bg-transparent">
+      {/* Header section with white high-contrast style */}
+      <div className={`p-8 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-white dark:bg-transparent shadow-sm dark:shadow-none`}>
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
-              <h3 className={`text-2xl font-black mt-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{stat.value}</h3>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-indigo-50'} text-indigo-500`}>
+                  <FrameworkIcons.Users size={20} />
+                </div>
+                <h1 className="text-2xl font-black uppercase tracking-tight">Identity Management</h1>
+              </div>
+              <p className="text-slate-500 font-medium text-sm">Manage users, adjust permissions and review access logs.</p>
             </div>
-            <div className={`p-3 rounded-xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-50'}`}>
-              {stat.icon}
+            
+            <div className="flex items-center gap-3">
+              <Slot name="admin.users.list.header.actions" />
+              <Button 
+                variant="primary" 
+                icon={<FrameworkIcons.Plus size={18} />}
+              >
+                Invite User
+              </Button>
             </div>
-          </Card>
-        ))}
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1 group">
-          <FrameworkIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search by name or email..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full rounded-xl py-3 pl-10 pr-4 outline-none border transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`} 
-          />
-        </div>
-        <button className={`flex items-center gap-2 px-6 py-3 rounded-xl border font-semibold transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-          <FrameworkIcons.Filter size={18} />
-          <span>Filters</span>
-        </button>
-      </div>
+      <div className="flex-1 overflow-auto p-8">
+        <div className="max-w-[1200px] mx-auto space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard 
+              title="Identity Base" 
+              value={stats.total.toLocaleString()} 
+              icon={<FrameworkIcons.Users size={20} />} 
+              trend={{ value: 4, isPositive: true }}
+            />
+            <StatCard 
+              title="Active Now" 
+              value={stats.active.toLocaleString()} 
+              icon={<FrameworkIcons.UserCheck size={20} />} 
+            />
+            <StatCard 
+              title="Access Levels" 
+              value={stats.roles.toLocaleString()} 
+              icon={<FrameworkIcons.Shield size={20} />} 
+            />
+          </div>
 
-      <Card className="px-0 py-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className={`${theme === 'dark' ? 'bg-slate-800/50' : 'bg-slate-50'} border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
-                <th className="px-8 py-5 font-bold text-slate-500">USER</th>
-                <th className="px-8 py-5 font-bold text-slate-500">ROLES</th>
-                <th className="px-8 py-5 font-bold text-slate-500">STATUS</th>
-                <th className="px-8 py-5 font-bold text-slate-500">JOINED</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-right">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="px-8 py-20 text-center">
-                    <FrameworkIcons.Loader className="animate-spin inline-block mr-2 text-indigo-500" />
-                    <span className="text-slate-500">Loading identity records...</span>
-                  </td>
-                </tr>
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-8 py-20 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                       <FrameworkIcons.User size={40} className="text-slate-300 mb-2" />
-                       <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>No identity records found</h3>
-                       <p className="text-sm text-slate-500 max-w-xs mx-auto">
-                         The users table is currently empty. If you are logged in using a legacy session, you may need to re-initialize your account in the setup page.
-                       </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredUsers.map(user => (
-                <tr key={user.id} className={`group border-b ${theme === 'dark' ? 'border-slate-800 hover:bg-slate-900/50' : 'border-slate-100 hover:bg-indigo-50/30'} transition-colors`}>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className={`h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 overflow-hidden flex items-center justify-center font-bold text-white shadow-sm`}>
-                        {getInitials(user)}
-                      </div>
-                      <div>
-                        <div className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{getDisplayName(user)}</div>
-                        <div className="text-xs text-slate-500 flex items-center gap-1">
-                          <FrameworkIcons.Mail size={12} /> {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex flex-wrap gap-1">
-                      {getRoles(user).map(role => (
-                        <Badge key={role} variant={role === 'admin' ? 'purple' : 'blue'}>
-                          {role}
-                        </Badge>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-2">
-                      <div className={`h-2 w-2 rounded-full bg-green-500`} />
-                      <span className={`font-medium text-green-500`}>Active</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className={`flex items-center gap-2 font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                      <FrameworkIcons.Calendar size={14} className="opacity-50" />
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Initial'}
-                    </div>
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Slot name="admin.users.list.table.actions" props={{ user }} />
-                      <button className={`p-2 rounded-lg transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-white text-slate-400 hover:text-indigo-600 hover:shadow-sm'}`}>
-                        <FrameworkIcons.More size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1 group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                <FrameworkIcons.Search size={18} />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Search identity base by name or email..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full rounded-2xl py-3 pl-12 pr-4 outline-none border transition-all text-sm font-medium ${
+                  theme === 'dark' 
+                    ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' 
+                    : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'
+                }`} 
+              />
+            </div>
+          </div>
+
+          <div className={`rounded-3xl border overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none ${
+            theme === 'dark' ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-100'
+          }`}>
+            <DataTable
+              columns={columns}
+              data={filteredUsers}
+              loading={loading}
+              totalDocs={filteredUsers.length}
+              limit={10}
+              page={1}
+              emptyMessage="No identity records match your query"
+              actions={(user) => (
+                <div className="flex items-center justify-end gap-2">
+                  <Slot name="admin.users.list.table.actions" props={{ user }} />
+                  <button className={`p-2 rounded-lg transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}>
+                    <FrameworkIcons.More size={18} />
+                  </button>
+                </div>
+              )}
+            />
+          </div>
+          
+          <Slot name="admin.users.list.bottom" />
         </div>
-      </Card>
-      
-      <Slot name="admin.users.list.bottom" />
+      </div>
     </div>
   );
 }

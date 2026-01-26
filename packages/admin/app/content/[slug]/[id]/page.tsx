@@ -199,139 +199,177 @@ export default function CollectionEditPage() {
   };
 
   return (
-    <div className="w-full space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <Link 
-          href={`/content/${slug}`}
-          className={`flex items-center gap-2 text-sm font-medium transition-colors ${theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
-        >
-          <FrameworkIcons.Left size={16} />
-          Back to {collection.name || slug}
-        </Link>
-        {!isNew && (
-          <button 
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center gap-2 px-4 py-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors text-sm font-bold"
-          >
-            <FrameworkIcons.Trash size={16} />
-            Delete Entry
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-          {isNew ? `New ${collection.name || collection.slug.charAt(0).toUpperCase() + collection.slug.slice(1)}` : `Edit ${collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (collection.name || 'Entry')}`}
-        </h1>
-        <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-          {collection.name || collection.slug.charAt(0).toUpperCase() + collection.slug.slice(1)} Record
-        </p>
-      </div>
-
-      {status && (
-        <div className={`p-4 rounded-xl flex items-start gap-3 border ${status.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-rose-500/10 border-rose-500/20 text-rose-500'}`}>
-          {status.type === 'success' ? <FrameworkIcons.Check size={20} className="mt-0.5" /> : <FrameworkIcons.Alert size={20} className="mt-0.5" />}
-          <div>
-            <p className="font-bold">{status.type === 'success' ? 'Success' : 'Error'}</p>
-            <p className="text-sm opacity-90">{status.message}</p>
+    <div className="flex flex-col h-full -mx-8 -mt-8 overflow-hidden bg-slate-50/30 dark:bg-transparent">
+      {/* Header section with white high-contrast style */}
+      <div className={`p-8 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-white dark:bg-transparent shadow-sm dark:shadow-none`}>
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <Link 
+              href={`/content/${slug}`}
+              className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-indigo-600'}`}
+            >
+              <FrameworkIcons.Left size={14} />
+              {collection.name || slug}
+            </Link>
+            <span className="text-slate-300">/</span>
+            <span className={`text-[11px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>
+              {isNew ? 'New Entry' : (id.length > 8 ? `${id.substring(0, 8)}...` : id)}
+            </span>
           </div>
-        </div>
-      )}
 
-      <Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew }} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6">
-          <Card className="p-8 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              {collection.fields
-                .filter(f => !f.admin?.hidden)
-                .map((field) => (
-                <div key={field.name} className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
-                  <label className={`block text-sm font-bold mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                    {field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()}
-                    {field.required && <span className="text-rose-500 ml-1">*</span>}
-                  </label>
-                  
-                  {field.admin?.component === 'Tags' || field.type === 'json' ? (
-                    <TagField 
-                      field={field} 
-                      value={formData[field.name]} 
-                      onChange={(val) => handleInputChange(field.name, val)}
-                      theme={theme}
-                    />
-                  ) : field.type === 'textarea' ? (
-                    <textarea 
-                      value={formData[field.name] || ''}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
-                      disabled={saving}
-                      className={`w-full h-32 rounded-xl py-3 px-4 outline-none border transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`}
-                      placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
-                    />
-                  ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
-                     <Input 
-                      type="password"
-                      value={formData[field.name] || ''}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
-                      placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
-                      disabled={saving}
-                    />
-                  ) : field.type === 'select' ? (
-                    <select
-                      value={formData[field.name] || field.defaultValue || ''}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
-                      disabled={saving}
-                      className={`w-full rounded-xl py-3 px-4 outline-none border transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`}
-                    >
-                      <option value="">Select an option...</option>
-                      {field.options?.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <Input 
-                      type={field.type === 'number' ? 'number' : 'text'}
-                      value={formData[field.name] || ''}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
-                      placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
-                      disabled={saving}
-                    />
-                  )}
-                  {field.admin?.description && (
-                    <p className="mt-1.5 text-xs text-slate-500 italic">{field.admin.description}</p>
-                  )}
-                </div>
-              ))}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-2xl font-black uppercase tracking-tight">
+                {isNew ? `Create ${collection.name || collection.slug}` : `Edit ${collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (collection.name || 'Entry')}`}
+              </h1>
+              <p className="text-slate-500 font-medium text-sm mt-1">
+                {isNew ? 'Define a new record for this collection' : `Modify existing ${collection.name || collection.slug} entry`}
+              </p>
             </div>
-          </Card>
-
-          <div className="flex items-center justify-end gap-4 pb-8">
-             <Button 
-              variant="ghost" 
-              type="button" 
-              onClick={() => router.back()}
-              disabled={saving}
-             >
-               Cancel
-             </Button>
-             <Button 
-              className="flex items-center gap-2 px-8" 
-              type="submit"
-              isLoading={saving}
-             >
-               <FrameworkIcons.Save size={18} />
-               {isNew ? 'Create' : 'Save Changes'}
-             </Button>
+            
+            <div className="flex items-center gap-3">
+              {!isNew && (
+                <button 
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className={`p-3 rounded-xl border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === 'dark' ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
+                >
+                  <FrameworkIcons.Trash size={20} />
+                </button>
+              )}
+              <Button 
+                variant="ghost" 
+                type="button" 
+                onClick={() => router.back()}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="px-8" 
+                onClick={handleSubmit}
+                isLoading={saving}
+                icon={<FrameworkIcons.Save size={18} />}
+              >
+                {isNew ? 'Create' : 'Save Changes'}
+              </Button>
+            </div>
           </div>
-        </form>
-
-        <div className="space-y-6">
-          <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
-          <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
         </div>
       </div>
-      
-      <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew }} />
+
+      <div className="flex-1 overflow-auto p-8">
+        <div className="max-w-[1200px] mx-auto">
+          {status && (
+            <div className={`mb-8 p-4 rounded-2xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
+              <div className={`p-2 rounded-xl ${status.type === 'success' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'}`}>
+                {status.type === 'success' ? <FrameworkIcons.Check size={20} /> : <FrameworkIcons.Alert size={20} />}
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-sm">{status.type === 'success' ? 'Success' : 'Error'}</p>
+                <p className="text-sm opacity-90">{status.message}</p>
+              </div>
+              <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <FrameworkIcons.Close size={18} />
+              </button>
+            </div>
+          )}
+
+          <Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew }} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                  {collection.fields
+                    .filter(f => !f.admin?.hidden)
+                    .map((field) => (
+                    <div key={field.name} className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
+                      <label className={`block text-[11px] font-black uppercase tracking-widest mb-3 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>
+                        {field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()}
+                        {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
+                      </label>
+                      
+                      {field.admin?.component === 'Tags' || field.type === 'json' ? (
+                        <TagField 
+                          field={field} 
+                          value={formData[field.name]} 
+                          onChange={(val) => handleInputChange(field.name, val)}
+                          theme={theme}
+                        />
+                      ) : field.type === 'textarea' ? (
+                        <textarea 
+                          value={formData[field.name] || ''}
+                          onChange={(e) => handleInputChange(field.name, e.target.value)}
+                          disabled={saving}
+                          className={`w-full min-h-[160px] rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-medium ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm'} ${field.required && !formData[field.name] ? 'border-amber-100' : ''}`}
+                          placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
+                        />
+                      ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
+                         <Input 
+                          type="password"
+                          value={formData[field.name] || ''}
+                          onChange={(e) => handleInputChange(field.name, e.target.value)}
+                          placeholder="••••••••"
+                          disabled={saving}
+                        />
+                      ) : field.type === 'select' ? (
+                        <select
+                          value={formData[field.name] || field.defaultValue || ''}
+                          onChange={(e) => handleInputChange(field.name, e.target.value)}
+                          disabled={saving}
+                          className={`w-full rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-medium appearance-none ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm'}`}
+                        >
+                          <option value="">Select an option...</option>
+                          {field.options?.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <Input 
+                          type={field.type === 'number' ? 'number' : 'text'}
+                          value={formData[field.name] || ''}
+                          onChange={(e) => handleInputChange(field.name, e.target.value)}
+                          placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
+                          disabled={saving}
+                        />
+                      )}
+                      {field.admin?.description && (
+                        <p className="mt-2 text-xs text-slate-400 font-medium italic">{field.admin.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
+              <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
+              
+              {!isNew && (
+                <Card title="Record Info">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-500 font-bold uppercase tracking-widest">ID</span>
+                      <span className="text-slate-400 font-mono">{id}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-500 font-bold uppercase tracking-widest">Created</span>
+                      <span className="text-slate-400 font-medium">{new Date(formData.createdAt).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-500 font-bold uppercase tracking-widest">Updated</span>
+                      <span className="text-slate-400 font-medium">{new Date(formData.updatedAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+          </div>
+          
+          <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew }} />
+        </div>
+      </div>
 
       <ConfirmDialog 
         isOpen={showDeleteConfirm}

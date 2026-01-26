@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   useEffect(() => {
     async function checkStatus() {
@@ -52,8 +53,19 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
+    const newFieldErrors: any = {};
+    
+    if (!email) newFieldErrors.email = 'Required';
+    if (!password) newFieldErrors.password = 'Required';
+    
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      return;
+    }
+    
+    setFieldErrors({});
+    setIsLoading(true);
     
     try {
       const data = await api.post(ENDPOINTS.AUTH.LOGIN, { email, password });
@@ -97,7 +109,7 @@ export default function LoginPage() {
               {error}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <Input 
               label="Email Address"
               placeholder="name@company.com"
@@ -106,6 +118,7 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={fieldErrors.email}
               className="group"
             />
             
@@ -121,6 +134,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                error={fieldErrors.password}
               />
             </div>
 

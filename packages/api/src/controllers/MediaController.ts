@@ -150,25 +150,13 @@ export class MediaController {
         const finalName = name || existingFolder.name;
         const finalParentId = pId !== undefined ? pId : existingFolder.parentId;
 
-        const [duplicate] = await this.db.select()
-          .from(mediaFolders)
-          .where(
-            and(
-              eq(mediaFolders.name, finalName),
-              finalParentId === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, finalParentId),
-              eq(mediaFolders.id, folderId).map ? undefined : undefined // help drizzle
-            )
-          )
-          .where(and(eq(mediaFolders.name, finalName), finalParentId === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, finalParentId)))
-          .limit(1);
-
-        // Wait, simpler duplicate check logic
+        // Simplified duplicate check logic
         const conditions = [
           eq(mediaFolders.name, finalName),
           finalParentId === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, finalParentId)
         ];
         
-        const [dup] = await this.db.select().from(mediaFolders).where(and(...conditions)).limit(1);
+        const [dup]: any = await this.db.select().from(mediaFolders).where(and(...conditions)).limit(1);
         if (dup && dup.id !== folderId) {
           return res.status(400).json({ error: 'A folder with this name already exists in the target location' });
         }
@@ -204,17 +192,17 @@ export class MediaController {
   async getFolderPath(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const path = [];
+      const folderPath: any[] = [];
       let currentId: number | null = Number(id);
       
       while (currentId) {
         const [folder]: any = await this.db.select().from(mediaFolders).where(eq(mediaFolders.id, currentId)).limit(1);
         if (!folder) break;
-        path.unshift(folder);
+        folderPath.unshift(folder);
         currentId = folder.parentId;
       }
       
-      res.json(path);
+      res.json(folderPath);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

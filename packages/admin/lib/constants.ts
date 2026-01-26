@@ -1,41 +1,45 @@
 
+const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.framework.local';
+
+// Helper to construct versioned URLs
+const v = (path: string) => `/api/${API_VERSION}${path}`;
 
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: '/api/auth/login',
-    LOGOUT: '/api/auth/logout',
-    STATUS: '/api/auth/status',
-    SETUP: '/api/auth/setup',
-    SESSIONS: '/api/auth/sessions',
+    LOGIN: v('/auth/login'),
+    LOGOUT: v('/auth/logout'),
+    STATUS: v('/auth/status'),
+    SETUP: v('/auth/setup'),
+    SESSIONS: v('/auth/sessions'),
   },
   PLUGINS: {
-    BASE: '/api/plugins',
-    LIST: '/api/plugins',
-    ACTIVE: '/api/plugins/active',
-    REGISTRY: '/api/plugins/registry',
-    UPLOAD: '/api/plugins/upload',
-    STAGED: '/api/system/admin/plugins',
-    INSTALL: (slug: string) => `/api/plugins/install/${slug}`,
-    TOGGLE: (slug: string) => `/api/plugins/${slug}/toggle`,
-    CONFIG: (slug: string) => `/api/plugins/${slug}/config`,
-    LOGS: (slug: string) => `/api/plugins/${slug}/logs`,
-    DELETE: (slug: string) => `/api/plugins/${slug}`,
+    BASE: v('/plugins'),
+    LIST: v('/plugins'),
+    ACTIVE: v('/plugins/active'),
+    REGISTRY: v('/plugins/registry'),
+    UPLOAD: v('/plugins/upload'),
+    STAGED: v('/system/admin/plugins'),
+    INSTALL: (slug: string) => v(`/plugins/install/${slug}`),
+    TOGGLE: (slug: string) => v(`/plugins/${slug}/toggle`),
+    CONFIG: (slug: string) => v(`/plugins/${slug}/config`),
+    LOGS: (slug: string) => v(`/plugins/${slug}/logs`),
+    DELETE: (slug: string) => v(`/plugins/${slug}`),
   },
   SYSTEM: {
     HEALTH: '/api/health',
     STATS: {
-      COLLECTIONS: '/api/system/admin/stats/collections',
+      COLLECTIONS: v('/system/admin/stats/collections'),
     },
-    LOGS: '/api/system/admin/logs',
+    LOGS: v('/system/admin/logs'),
     OPENAPI: '/api/openapi.json',
-    I18N: '/api/system/i18n',
+    I18N: v('/system/i18n'),
   },
   COLLECTIONS: {
-    BASE: '/api/collections',
+    BASE: v('/collections'),
   },
   MEDIA: {
-    BASE: '/api/media',
-    UPLOAD: '/api/media/upload',
+    BASE: v('/media'),
+    UPLOAD: v('/media/upload'),
   }
 };
