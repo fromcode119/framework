@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "composite": true,
+    "jsx": "react-jsx",
+    "noImplicitAny": false,
+    "paths": {
+      "@fromcode/*": ["packages/*/src"],
+      "@plugins/*": ["plugins/*"]
+    }
+  },
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/sdk" },
+    { "path": "./packages/react" },
+    { "path": "./packages/next" },
+    { "path": "./packages/cli" },
+    { "path": "./packages/api" },
+    { "path": "./packages/database" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/media" },
+    { "path": "./packages/email" },
+    { "path": "./packages/cache" },
+    { "path": "./packages/marketplace-client" }
+  ],
+  "exclude": ["node_modules", "dist", "packages/admin", "packages/frontend"]
+}

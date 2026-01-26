@@ -1,0 +1,575 @@
+#!/usr/bin/env node
+import { Command } from 'commander';
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import archiver from 'archiver';
+import * as readline from 'readline';
+import fetch from 'node-fetch';
+import extract from 'extract-zip';
+import { pipeline } from 'stream/promises';
+import { spawn } from 'child_process';
+import * as esbuild from 'esbuild';
+
+const program = new Command();
+
+function getPluginsDir(): string {
+  let pluginsDir = path.resolve(process.cwd(), 'plugins');
+  if (fs.existsSync(pluginsDir)) return pluginsDir;
+
+  if (fs.existsSync(path.resolve(process.cwd(), '../../plugins'))) {
+    return path.resolve(process.cwd(), '../../plugins');
+  }
+  
+  if (fs.existsSync(path.resolve(process.cwd(), 'framework/plugins'))) {
+    return path.resolve(process.cwd(), 'framework/plugins');
+  }
+
+  return path.resolve(process.cwd(), 'plugins'); // Default fallback
+}
+
+async function ask(question: string): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+}
+
+program
+  .name('fromcode')
+  .description('Fromcode Framework CLI')
+  .version('0.1.0');
+
+const plugin = program.command('plugin').description('Manage plugins');
+
+plugin
+  .command('create [name]')
+  .description('Create a new plugin scaffold')
+  .action(async (name) => {
+    try {
+      let pluginName = name;
+      if (!pluginName) {
+        pluginName = await ask(chalk.blue('Plugin name: '));
+      }
+
+      if (!pluginName) {
+        console.error(chalk.red('Plugin name is required!'));
+        return;
+      }
+
+      let defaultSlug = pluginName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      let slug = await ask(chalk.blue(`Plugin slug [${defaultSlug}]: `));
+      if (!slug) slug = defaultSlug;
+
+      let category = await ask(chalk.blue('Plugin category [general]: '));
+      if (!category) category = 'general';
+
+      const pluginsDir = getPluginsDir();
+      const pluginPath = path.join(pluginsDir, slug);
+
+      if (fs.existsSync(pluginPath)) {
+        console.error(chalk.red(`Plugin directory already exists: ${pluginPath}`));
+        return;
+      }
+
+      console.log(chalk.green(`\nCreating plugin "${pluginName}" in ${pluginPath}...`));
+
+      // Create directory structure
+      await fs.ensureDir(pluginPath);
+      await fs.ensureDir(path.join(pluginPath, 'admin'));
+      await fs.ensureDir(path.join(pluginPath, 'ui'));
+
+      // 1. manifest.json
+      const manifest = {
+        slug,
+        name: pluginName,
+        version: '1.0.0',
+        category,
+        main: 'index.js',
+        capabilities: ['api', 'admin', 'ui', 'database', 'hooks', 'i18n']
+      };
+      await fs.writeJson(path.join(pluginPath, 'manifest.json'), manifest, { spaces: 2 });
+
+      // 2. index.js
+      const indexJs = `
+module.exports = {
+  async onInit(context) {
+    const { logger } = context;
+    logger.info("${pluginName} Plugin Initialized!");
+    
+    // Example API route
+    context.api.get("/api/${slug}/hello", (req, res) => {
+      res.json({ message: "Hello from ${pluginName}!" });
+    });
+
+    // Example Translation registration
+    context.i18n.registerTranslations('en', {
+      '${slug}.welcome': 'Welcome to ${pluginName}!'
+    });
+  },
+  async onEnable(context) {
+    context.logger.info("${pluginName} Plugin Enabled!");
+  },
+  async onDisable(context) {
+    context.logger.info("${pluginName} Plugin Disabled!");
+  }
+};
+`;
+      await fs.writeFile(path.join(pluginPath, 'index.js'), indexJs.trim() + '\n');
+
+      // 3. admin/DashboardWidget.tsx
+      const dashboardWidget = `
+import React from 'react';
+
+const DashboardWidget = () => {
+  return (
+    <div style={{ padding: '20px', backgroundColor: '#f0f0f0', borderRadius: '8px', margin: '10px 0' }}>
+      <h3>Dashboard Widget from ${pluginName}</h3>
+    </div>
+  );
+};
+
+export default DashboardWidget;
+`;
+      await fs.writeFile(path.join(pluginPath, 'admin/DashboardWidget.tsx'), dashboardWidget.trim() + '\n');
+
+      // 4. ui/Banner.tsx
+      const banner = `
+import React from 'react';
+
+const Banner = () => {
+  return (
+    <div style={{ padding: '15px', backgroundColor: '#e0e0e0', textAlign: 'center', borderRadius: '8px', margin: '10px 0' }}>
+      <div key="msg">Welcome to ${pluginName} Banner!</div>
+    </div>
+  );
+};
+
+export default Banner;
+`;
+      await fs.writeFile(path.join(pluginPath, 'ui/Banner.tsx'), banner.trim() + '\n');
+
+      // 5. ui/index.ts
+      const uiIndex = `
+import Banner from './Banner';
+
+export const slots = {
+  'frontend.home.hero': {
+    component: Banner,
+    priority: 10
+  }
+};
+
+export const init = () => {
+  console.log('[${slug}] UI Initialized');
+};
+
+// --- Self-Registration ---
+if (typeof window !== 'undefined' && (window as any).Fromcode) {
+  const Fromcode = (window as any).Fromcode;
+  
+  // Register slots
+  Object.entries(slots).forEach(([slotName, config]: [string, any]) => {
+    Fromcode.registerSlotComponent(slotName, {
+      ...config,
+      pluginSlug: '${slug}'
+    });
+  });
+
+  // Run initialization
+  init();
+}
+`;
+      await fs.writeFile(path.join(pluginPath, 'ui/index.ts'), uiIndex.trim() + '\n');
+
+      console.log(chalk.green('\nPlugin scaffolded successfully!'));
+      console.log(chalk.gray(`Location: ${pluginPath}`));
+
+    } catch (error) {
+      console.error(chalk.red('Error creating plugin:'), error);
+    }
+  });
+
+plugin
+  .command('list')
+  .description('List all installed plugins')
+  .action(async () => {
+    try {
+      const pluginsDir = getPluginsDir();
+      if (!fs.existsSync(pluginsDir)) {
+         console.log(chalk.yellow('No plugins directory found.'));
+         return;
+      }
+
+      const dirs = await fs.readdir(pluginsDir);
+      console.log(chalk.blue('\nInstalled Plugins:'));
+      console.log(chalk.gray('--------------------------------------------------'));
+      
+      for (const dir of dirs) {
+        const manifestPaths = [
+          path.join(pluginsDir, dir, 'manifest.json'),
+          path.join(pluginsDir, dir, 'plugin.json') // Support older format
+        ];
+        
+        let manifest: any = null;
+        for (const p of manifestPaths) {
+          if (await fs.pathExists(p)) {
+            manifest = await fs.readJson(p);
+            break;
+          }
+        }
+
+        if (manifest) {
+          console.log(`${chalk.bold(manifest.name)} (${chalk.cyan(manifest.slug || dir)}) v${manifest.version}`);
+          console.log(chalk.gray(`  Category: ${manifest.category || 'unknown'}`));
+          console.log(chalk.gray(`  Capabilities: ${manifest.capabilities?.join(', ') || 'none'}`));
+          console.log('');
+        }
+      }
+    } catch (error) {
+      console.error(chalk.red('Error listing plugins:'), error);
+    }
+  });
+
+plugin
+  .command('build <slug>')
+  .description('Build plugin UI assets')
+  .option('-w, --watch', 'Watch for changes', false)
+  .action(async (slug, options) => {
+    try {
+      const pluginsDir = getPluginsDir();
+      const pluginDir = path.join(pluginsDir, slug);
+      if (!fs.existsSync(pluginDir)) {
+        console.error(chalk.red(`Plugin directory not found: ${pluginDir}`));
+        return;
+      }
+
+      const uiDir = path.join(pluginDir, 'ui');
+      if (!fs.existsSync(uiDir)) {
+        console.log(chalk.yellow(`No ui directory found for plugin ${slug}. Skipping build.`));
+        return;
+      }
+
+      const entryPoints = [
+         path.join(uiDir, 'index.ts'),
+         path.join(uiDir, 'index.js'),
+         path.join(uiDir, 'main.ts'),
+         path.join(uiDir, 'main.js')
+      ].filter(p => fs.existsSync(p));
+
+      if (entryPoints.length === 0) {
+        console.error(chalk.red(`No entry point found in ${uiDir} (index.ts/js, main.ts/js)`));
+        return;
+      }
+
+      const outDir = path.join(uiDir, 'dist');
+      await fs.ensureDir(outDir);
+
+      console.log(chalk.blue(`\nBuilding UI for ${chalk.bold(slug)}...`));
+      console.log(chalk.gray(`Entry: ${entryPoints[0]}`));
+      console.log(chalk.gray(`Output: ${outDir}`));
+
+      const buildOptions: esbuild.BuildOptions = {
+        entryPoints: [entryPoints[0]],
+        bundle: true,
+        minify: true,
+        sourcemap: true,
+        format: 'esm',
+        platform: 'browser',
+        target: ['es2020'],
+        outfile: path.join(outDir, 'bundle.js'),
+        loader: {
+          '.tsx': 'tsx',
+          '.ts': 'ts',
+          '.jsx': 'jsx',
+          '.js': 'js',
+          '.css': 'css',
+          '.svg': 'dataurl',
+          '.png': 'dataurl',
+          '.jpg': 'dataurl'
+        },
+        jsx: 'transform',
+        jsxFactory: 'React.createElement',
+        jsxFragment: 'React.Fragment',
+        external: ['react', 'react-dom', 'lucide-react', 'react/jsx-runtime']
+      };
+
+      if (options.watch) {
+        const ctx = await esbuild.context(buildOptions);
+        await ctx.watch();
+        console.log(chalk.green('Build started in watch mode...'));
+      } else {
+        await esbuild.build(buildOptions);
+        console.log(chalk.green('Build completed successfully!'));
+      }
+
+    } catch (error) {
+      console.error(chalk.red('Error building plugin:'), error);
+    }
+  });
+
+plugin
+  .command('pack <slug>')
+  .description('Pack a plugin into a ZIP for the marketplace')
+  .action(async (slug) => {
+    try {
+      const pluginsDir = getPluginsDir();
+      const pluginPath = path.join(pluginsDir, slug);
+
+      if (!fs.existsSync(pluginPath)) {
+        console.error(chalk.red(`Plugin directory not found: ${pluginPath}`));
+        return;
+      }
+
+      const manifestPath = path.join(pluginPath, 'manifest.json');
+      if (!fs.existsSync(manifestPath)) {
+        console.error(chalk.red(`manifest.json not found in ${pluginPath}`));
+        return;
+      }
+
+      const manifest = await fs.readJson(manifestPath);
+      const version = manifest.version;
+      const outDir = path.resolve(process.cwd(), 'dist');
+      await fs.ensureDir(outDir);
+      
+      const zipName = `${slug}-${version}.zip`;
+      const zipPath = path.join(outDir, zipName);
+
+      console.log(chalk.blue(`\nPacking ${chalk.bold(slug)} v${version}...`));
+      
+      const output = fs.createWriteStream(zipPath);
+      const archive = archiver('zip', { zlib: { level: 9 } });
+
+      archive.on('error', (err) => { throw err; });
+      archive.pipe(output);
+      archive.directory(pluginPath, false);
+      await archive.finalize();
+
+      console.log(chalk.green(`\nPlugin packed successfully!`));
+      console.log(chalk.gray(`Output: ${zipPath}`));
+
+    } catch (error) {
+      console.error(chalk.red('Error packing plugin:'), error);
+    }
+  });
+
+plugin
+  .command('search [query]')
+  .description('Search for plugins in the registry')
+  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://localhost:8080/registry.json')
+  .action(async (query, options) => {
+    try {
+      console.log(chalk.blue(`\nSearching registry: ${options.registry}...`));
+      const response = await fetch(options.registry);
+      if (!response.ok) throw new Error(`Failed to fetch registry: ${response.statusText}`);
+      
+      const registry: any = await response.json();
+      const plugins = registry.plugins || [];
+      
+      const filtered = query 
+        ? plugins.filter((p: any) => p.name.toLowerCase().includes(query.toLowerCase()) || p.slug.toLowerCase().includes(query.toLowerCase()))
+        : plugins;
+
+      console.log(chalk.white(`Found ${filtered.length} plugins:`));
+      console.log(chalk.gray('--------------------------------------------------'));
+
+      for (const p of filtered) {
+        console.log(`${chalk.bold(p.name)} (${chalk.cyan(p.slug)}) v${p.version}`);
+        console.log(chalk.gray(`  ${p.description || 'No description'}`));
+        console.log(chalk.gray(`  Author: ${p.author || 'unknown'}`));
+        console.log('');
+      }
+    } catch (error) {
+      console.error(chalk.red('Error searching registry:'), error);
+    }
+  });
+
+plugin
+  .command('install <slug>')
+  .description('Install a plugin from the registry')
+  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://localhost:8080/registry.json')
+  .action(async (slug, options) => {
+    try {
+      console.log(chalk.blue(`\nFetching plugin info for ${chalk.bold(slug)}...`));
+      const response = await fetch(options.registry);
+      if (!response.ok) throw new Error(`Failed to fetch registry: ${response.statusText}`);
+      
+      const registry: any = await response.json();
+      const pluginInfo = registry.plugins?.find((p: any) => p.slug === slug);
+
+      if (!pluginInfo) {
+        console.error(chalk.red(`Plugin not found in registry: ${slug}`));
+        return;
+      }
+
+      const version = pluginInfo.version;
+      const downloadUrl = new URL(pluginInfo.downloadUrl, options.registry).toString();
+      
+      console.log(chalk.cyan(`Downloading ${slug} v${version}...`));
+      console.log(chalk.gray(`Source: ${downloadUrl}`));
+      const zipResponse = await fetch(downloadUrl);
+      if (!zipResponse.ok) throw new Error(`Failed to download plugin: ${zipResponse.statusText}`);
+      if (!zipResponse.body) throw new Error(`Failed to download plugin: response body is null`);
+
+      const tmpZip = path.resolve(process.cwd(), `tmp-${slug}.zip`);
+      const fileStream = fs.createWriteStream(tmpZip);
+      await pipeline(zipResponse.body as any, fileStream);
+
+      const pluginsDir = getPluginsDir();
+      await fs.ensureDir(pluginsDir);
+      
+      const targetDir = path.join(pluginsDir, slug);
+      if (fs.existsSync(targetDir)) {
+        const confirm = await ask(chalk.yellow(`Plugin ${slug} already exists. Overwrite? (y/N): `));
+        if (confirm.toLowerCase() !== 'y') {
+          await fs.remove(tmpZip);
+          console.log('Installation cancelled.');
+          return;
+        }
+        await fs.remove(targetDir);
+      }
+
+      console.log(chalk.cyan(`Extracting to plugins/${slug}...`));
+      await fs.ensureDir(targetDir);
+      await extract(tmpZip, { dir: targetDir });
+      
+      // Cleanup
+      await fs.remove(tmpZip);
+      
+      console.log(chalk.green(`\nPlugin ${chalk.bold(slug)} installed successfully!`));
+
+    } catch (error) {
+      console.error(chalk.red('Error installing plugin:'), error);
+    }
+  });
+
+program
+  .command('dev')
+  .description('Start the development server')
+  .action(async () => {
+    try {
+      console.log(chalk.blue('\nStarting fromcode development environment...'));
+      
+      // Check for docker-compose.yml
+      if (fs.existsSync(path.join(process.cwd(), 'docker-compose.yml'))) {
+        console.log(chalk.gray('Spinning up infrastructure (Docker)...'));
+        const docker = spawn('docker', ['compose', 'up', '-d'], { stdio: 'inherit' });
+        await new Promise((resolve) => docker.on('exit', resolve));
+      }
+
+      console.log(chalk.gray('Starting services...'));
+      
+      // In a real implementation, we would use a more sophisticated runner like concurrently
+      // For now, let's run npm run dev if it exists in package.json
+      const pkgPath = path.join(process.cwd(), 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        const pkg = await fs.readJson(pkgPath);
+        if (pkg.scripts?.dev) {
+          const dev = spawn('npm', ['run', 'dev'], { stdio: 'inherit', shell: true });
+          dev.on('exit', (code) => {
+            process.exit(code || 0);
+          });
+        } else {
+             console.log(chalk.yellow('No dev script found in package.json. Starting default framework dev...'));
+             // Default framework dev logic here
+        }
+      }
+    } catch (error) {
+      console.error(chalk.red('Error starting development server:'), error);
+    }
+  });
+
+program
+  .command('build')
+  .description('Build the project for production')
+  .option('-m, --mode <mode>', 'Build mode (full, api, admin, frontend)', 'full')
+  .action(async (options) => {
+    try {
+      console.log(chalk.blue(`\nBuilding fromcode project [Mode: ${options.mode}]...`));
+      
+      const pkgPath = path.join(process.cwd(), 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        const pkg = await fs.readJson(pkgPath);
+        const buildScript = pkg.scripts?.[`build:${options.mode}`] || pkg.scripts?.build;
+        if (buildScript) {
+          const build = spawn('npm', ['run', options.mode === 'full' ? 'build' : `build:${options.mode}`], { stdio: 'inherit', shell: true });
+          await new Promise((resolve) => build.on('exit', resolve));
+        }
+      }
+      
+      console.log(chalk.green('\nBuild completed successfully!'));
+    } catch (error) {
+      console.error(chalk.red('Error building project:'), error);
+    }
+  });
+
+program
+  .command('create <name>')
+  .description('Create a new fromcode project')
+  .option('-t, --template <template>', 'Starter template to use', 'minimal')
+  .action(async (name, options) => {
+    try {
+      const targetDir = path.resolve(process.cwd(), name);
+      if (fs.existsSync(targetDir)) {
+        console.error(chalk.red(`Directory already exists: ${targetDir}`));
+        return;
+      }
+
+      console.log(chalk.blue(`\nCreating new fromcode project: ${chalk.bold(name)}...`));
+      console.log(chalk.gray(`Template: ${options.template}`));
+
+      const starterPath = path.resolve(__dirname, '..', '..', '..', 'starters', options.template);
+      
+      if (!fs.existsSync(starterPath)) {
+        console.error(chalk.red(`Template not found: ${options.template}`));
+        console.log(chalk.gray(`Checked path: ${starterPath}`));
+        return;
+      }
+
+      await fs.copy(starterPath, targetDir);
+      
+      // Customize package.json
+      const packageJsonPath = path.join(targetDir, 'package.json');
+      if (fs.existsSync(packageJsonPath)) {
+        const packageJson = await fs.readJson(packageJsonPath);
+        packageJson.name = name;
+        await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+      }
+
+      console.log(chalk.green(`\nProject created successfully in ${targetDir}!`));
+      console.log(chalk.white(`\nNext steps:`));
+      console.log(chalk.cyan(`  cd ${name}`));
+      console.log(chalk.cyan(`  npm install`));
+      console.log(chalk.cyan(`  npm run dev`));
+
+    } catch (error) {
+      console.error(chalk.red('Error creating project:'), error);
+    }
+  });
+
+program
+  .command('docker:build')
+  .description('Build framework Docker images')
+  .option('-m, --mode <mode>', 'Deployment mode (api-only, api-admin, full-stack, frontend-only)', 'full-stack')
+  .action((options) => {
+    console.log(chalk.blue(`Building Docker image for mode: ${options.mode}...`));
+    // In a real implementation, this would trigger docker build with --target
+    console.log(chalk.gray(`docker build --target ${options.mode} -t fromcode-framework:${options.mode} .`));
+  });
+
+program
+  .command('docker:deploy')
+  .description('Deploy framework using Docker Compose')
+  .action(() => {
+    console.log(chalk.blue('Deploying with Docker Compose...'));
+    console.log(chalk.gray('docker-compose up -d'));
+  });
+
+program.parse(process.argv);

@@ -1,0 +1,30 @@
+{
+  "name": "@fromcode/framework",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "build:api": "tsc -b packages/api",
+    "build:admin": "npm run build --workspace=@fromcode/admin",
+    "build:frontend": "npm run build --workspace=@fromcode/frontend",
+    "dev": "npm run dev --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "start:all": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\" \"PORT=3002 npm run start --workspace=@fromcode/frontend\"",
+    "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\""
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "concurrently": "^8.2.2"
+  },
+  "overrides": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "drizzle-orm": "^0.45.1"
+  }
+}
