@@ -1,0 +1,299 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { usePlugins } from '@fromcode/react';
+import { useTheme } from '@/components/ThemeContext';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Switch } from '@/components/ui/Switch';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useNotify } from '@/components/NotificationContext';
+import { FrameworkIcons } from '@/lib/icons';
+import Link from 'next/link';
+
+interface Plugin {
+  slug: string;
+  name: string;
+  version: string;
+  category: string;
+  description?: string;
+  state: 'inactive' | 'loading' | 'active' | 'error';
+  author?: string;
+  capabilities?: string[];
+  approvedCapabilities?: string[];
+  config?: Record<string, any>;
+}
+
+export default function InstalledPluginsPage() {
+  const { theme } = useTheme();
+  const { notify } = useNotify();
+  const { triggerRefresh, refreshVersion } = usePlugins();
+  const [plugins, setPlugins] = useState<Plugin[]>([]);
+  const [registryData, setRegistryData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pluginToDelete, setPluginToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  async function fetchPlugins() {
+    try {
+      const [data, reg] = await Promise.all([
+        api.get(ENDPOINTS.PLUGINS.LIST),
+        api.get(ENDPOINTS.PLUGINS.REGISTRY)
+      ]);
+      setPlugins(Array.isArray(data) ? data : []);
+      setRegistryData(reg.plugins || []);
+    } catch (err) {
+      console.error("Failed to fetch plugins", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('plugin', file);
+
+    try {
+      const response = await fetch(api.getURL(ENDPOINTS.PLUGINS.UPLOAD), {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      notify('success', 'Upload Successful', 'Plugin uploaded successfully.');
+      fetchPlugins();
+    } catch (err: any) {
+      notify('error', 'Upload Failed', err.message);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  useEffect(() => {
+    fetchPlugins();
+  }, [refreshVersion]);
+
+  const handleToggle = async (slug: string, currentEnabled: boolean) => {
+    try {
+      await api.post(ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled: !currentEnabled });
+      notify('success', 'Plugin Updated', `${slug} is now ${!currentEnabled ? 'active' : 'inactive'}.`);
+      setPlugins(prev => prev.map(p => p.slug === slug ? { ...p, state: !currentEnabled ? 'active' : 'inactive' } : p));
+      triggerRefresh();
+    } catch (err: any) {
+      notify('error', 'Update Failed', err.message);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!pluginToDelete) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(ENDPOINTS.PLUGINS.DELETE(pluginToDelete));
+      notify('success', 'Deleted', `Plugin ${pluginToDelete} removed.`);
+      setPlugins(prev => prev.filter(p => p.slug !== pluginToDelete));
+      setShowDeleteConfirm(false);
+    } catch (err: any) {
+      notify('error', 'Delete Failed', err.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const filteredPlugins = plugins.filter(p => 
+    (p.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+    (p.slug?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="relative flex-1 group">
+          <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search installed plugins..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={`w-full rounded-2xl py-4 pl-12 pr-6 outline-none border-0 font-bold transition-all ${theme === 'dark' ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/5' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-xl shadow-slate-200/50'}`} 
+          />
+        </div>
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip,.tar.gz" />
+        <button 
+          onClick={handleUploadClick}
+          disabled={isUploading}
+          className={`flex items-center justify-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] disabled:opacity-50`}
+        >
+          {isUploading ? <FrameworkIcons.Loader className="animate-spin" size={18} /> : <FrameworkIcons.Plus size={18} strokeWidth={3} />}
+          <span>Upload (.zip)</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {loading ? (
+           [1,2,3].map(i => (
+             <div key={i} className={`h-32 rounded-3xl animate-pulse ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white border-2 border-slate-50 shadow-xl shadow-slate-200/50'}`} />
+           ))
+        ) : filteredPlugins.length === 0 ? (
+          <div className="col-span-full py-20 text-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
+                <FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" />
+             </div>
+             <h3 className={`text-xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No plugins found</h3>
+             <p className="text-slate-500 font-medium">Try a different search term or upload a new plugin.</p>
+          </div>
+        ) : (
+          filteredPlugins.map(plugin => {
+            const regEntry = registryData.find(r => r.slug === plugin.slug);
+            const hasUpdate = regEntry && regEntry.version !== plugin.version;
+            const hasImageError = imageErrors[plugin.slug];
+
+            return (
+              <Card 
+                key={plugin.slug}
+                className={`group flex flex-col md:flex-row border-0 relative transition-all duration-700 overflow-hidden rounded-3xl ${theme === 'dark' ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-xl shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
+              >
+                 <div className="p-6 flex flex-col md:flex-row flex-1 items-center gap-8 relative">
+                    <div className={`h-20 w-20 rounded-2xl flex-shrink-0 flex items-center justify-center transition-all duration-700 group-hover:rotate-3 group-hover:scale-105 shadow-lg ${theme === 'dark' ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 shadow-indigo-100'}`}>
+                      {(plugin as any).iconUrl && !hasImageError ? (
+                        <img 
+                          src={(plugin as any).iconUrl} 
+                          alt={plugin.name} 
+                          className="w-10 h-10 object-contain" 
+                          onError={() => setImageErrors(prev => ({ ...prev, [plugin.slug]: true }))}
+                        />
+                      ) : (
+                        <FrameworkIcons.Box size={36} strokeWidth={1.5} />
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 space-y-2 text-center md:text-left">
+                       <div className="flex items-center justify-center md:justify-start gap-3">
+                          <Badge variant={plugin.state === 'active' ? 'success' : 'gray'} className="text-[9px] px-2 py-0.5 font-black uppercase tracking-widest rounded-lg shadow-sm">
+                              {plugin.state === 'active' ? 'Active' : 'Inactive'}
+                          </Badge>
+                          {hasUpdate && (
+                             <Link 
+                               href={`/plugins/marketplace/${plugin.slug}`}
+                               className="flex items-center gap-2 px-2 py-0.5 bg-amber-500 text-white rounded-lg animate-pulse no-underline shadow-md shadow-amber-500/20"
+                             >
+                                <FrameworkIcons.Refresh size={8} className="animate-spin-slow" />
+                                <span className="text-[8px] font-black uppercase tracking-widest leading-none">Update</span>
+                             </Link>
+                           )}
+                       </div>
+                       
+                       <div className="space-y-1">
+                          <Link href={`/plugins/${plugin.slug}`}>
+                             <h3 className={`text-2xl font-black tracking-tighter transition-colors duration-300 group-hover:text-indigo-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                {plugin.name}
+                             </h3>
+                          </Link>
+                          <p className={`text-[13px] leading-snug font-medium line-clamp-1 transition-colors duration-300 ${theme === 'dark' ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>
+                            {plugin.description || `Manage and configure your ${plugin.name} tools.`}
+                          </p>
+                       </div>
+
+                       <div className={`flex items-center justify-center md:justify-start gap-4 text-[9px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500/80'}`}>
+                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border shadow-sm transition-colors ${
+                          theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-100 text-slate-600'
+                        }`}>
+                          <FrameworkIcons.Shield size={10} className="text-indigo-500" />
+                          v{plugin.version}
+                        </div>
+                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border shadow-sm transition-colors ${
+                          theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-100 text-slate-600'
+                        }`}>
+                          <FrameworkIcons.User size={10} className="text-indigo-500" />
+                          <span className="truncate">{plugin.author || 'Official'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[220px]">
+                      <div className={`flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 ${
+                        theme === 'dark' 
+                          ? 'bg-slate-800/40 border-white/10 hover:bg-slate-800/60' 
+                          : 'bg-slate-100/50 border-slate-200/60 shadow-inner'
+                      }`}>
+                          <div className="flex flex-col">
+                            <span className={`text-[8px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                              Activation
+                            </span>
+                          </div>
+                          <Switch 
+                            checked={plugin.state === 'active'} 
+                            onChange={() => handleToggle(plugin.slug, plugin.state === 'active')}
+                            className="scale-75 origin-right"
+                          />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 gap-2">
+                        <Link 
+                          href={`/plugins/${plugin.slug}`} 
+                          className={`col-span-4 sm:col-span-2 flex items-center justify-center gap-2 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-[0.97] ${
+                            theme === 'dark' ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
+                          }`}
+                        >
+                          <FrameworkIcons.Right size={14} />
+                          <span>Open</span>
+                        </Link>
+                        
+                        <Link 
+                          href={`/plugins/${plugin.slug}?tab=settings`} 
+                          className={`col-span-2 sm:col-span-1 h-10 rounded-xl flex items-center justify-center transition-all border ${
+                            theme === 'dark' 
+                              ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-indigo-400 hover:bg-slate-700' 
+                              : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 shadow-sm hover:shadow-md'
+                          }`}
+                        >
+                          <FrameworkIcons.Settings size={16} />
+                        </Link>
+
+                        <button 
+                          onClick={() => { setPluginToDelete(plugin.slug); setShowDeleteConfirm(true); }}
+                          className={`col-span-2 sm:col-span-1 h-10 rounded-xl flex items-center justify-center transition-all border ${
+                            theme === 'dark' 
+                              ? 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400' 
+                              : 'bg-white border-slate-200 text-slate-400 hover:text-red-500 shadow-sm hover:shadow-md'
+                          }`}
+                        >
+                          <FrameworkIcons.Trash size={16} />
+                        </button>
+                      </div>
+                    </div>
+                 </div>
+              </Card>
+            );
+          })
+        )}
+      </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Delete Plugin"
+        description="Are you sure you want to remove this plugin? All its data will be lost."
+      />
+    </div>
+  );
+}

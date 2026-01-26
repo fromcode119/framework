@@ -1,0 +1,19 @@
+{
+  "name": "fromcode-minimal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "fromcode dev",
+    "build": "fromcode build",
+    "start": "fromcode start",
+    "plugin:create": "fromcode plugin create"
+  },
+  "dependencies": {
+    "@fromcode/core": "latest",
+    "@fromcode/api": "latest"
+  },
+  "devDependencies": {
+    "@fromcode/cli": "latest",
+    "typescript": "^5.0.0"
+  }
+}
