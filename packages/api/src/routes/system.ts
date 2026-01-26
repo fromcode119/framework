@@ -8,11 +8,11 @@ export function setupSystemRoutes(manager: PluginManager, auth: AuthManager, res
   const router = express.Router();
   const controller = new SystemController(manager, restController);
 
-  router.get('/system/admin/plugins', auth.guard(['admin']), (req, res) => controller.getAdminMetadata(req, res));
-  router.get('/system/admin/stats/collections', auth.guard(['admin']), (req, res) => controller.getStats(req, res));
-  router.get('/system/admin/activity', auth.guard(['admin']), (req, res) => controller.getActivity(req, res));
-  router.get('/system/admin/logs', auth.guard(['admin']), (req, res) => controller.getLogs(req, res));
-  router.get('/system/i18n', (req, res) => controller.getI18n(req, res));
+  router.get('/admin/plugins', auth.guard(['admin']), (req, res) => controller.getAdminMetadata(req, res));
+  router.get('/admin/stats/collections', auth.guard(['admin']), (req, res) => controller.getStats(req, res));
+  router.get('/admin/activity', auth.guard(['admin']), (req, res) => controller.getActivity(req, res));
+  router.get('/admin/logs', auth.guard(['admin']), (req, res) => controller.getLogs(req, res));
+  router.get('/i18n', (req, res) => controller.getI18n(req, res));
 
   return router;
 }

@@ -58,16 +58,7 @@ export default function PluginLoader() {
       }
 
       try {
-        const res = await fetch(api.getURL(ENDPOINTS.PLUGINS.STAGED), {
-          credentials: 'include'
-        });
-
-        if (res.status === 401) {
-          console.warn("[Admin] Plugin load failed: Unauthorized. Token may be expired.");
-          return;
-        }
-
-        const responseData = await res.json();
+        const responseData = await api.get(ENDPOINTS.PLUGINS.STAGED);
         const plugins: AdminPluginMetadata[] = responseData.plugins || [];
         const remoteMenu: any[] = responseData.menu || [];
 

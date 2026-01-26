@@ -33,138 +33,156 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            System Settings
-          </h1>
-          <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-            Global configuration and preferences for your platform.
-          </p>
+    <div className="flex flex-col h-full -mx-8 -mt-8 overflow-hidden bg-slate-50/20 dark:bg-transparent animate-in fade-in duration-500">
+      {/* Header section with white high-contrast style */}
+      <div className={`p-8 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-white dark:bg-transparent shadow-sm dark:shadow-none`}>
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-indigo-50'} text-indigo-500`}>
+                  <FrameworkIcons.Settings size={20} />
+                </div>
+                <h1 className="text-2xl font-black uppercase tracking-tight">System Settings</h1>
+              </div>
+              <p className="text-slate-500 font-medium text-sm">Global configuration and preferences for your platform ecosystem.</p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Button size="lg" className="px-8 transform hover:scale-[1.02] shadow-xl shadow-indigo-600/20" icon={<FrameworkIcons.Save size={18} />}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
         </div>
-        <Button size="lg" className="transform hover:scale-[1.02]">
-          <FrameworkIcons.Save size={18} />
-          <span>Save Changes</span>
-        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <Slot name="admin.settings.top" />
-          
-          <Card title="General Configuration">
-            <SettingRow 
-              icon={FrameworkIcons.Globe} 
-              title="Site URL" 
-              description="The primary address of your website for internal links and SEO."
-            >
-              <Input 
-                defaultValue="https://vselenskiportal88.com"
-                className="w-64"
-              />
-            </SettingRow>
-            
-            <SettingRow 
-              icon={FrameworkIcons.Palette} 
-              title="Theme Preferences" 
-              description="Choose the visual style of your administration panel."
-            >
-              <div className={`flex p-1 rounded-lg ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-100'}`}>
-                <button 
-                  onClick={() => theme === 'dark' && toggleTheme()}
-                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${theme === 'light' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
+      <div className="flex-1 overflow-auto p-8">
+        <div className="max-w-[1200px] mx-auto space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <Slot name="admin.settings.top" />
+              
+              <Card title="General Configuration">
+                <SettingRow 
+                  icon={FrameworkIcons.Globe} 
+                  title="Environment URL" 
+                  description="The primary address of your website for internal links, SEO, and canonical references."
                 >
-                  Light
-                </button>
-                <button 
-                  onClick={() => theme === 'light' && toggleTheme()}
-                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${theme === 'dark' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500'}`}
+                  <Input 
+                    defaultValue="https://fromcode.local"
+                    className="w-full md:w-64"
+                  />
+                </SettingRow>
+                
+                <SettingRow 
+                  icon={FrameworkIcons.Palette} 
+                  title="Visual Core" 
+                  description="Choose the visual style of your administration panel. Toggle between high-contrast modes."
                 >
-                  Dark
-                </button>
-              </div>
-            </SettingRow>
+                  <div className={`flex p-1 rounded-2xl ${theme === 'dark' ? 'bg-slate-900 border border-slate-800 shadow-inner' : 'bg-slate-100/80 border border-slate-100 shadow-inner'}`}>
+                    <button 
+                      onClick={() => theme === 'dark' && toggleTheme()}
+                      className={`flex items-center gap-2 px-6 py-2 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${theme === 'light' ? 'bg-white text-indigo-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      <FrameworkIcons.Sun size={14} />
+                      Light
+                    </button>
+                    <button 
+                      onClick={() => theme === 'light' && toggleTheme()}
+                      className={`flex items-center gap-2 px-6 py-2 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${theme === 'dark' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-indigo-600'}`}
+                    >
+                      <FrameworkIcons.Moon size={14} />
+                      Dark
+                    </button>
+                  </div>
+                </SettingRow>
 
-            <SettingRow 
-              icon={FrameworkIcons.Lock} 
-              title="Two-Factor Authentication" 
-              description="Add an extra layer of security to your admin account."
-            >
-              <Switch checked={twoFactor} onChange={setTwoFactor} />
-            </SettingRow>
+                <SettingRow 
+                  icon={FrameworkIcons.Shield} 
+                  title="Two-Factor Security" 
+                  description="Add an extra layer of security to your admin account by requiring verification codes."
+                >
+                  <Switch checked={twoFactor} onChange={setTwoFactor} />
+                </SettingRow>
 
-            <Slot name="admin.settings.general.after" />
-          </Card>
+                <Slot name="admin.settings.general.after" />
+              </Card>
 
-          <Card title="Notifications">
-            <SettingRow 
-              icon={FrameworkIcons.Mail} 
-              title="Email Alerts" 
-              description="Receive weekly summaries and critical system alerts via email."
-            >
-              <Switch checked={notifications} onChange={setNotifications} />
-            </SettingRow>
+              <Card title="Engagement">
+                <SettingRow 
+                  icon={FrameworkIcons.Mail} 
+                  title="Email Telemetry" 
+                  description="Receive critical system alerts, weekly summaries and audit snapshots via email."
+                >
+                  <Switch checked={notifications} onChange={setNotifications} />
+                </SettingRow>
 
-            <SettingRow 
-              icon={FrameworkIcons.Smartphone} 
-              title="Push Notifications" 
-              description="Enable real-time updates directly in your browser or mobile device."
-            >
-              <Switch checked={false} onChange={() => {}} disabled label="Pro Feature" />
-            </SettingRow>
-          </Card>
+                <SettingRow 
+                  icon={FrameworkIcons.Smartphone} 
+                  title="Infrastructure Health" 
+                  description="Enable real-time environment notifications via native OS push alerts."
+                >
+                  <Switch checked={false} onChange={() => {}} disabled label="Premium" />
+                </SettingRow>
+              </Card>
 
-          <Slot name="admin.settings.bottom" />
-        </div>
+              <Slot name="admin.settings.bottom" />
+            </div>
 
-        <div className="space-y-8">
-          <Slot name="admin.settings.sidebar.top" />
-          <Card title="System Status">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>Database</span>
-                <span className="flex items-center gap-2 text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Healthy
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>API Server</span>
-                <span className="flex items-center gap-2 text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Online
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>Storage</span>
-                <span className="text-slate-400 text-xs font-bold">12.4 GB / 100 GB</span>
-              </div>
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Maintenance Mode</span>
-                  <Switch checked={maintenance} onChange={setMaintenance} />
+            <div className="space-y-8">
+              <Slot name="admin.settings.sidebar.top" />
+              <Card title="Infrastructure">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Database</span>
+                    <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/10">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                      Healthy
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>API Clusters</span>
+                    <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/10">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                      Online
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Storage Used</span>
+                    <span className="text-[11px] font-black text-slate-400">12.4 GB / 100 GB</span>
+                  </div>
+                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`text-xs font-black uppercase tracking-widest text-indigo-500`}>Maintenance Mode</span>
+                      <Switch checked={maintenance} onChange={setMaintenance} />
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-medium leading-relaxed italic">
+                      Restricts portal frontend access to administrative accounts only during system upgrades.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[10px] text-slate-500 leading-relaxed">
-                  When enabled, only administrators can access the portal frontend.
-                </p>
-              </div>
-            </div>
-          </Card>
+              </Card>
 
-          <Card title="Danger Zone">
-            <div className="space-y-4">
-              <p className="text-xs text-slate-500">The following actions are destructive and cannot be undone.</p>
-              <Button variant="outline" className="w-full text-rose-500 border-rose-500/20 hover:bg-rose-500/10">
-                <FrameworkIcons.Database size={16} />
-                <span>Flush Cache</span>
-              </Button>
-              <Button variant="danger" className="w-full">
-                <FrameworkIcons.Shield size={16} />
-                <span>Reset System Configurations</span>
-              </Button>
+              <Card className="border-rose-100/50 dark:border-rose-500/10 shadow-rose-500/5">
+                <h3 className="text-xl font-black uppercase tracking-tight text-rose-500 mb-6 flex items-center gap-2">
+                  <FrameworkIcons.Zap size={20} className="fill-current" />
+                  Danger Zone
+                </h3>
+                <div className="space-y-4">
+                  <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed mb-4">Destructive operations affect global environment state.</p>
+                  <Button variant="ghost" className="w-full justify-between group border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl px-6 py-4" icon={<FrameworkIcons.Database size={18} />}>
+                    Flush Cache Clusters
+                    <FrameworkIcons.ArrowRight size={16} className="opacity-40 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-between group bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl px-6 py-4 dark:bg-rose-500/10 dark:border-rose-500/20" icon={<FrameworkIcons.Shield size={18} />}>
+                    Hard Factory Reset
+                    <FrameworkIcons.ArrowRight size={16} className="opacity-40 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </Card>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

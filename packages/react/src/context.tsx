@@ -102,7 +102,8 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       
       // Clean up trailing slash
       const base = effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
-      const endpoint = `${base}/api/system/i18n?locale=${newLocale}`;
+      const apiVersion = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
+      const endpoint = `${base}/api/${apiVersion}/system/i18n?locale=${newLocale}`;
       
       const res = await fetch(endpoint);
       if (!res.ok) throw new Error(`Status ${res.status}`);

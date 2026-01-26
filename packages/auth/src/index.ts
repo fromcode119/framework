@@ -5,14 +5,17 @@ export interface User {
   id: string;
   email: string;
   roles: string[];
-  jti?: string; // Add unique token ID for session tracking
+  jti?: string; 
+  isApiKey?: boolean;
 }
 
 export type SessionValidator = (jti: string) => Promise<boolean>;
+export type ApiKeyValidator = (apiKey: string) => Promise<User | null>;
 
 export class AuthManager {
   private secret: string;
   private sessionValidator?: SessionValidator;
+  private apiKeyValidator?: ApiKeyValidator;
 
   constructor(secret: string = process.env.JWT_SECRET || 'fromcode-removed-historical-secret') {
     this.secret = secret;
@@ -20,6 +23,10 @@ export class AuthManager {
 
   setSessionValidator(validator: SessionValidator) {
     this.sessionValidator = validator;
+  }
+
+  setApiKeyValidator(validator: ApiKeyValidator) {
+    this.apiKeyValidator = validator;
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -43,7 +50,7 @@ export class AuthManager {
       const decoded = jwt.verify(token, this.secret) as User;
       
       // If server-side session tracking is enabled, check if session is still valid
-      if (this.sessionValidator && decoded.jti) {
+      if (this.sessionValidator && decoded.jti && !decoded.isApiKey) {
         const isValid = await this.sessionValidator(decoded.jti);
         if (!isValid) throw new Error('Session revoked or expired');
       }
@@ -59,7 +66,21 @@ export class AuthManager {
     return async (req: any, res: any, next: any) => {
       let token: string | undefined;
 
-      // Check Authorization Header
+      // 1. Check for API Key in Header
+      const apiKey = req.headers['x-api-key'] || req.query.api_key;
+      if (apiKey && this.apiKeyValidator) {
+          try {
+              const user = await this.apiKeyValidator(String(apiKey));
+              if (user) {
+                  req.user = { ...user, isApiKey: true };
+                  return next();
+              }
+          } catch (e) {
+              console.error('[AuthManager] API Key validation failed', e);
+          }
+      }
+
+      // 2. Check Authorization Header
       const authHeader = req.headers.authorization;
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const t = authHeader.split(' ')[1];
@@ -68,13 +89,12 @@ export class AuthManager {
         }
       }
 
-      // Check Cookies (if cookie-parser is used)
+      // 3. Check Cookies (if cookie-parser is used)
       if (!token && req.cookies && req.cookies.fc_token) {
         token = req.cookies.fc_token;
-        console.log('[AuthManager] Found token in req.cookies');
       }
 
-      // Check Cookie in raw header (if cookie-parser is not used)
+      // 4. Check Cookie in raw header (if cookie-parser is not used)
       if (!token && req.headers.cookie) {
         const cookies = req.headers.cookie.split(';').reduce((acc: any, cookie: string) => {
           const [name, value] = cookie.trim().split('=');
@@ -82,7 +102,12 @@ export class AuthManager {
           return acc;
         }, {});
         token = cookies['fc_token'];
-        if (token) console.log('[AuthManager] Found token in raw cookies');
+        
+        if (!token) {
+            console.debug(`[AuthManager] fc_token not found in ${Object.keys(cookies).length} cookies: ${Object.keys(cookies).join(', ')}`);
+        }
+      } else if (!token && !req.headers.cookie) {
+          console.debug(`[AuthManager] No cookies received in headers`);
       }
 
       if (token) {
@@ -90,13 +115,7 @@ export class AuthManager {
           req.user = await this.verifyToken(token);
         } catch (err) {
           console.error(`[AuthManager] Token verification failed: ${err instanceof Error ? err.message : String(err)}`);
-          // Silent failure, req.user remains undefined
         }
-      } else {
-         // Only log if we have some cookies but not the one we want, to avoid noise
-         if (req.headers.cookie && !req.headers.cookie.includes('fc_token')) {
-           console.log('[AuthManager] Cookie present but fc_token missing');
-         }
       }
       next();
     };

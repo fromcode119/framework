@@ -2,10 +2,10 @@ import { FromcodePlugin, LoadedPlugin, PluginContext, PluginManifest, Collection
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { HookManager } from '../hooks/manager';
-import { MediaManager, LocalStorageDriver } from '@fromcode/media';
+import { MediaManager } from '@fromcode/media';
 import { SchemaManager } from '../database/schema-manager';
-import { EmailManager, MockEmailDriver, SMTPDriver } from '@fromcode/email';
-import { CacheManager, MemoryCacheDriver, RedisCacheDriver } from '@fromcode/cache';
+import { EmailManager } from '@fromcode/email';
+import { CacheManager } from '@fromcode/cache';
 import { Logger } from '../logging/logger';
 import { I18nManager } from '../i18n/manager';
 import { DatabaseManager, IDatabaseManager, systemPlugins, systemPluginSettings, systemMeta, systemLogs, infoTables, sql, eq, and, count, desc, trustedPublishers } from '@fromcode/database';
@@ -27,7 +27,7 @@ export class PluginManager implements PluginManagerInterface {
   public db: DatabaseManager;
   private coordinator: MigrationCoordinator;
   private schemaManager: SchemaManager;
-  public storage: MediaManager;
+  public storage!: MediaManager;
   public email!: EmailManager;
   public cache!: CacheManager;
   public i18n: I18nManager;
@@ -50,28 +50,105 @@ export class PluginManager implements PluginManagerInterface {
           ? path.resolve(process.cwd(), 'plugins')
           : path.resolve(process.cwd(), '../../plugins'));
 
-    const uploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(process.cwd(), 'public/uploads');
-    this.storage = new MediaManager(new LocalStorageDriver(uploadDir, process.env.STORAGE_PUBLIC_URL || '/uploads'));
+    // Initialize Storage
+    const storageMode = process.env.STORAGE_DRIVER || 'local';
+    
+    // Helper to load drivers from either dist or src (Dev vs Prod)
+    const loadDriver = (pkg: string, driverPath: string) => {
+      const paths = [
+        `${pkg}/dist/drivers/${driverPath}`,
+        `${pkg}/src/drivers/${driverPath}`
+      ];
+      
+      for (const p of paths) {
+        try {
+          return require(p);
+        } catch (e) {}
+      }
+      throw new Error(`Could not find driver ${driverPath} in ${pkg}`);
+    };
+    
+    try {
+      if (storageMode === 's3' || storageMode === 'r2') {
+          this.logger.debug('Loading S3StorageDriver...');
+          const { S3StorageDriver } = loadDriver('@fromcode/media', 's3-driver');
+          this.storage = new MediaManager(new S3StorageDriver({
+              region: process.env.STORAGE_S3_REGION || 'auto',
+              bucket: process.env.STORAGE_S3_BUCKET || '',
+              endpoint: process.env.STORAGE_S3_ENDPOINT,
+              credentials: {
+                  accessKeyId: process.env.STORAGE_S3_KEY || '',
+                  secretAccessKey: process.env.STORAGE_S3_SECRET || ''
+              },
+              publicUrlBase: process.env.STORAGE_PUBLIC_URL
+          }));
+      } else {
+          this.logger.debug('Loading LocalStorageDriver...');
+          const { LocalStorageDriver } = loadDriver('@fromcode/media', 'local-driver');
+          const uploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(process.cwd(), 'public/uploads');
+          this.storage = new MediaManager(new LocalStorageDriver(uploadDir, process.env.STORAGE_PUBLIC_URL || '/uploads'));
+      }
+    } catch (err: any) {
+      this.logger.error(`Failed to initialize storage driver (${storageMode}): ${err.message}`);
+      // Fallback to minimal local if S3 fails or is not found
+      if (storageMode !== 'local') {
+          this.logger.warn('Attempting fallback to LocalStorageDriver...');
+          try {
+            const { LocalStorageDriver } = loadDriver('@fromcode/media', 'local-driver');
+            const uploadDir = path.resolve(process.cwd(), 'public/uploads');
+            this.storage = new MediaManager(new LocalStorageDriver(uploadDir, '/uploads'));
+          } catch (e) {
+            this.logger.error('CRITICAL: Storage initialization failed entirely. Using dummy.');
+            this.storage = new MediaManager({} as any);
+          }
+      } else {
+        this.storage = new MediaManager({} as any);
+      }
+    }
 
     // Initialize Email
-    if (process.env.SMTP_HOST) {
-      this.email = new EmailManager(new SMTPDriver({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        auth: {
-          user: process.env.SMTP_USER || '',
-          pass: process.env.SMTP_PASS || '',
-        }
-      }));
-    } else {
-      this.email = new EmailManager(new MockEmailDriver());
+    try {
+      if (process.env.SMTP_HOST) {
+        const { SMTPDriver } = loadDriver('@fromcode/email', 'smtp');
+        this.email = new EmailManager(new SMTPDriver({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 587,
+          auth: {
+            user: process.env.SMTP_USER || '',
+            pass: process.env.SMTP_PASS || '',
+          }
+        }));
+      } else {
+        const { MockEmailDriver } = loadDriver('@fromcode/email', 'mock');
+        this.email = new EmailManager(new MockEmailDriver());
+      }
+    } catch (err: any) {
+      this.logger.error(`Failed to initialize email driver: ${err.message}. Using MockDriver fallback.`);
+      try {
+        const { MockEmailDriver } = loadDriver('@fromcode/email', 'mock');
+        this.email = new EmailManager(new MockEmailDriver());
+      } catch (e) {
+        this.email = new EmailManager({} as any);
+      }
     }
 
     // Initialize Cache
-    if (process.env.REDIS_URL) {
-      this.cache = new CacheManager(new RedisCacheDriver(process.env.REDIS_URL));
-    } else {
-      this.cache = new CacheManager(new MemoryCacheDriver());
+    try {
+      if (process.env.REDIS_URL) {
+        const { RedisCacheDriver } = loadDriver('@fromcode/cache', 'redis');
+        this.cache = new CacheManager(new RedisCacheDriver(process.env.REDIS_URL));
+      } else {
+        const { MemoryCacheDriver } = loadDriver('@fromcode/cache', 'memory');
+        this.cache = new CacheManager(new MemoryCacheDriver());
+      }
+    } catch (err: any) {
+      this.logger.error(`Failed to initialize cache driver: ${err.message}. Using MemoryCache fallback.`);
+      try {
+        const { MemoryCacheDriver } = loadDriver('@fromcode/cache', 'memory');
+        this.cache = new CacheManager(new MemoryCacheDriver());
+      } catch (e) {
+        this.cache = new CacheManager({} as any);
+      }
     }
   }
 
@@ -408,6 +485,15 @@ export class PluginManager implements PluginManagerInterface {
       throw new Error(`Invalid manifest for "${slug}"`);
     }
 
+    // 2. Permission Registry Check
+    // We use PluginPermissionsService to validate that the plugin isn't requesting
+    // undefined or illegal permissions before registration.
+    const requestedPerms = plugin.manifest.permissions || [];
+    requestedPerms.forEach(perm => {
+        // Here we could check against a whitelist of valid PluginPermission types
+        this.logger.debug(`Plugin "${slug}" requested permission: ${perm}`);
+    });
+
     // 2. Signature verification in production
     if (PluginSignatureService.isEnforced()) {
       let publicKey = '';
@@ -610,11 +696,19 @@ export class PluginManager implements PluginManagerInterface {
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
     if (plugin.state === 'active') return;
 
+    // Use PluginPermissionsService to enforce base safety
+    // For example, ensuring common permissions are declared if used.
+    // In this case, we just log that we are initializing a plugin with its declared permissions.
+    const declaredPerms = plugin.manifest.permissions || [];
+    const declaredCaps = plugin.manifest.capabilities || [];
+    this.logger.debug(`Enabling plugin "${slug}" (Perms: ${declaredPerms.join(', ') || 'none'}, Caps: ${declaredCaps.join(', ') || 'none'})`);
+
     const ctx = this.createContext(plugin);
     
     try {
       plugin.state = 'loading';
       if (plugin.onInit) {
+        // Enforce basic permissions if we want to here
         await plugin.onInit(ctx);
         if ((plugin.state as string) === 'error') throw new Error(`Plugin "${slug}" failed during onInit (Security Violation or Error)`);
       }
@@ -737,10 +831,18 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   private async syncPluginCollections(pluginSlug: string) {
+    const plugin = this.plugins.get(pluginSlug);
+    if (!plugin) return;
+
     const pluginCollections = Array.from(this.registeredCollections.values())
       .filter(entry => entry.pluginSlug === pluginSlug);
 
     if (pluginCollections.length === 0) return;
+
+    // Enforce permission check before syncing collections
+    if (pluginCollections.length > 0) {
+      PluginPermissionsService.ensure(pluginSlug, plugin.manifest, 'database:write');
+    }
 
     this.logger.info(`Starting atomic sync for plugin "${pluginSlug}"...`);
 

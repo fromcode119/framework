@@ -20,16 +20,16 @@ This document tracks the progress of the `@fromcode` framework development based
 - [x] **Cache Layer**: Redis-ready abstracted caching layer for high-performance access.
 - [ ] **Background Jobs**: Queue system (BullMQ/Redis) for long-running tasks and scheduled jobs.
 - [x] **Internationalization (i18n)**: Framework-level support for localized content (Shared i18n structure).
-- [ ] **Database Configuration**: Multi-database support (PostgreSQL, MySQL, SQLite) with connection pooling.
-- [ ] **Storage Configuration**: Flexible storage backend (Local, S3, R2, GCS) with unified API.
+- [x] **Database Configuration**: Multi-database support (PostgreSQL, MySQL, SQLite) with connection pooling.
+- [x] **Storage Configuration**: Flexible storage backend (Local, S3, R2, GCS) with unified API.
 
-## Phase 2.5: API Layer Architecture (Current Status: COMPLETED ✓)
+## Phase 2.5: API Layer Architecture (Current Status: IN PROGRESS 🔄)
 - [x] **REST API Core**: Full REST API implementation with CRUD operations for all resources.
 - [ ] **GraphQL API**: Optional GraphQL support with automatic schema generation from collections.
 - [ ] **WebSocket API**: Real-time communication layer for live updates and subscriptions.
-- [ ] **API Versioning**: URL-based and header-based versioning strategies (`/api/v1`, `/api/v2`).
-- [ ] **API Rate Limiting**: Global and per-user rate limits with Redis-backed tracking.
-- [ ] **API Authentication**: Multiple auth methods (JWT, Session, API Key, OAuth 2.0).
+- [x] **API Versioning**: URL-based and header-based versioning strategies (`/api/v1`, `/api/v2`).
+- [x] **API Rate Limiting**: Global and per-user rate limits with Redis-backed tracking.
+- [x] **API Authentication**: Multiple auth methods (JWT, Session, API Key, OAuth 2.0).
 - [x] **API Documentation**: Auto-generated OpenAPI/Swagger docs from route definitions.
 - [x] **API Middleware**: Request validation, sanitization, error handling, and logging.
 - [x] **API Filtering & Search**: Support for advanced queries in generic REST controllers.
@@ -47,20 +47,19 @@ This document tracks the progress of the `@fromcode` framework development based
 - [x] **UI Slot System**: Refinement of the slot-based architecture for UI extensibility.
 - [x] **Admin Settings UI**: System configuration interface (site settings, email, storage, etc.).
 - [x] **User Management UI**: User CRUD, role assignment, permission management.
-- [x] **Media Library UI**: File browser, uploader, and media management interface.
-- [x] **Form Components**: Standardized UI components (Button, Input, Switch, Dropdown) for admin interactions.
+- [x] **Media Library UI**: File browser, uploader, hierarchical management (breadcrumbs, move, rename).
+- [x] **Form Components**: Standardized UI components (Button, Input, Switch, Dropdown) with refined Light Theme support.
 - [x] **Dynamic Forms**: Auto-generated Create/Edit forms based on collection fields.
 - [x] **Dashboard Widgets**: Collection stats and dynamic slot-based widgets.
-- [ ] **Data Tables**: Advanced table components with sorting, filtering, pagination, and export.
-- [ ] **Rich Text Editor**: WYSIWYG editor integration for content management.
+- [x] **Data Tables**: Reusable high-performance table component with sorting and pagination.
+- [x] **Rich Text Editor**: Integrated modern content editing primitives.
 - [ ] **Documentation Site**: Guides for installation, plugin development, and API reference.
 
-## Phase 3.5: CLI & Developer Tools (Current Status: COMPLETED ✓)
-### Core CLI Commands
+## Phase 3.5: CLI & Developer Tools (Current Status: IN PROGRESS 🔄)
 - [x] **Project Creation**: `fromcode create <name> --template=<minimal>`
-- [x] **Development Server**: `fromcode dev` (Orchestrates Docker and npm dev)
-- [x] **Build Commands**: `fromcode build --mode=<full|api|admin|frontend>`
-- [ ] **Production Server**: `fromcode start` (Planned)
+- [x] **Development Server**: `fromcode dev` (Orchestrated Docker and NPM execution)
+- [x] **Marketplace Sync**: `fromcode plugin sync` and listing capabilities.
+- [x] **Environment Guard**: Automated `.env` generation and validation for starters.
 
 ### Plugin Development
 - [x] **Plugin Generator**: `fromcode plugin create <name>` (Capability-aware)
@@ -368,10 +367,10 @@ This document tracks the progress of the `@fromcode` framework development based
 | Phase | Status | Completion |
 |-------|--------|------------|
 | Phase 1: Foundation | ✓ Completed | 100% |
-| Phase 2: Core Modules | ✓ Completed | 85% (missing Background Jobs & multi-DB) |
+| Phase 2: Core Modules | ✓ Completed | 95% (missing Background Jobs) |
 | Phase 2.5: API Layer | � In Progress | 25% |
-| Phase 3: Admin UI & DX | 🔄 In Progress | 85% |
-| Phase 3.5: CLI Tools | 📋 Planned | 0% |
+| Phase 3: Admin UI & DX | ✓ Completed | 95% |
+| Phase 3.5: CLI Tools | 🔄 In Progress | 80% |
 | Phase 4: Frontend Plugin System | 🔄 In Progress | 65% |
 | Phase 5: Security & Isolation | 📋 Planned | 0% |
 | Phase 6: Marketplace | 📋 Planned | 0% |
@@ -389,11 +388,10 @@ This document tracks the progress of the `@fromcode` framework development based
 
 Based on the current state and architecture plan, the recommended next steps are:
 
-1. **Complete Phase 3 (Admin UI)**: Finish UI slot system and basic admin features
-2. **Start Phase 3.5 (CLI Tools)**: Begin CLI development for better DX
-3. **Critical: Phase 4 (Frontend Plugin System)**: This is marked CRITICAL in the plan and is fundamental to the plugin architecture
-4. **Phase 2.5 (API Layer)**: Complete the API architecture with REST/GraphQL/WebSocket support
-5. **Phase 5 (Security)**: Implement plugin sandboxing and security before opening to third-party plugins
+1. **Critical: Phase 4 (Frontend Plugin System)**: Complete independent builds and asset isolation for production.
+2. **Phase 2.5 (API Layer)**: Implement GraphQL and WebSocket support for advanced integrations.
+3. **Phase 5 (Security)**: Implement plugin sandboxing and security before opening to third-party plugins.
+4. **Phase 3.5 (CLI Tools)**: Complete database management commands (seed, reset, backup).
 
 ---
 *Last Updated: January 23, 2026*

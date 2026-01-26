@@ -21,6 +21,23 @@ services:
       - MARKETPLACE_REGISTRY_URL=${MARKETPLACE_REGISTRY_URL}
       - PLUGINS_DIR=${PLUGINS_DIR}
       - CORS_ALLOWED_DOMAINS=${CORS_ALLOWED_DOMAINS}
+      - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
+      
+      # Storage (S3/R2 Support)
+      - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
+      - STORAGE_S3_REGION=${STORAGE_S3_REGION}
+      - STORAGE_S3_BUCKET=${STORAGE_S3_BUCKET}
+      - STORAGE_S3_ENDPOINT=${STORAGE_S3_ENDPOINT}
+      - STORAGE_S3_KEY=${STORAGE_S3_KEY}
+      - STORAGE_S3_SECRET=${STORAGE_S3_SECRET}
+      
+      # Email (SMTP Support)
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      
+      - DEFAULT_LOCALE=${DEFAULT_LOCALE:-en}
     depends_on:
       - db
       - redis
@@ -47,6 +64,7 @@ services:
     environment:
       - API_URL=${INTERNAL_API_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - NODE_ENV=${NODE_ENV}
     depends_on:
       - api
@@ -71,6 +89,7 @@ services:
     environment:
       - API_URL=${INTERNAL_API_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - NODE_ENV=${NODE_ENV}
     depends_on:
       - api
