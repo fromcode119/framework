@@ -19,6 +19,8 @@ export interface PluginManagerInterface {
   storage: any;
   email: any;
   cache: any;
+  jobs: any;
+  redis?: any;
   auth: any;
   i18n: any;
   plugins: Map<string, LoadedPlugin>;
@@ -150,12 +152,55 @@ export function createPluginContext(
   });
 
   // --- Cache Proxy ---
-  const cacheProxy = new Proxy(manager.cache, {
+  const cachePrefix = `cache:${plugin.manifest.slug}:`;
+  const cacheProxy = {
+    get: (key: string) => {
+      if (!hasCapability('cache')) handleViolation('cache');
+      return manager.cache.get(`${cachePrefix}${key}`);
+    },
+    set: (key: string, value: any, ttl?: number) => {
+      if (!hasCapability('cache')) handleViolation('cache');
+      return manager.cache.set(`${cachePrefix}${key}`, value, ttl);
+    },
+    del: (key: string) => {
+      if (!hasCapability('cache')) handleViolation('cache');
+      return manager.cache.del(`${cachePrefix}${key}`);
+    }
+  };
+
+  // --- Redis Proxy with Prefixing ---
+  const redisPrefix = `redis:${plugin.manifest.slug}:`;
+  const redisProxy = new Proxy(manager.jobs.redis, {
     get: (target, prop) => {
-      if (!hasCapability('cache')) {
-        handleViolation('cache');
+      if (prop === 'global') {
+        if (!hasCapability('redis:global')) handleViolation('redis:global');
+        return target;
       }
-      return (target as any)[prop];
+
+      const original = (target as any)[prop];
+      if (typeof original === 'function') {
+        return (...args: any[]) => {
+          if (!hasCapability('jobs') && !hasCapability('cache')) {
+            handleViolation('jobs');
+          }
+
+          const keyCommands = [
+            'get', 'set', 'del', 'exists', 'expire', 'ttl', 'incr', 'decr',
+            'hget', 'hset', 'hdel', 'hgetall', 'hexists', 'hincrby',
+            'lpush', 'rpush', 'lpop', 'rpop', 'lrange', 'lrem', 'lset',
+            'sadd', 'srem', 'smembers', 'sismember', 'scard',
+            'zadd', 'zrem', 'zrange', 'zrevrange', 'zcard', 'zscore'
+          ];
+
+          if (typeof prop === 'string' && keyCommands.includes(prop.toLowerCase())) {
+            if (args.length > 0 && typeof args[0] === 'string') {
+              args[0] = `${redisPrefix}${args[0]}`;
+            }
+          }
+          return original.apply(target, args);
+        };
+      }
+      return original;
     }
   });
 
@@ -169,9 +214,25 @@ export function createPluginContext(
       generateToken: () => { throw new Error('Auth service not initialized'); },
       verifyToken: () => { throw new Error('Auth service not initialized'); },
     },
-    cache: cacheProxy,
+    cache: cacheProxy as any,
     storage: storageProxy,
     email: emailProxy,
+    redis: redisProxy,
+    jobs: {
+      enqueue: (name: string, data: any, options?: any) => {
+        if (!hasCapability('jobs')) handleViolation('jobs');
+        // Auto-prefix queue with plugin slug for isolation
+        return manager.jobs.addJob(plugin.manifest.slug, name, data, options);
+      },
+      add: (name: string, data: any, options?: any) => {
+        if (!hasCapability('jobs')) handleViolation('jobs');
+        return manager.jobs.addJob(plugin.manifest.slug, name, data, options);
+      },
+      worker: (processor: (job: any) => Promise<any>, options?: any) => {
+        if (!hasCapability('jobs')) handleViolation('jobs');
+        return manager.jobs.registerWorker(plugin.manifest.slug, processor, options);
+      }
+    },
     logger: {
       info: (msg: string) => {
         pluginLogger.info(msg);

@@ -25,7 +25,11 @@ export class RESTController {
   private virtualTables: Map<string, any> = new Map();
   private logger = new Logger({ namespace: 'REST' });
 
-  constructor(private db: IDatabaseManager, private auth?: AuthManager) {}
+  constructor(
+    private db: IDatabaseManager, 
+    private auth?: AuthManager,
+    private onSettingsUpdate?: (key: string, value: any) => void
+  ) {}
 
   /**
    * Generates or retrieves a Drizzle table object for a given collection definition.
@@ -35,9 +39,13 @@ export class RESTController {
       return this.virtualTables.get(collection.slug);
     }
 
+    const useTimestamps = collection.timestamps !== undefined ? collection.timestamps : true;
+
     const table = createDynamicTable({
-      slug: collection.slug,
-      fields: collection.fields.map(f => ({ name: f.name, type: f.type }))
+      slug: collection.tableName || collection.slug,
+      fields: collection.fields.map(f => ({ name: f.name, type: f.type })),
+      primaryKey: collection.primaryKey || 'id',
+      timestamps: useTimestamps
     });
 
     this.virtualTables.set(collection.slug, table);
@@ -90,32 +98,33 @@ export class RESTController {
         ? and(...whereChunks)
         : undefined;
       
-      let orderBy: any[] = [desc(table.id)]; // Default sort
+      const pk = collection.primaryKey || 'id';
+      let orderBy: any[] = [table[pk] ? desc(table[pk]) : desc(sql`1`)]; 
+      
       if (sort) {
         const isDesc = sort.startsWith('-');
         const fieldName = isDesc ? sort.substring(1) : sort;
-        if (table[fieldName]) {
+        // Search in both defined fields and the table object (which might have internal fields like updatedAt)
+        const hasField = table[fieldName] || collection.fields.some(f => f.name === fieldName);
+        
+        if (hasField && table[fieldName]) {
           orderBy = [isDesc ? desc(table[fieldName]) : asc(table[fieldName])];
+        } else {
+          this.logger.debug(`Ignoring invalid sort field: ${fieldName} for collection ${collection.slug}`);
         }
       }
       
       const limitVal = Math.min(parseInt(limit as string) || 10, 100);
       const offsetVal = parseInt(offset as string) || 0;
 
-      const rowsResult = await this.db.drizzle
-        .select()
-        .from(table)
-        .where(whereClause)
-        .orderBy(...orderBy)
-        .limit(limitVal)
-        .offset(offsetVal);
+      const rowsResult = await this.db.find(table, {
+        where: whereChunks.length > 0 ? whereClause : undefined,
+        limit: limitVal,
+        offset: offsetVal,
+        orderBy: orderBy
+      });
 
-      const totalResult = await this.db.drizzle
-        .select({ total: count() })
-        .from(table)
-        .where(whereClause);
-      
-      const total = Number(totalResult[0]?.total || 0);
+      const total = await this.db.count(collection.tableName || collection.slug, whereChunks.length > 0 ? whereClause : undefined);
 
       res.json({
         docs: this.filterHiddenFields(collection, rowsResult),
@@ -134,19 +143,19 @@ export class RESTController {
   async findOne(collection: Collection, req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const pk = collection.primaryKey || 'id';
       const table = this.getVirtualTable(collection);
       
-      const result = await this.db.drizzle
-        .select()
-        .from(table)
-        .where(eq(table.id, parseInt(id)))
-        .limit(1);
+      const where: any = {};
+      where[pk] = pk === 'id' ? parseInt(id) : id;
       
-      if (result.length === 0) {
+      const result = await this.db.findOne(table, where);
+      
+      if (!result) {
         return res.status(404).json({ error: 'Not found' });
       }
       
-      res.json(this.filterHiddenFields(collection, result[0]));
+      res.json(this.filterHiddenFields(collection, result));
     } catch (err: any) {
       this.logger.error(`FindOne error in ${collection.slug}:`, err);
       res.status(500).json({ error: err.message });
@@ -156,6 +165,7 @@ export class RESTController {
   async create(collection: Collection, req: Request, res: Response) {
     try {
       const data = req.body;
+      const tableName = collection.tableName || collection.slug;
       const table = this.getVirtualTable(collection);
       
       // Basic validation
@@ -185,10 +195,7 @@ export class RESTController {
         }
       }
 
-      const [newItem] = await this.db.drizzle
-        .insert(table)
-        .values(insertData)
-        .returning();
+      const newItem = await this.db.insert(table, insertData);
       
       res.status(201).json(this.filterHiddenFields(collection, newItem));
     } catch (err: any) {
@@ -209,6 +216,7 @@ export class RESTController {
     try {
       const { id } = req.params;
       const data = req.body;
+      const tableName = collection.tableName || collection.slug;
       const table = this.getVirtualTable(collection);
       
       // Basic validation
@@ -227,7 +235,8 @@ export class RESTController {
 
       // Filter data to only include valid fields and strip internal/excluded fields
       const updateData: any = {};
-      const excludedFields = ['id', 'createdAt', 'updatedAt', 'created_at', 'updated_at'];
+      const pk = collection.primaryKey || 'id';
+      const excludedFields = [pk, 'createdAt', 'updatedAt', 'created_at', 'updated_at'];
       
       for (const key of Object.keys(data)) {
         if (table[key] && !excludedFields.includes(key)) {
@@ -242,19 +251,18 @@ export class RESTController {
         }
       }
       
-      // Explicitly set updatedAt using database time if the column exists
-      if (table.updatedAt) {
-        updateData.updatedAt = sql`now()`;
-      }
+      const where: any = {};
+      where[pk] = pk === 'id' ? parseInt(id) : id;
 
-      const [updated] = await this.db.drizzle
-        .update(table)
-        .set(updateData)
-        .where(eq(table.id, parseInt(id)))
-        .returning();
+      const updated = await this.db.update(table, where, updateData);
       
       if (!updated) {
         return res.status(404).json({ error: 'Not found' });
+      }
+
+      // Notify parent about settings changes
+      if (collection.slug === 'settings' && this.onSettingsUpdate) {
+        this.onSettingsUpdate(id, data.value);
       }
       
       res.json(this.filterHiddenFields(collection, updated));
@@ -275,18 +283,19 @@ export class RESTController {
   async delete(collection: Collection, req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const pk = collection.primaryKey || 'id';
       const table = this.getVirtualTable(collection);
       
-      const [deleted] = await this.db.drizzle
-        .delete(table)
-        .where(eq(table.id, parseInt(id)))
-        .returning({ id: table.id });
+      const where: any = {};
+      where[pk] = pk === 'id' ? parseInt(id) : id;
+
+      const success = await this.db.delete(table, where);
       
-      if (!deleted) {
+      if (!success) {
         return res.status(404).json({ error: 'Not found' });
       }
       
-      res.json({ success: true, id: deleted.id });
+      res.json({ success: true, id });
     } catch (err: any) {
       this.logger.error(`Delete error in ${collection.slug}:`, err);
       res.status(500).json({ error: err.message });
@@ -300,22 +309,23 @@ export class RESTController {
       // We'll fetch the last 5 items from each collection
       await Promise.all(collections.map(async (c) => {
         try {
-          const table = this.getVirtualTable(c);
-          const rows = await this.db.drizzle
-            .select()
-            .from(table)
-            .orderBy(desc(table.id))
-            .limit(5);
+          const tableName = c.tableName || c.slug;
+          const pk = c.primaryKey || 'id';
+          
+          const rows = await this.db.find(tableName, {
+            limit: 5,
+            orderBy: desc(sql`${sql.identifier(pk)}`)
+          });
           
           rows.forEach((row: any) => {
             allActivity.push({
-              id: `${c.slug}-${row.id}`,
+              id: `${c.slug}-${row[pk]}`,
               type: 'record',
               collection: c.slug,
               collectionName: c.name || c.slug,
-              recordId: row.id,
-              title: row[c.admin?.useAsTitle || 'id'] || `Record #${row.id}`,
-              timestamp: row.updatedAt || row.createdAt || new Date(),
+              recordId: row[pk],
+              title: row[c.admin?.useAsTitle || pk] || `Record #${row[pk]}`,
+              timestamp: row.updatedAt || row.createdAt || row.updated_at || row.created_at || new Date(),
               user: row.email || row.username || 'System'
             });
           });

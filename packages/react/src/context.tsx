@@ -105,7 +105,9 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       const apiVersion = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
       const endpoint = `${base}/api/${apiVersion}/system/i18n?locale=${newLocale}`;
       
-      const res = await fetch(endpoint);
+      const res = await fetch(endpoint, {
+        credentials: 'include'
+      });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       setTranslations(data);

@@ -2,13 +2,14 @@ import { FromcodePlugin, LoadedPlugin, PluginContext, PluginManifest, Collection
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { HookManager } from '../hooks/manager';
-import { MediaManager } from '@fromcode/media';
+import { QueueManager } from '../queue/manager';
+import { MediaManager, StorageFactory } from '@fromcode/media';
 import { SchemaManager } from '../database/schema-manager';
-import { EmailManager } from '@fromcode/email';
-import { CacheManager } from '@fromcode/cache';
+import { EmailManager, EmailFactory } from '@fromcode/email';
+import { CacheManager, CacheFactory } from '@fromcode/cache';
 import { Logger } from '../logging/logger';
 import { I18nManager } from '../i18n/manager';
-import { DatabaseManager, IDatabaseManager, systemPlugins, systemPluginSettings, systemMeta, systemLogs, infoTables, sql, eq, and, count, desc, trustedPublishers } from '@fromcode/database';
+import { DatabaseManager, sql, eq, and, count, desc } from '@fromcode/database';
 import { loadMigrations } from '../database/migrations';
 import { PluginPermissionsService } from '../security/permissions';
 import { PluginSignatureService } from '../security/signature';
@@ -27,9 +28,10 @@ export class PluginManager implements PluginManagerInterface {
   public db: DatabaseManager;
   private coordinator: MigrationCoordinator;
   private schemaManager: SchemaManager;
-  public storage!: MediaManager;
-  public email!: EmailManager;
-  public cache!: CacheManager;
+  public storage: MediaManager;
+  public email: EmailManager;
+  public cache: CacheManager;
+  public jobs: QueueManager;
   public i18n: I18nManager;
   public auth: any = null;
   public headInjections: Map<string, any[]> = new Map();
@@ -42,6 +44,7 @@ export class PluginManager implements PluginManagerInterface {
     this.coordinator = new MigrationCoordinator(this.db);
     this.schemaManager = new SchemaManager(this.db);
     this.i18n = new I18nManager(process.env.DEFAULT_LOCALE || 'en');
+    this.jobs = new QueueManager({ redisUrl: process.env.REDIS_URL });
     
     // Prioritize a dedicated plugins directory in the workspace root
     this.pluginsRoot = process.env.PLUGINS_DIR 
@@ -52,103 +55,55 @@ export class PluginManager implements PluginManagerInterface {
 
     // Initialize Storage
     const storageMode = process.env.STORAGE_DRIVER || 'local';
-    
-    // Helper to load drivers from either dist or src (Dev vs Prod)
-    const loadDriver = (pkg: string, driverPath: string) => {
-      const paths = [
-        `${pkg}/dist/drivers/${driverPath}`,
-        `${pkg}/src/drivers/${driverPath}`
-      ];
-      
-      for (const p of paths) {
-        try {
-          return require(p);
-        } catch (e) {}
-      }
-      throw new Error(`Could not find driver ${driverPath} in ${pkg}`);
-    };
-    
     try {
-      if (storageMode === 's3' || storageMode === 'r2') {
-          this.logger.debug('Loading S3StorageDriver...');
-          const { S3StorageDriver } = loadDriver('@fromcode/media', 's3-driver');
-          this.storage = new MediaManager(new S3StorageDriver({
-              region: process.env.STORAGE_S3_REGION || 'auto',
-              bucket: process.env.STORAGE_S3_BUCKET || '',
-              endpoint: process.env.STORAGE_S3_ENDPOINT,
-              credentials: {
-                  accessKeyId: process.env.STORAGE_S3_KEY || '',
-                  secretAccessKey: process.env.STORAGE_S3_SECRET || ''
-              },
-              publicUrlBase: process.env.STORAGE_PUBLIC_URL
-          }));
-      } else {
-          this.logger.debug('Loading LocalStorageDriver...');
-          const { LocalStorageDriver } = loadDriver('@fromcode/media', 'local-driver');
-          const uploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(process.cwd(), 'public/uploads');
-          this.storage = new MediaManager(new LocalStorageDriver(uploadDir, process.env.STORAGE_PUBLIC_URL || '/uploads'));
-      }
-    } catch (err: any) {
-      this.logger.error(`Failed to initialize storage driver (${storageMode}): ${err.message}`);
-      // Fallback to minimal local if S3 fails or is not found
-      if (storageMode !== 'local') {
-          this.logger.warn('Attempting fallback to LocalStorageDriver...');
-          try {
-            const { LocalStorageDriver } = loadDriver('@fromcode/media', 'local-driver');
-            const uploadDir = path.resolve(process.cwd(), 'public/uploads');
-            this.storage = new MediaManager(new LocalStorageDriver(uploadDir, '/uploads'));
-          } catch (e) {
-            this.logger.error('CRITICAL: Storage initialization failed entirely. Using dummy.');
-            this.storage = new MediaManager({} as any);
+      const storageConfig = storageMode === 'local' 
+        ? { 
+            uploadDir: process.env.STORAGE_UPLOAD_DIR || path.resolve(process.cwd(), 'public/uploads'),
+            publicUrlBase: process.env.STORAGE_PUBLIC_URL || '/uploads'
           }
-      } else {
-        this.storage = new MediaManager({} as any);
-      }
+        : {
+            region: process.env.STORAGE_S3_REGION || 'auto',
+            bucket: process.env.STORAGE_S3_BUCKET || '',
+            endpoint: process.env.STORAGE_S3_ENDPOINT,
+            credentials: {
+                accessKeyId: process.env.STORAGE_S3_KEY || '',
+                secretAccessKey: process.env.STORAGE_S3_SECRET || ''
+            },
+            publicUrlBase: process.env.STORAGE_PUBLIC_URL
+          };
+      
+      this.storage = new MediaManager(StorageFactory.create(storageMode, storageConfig));
+    } catch (err: any) {
+      this.logger.error(`Failed to initialize storage driver (${storageMode}): ${err.message}. Falling back to minimal local.`);
+      const fallbackConfig = { uploadDir: path.resolve(process.cwd(), 'public/uploads'), publicUrlBase: '/uploads' };
+      this.storage = new MediaManager(StorageFactory.create('local', fallbackConfig));
     }
 
     // Initialize Email
+    const emailMode = process.env.SMTP_HOST ? 'smtp' : 'mock';
     try {
-      if (process.env.SMTP_HOST) {
-        const { SMTPDriver } = loadDriver('@fromcode/email', 'smtp');
-        this.email = new EmailManager(new SMTPDriver({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT) || 587,
-          auth: {
-            user: process.env.SMTP_USER || '',
-            pass: process.env.SMTP_PASS || '',
-          }
-        }));
-      } else {
-        const { MockEmailDriver } = loadDriver('@fromcode/email', 'mock');
-        this.email = new EmailManager(new MockEmailDriver());
-      }
+      const emailConfig = emailMode === 'smtp' ? {
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        auth: {
+          user: process.env.SMTP_USER || '',
+          pass: process.env.SMTP_PASS || '',
+        }
+      } : {};
+      this.email = new EmailManager(EmailFactory.create(emailMode, emailConfig));
     } catch (err: any) {
       this.logger.error(`Failed to initialize email driver: ${err.message}. Using MockDriver fallback.`);
-      try {
-        const { MockEmailDriver } = loadDriver('@fromcode/email', 'mock');
-        this.email = new EmailManager(new MockEmailDriver());
-      } catch (e) {
-        this.email = new EmailManager({} as any);
-      }
+      this.email = new EmailManager(EmailFactory.create('mock', {}));
     }
 
     // Initialize Cache
+    const cacheMode = process.env.REDIS_URL ? 'redis' : 'memory';
     try {
-      if (process.env.REDIS_URL) {
-        const { RedisCacheDriver } = loadDriver('@fromcode/cache', 'redis');
-        this.cache = new CacheManager(new RedisCacheDriver(process.env.REDIS_URL));
-      } else {
-        const { MemoryCacheDriver } = loadDriver('@fromcode/cache', 'memory');
-        this.cache = new CacheManager(new MemoryCacheDriver());
-      }
+      const cacheConfig = cacheMode === 'redis' ? { url: process.env.REDIS_URL } : {};
+      this.cache = new CacheManager(CacheFactory.create(cacheMode, cacheConfig));
     } catch (err: any) {
       this.logger.error(`Failed to initialize cache driver: ${err.message}. Using MemoryCache fallback.`);
-      try {
-        const { MemoryCacheDriver } = loadDriver('@fromcode/cache', 'memory');
-        this.cache = new CacheManager(new MemoryCacheDriver());
-      } catch (e) {
-        this.cache = new CacheManager({} as any);
-      }
+      this.cache = new CacheManager(CacheFactory.create('memory', {}));
     }
   }
 
@@ -240,11 +195,7 @@ export class PluginManager implements PluginManagerInterface {
 
   async getPluginConfig(slug: string): Promise<any> {
     try {
-      const [row]: any = await this.db.drizzle
-        .select({ settings: systemPluginSettings.settings })
-        .from(systemPluginSettings)
-        .where(eq(systemPluginSettings.pluginSlug, slug))
-        .limit(1);
+      const row = await this.db.findOne('_system_plugin_settings', { plugin_slug: slug });
       return row?.settings || {};
     } catch (err) {
       return {};
@@ -253,20 +204,19 @@ export class PluginManager implements PluginManagerInterface {
 
   async savePluginConfig(slug: string, config: any): Promise<void> {
     try {
-      await this.db.drizzle
-        .insert(systemPluginSettings)
-        .values({
-          pluginSlug: slug,
+      const existing = await this.db.findOne('_system_plugin_settings', { plugin_slug: slug });
+      if (existing) {
+        await this.db.update('_system_plugin_settings', { plugin_slug: slug }, {
           settings: config,
-          updatedAt: new Date()
-        })
-        .onConflictDoUpdate({
-          target: systemPluginSettings.pluginSlug,
-          set: {
-            settings: config,
-            updatedAt: new Date()
-          }
+          updated_at: new Date()
         });
+      } else {
+        await this.db.insert('_system_plugin_settings', {
+          plugin_slug: slug,
+          settings: config,
+          updated_at: new Date()
+        });
+      }
       
       // Update memory state if plugin is loaded
       const plugin = this.plugins.get(slug);
@@ -285,13 +235,42 @@ export class PluginManager implements PluginManagerInterface {
     
     // 0. Ensure meta table exists to track versions
     try {
-      await this.db.drizzle.execute(sql`
-        CREATE TABLE IF NOT EXISTS _system_meta (
-          key TEXT PRIMARY KEY,
-          value TEXT NOT NULL,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      // Use dialect-aware basic table creation
+      let createTableSql;
+      if (this.db.dialect === 'postgresql') {
+        createTableSql = sql`
+          CREATE TABLE IF NOT EXISTS _system_meta (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            description TEXT,
+            "group" TEXT,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          )
+        `;
+      } else if (this.db.dialect === 'mysql') {
+        createTableSql = sql`
+          CREATE TABLE IF NOT EXISTS _system_meta (
+            \`key\` VARCHAR(255) PRIMARY KEY,
+            \`value\` TEXT NOT NULL,
+            \`description\` TEXT,
+            \`group\` VARCHAR(255),
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          )
+        `;
+      } else {
+        // SQLite
+        createTableSql = sql`
+          CREATE TABLE IF NOT EXISTS _system_meta (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            description TEXT,
+            "group" TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `;
+      }
+      
+      await this.db.execute(createTableSql);
     } catch (err) {
       this.logger.error('Failed to create system meta table', err);
       return;
@@ -299,29 +278,25 @@ export class PluginManager implements PluginManagerInterface {
 
     const getVersion = async () => {
       try {
-        const [row]: any = await this.db.drizzle
-          .select({ value: systemMeta.value })
-          .from(systemMeta)
-          .where(eq(systemMeta.key, 'platform_migration_version'))
-          .limit(1);
+        const row = await this.db.findOne('_system_meta', { key: 'platform_migration_version' });
         return parseInt(row?.value || '0');
       } catch (e) { return 0; }
     };
 
     const setVersion = async (v: number) => {
-      await this.db.drizzle.insert(systemMeta)
-        .values({
+      const existing = await this.db.findOne('_system_meta', { key: 'platform_migration_version' });
+      if (existing) {
+        await this.db.update('_system_meta', { key: 'platform_migration_version' }, {
+          value: v.toString(),
+          updated_at: new Date()
+        });
+      } else {
+        await this.db.insert('_system_meta', {
           key: 'platform_migration_version',
           value: v.toString(),
-          updatedAt: new Date()
-        })
-        .onConflictDoUpdate({
-          target: systemMeta.key,
-          set: {
-            value: v.toString(),
-            updatedAt: new Date()
-          }
+          updated_at: new Date()
         });
+      }
     };
 
     const currentVersion = await getVersion();
@@ -352,11 +327,11 @@ export class PluginManager implements PluginManagerInterface {
 
   async writeLog(level: string, message: string, pluginSlug?: string, context?: any) {
     try {
-      await this.db.drizzle.insert(systemLogs).values({
+      await this.db.insert('_system_logs', {
         level,
         message,
-        pluginSlug,
-        context: context ? JSON.stringify(context) : null,
+        plugin_slug: pluginSlug,
+        context: context ? (this.db.dialect === 'sqlite' ? JSON.stringify(context) : context) : null,
         timestamp: new Date()
       });
     } catch (err) {
@@ -374,19 +349,19 @@ export class PluginManager implements PluginManagerInterface {
 
   private async loadRegistry(): Promise<Record<string, { state: string; approvedCapabilities: string[] }>> {
     try {
-      const result = await this.db.drizzle
-        .select({ 
-          slug: systemPlugins.slug, 
-          state: systemPlugins.state,
-          capabilities: systemPlugins.capabilities 
-        })
-        .from(systemPlugins);
+      const result = await this.db.find('_system_plugins', {
+        columns: {
+          slug: true,
+          state: true,
+          capabilities: true
+        }
+      });
 
       const registry: Record<string, { state: string; approvedCapabilities: string[] }> = {};
       result.forEach((row) => {
         registry[row.slug] = { 
           state: row.state,
-          approvedCapabilities: row.capabilities ? JSON.parse(row.capabilities) : []
+          approvedCapabilities: row.capabilities ? (typeof row.capabilities === 'string' ? JSON.parse(row.capabilities) : row.capabilities) : []
         };
       });
       return registry;
@@ -398,7 +373,12 @@ export class PluginManager implements PluginManagerInterface {
 
   private async saveRegistryItem(slug: string, state: string, capabilities?: string[], version?: string) {
     try {
-      const values: any = { slug, state, updatedAt: new Date() };
+      const values: any = { 
+        slug, 
+        state, 
+        updated_at: new Date() 
+      };
+      
       if (capabilities) {
         values.capabilities = JSON.stringify(capabilities);
       }
@@ -406,13 +386,12 @@ export class PluginManager implements PluginManagerInterface {
         values.version = version;
       }
 
-      await this.db.drizzle
-        .insert(systemPlugins)
-        .values(values)
-        .onConflictDoUpdate({
-          target: systemPlugins.slug,
-          set: values
-        });
+      const existing = await this.db.findOne('_system_plugins', { slug });
+      if (existing) {
+        await this.db.update('_system_plugins', { slug }, values);
+      } else {
+        await this.db.insert('_system_plugins', values);
+      }
     } catch (err) {
       this.logger.error(`Failed to save plugin state for ${slug} to DB`, err);
     }
@@ -502,12 +481,11 @@ export class PluginManager implements PluginManagerInterface {
       const publisherId = (plugin.manifest as any).publisherId;
       if (publisherId) {
         try {
-          const [publisher]: any = await this.db.drizzle
-            .select({ publicKey: trustedPublishers.publicKey })
-            .from(trustedPublishers)
-            .where(and(eq(trustedPublishers.publisherId, publisherId), eq(trustedPublishers.isActive, true)))
-            .limit(1);
-          publicKey = publisher?.publicKey || '';
+          const publisher = await this.db.findOne('_system_trusted_publishers', {
+            publisher_id: publisherId,
+            is_active: true
+          });
+          publicKey = publisher?.public_key || '';
         } catch (e) {}
       }
 
@@ -602,9 +580,10 @@ export class PluginManager implements PluginManagerInterface {
         this.logger.info(`Created backup at ${backupPath}`);
         
         // Update registry with backup path
-        await this.db.drizzle.update(systemPlugins)
-          .set({ backupPath, updatedAt: new Date() })
-          .where(eq(systemPlugins.slug, slug));
+        await this.db.update('_system_plugins', { slug }, { 
+          backup_path: backupPath, 
+          updated_at: new Date() 
+        });
 
       } catch (err) {
         this.logger.error(`Failed to create backup: ${err}`);
@@ -652,13 +631,11 @@ export class PluginManager implements PluginManagerInterface {
       await this.saveRegistryItem(slug, 'inactive', undefined, pkg.version);
 
       if (existing) {
-          await this.db.drizzle.update(systemPlugins)
-            .set({ 
-              hasUpdate: false,
-              healthStatus: 'healthy',
-              updatedAt: new Date() 
-            })
-            .where(eq(systemPlugins.slug, slug));
+          await this.db.update('_system_plugins', { slug }, { 
+            has_update: false,
+            health_status: 'healthy',
+            updated_at: new Date() 
+          });
       }
 
       // 8. Reload plugins to pick up the new one immediately
@@ -736,9 +713,10 @@ export class PluginManager implements PluginManagerInterface {
       this.logger.error(`Failed to enable plugin "${slug}": ${error}`);
       await this.writeLog('ERROR', `Initialization failed for "${slug}": ${error}`, slug);
 
-      await this.db.drizzle.update(systemPlugins)
-        .set({ healthStatus: 'error', updatedAt: new Date() })
-        .where(eq(systemPlugins.slug, slug));
+      await this.db.update('_system_plugins', { slug }, { 
+        health_status: 'error', 
+        updated_at: new Date() 
+      });
 
       throw error;
     }
@@ -766,9 +744,11 @@ export class PluginManager implements PluginManagerInterface {
     if (!plugin) return;
 
     plugin.state = 'error';
-    await this.db.drizzle.update(systemPlugins)
-      .set({ state: 'error', healthStatus: 'error', updatedAt: new Date() })
-      .where(eq(systemPlugins.slug, slug));
+    await this.db.update('_system_plugins', { slug }, { 
+      state: 'error', 
+      health_status: 'error', 
+      updated_at: new Date() 
+    });
       
     this.logger.error(`Plugin "${slug}" moved to error state: ${message}`);
   }
@@ -794,9 +774,7 @@ export class PluginManager implements PluginManagerInterface {
 
     // 2. Remove from registry table
     try {
-      await this.db.drizzle
-        .delete(systemPlugins)
-        .where(eq(systemPlugins.slug, slug));
+      await this.db.delete('_system_plugins', { slug });
     } catch (err) {
       this.logger.error(`Failed to remove plugin "${slug}" from DB registry`, err);
     }
@@ -959,6 +937,22 @@ export class PluginManager implements PluginManagerInterface {
     return this.registeredCollections.get(slug);
   }
 
+  async close() {
+    this.logger.info('Shutting down Plugin Manager...');
+    
+    // Disable all active plugins
+    for (const [slug, plugin] of this.plugins.entries()) {
+      if (plugin.state === 'active') {
+        await this.disable(slug);
+      }
+    }
+
+    // Close Queue Manager (Workers and Connections)
+    await this.jobs.close();
+    
+    this.logger.info('Plugin Manager shut down cleanly.');
+  }
+
   getAdminMetadata() {
     const allPlugins = Array.from(this.plugins.values());
     
@@ -1024,6 +1018,10 @@ export class PluginManager implements PluginManagerInterface {
       // 2. Automatically generate menu items for collections
       if (p.admin?.collections) {
         p.admin.collections.forEach(col => {
+          // Skip if it's a hidden collection or explicitly handled elsewhere
+          if (col.admin?.hidden) return;
+          if (col.slug === 'settings') return; // Handled by dedicated /settings page
+          
           // Check if there's already a menu item for this path
           const path = `/content/${col.slug}`;
           if (!menuItems.find(m => m.path === path)) {

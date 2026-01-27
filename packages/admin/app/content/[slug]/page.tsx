@@ -118,7 +118,7 @@ export default function CollectionListPage() {
                   <FrameworkIcons.Layout size={20} />
                 </div>
                 <h1 className="text-2xl font-black uppercase tracking-tight">
-                  {collection.slug === 'users' ? 'Identity Management' : (collection.name || slug.charAt(0).toUpperCase() + slug.slice(1))}
+                  {collection.slug === 'users' ? 'User Management' : (collection.name || slug.charAt(0).toUpperCase() + slug.slice(1))}
                 </h1>
               </div>
               <p className="text-slate-500 font-medium text-sm">

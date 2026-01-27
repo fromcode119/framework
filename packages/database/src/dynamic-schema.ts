@@ -17,45 +17,54 @@ export interface DynamicTableOptions {
   slug: string;
   fields: DynamicField[];
   timestamps?: boolean;
+  primaryKey?: string;
 }
 
 /**
  * Creates a Drizzle PG table object dynamically from a field list.
  */
 export function createDynamicTable(options: DynamicTableOptions) {
-  const { slug, fields, timestamps = true } = options;
+  const { slug, fields, timestamps = true, primaryKey = 'id' } = options;
   
   // Helper to convert camelCase to snake_case
   const toSnakeCase = (str: string) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 
-  const columns: any = {
-    id: serial('id').primaryKey(),
-  };
+  const columns: any = {};
+  
+  // If primaryKey is 'id' and not in fields, add it as serial
+  if (primaryKey === 'id' && !fields.find(f => f.name === 'id')) {
+    columns.id = serial('id').primaryKey();
+  }
 
   fields.forEach(field => {
-    if (field.name === 'id') return;
-    
     const dbName = toSnakeCase(field.name);
+    let column: any;
 
     switch (field.type) {
       case 'number':
-        columns[field.name] = numeric(dbName);
+        column = numeric(dbName);
         break;
       case 'boolean':
-        columns[field.name] = boolean(dbName);
+        column = boolean(dbName);
         break;
       case 'date':
-        columns[field.name] = timestamp(dbName, { withTimezone: true });
+        column = timestamp(dbName, { withTimezone: true });
         break;
       case 'json':
       case 'relationship':
       case 'upload':
       case 'richText':
-        columns[field.name] = jsonb(dbName);
+        column = jsonb(dbName);
         break;
       default:
-        columns[field.name] = text(dbName);
+        column = text(dbName);
     }
+
+    if (field.name === primaryKey) {
+      column = column.primaryKey();
+    }
+
+    columns[field.name] = column;
   });
 
   if (timestamps) {

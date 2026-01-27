@@ -48,12 +48,14 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [apiStatus, setApiStatus] = useState<'loading' | 'online' | 'offline'>('loading');
+  const [isMaintenance, setIsMaintenance] = useState(false);
 
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        await api.get(ENDPOINTS.SYSTEM.HEALTH);
+        const data = await api.get(ENDPOINTS.SYSTEM.HEALTH);
         setApiStatus('online');
+        setIsMaintenance(data.maintenance === true);
       } catch (e) {
         setApiStatus('offline');
       }
@@ -92,6 +94,13 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
              {apiStatus === 'online' ? 'System Online' : apiStatus === 'offline' ? 'System Offline' : 'Connecting...'}
            </span>
         </div>
+
+        {isMaintenance && (
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">
+            <FrameworkIcons.Zap size={12} className="text-amber-500 animate-pulse" />
+            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Maintenance Mode Active</span>
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-4">
         <Slot name="admin.layout.header.right" />

@@ -2,6 +2,7 @@ export * from './types';
 export { PluginManager } from './plugin/manager';
 export { SchemaManager } from './database/schema-manager';
 export { HookManager } from './hooks/manager';
+export { QueueManager } from './queue/manager';
 export { NodePluginLoader } from './discovery/node-loader';
 export { LogLevel, Logger } from './logging/logger';
 export { I18nManager } from './i18n/manager';

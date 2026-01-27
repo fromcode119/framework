@@ -5,26 +5,15 @@ FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Install dependencies
-COPY packages/core/package*.json ./packages/core/
-COPY packages/sdk/package*.json ./packages/sdk/
-COPY packages/react/package*.json ./packages/react/
-COPY packages/next/package*.json ./packages/next/
-COPY packages/cli/package*.json ./packages/cli/
-COPY packages/api/package*.json ./packages/api/
-COPY packages/admin/package*.json ./packages/admin/
-COPY packages/frontend/package*.json ./packages/frontend/
-COPY packages/database/package*.json ./packages/database/
-COPY packages/auth/package*.json ./packages/auth/
-COPY packages/marketplace-client/package*.json ./packages/marketplace-client/
-COPY packages/media/package*.json ./packages/media/
-COPY packages/email/package*.json ./packages/email/
-COPY packages/cache/package*.json ./packages/cache/
-COPY package*.json ./
-RUN npm install
-
-# Copy application
+# Copy everything first
 COPY . .
+
+# Install dependencies
+RUN npm install --prefer-offline --no-audit
+
+# Clean any accidentally copied host artifacts from packages
+RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find . -name "*.tsbuildinfo" -delete 2>/dev/null || true
 
 # Build common packages (core, react, etc.)
 RUN npm run build

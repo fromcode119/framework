@@ -1,0 +1,17 @@
+node_modules
+packages/**/node_modules
+dist
+packages/**/dist
+.next
+packages/**/.next
+*.tsbuildinfo
+.git
+.github
+*.log
+docker-compose.yml
+Dockerfile
+README.md
+docs
+scripts
+public/uploads/*
+!public/uploads/.gitkeep

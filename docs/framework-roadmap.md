@@ -18,7 +18,7 @@ This document tracks the progress of the `@fromcode` framework development based
 - [x] **Media Manager**: Service for handling file uploads, optimization, and storage (Local/S3/R2).
 - [x] **Email Service**: Abstracted email provider support (SMTP, SendGrid, SES).
 - [x] **Cache Layer**: Redis-ready abstracted caching layer for high-performance access.
-- [ ] **Background Jobs**: Queue system (BullMQ/Redis) for long-running tasks and scheduled jobs.
+- [x] **Background Jobs**: Queue system (BullMQ/Redis) for long-running tasks and scheduled jobs.
 - [x] **Internationalization (i18n)**: Framework-level support for localized content (Shared i18n structure).
 - [x] **Database Configuration**: Multi-database support (PostgreSQL, MySQL, SQLite) with connection pooling.
 - [x] **Storage Configuration**: Flexible storage backend (Local, S3, R2, GCS) with unified API.
@@ -267,7 +267,7 @@ This document tracks the progress of the `@fromcode` framework development based
 - [ ] **Configuration Presets**: Development, staging, production configs
 - [ ] **Service Orchestration**: Automatic service startup based on mode
 - [ ] **Health Checks**: Endpoint monitoring and automatic restarts
-- [ ] **Graceful Shutdown**: Proper cleanup on SIGTERM/SIGINT
+- [x] **Graceful Shutdown**: Proper cleanup on SIGTERM/SIGINT
 
 ### Database Management
 - [ ] **Connection Pooling**: Efficient database connection management
@@ -367,8 +367,8 @@ This document tracks the progress of the `@fromcode` framework development based
 | Phase | Status | Completion |
 |-------|--------|------------|
 | Phase 1: Foundation | ✓ Completed | 100% |
-| Phase 2: Core Modules | ✓ Completed | 95% (missing Background Jobs) |
-| Phase 2.5: API Layer | � In Progress | 25% |
+| Phase 2: Core Modules | ✓ Completed | 100% |
+| Phase 2.5: API Layer | 🔄 In Progress | 25% |
 | Phase 3: Admin UI & DX | ✓ Completed | 95% |
 | Phase 3.5: CLI Tools | 🔄 In Progress | 80% |
 | Phase 4: Frontend Plugin System | 🔄 In Progress | 65% |
@@ -376,11 +376,11 @@ This document tracks the progress of the `@fromcode` framework development based
 | Phase 6: Marketplace | 📋 Planned | 0% |
 | Phase 7: Theme System | 📋 Planned | 0% |
 | Phase 8: Multi-Tenancy | 📋 Planned | 0% |
-| Phase 9: Deployment & DevOps | 📋 Planned | 0% |
+| Phase 9: Deployment & DevOps | 🔄 In Progress | 5% |
 | Phase 10: Standard Plugins | 📋 Planned | 0% |
 | Phase 11: Advanced Features | 📋 Planned | 0% |
 
-**Overall Project Completion: ~15%**
+**Overall Project Completion: ~18%**
 
 ---
 

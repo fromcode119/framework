@@ -90,31 +90,42 @@ export class AuthManager {
       }
 
       // 3. Check Cookies (if cookie-parser is used)
-      if (!token && req.cookies && req.cookies.fc_token) {
+      if (!token && req.cookies) {
         token = req.cookies.fc_token;
-      }
-
-      // 4. Check Cookie in raw header (if cookie-parser is not used)
-      if (!token && req.headers.cookie) {
-        const cookies = req.headers.cookie.split(';').reduce((acc: any, cookie: string) => {
-          const [name, value] = cookie.trim().split('=');
-          acc[name] = value;
-          return acc;
-        }, {});
-        token = cookies['fc_token'];
-        
-        if (!token) {
-            console.debug(`[AuthManager] fc_token not found in ${Object.keys(cookies).length} cookies: ${Object.keys(cookies).join(', ')}`);
+        if (token) {
+          console.debug(`[AuthManager] Found token in req.cookies for ${req.url}`);
         }
-      } else if (!token && !req.headers.cookie) {
-          console.debug(`[AuthManager] No cookies received in headers`);
       }
 
-      if (token) {
+      // 4. Check Cookie in raw header (if cookie-parser is not used or failed)
+      if (!token && req.headers.cookie) {
+        const rawCookies = String(req.headers.cookie).split(';');
+        const cookies: Record<string, string> = {};
+        rawCookies.forEach(c => {
+          const parts = c.trim().split('=');
+          if (parts.length >= 2) {
+            const name = parts[0].trim();
+            const value = parts.slice(1).join('=').trim();
+            cookies[name] = value;
+          }
+        });
+        token = cookies['fc_token'];
+        if (token) {
+          console.debug(`[AuthManager] Found token in raw headers for ${req.url}`);
+        }
+      }
+
+      if (token && token !== 'undefined' && token !== 'null') {
         try {
           req.user = await this.verifyToken(token);
         } catch (err) {
-          console.error(`[AuthManager] Token verification failed: ${err instanceof Error ? err.message : String(err)}`);
+          if (!req.url.includes('/status') && !req.url.includes('/health') && !req.url.includes('/login')) {
+            console.error(`[AuthManager] Token verification failed for ${req.url}: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }
+      } else {
+        if (!req.url.includes('/status') && !req.url.includes('/health')) {
+            console.debug(`[AuthManager] No token found for ${req.url}`);
         }
       }
       next();

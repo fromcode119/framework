@@ -95,9 +95,9 @@ export function DataTable<T extends { id: any }>({
                 </td>
               </tr>
             ) : (
-              data.map((row) => (
+              data.map((row, index) => (
                 <tr 
-                  key={row.id} 
+                  key={row.id || row.key || row.slug || index} 
                   className={`transition-colors cursor-default ${
                     onRowClick ? 'cursor-pointer' : ''
                   } ${theme === 'dark' ? 'hover:bg-slate-800/30' : 'hover:bg-indigo-50/30'}`}

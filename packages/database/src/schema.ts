@@ -57,6 +57,8 @@ export const systemSessions = pgTable('_system_sessions', {
 export const systemMeta = pgTable('_system_meta', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
+  description: text('description'),
+  group: text('group'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 

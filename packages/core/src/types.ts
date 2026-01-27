@@ -17,7 +17,9 @@ export enum PluginCapability {
   EMAIL = 'email',
   CACHE = 'cache',
   I18N = 'i18n',
-  CONTENT = 'content'
+  CONTENT = 'content',
+  JOBS = 'jobs',
+  REDIS_GLOBAL = 'redis:global'
 }
 
 export interface MenuItemManifest {
@@ -141,6 +143,9 @@ export type Access = (args: { req: any; user: any }) => boolean | Promise<boolea
 export interface Collection {
   slug: string;
   name?: string;
+  tableName?: string; // Optional: specify a different table name
+  primaryKey?: string; // Optional: default is 'id'
+  timestamps?: boolean; // Optional: default is true
   fields: Field[];
   access?: {
     create?: Access;
@@ -176,6 +181,13 @@ export interface PluginContext {
   readonly cache: CacheManager;
   readonly storage: MediaManager;
   readonly email: EmailManager;
+  readonly redis: any;
+  readonly jobs: {
+    enqueue(name: string, data: any, options?: any): Promise<any>;
+    worker(processor: (job: any) => Promise<any>, options?: any): void;
+    // Namespaced enqueue
+    add(name: string, data: any, options?: any): Promise<any>;
+  };
   
   readonly plugin: {
     slug: string;
