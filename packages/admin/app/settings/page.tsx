@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Slot } from '@fromcode/react';
 import { useTheme } from '@/components/ThemeContext';
 import { Card } from '@/components/ui/Card';
@@ -8,12 +8,102 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { FrameworkIcons } from '@/lib/icons';
+import { api } from '@/lib/api';
+import { useNotification } from '@/components/NotificationContext';
+import { ENDPOINTS } from '@/lib/constants';
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
-  const [notifications, setNotifications] = useState(true);
-  const [twoFactor, setTwoFactor] = useState(false);
-  const [maintenance, setMaintenance] = useState(false);
+  const { addNotification } = useNotification();
+  const [isSaving, setIsSaving] = useState(false);
+  const [settings, setSettings] = useState<Record<string, any>>({
+    platform_name: '',
+    maintenance_mode: false,
+    two_factor_enabled: false,
+    email_notifications: true,
+    rate_limit_max: '100',
+    rate_limit_window: '900000'
+  });
+
+  // Fetch current settings on load
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const docs = response.docs || [];
+        
+        const newSettings = { ...settings };
+        docs.forEach((s: any) => {
+          if (s.key === 'maintenance_mode' || s.key === 'two_factor_enabled' || s.key === 'email_notifications') {
+            newSettings[s.key] = s.value === 'true';
+          } else {
+            newSettings[s.key] = s.value;
+          }
+        });
+        setSettings(newSettings);
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const updateSetting = async (key: string, value: any) => {
+    // Update local state for immediate UI feedback
+    setSettings(prev => ({ ...prev, [key]: value }));
+    
+    // Save immediately to API
+    try {
+      await api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/${key}`, {
+        value: typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value)
+      });
+      addNotification({
+        title: 'Settings Updated',
+        message: `${key.replace(/_/g, ' ')} has been updated.`,
+        type: 'success'
+      });
+    } catch (err: any) {
+      addNotification({
+        title: 'Update Failed',
+        message: err.message || 'Failed to save setting.',
+        type: 'error'
+      });
+      // Revert local state on failure
+      const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`);
+      const docs = response.docs || [];
+      const original = docs.find((s: any) => s.key === key);
+      if (original) {
+        setSettings(prev => ({ ...prev, [key]: original.value === 'true' }));
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    // This button now serves as a global refresh/force save if needed, 
+    // but toggles are already immediate.
+    setIsSaving(true);
+    try {
+      await Promise.all(Object.entries(settings).map(([key, value]) => {
+        return api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/${key}`, {
+          value: typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value)
+        });
+      }));
+      
+      addNotification({
+        title: 'All Settings Saved',
+        message: 'Global configuration synced successfully.',
+        type: 'success'
+      });
+    } catch (err: any) {
+      addNotification({
+        title: 'Save Failed',
+        message: err.message || 'An error occurred while saving settings.',
+        type: 'error'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const SettingRow = ({ icon: Icon, title, description, children }: any) => (
     <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
@@ -33,9 +123,9 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="flex flex-col h-full -mx-8 -mt-8 overflow-hidden bg-slate-50/20 dark:bg-transparent animate-in fade-in duration-500">
+    <div className="flex flex-col h-full animate-in fade-in duration-500">
       {/* Header section with white high-contrast style */}
-      <div className={`p-8 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-white dark:bg-transparent shadow-sm dark:shadow-none`}>
+      <div className={`p-8 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-white dark:bg-transparent shadow-sm dark:shadow-none -mx-8 -mt-8 mb-8`}>
         <div className="max-w-[1200px] mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
@@ -49,7 +139,13 @@ export default function SettingsPage() {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button size="lg" className="px-8 transform hover:scale-[1.02] shadow-xl shadow-indigo-600/20" icon={<FrameworkIcons.Save size={18} />}>
+              <Button 
+                size="lg" 
+                className="px-8 transform hover:scale-[1.02] shadow-xl shadow-indigo-600/20" 
+                icon={<FrameworkIcons.Save size={18} />}
+                onClick={handleSave}
+                isLoading={isSaving}
+              >
                 Save Changes
               </Button>
             </div>
@@ -57,7 +153,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 p-8">
         <div className="max-w-[1200px] mx-auto space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
@@ -65,16 +161,18 @@ export default function SettingsPage() {
               
               <Card title="General Configuration">
                 <SettingRow 
-                  icon={FrameworkIcons.Globe} 
-                  title="Environment URL" 
-                  description="The primary address of your website for internal links, SEO, and canonical references."
+                  icon={FrameworkIcons.Zap} 
+                  title="Platform Name" 
+                  description="The public identifier for your portal and administrative interface."
                 >
                   <Input 
-                    defaultValue="https://fromcode.local"
+                    value={settings.platform_name}
+                    onChange={(e) => updateSetting('platform_name', e.target.value)}
                     className="w-full md:w-64"
+                    placeholder="e.g. My Website"
                   />
                 </SettingRow>
-                
+
                 <SettingRow 
                   icon={FrameworkIcons.Palette} 
                   title="Visual Core" 
@@ -103,7 +201,10 @@ export default function SettingsPage() {
                   title="Two-Factor Security" 
                   description="Add an extra layer of security to your admin account by requiring verification codes."
                 >
-                  <Switch checked={twoFactor} onChange={setTwoFactor} />
+                  <Switch 
+                    checked={settings.two_factor_enabled} 
+                    onChange={(val) => updateSetting('two_factor_enabled', val)} 
+                  />
                 </SettingRow>
 
                 <Slot name="admin.settings.general.after" />
@@ -115,7 +216,10 @@ export default function SettingsPage() {
                   title="Email Telemetry" 
                   description="Receive critical system alerts, weekly summaries and audit snapshots via email."
                 >
-                  <Switch checked={notifications} onChange={setNotifications} />
+                  <Switch 
+                    checked={settings.email_notifications} 
+                    onChange={(val) => updateSetting('email_notifications', val)} 
+                  />
                 </SettingRow>
 
                 <SettingRow 
@@ -124,6 +228,34 @@ export default function SettingsPage() {
                   description="Enable real-time environment notifications via native OS push alerts."
                 >
                   <Switch checked={false} onChange={() => {}} disabled label="Premium" />
+                </SettingRow>
+              </Card>
+
+              <Card title="Security & API">
+                <SettingRow 
+                  icon={FrameworkIcons.Shield} 
+                  title="Rate Limit (Max Requests)" 
+                  description="The maximum number of requests a single IP can make within the defined window."
+                >
+                  <Input 
+                    type="number"
+                    value={settings.rate_limit_max}
+                    onChange={(e) => updateSetting('rate_limit_max', e.target.value)}
+                    className="w-full md:w-32"
+                  />
+                </SettingRow>
+
+                <SettingRow 
+                  icon={FrameworkIcons.Clock} 
+                  title="Rate Limit Window" 
+                  description="The time window in milliseconds for the rate limit (e.g., 900000 for 15 minutes)."
+                >
+                  <Input 
+                    type="number"
+                    value={settings.rate_limit_window}
+                    onChange={(e) => updateSetting('rate_limit_window', e.target.value)}
+                    className="w-full md:w-48"
+                  />
                 </SettingRow>
               </Card>
 
@@ -155,7 +287,10 @@ export default function SettingsPage() {
                   <div className="pt-6 border-t border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center justify-between mb-3">
                       <span className={`text-xs font-black uppercase tracking-widest text-indigo-500`}>Maintenance Mode</span>
-                      <Switch checked={maintenance} onChange={setMaintenance} />
+                      <Switch 
+                        checked={settings.maintenance_mode} 
+                        onChange={(val) => updateSetting('maintenance_mode', val)} 
+                      />
                     </div>
                     <p className="text-[11px] text-slate-400 font-medium leading-relaxed italic">
                       Restricts portal frontend access to administrative accounts only during system upgrades.

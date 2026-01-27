@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import GlobalInitializer from "./GlobalInitializer";
+import RootProvider from "./RootProvider";
 
 export const metadata: Metadata = {
   title: "Fromcode Frontend",
@@ -36,8 +37,11 @@ export default function RootLayout({
       </head>
       <body>
         <GlobalInitializer />
-        {children}
+        <RootProvider>
+          {children}
+        </RootProvider>
       </body>
     </html>
   );
 }
+

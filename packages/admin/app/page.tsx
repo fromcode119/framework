@@ -115,7 +115,7 @@ export default function AdminPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard 
-              title="Identity" 
+              title="Users" 
               value={loadingStats ? "..." : userCount} 
               icon={<FrameworkIcons.Users size={20} />} 
               trend={{ value: 12, isPositive: true }} 

@@ -16,6 +16,7 @@ interface Notification {
 
 interface NotificationContextType {
   notify: (type: NotificationType, title: string, message: string) => void;
+  addNotification: (notification: { type: NotificationType; title: string; message: string }) => void;
   remove: (id: string) => void;
 }
 
@@ -34,12 +35,16 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }, 5000);
   }, []);
 
+  const addNotification = useCallback((n: { type: NotificationType; title: string; message: string }) => {
+    notify(n.type, n.title, n.message);
+  }, [notify]);
+
   const remove = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ notify, remove }}>
+    <NotificationContext.Provider value={{ notify, addNotification, remove }}>
       {children}
       <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 min-w-[320px] max-w-[420px]">
         {notifications.map(n => (
@@ -76,5 +81,11 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 export const useNotify = () => {
   const context = useContext(NotificationContext);
   if (!context) throw new Error('useNotify must be used within NotificationProvider');
+  return context;
+};
+
+export const useNotification = () => {
+  const context = useContext(NotificationContext);
+  if (!context) throw new Error('useNotification must be used within NotificationProvider');
   return context;
 };

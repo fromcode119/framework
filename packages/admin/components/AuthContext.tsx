@@ -41,8 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (token: string | undefined, userData: User) => {
-    // Note: token is now handled by HttpOnly cookie from backend
-    // We only save the user profile for UI purposes
+    // Note: token is primarily handled by HttpOnly cookie from backend for security.
+    // However, we also store it in a companion cookie for client-side API calls 
+    // that might need to send it via Authorization header if cookies fail.
+    if (token) {
+      Cookies.set('fc_token', token, { expires: 7, path: '/' });
+    }
+    
     Cookies.set('fc_user', JSON.stringify(userData), { expires: 7, path: '/' });
     setUser(userData);
     router.push('/');
@@ -54,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error("Logout request failed", e);
     }
-    Cookies.remove('fc_token', { path: '/' }); // Clean up any old tokens
+    Cookies.remove('fc_token', { path: '/' });
     Cookies.remove('fc_user', { path: '/' });
     setUser(null);
     router.push('/login');

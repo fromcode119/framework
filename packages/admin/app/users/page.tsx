@@ -147,7 +147,7 @@ export default function UsersPage() {
                 <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-indigo-50'} text-indigo-500`}>
                   <FrameworkIcons.Users size={20} />
                 </div>
-                <h1 className="text-2xl font-black uppercase tracking-tight">Identity Management</h1>
+                <h1 className="text-2xl font-black uppercase tracking-tight">User Management</h1>
               </div>
               <p className="text-slate-500 font-medium text-sm">Manage users, adjust permissions and review access logs.</p>
             </div>
@@ -169,7 +169,7 @@ export default function UsersPage() {
         <div className="max-w-[1200px] mx-auto space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard 
-              title="Identity Base" 
+              title="User Base" 
               value={stats.total.toLocaleString()} 
               icon={<FrameworkIcons.Users size={20} />} 
               trend={{ value: 4, isPositive: true }}
@@ -193,7 +193,7 @@ export default function UsersPage() {
               </div>
               <input 
                 type="text" 
-                placeholder="Search identity base by name or email..." 
+                placeholder="Search user base by name or email..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`w-full rounded-2xl py-3 pl-12 pr-4 outline-none border transition-all text-sm font-medium ${
@@ -215,7 +215,7 @@ export default function UsersPage() {
               totalDocs={filteredUsers.length}
               limit={10}
               page={1}
-              emptyMessage="No identity records match your query"
+              emptyMessage="No user records match your query"
               actions={(user) => (
                 <div className="flex items-center justify-end gap-2">
                   <Slot name="admin.users.list.table.actions" props={{ user }} />

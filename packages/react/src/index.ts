@@ -1,3 +1,3 @@
-export * from './context';
-export * from './Slot';
-export * from './Icons';
+export { PluginsProvider, usePlugins, useTranslation } from './context';
+export { Slot } from './Slot';
+export { getIcon, createProxyIcon } from './Icons';

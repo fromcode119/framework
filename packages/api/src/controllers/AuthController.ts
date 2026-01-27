@@ -54,48 +54,85 @@ export class AuthController {
       .returning();
 
     const jti = Math.random().toString(36).substring(2) + Date.now().toString(36);
-    const userResponse = { id: newUser.id, email: newUser.email, roles: ['admin'], jti };
+    const userResponse = { id: String(newUser.id), email: newUser.email, roles: ['admin'], jti };
     const token = await this.auth.generateToken(userResponse);
     
     // Store session in DB
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
     await this.db.insert(systemSessions).values({
       userId: newUser.id,
       tokenId: jti,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expiresAt: expiresAt,
       userAgent: req.headers['user-agent'],
       ipAddress: req.ip
     });
 
     const cookieOptions = this.getCookieOptions(req);
     res.cookie('fc_token', token, cookieOptions);
-    res.json({ user: userResponse });
+    res.json({ 
+      token,
+      user: userResponse 
+    });
   }
 
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
+    console.debug(`[AuthController] Login attempt for email: ${email}`);
     
     try {
-      const [user]: any = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
-      
-      if (user && await this.auth.comparePassword(password, user.password || '')) {
-        const roles = typeof user.roles === 'string' ? JSON.parse(user.roles) : (user.roles || []);
-        const jti = Math.random().toString(36).substring(2) + Date.now().toString(36);
-        const userResponse = { id: user.id.toString(), email: user.email, roles, jti };
-        const token = await this.auth.generateToken(userResponse);
-        
-        await this.db.insert(systemSessions).values({
-          userId: user.id,
-          tokenId: jti,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-          userAgent: req.headers['user-agent'],
-          ipAddress: req.ip
-        });
-
-        const cookieOptions = this.getCookieOptions(req);
-        res.cookie('fc_token', token, cookieOptions);
-        return res.json({ user: userResponse });
+      if (!email || !password) {
+        console.warn(`[AuthController] Login failed: Missing email or password`);
+        return res.status(400).json({ error: 'Email and password required' });
       }
-    } catch (err) {}
+
+      const results = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
+      const user = results[0];
+      
+      if (user) {
+        const isMatch = await this.auth.comparePassword(password, user.password || '');
+        
+        if (isMatch) {
+          console.debug(`[AuthController] Password match for user: ${user.email}`);
+          const roles = typeof user.roles === 'string' ? JSON.parse(user.roles) : (user.roles || []);
+          const jti = Math.random().toString(36).substring(2) + Date.now().toString(36);
+          const userResponse = { id: user.id.toString(), email: user.email, roles, jti };
+          const token = await this.auth.generateToken(userResponse);
+          
+          const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+          
+          console.debug(`[AuthController] Generating token for JTI: ${jti}`);
+
+          try {
+            await this.db.insert(systemSessions).values({
+              userId: user.id,
+              tokenId: jti,
+              expiresAt: expiresAt,
+              userAgent: req.headers['user-agent'],
+              ipAddress: req.ip
+            });
+            console.debug(`[AuthController] Session stored successfully for JTI: ${jti}`);
+          } catch (sessionErr) {
+            console.error(`[AuthController] Failed to store session:`, sessionErr);
+            throw sessionErr;
+          }
+
+          const cookieOptions = this.getCookieOptions(req);
+          res.cookie('fc_token', token, cookieOptions);
+          return res.json({ 
+            token,
+            user: userResponse 
+          });
+        } else {
+          console.warn(`[AuthController] Password mismatch for user: ${email}`);
+          console.debug(`[AuthController] Hash in DB starts with: ${user.password?.substring(0, 10)}...`);
+        }
+      } else {
+        console.warn(`[AuthController] User NOT FOUND in database: ${email}`);
+      }
+    } catch (err: any) {
+      console.error(`[AuthController] Login exception for ${email}:`, err);
+      return res.status(500).json({ error: 'Internal server error during login' });
+    }
 
     res.status(401).json({ error: 'Invalid email or password' });
   }

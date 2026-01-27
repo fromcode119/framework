@@ -18,11 +18,11 @@ export class SystemController {
     const collections = this.manager.getCollections();
     const stats = await Promise.all(collections.map(async (c) => {
       try {
-        const result = await this.db.select({ total: count() }).from(sql`${sql.identifier(c.slug)}`);
+        const total = await (this.manager as any).db.count(c.tableName || c.slug);
         return {
           slug: c.slug,
           name: c.name || c.slug,
-          count: Number(result[0].total),
+          count: total,
           system: !!(c as any).system,
           priority: (c as any).priority || 100
         };

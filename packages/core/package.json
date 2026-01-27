@@ -11,22 +11,26 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode/database": "*",
-    "@fromcode/media": "*",
-    "@fromcode/email": "*",
     "@fromcode/cache": "*",
-    "uuid": "^9.0.1",
-    "zod": "^3.22.4",
+    "@fromcode/database": "*",
+    "@fromcode/email": "*",
+    "@fromcode/media": "*",
+    "adm-zip": "^0.5.10",
+    "bull": "^4.16.5",
+    "chokidar": "^3.6.0",
+    "ioredis": "^5.9.2",
     "semver": "^7.6.0",
     "tar": "^6.2.0",
-    "chokidar": "^3.6.0",
-    "adm-zip": "^0.5.10"
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.8",
+    "@types/adm-zip": "^0.5.5",
+    "@types/bull": "^3.15.9",
+    "@types/ioredis": "^4.28.10",
     "@types/semver": "^7.5.0",
     "@types/tar": "^6.1.11",
-    "@types/adm-zip": "^0.5.5",
+    "@types/uuid": "^9.0.8",
     "typescript": "^5.3.3"
   }
 }

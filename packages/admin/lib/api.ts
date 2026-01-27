@@ -1,10 +1,19 @@
 import { API_BASE_URL } from './constants';
+import Cookies from 'js-cookie';
 
 async function request(path: string, options: RequestInit = {}) {
-  const headers = {
+  // Extract token from cookie (if available to JS) to add to Authorization header
+  // This serves as a fallback for HttpOnly cookies when cross-subdomain fetch has issues
+  const token = Cookies.get('fc_token');
+
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...options.headers as any,
   };
+
+  if (token && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
 
