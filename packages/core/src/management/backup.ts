@@ -13,13 +13,31 @@ const execAsync = promisify(exec);
  * Useful for rollbacks during failed updates or migrations.
  */
 export class BackupService {
-  private static backupsDir = path.resolve(process.cwd(), 'backups');
+  private static getProjectRoot(): string {
+    let current = process.cwd();
+    while (current !== path.parse(current).root) {
+      const pkgPath = path.join(current, 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          if (pkg.name === '@fromcode/framework') return current;
+        } catch {}
+      }
+      current = path.dirname(current);
+    }
+    return process.cwd();
+  }
+
+  private static getBackupsDir(): string {
+    return path.resolve(this.getProjectRoot(), 'backups');
+  }
 
   /**
    * Initializes the backups directory
    */
   private static ensureBackupsDir(subDir?: string) {
-    const target = subDir ? path.join(this.backupsDir, subDir) : this.backupsDir;
+    const backupsDir = this.getBackupsDir();
+    const target = subDir ? path.join(backupsDir, subDir) : backupsDir;
     if (!fs.existsSync(target)) {
       fs.mkdirSync(target, { recursive: true });
     }
@@ -109,7 +127,7 @@ export class BackupService {
       const buffer = Buffer.from(arrayBuffer);
       
       const isZip = url.toLowerCase().includes('.zip') || url.includes('/zip/');
-      const tempFile = path.join(this.backupsDir, `download-${Date.now()}${isZip ? '.zip' : '.tar.gz'}`);
+      const tempFile = path.join(this.getBackupsDir(), `download-${Date.now()}${isZip ? '.zip' : '.tar.gz'}`);
       fs.writeFileSync(tempFile, buffer);
 
       // Extract to target
@@ -156,7 +174,7 @@ export class BackupService {
     } else if (dbUrl.includes('.db') || dbUrl.startsWith('sqlite')) {
       // Handle SQLite
       const sqlitePath = dbUrl.startsWith('sqlite://') ? dbUrl.replace('sqlite://', '') : dbUrl;
-      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(process.cwd(), sqlitePath);
+      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(this.getProjectRoot(), sqlitePath);
       
       if (fs.existsSync(absPath)) {
         const dumpPath = path.join(backupsPath, `db-copy-${timestamp}.db`);
@@ -174,7 +192,7 @@ export class BackupService {
    */
   static async createSystemBackup(): Promise<string> {
     const backupsPath = this.ensureBackupsDir('system');
-    const rootDir = process.cwd();
+    const rootDir = this.getProjectRoot();
     
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFileName = `system-${timestamp}.tar.gz`;
@@ -231,7 +249,7 @@ export class BackupService {
    * Cleans up old backups for a specific slug, keeping only the most recent N
    */
   private static cleanupOld(slug: string, type: string, keep: number = 3) {
-    const dir = path.join(this.backupsDir, type);
+    const dir = path.join(this.getBackupsDir(), type);
     if (!fs.existsSync(dir)) return;
 
     const files = fs.readdirSync(dir)

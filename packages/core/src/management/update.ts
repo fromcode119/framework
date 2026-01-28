@@ -18,6 +18,26 @@ export class SystemUpdateService {
     }
   }
 
+  private static getProjectRoot(): string {
+    let current = process.cwd();
+    // Try to find the monorepo root by looking for @fromcode/framework
+    while (current !== path.parse(current).root) {
+      const pkgPath = path.join(current, 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          if (pkg.name === '@fromcode/framework') {
+            return current;
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+      current = path.dirname(current);
+    }
+    return process.cwd();
+  }
+
   static async checkUpdate() {
     const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
     try {
@@ -28,7 +48,8 @@ export class SystemUpdateService {
       if (!registry.core) return null;
 
       let currentVersion = '0.0.0';
-      const pkgPath = path.resolve(process.cwd(), 'package.json');
+      const rootDir = this.getProjectRoot();
+      const pkgPath = path.resolve(rootDir, 'package.json');
       if (fs.existsSync(pkgPath)) {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
         currentVersion = pkg.version || '0.0.0';
@@ -69,14 +90,15 @@ export class SystemUpdateService {
       throw new Error(`Pre-update backup failed: ${err.message}`);
     }
 
-    const tempDir = path.resolve(process.cwd(), `.tmp-system-update-${Date.now()}`);
+    const rootDir = this.getProjectRoot();
+    const tempDir = path.resolve(rootDir, `.tmp-system-update-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
 
     try {
       await BackupService.downloadAndExtract(downloadUrl, tempDir);
       
-      this.logger.info('Applying update files to system root...');
-      this.moveDir(tempDir, process.cwd());
+      this.logger.info(`Applying update files to system root: ${rootDir}`);
+      this.moveDir(tempDir, rootDir);
       
       this.logger.info(`Framework Core successfully updated to v${status.latest}. A system restart may be required.`);
       return { success: true, version: status.latest };
