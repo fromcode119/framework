@@ -94,8 +94,8 @@ export class SystemUpdateService {
       const srcPath = path.join(src, item);
       const destPath = path.join(dest, item);
       
-      // Skip node_modules if present in update (unlikely but safe)
-      if (item === 'node_modules') continue;
+      // Skip node_modules and hidden git files
+      if (item === 'node_modules' || item === '.git') continue;
 
       if (fs.statSync(srcPath).isDirectory()) {
         if (!fs.existsSync(destPath)) fs.mkdirSync(destPath, { recursive: true });
