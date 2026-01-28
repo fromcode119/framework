@@ -6,6 +6,7 @@ import { Button } from './Button';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
+import { Portal } from './Portal';
 
 const { Folder, Left, Loader, Check } = FrameworkIcons;
 
@@ -66,12 +67,18 @@ export function MoveDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div 
-        className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 ${
-          theme === 'dark' ? 'bg-slate-900 border border-slate-800' : 'bg-white'
-        }`}
-      >
+    <Portal>
+      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300" 
+          onClick={onClose}
+        />
+        
+        {/* Dialog */}
+        <div className={`relative w-full max-w-md my-auto rounded-3xl border shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
+          theme === 'dark' ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
+        }`}>
         <div className="p-6">
           <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
             {title}
@@ -154,5 +161,6 @@ export function MoveDialog({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

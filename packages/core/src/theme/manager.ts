@@ -15,7 +15,7 @@ export class ThemeManager {
     this.themesRoot = process.env.THEMES_DIR 
       ? path.resolve(process.env.THEMES_DIR)
       : path.resolve(process.cwd(), '../../themes');
-    this.registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.framework.local/registry.json';
+    this.registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
   }
 
   async init() {

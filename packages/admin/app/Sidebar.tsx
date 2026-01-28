@@ -21,7 +21,8 @@ const {
   Down,
   Close,
   Zap,
-  Activity
+  Activity,
+  Refresh
 } = FrameworkIcons;
 
 interface NavItemProps {
@@ -310,6 +311,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
 
         <div className="mt-auto pt-6">
           {!isMini && <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">System</p>}
+          <NavItem icon={<Refresh size={18}/>} label="Updates" href="/settings/updates" active={pathname === '/settings/updates'} onClick={onClose} isMini={isMini} />
           <NavItem icon={<Settings size={18}/>} label="Settings" href="/settings" active={pathname === '/settings'} onClick={onClose} isMini={isMini} />
         </div>
         

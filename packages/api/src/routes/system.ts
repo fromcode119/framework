@@ -25,6 +25,10 @@ export function setupSystemRoutes(manager: PluginManager, themeManager: ThemeMan
   router.put('/admin/users/:id', auth.guard(['admin']), (req, res) => controller.saveUser(req, res));
   router.delete('/admin/users/:id', auth.guard(['admin']), (req, res) => controller.deleteUser(req, res));
   router.post('/admin/users/roles', auth.guard(['admin']), (req, res) => controller.saveUserRoles(req, res));
+  
+  router.get('/update/check', auth.guard(['admin']), (req, res) => controller.checkUpdate(req, res));
+  router.post('/update/apply', auth.guard(['admin']), (req, res) => controller.applyUpdate(req, res));
+
   router.get('/frontend', (req, res) => controller.getFrontendMetadata(req, res));
   router.get('/i18n', (req, res) => controller.getI18n(req, res));
 

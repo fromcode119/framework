@@ -73,7 +73,7 @@ export class PluginController {
 
   async registry(req: Request, res: Response) {
     try {
-      const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.framework.local/registry.json';
+      const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
       const response = await fetch(registryUrl);
       if (!response.ok) throw new Error(`Registry unavailable`);
       res.json(await response.json());
@@ -86,7 +86,7 @@ export class PluginController {
     const { slug } = req.params;
     const { version } = req.query;
     try {
-      const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.framework.local/registry.json';
+      const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
       const response = await fetch(registryUrl);
       const registryData: any = await response.json();
       

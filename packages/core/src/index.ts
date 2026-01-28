@@ -17,3 +17,4 @@ export * from './management/backup';
 export * from './management/manifest';
 export * from './management/migration-coordinator';
 export * from './management/hot-reload';
+export * from './management/update';

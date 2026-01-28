@@ -12,7 +12,7 @@ export function useSystemStatus() {
   useEffect(() => {
     async function initializeSystem() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://api.framework.local';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://api.fromcode.local';
         
         // 1. Check system health and maintenance status (Whitelisted)
         const healthRes = await fetch(`${apiUrl}/api/health`, { 

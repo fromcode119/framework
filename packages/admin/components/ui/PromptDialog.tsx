@@ -5,6 +5,7 @@ import { useTheme } from '@/components/ThemeContext';
 import { Button } from './Button';
 import { Input } from './Input';
 import { FrameworkIcons } from '@/lib/icons';
+import { Portal } from './Portal';
 
 const { Close: X } = FrameworkIcons;
 
@@ -59,17 +60,18 @@ export const PromptDialog = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-300" 
-        onClick={onClose}
-      />
-      
-      {/* Dialog */}
-      <div className={`relative w-full max-w-md rounded-2xl border shadow-2xl p-6 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${
-        theme === 'dark' ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100'
-      }`}>
+    <Portal>
+      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300" 
+          onClick={onClose}
+        />
+        
+        {/* Dialog */}
+        <div className={`relative w-full max-w-md my-auto rounded-3xl border shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
+          theme === 'dark' ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
+        }`}>
         <div className="flex items-start gap-4 mb-6">
           {icon && (
             <div className={`p-3 rounded-xl flex-shrink-0 ${
@@ -130,5 +132,6 @@ export const PromptDialog = ({
         </form>
       </div>
     </div>
+    </Portal>
   );
 };

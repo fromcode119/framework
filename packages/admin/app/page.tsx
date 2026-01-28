@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [activePluginsCount, setActivePluginsCount] = useState<number>(0);
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [updateAvailable, setUpdateAvailable] = useState<any>(null);
   
   const hasMainContent = slots['admin.dashboard.main'] && slots['admin.dashboard.main'].length > 0;
   
@@ -81,9 +82,21 @@ export default function AdminPage() {
       }
     }
 
+    async function fetchUpdate() {
+      try {
+        const data = await api.get(ENDPOINTS.SYSTEM.UPDATE_CHECK);
+        if (data && data.hasUpdate) {
+          setUpdateAvailable(data);
+        }
+      } catch (err) {
+        // Silent fail on dashboard
+      }
+    }
+
     fetchStats();
     fetchPlugins();
     fetchActivity();
+    fetchUpdate();
   }, [isAuthLoading, user, refreshVersion]);
 
   return (
@@ -131,6 +144,49 @@ export default function AdminPage() {
       </div>
 
       <div className="w-full px-6 lg:px-12 pt-12 space-y-8 pb-12">
+        {/* Update Alert */}
+        {updateAvailable && (
+          <div className={`p-1 rounded-[2rem] animate-in slide-in-from-top-4 duration-500 ${
+            theme === 'dark' ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/10 to-transparent' : 'bg-gradient-to-r from-amber-500/10 via-amber-100/50 to-white'
+          } border border-amber-500/20 shadow-xl shadow-amber-500/5`}>
+            <div className={`px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 rounded-[1.9rem] ${
+              theme === 'dark' ? 'bg-slate-900/40' : 'bg-white/80'
+            }`}>
+              <div className="flex items-center gap-5">
+                <div className="h-12 w-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
+                  <FrameworkIcons.Refresh size={24} className="animate-spin-slow" />
+                </div>
+                <div>
+                  <h4 className={`text-lg font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    Framework Update Available
+                  </h4>
+                  <p className="text-sm font-medium text-slate-500">
+                    A new version of Fromcode Core <span className="font-bold text-amber-600">v{updateAvailable.latest}</span> is available.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-[10px] font-black uppercase tracking-widest px-6"
+                  onClick={() => setUpdateAvailable(null)}
+                >
+                  Dismiss
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  className="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-xl shadow-lg shadow-amber-600/30"
+                  onClick={() => window.location.href = '/settings/updates'}
+                >
+                  View Update Details
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard 

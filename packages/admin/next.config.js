@@ -8,7 +8,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'api.framework.local',
+        hostname: 'api.fromcode.local',
       },
       {
         protocol: 'http',

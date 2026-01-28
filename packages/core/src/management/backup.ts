@@ -2,6 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import * as tar from 'tar';
 import AdmZip from 'adm-zip';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 /**
  * Backup Service
@@ -125,6 +129,102 @@ export class BackupService {
     } catch (err) {
       throw new Error(`Download/extraction failed: ${err}`);
     }
+  }
+
+  /**
+   * Creates a database dump
+   * @returns Path to the dump file
+   */
+  static async backupDatabase(): Promise<string | null> {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) return null;
+
+    const backupsPath = this.ensureBackupsDir('database');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    
+    if (dbUrl.startsWith('postgres') || dbUrl.startsWith('postgresql')) {
+      const dumpPath = path.join(backupsPath, `db-dump-${timestamp}.sql`);
+      try {
+        // Use pg_dump if available. We assume it's in the PATH (installed in Dockerfile)
+        await execAsync(`pg_dump "${dbUrl}" > "${dumpPath}"`);
+        return dumpPath;
+      } catch (err: any) {
+        console.error(`[BackupService] PostgreSQL dump failed: ${err.message}`);
+        // If pg_dump fails, we might still want to proceed with other backups
+        return null;
+      }
+    } else if (dbUrl.includes('.db') || dbUrl.startsWith('sqlite')) {
+      // Handle SQLite
+      const sqlitePath = dbUrl.startsWith('sqlite://') ? dbUrl.replace('sqlite://', '') : dbUrl;
+      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(process.cwd(), sqlitePath);
+      
+      if (fs.existsSync(absPath)) {
+        const dumpPath = path.join(backupsPath, `db-copy-${timestamp}.db`);
+        fs.copyFileSync(absPath, dumpPath);
+        return dumpPath;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Creates a full system backup
+   * @returns The path to the created backup file
+   */
+  static async createSystemBackup(): Promise<string> {
+    const backupsPath = this.ensureBackupsDir('system');
+    const rootDir = process.cwd();
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupFileName = `system-${timestamp}.tar.gz`;
+    const backupPath = path.join(backupsPath, backupFileName);
+
+    // 1. First, create a database dump
+    let dbDumpPath: string | null = null;
+    try {
+      dbDumpPath = await this.backupDatabase();
+    } catch (e) {
+      console.warn('[BackupService] Database backup failed, proceeding with files only.');
+    }
+
+    // 2. List of things to backup (essentially everything except node_modules and backups)
+    const items = fs.readdirSync(rootDir);
+    const toBackup = items.filter(item => 
+      item !== 'node_modules' && 
+      item !== 'backups' && 
+      !item.startsWith('.') &&
+      !item.startsWith('tmp-')
+    );
+
+    // 3. If we have a DB dump, copy it to a temporary location in root so it's included in the tarball
+    let tempDbFile: string | null = null;
+    if (dbDumpPath && fs.existsSync(dbDumpPath)) {
+      tempDbFile = `database-backup-${timestamp}${path.extname(dbDumpPath)}`;
+      fs.copyFileSync(dbDumpPath, path.join(rootDir, tempDbFile));
+      toBackup.push(tempDbFile);
+    }
+
+    // 4. Create the tarball
+    try {
+      await tar.create(
+        {
+          gzip: true,
+          file: backupPath,
+          cwd: rootDir,
+        },
+        toBackup
+      );
+    } finally {
+      // 5. Cleanup the temporary file in root
+      if (tempDbFile && fs.existsSync(path.join(rootDir, tempDbFile))) {
+        fs.unlinkSync(path.join(rootDir, tempDbFile));
+      }
+    }
+
+    this.cleanupOld('system', 'system', 5);
+
+    return backupPath;
   }
 
   /**

@@ -4,6 +4,7 @@ import {
   count, sql, systemLogs, systemRoles, users, desc, eq, or, ilike,
   systemUsersToRoles, systemRolesToPermissions, systemPermissions 
 } from '@fromcode/database';
+import { SystemUpdateService } from '@fromcode/core';
 import { RESTController } from '../rest-controller';
 
 export class SystemController {
@@ -469,6 +470,24 @@ export class SystemController {
     } catch (err: any) {
       console.error('[SystemController] saveUserRoles Error:', err);
       res.status(500).json({ error: 'Failed to save user roles: ' + err.message });
+    }
+  }
+
+  async checkUpdate(req: Request, res: Response) {
+    try {
+      const status = await SystemUpdateService.checkUpdate();
+      res.json(status);
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to check for updates: ' + err.message });
+    }
+  }
+
+  async applyUpdate(req: Request, res: Response) {
+    try {
+      const result = await SystemUpdateService.applyUpdate();
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to apply update: ' + err.message });
     }
   }
 }
