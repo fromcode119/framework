@@ -46,19 +46,19 @@ export class PluginManager implements PluginManagerInterface {
     this.i18n = new I18nManager(process.env.DEFAULT_LOCALE || 'en');
     this.jobs = new QueueManager({ redisUrl: process.env.REDIS_URL });
     
-    // Prioritize a dedicated plugins directory in the workspace root
+    // Use root-aware resolution for directories
+    const rootDir = this.getProjectRoot();
+    
     this.pluginsRoot = process.env.PLUGINS_DIR 
       ? path.resolve(process.env.PLUGINS_DIR)
-      : (fs.existsSync(path.resolve(process.cwd(), 'plugins'))
-          ? path.resolve(process.cwd(), 'plugins')
-          : path.resolve(process.cwd(), '../../plugins'));
+      : path.resolve(rootDir, 'plugins');
 
     // Initialize Storage
     const storageMode = process.env.STORAGE_DRIVER || 'local';
     try {
       const storageConfig = storageMode === 'local' 
         ? { 
-            uploadDir: process.env.STORAGE_UPLOAD_DIR || path.resolve(process.cwd(), 'public/uploads'),
+            uploadDir: process.env.STORAGE_UPLOAD_DIR || path.resolve(rootDir, 'public/uploads'),
             publicUrlBase: process.env.STORAGE_PUBLIC_URL || '/uploads'
           }
         : {
@@ -75,7 +75,7 @@ export class PluginManager implements PluginManagerInterface {
       this.storage = new MediaManager(StorageFactory.create(storageMode, storageConfig));
     } catch (err: any) {
       this.logger.error(`Failed to initialize storage driver (${storageMode}): ${err.message}. Falling back to minimal local.`);
-      const fallbackConfig = { uploadDir: path.resolve(process.cwd(), 'public/uploads'), publicUrlBase: '/uploads' };
+      const fallbackConfig = { uploadDir: path.resolve(rootDir, 'public/uploads'), publicUrlBase: '/uploads' };
       this.storage = new MediaManager(StorageFactory.create('local', fallbackConfig));
     }
 
@@ -107,6 +107,21 @@ export class PluginManager implements PluginManagerInterface {
     }
   }
 
+  private getProjectRoot(): string {
+    let current = process.cwd();
+    while (current !== path.parse(current).root) {
+      const pkgPath = path.join(current, 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          if (pkg.name === '@fromcode/framework') return current;
+        } catch {}
+      }
+      current = path.dirname(current);
+    }
+    return process.cwd();
+  }
+
   async init() {
     await this.runSystemMigrations();
     await this.coordinator.validateDatabaseState();
@@ -117,9 +132,10 @@ export class PluginManager implements PluginManagerInterface {
     const roots = [this.pluginsRoot];
     
     // Also scan for plugins inside themes
+    const rootDir = this.getProjectRoot();
     const themesDir = process.env.THEMES_DIR 
       ? path.resolve(process.env.THEMES_DIR)
-      : path.resolve(process.cwd(), '../../themes');
+      : path.resolve(rootDir, 'themes');
 
     if (fs.existsSync(themesDir)) {
       const themes = fs.readdirSync(themesDir);

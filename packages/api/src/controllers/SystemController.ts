@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { PluginManager, ThemeManager } from '@fromcode/core';
 import { 
   count, sql, systemLogs, systemRoles, users, desc, eq, or, ilike,
-  systemUsersToRoles, systemRolesToPermissions, systemPermissions 
+  systemUsersToRoles, systemRolesToPermissions, systemPermissions,
+  systemThemes
 } from '@fromcode/database';
 import { SystemUpdateService } from '@fromcode/core';
 import { RESTController } from '../rest-controller';
@@ -20,6 +21,54 @@ export class SystemController {
 
   async getFrontendMetadata(req: Request, res: Response) {
     res.json(this.themeManager.getFrontendMetadata());
+  }
+
+  async getThemes(req: Request, res: Response) {
+    try {
+      res.json(this.themeManager.getThemes());
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to fetch themes: ' + err.message });
+    }
+  }
+
+  async getRegistryThemes(req: Request, res: Response) {
+    try {
+      res.json(await this.themeManager.getRegistryThemes());
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to fetch registry themes: ' + err.message });
+    }
+  }
+
+  async activateTheme(req: Request, res: Response) {
+    try {
+      const { slug } = req.body;
+      if (!slug) return res.status(400).json({ error: 'Theme slug is required' });
+      await this.themeManager.activateTheme(slug);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to activate theme: ' + err.message });
+    }
+  }
+
+  async installTheme(req: Request, res: Response) {
+    try {
+      const pkg = req.body;
+      if (!pkg.slug || !pkg.downloadUrl) return res.status(400).json({ error: 'Invalid theme package' });
+      await this.themeManager.installTheme(pkg);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to install theme: ' + err.message });
+    }
+  }
+
+  async deleteTheme(req: Request, res: Response) {
+    try {
+      const { slug } = req.params;
+      await this.themeManager.deleteTheme(slug);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to delete theme: ' + err.message });
+    }
   }
 
   async getStats(req: Request, res: Response) {
