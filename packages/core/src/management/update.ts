@@ -3,9 +3,20 @@ import path from 'path';
 import { BackupService } from './backup';
 import { Logger } from '../logging/logger';
 import semver from 'semver';
+import crypto from 'crypto';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
+
+  private static getFileHash(filePath: string): string {
+    if (!fs.existsSync(filePath)) return '';
+    try {
+      const content = fs.readFileSync(filePath);
+      return crypto.createHash('md5').update(content).digest('hex');
+    } catch {
+      return '';
+    }
+  }
 
   static async checkUpdate() {
     const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
@@ -90,11 +101,17 @@ export class SystemUpdateService {
         if (!fs.existsSync(destPath)) fs.mkdirSync(destPath, { recursive: true });
         this.moveDir(srcPath, destPath);
       } else {
-        try {
-          fs.renameSync(srcPath, destPath);
-        } catch (e) {
-          fs.copyFileSync(srcPath, destPath);
-          fs.unlinkSync(srcPath);
+        // Smart Update: Only overwrite if content actually changed
+        const srcHash = this.getFileHash(srcPath);
+        const destHash = this.getFileHash(destPath);
+
+        if (srcHash !== destHash) {
+          try {
+            fs.renameSync(srcPath, destPath);
+          } catch (e) {
+            fs.copyFileSync(srcPath, destPath);
+            fs.unlinkSync(srcPath);
+          }
         }
       }
     }
