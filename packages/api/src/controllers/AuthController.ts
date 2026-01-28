@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode/auth';
 import { PluginManager } from '@fromcode/core';
-import { users, systemSessions, eq, count, and, gt, sql } from '@fromcode/database';
+import { users, systemSessions, systemRoles, eq, count, and, gt, sql } from '@fromcode/database';
 
 export class AuthController {
   private db: any;
@@ -36,7 +36,35 @@ export class AuthController {
       if (Number(check[0].total) > 0) {
         return res.status(400).json({ error: 'System already initialized' });
       }
-    } catch (e) {}
+
+      // Initialize default system roles
+      await this.db.insert(systemRoles).values([
+        { 
+          slug: 'admin', 
+          name: 'Administrator', 
+          description: 'Complete unrestricted access to all system modules and settings.', 
+          type: 'system',
+          permissions: JSON.stringify(['*'])
+        },
+        { 
+          slug: 'editor', 
+          name: 'Content Editor', 
+          description: 'Can create, edit and delete collections but cannot modify system settings.', 
+          type: 'custom',
+          permissions: JSON.stringify(['content:read', 'content:write'])
+        },
+        { 
+          slug: 'user', 
+          name: 'Standard User', 
+          description: 'Regular account with access to assigned frontend capabilities only.', 
+          type: 'custom',
+          permissions: JSON.stringify([])
+        }
+      ]).onConflictDoNothing();
+      
+    } catch (e) {
+      console.error('[AuthController] Setup initialization failed:', e);
+    }
 
     const { email, password } = req.body;
     if (!email || !password) {
@@ -49,7 +77,7 @@ export class AuthController {
       .values({
         email,
         password: hashedPassword,
-        roles: JSON.stringify(['admin'])
+        roles: ['admin']
       })
       .returning();
 
@@ -69,6 +97,17 @@ export class AuthController {
 
     const cookieOptions = this.getCookieOptions(req);
     res.cookie('fc_token', token, cookieOptions);
+
+    // Log Setup Activity
+    try {
+      await this.manager.writeLog(
+        'INFO', 
+        `System initialized. Admin account created: ${email}`, 
+        'System', 
+        { userId: newUser.id, email, ip: req.ip }
+      );
+    } catch (e) {}
+
     res.json({ 
       token,
       user: userResponse 
@@ -118,16 +157,53 @@ export class AuthController {
 
           const cookieOptions = this.getCookieOptions(req);
           res.cookie('fc_token', token, cookieOptions);
+
+          // Log Login Activity
+          try {
+            await this.manager.writeLog(
+              'INFO', 
+              `Successful login for ${user.email}`, 
+              'System', 
+              { 
+                userId: user.id, 
+                email: user.email, 
+                ip: req.ip, 
+                userAgent: req.headers['user-agent'],
+                jti
+              }
+            );
+          } catch (logErr) {
+            console.error('[AuthController] Failed to write login log:', logErr);
+          }
+
           return res.json({ 
             token,
             user: userResponse 
           });
         } else {
           console.warn(`[AuthController] Password mismatch for user: ${email}`);
+          // Log Failed Login Attempt
+          try {
+            await this.manager.writeLog(
+              'WARN', 
+              `Failed login attempt for ${email} (Invalid Password)`, 
+              'System', 
+              { email, ip: req.ip }
+            );
+          } catch (logErr) {}
           console.debug(`[AuthController] Hash in DB starts with: ${user.password?.substring(0, 10)}...`);
         }
       } else {
         console.warn(`[AuthController] User NOT FOUND in database: ${email}`);
+        // Log Non-existent User attempt
+        try {
+          await this.manager.writeLog(
+            'WARN', 
+            `Failed login attempt for non-existent user: ${email}`, 
+            'System', 
+            { email, ip: req.ip }
+          );
+        } catch (logErr) {}
       }
     } catch (err: any) {
       console.error(`[AuthController] Login exception for ${email}:`, err);
@@ -143,6 +219,14 @@ export class AuthController {
         await this.db.update(systemSessions)
           .set({ isRevoked: true, updatedAt: new Date() })
           .where(eq(systemSessions.tokenId, req.user.jti));
+        
+        // Log Logout Activity
+        await this.manager.writeLog(
+          'INFO', 
+          `User logged out: ${req.user.email}`, 
+          'System', 
+          { userId: req.user.id, email: req.user.email, jti: req.user.jti }
+        );
       } catch (e) {}
     }
 

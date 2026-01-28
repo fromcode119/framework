@@ -13,6 +13,40 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
+export const systemRoles = pgTable('_system_roles', {
+  slug: text('slug').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  type: text('type').notNull().default('custom'), // 'system' or 'custom'
+  permissions: jsonb('permissions').notNull().default([]), // List of capability names
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export const systemPermissions = pgTable('_system_permissions', {
+  name: text('name').primaryKey(),
+  description: text('description'),
+  pluginSlug: text('plugin_slug'),
+  group: text('group'),
+  impact: text('impact'), // low, medium, high, critical
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export const systemUsersToRoles = pgTable('_system_users_roles', {
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  roleSlug: text('role_slug').notNull().references(() => systemRoles.slug, { onDelete: 'cascade' }),
+}, (t) => ({
+  pk: [t.userId, t.roleSlug],
+}));
+
+export const systemRolesToPermissions = pgTable('_system_roles_permissions', {
+  roleSlug: text('role_slug').notNull().references(() => systemRoles.slug, { onDelete: 'cascade' }),
+  permissionName: text('permission_name').notNull().references(() => systemPermissions.name, { onDelete: 'cascade' }),
+}, (t) => ({
+  pk: [t.roleSlug, t.permissionName],
+}));
+
 export const systemPlugins = pgTable('_system_plugins', {
   slug: text('slug').primaryKey(),
   version: text('version'),

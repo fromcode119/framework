@@ -62,11 +62,11 @@ export function DataTable<T extends { id: any }>({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[600px]">
           <thead>
-            <tr className={`${theme === 'dark' ? 'bg-slate-900/50' : 'bg-slate-50/50'} border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
+            <tr className={`${theme === 'dark' ? 'bg-slate-900/50' : 'bg-slate-100/50'} border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200/60'}`}>
               {columns.map((col) => (
                 <th 
                   key={col.id} 
-                  className={`px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 ${col.sortable ? 'cursor-pointer hover:text-indigo-500 transition-colors' : ''} ${col.className || ''}`}
+                  className={`px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 ${col.sortable ? 'cursor-pointer hover:text-indigo-500 transition-colors' : ''} ${col.className || ''}`}
                   onClick={() => col.sortable && handleSort(col.id)}
                 >
                   <div className="flex items-center gap-2">
@@ -76,21 +76,21 @@ export function DataTable<T extends { id: any }>({
                 </th>
               ))}
               {actions && (
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 text-right">
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 text-right">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+          <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
             {data.length === 0 && !loading ? (
               <tr>
-                <td colSpan={columns.length + (actions ? 1 : 0)} className="px-6 py-20 text-center">
+                <td colSpan={columns.length + (actions ? 1 : 0)} className="px-6 py-24 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                      <FrameworkIcons.Search size={20} className="text-slate-400" />
+                    <div className={`w-14 h-14 rounded-3xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
+                      <FrameworkIcons.Search size={22} className="text-slate-400" />
                     </div>
-                    <p className="font-bold text-slate-500 uppercase tracking-widest text-[11px]">{emptyMessage}</p>
+                    <p className="font-black text-slate-400 uppercase tracking-widest text-[10px]">{emptyMessage}</p>
                   </div>
                 </td>
               </tr>
@@ -98,14 +98,14 @@ export function DataTable<T extends { id: any }>({
               data.map((row, index) => (
                 <tr 
                   key={row.id || row.key || row.slug || index} 
-                  className={`transition-colors cursor-default ${
+                  className={`transition-all duration-200 cursor-default ${
                     onRowClick ? 'cursor-pointer' : ''
-                  } ${theme === 'dark' ? 'hover:bg-slate-800/30' : 'hover:bg-indigo-50/30'}`}
+                  } ${theme === 'dark' ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/80'}`}
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (
-                    <td key={col.id} className={`px-6 py-4 ${col.className || ''}`}>
-                      <div className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <td key={col.id} className={`px-6 py-5 ${col.className || ''}`}>
+                      <div className={`text-[13px] font-bold tracking-tight ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
                         {typeof col.accessor === 'function' 
                           ? col.accessor(row) 
                           : (String(row[col.accessor]) || '-')}
@@ -125,7 +125,11 @@ export function DataTable<T extends { id: any }>({
       </div>
 
       {totalPages > 1 && (
-        <div className={`flex items-center justify-between px-6 py-4 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-slate-50/20 dark:bg-slate-900/10`}>
+        <div className={`flex items-center justify-between px-8 py-5 border-t transition-all ${
+          theme === 'dark' 
+            ? 'bg-slate-950/40 border-slate-800/50' 
+            : 'bg-slate-50/50 border-slate-100'
+        }`}>
           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
             Showing <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{data.length}</span> of <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{totalDocs}</span> records
           </p>

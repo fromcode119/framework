@@ -143,12 +143,12 @@ export function MoveDialog({
               Cancel
             </Button>
             <Button
-              className="flex-1"
+              className="flex-1 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px]"
               onClick={() => onConfirm(currentParentId)}
-              disabled={isLoading}
+              isLoading={isLoading}
+              icon={<Check size={18} />}
             >
-              {isLoading ? <Loader className="animate-spin" size={18} /> : <Check size={18} />}
-              <span>Move Here</span>
+              Move Here
             </Button>
           </div>
         </div>

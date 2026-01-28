@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useNotify } from '@/components/NotificationContext';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
+import { Loader } from '@/components/ui/Loader';
 
 interface Plugin {
   slug: string;
@@ -124,34 +125,36 @@ export default function InstalledPluginsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-      <div className="flex flex-col md:flex-row gap-6">
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center min-h-screen">
+          <Loader label="Synchronizing Global Plugin Registry" />
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col md:flex-row gap-6">
         <div className="relative flex-1 group">
-          <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+          <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={16} />
           <input 
             type="text" 
             placeholder="Search installed plugins..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full rounded-2xl py-4 pl-12 pr-6 outline-none border-0 font-bold transition-all ${theme === 'dark' ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/5' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-xl shadow-slate-200/50'}`} 
+            className={`w-full rounded-2xl py-2.5 pl-11 pr-6 outline-none border-0 font-bold transition-all ${theme === 'dark' ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/5' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-xl shadow-slate-200/50'}`} 
           />
         </div>
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip,.tar.gz" />
         <button 
           onClick={handleUploadClick}
           disabled={isUploading}
-          className={`flex items-center justify-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] disabled:opacity-50`}
+          className={`flex items-center justify-center gap-3 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase tracking-widest text-[11px] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] disabled:opacity-50`}
         >
-          {isUploading ? <FrameworkIcons.Loader className="animate-spin" size={18} /> : <FrameworkIcons.Plus size={18} strokeWidth={3} />}
+          {isUploading ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}
           <span>Upload (.zip)</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {loading ? (
-           [1,2,3].map(i => (
-             <div key={i} className={`h-32 rounded-3xl animate-pulse ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white border-2 border-slate-50 shadow-xl shadow-slate-200/50'}`} />
-           ))
-        ) : filteredPlugins.length === 0 ? (
+        {filteredPlugins.length === 0 ? (
           <div className="col-span-full py-20 text-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
                 <FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" />
@@ -186,7 +189,7 @@ export default function InstalledPluginsPage() {
                     
                     <div className="flex-1 space-y-2 text-center md:text-left">
                        <div className="flex items-center justify-center md:justify-start gap-3">
-                          <Badge variant={plugin.state === 'active' ? 'success' : 'gray'} className="text-[9px] px-2 py-0.5 font-black uppercase tracking-widest rounded-lg shadow-sm">
+                          <Badge variant={plugin.state === 'active' ? 'success' : 'gray'} className="flex-shrink-0">
                               {plugin.state === 'active' ? 'Active' : 'Inactive'}
                           </Badge>
                           {hasUpdate && (
@@ -248,7 +251,7 @@ export default function InstalledPluginsPage() {
                       <div className="grid grid-cols-4 gap-2">
                         <Link 
                           href={`/plugins/${plugin.slug}`} 
-                          className={`col-span-4 sm:col-span-2 flex items-center justify-center gap-2 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-[0.97] ${
+                          className={`col-span-4 sm:col-span-2 flex items-center justify-center gap-2 h-9 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-[0.97] ${
                             theme === 'dark' ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
                           }`}
                         >
@@ -258,24 +261,24 @@ export default function InstalledPluginsPage() {
                         
                         <Link 
                           href={`/plugins/${plugin.slug}?tab=settings`} 
-                          className={`col-span-2 sm:col-span-1 h-10 rounded-xl flex items-center justify-center transition-all border ${
+                          className={`col-span-2 sm:col-span-1 h-9 rounded-lg flex items-center justify-center transition-all border ${
                             theme === 'dark' 
                               ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-indigo-400 hover:bg-slate-700' 
                               : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 shadow-sm hover:shadow-md'
                           }`}
                         >
-                          <FrameworkIcons.Settings size={16} />
+                          <FrameworkIcons.Settings size={14} />
                         </Link>
 
                         <button 
                           onClick={() => { setPluginToDelete(plugin.slug); setShowDeleteConfirm(true); }}
-                          className={`col-span-2 sm:col-span-1 h-10 rounded-xl flex items-center justify-center transition-all border ${
+                          className={`col-span-2 sm:col-span-1 h-9 rounded-lg flex items-center justify-center transition-all border ${
                             theme === 'dark' 
                               ? 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400' 
                               : 'bg-white border-slate-200 text-slate-400 hover:text-red-500 shadow-sm hover:shadow-md'
                           }`}
                         >
-                          <FrameworkIcons.Trash size={16} />
+                          <FrameworkIcons.Trash size={14} />
                         </button>
                       </div>
                     </div>
@@ -285,6 +288,8 @@ export default function InstalledPluginsPage() {
           })
         )}
       </div>
+      </>
+      )}
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}

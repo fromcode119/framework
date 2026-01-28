@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import { PluginManager, Logger, requestContext, HotReloadService } from '@fromcode/core';
+import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { MediaManager } from '@fromcode/media';
 import { CacheFactory, CacheManager } from '@fromcode/cache';
@@ -13,6 +13,7 @@ import { API_ROUTES } from './constants';
 import { createCollectionMiddleware } from './middlewares/collection';
 import { setupAuthRoutes } from './routes/auth';
 import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
+import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
 import { setupSystemRoutes } from './routes/system';
 import { setupMediaRoutes } from './routes/media';
 import { generateOpenAPI } from './swagger';
@@ -91,7 +92,7 @@ export class APIServer {
   private cache: CacheManager;
   private settingsCache: Map<string, string> = new Map();
   
-  constructor(private manager: PluginManager, private auth: AuthManager) {
+  constructor(private manager: PluginManager, private themeManager: ThemeManager, private auth: AuthManager) {
     const cacheDriver = process.env.REDIS_URL ? 'redis' : 'memory';
     const driver = CacheFactory.create(cacheDriver, { url: process.env.REDIS_URL });
     this.cache = new CacheManager(driver);
@@ -438,7 +439,8 @@ export class APIServer {
 
     vApi.use('/auth', setupAuthRoutes(this.manager, this.auth));
     vApi.use('/plugins', setupPluginRoutes(this.manager, this.auth));
-    vApi.use('/system', setupSystemRoutes(this.manager, this.auth, this.restController));
+    vApi.use('/themes', setupThemeRoutes(this.themeManager, this.auth));
+    vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     
     // Add collections to versioned API
@@ -450,11 +452,13 @@ export class APIServer {
     // Legacy support (to avoid breaking current admin)
     this.app.use('/api/auth', setupAuthRoutes(this.manager, this.auth));
     this.app.use('/api/plugins', setupPluginRoutes(this.manager, this.auth));
+    this.app.use('/api/themes', setupThemeRoutes(this.themeManager, this.auth));
     this.app.use('/api/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
-    this.app.use('/api/system', setupSystemRoutes(this.manager, this.auth, this.restController));
+    this.app.use('/api/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     
     // Mount assets at root
     this.app.use('/plugins', setupPluginAssetRoutes(this.manager));
+    this.app.use('/themes', setupThemeAssetRoutes(this.themeManager));
 
     this.setupLegacyCollectionRoutes();
   }
@@ -504,8 +508,12 @@ export class APIServer {
 async function bootstrap() {
   const manager = new PluginManager();
   await manager.init();
+
+  const themeManager = new ThemeManager((manager as any).db);
+  await themeManager.init();
+
   const auth = new AuthManager();
-  const server = new APIServer(manager, auth);
+  const server = new APIServer(manager, themeManager, auth);
   await server.initialize();
 
   manager.setAuth(auth);

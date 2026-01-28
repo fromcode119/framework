@@ -199,14 +199,17 @@ export default function CollectionEditPage() {
   };
 
   return (
-    <div className="flex flex-col h-full -mx-8 -mt-8 overflow-hidden bg-slate-50/30 dark:bg-transparent">
-      {/* Header section with white high-contrast style */}
-      <div className={`p-8 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-white dark:bg-transparent shadow-sm dark:shadow-none`}>
-        <div className="max-w-[1200px] mx-auto">
+    <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
+        theme === 'dark' 
+          ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
+          : 'bg-white/80 border-slate-100 shadow-sm'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
           <div className="flex items-center gap-2 mb-4">
             <Link 
               href={`/content/${slug}`}
-              className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-indigo-600'}`}
+              className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-indigo-600'}`}
             >
               <FrameworkIcons.Left size={14} />
               {collection.name || slug}
@@ -219,10 +222,10 @@ export default function CollectionEditPage() {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h1 className="text-2xl font-black uppercase tracking-tight">
+              <h1 className={`text-2xl font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 {isNew ? `Create ${collection.name || collection.slug}` : `Edit ${collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (collection.name || 'Entry')}`}
               </h1>
-              <p className="text-slate-500 font-medium text-sm mt-1">
+              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-1">
                 {isNew ? 'Define a new record for this collection' : `Modify existing ${collection.name || collection.slug} entry`}
               </p>
             </div>
@@ -239,13 +242,14 @@ export default function CollectionEditPage() {
               <Button 
                 variant="ghost" 
                 type="button" 
+                className="font-bold text-slate-400"
                 onClick={() => router.back()}
                 disabled={saving}
               >
                 Cancel
               </Button>
               <Button 
-                className="px-8" 
+                className="px-8 font-black uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-600/30" 
                 onClick={handleSubmit}
                 isLoading={saving}
                 icon={<FrameworkIcons.Save size={18} />}
@@ -257,8 +261,8 @@ export default function CollectionEditPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-8">
-        <div className="max-w-[1200px] mx-auto">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto">
           {status && (
             <div className={`mb-8 p-4 rounded-2xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
               <div className={`p-2 rounded-xl ${status.type === 'success' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'}`}>
@@ -279,12 +283,12 @@ export default function CollectionEditPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               <Card>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                   {collection.fields
                     .filter(f => !f.admin?.hidden)
                     .map((field) => (
                     <div key={field.name} className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
-                      <label className={`block text-[11px] font-black uppercase tracking-widest mb-3 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>
+                      <label className={`block text-[10px] font-black uppercase tracking-widest mb-3 pl-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                         {field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()}
                         {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
                       </label>
@@ -301,7 +305,11 @@ export default function CollectionEditPage() {
                           value={formData[field.name] || ''}
                           onChange={(e) => handleInputChange(field.name, e.target.value)}
                           disabled={saving}
-                          className={`w-full min-h-[160px] rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-medium ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm'} ${field.required && !formData[field.name] ? 'border-amber-100' : ''}`}
+                          className={`w-full min-h-[160px] rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-bold ${
+                            theme === 'dark' 
+                              ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900' 
+                              : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:bg-slate-50 shadow-sm'
+                          } ${field.required && !formData[field.name] ? 'border-amber-100' : ''}`}
                           placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
                         />
                       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
@@ -311,19 +319,29 @@ export default function CollectionEditPage() {
                           onChange={(e) => handleInputChange(field.name, e.target.value)}
                           placeholder="••••••••"
                           disabled={saving}
+                          className="font-bold"
                         />
                       ) : field.type === 'select' ? (
-                        <select
-                          value={formData[field.name] || field.defaultValue || ''}
-                          onChange={(e) => handleInputChange(field.name, e.target.value)}
-                          disabled={saving}
-                          className={`w-full rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-medium appearance-none ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm'}`}
-                        >
-                          <option value="">Select an option...</option>
-                          {field.options?.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            value={formData[field.name] || field.defaultValue || ''}
+                            onChange={(e) => handleInputChange(field.name, e.target.value)}
+                            disabled={saving}
+                            className={`w-full rounded-2xl py-3 pl-4 pr-10 outline-none border transition-all text-sm font-bold appearance-none ${
+                              theme === 'dark' 
+                                ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500' 
+                                : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'
+                            }`}
+                          >
+                            <option value="">Select an option...</option>
+                            {field.options?.map(opt => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                             <FrameworkIcons.Down size={14} />
+                          </div>
+                        </div>
                       ) : (
                         <Input 
                           type={field.type === 'number' ? 'number' : 'text'}
@@ -331,10 +349,11 @@ export default function CollectionEditPage() {
                           onChange={(e) => handleInputChange(field.name, e.target.value)}
                           placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
                           disabled={saving}
+                          className="font-bold"
                         />
                       )}
                       {field.admin?.description && (
-                        <p className="mt-2 text-xs text-slate-400 font-medium italic">{field.admin.description}</p>
+                        <p className="mt-2.5 text-[10px] text-slate-400 font-bold uppercase tracking-tight opacity-60 ml-1">{field.admin.description}</p>
                       )}
                     </div>
                   ))}
@@ -349,27 +368,87 @@ export default function CollectionEditPage() {
               {!isNew && (
                 <Card title="Record Info">
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-bold uppercase tracking-widest">ID</span>
-                      <span className="text-slate-400 font-mono">{id}</span>
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 font-black uppercase tracking-widest">Identifier</span>
+                      <span className="text-slate-500 font-black tracking-tighter bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">{id}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-bold uppercase tracking-widest">Created</span>
-                      <span className="text-slate-400 font-medium">{new Date(formData.createdAt).toLocaleString()}</span>
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 font-black uppercase tracking-widest">Created</span>
+                      <span className="text-slate-500 font-bold">{new Date(formData.createdAt).toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-bold uppercase tracking-widest">Updated</span>
-                      <span className="text-slate-400 font-medium">{new Date(formData.updatedAt).toLocaleString()}</span>
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 font-black uppercase tracking-widest">Last Update</span>
+                      <span className="text-slate-500 font-bold">{new Date(formData.updatedAt).toLocaleString()}</span>
                     </div>
                   </div>
                 </Card>
               )}
+
+              <Card title="Management">
+                 <p className="text-[11px] text-slate-400 font-bold leading-relaxed mb-6 italic">
+                   Version control and audit trails are active for this entry.
+                 </p>
+                 <Button 
+                    className="w-full py-4 font-black uppercase tracking-widest text-[11px] rounded-2xl" 
+                    onClick={handleSubmit}
+                    isLoading={saving}
+                  >
+                    {isNew ? 'Create Entry' : 'Commit Changes'}
+                  </Button>
+              </Card>
             </div>
           </div>
           
           <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew }} />
         </div>
       </div>
+
+      <div className={`mt-auto border-t py-12 backdrop-blur-3xl transition-all duration-300 ${
+        theme === 'dark' 
+          ? 'bg-slate-950/40 border-slate-800' 
+          : 'bg-slate-50/50 border-slate-100'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2.5">
+              <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+                Persistence Layer // {collection.slug.toUpperCase()}
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <Button 
+              variant="ghost" 
+              className="rounded-xl px-6 text-[10px] font-black uppercase tracking-widest text-slate-400"
+              onClick={() => router.back()}
+            >
+              Discard
+            </Button>
+            <Button 
+              className="rounded-xl px-10 shadow-xl shadow-indigo-600/30 text-[10px] font-black uppercase tracking-widest py-4"
+              onClick={handleSubmit}
+              isLoading={saving}
+              icon={<FrameworkIcons.Save size={16} strokeWidth={3} />}
+            >
+              Commit Changes
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <ConfirmDialog 
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        isLoading={deleting}
+        title="Delete Record"
+        description="Are you sure you want to delete this record? This action is permanent and cannot be undone."
+        confirmLabel="Delete Permanently"
+      />
+    </div>
+  );
 
       <ConfirmDialog 
         isOpen={showDeleteConfirm}

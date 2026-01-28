@@ -84,12 +84,17 @@ export class PluginController {
 
   async install(req: Request, res: Response) {
     const { slug } = req.params;
+    const { version } = req.query;
     try {
       const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.framework.local/registry.json';
       const response = await fetch(registryUrl);
       const registryData: any = await response.json();
-      const pkg = registryData.plugins.find((p: any) => p.slug === slug);
-      if (!pkg) return res.status(404).json({ error: 'Plugin not found' });
+      
+      const pkg = registryData.plugins.find((p: any) => 
+        p.slug === slug && (!version || p.version === version)
+      );
+      
+      if (!pkg) return res.status(404).json({ error: `Plugin ${slug} ${version ? 'v'+version : ''} not found` });
 
       if (pkg.downloadUrl && !pkg.downloadUrl.startsWith('http')) {
         pkg.downloadUrl = new URL(pkg.downloadUrl, registryUrl).toString();

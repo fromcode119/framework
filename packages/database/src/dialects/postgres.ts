@@ -20,6 +20,9 @@ export class PostgresDatabaseManager implements IDatabaseManager {
   }
 
   async execute(query: any) {
+    if (typeof query === 'string') {
+      return this.pool.query(query);
+    }
     return this.drizzle.execute(query);
   }
 
@@ -34,24 +37,54 @@ export class PostgresDatabaseManager implements IDatabaseManager {
   async find(tableOrName: any, options: any = {}) {
     const { limit, offset, orderBy, where, columns } = options;
     
-    let query;
+    // If it's a string (dynamic table), use raw SQL to ensure all columns are retrieved
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
+      let sqlQuery = `SELECT `;
+      
       if (columns && Object.keys(columns).length > 0) {
-        const selectFields: Record<string, any> = {};
-        for (const [key, value] of Object.entries(columns)) {
-          if (value) {
-            selectFields[key] = sql`${sql.identifier(key)}`;
-          }
-        }
-        query = this.drizzle.select(selectFields).from(sql`${sql.identifier(tableName)}`);
+        sqlQuery += Object.entries(columns)
+          .filter(([_, v]) => v)
+          .map(([k, _]) => `"${k}"`)
+          .join(', ');
       } else {
-        query = this.drizzle.select().from(sql`${sql.identifier(tableName)}`);
+        sqlQuery += `*`;
       }
-    } else {
-      // It's a Drizzle table object
-      query = this.drizzle.select().from(tableOrName);
+      
+      sqlQuery += ` FROM "${tableName}"`;
+      
+      const conditions: string[] = [];
+      const values: any[] = [];
+      
+      if (where) {
+        Object.entries(where).forEach(([k, v], i) => {
+          conditions.push(`"${k}" = $${i + 1}`);
+          values.push(v);
+        });
+        if (conditions.length > 0) {
+          sqlQuery += ` WHERE ` + conditions.join(' AND ');
+        }
+      }
+      
+      if (orderBy) {
+        sqlQuery += ` ORDER BY `;
+        if (typeof orderBy === 'string') {
+          sqlQuery += orderBy;
+        } else {
+          // Simplified order by for objects
+          sqlQuery += Object.entries(orderBy).map(([k, v]) => `"${k}" ${v}`).join(', ');
+        }
+      }
+      
+      if (limit) sqlQuery += ` LIMIT ${limit}`;
+      if (offset) sqlQuery += ` OFFSET ${offset}`;
+      
+      const result = await this.pool.query(sqlQuery, values);
+      return result.rows;
     }
+
+    // Otherwise use Drizzle for typed table objects
+    let query = this.drizzle.select().from(tableOrName);
 
     if (where) {
       // If where is a simple record, convert it. If it's already a Drizzle clause (SQL object), use it directly.

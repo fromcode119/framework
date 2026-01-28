@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import "./globals.css";
 import GlobalInitializer from "./GlobalInitializer";
 import RootProvider from "./RootProvider";
+import PluginLoader from "./PluginLoader";
 
 export const metadata: Metadata = {
   title: "Fromcode Frontend",
@@ -38,6 +40,7 @@ export default function RootLayout({
       <body>
         <GlobalInitializer />
         <RootProvider>
+          <PluginLoader />
           {children}
         </RootProvider>
       </body>

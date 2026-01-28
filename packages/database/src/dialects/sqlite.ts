@@ -20,6 +20,9 @@ export class SqliteDatabaseManager implements IDatabaseManager {
   }
 
   async execute(query: any) {
+    if (typeof query === 'string') {
+      return this.sqlite.exec(query);
+    }
     return this.drizzle.run(query);
   }
 

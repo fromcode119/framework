@@ -22,6 +22,26 @@ export enum PluginCapability {
   REDIS_GLOBAL = 'redis:global'
 }
 
+export interface ThemeManifest {
+  slug: string;
+  name: string;
+  version: string;
+  description?: string;
+  author?: string;
+  layouts: {
+    name: string;
+    label: string;
+    description?: string;
+  }[];
+  slots?: string[]; // Defined slot names this theme provides
+  dependencies?: Record<string, string>; // Plugins required by this theme
+  variables?: Record<string, string>;
+  ui: {
+    entry: string;
+    css?: string[];
+  };
+}
+
 export interface MenuItemManifest {
   label: string;
   path: string;
@@ -78,6 +98,19 @@ export interface PluginManifest {
         defaultValue?: any;
       }[];
     };
+  };
+
+  // Metadata for Frontend Theme
+  theme?: {
+    overrides?: { name: string; component: string; priority?: number }[];
+    variables?: Record<string, string>;
+    settings?: {
+      name: string;
+      label: string;
+      type: FieldType;
+      description?: string;
+      defaultValue?: any;
+    }[];
   };
 
   // UI build info

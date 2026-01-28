@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 export interface MarketplacePlugin {
   slug: string;
   name: string;
@@ -11,10 +9,12 @@ export class MarketplaceClient {
   constructor(private baseUrl: string = 'https://marketplace.fromcode.com') {}
 
   async search(query: string): Promise<MarketplacePlugin[]> {
-    const response = await axios.get(`${this.baseUrl}/api/plugins/search`, {
-      params: { q: query },
-    });
-    return response.data;
+    const url = new URL(`${this.baseUrl}/api/plugins/search`);
+    url.searchParams.append('q', query);
+    
+    const response = await fetch(url.toString());
+    if (!response.ok) throw new Error(`Marketplace search failed: ${response.statusText}`);
+    return response.json();
   }
 
   async install(slug: string): Promise<void> {
