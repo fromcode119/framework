@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useTheme } from '@/components/ThemeContext';
+import { Portal } from './Portal';
 
 interface DropdownItem {
   label: string;
@@ -14,16 +15,45 @@ interface DropdownProps {
   trigger: React.ReactNode;
   items: DropdownItem[];
   align?: 'left' | 'right';
+  header?: React.ReactNode;
 }
 
-export const Dropdown = ({ trigger, items, align = 'right' }: DropdownProps) => {
+export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const { theme } = useTheme();
+
+  const updatePosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + 12,
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  };
+
+  useLayoutEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        triggerRef.current && !triggerRef.current.contains(event.target as Node) &&
+        menuRef.current && !menuRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -32,39 +62,92 @@ export const Dropdown = ({ trigger, items, align = 'right' }: DropdownProps) => 
   }, []);
 
   return (
-    <div className="relative inline-block text-left" ref={containerRef}>
-      <div onClick={() => setIsOpen(!isOpen)}>
-        {trigger}
+    <>
+      <div 
+        className="relative inline-block text-left" 
+        ref={triggerRef}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="cursor-pointer">
+          {trigger}
+        </div>
       </div>
 
       {isOpen && (
-        <div 
-          className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-2 w-64 max-w-[calc(100vw-2rem)] origin-top-right rounded-xl border shadow-xl z-[100] animate-in slide-in-from-top-2 duration-200 ${
-            theme === 'dark' ? 'bg-[#1e293b] border-slate-700 shadow-black/40' : 'bg-white border-slate-200'
-          }`}
-        >
-          <div className="py-1 px-1">
-            {items.map((item) => (
-              <button
-                key={item.label}
-                title={item.label}
-                onClick={() => {
-                  item.onClick();
-                  setIsOpen(false);
-                }}
-                className={`flex items-center w-full gap-3 px-3 py-2 text-sm font-semibold rounded-lg transition-colors overflow-hidden ${
-                  item.variant === 'danger' 
-                    ? 'text-rose-500 hover:bg-rose-500/10' 
-                    : `${theme === 'dark' ? 'text-slate-200 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-50'}`
-                }`}
-              >
-                {item.icon && <span className="flex-shrink-0 text-slate-400">{item.icon}</span>}
-                <span className="truncate text-left flex-1">{item.label}</span>
-              </button>
-            ))}
+        <Portal>
+          <div 
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: coords.top,
+              left: align === 'right' ? 'auto' : coords.left,
+              right: align === 'right' ? window.innerWidth - (coords.left + coords.width) : 'auto',
+              minWidth: '20rem'
+            }}
+            className={`w-80 max-w-[calc(100vw-2rem)] origin-top-right rounded-[2rem] border shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)] z-[9999] animate-in zoom-in-95 slide-in-from-top-2 duration-500 overflow-hidden ${
+              theme === 'dark' 
+                ? 'bg-slate-900/95 backdrop-blur-2xl border-white/10 ring-1 ring-white/10 shadow-black' 
+                : 'bg-white/95 backdrop-blur-2xl border-slate-200/60 shadow-slate-200/50 ring-1 ring-black/[0.02]'
+            }`}
+          >
+            {header && (
+              <div className={`px-7 py-6 border-b mb-1 relative overflow-hidden ${
+                theme === 'dark' ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50/50'
+              }`}>
+                <div className="relative z-10">{header}</div>
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl" />
+              </div>
+            )}
+            <div className="p-3 space-y-1">
+              {items.map((item, idx) => {
+                const isLast = idx === items.length - 1;
+                const isDanger = item.variant === 'danger';
+
+                return (
+                  <React.Fragment key={item.label}>
+                    {isLast && idx !== 0 && (
+                      <div className={`my-2 h-[1px] mx-4 ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100'}`} />
+                    )}
+                    <button
+                      title={item.label}
+                      onClick={() => {
+                        item.onClick();
+                        setIsOpen(false);
+                      }}
+                      className={`group flex items-center w-full gap-4 px-4 py-3 text-[13px] font-bold rounded-[1.25rem] transition-all duration-300 overflow-hidden relative ${
+                        isDanger 
+                          ? 'text-rose-500 hover:bg-rose-500/10' 
+                          : `${theme === 'dark' 
+                              ? 'text-slate-300 hover:bg-white/5 hover:text-white' 
+                              : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
+                      }`}
+                    >
+                      {item.icon && (
+                        <div className={`flex-shrink-0 transition-all duration-300 group-hover:scale-110 h-9 w-9 rounded-xl flex items-center justify-center ${
+                          isDanger 
+                            ? 'bg-rose-500/10 text-rose-500' 
+                            : theme === 'dark' 
+                              ? 'bg-slate-800 text-slate-400 group-hover:bg-indigo-500/20 group-hover:text-indigo-400' 
+                              : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 shadow-sm'
+                        }`}>
+                          {item.icon}
+                        </div>
+                      )}
+                      <span className="truncate text-left flex-1 font-black uppercase text-[10px] tracking-[0.15em]">{item.label}</span>
+                      
+                      {!isDanger && (
+                        <div className={`h-1.5 w-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 ${
+                          theme === 'dark' ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]' : 'bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.4)]'
+                        }`} />
+                      )}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </Portal>
       )}
-    </div>
+    </>
   );
 };

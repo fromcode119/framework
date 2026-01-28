@@ -4,60 +4,63 @@ import * as tar from 'tar';
 import AdmZip from 'adm-zip';
 
 /**
- * Plugin Backup Service
- * Handles creating and restoring backups of plugin directories
+ * Backup Service
+ * Handles creating and restoring backups of directories
  * Useful for rollbacks during failed updates or migrations.
  */
-export class PluginBackupService {
-  private static backupsDir = path.resolve(process.cwd(), 'backups/plugins');
+export class BackupService {
+  private static backupsDir = path.resolve(process.cwd(), 'backups');
 
   /**
    * Initializes the backups directory
    */
-  private static ensureBackupsDir() {
-    if (!fs.existsSync(this.backupsDir)) {
-      fs.mkdirSync(this.backupsDir, { recursive: true });
+  private static ensureBackupsDir(subDir?: string) {
+    const target = subDir ? path.join(this.backupsDir, subDir) : this.backupsDir;
+    if (!fs.existsSync(target)) {
+      fs.mkdirSync(target, { recursive: true });
     }
+    return target;
   }
 
   /**
-   * Creates a backup of a plugin directory
-   * @param pluginSlug - The slug of the plugin
-   * @param pluginPath - The absolute path to the plugin directory
+   * Creates a backup of a directory
+   * @param slug - The slug of the entity (plugin/theme)
+   * @param entityPath - The absolute path to the directory
+   * @param type - Optional subfolder for organization
    * @returns The path to the created backup file
    */
-  static async createBackup(pluginSlug: string, pluginPath: string): Promise<string> {
-    this.ensureBackupsDir();
+  static async create(slug: string, entityPath: string, type: 'plugins' | 'themes' = 'plugins'): Promise<string> {
+    const backupsPath = this.ensureBackupsDir(type);
     
-    if (!fs.existsSync(pluginPath)) {
-      throw new Error(`Plugin path does not exist: ${pluginPath}`);
+    if (!fs.existsSync(entityPath)) {
+      throw new Error(`Path does not exist: ${entityPath}`);
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupFileName = `${pluginSlug}-${timestamp}.tar.gz`;
-    const backupPath = path.join(this.backupsDir, backupFileName);
+    const backupFileName = `${slug}-${timestamp}.tar.gz`;
+    const backupPath = path.join(backupsPath, backupFileName);
 
     await tar.create(
       {
         gzip: true,
         file: backupPath,
-        cwd: path.dirname(pluginPath),
+        cwd: path.dirname(entityPath),
       },
-      [path.basename(pluginPath)]
+      [path.basename(entityPath)]
     );
 
     // Optional: Cleanup old backups (keep last 3)
-    this.cleanupOldBackups(pluginSlug);
+    this.cleanupOld(slug, type);
 
     return backupPath;
   }
 
   /**
-   * Restores a plugin from a backup file
+   * Restores from a backup file
    * @param backupPath - The path to the backup file
-   * @param targetDir - The directory where the plugin should be extracted
+   * @param targetDir - The directory where it should be extracted
    */
-  static async restoreBackup(backupPath: string, targetDir: string): Promise<void> {
+  static async restore(backupPath: string, targetDir: string): Promise<void> {
     if (!fs.existsSync(backupPath)) {
       throw new Error(`Backup file does not exist: ${backupPath}`);
     }
@@ -75,11 +78,11 @@ export class PluginBackupService {
   }
 
   /**
-   * Downloads a plugin from a URL and extracts it to the target directory
-   * @param url - The URL to download the plugin from
-   * @param targetDir - The directory where the plugin should be extracted
+   * Downloads from a URL and extracts to the target directory
+   * @param url - The URL to download from
+   * @param targetDir - The directory where it should be extracted
    */
-  static async downloadAndExtractPlugin(url: string, targetDir: string): Promise<void> {
+  static async downloadAndExtract(url: string, targetDir: string): Promise<void> {
     this.ensureBackupsDir();
 
     // Ensure target directory exists
@@ -90,7 +93,7 @@ export class PluginBackupService {
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Failed to download plugin: ${response.statusText}`);
+        throw new Error(`Failed to download: ${response.statusText}`);
       }
 
       if (!response.body) {
@@ -101,7 +104,7 @@ export class PluginBackupService {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       
-      const isZip = url.endsWith('.zip');
+      const isZip = url.toLowerCase().includes('.zip') || url.includes('/zip/');
       const tempFile = path.join(this.backupsDir, `download-${Date.now()}${isZip ? '.zip' : '.tar.gz'}`);
       fs.writeFileSync(tempFile, buffer);
 
@@ -120,28 +123,29 @@ export class PluginBackupService {
         fs.unlinkSync(tempFile);
       } catch (e) {}
     } catch (err) {
-      throw new Error(`Plugin download/extraction failed: ${err}`);
+      throw new Error(`Download/extraction failed: ${err}`);
     }
   }
 
   /**
-   * Cleans up old backups for a specific plugin, keeping only the most recent N
+   * Cleans up old backups for a specific slug, keeping only the most recent N
    */
-  private static cleanupOldBackups(pluginSlug: string, keep: number = 3) {
-    if (!fs.existsSync(this.backupsDir)) return;
+  private static cleanupOld(slug: string, type: string, keep: number = 3) {
+    const dir = path.join(this.backupsDir, type);
+    if (!fs.existsSync(dir)) return;
 
-    const files = fs.readdirSync(this.backupsDir)
-      .filter(f => f.startsWith(`${pluginSlug}-`) && f.endsWith('.tar.gz'))
+    const files = fs.readdirSync(dir)
+      .filter(f => f.startsWith(`${slug}-`) && f.endsWith('.tar.gz'))
       .map(f => ({
         name: f,
-        time: fs.statSync(path.join(this.backupsDir, f)).mtime.getTime()
+        time: fs.statSync(path.join(dir, f)).mtime.getTime()
       }))
       .sort((a, b) => b.time - a.time);
 
     if (files.length > keep) {
       files.slice(keep).forEach(f => {
         try {
-          fs.unlinkSync(path.join(this.backupsDir, f.name));
+          fs.unlinkSync(path.join(dir, f.name));
         } catch (e) {
           // Ignore errors during cleanup
         }

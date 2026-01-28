@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronRight,
+  ChevronLeft,
   ArrowLeft,
   X,
   Home,
@@ -123,6 +124,10 @@ export const FrameworkIcons = {
   Up: ChevronUp,
   Right: ChevronRight,
   Left: ArrowLeft,
+  ChevronLeft: ChevronLeft,
+  ChevronRight: ChevronRight,
+  ArrowLeft: ArrowLeft,
+  ArrowRight: ArrowRight,
   Close: X,
   Home: Home,
   Plus: Plus,
@@ -198,8 +203,7 @@ export const FrameworkIcons = {
 
   // Miscellaneous
   Orbit: Orbit,
-  Zap: ZapIcon,
-  ArrowRight: ArrowRight
+  Zap: ZapIcon
 };
 
 export type IconName = keyof typeof FrameworkIcons;

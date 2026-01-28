@@ -11,11 +11,13 @@ import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { useNotification } from '@/components/NotificationContext';
 import { ENDPOINTS } from '@/lib/constants';
+import { Loader } from '@/components/ui/Loader';
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
   const { addNotification } = useNotification();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [settings, setSettings] = useState<Record<string, any>>({
     platform_name: '',
     maintenance_mode: false,
@@ -43,10 +45,20 @@ export default function SettingsPage() {
         setSettings(newSettings);
       } catch (err) {
         console.error('Failed to fetch settings:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchSettings();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <Loader label="Synchronizing Environment..." />
+      </div>
+    );
+  }
 
   const updateSetting = async (key: string, value: any) => {
     // Update local state for immediate UI feedback
@@ -123,38 +135,47 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in duration-500">
-      {/* Header section with white high-contrast style */}
-      <div className={`p-8 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} bg-white dark:bg-transparent shadow-sm dark:shadow-none -mx-8 -mt-8 mb-8`}>
-        <div className="max-w-[1200px] mx-auto">
+    <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      {/* Premium Settings Header */}
+      <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
+        theme === 'dark' 
+          ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
+          : 'bg-white/80 border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_10px_40px_-10px_rgba(0,0,0,0.04)]'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-indigo-50'} text-indigo-500`}>
-                  <FrameworkIcons.Settings size={20} />
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 ${
+                  theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-600 text-white'
+                }`}>
+                  <FrameworkIcons.Settings size={20} strokeWidth={2.5} />
                 </div>
-                <h1 className="text-2xl font-black uppercase tracking-tight">System Settings</h1>
+                <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  System Settings
+                </h1>
               </div>
-              <p className="text-slate-500 font-medium text-sm">Global configuration and preferences for your platform ecosystem.</p>
+              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
+                Configure global platform behavior and identity protocols.
+              </p>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Button 
-                size="lg" 
-                className="px-8 transform hover:scale-[1.02] shadow-xl shadow-indigo-600/20" 
-                icon={<FrameworkIcons.Save size={18} />}
+                className="px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/10 font-bold uppercase tracking-widest text-[10px] active:scale-95 transition-all text-white" 
+                icon={<FrameworkIcons.Save size={16} strokeWidth={2.5} />}
                 onClick={handleSave}
                 isLoading={isSaving}
               >
-                Save Changes
+                Save
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 p-8">
-        <div className="max-w-[1200px] mx-auto space-y-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-12">
+        <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <Slot name="admin.settings.top" />
@@ -284,7 +305,11 @@ export default function SettingsPage() {
                     <span className={`text-xs font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Storage Used</span>
                     <span className="text-[11px] font-black text-slate-400">12.4 GB / 100 GB</span>
                   </div>
-                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800/50">
+                  <div className={`-mx-8 -mb-8 mt-8 p-8 border-t transition-colors ${
+                    theme === 'dark' 
+                      ? 'bg-slate-950/50 border-slate-800/50' 
+                      : 'bg-slate-50/50 border-slate-100'
+                  }`}>
                     <div className="flex items-center justify-between mb-3">
                       <span className={`text-xs font-black uppercase tracking-widest text-indigo-500`}>Maintenance Mode</span>
                       <Switch 
@@ -316,6 +341,42 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Premium Footer */}
+      <div className={`mt-auto border-t ${
+        theme === 'dark' ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  Administrative Instance // Secure Mode
+                </span>
+              </div>
+              <p className="text-[9px] font-bold text-slate-400 italic">Global configuration changes are logged and audited in real-time.</p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="secondary" 
+                className="rounded-xl px-5 py-2 text-[10px] font-black uppercase tracking-widest border-slate-200 dark:border-slate-800"
+                onClick={() => window.open('https://docs.fromcode.com', '_blank')}
+              >
+                Config Docs
+              </Button>
+              <Button 
+                className="rounded-xl px-6 py-2.5 shadow-lg shadow-indigo-600/10 text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all text-white"
+                onClick={handleSave}
+                isLoading={isSaving}
+              >
+                Save
+              </Button>
             </div>
           </div>
         </div>

@@ -42,13 +42,17 @@ export const Button = ({
     icon: 'p-2',
   };
 
+  const spinnerColor = variant === 'primary' || variant === 'danger' 
+    ? 'border-white/20 border-t-white' 
+    : theme === 'dark' ? 'border-indigo-400/20 border-t-indigo-400' : 'border-indigo-600/20 border-t-indigo-600';
+
   return (
     <Component
       className={`inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {isLoading ? (
-        <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <div className={`h-4 w-4 border-2 rounded-full animate-spin ${spinnerColor}`} />
       ) : (
         <>
           {icon && <span className="flex-shrink-0">{icon}</span>}

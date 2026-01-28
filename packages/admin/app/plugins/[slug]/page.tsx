@@ -10,10 +10,11 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useNotify } from '@/components/NotificationContext';
+import { Loader } from '@/components/ui/Loader';
 
 interface Plugin {
   slug: string;
@@ -42,6 +43,7 @@ interface Plugin {
 export default function PluginDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
+  const pathname = usePathname();
   const { notify } = useNotify();
   const { triggerRefresh, refreshVersion } = usePlugins();
   const searchParams = useSearchParams();
@@ -192,10 +194,17 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     }
   };
 
+  const handleTabChange = (tabId: 'overview' | 'settings' | 'permissions') => {
+    setActiveTab(tabId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tabId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   if (loading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <Loader label="Synchronizing Plugin Manifest..." />
       </div>
     );
   }
@@ -207,16 +216,16 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
       <div className="flex items-center gap-6">
         <Link 
           href="/plugins/installed"
-          className={`h-14 w-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg ${theme === 'dark' ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
+          className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg ${theme === 'dark' ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
         >
-          <FrameworkIcons.Left size={24} strokeWidth={2.5} />
+          <FrameworkIcons.Left size={20} strokeWidth={2.5} />
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3">
-             <h1 className={`text-4xl font-black tracking-tighter truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+             <h1 className={`text-3xl font-black tracking-tighter truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                {plugin.name}
              </h1>
-             <Badge variant={plugin.state === 'active' ? 'success' : 'gray'} className="text-[10px] px-3 py-1 font-black uppercase tracking-widest rounded-lg">
+             <Badge variant={plugin.state === 'active' ? 'success' : 'gray'}>
                 {plugin.state}
              </Badge>
           </div>
@@ -252,7 +261,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           ].map(tab => (
             <button 
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => handleTabChange(tab.id as any)}
               className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all rounded-xl ${activeTab === tab.id 
                 ? (theme === 'dark' 
                     ? 'bg-slate-800 text-indigo-400 shadow-xl shadow-indigo-500/10' 
@@ -302,7 +311,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                 </div>
               )}
 
-              <div className={`mt-10 pt-8 border-t-2 border-dashed ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} flex items-center justify-between`}>
+              <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} flex items-center justify-between`}>
                 <div className="space-y-1">
                   <div className={`text-[11px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Runtime Status</div>
                   <div className="flex items-center gap-3">
@@ -360,7 +369,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                                  value={configValues[setting.name] || ''}
                                  onChange={(e) => setConfigValues(v => ({ ...v, [setting.name]: e.target.value }))}
                                  placeholder={setting.description}
-                                 className={`w-full rounded-2xl py-4 px-6 outline-none border transition-all font-bold ${
+                                 className={`w-full rounded-xl py-3 px-6 outline-none border transition-all font-bold ${
                                    theme === 'dark' 
                                      ? 'bg-slate-950 border-slate-800 text-white focus:ring-2 ring-indigo-500/30' 
                                      : 'bg-slate-100/50 border-slate-200/60 text-slate-900 focus:bg-white focus:ring-4 ring-indigo-500/5 shadow-inner focus:shadow-indigo-500/5'
@@ -370,12 +379,14 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                          </div>
                        ))}
                     </div>
-                    <div className="flex justify-end pt-10 border-t border-slate-100 dark:border-slate-800">
+                    <div className={`-mx-8 -mb-8 mt-12 p-8 border-t flex justify-end transition-colors ${
+                      theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50/50 border-slate-100/60'
+                    }`}>
                       <button 
                         onClick={handleSaveConfig}
                         disabled={isSaving}
-                        className={`px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 disabled:opacity-50`}>
-                        {isSaving ? 'Processing...' : 'Save Configuration'}
+                        className={`px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 active:scale-95 disabled:opacity-50`}>
+                        {isSaving ? 'Processing...' : 'Save'}
                       </button>
                     </div>
                  </div>
@@ -405,21 +416,21 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                     plugin.capabilities.map(cap => {
                       const isUnapproved = !plugin.approvedCapabilities?.includes(cap);
                       return (
-                        <div key={cap} className={`flex items-center gap-6 p-6 rounded-3xl transition-all duration-300 ${
+                        <div key={cap} className={`flex items-center gap-6 p-6 rounded-[2rem] transition-all duration-300 border ${
                           isUnapproved 
-                            ? (theme === 'dark' ? 'bg-amber-500/5 ring-1 ring-amber-500/20' : 'bg-amber-50 ring-1 ring-amber-100')
-                            : (theme === 'dark' ? 'bg-slate-800/30' : 'bg-slate-50/50')
+                            ? (theme === 'dark' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200')
+                            : (theme === 'dark' ? 'bg-slate-800/30 border-white/5' : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-500/20')
                         }`}>
                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                             isUnapproved ? 'bg-amber-500 shadow-lg shadow-amber-500/20' : 'bg-indigo-600 shadow-lg shadow-indigo-500/20'
+                             isUnapproved ? 'bg-amber-500 shadow-xl shadow-amber-500/20' : 'bg-indigo-600 shadow-xl shadow-indigo-500/25'
                            } text-white`}>
                               {cap.includes('db') || cap.includes('database') ? <FrameworkIcons.Database size={20} /> : 
                                cap.includes('api') ? <FrameworkIcons.Globe size={20} /> : 
                                cap.includes('hook') ? <FrameworkIcons.Zap size={20} /> : <FrameworkIcons.Shield size={20} />}
                            </div>
                            <div className="flex-1">
-                              <div className={`text-md font-black tracking-tight ${
-                                isUnapproved ? 'text-amber-600 dark:text-amber-400' : 'text-slate-900 dark:text-white'
+                              <div className={`text-sm font-black tracking-tight ${
+                                isUnapproved ? 'text-amber-700 dark:text-amber-400' : 'text-slate-950 dark:text-white'
                               }`}>
                                  {cap.split(':').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                               </div>
@@ -429,7 +440,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                                    : `Granted access to the system ${cap.split(':')[0]} layer.`}
                               </p>
                            </div>
-                           <Badge variant={isUnapproved ? "warning" : "success"} className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${isUnapproved ? 'animate-pulse' : ''}`}>
+                           <Badge variant={isUnapproved ? "warning" : "success"} className={isUnapproved ? 'animate-pulse' : ''}>
                              {isUnapproved ? "UNAPPROVED" : "GRANTED"}
                            </Badge>
                         </div>
@@ -537,8 +548,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
               </div>
             </div>
             
-            <div className={`mt-10 pt-8 border-t-2 border-dashed ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} space-y-4`}>
-              <button className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border font-black uppercase tracking-widest text-[11px] transition-all ${
+            <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
+              <button className={`w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl border font-black uppercase tracking-widest text-[11px] transition-all ${
                 theme === 'dark' 
                   ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' 
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'
@@ -558,7 +569,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             </p>
             <button 
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-red-600/20 active:scale-95"
+              className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-red-600/20 active:scale-95"
             >
               Uninstall Plugin
             </button>

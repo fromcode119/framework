@@ -13,7 +13,7 @@ import { DatabaseManager, sql, eq, and, count, desc } from '@fromcode/database';
 import { loadMigrations } from '../database/migrations';
 import { PluginPermissionsService } from '../security/permissions';
 import { PluginSignatureService } from '../security/signature';
-import { PluginBackupService } from '../management/backup';
+import { BackupService } from '../management/backup';
 import { validatePluginManifest, RegistryPlugin } from '../management/manifest';
 import { MigrationCoordinator } from '../management/migration-coordinator';
 import path from 'path';
@@ -114,56 +114,62 @@ export class PluginManager implements PluginManagerInterface {
 
   async discoverPlugins() {
     this.logger.info(`Scanning for plugins in ${this.pluginsRoot}...`);
-    if (!fs.existsSync(this.pluginsRoot)) {
-        this.logger.warn(`Plugins directory ${this.pluginsRoot} does not exist.`);
-        return [];
+    const roots = [this.pluginsRoot];
+    
+    // Also scan for plugins inside themes
+    const themesDir = process.env.THEMES_DIR 
+      ? path.resolve(process.env.THEMES_DIR)
+      : path.resolve(process.cwd(), '../../themes');
+
+    if (fs.existsSync(themesDir)) {
+      const themes = fs.readdirSync(themesDir);
+      for (const themeSlug of themes) {
+        const themePluginsPath = path.join(themesDir, themeSlug, 'plugins');
+        if (fs.existsSync(themePluginsPath) && fs.statSync(themePluginsPath).isDirectory()) {
+          this.logger.info(`Adding theme-hosted plugin root: ${themePluginsPath}`);
+          roots.push(themePluginsPath);
+        }
+      }
     }
 
-    const pluginDirs = fs.readdirSync(this.pluginsRoot);
-    this.logger.info(`Found ${pluginDirs.length} entries in plugins directory.`);
     const discovered: any[] = [];
 
-    for (const dir of pluginDirs) {
-      if (dir.startsWith('.')) continue; // Skip .DS_Store etc
+    for (const root of roots) {
+      if (!fs.existsSync(root)) continue;
+      const pluginDirs = fs.readdirSync(root);
+      
+      for (const dir of pluginDirs) {
+        if (dir.startsWith('.')) continue;
 
-      const pluginPath = path.join(this.pluginsRoot, dir);
-      if (!fs.statSync(pluginPath).isDirectory()) continue;
+        const pluginPath = path.join(root, dir);
+        if (!fs.statSync(pluginPath).isDirectory()) continue;
 
-      const manifestPath = path.join(pluginPath, 'manifest.json');
-      if (fs.existsSync(manifestPath)) {
-        try {
-          const manifestContent = fs.readFileSync(manifestPath, 'utf8');
-          const manifest = JSON.parse(manifestContent);
-          this.logger.info(`Found manifest for "${manifest.slug}" v${manifest.version}`);
+        const manifestPath = path.join(pluginPath, 'manifest.json');
+        if (fs.existsSync(manifestPath)) {
+          try {
+            const manifestContent = fs.readFileSync(manifestPath, 'utf8');
+            const manifest = JSON.parse(manifestContent);
+            this.logger.info(`Found manifest for "${manifest.slug}" v${manifest.version}`);
 
-          const indexPath = path.join(pluginPath, manifest.main || 'index.js');
-          
-          if (fs.existsSync(indexPath)) {
-            // Delete from require cache to allow reloading
-            try {
-                const resolved = require.resolve(indexPath);
-                if (require.cache[resolved]) {
-                    this.logger.debug(`Clearing require cache for ${manifest.slug}`);
-                    delete require.cache[resolved];
-                }
-            } catch (e) {}
+            const indexPath = path.join(pluginPath, manifest.main || 'index.js');
+            
+            if (fs.existsSync(indexPath)) {
+              // Clear require cache
+              try {
+                  const resolved = require.resolve(indexPath);
+                  if (require.cache[resolved]) delete require.cache[resolved];
+              } catch (e) {}
 
-            const pluginModule = require(indexPath);
-            discovered.push({
-              plugin: {
-                manifest,
-                ...pluginModule
-              },
-              path: pluginPath
-            });
-          } else {
-              this.logger.warn(`Missing entry point for "${manifest.slug}" at ${indexPath}`);
+              const pluginModule = require(indexPath);
+              discovered.push({
+                plugin: { manifest, ...pluginModule },
+                path: pluginPath
+              });
+            }
+          } catch (err: any) {
+            this.logger.warn(`Failed to stage plugin from ${dir}: ${err.message}`);
           }
-        } catch (err: any) {
-          this.logger.warn(`Failed to stage plugin from ${dir}: ${err.message}`);
         }
-      } else {
-          this.logger.debug(`No manifest.json found in ${pluginPath}`);
       }
     }
 
@@ -576,7 +582,7 @@ export class PluginManager implements PluginManagerInterface {
     let backupPath = '';
     if (existing && existing.path) {
       try {
-        backupPath = await PluginBackupService.createBackup(slug, existing.path);
+        backupPath = await BackupService.create(slug, existing.path, 'plugins');
         this.logger.info(`Created backup at ${backupPath}`);
         
         // Update registry with backup path
@@ -606,7 +612,7 @@ export class PluginManager implements PluginManagerInterface {
         : path.join(this.pluginsRoot, slug);
       
       this.logger.info(`Downloading "${slug}" from ${pkg.downloadUrl}...`);
-      await PluginBackupService.downloadAndExtractPlugin(pkg.downloadUrl, tempDir);
+      await BackupService.downloadAndExtract(pkg.downloadUrl, tempDir);
       
       // 5. Flatten structure: find where manifest.json actually is
       const contentDir = this.findManifestDir(tempDir);
@@ -857,7 +863,7 @@ export class PluginManager implements PluginManagerInterface {
         zip.extractAllTo(tempDir, true);
       } else {
         // Extract the plugin (using our backup service restore logic which handles tar.gz)
-        await PluginBackupService.restoreBackup(filePath, tempDir);
+        await BackupService.restore(filePath, tempDir);
       }
 
       // Look for manifest.json in the extracted folder
@@ -888,7 +894,7 @@ export class PluginManager implements PluginManagerInterface {
       if (fs.existsSync(targetDir)) {
           // If the target is just a folder containing the REAL content (wrapped),
           // or if it's the wrong structure, back it up and clear it.
-          await PluginBackupService.createBackup(manifest.slug, targetDir);
+          await BackupService.create(manifest.slug, targetDir, 'plugins');
           fs.rmSync(targetDir, { recursive: true, force: true });
       }
       fs.mkdirSync(targetDir, { recursive: true });
@@ -977,31 +983,46 @@ export class PluginManager implements PluginManagerInterface {
           },
           ui: {
             ...(p.manifest.ui || {}),
-            // We explicitly do not include general headInjections in admin metadata
-            // to prevent plugins from poisoning the admin panel HTML (Security).
-            // Main UI components are loaded via ui.entry and ui.css.
             headInjections: []
           }
         };
       });
 
-    if (systemCollections.length > 0) {
-      pluginMetadata.unshift({
-        slug: 'system',
-        name: 'Platform',
-        admin: {
-          group: 'Platform',
-          icon: 'Shield',
-          collections: systemCollections
-        } as any,
-        ui: {
-          headInjections: []
-        }
-      });
-    }
-
     // Generate Unified Menu
     const menuItems: any[] = [];
+
+    // Add Themes menu item
+    menuItems.push({
+      label: 'Themes',
+      path: '/themes',
+      icon: 'Palette',
+      group: 'Platform',
+      pluginSlug: 'system',
+      priority: 90
+    });
+
+    // Add Users menu item explicitly if not present to ensure Roles/Permissions are visible
+    menuItems.push({
+      label: 'Users',
+      path: '/users',
+      icon: 'Users',
+      group: 'Platform',
+      pluginSlug: 'system',
+      priority: 80,
+      children: [
+        { label: 'Roles', path: '/users/roles', icon: 'Shield' },
+        { label: 'Permissions', path: '/users/permissions', icon: 'Lock' }
+      ]
+    });
+
+    menuItems.push({
+      label: 'Activity',
+      path: '/activity',
+      icon: 'Activity',
+      group: 'Platform',
+      pluginSlug: 'system',
+      priority: 85
+    });
 
     // 1. Process explicit menu items from manifests
     pluginMetadata.forEach(p => {
@@ -1033,8 +1054,8 @@ export class PluginManager implements PluginManagerInterface {
               pluginSlug: p.slug,
               // Special case for users to add children placeholders if requested
               children: col.slug === 'users' ? [
-                { label: 'Roles', path: '/users/roles' },
-                { label: 'Permissions', path: '/users/permissions' }
+                { label: 'Roles', path: '/users/roles', icon: 'Shield' },
+                { label: 'Permissions', path: '/users/permissions', icon: 'Lock' }
               ] : undefined
             });
           }

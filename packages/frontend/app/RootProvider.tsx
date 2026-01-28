@@ -1,9 +1,10 @@
 "use client";
 
 import React, { ReactNode } from 'react';
-import { PluginsProvider } from '@fromcode/react';
+import { PluginsProvider, Override } from '@fromcode/react';
 import { useSystemStatus } from '../lib/useSystemStatus';
 import MaintenanceScreen from '../components/MaintenanceScreen';
+import ThemeInitializer from '../components/ThemeInitializer';
 
 function SystemGate({ children }: { children: ReactNode }) {
   const status = useSystemStatus();
@@ -16,7 +17,11 @@ function SystemGate({ children }: { children: ReactNode }) {
     return <MaintenanceScreen />;
   }
 
-  return <>{children}</>;
+  return (
+    <Override name="frontend.layout.main" fallback={<>{children}</>}>
+      {children}
+    </Override>
+  );
 }
 
 export default function RootProvider({ children }: { children: ReactNode }) {
@@ -24,6 +29,7 @@ export default function RootProvider({ children }: { children: ReactNode }) {
 
   return (
     <PluginsProvider apiUrl={apiUrl}>
+      <ThemeInitializer />
       <SystemGate>
         {children}
       </SystemGate>

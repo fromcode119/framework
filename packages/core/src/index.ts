@@ -1,5 +1,6 @@
 export * from './types';
 export { PluginManager } from './plugin/manager';
+export { ThemeManager } from './theme/manager';
 export { SchemaManager } from './database/schema-manager';
 export { HookManager } from './hooks/manager';
 export { QueueManager } from './queue/manager';
