@@ -7,13 +7,13 @@ export default function PluginLoader() {
   const { refreshVersion } = usePlugins();
   const [plugins, setPlugins] = useState<any[]>([]);
   const [theme, setTheme] = useState<any>(null);
-  const [apiUrl, setApiUrl] = useState<string>('http://api.framework.local');
+  const [apiUrl, setApiUrl] = useState<string>('http://api.fromcode.local');
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const bridgeUrl = (window as any).FROMCODE_API_URL;
-        const currentApiUrl = bridgeUrl || 'http://api.framework.local';
+        const currentApiUrl = bridgeUrl || 'http://api.fromcode.local';
         setApiUrl(currentApiUrl);
 
         const apiVersion = 'v1';

@@ -68,7 +68,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   const loadFrontendConfig = useCallback(async () => {
     try {
       const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-      let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.framework.local';
+      let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.fromcode.local';
       
       if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
         effectiveApiUrl = `http://${effectiveApiUrl}`;
@@ -130,7 +130,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   const loadTranslations = useCallback(async (newLocale: string) => {
     try {
       const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-      let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.framework.local';
+      let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.fromcode.local';
       
       // Ensure effectiveApiUrl is absolute or properly handled
       if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {

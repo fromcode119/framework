@@ -47,6 +47,119 @@ program
   .description('Fromcode Framework CLI')
   .version('0.1.0');
 
+const core = program.command('core').description('Manage framework core');
+
+core
+  .command('status')
+  .description('Check framework core status and updates')
+  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json')
+  .action(async (options) => {
+    try {
+      const pkgPath = path.resolve(process.cwd(), 'package.json');
+      if (!fs.existsSync(pkgPath)) {
+        console.error(chalk.red('package.json not found in current directory. Are you in the project root?'));
+        return;
+      }
+
+      const pkg = await fs.readJson(pkgPath);
+      const currentVersion = pkg.version || 'unknown';
+      console.log(`${chalk.blue('Fromcode Core Version:')} ${chalk.bold(currentVersion)}`);
+
+      console.log(chalk.gray(`\nChecking registry at ${options.registry}...`));
+      const response = await fetch(options.registry);
+      if (!response.ok) throw new Error(`Registry unavailable: ${response.statusText}`);
+      
+      const registry = await response.json();
+      if (!registry.core) {
+        console.log(chalk.yellow('Registry does not provide core version information yet.'));
+        return;
+      }
+
+      const latestVersion = registry.core.version;
+      if (latestVersion !== currentVersion) {
+        console.log(chalk.green(`\nA newer version of Fromcode Core is available: ${chalk.bold(latestVersion)}`));
+        console.log(chalk.gray(`Use 'fromcode core update' to apply the update.`));
+      } else {
+        console.log(chalk.green('\nYou are running the latest version of Fromcode Core.'));
+      }
+    } catch (error) {
+      console.error(chalk.red('Error checking core status:'), error);
+    }
+  });
+
+core
+  .command('update')
+  .description('Update framework core to the latest version')
+  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json')
+  .action(async (options) => {
+    try {
+      const pkgPath = path.resolve(process.cwd(), 'package.json');
+      if (!fs.existsSync(pkgPath)) {
+        console.error(chalk.red('package.json not found. Core update must be run from project root.'));
+        return;
+      }
+
+      const pkg = await fs.readJson(pkgPath);
+      const currentVersion = pkg.version || '0.0.0';
+
+      console.log(chalk.blue(`\nFetching latest core info from ${options.registry}...`));
+      const response = await fetch(options.registry);
+      const registry = await response.json();
+
+      if (!registry.core) {
+        console.error(chalk.red('No core update information found in registry.'));
+        return;
+      }
+
+      const latestVersion = registry.core.version;
+      if (latestVersion === currentVersion) {
+        console.log(chalk.green('You are already on the latest version.'));
+        return;
+      }
+
+      const confirm = await ask(chalk.yellow(`Update core from ${currentVersion} to ${latestVersion}? This will overwrite core files. (y/N): `));
+      if (confirm.toLowerCase() !== 'y') {
+        console.log('Update cancelled.');
+        return;
+      }
+
+      const downloadUrl = new URL(registry.core.downloadUrl, options.registry).toString();
+      console.log(chalk.cyan(`Downloading Core v${latestVersion} from ${downloadUrl}...`));
+
+      const zipResponse = await fetch(downloadUrl);
+      if (!zipResponse.ok) throw new Error(`Download failed: ${zipResponse.statusText}`);
+      if (!zipResponse.body) throw new Error('Empty response body');
+
+      const tmpZip = path.resolve(process.cwd(), `core-update-${latestVersion}.zip`);
+      const fileStream = fs.createWriteStream(tmpZip);
+      await pipeline(zipResponse.body as any, fileStream);
+
+      console.log(chalk.cyan('Creating backup of current core...'));
+      const backupDir = path.resolve(process.cwd(), '.backups', `core-${currentVersion}-${Date.now()}`);
+      await fs.ensureDir(backupDir);
+      
+      // Define core folders to backup (example)
+      const coreFolders = ['packages', 'package.json', 'tsconfig.json'];
+      for (const folder of coreFolders) {
+        if (fs.existsSync(path.resolve(process.cwd(), folder))) {
+          await fs.copy(path.resolve(process.cwd(), folder), path.join(backupDir, folder));
+        }
+      }
+
+      console.log(chalk.cyan('Applying update...'));
+      await extract(tmpZip, { dir: process.cwd() });
+      
+      // Cleanup
+      await fs.remove(tmpZip);
+      
+      console.log(chalk.green(`\nFromcode Core updated successfully to v${latestVersion}!`));
+      console.log(chalk.yellow('Please run "npm install" to ensure all dependencies are updated.'));
+
+    } catch (error) {
+      console.error(chalk.red('Error updating core:'), error);
+    }
+  });
+
 const plugin = program.command('plugin').description('Manage plugins');
 
 plugin
@@ -363,7 +476,7 @@ plugin
 plugin
   .command('search [query]')
   .description('Search for plugins in the registry')
-  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://localhost:8080/registry.json')
+  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json')
   .action(async (query, options) => {
     try {
       console.log(chalk.blue(`\nSearching registry: ${options.registry}...`));
@@ -394,7 +507,7 @@ plugin
 plugin
   .command('install <slug>')
   .description('Install a plugin from the registry')
-  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://localhost:8080/registry.json')
+  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json')
   .action(async (slug, options) => {
     try {
       console.log(chalk.blue(`\nFetching plugin info for ${chalk.bold(slug)}...`));

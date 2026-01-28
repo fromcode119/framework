@@ -6,7 +6,7 @@ export interface MarketplacePlugin {
 }
 
 export class MarketplaceClient {
-  constructor(private baseUrl: string = 'https://marketplace.fromcode.com') {}
+  constructor(private baseUrl: string = 'http://registry.fromcode.com') {}
 
   async search(query: string): Promise<MarketplacePlugin[]> {
     const url = new URL(`${this.baseUrl}/api/plugins/search`);

@@ -1,6 +1,6 @@
 
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.framework.local';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.fromcode.local';
 
 // Helper to construct versioned URLs
 const v = (path: string) => `/api/${API_VERSION}${path}`;
@@ -46,6 +46,8 @@ export const ENDPOINTS = {
     USERS: v('/system/admin/users'),
     USER: (id: string | number) => v(`/system/admin/users/${id}`),
     USER_ROLES: v('/system/admin/users/roles'),
+    UPDATE_CHECK: v('/system/update/check'),
+    UPDATE_APPLY: v('/system/update/apply'),
     OPENAPI: '/api/openapi.json',
     I18N: v('/system/i18n'),
   },

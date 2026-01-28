@@ -243,7 +243,7 @@ export class APIServer {
             ? process.env.CORS_ALLOWED_DOMAINS.split(',').map(d => d.trim().toLowerCase())
             : [];
           
-          const allowedDomains = ['localhost', '127.0.0.1', 'framework.local', ...envAllowed];
+          const allowedDomains = ['localhost', '127.0.0.1', 'fromcode.local', ...envAllowed];
           
           const isAllowed = allowedDomains.some(domain => {
             const lowHost = hostname.toLowerCase();
@@ -424,9 +424,19 @@ export class APIServer {
   }
 
   private setupRoutes() {
+    // Dynamically load version from package.json if available
+    let coreVersion = '0.1.0';
+    try {
+      const pkgPath = path.resolve(process.cwd(), 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        coreVersion = pkg.version || coreVersion;
+      }
+    } catch (e) {}
+
     this.app.get('/api/health', async (req: any, res) => res.json({ 
       status: 'ok', 
-      version: '1.0.0',
+      version: coreVersion,
       maintenance: await this.getMaintenanceStatus(),
       bypass: !!(req.user && req.user.roles && req.user.roles.includes('admin'))
     }));
