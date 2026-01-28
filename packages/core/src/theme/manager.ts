@@ -12,10 +12,26 @@ export class ThemeManager {
   private registryUrl: string;
 
   constructor(private db: any) {
+    const rootDir = this.getProjectRoot();
     this.themesRoot = process.env.THEMES_DIR 
       ? path.resolve(process.env.THEMES_DIR)
-      : path.resolve(process.cwd(), '../../themes');
+      : path.resolve(rootDir, 'themes');
     this.registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
+  }
+
+  private getProjectRoot(): string {
+    let current = process.cwd();
+    while (current !== path.parse(current).root) {
+      const pkgPath = path.join(current, 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          if (pkg.name === '@fromcode/framework') return current;
+        } catch {}
+      }
+      current = path.dirname(current);
+    }
+    return process.cwd();
   }
 
   async init() {

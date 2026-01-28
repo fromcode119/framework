@@ -105,6 +105,13 @@ export const systemLogs = pgTable('_system_logs', {
   timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow(),
 });
 
+export const systemThemes = pgTable('_system_themes', {
+  slug: text('slug').primaryKey(),
+  state: text('state').notNull().default('inactive'),
+  config: jsonb('config'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
 export const mediaFolders = pgTable('media_folders', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
