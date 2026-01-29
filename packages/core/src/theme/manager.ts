@@ -137,6 +137,7 @@ export class ThemeManager {
   }
 
   async activateTheme(slug: string) {
+    await this.discoverThemes(); // Ensure we have latest themes from disk
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
     
     // Deactivate previous
@@ -170,7 +171,7 @@ export class ThemeManager {
     // Also cleanup DB if entry exists
     try {
       await this.db.delete('_system_themes', { slug });
-    } catch (e) {
+    } catch (e: any) {
       this.logger.warn(`Failed to cleanup DB entries for deleted theme ${slug}: ${e.message}`);
     }
 

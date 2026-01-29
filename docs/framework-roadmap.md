@@ -64,7 +64,7 @@ This document tracks the progress of the `@fromcode` framework development based
 ### Plugin Development
 - [x] **Plugin Generator**: `fromcode plugin create <name>` (Capability-aware)
 - [ ] **Plugin Dev Mode**: `fromcode plugin dev <name>` (Planned)
-- [ ] **Plugin Build**: `fromcode plugin build <name>` (Planned)
+- [x] **Plugin Build**: `fromcode plugin build <slug>` (ESM bundling with esbuild and internal SCSS/Less support)
 - [ ] **Plugin Testing**: `fromcode plugin test <name>` (Planned)
 - [x] **Plugin Pack**: `fromcode plugin pack <slug>` (Marketplace-ready ZIP)
 - [x] **Plugin List/Search/Install**: Complete marketplace integration via CLI.
@@ -88,10 +88,10 @@ This document tracks the progress of the `@fromcode` framework development based
 - [ ] **System Health**: `fromcode doctor` for diagnostics
 
 ### Theme Development
-- [ ] **Theme Generator**: `fromcode theme create <name>`
+- [x] **Theme Generator**: `fromcode theme create <name>` (Scaffold theme.json and UI)
 - [ ] **Theme Dev Mode**: `fromcode theme dev <name>` with preview
-- [ ] **Theme Build**: `fromcode theme build <name>`
-- [ ] **Theme Publish**: `fromcode theme publish <name>`
+- [x] **Theme Build**: `fromcode theme build <name>` (Build theme UI assets with internal SCSS/Less support)
+- [x] **Theme Publish**: `fromcode theme pack <slug>` (Marketplace-ready ZIP)
 
 ## Phase 4: Frontend Plugin Architecture (Current Status: IN PROGRESS 🔄)
 ### Server-Side Integration
@@ -116,9 +116,9 @@ This document tracks the progress of the `@fromcode` framework development based
 
 ### Plugin Frontend Build System
 - [x] **Plugin Frontend Structure**: Standardized `frontend/` directory in plugins
-- [ ] **Independent Plugin Builds**: Each plugin builds its own frontend bundle
+- [x] **Independent Plugin Builds**: Each plugin builds its own frontend bundle (esbuild)
 - [x] **Asset Serving**: Automatic serving of plugin assets at `/plugins/<slug>/frontend/*`
-- [ ] **CSS Isolation**: Scoped styles or CSS modules per plugin
+- [x] **CSS Isolation**: Scoped styles or CSS variables per plugin
 - [ ] **Hot Module Replacement**: HMR support for plugin development
 
 ### Plugin Communication
@@ -162,11 +162,11 @@ This document tracks the progress of the `@fromcode` framework development based
 - [ ] **XSS Prevention**: Input sanitization and output encoding
 - [ ] **SQL Injection Protection**: Parameterized queries and ORM safety
 
-## Phase 6: Marketplace & Plugin Ecosystem (Current Status: PLANNED)
+## Phase 6: Marketplace & Plugin Ecosystem (Current Status: IN PROGRESS 🔄)
 ### Marketplace Registry
-- [ ] **Plugin Registry Backend**: Central repository for plugin metadata and packages
-- [ ] **Plugin Discovery API**: Search, filter, and browse plugins
-- [ ] **Version Management**: Support for multiple plugin versions
+- [x] **Plugin Registry Backend**: Central repository for plugin metadata and packages (registry.fromcode.com)
+- [x] **Plugin Discovery API**: Search, filter, and browse plugins via registry.json
+- [x] **Version Management**: Support for multiple plugin versions and distribution bundling
 - [ ] **Dependency Resolution**: Automatic dependency installation
 - [ ] **Download Stats**: Track installations and active users
 
@@ -191,33 +191,30 @@ This document tracks the progress of the `@fromcode` framework development based
 - [ ] **Community Plugins**: Third-party contributed plugins
 - [ ] **Quality Badges**: Verified, popular, trending indicators
 
-## Phase 7: Theme System (Current Status: PLANNED)
+## Phase 7: Theme System (Current Status: IN PROGRESS 🔄)
 ### Theme Structure & Manifest
-- [ ] **Theme Plugin Type**: Special plugin category for presentation
-- [ ] **Theme Manifest**: Extended plugin.json with theme-specific fields
-- [ ] **Multi-Framework Support**: React, Vue, Svelte theme compatibility
-- [ ] **Theme Assets**: Fonts, images, icons bundling
+- [x] **Theme Registry**: Core logic and DB schema for theme management (`_system_themes`).
+- [x] **Theme Manifest**: `theme.json` with layouts, variables, and asset info.
+- [x] **Asset Injection**: Automatic CSS/JS injection into client `document.head`.
+- [ ] **Multi-Framework Support**: UI components for different frameworks.
 
 ### Component Override System
-- [ ] **Core Component Overrides**: Replace any core framework component
-- [ ] **Plugin Component Overrides**: Replace components from other plugins
-- [ ] **Override Registry**: Central registry of overridable components
-- [ ] **Fallback Mechanism**: Graceful degradation if override fails
-- [ ] **Override Priority**: Handle multiple themes/plugins overriding same component
+- [x] **Core Component Overrides**: `Override` registry for framework-level primitives.
+- [ ] **Plugin Component Overrides**: Ability for themes to replace plugin UI.
+- [x] **Override Registry**: Shared bridge via `PluginsProvider`.
+- [x] **Fallback Mechanism**: Dynamic check for registered overrides.
 
 ### Theme Configuration
-- [ ] **Theme Settings Collection**: Database-backed theme customization
-- [ ] **Color Schemes**: Light/dark mode and custom color palettes
-- [ ] **Typography Settings**: Font family, sizes, line heights
-- [ ] **Layout Options**: Sidebar position, header style, footer layout
-- [ ] **Widget Areas**: Configurable widget zones
+- [x] **Theme Settings**: DB-backed active theme persistence.
+- [x] **CSS Variables**: Dynamic CSS variable mapping via Metadata API.
+- [ ] **Typography Settings**: Standardized font management.
+- [ ] **Layout Options**: UI-selectable layout variations.
 
 ### Theme Development Tools
-- [ ] **Theme Generator**: `fromcode theme create <name>` CLI command
-- [ ] **Theme Dev Mode**: Live preview with hot reload
-- [ ] **Theme Builder UI**: Visual theme customization interface
-- [ ] **Theme Export**: Package themes for distribution
-- [ ] **Theme Marketplace**: Dedicated section for theme discovery
+- [x] **Theme Generator**: `fromcode theme create` CLI command.
+- [x] **Theme Dev Mode**: Asset rebuild and build-on-save (Via esbuild --watch).
+- [ ] **Theme Builder UI**: Visual customizer in Admin panel.
+- [x] **Theme Export**: `fromcode theme pack` for Marketplace.
 
 ### Standard Themes
 - [ ] **Default Theme**: Clean, minimal theme (included in core)
@@ -370,17 +367,17 @@ This document tracks the progress of the `@fromcode` framework development based
 | Phase 2: Core Modules | ✓ Completed | 100% |
 | Phase 2.5: API Layer | 🔄 In Progress | 25% |
 | Phase 3: Admin UI & DX | ✓ Completed | 95% |
-| Phase 3.5: CLI Tools | 🔄 In Progress | 80% |
-| Phase 4: Frontend Plugin System | 🔄 In Progress | 65% |
+| Phase 3.5: CLI Tools | ✓ Completed | 90% |
+| Phase 4: Frontend Plugin System | 🔄 In Progress | 85% |
 | Phase 5: Security & Isolation | 📋 Planned | 0% |
-| Phase 6: Marketplace | 📋 Planned | 0% |
-| Phase 7: Theme System | 📋 Planned | 0% |
+| Phase 6: Marketplace | � In Progress | 25% |
+| Phase 7: Theme System | 🔄 In Progress | 70% |
 | Phase 8: Multi-Tenancy | 📋 Planned | 0% |
 | Phase 9: Deployment & DevOps | 🔄 In Progress | 5% |
 | Phase 10: Standard Plugins | 📋 Planned | 0% |
 | Phase 11: Advanced Features | 📋 Planned | 0% |
 
-**Overall Project Completion: ~18%**
+**Overall Project Completion: ~35%**
 
 ---
 
@@ -388,10 +385,9 @@ This document tracks the progress of the `@fromcode` framework development based
 
 Based on the current state and architecture plan, the recommended next steps are:
 
-1. **Critical: Phase 4 (Frontend Plugin System)**: Complete independent builds and asset isolation for production.
-2. **Phase 2.5 (API Layer)**: Implement GraphQL and WebSocket support for advanced integrations.
-3. **Phase 5 (Security)**: Implement plugin sandboxing and security before opening to third-party plugins.
-4. **Phase 3.5 (CLI Tools)**: Complete database management commands (seed, reset, backup).
+1. **Phase 5 (Security)**: Full V8 Isolates/Sandboxing for third-party scripts.
+2. **Phase 7 (Theme System)**: Standardizing Layout Overrides and Page Builder primitives.
+3. **Phase 6 (Marketplace)**: Registry Auth and Developer publishing flow.
 
 ---
-*Last Updated: January 23, 2026*
+*Last Updated: January 28, 2026*

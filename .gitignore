@@ -12,6 +12,11 @@ out/
 dist/
 build/
 *.tsbuildinfo
+**/bundle.js
+**/bundle.js.map
+**/ui/*.css
+!**/ui/theme.css
+!**/ui/index.css
 
 # IDEs
 .vscode/

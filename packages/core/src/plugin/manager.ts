@@ -691,6 +691,7 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   async enable(slug: string): Promise<void> {
+    if (!this.plugins.has(slug)) await this.discoverPlugins();
     const plugin = this.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
     if (plugin.state === 'active') return;

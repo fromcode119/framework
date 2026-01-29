@@ -18,11 +18,15 @@
     "esbuild": "^0.27.2",
     "extract-zip": "^2.0.1",
     "fs-extra": "^11.2.0",
-    "node-fetch": "^3.3.2"
+    "less": "^4.5.1",
+    "node-fetch": "^3.3.2",
+    "sass": "^1.97.3"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
+    "@types/less": "^3.0.8",
     "@types/node": "^20.10.1",
+    "@types/sass": "^1.43.1",
     "typescript": "^5.3.3"
   }
 }

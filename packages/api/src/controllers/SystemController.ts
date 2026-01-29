@@ -102,7 +102,7 @@ export class SystemController {
       const search = (req.query.search as string || '');
       const offset = (page - 1) * limit;
 
-      let whereClause = undefined;
+      let whereClause: any = undefined;
       if (search) {
         whereClause = or(
           ilike(systemLogs.message, `%${search}%`),
@@ -463,7 +463,7 @@ export class SystemController {
 
       // Sync Roles
       if (Array.isArray(roles)) {
-        await this.db.delete(systemUsersToRoles).where(eq(systemUsersToRoles.userId, userId));
+        await this.db.delete(systemUsersToRoles).where(eq(systemUsersToRoles.userId, userId as any));
         if (roles.length > 0) {
           await this.db.insert(systemUsersToRoles).values(
             roles.map(r => ({ userId, roleSlug: r }))

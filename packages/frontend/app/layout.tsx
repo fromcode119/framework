@@ -18,9 +18,10 @@ export default function RootLayout({
 
   const importMap = {
     imports: {
-      "react": "data:text/javascript,export default window.React; export const { useState, useEffect, useContext, useReducer, useCallback, useMemo, useRef, useImperativeHandle, useLayoutEffect, useInsertionEffect, useDebugValue, useDeferredValue, useTransition, useId, useSyncExternalStore, createElement, Fragment, createContext } = window.React;",
+      "react": "data:text/javascript,export default window.React; export const { useState, useEffect, useContext, useReducer, useCallback, useMemo, useRef, useImperativeHandle, useLayoutEffect, useInsertionEffect, useDebugValue, useDeferredValue, useTransition, useId, useSyncExternalStore, createElement, Fragment, createContext, forwardRef } = window.React;",
       "react/jsx-runtime": "data:text/javascript,export const Fragment = window.React.Fragment; export const jsx = (type, props, key) => window.React.createElement(type, { ...props, key }); export const jsxs = (type, { children, ...props }, key) => window.React.createElement(type, { ...props, key }, ...(Array.isArray(children) ? children : [children]));",
       "react-dom": "data:text/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal } = window.ReactDOM;",
+      "@fromcode/react": "data:text/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider } = window.Fromcode;",
       "lucide-react": "/icons-registry?v=" + version
     }
   };
