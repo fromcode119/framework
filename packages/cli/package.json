@@ -9,9 +9,6 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@types/archiver": "^7.0.0",
-    "@types/extract-zip": "^2.0.0",
-    "@types/node-fetch": "^2.6.13",
     "archiver": "^7.0.1",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
@@ -23,10 +20,13 @@
     "sass": "^1.97.3"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
+    "@types/extract-zip": "^2.0.0",
     "@types/fs-extra": "^11.0.4",
     "@types/less": "^3.0.8",
     "@types/node": "^20.10.1",
     "@types/sass": "^1.43.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.3"
   }
 }

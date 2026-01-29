@@ -5,15 +5,46 @@ import fs from 'fs-extra';
 import path from 'path';
 import archiver from 'archiver';
 import * as readline from 'readline';
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 import extract from 'extract-zip';
 import { pipeline } from 'stream/promises';
 import { spawn } from 'child_process';
+import { Readable } from 'stream';
 import * as esbuild from 'esbuild';
 import * as sass from 'sass';
 import * as less from 'less';
 
 const program = new Command();
+
+interface PluginManifest {
+  slug: string;
+  name: string;
+  version: string;
+  category?: string;
+  capabilities?: string[];
+  description?: string;
+  author?: string;
+  downloadUrl?: string;
+}
+
+interface ThemeManifest {
+  slug: string;
+  name: string;
+  version: string;
+  author?: string;
+  downloadUrl?: string;
+}
+
+interface RegistryCore {
+  version: string;
+  downloadUrl: string;
+}
+
+interface Registry {
+  core?: RegistryCore;
+  plugins?: PluginManifest[];
+  themes?: ThemeManifest[];
+}
 
 function getProjectRoot(): string {
   let current = process.cwd();
@@ -93,17 +124,6 @@ async function compileStyles(uiDir: string): Promise<void> {
       await fs.writeFile(path.join(uiDir, entry.out), result.css);
     }
   }
-}
-
-interface RegistryCore {
-  version: string;
-  downloadUrl: string;
-}
-
-interface Registry {
-  core?: RegistryCore;
-  plugins?: any[];
-  themes?: any[];
 }
 
 program
@@ -196,7 +216,7 @@ core
 
       const tmpZip = path.resolve(process.cwd(), `core-update-${latestVersion}.zip`);
       const fileStream = fs.createWriteStream(tmpZip);
-      await pipeline(zipResponse.body as any, fileStream);
+      await pipeline(zipResponse.body as unknown as Readable, fileStream);
 
       console.log(chalk.cyan('Creating backup of current core...'));
       const backupDir = path.resolve(process.cwd(), '.backups', `core-${currentVersion}-${Date.now()}`);
@@ -403,10 +423,10 @@ plugin
           path.join(pluginsDir, dir, 'plugin.json') // Support older format
         ];
         
-        let manifest: any = null;
+        let manifest: PluginManifest | null = null;
         for (const p of manifestPaths) {
           if (await fs.pathExists(p)) {
-            manifest = await fs.readJson(p);
+            manifest = await fs.readJson(p) as PluginManifest;
             break;
           }
         }
@@ -559,11 +579,11 @@ plugin
       const response = await fetch(options.registry);
       if (!response.ok) throw new Error(`Failed to fetch registry: ${response.statusText}`);
       
-      const registry = (await response.json()) as any;
+      const registry = (await response.json()) as Registry;
       const plugins = registry.plugins || [];
       
       const filtered = query 
-        ? plugins.filter((p: any) => p.name.toLowerCase().includes(query.toLowerCase()) || p.slug.toLowerCase().includes(query.toLowerCase()))
+        ? plugins.filter((p: PluginManifest) => (p.name?.toLowerCase().includes(query.toLowerCase()) || p.slug.toLowerCase().includes(query.toLowerCase())))
         : plugins;
 
       console.log(chalk.white(`Found ${filtered.length} plugins:`));
@@ -590,8 +610,8 @@ plugin
       const response = await fetch(options.registry);
       if (!response.ok) throw new Error(`Failed to fetch registry: ${response.statusText}`);
       
-      const registry = (await response.json()) as any;
-      const pluginInfo = registry.plugins?.find((p: any) => p.slug === slug);
+      const registry = (await response.json()) as Registry;
+      const pluginInfo = registry.plugins?.find((p: PluginManifest) => p.slug === slug);
 
       if (!pluginInfo) {
         console.error(chalk.red(`Plugin not found in registry: ${slug}`));
@@ -599,6 +619,10 @@ plugin
       }
 
       const version = pluginInfo.version;
+      if (!pluginInfo.downloadUrl) {
+        console.error(chalk.red(`No download URL found for plugin: ${slug}`));
+        return;
+      }
       const downloadUrl = new URL(pluginInfo.downloadUrl, options.registry).toString();
       
       console.log(chalk.cyan(`Downloading ${slug} v${version}...`));
@@ -609,7 +633,7 @@ plugin
 
       const tmpZip = path.resolve(process.cwd(), `tmp-${slug}.zip`);
       const fileStream = fs.createWriteStream(tmpZip);
-      await pipeline(zipResponse.body as any, fileStream);
+      await pipeline(zipResponse.body as unknown as Readable, fileStream);
 
       const pluginsDir = getPluginsDir();
       await fs.ensureDir(pluginsDir);
@@ -894,23 +918,28 @@ theme
      try {
       console.log(chalk.blue(`\nFetching theme info for ${chalk.bold(slug)}...`));
       const response = await fetch(options.registry);
-      const registry = (await response.json()) as any;
-      const themeInfo = registry.themes?.find((t: any) => t.slug === slug);
+      const registry = (await response.json()) as Registry;
+      const themeInfo = registry.themes?.find((t: ThemeManifest) => t.slug === slug);
 
       if (!themeInfo) {
         console.error(chalk.red(`Theme not found in registry: ${slug}`));
         return;
       }
 
-      const downloadUrl = themeInfo.downloadUrl.startsWith('.') 
+      const downloadUrl = (themeInfo.downloadUrl && themeInfo.downloadUrl.startsWith('.'))
         ? new URL(themeInfo.downloadUrl, options.registry).toString()
         : themeInfo.downloadUrl;
       
-      console.log(chalk.cyan(`Downloading ${slug} v${themeInfo.version}...`));
+      if (!downloadUrl) {
+        console.error(chalk.red(`No download URL found for theme: ${slug}`));
+        return;
+      }
       const zipResponse = await fetch(downloadUrl);
       const tmpZip = path.resolve(process.cwd(), `tmp-theme-${slug}.zip`);
       const fileStream = fs.createWriteStream(tmpZip);
-      await pipeline(zipResponse.body as any, fileStream);
+      
+      if (!zipResponse.body) throw new Error('Empty response body');
+      await pipeline(zipResponse.body as unknown as Readable, fileStream);
 
       const themesDir = getThemesDir();
       const targetDir = path.join(themesDir, slug);
