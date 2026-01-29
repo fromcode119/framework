@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { Slot, PluginsProvider } from '@fromcode/react';
+import { Slot, PluginsProvider, useTranslation } from '@fromcode/react';
 import { ThemeProvider, useTheme } from '@/components/ThemeContext';
 import Sidebar from './Sidebar';
 import PluginLoader from './PluginLoader';
@@ -33,12 +33,18 @@ function GlobalInitializer() {
     (window as any).React = React;
     (window as any).ReactDOM = ReactDOM;
     
+    // Bridge for plugins
+    (window as any).Fromcode = {
+      useTranslation,
+      getIcon,
+    };
+    
     // Register the stable framework icon set
     (window as any).FrameworkIcons = FrameworkIcons;
     (window as any).getIcon = getIcon;
     
     if (!(window as any)._framework_initialized) {
-      console.log(`[Framework] Semantic icons initialized with ${Object.keys(FrameworkIcons).length} definitions.`);
+      console.log(`[Framework] Semantic icons and Fromcode bridge initialized.`);
       (window as any)._framework_initialized = true;
     }
   }

@@ -3,7 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { FrameworkIcons } from '../lib/icons';
-import { getIcon } from '@fromcode/react';
+import { getIcon, useTranslation } from '@fromcode/react';
 
 export default function GlobalInitializer() {
     if (typeof window !== 'undefined') {
@@ -11,6 +11,12 @@ export default function GlobalInitializer() {
         (window as any).ReactDOM = ReactDOM;
         (window as any).FrameworkIcons = FrameworkIcons;
         (window as any).getIcon = getIcon;
+
+        // Bridge for plugins/themes
+        (window as any).Fromcode = {
+            useTranslation,
+            getIcon,
+        };
     }
     return null;
 }

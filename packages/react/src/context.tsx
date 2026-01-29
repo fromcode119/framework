@@ -40,7 +40,7 @@ interface PluginContextValue {
   refreshVersion: number;
   triggerRefresh: () => void;
   setLocale: (locale: string) => void;
-  t: (key: string, params?: Record<string, any>) => string;
+  t: (key: string, params?: Record<string, any>, defaultValue?: string) => string;
   emit: (event: string, data: any) => void;
   on: (event: string, handler: (data: any) => void) => () => void;
   registerAPI: (slug: string, api: any) => void;
@@ -202,7 +202,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     loadTranslations(locale);
   }, [locale, loadTranslations]);
 
-  const t = useCallback((key: string, params: Record<string, any> = {}) => {
+  const t = useCallback((key: string, params: Record<string, any> = {}, defaultValue?: string) => {
     let value: any = translations;
     const parts = key.split('.');
     
@@ -210,11 +210,11 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       if (value && typeof value === 'object' && part in value) {
         value = value[part];
       } else {
-        return key;
+        return defaultValue || key;
       }
     }
 
-    if (typeof value !== 'string') return key;
+    if (typeof value !== 'string') return defaultValue || key;
 
     return value.replace(/\{\{(.+?)\}\}/g, (_, match) => {
       const paramKey = match.trim();
@@ -290,7 +290,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     if (!fc.registerCollection) fc.registerCollection = queueMethod('collection');
     if (!fc.registerTheme) fc.registerTheme = queueMethod('theme');
     
-    if (!fc.t) fc.t = (key: string) => key;
+    if (!fc.t) fc.t = (key: string, _params?: any, defaultValue?: string) => defaultValue || key;
     if (!fc.locale) fc.locale = 'en';
   }
 
