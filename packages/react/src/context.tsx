@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { Slot } from './Slot';
 import { Override } from './Override';
 
@@ -31,6 +32,7 @@ interface PluginContextValue {
   slots: Record<string, SlotComponent[]>;
   overrides: Record<string, SlotComponent>;
   themeVariables: Record<string, string>;
+  themeLayouts: Record<string, any>;
   menuItems: MenuItem[];
   collections: CollectionMetadata[];
   translations: Record<string, any>;
@@ -57,6 +59,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   const [slots, setSlots] = useState<Record<string, SlotComponent[]>>({});
   const [overrides, setOverrides] = useState<Record<string, SlotComponent>>({});
   const [themeVariables, setThemeVariables] = useState<Record<string, string>>({});
+  const [themeLayouts, setThemeLayouts] = useState<Record<string, any>>({});
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [collections, setCollections] = useState<CollectionMetadata[]>([]);
   const [translations, setTranslations] = useState<Record<string, any>>({});
@@ -82,10 +85,52 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       
+      // Inject Import Map for React modules to ensure plugins use the host's React
+      if (typeof document !== 'undefined' && !document.querySelector('script[type="importmap"]')) {
+        const importMap = {
+          imports: {
+            "react": "data:text/javascript,export default window.React;export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, version } = window.React;",
+            "react-dom": "data:text/javascript,export default window.ReactDom;export const { render, hydrate, createRoot } = window.ReactDom || {};",
+            "@fromcode/react": "data:text/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider } = window.Fromcode;",
+            "react/jsx-runtime": "data:text/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment;"
+          }
+        };
+        const script = document.createElement('script');
+        script.type = 'importmap';
+        script.textContent = JSON.stringify(importMap);
+        document.head.prepend(script);
+      }
+
       if (data.activeTheme) {
         setThemeVariables(data.activeTheme.variables || {});
-        // Process overrides if they provide a component reference string or if we load them dynamically
-        // For now, variables is the main focus for "themes"
+        
+        const theme = data.activeTheme;
+        const baseThemeUrl = `${base}/themes/${theme.slug}`;
+
+        // Load Theme CSS
+        if (theme.ui?.css) {
+           theme.ui.css.forEach((cssPath: string) => {
+              const fullUrl = cssPath.startsWith('http') ? cssPath : `${baseThemeUrl}/ui/${cssPath}`;
+              if (!document.querySelector(`link[href="${fullUrl}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = fullUrl;
+                document.head.appendChild(link);
+              }
+           });
+        }
+
+        // Load Theme JS Bundle (Entry)
+        if (theme.ui?.entry) {
+          const entryUrl = theme.ui.entry.startsWith('http') ? theme.ui.entry : `${baseThemeUrl}/ui/${theme.ui.entry}`;
+          if (!document.querySelector(`script[src="${entryUrl}"]`)) {
+            const script = document.createElement('script');
+            script.src = entryUrl;
+            script.type = 'module';
+            script.async = true;
+            document.head.appendChild(script);
+          }
+        }
       }
     } catch (err) {
       console.warn("[Theme] Failed to load frontend config:", err);
@@ -219,6 +264,9 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     if (config?.variables) {
       setThemeVariables(prev => ({ ...prev, ...config.variables }));
     }
+    if (config?.layouts) {
+      setThemeLayouts(prev => ({ ...prev, ...config.layouts }));
+    }
   }, []);
 
   // Set up global bridge for dynamic plugins
@@ -229,6 +277,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     
     const fc = (window as any).Fromcode;
     fc.React = React;
+    fc.ReactDom = ReactDOM;
 
     const queueMethod = (type: string) => (...args: any[]) => {
       if (!(window as any)._fromcodeQueue) (window as any)._fromcodeQueue = [];
@@ -249,9 +298,11 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     if (typeof window !== 'undefined') {
       if (apiUrl) (window as any).FROMCODE_API_URL = apiUrl;
       (window as any).React = React;
+      (window as any).ReactDom = ReactDOM;
       
       const bridge = {
         React: React,
+        ReactDom: ReactDOM,
         Slot,
         Override,
         registerSlotComponent,
@@ -264,7 +315,10 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         emit,
         on,
         t,
-        locale
+        locale,
+        usePlugins,
+        useTranslation,
+        PluginsProvider
       };
 
       (window as any).Fromcode = bridge;
@@ -295,6 +349,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     slots,
     overrides,
     themeVariables,
+    themeLayouts,
     menuItems,
     collections,
     translations,
@@ -313,7 +368,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     registerCollection,
     registerTheme,
     loadFrontendConfig
-  }), [slots, overrides, themeVariables, menuItems, collections, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, loadFrontendConfig]);
+  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, loadFrontendConfig]);
 
   return (
     <PluginContext.Provider value={value}>

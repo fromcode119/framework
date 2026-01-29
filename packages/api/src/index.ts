@@ -8,6 +8,7 @@ import { MediaManager } from '@fromcode/media';
 import { CacheFactory, CacheManager } from '@fromcode/cache';
 import { systemSessions, eq, and, gt } from '@fromcode/database';
 import * as path from 'path';
+import * as fs from 'fs';
 import { RESTController } from './rest-controller';
 import { API_ROUTES } from './constants';
 import { createCollectionMiddleware } from './middlewares/collection';
@@ -88,7 +89,7 @@ export class APIServer {
   public app = express();
   private logger = new Logger({ namespace: 'APIServer' });
   private restController: RESTController;
-  private mediaManager: MediaManager;
+  private mediaManager!: MediaManager;
   private cache: CacheManager;
   private settingsCache: Map<string, string> = new Map();
   

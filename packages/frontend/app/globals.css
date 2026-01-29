@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: var(--theme-background, #ffffff);
+  --foreground: var(--theme-foreground, #0f172a);
+  --primary: var(--theme-primary, #10b981);
 }
 
 body {
@@ -44,3 +45,43 @@ body {
 .ring-inset { --tw-ring-inset: inset; }
 .ring-slate-300 { --tw-ring-color: #cbd5e1; }
 .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+
+/* Global Button Styles */
+.btn-primary {
+  background-color: var(--primary) !important;
+  color: white !important;
+  border-radius: 9999px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #0f172a;
+  border-radius: 9999px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid #cbd5e1;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+}
+
+.btn-secondary:active {
+  transform: scale(0.95);
+}

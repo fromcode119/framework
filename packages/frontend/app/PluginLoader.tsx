@@ -37,8 +37,11 @@ export default function PluginLoader() {
         return <script key={plugin.slug} src={scriptUrl} type="module" async />;
       })}
       {theme && theme.ui?.entry && (
-        <script key={`theme-${theme.slug}`} src={`${apiUrl}/themes/${theme.slug}/ui/${theme.ui.entry}`} type="module" async />
+        <script key={`theme-js-${theme.slug}`} src={`${apiUrl}/themes/${theme.slug}/ui/${theme.ui.entry}`} type="module" async />
       )}
+      {theme && theme.ui?.styles?.map((style: string) => (
+        <link key={`theme-css-${theme.slug}-${style}`} rel="stylesheet" href={`${apiUrl}/themes/${theme.slug}/ui/${style}`} />
+      ))}
     </>
   );
 }

@@ -24,6 +24,7 @@ export class PluginController {
         slug: p.manifest.slug,
         version: p.manifest.version,
         name: p.manifest.name,
+        capabilities: p.manifest.capabilities,
         ui: {
           ...(p.manifest.ui || {}),
           headInjections: this.manager.getHeadInjections(p.manifest.slug)

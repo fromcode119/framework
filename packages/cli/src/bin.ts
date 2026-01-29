@@ -10,22 +10,42 @@ import extract from 'extract-zip';
 import { pipeline } from 'stream/promises';
 import { spawn } from 'child_process';
 import * as esbuild from 'esbuild';
+import * as sass from 'sass';
+import * as less from 'less';
 
 const program = new Command();
 
+function getProjectRoot(): string {
+  let current = process.cwd();
+  // Traverse up to find a directory containing 'plugins' or 'themes' or a project root marker
+  while (current !== path.parse(current).root) {
+    if (fs.existsSync(path.join(current, 'plugins')) || fs.existsSync(path.join(current, 'themes'))) {
+      return current;
+    }
+    const pkgPath = path.join(current, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          if (pkg.name === '@fromcode/framework') return current;
+        } catch {}
+    }
+    current = path.dirname(current);
+  }
+  return process.cwd();
+}
+
 function getPluginsDir(): string {
-  let pluginsDir = path.resolve(process.cwd(), 'plugins');
-  if (fs.existsSync(pluginsDir)) return pluginsDir;
+  const root = getProjectRoot();
+  const dir = path.resolve(root, 'plugins');
+  if (!fs.existsSync(dir)) fs.ensureDirSync(dir);
+  return dir;
+}
 
-  if (fs.existsSync(path.resolve(process.cwd(), '../../plugins'))) {
-    return path.resolve(process.cwd(), '../../plugins');
-  }
-  
-  if (fs.existsSync(path.resolve(process.cwd(), 'framework/plugins'))) {
-    return path.resolve(process.cwd(), 'framework/plugins');
-  }
-
-  return path.resolve(process.cwd(), 'plugins'); // Default fallback
+function getThemesDir(): string {
+  const root = getProjectRoot();
+  const dir = path.resolve(root, 'themes');
+  if (!fs.existsSync(dir)) fs.ensureDirSync(dir);
+  return dir;
 }
 
 async function ask(question: string): Promise<string> {
@@ -40,6 +60,39 @@ async function ask(question: string): Promise<string> {
       resolve(answer);
     });
   });
+}
+
+async function compileStyles(uiDir: string): Promise<void> {
+  const sassEntries = [
+    { in: 'theme.scss', out: 'theme.css' },
+    { in: 'index.scss', out: 'index.css' },
+    { in: 'style.scss', out: 'style.css' }
+  ];
+
+  for (const entry of sassEntries) {
+    const fullInPath = path.join(uiDir, entry.in);
+    if (fs.existsSync(fullInPath)) {
+      console.log(chalk.gray(`Compiling SCSS: ${entry.in} -> ${entry.out}`));
+      const result = sass.compile(fullInPath);
+      await fs.writeFile(path.join(uiDir, entry.out), result.css);
+    }
+  }
+
+  const lessEntries = [
+    { in: 'theme.less', out: 'theme.css' },
+    { in: 'index.less', out: 'index.css' },
+    { in: 'style.less', out: 'style.css' }
+  ];
+
+  for (const entry of lessEntries) {
+    const fullInPath = path.join(uiDir, entry.in);
+    if (fs.existsSync(fullInPath)) {
+      console.log(chalk.gray(`Compiling Less: ${entry.in} -> ${entry.out}`));
+      const content = await fs.readFile(fullInPath, 'utf8');
+      const result = await less.render(content);
+      await fs.writeFile(path.join(uiDir, entry.out), result.css);
+    }
+  }
 }
 
 program
@@ -69,7 +122,7 @@ core
       const response = await fetch(options.registry);
       if (!response.ok) throw new Error(`Registry unavailable: ${response.statusText}`);
       
-      const registry = await response.json();
+      const registry = (await response.json()) as any;
       if (!registry.core) {
         console.log(chalk.yellow('Registry does not provide core version information yet.'));
         return;
@@ -104,7 +157,7 @@ core
 
       console.log(chalk.blue(`\nFetching latest core info from ${options.registry}...`));
       const response = await fetch(options.registry);
-      const registry = await response.json();
+      const registry = (await response.json()) as any;
 
       if (!registry.core) {
         console.error(chalk.red('No core update information found in registry.'));
@@ -165,7 +218,9 @@ const plugin = program.command('plugin').description('Manage plugins');
 plugin
   .command('create [name]')
   .description('Create a new plugin scaffold')
-  .action(async (name) => {
+  .option('-s, --slug <slug>', 'Plugin slug')
+  .option('-c, --category <category>', 'Plugin category')
+  .action(async (name, options) => {
     try {
       let pluginName = name;
       if (!pluginName) {
@@ -177,12 +232,18 @@ plugin
         return;
       }
 
-      let defaultSlug = pluginName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      let slug = await ask(chalk.blue(`Plugin slug [${defaultSlug}]: `));
-      if (!slug) slug = defaultSlug;
+      let slug = options.slug;
+      if (!slug) {
+        let defaultSlug = pluginName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        slug = await ask(chalk.blue(`Plugin slug [${defaultSlug}]: `));
+        if (!slug) slug = defaultSlug;
+      }
 
-      let category = await ask(chalk.blue('Plugin category [general]: '));
-      if (!category) category = 'general';
+      let category = options.category;
+      if (!category) {
+        category = await ask(chalk.blue('Plugin category [general]: '));
+        if (!category) category = 'general';
+      }
 
       const pluginsDir = getPluginsDir();
       const pluginPath = path.join(pluginsDir, slug);
@@ -382,12 +443,16 @@ plugin
         return;
       }
 
-      const outDir = path.join(uiDir, 'dist');
-      await fs.ensureDir(outDir);
+      const outDir = uiDir;
+      const outFile = path.join(outDir, 'bundle.js');
 
       console.log(chalk.blue(`\nBuilding UI for ${chalk.bold(slug)}...`));
+      
+      // Compile styles first
+      await compileStyles(uiDir);
+
       console.log(chalk.gray(`Entry: ${entryPoints[0]}`));
-      console.log(chalk.gray(`Output: ${outDir}`));
+      console.log(chalk.gray(`Output: ${outFile}`));
 
       const buildOptions: esbuild.BuildOptions = {
         entryPoints: [entryPoints[0]],
@@ -397,7 +462,7 @@ plugin
         format: 'esm',
         platform: 'browser',
         target: ['es2020'],
-        outfile: path.join(outDir, 'bundle.js'),
+        outfile: outFile,
         loader: {
           '.tsx': 'tsx',
           '.ts': 'ts',
@@ -411,7 +476,7 @@ plugin
         jsx: 'transform',
         jsxFactory: 'React.createElement',
         jsxFragment: 'React.Fragment',
-        external: ['react', 'react-dom', 'lucide-react', 'react/jsx-runtime']
+        external: ['react', 'react-dom', 'lucide-react', '@fromcode/react', 'react/jsx-runtime']
       };
 
       if (options.watch) {
@@ -483,7 +548,7 @@ plugin
       const response = await fetch(options.registry);
       if (!response.ok) throw new Error(`Failed to fetch registry: ${response.statusText}`);
       
-      const registry: any = await response.json();
+      const registry = (await response.json()) as any;
       const plugins = registry.plugins || [];
       
       const filtered = query 
@@ -514,7 +579,7 @@ plugin
       const response = await fetch(options.registry);
       if (!response.ok) throw new Error(`Failed to fetch registry: ${response.statusText}`);
       
-      const registry: any = await response.json();
+      const registry = (await response.json()) as any;
       const pluginInfo = registry.plugins?.find((p: any) => p.slug === slug);
 
       if (!pluginInfo) {
@@ -560,6 +625,293 @@ plugin
 
     } catch (error) {
       console.error(chalk.red('Error installing plugin:'), error);
+    }
+  });
+
+const theme = program.command('theme').description('Manage themes');
+
+theme
+  .command('create [name]')
+  .description('Create a new theme scaffold')
+  .option('-s, --slug <slug>', 'Theme slug')
+  .action(async (name, options) => {
+    try {
+      let themeName = name;
+      if (!themeName) {
+        themeName = await ask(chalk.blue('Theme name: '));
+      }
+
+      if (!themeName) {
+        console.error(chalk.red('Theme name is required!'));
+        return;
+      }
+
+      let slug = options.slug;
+      if (!slug) {
+        let defaultSlug = themeName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        slug = await ask(chalk.blue(`Theme slug [${defaultSlug}]: `));
+        if (!slug) slug = defaultSlug;
+      }
+
+      const themesDir = getThemesDir();
+      const themePath = path.join(themesDir, slug);
+
+      if (fs.existsSync(themePath)) {
+        console.error(chalk.red(`Theme directory already exists: ${themePath}`));
+        return;
+      }
+
+      console.log(chalk.green(`\nCreating theme "${themeName}" in ${themePath}...`));
+
+      await fs.ensureDir(themePath);
+      await fs.ensureDir(path.join(themePath, 'ui'));
+
+      // 1. theme.json
+      const manifest = {
+        slug,
+        name: themeName,
+        version: '1.0.0',
+        author: 'Unknown',
+        variables: {
+          '--primary': '#3b82f6',
+          '--secondary': '#1e293b',
+          '--background': '#ffffff',
+          '--foreground': '#0f172a'
+        },
+        ui: {
+          entry: 'bundle.js',
+          css: ['theme.css']
+        },
+        layouts: [
+          { name: 'default', label: 'Default Layout', description: 'Main layout for the theme' }
+        ]
+      };
+      await fs.writeJson(path.join(themePath, 'theme.json'), manifest, { spaces: 2 });
+
+      // 2. ui/theme.css
+      const themeCss = `
+:root {
+  --primary: #3b82f6;
+  --secondary: #1e293b;
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: sans-serif;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+}
+`;
+      await fs.writeFile(path.join(themePath, 'ui/theme.css'), themeCss.trim() + '\n');
+
+      // 3. ui/index.ts
+      const uiIndex = `
+export const init = () => {
+  console.log('[${slug}] Theme UI Initialized');
+  
+  // Custom theme logic here
+  document.body.classList.add('theme-${slug}');
+};
+
+// --- Self-Registration ---
+if (typeof window !== 'undefined' && (window as any).Fromcode) {
+  const Fromcode = (window as any).Fromcode;
+  
+  // Custom theme scripts can interact with Fromcode bridge here
+  init();
+}
+`;
+      await fs.writeFile(path.join(themePath, 'ui/index.ts'), uiIndex.trim() + '\n');
+
+      console.log(chalk.green('\nTheme scaffolded successfully!'));
+      console.log(chalk.gray(`Location: ${themePath}`));
+
+    } catch (error) {
+      console.error(chalk.red('Error creating theme:'), error);
+    }
+  });
+
+theme
+  .command('list')
+  .description('List all local themes')
+  .action(async () => {
+    try {
+      const themesDir = getThemesDir();
+      const dirs = await fs.readdir(themesDir);
+      console.log(chalk.blue('\nLocal Themes:'));
+      console.log(chalk.gray('--------------------------------------------------'));
+      
+      for (const dir of dirs) {
+        if (dir.startsWith('.')) continue;
+        const manifestPath = path.join(themesDir, dir, 'theme.json');
+        
+        if (await fs.pathExists(manifestPath)) {
+          const manifest = await fs.readJson(manifestPath);
+          console.log(`${chalk.bold(manifest.name)} (${chalk.cyan(manifest.slug || dir)}) v${manifest.version}`);
+          console.log(chalk.gray(`  Author: ${manifest.author || 'unknown'}`));
+          console.log('');
+        }
+      }
+    } catch (error) {
+      console.error(chalk.red('Error listing themes:'), error);
+    }
+  });
+
+theme
+  .command('build <slug>')
+  .description('Build theme UI assets')
+  .option('-w, --watch', 'Watch for changes', false)
+  .action(async (slug, options) => {
+    try {
+      const themesDir = getThemesDir();
+      const themeDir = path.join(themesDir, slug);
+      if (!fs.existsSync(themeDir)) {
+        console.error(chalk.red(`Theme directory not found: ${themeDir}`));
+        return;
+      }
+
+      const uiDir = path.join(themeDir, 'ui');
+      if (!fs.existsSync(uiDir)) {
+        console.log(chalk.yellow(`No ui directory found for theme ${slug}. Skipping build.`));
+        return;
+      }
+
+      const entryPoints = [
+         path.join(uiDir, 'index.ts'),
+         path.join(uiDir, 'index.js')
+      ].filter(p => fs.existsSync(p));
+
+      if (entryPoints.length === 0) {
+        console.error(chalk.red(`No entry point found in ${uiDir} (index.ts/js)`));
+        return;
+      }
+
+      const outDir = uiDir;
+      await fs.ensureDir(outDir);
+
+      console.log(chalk.blue(`\nBuilding UI for theme ${chalk.bold(slug)}...`));
+
+      // Compile styles first (supports SCSS -> CSS)
+      await compileStyles(uiDir);
+
+      const buildOptions: esbuild.BuildOptions = {
+        entryPoints: [entryPoints[0]],
+        bundle: true,
+        minify: true,
+        sourcemap: true,
+        format: 'esm',
+        platform: 'browser',
+        target: ['es2020'],
+        outfile: path.join(uiDir, 'bundle.js'), // Themes typically expect bundle.js in ui root or dist
+        loader: {
+          '.tsx': 'tsx',
+          '.ts': 'ts',
+          '.jsx': 'jsx',
+          '.js': 'js',
+          '.css': 'css',
+          '.svg': 'dataurl',
+          '.png': 'dataurl',
+          '.jpg': 'dataurl'
+        },
+        jsx: 'transform',
+        jsxFactory: 'React.createElement',
+        jsxFragment: 'React.Fragment',
+        external: ['react', 'react-dom', 'lucide-react', '@fromcode/react', 'react/jsx-runtime']
+      };
+
+      if (options.watch) {
+        const ctx = await esbuild.context(buildOptions);
+        await ctx.watch();
+        console.log(chalk.green('Theme build started in watch mode...'));
+      } else {
+        await esbuild.build(buildOptions);
+        console.log(chalk.green('Theme build completed successfully!'));
+      }
+
+    } catch (error) {
+      console.error(chalk.red('Error building theme:'), error);
+    }
+  });
+
+theme
+  .command('pack <slug>')
+  .description('Pack a theme into a ZIP for the marketplace')
+  .action(async (slug) => {
+    try {
+      const themesDir = getThemesDir();
+      const themePath = path.join(themesDir, slug);
+
+      if (!fs.existsSync(themePath)) {
+        console.error(chalk.red(`Theme directory not found: ${themePath}`));
+        return;
+      }
+
+      const manifestPath = path.join(themePath, 'theme.json');
+      const manifest = await fs.readJson(manifestPath);
+      const version = manifest.version;
+      const outDir = path.resolve(process.cwd(), 'dist');
+      await fs.ensureDir(outDir);
+      
+      const zipPath = path.join(outDir, `theme-${slug}-${version}.zip`);
+      const output = fs.createWriteStream(zipPath);
+      const archive = archiver('zip', { zlib: { level: 9 } });
+
+      archive.pipe(output);
+      archive.directory(themePath, false);
+      await archive.finalize();
+
+      console.log(chalk.green(`\nTheme packed successfully: ${zipPath}`));
+    } catch (error) {
+      console.error(chalk.red('Error packing theme:'), error);
+    }
+  });
+
+theme
+  .command('install <slug>')
+  .description('Install a theme from the registry')
+  .option('-r, --registry <url>', 'Registry URL', process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json')
+  .action(async (slug, options) => {
+     // Implementation similar to plugin install but for theme
+     try {
+      console.log(chalk.blue(`\nFetching theme info for ${chalk.bold(slug)}...`));
+      const response = await fetch(options.registry);
+      const registry = (await response.json()) as any;
+      const themeInfo = registry.themes?.find((t: any) => t.slug === slug);
+
+      if (!themeInfo) {
+        console.error(chalk.red(`Theme not found in registry: ${slug}`));
+        return;
+      }
+
+      const downloadUrl = themeInfo.downloadUrl.startsWith('.') 
+        ? new URL(themeInfo.downloadUrl, options.registry).toString()
+        : themeInfo.downloadUrl;
+      
+      console.log(chalk.cyan(`Downloading ${slug} v${themeInfo.version}...`));
+      const zipResponse = await fetch(downloadUrl);
+      const tmpZip = path.resolve(process.cwd(), `tmp-theme-${slug}.zip`);
+      const fileStream = fs.createWriteStream(tmpZip);
+      await pipeline(zipResponse.body as any, fileStream);
+
+      const themesDir = getThemesDir();
+      const targetDir = path.join(themesDir, slug);
+      if (fs.existsSync(targetDir)) await fs.remove(targetDir);
+      
+      await fs.ensureDir(targetDir);
+      await extract(tmpZip, { dir: targetDir });
+      await fs.remove(tmpZip);
+      
+      console.log(chalk.green(`\nTheme ${chalk.bold(slug)} installed successfully!`));
+    } catch (error) {
+      console.error(chalk.red('Error installing theme:'), error);
     }
   });
 
