@@ -95,6 +95,17 @@ async function compileStyles(uiDir: string): Promise<void> {
   }
 }
 
+interface RegistryCore {
+  version: string;
+  downloadUrl: string;
+}
+
+interface Registry {
+  core?: RegistryCore;
+  plugins?: any[];
+  themes?: any[];
+}
+
 program
   .name('fromcode')
   .description('Fromcode Framework CLI')
@@ -122,7 +133,7 @@ core
       const response = await fetch(options.registry);
       if (!response.ok) throw new Error(`Registry unavailable: ${response.statusText}`);
       
-      const registry = (await response.json()) as any;
+      const registry = (await response.json()) as Registry;
       if (!registry.core) {
         console.log(chalk.yellow('Registry does not provide core version information yet.'));
         return;
@@ -157,7 +168,7 @@ core
 
       console.log(chalk.blue(`\nFetching latest core info from ${options.registry}...`));
       const response = await fetch(options.registry);
-      const registry = (await response.json()) as any;
+      const registry = (await response.json()) as Registry;
 
       if (!registry.core) {
         console.error(chalk.red('No core update information found in registry.'));
