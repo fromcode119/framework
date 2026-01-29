@@ -29,6 +29,7 @@ export default function MarketplacePage() {
   const [plugins, setPlugins] = useState<PluginEntry[]>([]);
   const [installedPlugins, setInstalledPlugins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [installing, setInstalling] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
@@ -64,14 +65,24 @@ export default function MarketplacePage() {
 
   const handleInstall = async (e: React.MouseEvent, slug: string) => {
     e.stopPropagation();
+    console.log('[Marketplace] Installing plugin:', slug);
+    if (installing) return;
+
     try {
+      setInstalling(slug);
       notify('info', 'Installation Started', `Downloading and staging ${slug}...`);
-      await api.post(ENDPOINTS.PLUGINS.INSTALL(slug), {});
+      const response = await api.post(ENDPOINTS.PLUGINS.INSTALL(slug), {});
+      console.log('[Marketplace] Install response:', response);
       notify('success', 'Installation Complete', `Plugin "${slug}" installed successfully.`);
+      
+      // Refresh both the local marketplace state and the global plugin context
+      await fetchData();
       triggerRefresh();
-      fetchData();
     } catch (err: any) {
-      notify('error', 'Network Error', err.message || 'Failed to connect to server');
+      console.error('[Marketplace] Installation failed:', err);
+      notify('error', 'Installation Failed', err.message || 'Failed to install plugin');
+    } finally {
+      setInstalling(null);
     }
   };
 
@@ -179,18 +190,24 @@ export default function MarketplacePage() {
                     ) : hasUpdate ? (
                       <button 
                         onClick={(e) => handleInstall(e, plugin.slug)}
-                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-[0.97] bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20 hover:-translate-y-1`}
+                        disabled={!!installing}
+                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-[0.97] bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
-                         <FrameworkIcons.Refresh size={16} className="animate-spin-slow" />
-                         <span>Update Plugin</span>
+                         <FrameworkIcons.Refresh size={16} className={installing === plugin.slug ? "animate-spin" : "animate-spin-slow"} />
+                         <span>{installing === plugin.slug ? 'Updating...' : 'Update Plugin'}</span>
                        </button>
                     ) : (
                       <button 
                         onClick={(e) => handleInstall(e, plugin.slug)}
-                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-[0.97] bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20 hover:-translate-y-1`}
+                        disabled={!!installing}
+                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-[0.97] bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
-                         <FrameworkIcons.Download size={16} />
-                         <span>Install Now</span>
+                         {installing === plugin.slug ? (
+                           <FrameworkIcons.Refresh size={16} className="animate-spin" />
+                         ) : (
+                           <FrameworkIcons.Download size={16} />
+                         )}
+                         <span>{installing === plugin.slug ? 'Installing...' : 'Install Now'}</span>
                        </button>
                     )}
                   </div>

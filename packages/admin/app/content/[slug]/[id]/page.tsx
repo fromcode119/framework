@@ -449,16 +449,4 @@ export default function CollectionEditPage() {
       />
     </div>
   );
-
-      <ConfirmDialog 
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDelete}
-        isLoading={deleting}
-        title="Delete Record"
-        description="Are you sure you want to delete this record? This action is permanent and cannot be undone."
-        confirmLabel="Delete Permanently"
-      />
-    </div>
-  );
 }

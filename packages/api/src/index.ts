@@ -244,7 +244,7 @@ export class APIServer {
             ? process.env.CORS_ALLOWED_DOMAINS.split(',').map(d => d.trim().toLowerCase())
             : [];
           
-          const allowedDomains = ['localhost', '127.0.0.1', 'fromcode.local', ...envAllowed];
+          const allowedDomains = ['localhost', '127.0.0.1', 'fromcode.local', 'framework.local', ...envAllowed];
           
           const isAllowed = allowedDomains.some(domain => {
             const lowHost = hostname.toLowerCase();

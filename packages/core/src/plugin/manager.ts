@@ -1006,10 +1006,10 @@ export class PluginManager implements PluginManagerInterface {
       });
 
     // Generate Unified Menu
-    const menuItems: any[] = [];
+    const rawMenuItems: any[] = [];
 
     // Add Themes menu item
-    menuItems.push({
+    rawMenuItems.push({
       label: 'Themes',
       path: '/themes',
       icon: 'Palette',
@@ -1019,7 +1019,7 @@ export class PluginManager implements PluginManagerInterface {
     });
 
     // Add Users menu item explicitly if not present to ensure Roles/Permissions are visible
-    menuItems.push({
+    rawMenuItems.push({
       label: 'Users',
       path: '/users',
       icon: 'Users',
@@ -1032,7 +1032,7 @@ export class PluginManager implements PluginManagerInterface {
       ]
     });
 
-    menuItems.push({
+    rawMenuItems.push({
       label: 'Activity',
       path: '/activity',
       icon: 'Activity',
@@ -1045,7 +1045,7 @@ export class PluginManager implements PluginManagerInterface {
     pluginMetadata.forEach(p => {
       if (p.admin?.menu) {
         p.admin.menu.forEach(item => {
-          menuItems.push({
+          rawMenuItems.push({
             ...item,
             pluginSlug: p.slug,
             group: item.group || p.admin.group || null
@@ -1060,29 +1060,62 @@ export class PluginManager implements PluginManagerInterface {
           if (col.admin?.hidden) return;
           if (col.slug === 'settings') return; // Handled by dedicated /settings page
           
-          // Check if there's already a menu item for this path
+          // Check if there's already a menu item for this path OR a very similar path
           const path = `/content/${col.slug}`;
-          if (!menuItems.find(m => m.path === path)) {
-            menuItems.push({
-              label: col.name || col.slug.charAt(0).toUpperCase() + col.slug.slice(1),
+          const label = col.name || col.slug.charAt(0).toUpperCase() + col.slug.slice(1);
+          
+          const isDuplicate = rawMenuItems.some(m => 
+            m.path === path || 
+            m.path === `/${col.slug}` ||
+            (m.label.toLowerCase() === label.toLowerCase() && m.pluginSlug === p.slug)
+          );
+
+          if (!isDuplicate) {
+            rawMenuItems.push({
+              label,
               path,
               icon: col.admin?.icon || p.admin.icon || 'FileText',
               group: col.admin?.group || p.admin.group || null,
-              pluginSlug: p.slug,
-              // Special case for users to add children placeholders if requested
-              children: col.slug === 'users' ? [
-                { label: 'Roles', path: '/users/roles', icon: 'Shield' },
-                { label: 'Permissions', path: '/users/permissions', icon: 'Lock' }
-              ] : undefined
+              pluginSlug: p.slug
             });
           }
         });
       }
     });
 
+    // 3. Grouping and Final Processing
+    const finalMenu: any[] = [];
+    const groups: Record<string, any> = {};
+
+    rawMenuItems.forEach(item => {
+      const groupName = item.group || 'Platform';
+      
+      if (groupName === 'Platform') {
+        finalMenu.push(item);
+      } else {
+        if (!groups[groupName]) {
+          // Find the plugin that defined this group's icon, or default to Layers
+          const groupIcon = allPlugins.find(p => p.manifest.admin?.group === groupName)?.manifest.admin?.icon || 'Layers';
+          
+          groups[groupName] = {
+            label: groupName,
+            icon: groupIcon,
+            group: 'Platform', // Keep the actual group container in Platform section
+            path: `/#group-${groupName.toLowerCase()}`, // Virtual path for dropdown
+            children: [],
+            isGroup: true,
+            priority: 50, // Default priority for custom groups
+            pluginSlug: item.pluginSlug
+          };
+          finalMenu.push(groups[groupName]);
+        }
+        groups[groupName].children.push(item);
+      }
+    });
+
     return {
       plugins: pluginMetadata,
-      menu: menuItems.sort((a, b) => (a.priority || 0) - (b.priority || 0))
+      menu: finalMenu.sort((a, b) => (a.priority || 0) - (b.priority || 0))
     };
   }
 }

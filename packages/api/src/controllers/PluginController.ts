@@ -86,23 +86,39 @@ export class PluginController {
   async install(req: Request, res: Response) {
     const { slug } = req.params;
     const { version } = req.query;
+    this.logger.info(`Installation request received for plugin: ${slug} (version: ${version || 'latest'})`);
+    
     try {
       const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
+      this.logger.debug(`Fetching registry from: ${registryUrl}`);
+      
       const response = await fetch(registryUrl);
+      if (!response.ok) {
+        throw new Error(`Registry returned status ${response.status}: ${response.statusText}`);
+      }
+      
       const registryData: any = await response.json();
       
       const pkg = registryData.plugins.find((p: any) => 
         p.slug === slug && (!version || p.version === version)
       );
       
-      if (!pkg) return res.status(404).json({ error: `Plugin ${slug} ${version ? 'v'+version : ''} not found` });
+      if (!pkg) {
+        this.logger.warn(`Plugin ${slug} not found in registry`);
+        return res.status(404).json({ error: `Plugin ${slug} ${version ? 'v'+version : ''} not found` });
+      }
 
       if (pkg.downloadUrl && !pkg.downloadUrl.startsWith('http')) {
         pkg.downloadUrl = new URL(pkg.downloadUrl, registryUrl).toString();
       }
+      
+      this.logger.info(`Installing ${slug} from ${pkg.downloadUrl}`);
       await this.manager.updatePlugin(slug, pkg);
+      
+      this.logger.info(`Successfully installed plugin: ${slug}`);
       res.json({ success: true });
     } catch (err: any) {
+      this.logger.error(`Failed to install plugin ${slug}: ${err.message}`, err);
       res.status(500).json({ error: err.message });
     }
   }
