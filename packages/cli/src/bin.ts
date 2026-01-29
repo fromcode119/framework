@@ -16,6 +16,36 @@ import * as less from 'less';
 
 const program = new Command();
 
+const translations = {
+  en: {
+    'cli.status.checking': 'Checking registry at {{registry}}...',
+    'cli.status.no_core': 'Registry does not provide core version information yet.',
+    'cli.status.new_version': '\nA newer version of Fromcode Core is available: {{version}}',
+    'cli.status.update_hint': 'Use "fromcode core update" to apply the update.',
+    'cli.status.latest': '\nYou are running the latest version of Fromcode Core.',
+    'cli.build.no_ui': 'No ui directory found for {{type}} {{slug}}. Skipping build.',
+    'cli.build.no_entry': 'No entry point found in {{dir}} (index.ts/js{{extra}})',
+    'cli.build.compiling': 'Compiling {{type}}: {{in}} -> {{out}}',
+    'cli.build.starting': '\nBuilding UI for {{type}} {{slug}}...',
+    'cli.build.success': 'Build completed successfully!',
+    'cli.pack.starting': '\nPacking {{slug}} v{{version}}...',
+    'cli.pack.success': '\nPacked successfully!',
+    'cli.install.fetching': '\nFetching {{type}} info for {{slug}}...',
+    'cli.install.downloading': 'Downloading {{slug}} v{{version}}...',
+    'cli.install.extracting': 'Extracting to {{dir}}...',
+    'cli.install.success': '\n{{type}} {{slug}} installed successfully!'
+  }
+};
+
+const currentLocale = 'en';
+function t(key: string, params: Record<string, string> = {}, defaultValue?: string): string {
+  let text = (translations as any)[currentLocale][key] || defaultValue || key;
+  Object.keys(params).forEach(p => {
+    text = text.replace(`{{${p}}}`, params[p]);
+  });
+  return text;
+}
+
 interface PluginManifest {
   slug: string;
   name: string;
@@ -470,14 +500,14 @@ plugin
       ].filter(p => fs.existsSync(p));
 
       if (entryPoints.length === 0) {
-        console.error(chalk.red(`No entry point found in ${uiDir} (index.ts/js, main.ts/js)`));
+        console.error(chalk.red(t('cli.build.no_entry', { dir: uiDir, extra: ', main.ts/js' })));
         return;
       }
 
       const outDir = uiDir;
       const outFile = path.join(outDir, 'bundle.js');
 
-      console.log(chalk.blue(`\nBuilding UI for ${chalk.bold(slug)}...`));
+      console.log(chalk.blue(t('cli.build.starting', { type: 'plugin', slug })));
       
       // Compile styles first
       await compileStyles(uiDir);
@@ -825,14 +855,14 @@ theme
       ].filter(p => fs.existsSync(p));
 
       if (entryPoints.length === 0) {
-        console.error(chalk.red(`No entry point found in ${uiDir} (index.ts/js)`));
+        console.error(chalk.red(t('cli.build.no_entry', { dir: uiDir, extra: '' })));
         return;
       }
 
       const outDir = uiDir;
       await fs.ensureDir(outDir);
 
-      console.log(chalk.blue(`\nBuilding UI for theme ${chalk.bold(slug)}...`));
+      console.log(chalk.blue(t('cli.build.starting', { type: 'theme', slug })));
 
       // Compile styles first (supports SCSS -> CSS)
       await compileStyles(uiDir);
