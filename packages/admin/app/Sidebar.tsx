@@ -8,6 +8,7 @@ import { Icon } from '@/components/Icon';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { APP_NAME } from '@/lib/env';
 
 const { 
   Dashboard, 
@@ -33,9 +34,10 @@ interface NavItemProps {
   onClick?: () => void;
   children?: any[];
   isMini?: boolean;
+  isGroupHeader?: boolean;
 }
 
-const NavItem = ({ icon, label, href, active, onClick, children, isMini }: NavItemProps) => {
+const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroupHeader }: NavItemProps) => {
   const { theme } = useTheme();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
@@ -57,24 +59,31 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini }: NavIt
   }, [isChildActive]);
 
   // The parent is "highlighted" if it is active AND NO CHILD is active.
-  // If a child is active, the parent is only "expanded" but not necessarily highlighted as the primary destination.
   const isHighlighted = active && !isChildActive;
+  
+  // If it's a group header, clicking should just toggle expansion
+  const handleClick = (e: React.MouseEvent) => {
+    if (isGroupHeader || (hasChildren && !expanded)) {
+      if (isGroupHeader) {
+        e.preventDefault();
+      }
+      setExpanded(!expanded);
+    }
+    onClick?.();
+  };
 
   return (
     <div className="flex flex-col gap-1">
       <div className={`flex items-center group relative ${isMini ? 'justify-center w-full' : 'gap-1'}`}>
         <Link 
-          href={href} 
-          onClick={() => {
-            if (hasChildren && !expanded) setExpanded(true);
-            onClick?.();
-          }}
+          href={isGroupHeader ? '#' : href} 
+          onClick={handleClick}
           className={`flex items-center transition-all duration-300 ${
             isHighlighted 
               ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' 
               : isChildActive
-                ? (theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400 font-bold' : 'bg-indigo-50 text-indigo-600 font-bold shadow-sm shadow-indigo-200/50')
-                : `text-slate-500 ${theme === 'dark' ? 'hover:bg-slate-800/60 hover:text-slate-200' : 'hover:bg-indigo-50/50 hover:text-indigo-600 hover:shadow-indigo-500/5'}`
+                ? 'bg-indigo-50 text-indigo-600 font-bold shadow-sm shadow-indigo-200/50 dark:bg-indigo-500/10 dark:text-indigo-400 dark:shadow-none'
+                : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600 hover:shadow-indigo-500/5 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'
           } ${isMini ? 'justify-center w-12 h-12 rounded-full' : 'flex-1 justify-between px-3.5 py-2.5 rounded-xl'}`}
         >
           <div className={`flex items-center justify-center ${isMini ? 'w-full' : 'gap-3'}`}>
@@ -90,30 +99,21 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini }: NavIt
         </Link>
 
         {isMini && (
-          <div className={`absolute left-full ml-4 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border ${
-            theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
-          }`}>
+          <div className="absolute left-full ml-4 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
               {label}
             </div>
-            {/* Tooltip Arrow */}
-            <div className={`absolute top-1/2 -left-1 -translate-y-1/2 rotate-45 w-2 h-2 border-l border-b ${
-              theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
-            }`} />
           </div>
         )}
 
         {hasChildren && !isMini && (
           <button 
-            onClick={(e) => {
-              e.preventDefault();
-              setExpanded(!expanded);
-            }}
+            onClick={() => setExpanded(!expanded)}
             className={`p-2 rounded-lg transition-colors ${
               isHighlighted || isChildActive
                 ? 'text-indigo-500' 
-                : theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-100 text-slate-400'
+                : 'hover:bg-slate-100 text-slate-400 dark:hover:bg-slate-800 dark:text-slate-500'
             }`}
           >
             <Down size={14} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
@@ -122,9 +122,12 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini }: NavIt
       </div>
       
       {hasChildren && expanded && !isMini && (
-        <div className="flex flex-col gap-0.5 mt-1 transition-all duration-300">
+        <div className="flex flex-col gap-0.5 mt-1 relative">
+          {/* Vertical track line for visual hierarchy */}
+          <div className="absolute left-[21px] top-0 bottom-6 w-px bg-slate-100 dark:bg-slate-800/80" />
+
           {children.map((child) => {
-            const isSubActive = pathname === child.path;
+            const isSubActive = pathname === child.path || (child.path !== '/' && pathname.startsWith(child.path + '/'));
             const subIcon = child.icon || 'Circle';
             
             return (
@@ -132,29 +135,30 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini }: NavIt
                 key={child.path}
                 href={child.path}
                 onClick={onClick}
-                className={`flex items-center gap-3 py-2.5 pl-11 pr-4 text-[11px] transition-all relative group/sub rounded-r-xl ${
+                className={`flex items-center gap-3 py-2.5 pl-10 pr-4 text-[10px] transition-all relative group/sub rounded-xl mx-2 ${
                   isSubActive
-                    ? (theme === 'dark' ? 'text-indigo-400 bg-slate-900/40' : 'text-indigo-600 bg-indigo-50/40 shadow-sm shadow-indigo-100/50')
-                    : `text-slate-500 hover:text-indigo-600 hover:bg-slate-50/50 dark:hover:bg-slate-900/20`
+                    ? 'text-indigo-600 bg-indigo-50/50 shadow-sm shadow-indigo-100/20 dark:text-indigo-400 dark:bg-indigo-500/5 dark:shadow-none'
+                    : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50/30 dark:hover:bg-slate-800/20'
                 }`}
               >
-                 {/* Selection Indicator Pill */}
+                 {/* Horizontal Connector Line */}
+                 <div className={`absolute left-[13px] top-1/2 -translate-y-1/2 h-px transition-all duration-300 ${
+                   isSubActive ? 'w-4 bg-indigo-500' : 'w-2 bg-slate-200 dark:bg-slate-800 group-hover/sub:bg-indigo-300 group-hover/sub:w-3'
+                 }`} />
+
                  {isSubActive && (
-                   <div className="absolute left-[32px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.6)]" />
-                 )}
-                 {!isSubActive && (
-                   <div className="absolute left-[33px] top-1/2 -translate-y-1/2 w-0.5 h-3 bg-slate-200 dark:bg-slate-800 rounded-full group-hover/sub:bg-indigo-300 group-hover/sub:h-4 transition-all opacity-0 group-hover/sub:opacity-100" />
+                   <div className="absolute left-[11px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.6)] z-10" />
                  )}
 
                  <div className="flex items-center gap-2.5">
-                   <div className={`flex items-center justify-center transition-all duration-300 ml-1 ${
+                   <div className={`flex items-center justify-center transition-all duration-300 ${
                      isSubActive 
                        ? 'text-indigo-500 scale-110' 
                        : 'text-slate-400 opacity-40 group-hover/sub:opacity-100 group-hover/sub:text-indigo-500'
                    }`}>
-                      <Icon name={subIcon} size={13} />
+                      <Icon name={subIcon} size={14} strokeWidth={2.5} />
                    </div>
-                   <span className={`font-black uppercase tracking-[0.1em] opacity-80 ${isSubActive ? 'opacity-100 text-indigo-500' : 'group-hover/sub:opacity-100'}`}>
+                   <span className={`font-black uppercase tracking-[0.15em] ${isSubActive ? 'text-indigo-600 dark:text-indigo-400' : 'opacity-70 group-hover/sub:opacity-100'}`}>
                      {child.label}
                    </span>
                  </div>
@@ -185,7 +189,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   const authorizedMenuItems = menuItems.filter(item => {
     // If it's a platform/system route, require admin
     const isAdminRoute = [
-      '/', '/plugins', '/users', '/settings', '/media', '/content/users', '/users/roles', '/users/permissions', '/activity'
+      '/', '/plugins', '/users', '/settings', '/media', '/users/roles', '/users/permissions', '/activity'
     ].some(path => item.path === path || item.path?.startsWith(path + '/'));
     
     if (isAdminRoute && !user?.roles?.includes('admin')) {
@@ -216,15 +220,15 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   });
 
   return (
-    <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-20' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:relative lg:translate-x-0 ${theme === 'dark' ? 'bg-[#020617] border-slate-800' : 'bg-white border-slate-200'} border-r flex flex-col shadow-2xl lg:shadow-none`}>
+    <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-20' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:relative lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none`}>
       <div className={`p-6 flex items-center ${isMini ? 'justify-center' : 'justify-between'}`}>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
             <Zap size={18} className="text-white" fill="currentColor" />
           </div>
           {!isMini && (
-            <span className={`font-bold text-xl tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              Fromcode
+            <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
+              {APP_NAME}
             </span>
           )}
         </div>
@@ -242,9 +246,13 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         </div>
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group];
+          // If a group has only one item and that item is a group wrapper (dropdown),
+          // we should skip the redundant section header.
+          const isRedundantHeader = !isMini && items.length === 1 && items[0].isGroup && items[0].label.toLowerCase() === group.toLowerCase();
+
           return (
             <React.Fragment key={group}>
-              {!isMini && (
+              {!isMini && !isRedundantHeader && (
                 <p className={`px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}>
                   {group}
                 </p>
@@ -260,7 +268,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     href="/users" 
                     active={pathname.startsWith('/users')} 
                     onClick={onClose} 
-                    children={menuItems.find(m => m.path === '/users' || m.path === '/content/users')?.children}
+                    children={menuItems.find(m => m.path === '/users')?.children}
                     isMini={isMini}
                   />
                   
@@ -269,7 +277,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                   <NavItem icon={<Activity size={18}/>} label="Activity" href="/activity" active={pathname.startsWith('/activity')} onClick={onClose} isMini={isMini} />
                   
                   {/* Other Platform items (excluding the ones we just handled manually) */}
-                  {items.filter(i => !['/content/users', '/', '/plugins', '/content/media', '/media', '/users', '/activity'].includes(i.path)).map((item, idx) => (
+                  {items.filter(i => !['/', '/plugins', '/media', '/users', '/activity'].includes(i.path)).map((item, idx) => (
                     <NavItem 
                       key={`${item.pluginSlug}-${idx}`}
                       icon={<Icon name={item.icon || 'Package'} size={18} />}
@@ -292,8 +300,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     active={item.path ? (item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)) : false}
                     onClick={onClose}
                     children={item.children}
-                    isMini={isMini}
-                  />
+                    isMini={isMini}                   isGroupHeader={item.isGroup}                  />
                 ))
               )}
             </React.Fragment>
@@ -321,14 +328,10 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
       </nav>
 
       {/* Mini Toggle Button */}
-      <div className={`p-4 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'} hidden lg:block`}>
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800 hidden lg:block">
         <button
           onClick={onMiniToggle}
-          className={`w-full flex items-center justify-center p-3 rounded-xl transition-all ${
-            theme === 'dark' 
-              ? 'hover:bg-slate-800 text-slate-400' 
-              : 'hover:bg-slate-50 text-slate-500'
-          }`}
+          className="w-full flex items-center justify-center p-3 rounded-xl transition-all hover:bg-slate-50 text-slate-500 dark:hover:bg-slate-800 dark:text-slate-400"
         >
           <div className={`transition-transform duration-500 ${isMini ? 'rotate-180' : ''}`}>
              <FrameworkIcons.Left size={18} strokeWidth={2.5} />

@@ -16,10 +16,21 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 
 export default function CollectionListPage() {
-  const { slug } = useParams() as { slug: string };
+  const { pluginSlug, slug } = useParams() as { pluginSlug: string; slug: string };
   const { collections } = usePlugins();
   const { theme } = useTheme();
   const [data, setData] = useState<any[]>([]);
+  
+  // Find the collection by matching the short slug and the explicit pluginSlug
+  const collection = collections.find(c => {
+    // Check if the actual collection slug (prefixed) matches the URL slug (short)
+    const isSlugMatch = c.shortSlug === slug || c.slug === slug;
+    const isPluginMatch = c.pluginSlug === pluginSlug || (c.pluginSlug === 'cms' && pluginSlug === 'cms');
+    
+    return isSlugMatch && isPluginMatch;
+  });
+
+  // Basic search state
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -27,7 +38,7 @@ export default function CollectionListPage() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState('-createdAt');
 
-  const collection = collections.find(c => c.slug === slug);
+  const resolvedSlug = collection?.slug || slug;
 
   // Simple debounce
   useEffect(() => {
@@ -47,7 +58,7 @@ export default function CollectionListPage() {
         if (debouncedSearch) queryParams.append('search', debouncedSearch);
         if (sort) queryParams.append('sort', sort);
 
-        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${slug}?${queryParams.toString()}`);
+        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
         
         if (result.docs) {
           setData(result.docs);
@@ -61,7 +72,7 @@ export default function CollectionListPage() {
     }
 
     fetchData();
-  }, [slug, debouncedSearch, page, sort]);
+  }, [resolvedSlug, debouncedSearch, page, sort]);
 
   if (!collection) {
     return (
@@ -92,10 +103,15 @@ export default function CollectionListPage() {
     e.stopPropagation();
     if (confirm('Are you sure you want to delete this record?')) {
       try {
-        await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${slug}/${id}`);
+        await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
         // Refresh data
         setPage(1);
-        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${slug}`);
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', '1');
+        queryParams.append('limit', '10');
+        if (debouncedSearch) queryParams.append('search', debouncedSearch);
+        
+        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
         if (result.docs) {
           setData(result.docs);
           setTotal(result.totalDocs);
@@ -124,7 +140,9 @@ export default function CollectionListPage() {
               </h1>
             </div>
             <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-              {collection.slug === 'users' ? 'Manage system users, roles and security permissions.' : `Manage and organize ${collection.slug} records.`}
+              {collection.slug === 'users' 
+                ? 'Manage system users, roles and security permissions.' 
+                : `Manage and organize ${(collection.name || slug).toLowerCase()} records.`}
             </p>
           </div>
           
@@ -145,7 +163,7 @@ export default function CollectionListPage() {
               variant="primary" 
               size="sm"
               as={Link}
-              href={`/content/${slug}/new`}
+              href={`/${pluginSlug}/${slug}/new`}
               className="px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-xl shadow-indigo-600/30"
               icon={<FrameworkIcons.Plus size={18} />}
             >
@@ -188,11 +206,11 @@ export default function CollectionListPage() {
             onPageChange={setPage}
             onSort={setSort}
             currentSort={sort}
-            onRowClick={(row) => (window.location.href = `/content/${slug}/${row.id}`)}
+            onRowClick={(row) => (window.location.href = `/${pluginSlug}/${slug}/${row.id}`)}
             actions={(row) => (
               <div className="flex items-center justify-end gap-2">
                 <Link 
-                  href={`/content/${slug}/${row.id}`}
+                  href={`/${pluginSlug}/${slug}/${row.id}`}
                   onClick={(e) => e.stopPropagation()}
                   className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
                 >

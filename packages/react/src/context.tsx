@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, ReactNode, useCallback } fr
 import ReactDOM from 'react-dom';
 import { Slot } from './Slot';
 import { Override } from './Override';
+import { getIcon } from './Icons';
 
 export interface SlotComponent {
   component: React.ComponentType<any>;
@@ -23,6 +24,8 @@ export interface MenuItem {
 
 export interface CollectionMetadata {
   slug: string;
+  shortSlug?: string;
+  pluginSlug?: string;
   name?: string;
   fields: any[];
   admin?: any;
@@ -89,10 +92,11 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       if (typeof document !== 'undefined' && !document.querySelector('script[type="importmap"]')) {
         const importMap = {
           imports: {
-            "react": "data:text/javascript,export default window.React;export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, version } = window.React;",
-            "react-dom": "data:text/javascript,export default window.ReactDom;export const { render, hydrate, createRoot } = window.ReactDom || {};",
-            "@fromcode/react": "data:text/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider } = window.Fromcode;",
-            "react/jsx-runtime": "data:text/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment;"
+            "react": "data:text/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, version } = window.React;",
+            "react-dom": "data:text/javascript,export default window.ReactDom; export const { render, hydrate, createRoot } = window.ReactDom || {};",
+            "@fromcode/react": "data:text/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider, getIcon, createProxyIcon } = window.Fromcode;",
+            "react/jsx-runtime": "data:text/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment;",
+            "lucide-react": "data:text/javascript,export const { Loader2, Search, Plus, Trash2, Pencil, Save, Download, Upload, RefreshCw, ExternalLink, MoreHorizontal, Filter, FileText, Tag, Layers, ChevronDown, ChevronRight, Home, Info, AlertCircle, CheckCircle2, MoreVertical, Layout, Columns, Copy, Settings, BarChart3, PlusCircle } = window.Fromcode; export default window.Fromcode;"
           }
         };
         const script = document.createElement('script');
@@ -222,27 +226,57 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     });
   }, [translations]);
 
-  const registerSlotComponent = useCallback((slotName: string, component: SlotComponent) => {
+  const registerSlotComponent = useCallback((slotName: string, component: any, pluginSlug?: string, priority?: number) => {
+    if (!component) {
+      console.warn(`[Fromcode] Attempted to register undefined component for slot "${slotName}" from plugin "${pluginSlug || 'unknown'}". Ignored.`);
+      return;
+    }
+
+    // Handle CJS/ESM mismatch where component might be { default: Comp }
+    let actualComponent = component;
+    if (component && !component.$$typeof && typeof component === 'object' && component.default) {
+      actualComponent = component.default;
+    }
+
+    // Safety check: if we somehow got undefined after unwrapping, ignore it
+    if (!actualComponent) {
+      console.warn(`[Fromcode] Component for slot "${slotName}" resolved to undefined. Plugin: ${pluginSlug || 'unknown'}`);
+      return;
+    }
+
+    const componentObj: SlotComponent = typeof actualComponent === 'function' || (actualComponent && (actualComponent as any).$$typeof)
+      ? { component: actualComponent, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
+      : actualComponent;
+
+    if (!componentObj || !componentObj.component) {
+      console.warn(`[Fromcode] Invalid component object for slot "${slotName}" from plugin "${pluginSlug || 'unknown'}".`);
+      return;
+    }
+
     setSlots((prev) => {
       const existing = prev[slotName] || [];
       const isAlreadyRegistered = existing.some(
-        (item) => item.pluginSlug === component.pluginSlug && 
-                  (item.component === component.component)
+        (item) => item.pluginSlug === componentObj.pluginSlug && 
+                  (item.component === componentObj.component)
       );
       if (isAlreadyRegistered) return prev;
       return { 
         ...prev, 
-        [slotName]: [...existing, component].sort((a, b) => a.priority - b.priority) 
+        [slotName]: [...existing, componentObj].sort((a, b) => a.priority - b.priority) 
       };
     });
   }, []);
 
-  const registerOverride = useCallback((name: string, component: SlotComponent) => {
+  const registerOverride = useCallback((name: string, component: any, pluginSlug?: string, priority?: number) => {
+    const componentObj: SlotComponent = typeof component === 'function' || (component && component.$$typeof)
+      ? { component, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
+      : component;
+
     setOverrides((prev) => {
       const existing = prev[name];
       // Only replace if priority is higher
-      if (existing && existing.priority >= component.priority) return prev;
-      return { ...prev, [name]: component };
+      if (existing && existing.priority >= componentObj.priority) return prev;
+      return { ...prev, [name]: componentObj };
     });
   }, []);
 
@@ -277,7 +311,8 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     
     const fc = (window as any).Fromcode;
     fc.React = React;
-    fc.ReactDom = ReactDOM;
+    fc.ReactDOM = ReactDOM;
+    fc.ReactDom = ReactDOM; // Compatibility
 
     const queueMethod = (type: string) => (...args: any[]) => {
       if (!(window as any)._fromcodeQueue) (window as any)._fromcodeQueue = [];
@@ -292,19 +327,53 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     
     if (!fc.t) fc.t = (key: string, _params?: any, defaultValue?: string) => defaultValue || key;
     if (!fc.locale) fc.locale = 'en';
+    if (!fc.getIcon) fc.getIcon = getIcon;
   }
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       if (apiUrl) (window as any).FROMCODE_API_URL = apiUrl;
       (window as any).React = React;
-      (window as any).ReactDom = ReactDOM;
+      (window as any).ReactDOM = ReactDOM;
+      (window as any).ReactDom = ReactDOM; // Consistency
       
       const bridge = {
         React: React,
+        ReactDOM: ReactDOM,
         ReactDom: ReactDOM,
         Slot,
         Override,
+        getIcon,
+        createProxyIcon: (window as any).Fromcode?.createProxyIcon || (() => null),
+        // Map Lucide names to their framework equivalents or direct proxies
+        Loader2: getIcon('Loader2'),
+        Search: getIcon('Search'),
+        Plus: getIcon('Plus'),
+        Trash2: getIcon('Trash'),
+        Pencil: getIcon('Edit'),
+        Save: getIcon('Save'),
+        Download: getIcon('Download'),
+        Upload: getIcon('Upload'),
+        RefreshCw: getIcon('Refresh'),
+        ExternalLink: getIcon('External'),
+        MoreHorizontal: getIcon('More'),
+        Filter: getIcon('Filter'),
+        FileText: getIcon('FileText'),
+        Tag: getIcon('Tag'),
+        Layers: getIcon('Layers'),
+        ChevronDown: getIcon('Down'),
+        ChevronRight: getIcon('Right'),
+        Home: getIcon('Home'),
+        Info: getIcon('Info'),
+        AlertCircle: getIcon('Alert'),
+        CheckCircle2: getIcon('Check'),
+        MoreVertical: getIcon('MoreVertical'),
+        Layout: getIcon('Layout'),
+        Columns: getIcon('Columns'),
+        Copy: getIcon('Copy'),
+        Settings: getIcon('Settings'),
+        BarChart3: getIcon('BarChart3'),
+        PlusCircle: getIcon('PlusCircle'),
         registerSlotComponent,
         registerOverride,
         registerMenuItem,
@@ -322,6 +391,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       };
 
       (window as any).Fromcode = bridge;
+      (window as any).getIcon = getIcon;
 
       // Flush queue
       if ((window as any)._fromcodeQueue) {

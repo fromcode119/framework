@@ -17,11 +17,12 @@
     "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\""
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.1"
+    "drizzle-orm": "^0.45.1",
+    "tar": "^7.5.7"
   },
   "devDependencies": {
-    "tsx": "^4.21.0",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "tsx": "^4.21.0"
   },
   "overrides": {
     "react": "19.0.0",

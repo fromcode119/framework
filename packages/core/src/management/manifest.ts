@@ -49,6 +49,10 @@ export const PluginManifestSchema = z.object({
   // Admin UI & Extensions
   admin: z.object({
     group: z.string().optional(),
+    groupStrategy: z.union([
+      z.enum(['dropdown', 'section']),
+      z.record(z.enum(['dropdown', 'section']))
+    ]).optional(),
     icon: z.string().optional(),
     menu: z.array(z.any()).optional(),
     slots: z.array(z.object({

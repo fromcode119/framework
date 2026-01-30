@@ -84,6 +84,7 @@ export interface PluginManifest {
   // Metadata for Admin UI
   admin?: {
     group?: string;
+    groupStrategy?: 'dropdown' | 'section' | Record<string, 'dropdown' | 'section'>;
     icon?: string;
     menu?: MenuItemManifest[];
     slots?: { slot: string; component: string; priority?: number }[];
@@ -175,10 +176,13 @@ export type Access = (args: { req: any; user: any }) => boolean | Promise<boolea
 
 export interface Collection {
   slug: string;
+  pluginSlug?: string; // Automatically populated by framework
+  shortSlug?: string;  // Automatically populated by framework
   name?: string;
   tableName?: string; // Optional: specify a different table name
   primaryKey?: string; // Optional: default is 'id'
   timestamps?: boolean; // Optional: default is true
+  priority?: number;    // Optional: for sorting in the menu
   fields: Field[];
   access?: {
     create?: Access;

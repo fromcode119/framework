@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/ThemeContext';
 
 interface StatCardProps {
   title: string;
@@ -14,12 +13,10 @@ interface StatCardProps {
 }
 
 export const StatCard = ({ title, value, icon, trend }: StatCardProps) => {
-  const { theme } = useTheme();
-  
   return (
-    <div className={`p-6 rounded-2xl border transition-all hover:shadow-md ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+    <div className="p-6 rounded-2xl border transition-all hover:shadow-md bg-white border-slate-100 dark:bg-slate-900 dark:border-slate-800">
       <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-xl ${theme === 'dark' ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+        <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400">
           {icon}
         </div>
         {trend && (
@@ -29,7 +26,7 @@ export const StatCard = ({ title, value, icon, trend }: StatCardProps) => {
         )}
       </div>
       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{title}</p>
-      <h3 className={`text-2xl font-black mt-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{value}</h3>
+      <h3 className="text-2xl font-black mt-1 text-slate-900 dark:text-white">{value}</h3>
     </div>
   );
 };

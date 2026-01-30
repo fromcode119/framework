@@ -13,10 +13,12 @@ export function generateOpenAPI(collections: Collection[]) {
     };
 
     const required = collection.fields
-      .filter(f => f.required)
+      .filter(f => f.required && !f.admin?.hidden)
       .map(f => f.name);
 
     for (const field of collection.fields) {
+      if (field.admin?.hidden) continue;
+
       properties[field.name] = {
         type: mapTypeToOpenAPI(field.type),
         description: field.label

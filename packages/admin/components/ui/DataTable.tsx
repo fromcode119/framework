@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useTheme } from '@/components/ThemeContext';
 import { FrameworkIcons } from '@/lib/icons';
 
 interface Column<T> {
@@ -41,8 +40,6 @@ export function DataTable<T extends { id: any }>({
   actions,
   emptyMessage = "No records found"
 }: DataTableProps<T>) {
-  const { theme } = useTheme();
-
   const handleSort = (columnId: string) => {
     if (!onSort) return;
     const isDesc = currentSort === `-${columnId}`;
@@ -62,7 +59,7 @@ export function DataTable<T extends { id: any }>({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[600px]">
           <thead>
-            <tr className={`${theme === 'dark' ? 'bg-slate-900/50' : 'bg-slate-100/50'} border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200/60'}`}>
+            <tr className="bg-slate-100/50 border-b border-slate-200/60 dark:bg-slate-900/50 dark:border-slate-800">
               {columns.map((col) => (
                 <th 
                   key={col.id} 
@@ -87,7 +84,7 @@ export function DataTable<T extends { id: any }>({
               <tr>
                 <td colSpan={columns.length + (actions ? 1 : 0)} className="px-6 py-24 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <div className={`w-14 h-14 rounded-3xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
+                    <div className="w-14 h-14 rounded-3xl flex items-center justify-center mb-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
                       <FrameworkIcons.Search size={22} className="text-slate-400" />
                     </div>
                     <p className="font-black text-slate-400 uppercase tracking-widest text-[10px]">{emptyMessage}</p>
@@ -98,14 +95,14 @@ export function DataTable<T extends { id: any }>({
               data.map((row, index) => (
                 <tr 
                   key={row.id || row.key || row.slug || index} 
-                  className={`transition-all duration-200 cursor-default ${
+                  className={`transition-all duration-200 cursor-default hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${
                     onRowClick ? 'cursor-pointer' : ''
-                  } ${theme === 'dark' ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/80'}`}
+                  }`}
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (
                     <td key={col.id} className={`px-6 py-5 ${col.className || ''}`}>
-                      <div className={`text-[13px] font-bold tracking-tight ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                      <div className="text-[13px] font-bold tracking-tight text-slate-700 dark:text-slate-300">
                         {typeof col.accessor === 'function' 
                           ? col.accessor(row) 
                           : (String(row[col.accessor]) || '-')}
@@ -125,24 +122,16 @@ export function DataTable<T extends { id: any }>({
       </div>
 
       {totalPages > 1 && (
-        <div className={`flex items-center justify-between px-8 py-5 border-t transition-all ${
-          theme === 'dark' 
-            ? 'bg-slate-950/40 border-slate-800/50' 
-            : 'bg-slate-50/50 border-slate-100'
-        }`}>
+        <div className="flex items-center justify-between px-8 py-5 border-t transition-all bg-slate-50/50 border-slate-100 dark:bg-slate-950/40 dark:border-slate-800/50">
           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-            Showing <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{data.length}</span> of <span className={`${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{totalDocs}</span> records
+            Showing <span className="text-slate-900 dark:text-white">{data.length}</span> of <span className="text-slate-900 dark:text-white">{totalDocs}</span> records
           </p>
           
           <div className="flex items-center gap-2">
             <button 
               disabled={page === 1}
               onClick={() => onPageChange?.(page - 1)}
-              className={`p-2 rounded-lg transition-all border ${
-                theme === 'dark' 
-                  ? 'bg-slate-800 border-slate-700 text-slate-400 disabled:opacity-20' 
-                  : 'bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm'
-              }`}
+              className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20"
             >
               <FrameworkIcons.Left size={16} />
             </button>
@@ -158,9 +147,7 @@ export function DataTable<T extends { id: any }>({
                     className={`h-9 w-9 text-[11px] font-black rounded-lg transition-all ${
                       page === pageNum 
                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
-                        : theme === 'dark' 
-                          ? 'bg-slate-800 text-slate-400 hover:text-white' 
-                          : 'bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm'
+                        : 'bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent'
                     }`}
                   >
                     {pageNum}
@@ -173,11 +160,7 @@ export function DataTable<T extends { id: any }>({
             <button 
               disabled={page === totalPages}
               onClick={() => onPageChange?.(page + 1)}
-              className={`p-2 rounded-lg transition-all border ${
-                theme === 'dark' 
-                  ? 'bg-slate-800 border-slate-700 text-slate-400 disabled:opacity-20' 
-                  : 'bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm'
-              }`}
+              className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20"
             >
               <FrameworkIcons.Right size={16} />
             </button>

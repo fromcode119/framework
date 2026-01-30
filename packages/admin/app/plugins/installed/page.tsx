@@ -107,14 +107,22 @@ export default function InstalledPluginsPage() {
     if (!pluginToDelete) return;
     setIsDeleting(true);
     try {
+      const plugin = plugins.find(p => p.slug === pluginToDelete);
+      
+      if (plugin && plugin.state === 'active') {
+        await api.post(ENDPOINTS.PLUGINS.TOGGLE(pluginToDelete), { enabled: false });
+      }
+
       await api.delete(ENDPOINTS.PLUGINS.DELETE(pluginToDelete));
       notify('success', 'Deleted', `Plugin ${pluginToDelete} removed.`);
       setPlugins(prev => prev.filter(p => p.slug !== pluginToDelete));
       setShowDeleteConfirm(false);
+      triggerRefresh();
     } catch (err: any) {
       notify('error', 'Delete Failed', err.message);
     } finally {
       setIsDeleting(false);
+      setPluginToDelete(null);
     }
   };
 
@@ -293,11 +301,19 @@ export default function InstalledPluginsPage() {
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setPluginToDelete(null);
+        }}
         onConfirm={handleDelete}
         isLoading={isDeleting}
-        title="Delete Plugin"
-        description="Are you sure you want to remove this plugin? All its data will be lost."
+        title="Destroy Plugin"
+        description={`This will permanently remove ${pluginToDelete} and all its data. ${
+          plugins.find(p => p.slug === pluginToDelete)?.state === 'active' 
+            ? "Since it's currently active, we'll deactivate it first." 
+            : ""
+        }`}
+        confirmLabel="Destroy Now"
       />
     </div>
   );

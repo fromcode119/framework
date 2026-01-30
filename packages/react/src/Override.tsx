@@ -14,10 +14,22 @@ export const Override = ({ name, props, fallback, children }: OverrideProps) => 
   const { overrides } = usePlugins();
   const item = overrides[name];
 
-  if (!item) {
+  if (!item || !item.component) {
     return <>{fallback || children}</>;
   }
 
   const Component = item.component;
-  return <Component {...props}>{children || fallback}</Component>;
+
+  // Safety check for React component validity
+  if (typeof Component !== 'function' && typeof Component !== 'string' && !(Component as any)?.$$typeof) {
+    console.warn(`[Override] Component for override "${name}" is of invalid type: ${typeof Component}. Skipping.`);
+    return <>{fallback || children}</>;
+  }
+
+  try {
+    return <Component {...props}>{children || fallback}</Component>;
+  } catch (err) {
+    console.error(`[Override] Runtime error in override component "${name}":`, err);
+    return <>{fallback || children}</>;
+  }
 };

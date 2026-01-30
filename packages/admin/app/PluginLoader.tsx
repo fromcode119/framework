@@ -47,13 +47,19 @@ export default function PluginLoader() {
       // Small delay to ensure GlobalInitializer has run
       // and window.FrameworkIcons, window.React, window.ReactDOM are available
       let retryCount = 0;
-      while (!(window as any).FrameworkIcons && retryCount < 50) {
+      while (
+        (!(window as any).FrameworkIcons || 
+         !(window as any).React || 
+         !(window as any).Fromcode?.registerSlotComponent ||
+         typeof (window as any).Fromcode.registerSlotComponent !== 'function') && 
+        retryCount < 50
+      ) {
         await new Promise(resolve => setTimeout(resolve, 50));
         retryCount++;
       }
 
-      if (!(window as any).FrameworkIcons) {
-        console.error("[Admin] FrameworkIcons not found on window. Plugin loading aborted.");
+      if (!(window as any).FrameworkIcons || !(window as any).React) {
+        console.error("[Admin] Required globals not found on window. Plugin loading aborted.");
         return;
       }
 
@@ -68,7 +74,7 @@ export default function PluginLoader() {
             if (plugin.ui?.entry) {
               const src = `${API_BASE_URL}/plugins/${plugin.slug}/ui/${plugin.ui.entry}`;
               
-              // 1. Module Preload to optimize loading and prevent "preloaded but not used" browser warnings
+              // 1. Module Preload
               if (!document.querySelector(`link[href="${src}"][rel="modulepreload"]`)) {
                 const link = document.createElement('link');
                 link.rel = 'modulepreload';
@@ -76,14 +82,32 @@ export default function PluginLoader() {
                 document.head.appendChild(link);
               }
 
-              // 2. Main Entry Injection
-              if (!document.querySelector(`script[src="${src}"]`)) {
-                const script = document.createElement('script');
-                script.type = 'module';
-                script.src = src;
-                script.async = true;
-                document.body.appendChild(script);
-              }
+              // 2. Dynamic Import to handle both side-effects and structured exports (slots)
+              import(/* webpackIgnore: true */ src).then(module => {
+                if (module.init) module.init();
+                
+                // If the module exports a "slots" object, register them automatically
+                if (module.slots) {
+                  Object.entries(module.slots).forEach(([slotName, config]: [string, any]) => {
+                    const component = typeof config === 'function' ? config : config.component;
+                    const priority = config.priority || 0;
+                    registerSlotComponent(slotName, component, plugin.slug, priority);
+                  });
+                }
+                
+                console.log(`[Admin] Plugin ${plugin.slug} UI module loaded and initialized.`);
+              }).catch(err => {
+                console.warn(`[Admin] Failed to dynamic import plugin ${plugin.slug}:`, err);
+                
+                // Fallback: regular script tag if import fails (legacy or side-effect only)
+                if (!document.querySelector(`script[src="${src}"]`)) {
+                  const script = document.createElement('script');
+                  script.type = 'module';
+                  script.src = src;
+                  script.async = true;
+                  document.body.appendChild(script);
+                }
+              });
             }
 
             // Load CSS if defined

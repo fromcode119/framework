@@ -75,11 +75,33 @@ export class PluginController {
   async registry(req: Request, res: Response) {
     try {
       const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
-      const response = await fetch(registryUrl);
-      if (!response.ok) throw new Error(`Registry unavailable`);
-      res.json(await response.json());
+      this.logger.debug(`Fetching plugin registry from: ${registryUrl}`);
+      
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+      try {
+        const response = await fetch(registryUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+        
+        if (!response.ok) {
+          this.logger.warn(`Registry responded with status: ${response.status}`);
+          throw new Error(`Registry unavailable`);
+        }
+        
+        const data = await response.json();
+        res.json(data);
+      } catch (err: any) {
+        clearTimeout(timeout);
+        throw err;
+      }
     } catch (err: any) {
-      res.status(503).json({ error: 'Marketplace registry currently unavailable.' });
+      this.logger.error(`Marketplace registry error: ${err.message}`);
+      // Return 200 with empty list or specialized error to avoid breaking UI/Proxy
+      res.status(503).json({ 
+        error: 'Marketplace registry currently unavailable.',
+        message: err.message === 'The user aborted a request.' ? 'Request timed out' : err.message
+      });
     }
   }
 
@@ -92,7 +114,12 @@ export class PluginController {
       const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
       this.logger.debug(`Fetching registry from: ${registryUrl}`);
       
-      const response = await fetch(registryUrl);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10s for installation lookup
+
+      const response = await fetch(registryUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+      
       if (!response.ok) {
         throw new Error(`Registry returned status ${response.status}: ${response.statusText}`);
       }
