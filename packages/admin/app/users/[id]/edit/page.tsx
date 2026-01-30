@@ -20,6 +20,7 @@ export default function EditUserPage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
+    username: '',
     firstName: '',
     lastName: '',
     password: '',
@@ -33,6 +34,7 @@ export default function EditUserPage() {
         const data = await api.get(ENDPOINTS.SYSTEM.USER(id as string));
         setFormData({
           email: data.email || '',
+          username: data.username || '',
           firstName: data.firstName || '',
           lastName: data.lastName || '',
           password: '',
@@ -129,6 +131,14 @@ export default function EditUserPage() {
                         value={formData.email} 
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                         required
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Username</label>
+                     <Input 
+                        placeholder="username" 
+                        value={formData.username} 
+                        onChange={(e) => setFormData({...formData, username: e.target.value})}
                      />
                   </div>
                   <div className="space-y-2">

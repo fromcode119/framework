@@ -1,4 +1,5 @@
 export * from './types';
+export { RecordVersions } from './collections/RecordVersions';
 export { PluginManager } from './plugin/manager';
 export { ThemeManager } from './theme/manager';
 export { SchemaManager } from './database/schema-manager';

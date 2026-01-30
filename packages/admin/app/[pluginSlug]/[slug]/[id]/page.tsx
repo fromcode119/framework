@@ -17,6 +17,7 @@ import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 
 const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { field: any, value: any, onChange: (val: any) => void, theme: string, collectionSlug: string }) => {
+  const sourceCollection = field.admin?.sourceCollection || field.relationTo;
   return (
     <TagField 
       collectionSlug={collectionSlug}
@@ -24,8 +25,10 @@ const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { fiel
       value={value}
       onChange={onChange}
       theme={theme}
-      sourceCollection={field.admin?.sourceCollection}
-      sourceField={field.admin?.sourceField}
+      sourceCollection={sourceCollection}
+      sourceField={field.admin?.sourceField || (sourceCollection === 'users' ? 'username' : 'slug')}
+      hasMany={field.hasMany !== undefined ? field.hasMany : (field.admin?.component === 'TagField' || field.admin?.component === 'Tags')}
+      allowCreate={sourceCollection !== 'users'}
     />
   );
 };
@@ -53,6 +56,10 @@ export default function CollectionEditPage() {
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [slugWarning, setSlugWarning] = useState<string | null>(null);
+  const [selectedRevision, setSelectedRevision] = useState<any | null>(null);
+  const [revisions, setRevisions] = useState<any[]>([]);
+
+  const currentRevIndex = selectedRevision ? revisions.findIndex(r => r.id === selectedRevision.id) : -1;
 
   const resolvedSlug = collection?.slug || slug;
 
@@ -69,11 +76,25 @@ export default function CollectionEditPage() {
   useEffect(() => {
     if (isNew || !collection) return;
 
-    async function fetchEntry() {
+    async function fetchData() {
       try {
-        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
-        setFormData(result);
-        if (result.slug) setSlugManuallyEdited(true);
+        const [entryData, versionData] = await Promise.all([
+           api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`),
+           api.get(`${ENDPOINTS.COLLECTIONS.BASE}/versions?ref_id=${id}&ref_collection=${resolvedSlug}&sort=-id&limit=20`)
+        ]);
+
+        setFormData(entryData);
+        if (entryData.slug) setSlugManuallyEdited(true);
+
+        if (versionData && versionData.docs) {
+           setRevisions(versionData.docs.map((v: any) => ({
+              id: v.id,
+              date: new Date(v.created_at || v.createdAt),
+              user: v.updated_by || v.updatedBy || 'System',
+              action: v.change_summary || 'Update',
+              changes: v.version_data
+           })));
+        }
       } catch (err) {
         console.error("Failed to fetch entry:", err);
         setStatus({ type: 'error', message: 'Failed to load entry' });
@@ -82,7 +103,7 @@ export default function CollectionEditPage() {
       }
     }
 
-    fetchEntry();
+    fetchData();
   }, [resolvedSlug, id, isNew, collection]);
 
   // Debounced slug uniqueness check
@@ -121,7 +142,41 @@ export default function CollectionEditPage() {
   }, [formData.slug, resolvedSlug, id, isNew, collection]);
 
   if (!collection) {
-    return <div>Collection {slug} not found</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in-95 duration-700">
+        <div className={`p-8 rounded-[40px] mb-8 relative group ${theme === 'dark' ? 'bg-slate-900 shadow-2xl shadow-black/50' : 'bg-white shadow-2xl shadow-slate-200'}`}>
+           <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+           <FrameworkIcons.Search size={64} className="text-indigo-500 relative z-10" strokeWidth={1} />
+        </div>
+        
+        <h2 className={`text-4xl font-black tracking-tighter uppercase mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+          Collection Not Found
+        </h2>
+        
+        <p className="text-slate-500 font-bold text-center max-w-sm leading-relaxed mb-10 px-6">
+          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-[10px] ml-1">{pluginSlug}</span> plugin registry.
+        </p>
+
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost"
+            onClick={() => window.history.back()}
+            className="rounded-2xl px-8 font-black uppercase tracking-widest text-[10px] text-slate-400"
+          >
+            Go Back
+          </Button>
+          <Button 
+            variant="primary"
+            as={Link}
+            href="/"
+            className="rounded-2xl px-10 py-5 font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-indigo-500/30"
+            icon={<FrameworkIcons.Layout size={18} />}
+          >
+            Return to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const handleInputChange = (name: string, value: any) => {
@@ -156,6 +211,23 @@ export default function CollectionEditPage() {
       const result = await (isNew ? api.post(url, formData) : api.put(url, formData));
 
       setStatus({ type: 'success', message: `Entry ${isNew ? 'created' : 'updated'} successfully` });
+      
+      // Refresh revisions
+      if (!isNew) {
+        try {
+          const versionData = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/versions?ref_id=${id}&ref_collection=${resolvedSlug}&sort=-id&limit=20`);
+          if (versionData && versionData.docs) {
+            setRevisions(versionData.docs.map((v: any) => ({
+              id: v.id,
+              date: new Date(v.created_at || v.createdAt),
+              user: v.updated_by || v.updatedBy || 'System',
+              action: v.change_summary || 'Update',
+              changes: v.version_data
+            })));
+          }
+        } catch (e) {}
+      }
+
       if (isNew) {
         router.push(`/${pluginSlug}/${slug}/${result.id}`);
       }
@@ -211,6 +283,20 @@ export default function CollectionEditPage() {
             </div>
             
             <div className="flex items-center gap-3">
+              {!isNew && formData.slug && (
+                <a 
+                  href={`/${formData.slug}?preview=1&draft=1`}
+                  target="_blank"
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                    theme === 'dark' 
+                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700' 
+                      : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100'
+                  }`}
+                >
+                  <FrameworkIcons.Eye size={14} />
+                  Preview
+                </a>
+              )}
               {!isNew && (
                 <button 
                   onClick={() => setShowDeleteConfirm(true)}
@@ -219,23 +305,6 @@ export default function CollectionEditPage() {
                   <FrameworkIcons.Trash size={20} />
                 </button>
               )}
-              <Button 
-                variant="ghost" 
-                type="button" 
-                className="font-bold text-slate-400"
-                onClick={() => router.back()}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button 
-                className="px-8 font-black uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-600/30" 
-                onClick={handleSubmit}
-                isLoading={saving}
-                icon={<FrameworkIcons.Save size={18} />}
-              >
-                {isNew ? 'Create' : 'Save Changes'}
-              </Button>
             </div>
           </div>
         </div>
@@ -260,20 +329,20 @@ export default function CollectionEditPage() {
 
           <Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew }} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-32">
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                   {collection.fields
-                    .filter(f => !f.admin?.hidden)
+                    .filter(f => !f.admin?.hidden && f.admin?.position !== 'sidebar')
                     .map((field) => (
-                    <div key={field.name} className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
+                    <div key={field.name} className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
                       <label className={`block text-[10px] font-black uppercase tracking-widest mb-3 pl-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                         {field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()}
                         {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
                       </label>
                       
-                      {field.admin?.component === 'Tags' || field.type === 'json' ? (
+                      {field.admin?.component === 'TagField' || field.admin?.component === 'Tags' || field.type === 'json' ? (
                         <TagFieldLocal 
                           field={field} 
                           value={formData[field.name]} 
@@ -281,7 +350,7 @@ export default function CollectionEditPage() {
                           theme={theme}
                           collectionSlug={resolvedSlug}
                         />
-                      ) : field.type === 'textarea' ? (
+                      ) : (field.type === 'textarea' || field.type === 'richText') ? (
                         <textarea 
                           value={formData[field.name] || ''}
                           onChange={(e) => handleInputChange(field.name, e.target.value)}
@@ -347,6 +416,67 @@ export default function CollectionEditPage() {
               <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
               <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
               
+              {collection.fields.some(f => f.admin?.position === 'sidebar' && !f.admin?.hidden) && (
+                <Card title="Settings">
+                  <div className="space-y-6">
+                    {collection.fields
+                      .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden)
+                      .map((field) => (
+                        <div key={field.name}>
+                          <label className={`block text-[9px] font-black uppercase tracking-widest mb-2 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                            {field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()}
+                          </label>
+                          {field.type === 'select' ? (
+                            <Select
+                              value={formData[field.name] || field.defaultValue || ''}
+                              options={field.options || []}
+                              onChange={(val) => handleInputChange(field.name, val)}
+                              disabled={saving}
+                              theme={theme}
+                            />
+                          ) : (field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags') ? (
+                            <TagFieldLocal 
+                              field={field} 
+                              value={formData[field.name]} 
+                              onChange={(val) => handleInputChange(field.name, val)}
+                              theme={theme}
+                              collectionSlug={resolvedSlug}
+                            />
+                          ) : field.type === 'boolean' ? (
+                            <div className="flex items-center gap-2">
+                               {/* Add boolean toggle here if needed, or use Select for now */}
+                               <Select
+                                value={formData[field.name]?.toString() || field.defaultValue?.toString() || 'false'}
+                                options={[{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]}
+                                onChange={(val) => handleInputChange(field.name, val === 'true')}
+                                disabled={saving}
+                                theme={theme}
+                              />
+                            </div>
+                          ) : (
+                            <Input 
+                              value={formData[field.name] || ''}
+                              onChange={(e) => handleInputChange(field.name, e.target.value)}
+                              placeholder={`Enter ${field.label || field.name}...`}
+                              disabled={saving}
+                              className="text-xs h-10 font-bold"
+                            />
+                          )}
+                          {field.admin?.description && (
+                            <p className="mt-1.5 text-[9px] text-slate-400 font-bold uppercase tracking-tight opacity-50">{field.admin.description}</p>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </Card>
+              )}
+
+              <Card title="Management">
+                 <p className="text-[11px] text-slate-400 font-bold leading-relaxed italic">
+                   Version control and audit trails are active for this entry. All changes are snapshotted to the global governance layer.
+                 </p>
+              </Card>
+
               {!isNew && (
                 <Card title="Record Info">
                   <div className="space-y-4">
@@ -366,18 +496,37 @@ export default function CollectionEditPage() {
                 </Card>
               )}
 
-              <Card title="Management">
-                 <p className="text-[11px] text-slate-400 font-bold leading-relaxed mb-6 italic">
-                   Version control and audit trails are active for this entry.
-                 </p>
-                 <Button 
-                    className="w-full py-4 font-black uppercase tracking-widest text-[11px] rounded-2xl" 
-                    onClick={handleSubmit}
-                    isLoading={saving}
-                  >
-                    {isNew ? 'Create Entry' : 'Commit Changes'}
-                  </Button>
-              </Card>
+              {!isNew && (
+                <Card title="Version History">
+                   <div className="space-y-4">
+                      {revisions.map((v, i) => (
+                        <div 
+                          key={i} 
+                          onClick={() => setSelectedRevision(v)}
+                          className="flex items-start gap-3 group cursor-pointer p-2 -m-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                        >
+                           <div className={`mt-1 h-2 w-2 rounded-full ${i === 0 ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-200'} shrink-0`} />
+                           <div className="flex-1">
+                              <div className="flex justify-between items-center">
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">{v.user}</span>
+                                 <div className="flex items-center gap-2">
+                                    <button 
+                                      onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, ...v.changes }); }}
+                                      className="text-[9px] font-black uppercase text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+                                    >
+                                       <FrameworkIcons.Refresh size={8} />
+                                       Restore
+                                    </button>
+                                 </div>
+                              </div>
+                              <p className="text-[10px] text-slate-500 font-medium">{v.action}</p>
+                              <p className="text-[8px] text-slate-400 uppercase tracking-widest mt-0.5">{v.date.toLocaleString()}</p>
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                </Card>
+              )}
             </div>
           </div>
           
@@ -385,12 +534,77 @@ export default function CollectionEditPage() {
         </div>
       </div>
 
-      <div className={`mt-auto border-t py-12 backdrop-blur-3xl transition-all duration-300 ${
+      {selectedRevision && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 animate-in fade-in duration-300">
+           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setSelectedRevision(null)} />
+           <Card className="relative w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                 <div>
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-indigo-500">Revision Details</h2>
+                    <p className="text-[10px] text-slate-500 font-bold mt-1">{selectedRevision.date.toLocaleString()} by {selectedRevision.user}</p>
+                 </div>
+                 <button onClick={() => setSelectedRevision(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <FrameworkIcons.Close size={20} />
+                 </button>
+              </div>
+
+              <div className={`rounded-xl p-4 mb-6 max-h-[40vh] overflow-y-auto ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'}`}>
+                 <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Snapshot Changes</h3>
+                 <div className="space-y-3">
+                    {Object.entries(selectedRevision.changes)
+                      .filter(([key]) => !['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key))
+                      .map(([key, val]) => (
+                       <div key={key} className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-2 last:border-0">
+                          <span className="text-[9px] font-black text-indigo-500 uppercase">{key}</span>
+                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 truncate">
+                            {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                          </span>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 mt-8">
+                 <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      className="text-[10px] font-black uppercase tracking-widest disabled:opacity-30" 
+                      disabled={currentRevIndex >= revisions.length - 1}
+                      onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
+                    >
+                       <FrameworkIcons.Left size={14} className="mr-2" />
+                       Older
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="text-[10px] font-black uppercase tracking-widest disabled:opacity-30" 
+                      disabled={currentRevIndex <= 0}
+                      onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
+                    >
+                       Newer
+                       <FrameworkIcons.Right size={14} className="ml-2" />
+                    </Button>
+                 </div>
+                 <Button 
+                    className="px-8 text-[10px] font-black uppercase tracking-widest"
+                    onClick={() => {
+                       setFormData({ ...formData, ...selectedRevision.changes });
+                       setSelectedRevision(null);
+                    }}
+                 >
+                    Apply Revision
+                 </Button>
+              </div>
+           </Card>
+        </div>
+      )}
+
+      <div className={`fixed bottom-0 left-0 right-0 z-[100] border-t py-10 backdrop-blur-3xl transition-all duration-300 ${
         theme === 'dark' 
-          ? 'bg-slate-950/40 border-slate-800' 
-          : 'bg-slate-50/50 border-slate-100'
+          ? 'bg-slate-950/80 border-slate-800/50 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]' 
+          : 'bg-white/80 border-slate-100 shadow-lg'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8 pl-20 lg:pl-64">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
               <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
@@ -406,15 +620,15 @@ export default function CollectionEditPage() {
               className="rounded-xl px-6 text-[10px] font-black uppercase tracking-widest text-slate-400"
               onClick={() => router.back()}
             >
-              Discard
+              Discard Changes
             </Button>
             <Button 
-              className="rounded-xl px-10 shadow-xl shadow-indigo-600/30 text-[10px] font-black uppercase tracking-widest py-4"
+              className="rounded-xl px-12 shadow-2xl shadow-indigo-600/30 text-[10px] font-black uppercase tracking-widest py-4.5"
               onClick={handleSubmit}
               isLoading={saving}
               icon={<FrameworkIcons.Save size={16} strokeWidth={3} />}
             >
-              Commit Changes
+              {isNew ? 'Create Entry' : 'Commit Changes'}
             </Button>
           </div>
         </div>
