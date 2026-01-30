@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
-import { useTheme } from '@/components/ThemeContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FrameworkIcons } from '@/lib/icons';
@@ -11,10 +10,10 @@ import { useEffect } from 'react';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useNotify } from '@/components/NotificationContext';
+import { APP_NAME } from '@/lib/env';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { theme } = useTheme();
   const { notify } = useNotify();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -81,7 +80,7 @@ export default function LoginPage() {
 
   if (isCheckingStatus) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#020617]' : 'bg-slate-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#020617]">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Verifying System...</span>
@@ -91,19 +90,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-6 ${theme === 'dark' ? 'bg-[#020617]' : 'bg-slate-50'}`}>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-600/30 mb-6 transform hover:scale-110 transition-transform">
             <FrameworkIcons.Zap size={32} className="text-white" fill="currentColor" />
           </div>
-          <h1 className={`text-3xl font-black tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            Welcome to Fromcode
+          <h1 className="text-3xl font-black tracking-tight mb-2 text-slate-900 dark:text-white">
+            Welcome to {APP_NAME}
           </h1>
           <p className="text-slate-500 font-medium">Please enter your credentials to continue</p>
         </div>
 
-        <div className={`p-8 rounded-3xl border shadow-2xl ${theme === 'dark' ? 'bg-[#0f172a] border-slate-800 shadow-black/40' : 'bg-white border-slate-200'}`}>
+        <div className="p-8 rounded-3xl border shadow-2xl bg-white border-slate-200 dark:bg-[#0f172a] dark:border-slate-800 dark:shadow-black/40">
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-bold animate-in fade-in zoom-in duration-300">
               {error}
@@ -124,7 +123,7 @@ export default function LoginPage() {
             
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className={`text-xs font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>Password</label>
+                <label className="text-[11px] font-black uppercase tracking-widest text-slate-500">Password</label>
                 <button type="button" onClick={handleForgotPassword} className="text-xs font-bold text-indigo-500 hover:text-indigo-400">Forgot?</button>
               </div>
               <Input 
@@ -140,7 +139,7 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2">
-                <div className={`p-1 rounded bg-indigo-500/10 text-indigo-500`}>
+                <div className="p-1 rounded bg-indigo-500/10 text-indigo-500">
                   <FrameworkIcons.Shield size={14} />
                 </div>
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Secure Session</span>

@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthContext';
-import { useTheme } from '@/components/ThemeContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
+import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
 
 const { Zap, Mail, Lock, ArrowRight, Shield: ShieldCheck, UserPlus, Orbit } = FrameworkIcons;
 
@@ -16,7 +16,6 @@ const ICON_SIZE = 42;
 
 export default function SetupPage() {
   const router = useRouter();
-  const { theme } = useTheme();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
@@ -79,7 +78,7 @@ export default function SetupPage() {
 
   if (isChecking) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-slate-950' : 'bg-slate-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-6">
           <div className="relative">
             <div className="h-16 w-16 border-[5px] border-indigo-600/10 rounded-3xl"></div>
@@ -92,19 +91,19 @@ export default function SetupPage() {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-6 sm:p-12 ${theme === 'dark' ? 'bg-[#020617]' : 'bg-slate-50'}`}>
+    <div className="min-h-screen flex items-center justify-center p-6 sm:p-12 bg-slate-50 dark:bg-[#020617]">
       <div className="w-full max-w-lg">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-1000">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-white dark:bg-slate-900 rounded-[2rem] shadow-[0_20px_50px_rgba(79,70,229,0.15)] mb-8 transform hover:scale-105 transition-all duration-500 ring-1 ring-slate-100 dark:ring-slate-800">
-            <FrameworkIcons.Orbit size={ICON_SIZE} className="text-indigo-600 animate-[spin_10s_linear_infinite]" />
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(79,70,229,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 transform hover:scale-105 transition-all duration-500 border-[6px] border-white dark:border-slate-800 outline outline-1 outline-indigo-50/50 dark:outline-slate-800">
+            <FrameworkIcons.Orbit size={ICON_SIZE} className="text-indigo-600 dark:text-indigo-500 animate-[spin_10s_linear_infinite]" />
           </div>
-          <h1 className={`text-5xl font-black tracking-tighter mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-950'}`}>
+          <h1 className="text-5xl font-black tracking-tighter mb-4 text-slate-950 dark:text-white">
             System Setup
           </h1>
           <p className="text-slate-500 font-medium text-lg leading-relaxed max-w-[340px] mx-auto">Create the root administrator account to unlock your digital core.</p>
         </div>
 
-        <div className={`p-10 sm:p-12 rounded-[3.5rem] border shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] dark:shadow-black/60 animate-in fade-in slide-in-from-bottom-8 duration-1000 ${theme === 'dark' ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-white'}`}>
+        <div className="p-10 sm:p-12 rounded-[3.5rem] border shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] dark:shadow-black/60 animate-in fade-in slide-in-from-bottom-8 duration-1000 bg-white dark:bg-slate-900/50 border-slate-100 dark:border-slate-800">
           {error && (
             <div className="mb-8 p-5 rounded-3xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 text-rose-600 text-[13px] font-black animate-in zoom-in duration-300 flex items-center gap-4">
               <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center">
@@ -160,7 +159,7 @@ export default function SetupPage() {
                   <FrameworkIcons.Shield size={20} />
                 </div>
                 <div>
-                  <h4 className={`text-sm font-black mb-1 uppercase tracking-tight ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-900'}`}>Omnipotent Privilege</h4>
+                  <h4 className="text-sm font-black mb-1 uppercase tracking-tight text-indigo-900 dark:text-indigo-300">Omnipotent Privilege</h4>
                   <p className="text-[11px] text-slate-500 font-medium leading-relaxed italic">
                     This account holds master keys to all infrastructure, deployments, and sensitive user telemetry.
                   </p>
@@ -179,9 +178,11 @@ export default function SetupPage() {
           </form>
         </div>
 
-        <div className="text-center mt-12 flex items-center justify-center gap-6 opacity-40">
+        <div className="text-center mt-12 flex items-center justify-center gap-6 opacity-40 text-slate-500">
            <div className="h-[2px] w-12 bg-slate-200 dark:bg-slate-800 rounded-full" />
-           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">v0.1.0 Nexus Alpha</span>
+           <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+             v{APP_VERSION} {APP_NAME} {APP_CHANNEL}
+           </span>
            <div className="h-[2px] w-12 bg-slate-200 dark:bg-slate-800 rounded-full" />
         </div>
       </div>

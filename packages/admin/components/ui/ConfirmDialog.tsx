@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { useTheme } from '@/components/ThemeContext';
 import { Button } from './Button';
 import { FrameworkIcons } from '@/lib/icons';
 import { Portal } from './Portal';
@@ -31,8 +30,6 @@ export const ConfirmDialog = ({
   variant = 'danger',
   isLoading = false
 }: ConfirmDialogProps) => {
-  const { theme } = useTheme();
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -53,28 +50,26 @@ export const ConfirmDialog = ({
         />
         
         {/* Dialog */}
-        <div className={`relative w-full max-w-md my-auto rounded-3xl border shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
-          theme === 'dark' ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
-        }`}>
+        <div className="relative w-full max-w-md my-auto rounded-3xl border shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 bg-white border-slate-100 shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800 dark:shadow-black/50">
           <div className="flex items-start gap-4">
             <div className={`p-3 rounded-xl flex-shrink-0 ${
               variant === 'danger' 
-                ? (theme === 'dark' ? 'bg-rose-500/10 text-rose-500' : 'bg-rose-50 text-rose-600')
-                : (theme === 'dark' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-50 text-indigo-600')
+                ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-500'
+                : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-500'
             }`}>
               <AlertTriangle size={24} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className={`text-lg font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                 {title}
               </h3>
-              <p className={`mt-2 text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                 {description}
               </p>
             </div>
             <button 
               onClick={onClose}
-              className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-50 text-slate-400 hover:text-slate-900'}`}
+              className="p-1 rounded-lg transition-colors hover:bg-slate-50 text-slate-400 hover:text-slate-900 dark:hover:bg-slate-800 dark:text-slate-500 dark:hover:text-white"
             >
               <X size={20} />
             </button>

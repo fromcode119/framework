@@ -12,12 +12,16 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme;
-    if (saved) setTheme(saved);
+    if (saved) {
+      setTheme(saved);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
     setMounted(true);
   }, []);
 
@@ -29,17 +33,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!mounted) return;
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
   }, [theme, mounted]);
 
   if (!mounted) {
-    return <div className="bg-[#020617] min-h-screen" />;
+    return <div className="bg-slate-50 dark:bg-[#020617] min-h-screen" />;
   }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div className={theme === "dark" ? "bg-[#020617] text-slate-400 min-h-screen" : "bg-slate-50 text-slate-600 min-h-screen"}>
+      <div className="min-h-screen transition-colors duration-300">
         {children}
       </div>
     </ThemeContext.Provider>

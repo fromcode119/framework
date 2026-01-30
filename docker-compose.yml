@@ -48,6 +48,8 @@ services:
       - /app/node_modules
       - /app/packages/api/node_modules
       - /app/packages/core/node_modules
+      - /app/packages/admin/node_modules
+      - /app/packages/frontend/node_modules
       - ./public/uploads:/app/public/uploads
       - ./plugins:/app/plugins
     networks:
@@ -68,13 +70,15 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - NODE_ENV=${NODE_ENV}
+      - WATCHPACK_POLLING=true
     depends_on:
       - api
     volumes:
       - .:/app
       - /app/node_modules
       - /app/packages/admin/node_modules
-      - /app/.next
+      - /app/packages/admin/.next
+      - /app/packages/core/node_modules
     networks:
       - framework
       - public
@@ -93,13 +97,15 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - NODE_ENV=${NODE_ENV}
+      - WATCHPACK_POLLING=true
     depends_on:
       - api
     volumes:
       - .:/app
       - /app/node_modules
       - /app/packages/frontend/node_modules
-      - /app/.next
+      - /app/packages/frontend/.next
+      - /app/packages/core/node_modules
     networks:
       - framework
       - public

@@ -231,7 +231,7 @@ export class APIServer {
   private setupCors() {
     this.app.use(cors({
       origin: (origin, callback) => {
-        // In development, handle wide-open CORS. In production, check against whitelist.
+        // In development, handle wide-open CORS.
         if (!origin || process.env.NODE_ENV === 'development') {
           return callback(null, true);
         }
@@ -244,7 +244,15 @@ export class APIServer {
             ? process.env.CORS_ALLOWED_DOMAINS.split(',').map(d => d.trim().toLowerCase())
             : [];
           
-          const allowedDomains = ['localhost', '127.0.0.1', 'fromcode.local', 'framework.local', ...envAllowed];
+          const allowedDomains = [
+            'localhost', 
+            '127.0.0.1', 
+            'fromcode.local', 
+            'framework.local', 
+            'api.framework.local',
+            'admin.framework.local',
+            ...envAllowed
+          ];
           
           const isAllowed = allowedDomains.some(domain => {
             const lowHost = hostname.toLowerCase();
@@ -255,10 +263,11 @@ export class APIServer {
           if (isAllowed) {
             callback(null, true);
           } else {
-            this.logger.warn(`CORS blocked for origin: ${origin}`);
-            callback(null, false);
+            this.logger.error(`CORS BLOCKED: Origin "${origin}" (hostname: "${hostname}") is not in whitelist: ${allowedDomains.join(', ')}`);
+            callback(new Error('Not allowed by CORS'));
           }
         } catch (err) {
+          this.logger.error(`CORS Error parsing origin "${origin}": ${err}`);
           callback(null, false);
         }
       },
@@ -385,6 +394,7 @@ export class APIServer {
       // These are essential for the system to function or for admins to login.
       const isPublicSystemRoute = 
         req.path === '/api/health' || 
+        req.path.endsWith('openapi.json') ||
         req.path.startsWith('/api/auth') || 
         req.path.startsWith('/api/v1/auth') ||
         req.path.endsWith('/system/i18n') ||
@@ -441,10 +451,14 @@ export class APIServer {
       maintenance: await this.getMaintenanceStatus(),
       bypass: !!(req.user && req.user.roles && req.user.roles.includes('admin'))
     }));
-    this.app.get('/api/openapi.json', (req, res) => res.json(generateOpenAPI(this.manager.getCollections())));
 
     const apiVersion = process.env.API_VERSION_PREFIX || 'v1';
     const vPrefix = `/api/${apiVersion}`;
+    
+    // Mount OpenAPI at both the generic and versioned path
+    const openApiHandler = (req: any, res: any) => res.json(generateOpenAPI(this.manager.getCollections()));
+    this.app.get('/api/openapi.json', openApiHandler);
+    this.app.get(`${vPrefix}/openapi.json`, openApiHandler);
     
     const vApi = express.Router();
 

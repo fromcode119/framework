@@ -278,12 +278,15 @@ export function createPluginContext(
         }
 
         // Automatically prefix plugin collections for isolation and security
-        const prefixedSlug = `${tablePrefix}${collection.slug}`;
-        const modifiedCollection = {
+        const shortSlug = collection.slug;
+        const prefixedSlug = `${tablePrefix}${shortSlug}`;
+        const modifiedCollection: Collection = {
           ...collection,
           slug: prefixedSlug,
+          shortSlug,
+          pluginSlug: plugin.manifest.slug,
           // Keep pretty name if not provided
-          name: collection.name || collection.slug.charAt(0).toUpperCase() + collection.slug.slice(1)
+          name: collection.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
         };
 
         rootLogger.info(`Plugin "${plugin.manifest.slug}" registered collection "${collection.slug}" as "${prefixedSlug}"`);

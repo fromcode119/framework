@@ -989,7 +989,10 @@ export class PluginManager implements PluginManagerInterface {
       .map(p => {
         const collections = Array.from(this.registeredCollections.values())
           .filter(c => c.pluginSlug === p.manifest.slug)
-          .map(c => c.collection);
+          .map(c => ({
+             ...c.collection,
+             pluginSlug: p.manifest.slug
+          }));
 
         return {
           slug: p.manifest.slug,
@@ -1045,8 +1048,30 @@ export class PluginManager implements PluginManagerInterface {
     pluginMetadata.forEach(p => {
       if (p.admin?.menu) {
         p.admin.menu.forEach(item => {
+          // If the path doesn't start with /admin or /content, and it matches a collection name,
+          // automatically prefix it with /${pluginSlug}/ to support the framework's routing structure
+          let effectivePath = item.path;
+          if (effectivePath && !effectivePath.startsWith('/admin/') && !effectivePath.startsWith(`/${p.slug}/`)) {
+            const pathSlug = effectivePath.replace(/^\//, '');
+            
+            // Check both manifest-declared and dynamically registered collections
+            const registeredForPlugin = Array.from(this.registeredCollections.values())
+              .filter(c => c.pluginSlug === p.slug)
+              .map(c => c.collection);
+
+            const hasMatchingCollection = 
+              p.admin.collections?.some(col => col.shortSlug === pathSlug || col.slug === pathSlug) ||
+              registeredForPlugin.some(col => col.shortSlug === pathSlug || col.slug === pathSlug);
+            
+            if (hasMatchingCollection) {
+                effectivePath = `/${p.slug}/${pathSlug}`;
+                this.logger.debug(`Auto-prefixed menu path for ${item.label}: ${item.path} -> ${effectivePath}`);
+            }
+          }
+
           rawMenuItems.push({
             ...item,
+            path: effectivePath,
             pluginSlug: p.slug,
             group: item.group || p.admin.group || null
           });
@@ -1054,30 +1079,50 @@ export class PluginManager implements PluginManagerInterface {
       }
 
       // 2. Automatically generate menu items for collections
-      if (p.admin?.collections) {
-        p.admin.collections.forEach(col => {
+      const collections = Array.from(this.registeredCollections.values())
+        .filter(c => c.pluginSlug === p.slug)
+        .map(c => c.collection);
+
+      if (collections.length > 0) {
+        collections.forEach(col => {
           // Skip if it's a hidden collection or explicitly handled elsewhere
           if (col.admin?.hidden) return;
           if (col.slug === 'settings') return; // Handled by dedicated /settings page
           
-          // Check if there's already a menu item for this path OR a very similar path
-          const path = `/content/${col.slug}`;
-          const label = col.name || col.slug.charAt(0).toUpperCase() + col.slug.slice(1);
+          // Use the short slug for the URL to keep it pretty
+          const shortSlug = col.shortSlug || col.slug;
+          const path = `/${p.slug}/${shortSlug}`;
+          const label = col.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1);
           
-          const isDuplicate = rawMenuItems.some(m => 
-            m.path === path || 
-            m.path === `/${col.slug}` ||
-            (m.label.toLowerCase() === label.toLowerCase() && m.pluginSlug === p.slug)
-          );
+          // Improved Deduplication: Check for manifest menu items that might already handle this content
+          const isExplicitlyHandled = rawMenuItems.some(m => {
+             if (m.pluginSlug !== p.slug) return false;
+             // Exact path match
+             if (m.path === path) return true;
+             
+             // Custom path that likely refers to the same thing
+             const normalizedPath = m.path?.toLowerCase().replace(/^\/[^/]+\//, '').replace(/^\//, '');
+             
+             if (normalizedPath === shortSlug) return true;
+             return false;
+          });
 
-          if (!isDuplicate) {
-            rawMenuItems.push({
-              label,
-              path,
-              icon: col.admin?.icon || p.admin.icon || 'FileText',
-              group: col.admin?.group || p.admin.group || null,
-              pluginSlug: p.slug
-            });
+          if (!isExplicitlyHandled) {
+            const isDuplicate = rawMenuItems.some(m => 
+              m.path === path || 
+              (m.label.toLowerCase() === label.toLowerCase() && m.pluginSlug === p.slug)
+            );
+
+            if (!isDuplicate) {
+              rawMenuItems.push({
+                label,
+                path,
+                icon: col.admin?.icon || p.admin.icon || 'FileText',
+                group: col.admin?.group || p.admin.group || null,
+                priority: col.priority || 100,
+                pluginSlug: p.slug
+              });
+            }
           }
         });
       }
@@ -1085,31 +1130,65 @@ export class PluginManager implements PluginManagerInterface {
 
     // 3. Grouping and Final Processing
     const finalMenu: any[] = [];
-    const groups: Record<string, any> = {};
+    const pluginGroupBuckets: Record<string, { pluginSlug: string, groupName: string, items: any[] }> = {};
 
+    // First pass: Bucket items by plugin and group
     rawMenuItems.forEach(item => {
-      const groupName = item.group || 'Platform';
+      const gName = item.group || 'Platform';
+      const bucketKey = `${item.pluginSlug}:${gName}`;
+      if (!pluginGroupBuckets[bucketKey]) {
+        pluginGroupBuckets[bucketKey] = { 
+            pluginSlug: item.pluginSlug || 'system', 
+            groupName: gName, 
+            items: [] 
+        };
+      }
+      pluginGroupBuckets[bucketKey].items.push(item);
+    });
+
+    // Define groups that should ALWAYS be rendered as sections (flat) for consistency
+    const alwaysSectionGroups = ['Platform', 'Content'];
+
+    // Second pass: Process each bucket
+    Object.values(pluginGroupBuckets).forEach(bucket => {
+      const { pluginSlug, groupName, items } = bucket;
+      const plugin = allPlugins.find(p => p.manifest.slug === pluginSlug);
       
-      if (groupName === 'Platform') {
-        finalMenu.push(item);
-      } else {
-        if (!groups[groupName]) {
-          // Find the plugin that defined this group's icon, or default to Layers
-          const groupIcon = allPlugins.find(p => p.manifest.admin?.group === groupName)?.manifest.admin?.icon || 'Layers';
-          
-          groups[groupName] = {
-            label: groupName,
-            icon: groupIcon,
-            group: 'Platform', // Keep the actual group container in Platform section
-            path: `/#group-${groupName.toLowerCase()}`, // Virtual path for dropdown
-            children: [],
-            isGroup: true,
-            priority: 50, // Default priority for custom groups
-            pluginSlug: item.pluginSlug
-          };
-          finalMenu.push(groups[groupName]);
+      // Determine strategy: Common groups are sections, others default to dropdown for tidiness
+      let strategy: 'dropdown' | 'section' = alwaysSectionGroups.includes(groupName) ? 'section' : 'dropdown';
+      
+      // Override with manifest if provided
+      if (plugin?.manifest.admin?.groupStrategy) {
+        const gs = plugin.manifest.admin.groupStrategy as any;
+        if (typeof gs === 'string') {
+          strategy = gs as 'dropdown' | 'section';
+        } else if (gs[groupName]) {
+          strategy = gs[groupName] as 'dropdown' | 'section';
         }
-        groups[groupName].children.push(item);
+      }
+
+      if (strategy === 'section') {
+        // Flatten items into the final menu
+        items.forEach(item => {
+          finalMenu.push({
+            ...item,
+            group: groupName // Ensure group name is preserved for sidebar sectioning
+          });
+        });
+      } else {
+        // Dropdown expansion strategy
+        const groupIcon = items.find(i => i.icon)?.icon || plugin?.manifest.admin?.icon || 'Layers';
+        
+        finalMenu.push({
+          label: groupName,
+          icon: groupIcon,
+          group: groupName,
+          path: `/#group-${pluginSlug}-${groupName.toLowerCase()}`,
+          children: items,
+          isGroup: true,
+          priority: items[0].priority || 50,
+          pluginSlug
+        });
       }
     });
 

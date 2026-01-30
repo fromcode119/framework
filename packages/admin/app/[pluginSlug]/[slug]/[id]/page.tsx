@@ -14,11 +14,10 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 
-const TagField = ({ field, value, onChange, theme }: { field: any, value: any, onChange: (val: any) => void, theme: string }) => {
+const TagField = ({ field, value, onChange, theme, collectionSlug }: { field: any, value: any, onChange: (val: any) => void, theme: string, collectionSlug: string }) => {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const { slug } = useParams() as { slug: string };
 
   const tags = React.useMemo(() => {
     if (Array.isArray(value)) return value;
@@ -40,7 +39,7 @@ const TagField = ({ field, value, onChange, theme }: { field: any, value: any, o
 
     const fetchSuggestions = async () => {
       try {
-        const allSuggestions = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${slug}/suggestions/${field.name}`);
+        const allSuggestions = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}/suggestions/${field.name}`);
         if (Array.isArray(allSuggestions)) {
           setSuggestions(
             allSuggestions
@@ -54,7 +53,7 @@ const TagField = ({ field, value, onChange, theme }: { field: any, value: any, o
 
     const timer = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timer);
-  }, [inputValue, slug, field.name, tags]);
+  }, [inputValue, collectionSlug, field.name, tags]);
 
   const addTag = (tag: string) => {
     const trimmed = tag.trim();
@@ -122,13 +121,19 @@ const TagField = ({ field, value, onChange, theme }: { field: any, value: any, o
 };
 
 export default function CollectionEditPage() {
-  const { slug, id } = useParams() as { slug: string, id: string };
+  const { pluginSlug, slug, id } = useParams() as { pluginSlug: string, slug: string, id: string };
   const router = useRouter();
   const { collections } = usePlugins();
   const { theme } = useTheme();
   
   const isNew = id === 'new';
-  const collection = collections.find(c => c.slug === slug);
+  const collection = collections.find(c => {
+    // Check if the actual collection slug (prefixed) matches the URL slug (short)
+    const isSlugMatch = c.shortSlug === slug || c.slug === slug;
+    const isPluginMatch = c.pluginSlug === pluginSlug || (c.pluginSlug === 'cms' && pluginSlug === 'cms');
+    
+    return isSlugMatch && isPluginMatch;
+  });
   
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(!isNew);
@@ -137,12 +142,14 @@ export default function CollectionEditPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
+  const resolvedSlug = collection?.slug || slug;
+
   useEffect(() => {
     if (isNew || !collection) return;
 
     async function fetchEntry() {
       try {
-        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${slug}/${id}`);
+        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
         setFormData(result);
       } catch (err) {
         console.error("Failed to fetch entry:", err);
@@ -153,7 +160,7 @@ export default function CollectionEditPage() {
     }
 
     fetchEntry();
-  }, [slug, id, isNew, collection]);
+  }, [resolvedSlug, id, isNew, collection]);
 
   if (!collection) {
     return <div>Collection {slug} not found</div>;
@@ -170,14 +177,14 @@ export default function CollectionEditPage() {
 
     try {
       const url = isNew 
-        ? `${ENDPOINTS.COLLECTIONS.BASE}/${slug}` 
-        : `${ENDPOINTS.COLLECTIONS.BASE}/${slug}/${id}`;
+        ? `${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}` 
+        : `${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`;
 
       const result = await (isNew ? api.post(url, formData) : api.put(url, formData));
 
       setStatus({ type: 'success', message: `Entry ${isNew ? 'created' : 'updated'} successfully` });
       if (isNew) {
-        router.push(`/content/${slug}/${result.id}`);
+        router.push(`/${pluginSlug}/${slug}/${result.id}`);
       }
     } catch (err: any) {
       setStatus({ type: 'error', message: err.message || 'Operation failed' });
@@ -189,8 +196,8 @@ export default function CollectionEditPage() {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${slug}/${id}`);
-      router.push(`/content/${slug}`);
+      await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
+      router.push(`/${pluginSlug}/${slug}`);
     } catch (err: any) {
       setStatus({ type: 'error', message: err.message });
       setDeleting(false);
@@ -208,7 +215,7 @@ export default function CollectionEditPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
           <div className="flex items-center gap-2 mb-4">
             <Link 
-              href={`/content/${slug}`}
+              href={`/${pluginSlug}/${slug}`}
               className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-indigo-600'}`}
             >
               <FrameworkIcons.Left size={14} />
@@ -299,6 +306,7 @@ export default function CollectionEditPage() {
                           value={formData[field.name]} 
                           onChange={(val) => handleInputChange(field.name, val)}
                           theme={theme}
+                          collectionSlug={resolvedSlug}
                         />
                       ) : field.type === 'textarea' ? (
                         <textarea 

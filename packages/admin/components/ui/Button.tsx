@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/ThemeContext';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
@@ -25,14 +24,12 @@ export const Button = ({
   as: Component = 'button',
   ...props 
 }: ButtonProps) => {
-  const { theme } = useTheme();
-
   const variants = {
     primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20',
-    secondary: theme === 'dark' ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border-transparent' : 'bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50',
+    secondary: 'bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:border-transparent',
     danger: 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20',
-    ghost: theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-100' : 'hover:bg-slate-100/80 text-slate-600 hover:text-slate-900',
-    outline: `border ${theme === 'dark' ? 'border-slate-800 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`,
+    ghost: 'hover:bg-slate-100/80 text-slate-600 hover:text-slate-900 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-100',
+    outline: 'border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800',
   };
 
   const sizes = {
@@ -44,7 +41,7 @@ export const Button = ({
 
   const spinnerColor = variant === 'primary' || variant === 'danger' 
     ? 'border-white/20 border-t-white' 
-    : theme === 'dark' ? 'border-indigo-400/20 border-t-indigo-400' : 'border-indigo-600/20 border-t-indigo-600';
+    : 'border-indigo-600/20 border-t-indigo-600 dark:border-indigo-400/20 dark:border-t-indigo-400';
 
   return (
     <Component

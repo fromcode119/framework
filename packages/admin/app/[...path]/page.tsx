@@ -3,11 +3,10 @@
 import React, { use } from 'react';
 import { usePlugins, Slot } from '@fromcode/react';
 import { useTheme } from '@/components/ThemeContext';
-import { usePathname } from 'next/navigation';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 
-const { Info, Plugins: Puzzle, Right: ChevronRight, Home } = FrameworkIcons;
+const { Info, Plugins: Puzzle } = FrameworkIcons;
 
 export default function DynamicPluginPage({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = use(params);
@@ -15,39 +14,27 @@ export default function DynamicPluginPage({ params }: { params: Promise<{ path: 
   const { menuItems, collections } = usePlugins();
   const { theme } = useTheme();
 
-  // Find the most specific matching menu item or collection
-  const menuItem = menuItems.find(item => 
-    item.path === pathname || 
-    item.children?.some(c => c.path === pathname) ||
-    (item.path && pathname.startsWith(item.path + '/'))
-  );
+  // Find the most specific matching menu item or child
+  let activeItem = menuItems.find(item => item.path === pathname);
+  
+  if (!activeItem) {
+    for (const item of menuItems) {
+      const child = item.children?.find((c: any) => c.path === pathname);
+      if (child) {
+        activeItem = { ...child, pluginSlug: child.pluginSlug || item.pluginSlug };
+        break;
+      }
+    }
+  }
 
-  const pluginSlug = menuItem?.pluginSlug || path[0];
+  if (!activeItem) {
+    activeItem = menuItems.find(item => item.path && pathname.startsWith(item.path + '/'));
+  }
 
-  const renderBreadcrumbs = () => (
-    <nav className="flex items-center gap-2 mb-8 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-      <Link href="/" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5 font-black">
-        <Home size={12} />
-        PORTAL
-      </Link>
-      {path.map((segment, i) => (
-        <React.Fragment key={segment}>
-          <ChevronRight size={10} className="text-slate-300" />
-          <Link 
-            href={`/${path.slice(0, i + 1).join('/')}`}
-            className={`transition-colors font-bold ${i === path.length - 1 ? 'text-indigo-600' : 'hover:text-indigo-600'}`}
-          >
-            {segment.replace(/-/g, ' ')}
-          </Link>
-        </React.Fragment>
-      ))}
-    </nav>
-  );
+  const pluginSlug = activeItem?.pluginSlug || path[0];
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {renderBreadcrumbs()}
-
       <div className="space-y-8">
         <Slot name={`admin.plugin.${pluginSlug}.page.${path.join('.')}`} fallback={
            <div className="space-y-8">

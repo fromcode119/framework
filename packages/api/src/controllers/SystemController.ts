@@ -78,6 +78,8 @@ export class SystemController {
         const total = await (this.manager as any).db.count(c.tableName || c.slug);
         return {
           slug: c.slug,
+          shortSlug: c.shortSlug || c.slug,
+          pluginSlug: c.pluginSlug || 'system',
           name: c.name || c.slug,
           count: total,
           system: !!(c as any).system,

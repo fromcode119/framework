@@ -8,7 +8,9 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'api.fromcode.local',
+        hostname: process.env.NEXT_PUBLIC_API_URL 
+          ? new URL(process.env.NEXT_PUBLIC_API_URL).hostname 
+          : 'api.framework.local',
       },
       {
         protocol: 'http',
@@ -16,7 +18,13 @@ const nextConfig = {
       }
     ],
   },
-  webpack: (config) => {
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
+    }
     return config;
   },
   typescript: {

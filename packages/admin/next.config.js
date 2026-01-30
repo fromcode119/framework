@@ -8,7 +8,9 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'api.fromcode.local',
+        hostname: process.env.NEXT_PUBLIC_API_URL 
+          ? new URL(process.env.NEXT_PUBLIC_API_URL).hostname 
+          : 'api.framework.local',
       },
       {
         protocol: 'http',
@@ -16,7 +18,15 @@ const nextConfig = {
       }
     ],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Standard Docker/macOS watch optimization
+    if (dev && !isServer) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
+    }
+
     // Externalize server-only modules that might be accidentally pulled in via plugin analysis
     if (!isServer) {
       config.resolve.fallback = {

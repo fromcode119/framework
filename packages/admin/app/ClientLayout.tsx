@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { Slot, PluginsProvider, useTranslation } from '@fromcode/react';
+import { Slot, PluginsProvider, useTranslation, usePlugins } from '@fromcode/react';
 import { ThemeProvider, useTheme } from '@/components/ThemeContext';
 import Sidebar from './Sidebar';
 import PluginLoader from './PluginLoader';
@@ -11,7 +11,6 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
 import { api } from '@/lib/api';
-import { getIcon } from '@fromcode/react';
 import { API_BASE_URL, ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/Loader';
 
@@ -27,29 +26,6 @@ const {
   Logout,
   Help
 } = FrameworkIcons;
-
-function GlobalInitializer() {
-  if (typeof window !== 'undefined') {
-    (window as any).React = React;
-    (window as any).ReactDOM = ReactDOM;
-    
-    // Bridge for plugins
-    (window as any).Fromcode = {
-      useTranslation,
-      getIcon,
-    };
-    
-    // Register the stable framework icon set
-    (window as any).FrameworkIcons = FrameworkIcons;
-    (window as any).getIcon = getIcon;
-    
-    if (!(window as any)._framework_initialized) {
-      console.log(`[Framework] Semantic icons and Fromcode bridge initialized.`);
-      (window as any)._framework_initialized = true;
-    }
-  }
-  return null;
-}
 
 function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const { theme, toggleTheme } = useTheme();
@@ -83,7 +59,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   ];
   
   return (
-    <header className={`flex h-16 border-b items-center justify-between px-6 lg:px-12 sticky top-0 z-[100] backdrop-blur-md transition-all duration-300 ease-in-out ${theme === 'dark' ? 'bg-[#020617]/80 border-slate-800' : 'bg-white/80 border-slate-200'}`}>
+    <header className="flex h-16 border-b items-center justify-between px-6 lg:px-12 sticky top-0 z-[100] backdrop-blur-md transition-all duration-300 ease-in-out bg-white/80 border-slate-200 dark:bg-[#020617]/80 dark:border-slate-800">
       <div className="flex items-center gap-4">
         <button 
           onClick={onMenuClick}
@@ -91,11 +67,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
         >
           <Menu size={20}/>
         </button>
-        <div className={`flex items-center gap-3 rounded-full px-4 py-1.5 border transition-all duration-300 ${
-          theme === 'dark' 
-            ? 'bg-slate-900 border-slate-800' 
-            : 'bg-slate-100/80 border-slate-200/60 shadow-inner'
-        }`}>
+        <div className="flex items-center gap-3 rounded-full px-4 py-1.5 border transition-all duration-300 bg-slate-100/80 border-slate-200/60 shadow-inner dark:bg-slate-900 dark:border-slate-800">
            <div className={`h-2 w-2 rounded-full ${
              apiStatus === 'online' ? 'bg-green-500 animate-pulse' : 
              apiStatus === 'offline' ? 'bg-red-500' : 'bg-slate-400'
@@ -125,13 +97,13 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
           items={userMenuItems}
           header={
             <div className="flex flex-col gap-1">
-              <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>Connected Account</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">Connected Account</span>
               <div className="flex items-center gap-3 mt-1">
                  <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white text-xs font-black shadow-lg">
                     {user?.email?.charAt(0).toUpperCase() || 'A'}
                  </div>
                  <div className="flex flex-col overflow-hidden">
-                    <span className={`text-[13px] font-black truncate tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    <span className="text-[13px] font-black truncate tracking-tight text-slate-900 dark:text-white">
                       {user?.email || 'Guest Account'}
                     </span>
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
@@ -144,7 +116,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
           trigger={
             <div className="flex items-center gap-3 hover:opacity-80 transition-opacity max-w-[200px]">
               <div className="flex flex-col items-end hidden sm:flex overflow-hidden">
-                <span className={`text-[11px] font-bold truncate w-full text-right ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
+                <span className="text-[11px] font-bold truncate w-full text-right text-slate-900 dark:text-slate-200">
                   {user?.email?.split('@')[0] || 'Unknown'}
                 </span>
                 <span className="text-[9px] text-slate-500 font-medium uppercase tracking-tighter">
@@ -165,6 +137,8 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const { registerSlotComponent } = usePlugins();
+  const translation = useTranslation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isMini, setIsMini] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -176,6 +150,19 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('fc_sidebar_mini', isMini.toString());
   }, [isMini]);
+
+  // Expose Framework utilities to the global scope for the plugin bridge
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).FrameworkIcons = FrameworkIcons;
+      (window as any).Fromcode = {
+        ...(window as any).Fromcode,
+        registerSlotComponent,
+        useTranslation: () => translation,
+        usePlugins
+      };
+    }
+  }, [registerSlotComponent, translation]);
 
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
   const pathname = usePathname();
@@ -222,7 +209,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   // Handle Unauthorized State
   if (user && !isAuthPage && !user.roles?.includes('admin')) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#020617]' : 'bg-slate-50'}`}>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#020617]">
         <div className="max-w-md w-full p-12 text-center space-y-6">
           <div className="mx-auto w-20 h-20 bg-rose-500/10 rounded-3xl flex items-center justify-center text-rose-500 shadow-xl shadow-rose-500/10">
             <FrameworkIcons.Zap size={40} />
@@ -252,7 +239,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   // Show Loading state while checking initialization or auth
   if (isInitialized === null || (isAuthLoading && !isAuthPage)) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-colors duration-500 ${theme === 'dark' ? 'bg-[#020617]' : 'bg-slate-50'}`}>
+      <div className="min-h-screen flex items-center justify-center transition-colors duration-500 bg-slate-50 dark:bg-[#020617]">
         <Loader label="Initializing Secure Session" />
       </div>
     );
@@ -260,15 +247,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   if (isAuthPage) {
     return (
-      <div className={`min-h-screen transition-colors duration-300 font-sans ${theme === 'dark' ? 'bg-[#020617]' : 'bg-slate-50'}`}>
+      <div className="min-h-screen transition-colors duration-300 font-sans bg-slate-50 dark:bg-[#020617]">
         {children}
       </div>
     );
   }
   
   return (
-    <div className={`min-h-screen flex flex-col lg:flex-row transition-all duration-300 ease-in-out font-sans ${theme === 'dark' ? 'bg-[#020617]' : 'bg-slate-50'}`}>
-      <GlobalInitializer />
+    <div className="min-h-screen flex flex-col lg:flex-row transition-all duration-300 ease-in-out font-sans bg-slate-50 dark:bg-[#020617]">
       <PluginLoader />
       
       {/* Mobile Backdrop */}
