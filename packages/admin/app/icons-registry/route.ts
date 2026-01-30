@@ -11,7 +11,9 @@ const commonIcons = [
   "Search", "Plus", "Trash2", "Loader2", "Save", "Edit", 
   "Settings", "Layout", "Shield", "User", "Activity", "Check",
   "X", "ChevronDown", "ChevronUp", "ChevronRight", "ChevronLeft",
-  "ArrowLeft", "ArrowRight", "FileText", "LayoutTemplate", "Tag"
+  "ArrowLeft", "ArrowRight", "FileText", "LayoutTemplate", "Tag",
+  "PlusCircle", "BarChart3", "Layers", "MoreVertical", "MoreHorizontal",
+  "Circle", "CheckCircle", "AlertCircle", "HelpCircle", "Pencil", "Trash"
 ];
 
 // Pre-compute the JS content to avoid expensive string operations per request
@@ -33,12 +35,14 @@ const generateRegistryContent = () => {
     ``
   ];
 
-  // Add named exports for common icons
+  // 1. Add named exports for common icons (fast path)
   commonIcons.forEach(name => {
     parts.push(`export const ${name} = proxy("${name}");`);
   });
 
-  // Add all other icons from the framework library
+  // 2. Automatically export all icons known by the framework
+  // This ensures that any icon used via named import in a plugin 
+  // will have a corresponding export.
   const otherIcons = IconNames.filter(name => 
     !commonIcons.includes(name) && 
     /^[A-Z]/.test(name) // Only export PascalCase names (likely icons)
@@ -49,6 +53,7 @@ const generateRegistryContent = () => {
   });
 
   parts.push(``);
+  parts.push(`// Default export is a Proxy for dynamic icon access`);
   parts.push(`export default new Proxy({}, { get: (_, name) => proxy(name) });`);
 
   return parts.join('\n');

@@ -25,6 +25,7 @@ export interface MenuItem {
 export interface CollectionMetadata {
   slug: string;
   shortSlug?: string;
+  unprefixedSlug?: string;
   pluginSlug?: string;
   name?: string;
   fields: any[];
@@ -54,6 +55,11 @@ interface PluginContextValue {
   registerCollection: (collection: CollectionMetadata) => void;
   registerTheme: (slug: string, config: any) => void;
   loadFrontendConfig: () => Promise<void>;
+  resolveContent: (slug: string) => Promise<{ type: string, doc: any, plugin: string } | null>;
+  api: {
+    get: (path: string, options?: any) => Promise<any>;
+    post: (path: string, body?: any, options?: any) => Promise<any>;
+  };
 }
 
 const PluginContext = createContext<PluginContextValue | null>(null);
@@ -71,18 +77,55 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   const [pluginAPIs] = useState<Record<string, any>>({});
   const [events] = useState(() => new Map<string, Set<(data: any) => void>>());
 
+  const getBaseURL = useCallback(() => {
+    const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
+    let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.fromcode.local';
+    
+    if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
+      effectiveApiUrl = `http://${effectiveApiUrl}`;
+    }
+    
+    return effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
+  }, [apiUrl]);
+
+  const apiFetch = useCallback(async (path: string, options: RequestInit = {}) => {
+    const base = getBaseURL();
+    const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
+    
+    const url = path.startsWith('http') ? path : `${base}/api/${version}${path.startsWith('/') ? '' : '/'}${path}`;
+    
+    const res = await fetch(url, options);
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(err.error || `Failed to fetch from ${url}`);
+    }
+    return res.json();
+  }, [getBaseURL]);
+
+  const api = useMemo(() => ({
+    get: (path: string, options?: any) => apiFetch(path, { ...options, method: 'GET' }),
+    post: (path: string, body?: any, options?: any) => apiFetch(path, { 
+        ...options, 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
+        body: JSON.stringify(body)
+    }),
+  }), [apiFetch]);
+
+  const resolveContent = useCallback(async (slug: string) => {
+    try {
+        const result = await api.get(`/system/resolve?slug=${encodeURIComponent(slug)}`);
+        return result;
+    } catch (e) {
+        return null;
+    }
+  }, [api]);
+
   const loadFrontendConfig = useCallback(async () => {
     try {
-      const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-      let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.fromcode.local';
-      
-      if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
-        effectiveApiUrl = `http://${effectiveApiUrl}`;
-      }
-      
-      const base = effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
-      const apiVersion = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
-      const endpoint = `${base}/api/${apiVersion}/system/frontend`;
+      const base = getBaseURL();
+      const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
+      const endpoint = `${base}/api/${version}/system/frontend`;
       
       const res = await fetch(endpoint);
       if (!res.ok) throw new Error(`Status ${res.status}`);
@@ -96,7 +139,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
             "react-dom": "data:text/javascript,export default window.ReactDom; export const { render, hydrate, createRoot } = window.ReactDom || {};",
             "@fromcode/react": "data:text/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider, getIcon, createProxyIcon } = window.Fromcode;",
             "react/jsx-runtime": "data:text/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment;",
-            "lucide-react": "data:text/javascript,export const { Loader2, Search, Plus, Trash2, Pencil, Save, Download, Upload, RefreshCw, ExternalLink, MoreHorizontal, Filter, FileText, Tag, Layers, ChevronDown, ChevronRight, Home, Info, AlertCircle, CheckCircle2, MoreVertical, Layout, Columns, Copy, Settings, BarChart3, PlusCircle } = window.Fromcode; export default window.Fromcode;"
+            "lucide-react": "data:text/javascript,const proxy = (name) => (props) => { const Component = (window.FrameworkIcons && window.FrameworkIcons[name]) || (window.Fromcode && window.Fromcode[name]); return Component ? window.React.createElement(Component, props) : null; }; export const Loader2 = proxy('Loader2'); export const Search = proxy('Search'); export const Plus = proxy('Plus'); export const Trash2 = proxy('Trash2'); export const Pencil = proxy('Pencil'); export const Save = proxy('Save'); export const Download = proxy('Download'); export const Upload = proxy('Upload'); export const RefreshCw = proxy('RefreshCw'); export const ExternalLink = proxy('ExternalLink'); export const MoreHorizontal = proxy('MoreHorizontal'); export const Filter = proxy('Filter'); export const FileText = proxy('FileText'); export const Tag = proxy('Tag'); export const Layers = proxy('Layers'); export const ChevronDown = proxy('ChevronDown'); export const ChevronRight = proxy('ChevronRight'); export const Home = proxy('Home'); export const Info = proxy('Info'); export const AlertCircle = proxy('AlertCircle'); export const CheckCircle2 = proxy('CheckCircle2'); export const MoreVertical = proxy('MoreVertical'); export const Layout = proxy('Layout'); export const Columns = proxy('Columns'); export const Copy = proxy('Copy'); export const Settings = proxy('Settings'); export const BarChart3 = proxy('BarChart3'); export const PlusCircle = proxy('PlusCircle'); export default new Proxy({}, { get: (_, name) => proxy(name) });"
           }
         };
         const script = document.createElement('script');
@@ -437,8 +480,10 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     registerMenuItem,
     registerCollection,
     registerTheme,
-    loadFrontendConfig
-  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, loadFrontendConfig]);
+    loadFrontendConfig,
+    resolveContent,
+    api
+  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, loadFrontendConfig, resolveContent, api]);
 
   return (
     <PluginContext.Provider value={value}>

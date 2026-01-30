@@ -31,6 +31,7 @@ export function setupSystemRoutes(manager: PluginManager, themeManager: ThemeMan
 
   router.get('/frontend', (req, res) => controller.getFrontendMetadata(req, res));
   router.get('/i18n', (req, res) => controller.getI18n(req, res));
+  router.get('/resolve', (req, res) => controller.resolveSlug(req, res));
 
   return router;
 }

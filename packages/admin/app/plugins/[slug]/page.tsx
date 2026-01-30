@@ -15,6 +15,7 @@ import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useNotify } from '@/components/NotificationContext';
 import { Loader } from '@/components/ui/Loader';
+import { Select } from '@/components/ui/Select';
 
 interface Plugin {
   slug: string;
@@ -35,6 +36,8 @@ interface Plugin {
         type: string;
         description?: string;
         defaultValue?: any;
+        options?: { label: string; value: string }[];
+        placeholder?: string;
       }[];
     };
   };
@@ -363,7 +366,43 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                                   />
                                )}
                             </div>
-                            {setting.type !== 'boolean' && (
+                            {setting.type === 'select' && setting.options && (
+                               <div className="space-y-4">
+                                  <Select 
+                                    theme={theme}
+                                    options={setting.options}
+                                    value={setting.options.some(opt => opt.value === configValues[setting.name]) ? configValues[setting.name] : 'custom'}
+                                    onChange={(val) => {
+                                      if (val === 'custom') {
+                                        // Don't change the actual value yet, or set it to default if it was a predefined one
+                                        if (setting.options?.some(opt => opt.value === configValues[setting.name])) {
+                                          setConfigValues(v => ({ ...v, [setting.name]: '/:slug' })); // default custom
+                                        }
+                                      } else {
+                                        setConfigValues(v => ({ ...v, [setting.name]: val }));
+                                      }
+                                    }}
+                                  />
+                                  {(!setting.options.some(opt => opt.value === configValues[setting.name]) || 
+                                    setting.options.find(opt => opt.value === configValues[setting.name])?.value === 'custom') && (
+                                     <div className="animate-in slide-in-from-top-2 duration-300">
+                                       <input 
+                                         type="text" 
+                                         value={configValues[setting.name] === 'custom' ? '' : configValues[setting.name] || ''}
+                                         onChange={(e) => setConfigValues(v => ({ ...v, [setting.name]: e.target.value }))}
+                                         placeholder="Enter custom value..."
+                                         className={`w-full rounded-xl py-3 px-6 outline-none border transition-all font-bold ${
+                                           theme === 'dark' 
+                                             ? 'bg-slate-950 border-slate-800 text-white focus:ring-2 ring-indigo-500/30' 
+                                             : 'bg-slate-100/50 border-slate-200/60 text-slate-900 focus:bg-white focus:ring-4 ring-indigo-500/5 shadow-inner focus:shadow-indigo-500/5'
+                                         }`}
+                                       />
+                                       <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mt-2 ml-2">Custom Pattern Active</p>
+                                     </div>
+                                  )}
+                               </div>
+                            )}
+                            {setting.type !== 'boolean' && setting.type !== 'select' && (
                                <input 
                                  type="text" 
                                  value={configValues[setting.name] || ''}

@@ -541,4 +541,39 @@ export class SystemController {
       res.status(500).json({ error: 'Failed to apply update: ' + err.message });
     }
   }
+
+  async resolveSlug(req: Request, res: Response) {
+    const slug = req.query.slug as string;
+    if (!slug) return res.status(400).json({ error: 'Slug is required' });
+
+    const collections = this.manager.getCollections();
+    
+    // We search across all collections that have a 'slug' field
+    // TODO: In the future, we might want to restrict this to only 'viewable' collections
+    for (const collection of collections) {
+      const hasSlugField = collection.fields.some(f => f.name === 'slug');
+      if (!hasSlugField) continue;
+
+      try {
+        const tableName = collection.tableName || collection.slug;
+        const [doc] = await (this.manager as any).db.find(tableName, {
+          where: { slug: slug },
+          limit: 1
+        });
+
+        if (doc) {
+          return res.json({
+            type: collection.shortSlug || collection.slug,
+            plugin: collection.pluginSlug,
+            doc
+          });
+        }
+      } catch (e) {
+        // Continue to next collection if search fails
+        continue;
+      }
+    }
+
+    res.status(404).json({ error: 'Not found' });
+  }
 }

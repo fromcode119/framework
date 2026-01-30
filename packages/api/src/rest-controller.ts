@@ -199,12 +199,13 @@ export class RESTController {
       
       res.status(201).json(this.filterHiddenFields(collection, newItem));
     } catch (err: any) {
-      if (err.code === '23505') { // Unique constraint violation in Postgres
-        const detail = err.detail || '';
-        const match = detail.match(/\((.*?)\)=\((.*?)\)/);
-        const field = match ? match[1] : 'field';
+      if (err.code === '23505' || err.code === 'ER_DUP_ENTRY' || err.message.includes('UNIQUE constraint failed')) {
+        const detail = err.detail || err.message || '';
+        const match = detail.match(/\((.*?)\)=\((.*?)\)/) || detail.match(/UNIQUE constraint failed: (.*)/);
+        const field = match ? (match[1].split('.').pop() || 'field') : 'field';
+        
         return res.status(409).json({ 
-          error: `Duplicate entry found: A record with this ${field} already exists.`
+          error: `Duplicate entry found: A record with this ${field.replace(/_/g, ' ')} already exists.`
         });
       }
       this.logger.error(`Create error in ${collection.slug}:`, err);
@@ -267,12 +268,13 @@ export class RESTController {
       
       res.json(this.filterHiddenFields(collection, updated));
     } catch (err: any) {
-      if (err.code === '23505') { // Unique constraint violation in Postgres
-        const detail = err.detail || '';
-        const match = detail.match(/\((.*?)\)=\((.*?)\)/);
-        const field = match ? match[1] : 'field';
+      if (err.code === '23505' || err.code === 'ER_DUP_ENTRY' || err.message.includes('UNIQUE constraint failed')) {
+        const detail = err.detail || err.message || '';
+        const match = detail.match(/\((.*?)\)=\((.*?)\)/) || detail.match(/UNIQUE constraint failed: (.*)/);
+        const field = match ? (match[1].split('.').pop() || 'field') : 'field';
+        
         return res.status(409).json({ 
-          error: `Duplicate entry found: A record with this ${field} already exists.`
+          error: `Duplicate entry found: A record with this ${field.replace(/_/g, ' ')} already exists.`
         });
       }
       this.logger.error(`Update error in ${collection.slug}:`, err);

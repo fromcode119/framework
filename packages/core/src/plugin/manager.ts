@@ -806,6 +806,19 @@ export class PluginManager implements PluginManagerInterface {
     const pluginPath = plugin?.path;
     this.plugins.delete(slug);
 
+    // Clear require cache for the plugin's main entry point if we had it
+    if (pluginPath) {
+      try {
+        const manifest = plugin.manifest;
+        const indexPath = path.resolve(pluginPath, manifest.main || 'index.js');
+        const resolved = require.resolve(indexPath);
+        if (require.cache[resolved]) {
+          delete require.cache[resolved];
+          this.logger.debug(`Cleared require cache for ${slug}`);
+        }
+      } catch (e) {}
+    }
+
     // 4. Cleanup registered collections linked to this plugin
     for (const [colSlug, entry] of this.registeredCollections.entries()) {
       if (entry.pluginSlug === slug) {
@@ -1060,8 +1073,8 @@ export class PluginManager implements PluginManagerInterface {
               .map(c => c.collection);
 
             const hasMatchingCollection = 
-              p.admin.collections?.some(col => col.shortSlug === pathSlug || col.slug === pathSlug) ||
-              registeredForPlugin.some(col => col.shortSlug === pathSlug || col.slug === pathSlug);
+              p.admin.collections?.some(col => col.shortSlug === pathSlug || col.slug === pathSlug || (col as any).unprefixedSlug === pathSlug) ||
+              registeredForPlugin.some(col => col.shortSlug === pathSlug || col.slug === pathSlug || col.unprefixedSlug === pathSlug);
             
             if (hasMatchingCollection) {
                 effectivePath = `/${p.slug}/${pathSlug}`;

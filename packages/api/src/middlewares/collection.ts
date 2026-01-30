@@ -18,11 +18,13 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
       for (const [key, entry] of Array.from(registeredCollections.entries())) {
         const collectionSlug = entry.collection.slug?.toLowerCase();
         const shortSlug = entry.collection.shortSlug?.toLowerCase();
+        const unprefixedSlug = entry.collection.unprefixedSlug?.toLowerCase();
         
         if (
           key.toLowerCase() === targetSlug || 
           collectionSlug === targetSlug || 
           shortSlug === targetSlug ||
+          unprefixedSlug === targetSlug ||
           key.toLowerCase().endsWith(`_${targetSlug}`) ||
           (collectionSlug && collectionSlug.endsWith(`_${targetSlug}`))
         ) {

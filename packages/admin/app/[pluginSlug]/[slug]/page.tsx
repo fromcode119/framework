@@ -24,7 +24,11 @@ export default function CollectionListPage() {
   // Find the collection by matching the short slug and the explicit pluginSlug
   const collection = collections.find(c => {
     // Check if the actual collection slug (prefixed) matches the URL slug (short)
-    const isSlugMatch = c.shortSlug === slug || c.slug === slug;
+    // We check against:
+    // 1. shortSlug (pretty name like 'pages')
+    // 2. slug (technical prefixed name like 'fcp_cms_cms-pages')
+    // 3. unprefixedSlug (the name the plugin dev gave it before framework prefixing like 'cms-pages')
+    const isSlugMatch = c.shortSlug === slug || c.slug === slug || c.unprefixedSlug === slug;
     const isPluginMatch = c.pluginSlug === pluginSlug || (c.pluginSlug === 'cms' && pluginSlug === 'cms');
     
     return isSlugMatch && isPluginMatch;
