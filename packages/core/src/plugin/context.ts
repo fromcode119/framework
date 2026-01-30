@@ -278,18 +278,23 @@ export function createPluginContext(
         }
 
         // Automatically prefix plugin collections for isolation and security
-        const shortSlug = collection.slug;
-        const prefixedSlug = `${tablePrefix}${shortSlug}`;
+        // We preserve the human-friendly identifier (shortSlug) if provided,
+        // otherwise we use the technical slug provided by the plugin.
+        const inputSlug = collection.slug;
+        const shortSlug = collection.shortSlug || inputSlug;
+        const prefixedSlug = `${tablePrefix}${inputSlug}`;
+        
         const modifiedCollection: Collection = {
           ...collection,
           slug: prefixedSlug,
           shortSlug,
+          unprefixedSlug: inputSlug,
           pluginSlug: plugin.manifest.slug,
           // Keep pretty name if not provided
           name: collection.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
         };
 
-        rootLogger.info(`Plugin "${plugin.manifest.slug}" registered collection "${collection.slug}" as "${prefixedSlug}"`);
+        rootLogger.info(`Plugin "${plugin.manifest.slug}" registered collection "${inputSlug}" as "${prefixedSlug}" (shortSlug: ${shortSlug})`);
 
         const existing = manager.registeredCollections.get(prefixedSlug);
         if (existing) {

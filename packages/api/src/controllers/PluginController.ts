@@ -41,7 +41,11 @@ export class PluginController {
       else await this.manager.disable(slug);
       res.json({ success: true, state: enabled ? 'active' : 'inactive' });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      const status = err.message.toLowerCase().includes('not found') || 
+                     err.message.toLowerCase().includes('missing dependency') ||
+                     err.message.toLowerCase().includes('incompatible') ? 400 : 500;
+      this.logger.error(`Toggle failed for plugin "${slug}": ${err.message}`);
+      res.status(status).json({ error: err.message });
     }
   }
 
@@ -68,7 +72,14 @@ export class PluginController {
       await this.manager.delete(slug);
       res.json({ success: true });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      // Differentiate between validation errors (400) and actual server crashes (500)
+      const isValidationError = err.message.toLowerCase().includes('cannot delete') || 
+                               err.message.toLowerCase().includes('required by') ||
+                               err.message.toLowerCase().includes('not found');
+      
+      const status = isValidationError ? 400 : 500;
+      this.logger.error(`Delete failed for plugin "${slug}": ${err.message}`);
+      res.status(status).json({ error: err.message });
     }
   }
 

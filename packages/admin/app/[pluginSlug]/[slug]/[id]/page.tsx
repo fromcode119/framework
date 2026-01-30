@@ -6,6 +6,8 @@ import { Slot, usePlugins } from '@fromcode/react';
 import { useTheme } from '@/components/ThemeContext';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { TagField } from '@/components/ui/TagField';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FrameworkIcons } from '@/lib/icons';
@@ -14,109 +16,17 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 
-const TagField = ({ field, value, onChange, theme, collectionSlug }: { field: any, value: any, onChange: (val: any) => void, theme: string, collectionSlug: string }) => {
-  const [inputValue, setInputValue] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
-  const tags = React.useMemo(() => {
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'string' && value.trim()) {
-      try {
-        return JSON.parse(value);
-      } catch (e) {
-        return [];
-      }
-    }
-    return [];
-  }, [value]);
-
-  useEffect(() => {
-    if (inputValue.length < 1) {
-      setSuggestions([]);
-      return;
-    }
-
-    const fetchSuggestions = async () => {
-      try {
-        const allSuggestions = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}/suggestions/${field.name}`);
-        if (Array.isArray(allSuggestions)) {
-          setSuggestions(
-            allSuggestions
-              .filter(s => typeof s === 'string' && s.toLowerCase().includes(inputValue.toLowerCase()) && !tags.includes(s))
-          );
-        }
-      } catch (err) {
-        console.error("Failed to fetch suggestions");
-      }
-    };
-
-    const timer = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timer);
-  }, [inputValue, collectionSlug, field.name, tags]);
-
-  const addTag = (tag: string) => {
-    const trimmed = tag.trim();
-    if (trimmed && !tags.includes(trimmed)) {
-      onChange([...tags, trimmed]);
-      setInputValue('');
-      setShowSuggestions(false);
-    }
-  };
-
+const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { field: any, value: any, onChange: (val: any) => void, theme: string, collectionSlug: string }) => {
   return (
-    <div className="relative">
-      <div className={`w-full min-h-[48px] rounded-xl py-2 px-3 border flex flex-wrap gap-2 transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 focus-within:border-indigo-500/50' : 'bg-white border-slate-200 focus-within:border-indigo-500 shadow-sm'}`}>
-        {tags.map((tag: string, i: number) => (
-          <span key={tag} className="bg-indigo-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
-            {tag}
-            <button 
-              type="button" 
-              onClick={() => {
-                const newTags = [...tags];
-                newTags.splice(i, 1);
-                onChange(newTags);
-              }}
-              className="hover:text-indigo-200 transition-colors"
-            >
-              <FrameworkIcons.Close size={12} />
-            </button>
-          </span>
-        ))}
-        <input 
-          type="text"
-          value={inputValue}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-            setShowSuggestions(true);
-          }}
-          onFocus={() => setShowSuggestions(true)}
-          placeholder="Add tag and press Enter..."
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              addTag(inputValue);
-            }
-          }}
-          className={`flex-1 bg-transparent min-w-[150px] outline-none text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}
-        />
-      </div>
-
-      {showSuggestions && suggestions.length > 0 && (
-        <div className={`absolute z-50 w-full mt-2 rounded-xl border shadow-2xl p-1 animate-in fade-in zoom-in-95 duration-200 ${theme === 'dark' ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
-          {suggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              onClick={() => addTag(suggestion)}
-              className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-300 hover:text-white' : 'hover:bg-slate-100 text-slate-700 hover:text-indigo-600'}`}
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <TagField 
+      collectionSlug={collectionSlug}
+      fieldName={field.name}
+      value={value}
+      onChange={onChange}
+      theme={theme}
+      sourceCollection={field.admin?.sourceCollection}
+      sourceField={field.admin?.sourceField}
+    />
   );
 };
 
@@ -129,7 +39,7 @@ export default function CollectionEditPage() {
   const isNew = id === 'new';
   const collection = collections.find(c => {
     // Check if the actual collection slug (prefixed) matches the URL slug (short)
-    const isSlugMatch = c.shortSlug === slug || c.slug === slug;
+    const isSlugMatch = c.shortSlug === slug || c.slug === slug || c.unprefixedSlug === slug;
     const isPluginMatch = c.pluginSlug === pluginSlug || (c.pluginSlug === 'cms' && pluginSlug === 'cms');
     
     return isSlugMatch && isPluginMatch;
@@ -141,8 +51,20 @@ export default function CollectionEditPage() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [slugWarning, setSlugWarning] = useState<string | null>(null);
 
   const resolvedSlug = collection?.slug || slug;
+
+  const slugify = (text: string) => {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')     // Replace spaces with -
+      .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+      .replace(/\-\-+/g, '-');  // Replace multiple - with single -
+  };
 
   useEffect(() => {
     if (isNew || !collection) return;
@@ -151,6 +73,7 @@ export default function CollectionEditPage() {
       try {
         const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
         setFormData(result);
+        if (result.slug) setSlugManuallyEdited(true);
       } catch (err) {
         console.error("Failed to fetch entry:", err);
         setStatus({ type: 'error', message: 'Failed to load entry' });
@@ -162,12 +85,62 @@ export default function CollectionEditPage() {
     fetchEntry();
   }, [resolvedSlug, id, isNew, collection]);
 
+  // Debounced slug uniqueness check
+  useEffect(() => {
+    if (!formData.slug || !collection) {
+      setSlugWarning(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        // Query the collection for existing slug using direct matching
+        const query = `?slug=${encodeURIComponent(formData.slug)}&limit=1`;
+        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}${query}`);
+        
+        // Handle result Doc structure
+        const results = response.docs || [];
+        
+        if (Array.isArray(results) && results.length > 0) {
+          const match = results[0];
+          // If it's a different record, it's a duplicate
+          if (isNew || String(match.id) !== String(id)) {
+            setSlugWarning(`This slug is already taken by "${match.name || match.title || match.id}".`);
+          } else {
+            setSlugWarning(null);
+          }
+        } else {
+          setSlugWarning(null);
+        }
+      } catch (err) {
+        // Silent fail for validation helper
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.slug, resolvedSlug, id, isNew, collection]);
+
   if (!collection) {
     return <div>Collection {slug} not found</div>;
   }
 
   const handleInputChange = (name: string, value: any) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+
+      // Auto-generate slug logic
+      const sourceField = collection.admin?.useAsTitle || (collection.fields.find(f => f.name === 'name' || f.name === 'title')?.name);
+      
+      if (name === sourceField && !slugManuallyEdited && isNew) {
+        newData.slug = slugify(value);
+      }
+
+      if (name === 'slug') {
+        setSlugManuallyEdited(true);
+      }
+
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -301,7 +274,7 @@ export default function CollectionEditPage() {
                       </label>
                       
                       {field.admin?.component === 'Tags' || field.type === 'json' ? (
-                        <TagField 
+                        <TagFieldLocal 
                           field={field} 
                           value={formData[field.name]} 
                           onChange={(val) => handleInputChange(field.name, val)}
@@ -330,35 +303,36 @@ export default function CollectionEditPage() {
                           className="font-bold"
                         />
                       ) : field.type === 'select' ? (
-                        <div className="relative">
-                          <select
-                            value={formData[field.name] || field.defaultValue || ''}
-                            onChange={(e) => handleInputChange(field.name, e.target.value)}
-                            disabled={saving}
-                            className={`w-full rounded-2xl py-3 pl-4 pr-10 outline-none border transition-all text-sm font-bold appearance-none ${
-                              theme === 'dark' 
-                                ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500' 
-                                : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'
-                            }`}
-                          >
-                            <option value="">Select an option...</option>
-                            {field.options?.map(opt => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                          </select>
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                             <FrameworkIcons.Down size={14} />
-                          </div>
-                        </div>
-                      ) : (
-                        <Input 
-                          type={field.type === 'number' ? 'number' : 'text'}
-                          value={formData[field.name] || ''}
-                          onChange={(e) => handleInputChange(field.name, e.target.value)}
-                          placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
+                        <Select
+                          value={formData[field.name] || field.defaultValue || ''}
+                          options={field.options || []}
+                          onChange={(val) => handleInputChange(field.name, val)}
                           disabled={saving}
-                          className="font-bold"
+                          theme={theme}
                         />
+                      ) : (
+                        <div className="relative">
+                          <Input 
+                            type={field.type === 'number' ? 'number' : 'text'}
+                            value={formData[field.name] || ''}
+                            onChange={(e) => handleInputChange(field.name, e.target.value)}
+                            placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
+                            disabled={saving}
+                            className={`font-bold ${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20' : ''}`}
+                          />
+                          {field.name === 'slug' && slugWarning && (
+                            <div className="absolute top-full left-0 mt-2 flex items-center gap-2 text-[10px] font-bold text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">
+                               <FrameworkIcons.Alert size={12} />
+                               <span>{slugWarning}</span>
+                            </div>
+                          )}
+                          {field.name === 'slug' && !slugManuallyEdited && isNew && formData[field.name] && (
+                             <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[8px] font-black uppercase tracking-widest animate-pulse border border-indigo-500/20 pointer-events-none">
+                                <FrameworkIcons.Refresh size={8} />
+                                Auto
+                             </div>
+                          )}
+                        </div>
                       )}
                       {field.admin?.description && (
                         <p className="mt-2.5 text-[10px] text-slate-400 font-bold uppercase tracking-tight opacity-60 ml-1">{field.admin.description}</p>

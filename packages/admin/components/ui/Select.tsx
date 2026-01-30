@@ -1,0 +1,205 @@
+"use client";
+
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { Portal } from './Portal';
+import { FrameworkIcons } from '@/lib/icons';
+
+interface Option {
+  label: string;
+  value: string;
+}
+
+interface SelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: Option[];
+  placeholder?: string;
+  disabled?: boolean;
+  theme?: string;
+  className?: string;
+  label?: string;
+  searchable?: boolean;
+}
+
+export const Select = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder = "Select an option...", 
+  disabled = false, 
+  theme = 'light',
+  className = '',
+  label,
+  searchable = true
+}: SelectProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+
+  const selectedOption = options.find(opt => String(opt.value) === String(value));
+
+  const filteredOptions = options.filter(opt => 
+    opt.label.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  const updatePosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const margin = 8;
+      const menuHeight = Math.min(filteredOptions.length * 48 + (searchable ? 100 : 40), 300);
+      
+      let top = rect.bottom + margin;
+      // Check if it should open upwards
+      if (top + menuHeight > window.innerHeight) {
+        top = rect.top - menuHeight - margin;
+      }
+
+      setCoords({
+        top,
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  };
+
+  useLayoutEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      if (searchable) {
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen, filteredOptions.length]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) setSearchValue('');
+  }, [isOpen]);
+
+  return (
+    <div className={`flex flex-col gap-2 w-full ${className}`}>
+      {label && <label className="text-[11px] font-black uppercase tracking-widest text-slate-500">{label}</label>}
+      <div className="relative w-full" ref={triggerRef}>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          className={`w-full rounded-2xl py-3.5 pl-5 pr-12 outline-none border transition-all text-sm font-bold flex items-center justify-between text-left group overflow-hidden relative shadow-sm ${
+            theme === 'dark' 
+              ? 'bg-slate-900/60 border-slate-800 text-white hover:border-indigo-500/50' 
+              : 'bg-white border-slate-200 text-slate-900 hover:border-indigo-500'
+          } ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        >
+          <span className={`truncate relative z-10 ${!selectedOption ? 'text-slate-400 font-medium' : ''}`}>
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
+          
+          <div className={`transition-transform duration-300 relative z-10 ${isOpen ? 'rotate-180 text-indigo-500' : 'text-slate-400'}`}>
+            <FrameworkIcons.Down size={14} />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/[0.03] to-indigo-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
+        </button>
+
+        {isOpen && (
+          <Portal>
+            <div 
+              ref={menuRef}
+              style={{
+                position: 'fixed',
+                top: coords.top,
+                left: coords.left,
+                width: coords.width,
+                zIndex: 9999
+              }}
+              className={`max-h-[300px] flex flex-col rounded-[1.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-top-2 duration-300 overflow-hidden ${
+                theme === 'dark' 
+                  ? 'bg-slate-950/95 border-slate-800/80 backdrop-blur-3xl' 
+                  : 'bg-white/95 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
+              }`}
+            >
+              {searchable && (
+                <div className="p-2.5 border-b border-slate-100 dark:border-slate-800">
+                  <div className="relative group">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                      <FrameworkIcons.Search size={14} />
+                    </div>
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search options..."
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
+                      className={`w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border outline-none transition-all ${
+                        theme === 'dark'
+                          ? 'bg-slate-900/50 border-slate-800 focus:border-indigo-500/50 text-white'
+                          : 'bg-slate-50 border-slate-100 focus:border-indigo-500'
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto p-1.5 scrollbar-hide">
+                {filteredOptions.length === 0 ? (
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 opacity-50">No results found</p>
+                  </div>
+                ) : (
+                  filteredOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        onChange(opt.value);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
+                        String(value) === String(opt.value)
+                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                          : theme === 'dark'
+                            ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
+                      }`}
+                    >
+                      <span className={`relative z-10 font-bold truncate ${String(value) === String(opt.value) ? 'font-black uppercase text-[10px] tracking-widest' : ''}`}>
+                        {opt.label}
+                      </span>
+                      {String(value) === String(opt.value) ? (
+                        <FrameworkIcons.Check size={14} className="relative z-10 flex-shrink-0" />
+                      ) : (
+                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100 flex-shrink-0" />
+                      )}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          </Portal>
+        )}
+      </div>
+    </div>
+  );
+};
