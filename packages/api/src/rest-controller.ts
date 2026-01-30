@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Collection, Logger } from '@fromcode/core';
+import { Collection, Logger, RecordVersions } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { 
   IDatabaseManager, 
@@ -9,6 +9,7 @@ import {
   or,
   eq, 
   ilike,
+  isNotNull,
   pgTable, 
   serial, 
   text, 
@@ -75,6 +76,20 @@ export class RESTController {
       const table = this.getVirtualTable(collection);
       
       const whereChunks: any[] = [];
+      const isAdmin = (req as any).user && (req as any).user.roles && (req as any).user.roles.includes('admin');
+      const isPreview = req.query.preview === '1' || req.query.draft === '1';
+
+      // 1. Handle Status/Visibility (Governance Layer)
+      // If the collection has a 'status' field, we default to 'published' unless it's an admin preview
+      const statusField = collection.fields.find(f => f.name === 'status');
+      if (statusField && !filters.status) {
+        if (isAdmin && isPreview) {
+          // Admin preview: don't inject any status filter (show all)
+        } else {
+          // Public or non-preview: only show published
+          whereChunks.push(eq(table['status'], 'published'));
+        }
+      }
 
       // Handle Search (across all text/textarea fields) using ilike
       if (search) {
@@ -154,6 +169,17 @@ export class RESTController {
       if (!result) {
         return res.status(404).json({ error: 'Not found' });
       }
+
+      // 1. Handle Status/Visibility (Governance Layer)
+      const statusField = collection.fields.find(f => f.name === 'status');
+      if (statusField && result.status !== 'published') {
+        const isAdmin = (req as any).user && (req as any).user.roles && (req as any).user.roles.includes('admin');
+        const isPreview = req.query.preview === '1' || req.query.draft === '1';
+
+        if (!isAdmin || !isPreview) {
+          return res.status(404).json({ error: 'Not found (draft)' });
+        }
+      }
       
       res.json(this.filterHiddenFields(collection, result));
     } catch (err: any) {
@@ -191,11 +217,37 @@ export class RESTController {
             value = await this.auth.hashPassword(value);
           }
           
+          // Postgres JSONB coercion: ensure values are valid JSON for the driver
+          const fieldConfig = collection.fields.find(f => f.name === key);
+          const isJsonType = fieldConfig && ['json', 'relationship', 'upload', 'richText'].includes(fieldConfig.type);
+          
+          if (isJsonType) {
+            if (value === '' || value === undefined || value === null) {
+              value = null;
+            }
+          }
+
           insertData[key] = value;
         }
       }
 
       const newItem = await this.db.insert(table, insertData);
+
+      // Create Initial Version Snapshot
+      try {
+        if (collection.slug !== '_system_record_versions' && collection.slug !== '_system_logs') {
+          const versionsTable = this.getVirtualTable(RecordVersions);
+          await this.db.insert(versionsTable, {
+            ref_id: String(newItem.id),
+            ref_collection: collection.slug,
+            version_data: newItem,
+            updated_by: (req as any).user?.id || null,
+            change_summary: `Initial creation of ${collection.slug} record`
+          });
+        }
+      } catch (versionErr) {
+        this.logger.error(`Failed to create initial version snapshot for ${collection.slug}:`, versionErr);
+      }
       
       res.status(201).json(this.filterHiddenFields(collection, newItem));
     } catch (err: any) {
@@ -220,7 +272,17 @@ export class RESTController {
       const tableName = collection.tableName || collection.slug;
       const table = this.getVirtualTable(collection);
       
-      // Basic validation
+      // 1. Fetch current state before update (for snapshotting)
+      const pk = collection.primaryKey || 'id';
+      const where: any = {};
+      where[pk] = pk === 'id' ? parseInt(id) : id;
+      const beforeUpdate = await this.db.findOne(table, where);
+
+      if (!beforeUpdate) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+
+      // 2. Basic validation
       const errors: string[] = [];
       collection.fields.forEach(field => {
         if (data[field.name] !== undefined) {
@@ -236,7 +298,6 @@ export class RESTController {
 
       // Filter data to only include valid fields and strip internal/excluded fields
       const updateData: any = {};
-      const pk = collection.primaryKey || 'id';
       const excludedFields = [pk, 'createdAt', 'updatedAt', 'created_at', 'updated_at'];
       
       for (const key of Object.keys(data)) {
@@ -248,17 +309,43 @@ export class RESTController {
             value = await this.auth.hashPassword(value);
           }
 
+          // Postgres JSONB coercion: ensure values are valid JSON for the driver
+          const fieldConfig = collection.fields.find(f => f.name === key);
+          const isJsonType = fieldConfig && ['json', 'relationship', 'upload', 'richText'].includes(fieldConfig.type);
+          
+          if (isJsonType) {
+            if (value === '' || value === undefined || value === null) {
+              value = null;
+            }
+          }
+
           updateData[key] = value;
         }
       }
       
-      const where: any = {};
-      where[pk] = pk === 'id' ? parseInt(id) : id;
-
       const updated = await this.db.update(table, where, updateData);
       
       if (!updated) {
         return res.status(404).json({ error: 'Not found' });
+      }
+
+      // 3. Create Version Snapshot
+      try {
+        const isSystemCollection = collection.slug.startsWith('_system_') || ['settings', 'users', 'media', '_system_record_versions'].includes(collection.slug);
+        
+        // We version everything except the versions table itself and transient logs
+        if (collection.slug !== '_system_record_versions' && collection.slug !== '_system_logs') {
+          const versionsTable = this.getVirtualTable(RecordVersions);
+          await this.db.insert(versionsTable, {
+            ref_id: String(id),
+            ref_collection: collection.slug,
+            version_data: updated,
+            updated_by: (req as any).user?.id || null,
+            change_summary: `Update ${collection.slug} record` // We could compute diffs here if needed
+          });
+        }
+      } catch (versionErr) {
+        this.logger.error(`Failed to create version snapshot for ${collection.slug}/${id}:`, versionErr);
       }
 
       // Notify parent about settings changes
@@ -349,6 +436,7 @@ export class RESTController {
   async getSuggestions(collection: Collection, req: Request, res: Response) {
     try {
       const { field } = req.params;
+      const { q } = req.query as any;
       const table = this.getVirtualTable(collection);
 
       if (!table[field]) {
@@ -359,21 +447,83 @@ export class RESTController {
       // Note: for JSONB fields, we might need different logic if they are arrays
       
       const config = collection.fields.find(f => f.name === field);
-      if (config?.type === 'json' || config?.admin?.component === 'Tags') {
+      if (config?.type === 'json' || config?.admin?.component === 'TagField' || config?.admin?.component === 'Tags') {
         // Special logic for JSONB arrays: unnest them to get unique elements
         // This is Postgres specific
-        const query = sql`SELECT DISTINCT jsonb_array_elements_text(${table[field]}) as value FROM ${table} WHERE ${table[field]} IS NOT NULL AND jsonb_typeof(${table[field]}) = 'array' LIMIT 50`;
+        let query = sql`SELECT DISTINCT jsonb_array_elements_text(${table[field]}) as value FROM ${table} WHERE ${table[field]} IS NOT NULL AND jsonb_typeof(${table[field]}) = 'array'`;
+        
+        if (q) {
+          query = sql`${query} AND jsonb_array_elements_text(${table[field]}) ILIKE ${`%${q}%`}`;
+        }
+        
+        query = sql`${query} LIMIT 50`;
         const result = await this.db.drizzle.execute(query);
+        
+        // If it's a relationship, we want both slug and name
+        if (config.type === 'relationship' && config.relationTo) {
+           const relatedCollection = config.relationTo;
+           // We can't easily join and unnest in one go with dynamic tables without complex SQL
+           // For now return labels if available
+           return res.json(result.rows.map((r: any) => ({ label: r.value, value: r.value })));
+        }
+
         return res.json(result.rows.map((r: any) => r.value));
       } else {
+        // Build conditions using drizzle-orm helpers
+        // For users collection, we are more lenient if searching for identifiers
+        const isUserSearch = collection.slug === 'users' && (field === 'username' || field === 'email');
+        const conditions: any[] = isUserSearch ? [] : [ isNotNull(table[field]) ];
+        
+        if (q) {
+          if (isUserSearch) {
+             // For users, if searching for username or email, check both and allow users without username
+             const userConditions = [];
+             if (table['username']) userConditions.push(ilike(table['username'], `%${q}%`));
+             if (table['email']) userConditions.push(ilike(table['email'], `%${q}%`));
+             
+             if (userConditions.length > 1) {
+               conditions.push(or(...userConditions));
+             } else if (userConditions.length === 1) {
+               conditions.push(userConditions[0]);
+             }
+          } else {
+             conditions.push(ilike(table[field], `%${q}%`));
+          }
+        }
+
+        const labelFieldName = (collection.admin?.useAsTitle && table[collection.admin.useAsTitle]) 
+          ? collection.admin.useAsTitle 
+          : field;
+          
+        // Build unique columns for GROUP BY
+        const groupByColumns = new Set();
+        groupByColumns.add(table[field]);
+        if (table[labelFieldName]) groupByColumns.add(table[labelFieldName]);
+        
+        if (isUserSearch) {
+          if (table['email']) groupByColumns.add(table['email']);
+          if (table['username']) groupByColumns.add(table['username']);
+        }
+
+        const groupBy = Array.from(groupByColumns).filter(Boolean);
+
+        const selectSchema: any = {
+          value: isUserSearch 
+            ? (table['username'] && table['email'] 
+                ? sql`COALESCE(${table['username']}, ${table['email']})` 
+                : (table['username'] || table['email'] || table[field]))
+            : table[field],
+          label: table[labelFieldName] || table[field]
+        };
+
         const result = await this.db.drizzle
-          .select({ value: table[field] })
+          .select(selectSchema)
           .from(table)
-          .where(sql`${table[field]} IS NOT NULL`)
-          .groupBy(table[field])
+          .where(and(...conditions))
+          .groupBy(...groupBy)
           .limit(50);
         
-        return res.json(result.map(r => r.value));
+        return res.json(result.map((r: any) => ({ label: r.label, value: r.value })));
       }
     } catch (err: any) {
       this.logger.error(`Suggestions error in ${collection.slug} for ${req.params.field}:`, err);

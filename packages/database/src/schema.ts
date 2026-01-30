@@ -12,7 +12,15 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
-
+export const systemRecordVersions = pgTable('_system_record_versions', {
+  id: serial('id').primaryKey(),
+  refId: text('ref_id').notNull(),
+  refCollection: text('ref_collection').notNull(),
+  versionData: jsonb('version_data').notNull(),
+  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+  changeSummary: text('change_summary'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
 export const systemRoles = pgTable('_system_roles', {
   slug: text('slug').primaryKey(),
   name: text('name').notNull(),

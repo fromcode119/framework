@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService } from '@fromcode/core';
+import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService, RecordVersions } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { MediaManager } from '@fromcode/media';
 import { CacheFactory, CacheManager } from '@fromcode/cache';
@@ -138,6 +138,7 @@ export class APIServer {
     this.registerCoreCollection('users', UserCollection);
     this.registerCoreCollection('media', MediaCollection);
     this.registerCoreCollection('settings', SettingsCollection);
+    this.registerCoreCollection('_system_record_versions', RecordVersions);
     this.setupMiddleware();
     this.setupRoutes();
     this.logger.info('API Server initialized successfully.');

@@ -20,6 +20,7 @@ import path from 'path';
 import fs from 'fs';
 import AdmZip from 'adm-zip';
 import { createPluginContext, PluginManagerInterface } from './context';
+import { RecordVersions } from '../collections/RecordVersions';
 
 export class PluginManager implements PluginManagerInterface {
   public plugins: Map<string, LoadedPlugin> = new Map();
@@ -125,6 +126,24 @@ export class PluginManager implements PluginManagerInterface {
   async init() {
     await this.runSystemMigrations();
     await this.coordinator.validateDatabaseState();
+    this.registerSystemCollections();
+    
+    // Sync system collections
+    for (const entry of Array.from(this.registeredCollections.values())) {
+      if (entry.pluginSlug === 'system') {
+        await this.schemaManager.syncCollection(entry.collection);
+      }
+    }
+  }
+
+  private registerSystemCollections() {
+    this.logger.info('Registering system collections...');
+    
+    // Global Record Versions
+    this.registeredCollections.set('versions', {
+      collection: RecordVersions,
+      pluginSlug: 'system'
+    });
   }
 
   async discoverPlugins() {

@@ -17,6 +17,7 @@ export default function NewUserPage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
+    username: '',
     firstName: '',
     lastName: '',
     password: '',
@@ -96,13 +97,21 @@ export default function NewUserPage() {
          <form onSubmit={handleSubmit} className="space-y-8">
             <Card title="Account Details">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-                  <div className="space-y-2 lg:col-span-2">
+                  <div className="space-y-2">
                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">E-Mail Address</label>
                      <Input 
                         placeholder="user@fromcode.com" 
                         value={formData.email} 
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                         required
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Username</label>
+                     <Input 
+                        placeholder="username" 
+                        value={formData.username} 
+                        onChange={(e) => setFormData({...formData, username: e.target.value})}
                      />
                   </div>
                   <div className="space-y-2">

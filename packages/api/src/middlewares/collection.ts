@@ -36,11 +36,36 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
     }
     
     if (!collectionEntry) {
-      const logs = Array.from(((manager as any).registeredCollections as Map<string, any>).keys());
-      console.error(`[CollectionMiddleware] Collection NOT FOUND: "${slug}". Available: ${logs.join(', ')}`);
+      const allRegistered = Array.from(((manager as any).registeredCollections as Map<string, any>).entries());
+      const publicCollections = allRegistered
+        .filter(([_, entry]) => !entry.collection.admin?.hidden)
+        .map(([key, _]) => key);
+      
+      // Calculate a "Did you mean?" suggestion
+      const findBestMatch = (input: string, choices: string[]) => {
+        const inputLo = input.toLowerCase();
+        let best = null;
+        let bestDist = 3; // Max distance
+
+        for (const choice of choices) {
+          const choiceLo = choice.toLowerCase();
+          // Simple fuzzy logic: check if one contains other or simple distance
+          if (choiceLo.includes(inputLo) || inputLo.includes(choiceLo)) {
+             return choice;
+          }
+        }
+        return null;
+      };
+
+      const suggestion = findBestMatch(slug, publicCollections);
+      
+      console.error(`[CollectionMiddleware] Collection NOT FOUND: "${slug}". Suggestion: ${suggestion}. Available: ${publicCollections.join(', ')}`);
+      
       return res.status(404).json({ 
           error: `Collection "${slug}" not found`,
-          available: logs
+          message: suggestion ? `Did you mean "${suggestion}"?` : `The collection "${slug}" does not exist in the platform registry.`,
+          available: (req as any).user?.roles?.includes('admin') ? publicCollections : undefined,
+          hint: suggestion ? `Try requesting /api/v1/collections/${suggestion} instead.` : undefined
       });
     }
 
