@@ -537,7 +537,7 @@ plugin
         jsx: 'transform',
         jsxFactory: 'React.createElement',
         jsxFragment: 'React.Fragment',
-        external: ['react', 'react-dom', 'lucide-react', '@fromcode/react', 'react/jsx-runtime']
+        external: ['react', 'react-dom', '@fromcode/react', 'react/jsx-runtime']
       };
 
       if (options.watch) {
@@ -889,7 +889,7 @@ theme
         jsx: 'transform',
         jsxFactory: 'React.createElement',
         jsxFragment: 'React.Fragment',
-        external: ['react', 'react-dom', 'lucide-react', '@fromcode/react', 'react/jsx-runtime']
+        external: ['react', 'react-dom', '@fromcode/react', 'react/jsx-runtime']
       };
 
       if (options.watch) {
