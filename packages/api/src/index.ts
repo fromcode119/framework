@@ -9,7 +9,7 @@ import { CacheFactory, CacheManager } from '@fromcode/cache';
 import { systemSessions, eq, and, gt } from '@fromcode/database';
 import * as path from 'path';
 import * as fs from 'fs';
-import { RESTController } from './rest-controller';
+import { RESTController } from './controllers/RESTController';
 import { API_ROUTES } from './constants';
 import { createCollectionMiddleware } from './middlewares/collection';
 import { setupAuthRoutes } from './routes/auth';
@@ -195,6 +195,8 @@ export class APIServer {
       
       const defaults = [
         { key: 'platform_name', value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
+        { key: 'frontend_url', value: 'http://frontend.framework.local', description: 'The primary URL for your frontend application.', group: 'General' },
+        { key: 'permalink_structure', value: '/:slug', description: 'The default URL structure for your content (e.g. /:year/:month/:slug)', group: 'General' },
         { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'System' },
         { key: 'rate_limit_max', value: '100', description: 'Maximum requests per window per IP', group: 'Security' },
         { key: 'rate_limit_window', value: '900000', description: 'Rate limit window in milliseconds (15min = 900000)', group: 'Security' },
@@ -425,7 +427,7 @@ export class APIServer {
       // Don't log for every health check or status call in debug to avoid noise
       const isNoise = req.url.includes('/health') || req.url.includes('/status');
       if (!isNoise) {
-        this.logger.debug(`${req.method} ${req.url} - User: ${req.user ? req.user.email : 'None'} - HasToken: ${hasToken} - Cookies: ${cookieCount}`);
+        this.logger.debug(`${req.method} ${req.url} - User: ${req.user ? req.user.email : 'None'} - HasToken: ${hasToken} - Cookies: ${JSON.stringify(req.cookies || {})}`);
       }
       
       if (!req.user && hasToken && !isNoise) {

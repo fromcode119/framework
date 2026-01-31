@@ -64,7 +64,7 @@ const cachedContent = generateRegistryContent();
 export async function GET() {
   return new NextResponse(cachedContent, {
     headers: {
-      'Content-Type': 'application/javascript',
+      'Content-Type': 'application/javascript; charset=utf-8',
       'Cache-Control': 'no-store, must-revalidate',
       'X-Content-Type-Options': 'nosniff'
     }

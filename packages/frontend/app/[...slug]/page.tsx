@@ -54,9 +54,15 @@ export default function DynamicContentPage() {
 
   return (
     <LayoutComponent page={content}>
-      <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
-        <h1 className="text-4xl font-black mb-8">{content.title}</h1>
-        <div dangerouslySetInnerHTML={{ __html: content.content }} />
+      <div className="w-full">
+        <Slot name="frontend.content.display" props={{ content: content.content }} />
+        
+        {(!content.content || typeof content.content === 'string') && (
+          <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
+            <h1 className="text-4xl font-black mb-8">{content.title}</h1>
+            <div dangerouslySetInnerHTML={{ __html: content.content }} />
+          </div>
+        )}
         
         <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
           <Slot name="frontend.content.footer" props={{ content }} />

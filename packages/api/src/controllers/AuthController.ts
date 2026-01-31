@@ -276,9 +276,12 @@ export class AuthController {
   }
 
   private getCookieOptions(req: Request, isLogout = false) {
+    const isProd = process.env.NODE_ENV === 'production';
+    const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https';
+
     const options: any = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production' && (req.protocol === 'https' || req.get('x-forwarded-proto') === 'https'),
+      secure: isProd && isHttps,
       sameSite: 'lax',
       path: '/',
     };
@@ -287,11 +290,21 @@ export class AuthController {
       options.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
     }
 
-    if (req.hostname.includes('.') && !req.hostname.match(/^\d+\.\d+\.\d+\.\d+$/) && req.hostname !== 'localhost') {
+    // Try to determine the root domain for cross-subdomain cookies
+    let domain = process.env.COOKIE_DOMAIN;
+
+    if (!domain && req.hostname.includes('.') && !req.hostname.match(/^\d+\.\d+\.\d+\.\d+$/) && req.hostname !== 'localhost') {
       const parts = req.hostname.split('.');
       if (parts.length >= 2) {
-        options.domain = '.' + parts.slice(-2).join('.');
+        domain = '.' + parts.slice(-2).join('.');
       }
+    }
+
+    if (domain) {
+      options.domain = domain;
+      console.log(`[AuthController] Setting cookie domain to: ${domain} (hostname: ${req.hostname})`);
+    } else {
+      console.log(`[AuthController] Setting cookie without explicit domain (hostname: ${req.hostname})`);
     }
 
     return options;

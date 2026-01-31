@@ -56,6 +56,7 @@ export interface PluginManifest {
   slug: string;                    // Unique identifier
   name: string;                    // Human-readable name
   version: string;                 // Semver version
+  main?: string;                   // Entry point file (usually index.js)
   
   // Metadata
   description?: string;

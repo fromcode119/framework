@@ -16,6 +16,7 @@ export const systemRecordVersions = pgTable('_system_record_versions', {
   id: serial('id').primaryKey(),
   refId: text('ref_id').notNull(),
   refCollection: text('ref_collection').notNull(),
+  version: integer('version').notNull().default(1),
   versionData: jsonb('version_data').notNull(),
   updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
   changeSummary: text('change_summary'),

@@ -21,6 +21,12 @@ export const RecordVersions: Collection = {
       required: true,
     },
     {
+      name: 'version',
+      type: 'number',
+      required: true,
+      defaultValue: 1,
+    },
+    {
       name: 'version_data',
       type: 'json',
       required: true,

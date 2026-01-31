@@ -1,7 +1,7 @@
 import express from 'express';
 import { AuthManager } from '@fromcode/auth';
 import { PluginManager, ThemeManager } from '@fromcode/core';
-import { RESTController } from '../rest-controller';
+import { RESTController } from '../controllers/RESTController';
 import { SystemController } from '../controllers/SystemController';
 
 export function setupSystemRoutes(manager: PluginManager, themeManager: ThemeManager, auth: AuthManager, restController: RESTController) {

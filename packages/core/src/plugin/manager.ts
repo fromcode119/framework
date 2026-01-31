@@ -1033,6 +1033,7 @@ export class PluginManager implements PluginManagerInterface {
             ...p.manifest.admin,
             collections
           },
+          config: p.manifest.config || {},
           ui: {
             ...(p.manifest.ui || {}),
             headInjections: []
