@@ -36,11 +36,17 @@ interface AdminPluginMetadata {
 }
 
 export default function PluginLoader() {
-  const { registerSlotComponent, registerMenuItem, registerCollection, refreshVersion } = usePlugins();
+  const pluginsContext = usePlugins();
+  const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion } = pluginsContext;
   const { user, isLoading: isAuthLoading } = useAuth();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    console.debug("[Admin] PluginLoader Effect triggered", { 
+      hasRegisterPlugins: typeof registerPlugins === 'function',
+      keys: Object.keys(pluginsContext)
+    });
+
     if (typeof window === 'undefined' || isAuthLoading || !user) return;
 
     async function loadPlugins() {
@@ -67,8 +73,14 @@ export default function PluginLoader() {
         const responseData = await api.get(ENDPOINTS.PLUGINS.STAGED);
         const plugins: AdminPluginMetadata[] = responseData.plugins || [];
         const remoteMenu: any[] = responseData.menu || [];
+        const settings: Record<string, any> = responseData.settings || {};
+
+        if (settings) {
+          registerSettings(settings);
+        }
 
         if (Array.isArray(plugins)) {
+          registerPlugins(plugins);
           for (const plugin of plugins) {
             // Load UI entry points if defined (Phase 4)
             if (plugin.ui?.entry) {
@@ -146,7 +158,7 @@ export default function PluginLoader() {
     }
 
     loadPlugins();
-  }, [user, isAuthLoading, registerSlotComponent, registerMenuItem, registerCollection, refreshVersion]);
+  }, [user, isAuthLoading, registerSlotComponent, registerMenuItem, registerCollection, registerPlugins, registerSettings, refreshVersion]);
 
   return null;
 }

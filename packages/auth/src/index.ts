@@ -93,7 +93,7 @@ export class AuthManager {
       if (!token && req.cookies) {
         token = req.cookies.fc_token;
         if (token) {
-          console.debug(`[AuthManager] Found token in req.cookies for ${req.url}`);
+          console.debug(`[AuthManager] Found fc_token in req.cookies for ${req.url}`);
         }
       }
 
@@ -111,7 +111,13 @@ export class AuthManager {
         });
         token = cookies['fc_token'];
         if (token) {
-          console.debug(`[AuthManager] Found token in raw headers for ${req.url}`);
+          console.debug(`[AuthManager] Found fc_token in raw headers for ${req.url}`);
+        } else {
+           // Debug log what cookies ARE present
+           const cookieNames = Object.keys(cookies).join(', ');
+           if (cookieNames && !req.url.includes('/status') && !req.url.includes('/health')) {
+             console.debug(`[AuthManager] No fc_token found in Cookie header for ${req.url}. Available cookies: ${cookieNames}`);
+           }
         }
       }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Slot } from './Slot';
 import { Override } from './Override';
@@ -39,6 +39,9 @@ interface PluginContextValue {
   themeLayouts: Record<string, any>;
   menuItems: MenuItem[];
   collections: CollectionMetadata[];
+  fieldComponents: Record<string, React.ComponentType<any>>;
+  plugins: any[];
+  settings: Record<string, any>;
   translations: Record<string, any>;
   locale: string;
   refreshVersion: number;
@@ -50,10 +53,13 @@ interface PluginContextValue {
   registerAPI: (slug: string, api: any) => void;
   getAPI: (slug: string) => any;
   registerSlotComponent: (slotName: string, component: SlotComponent) => void;
+  registerFieldComponent: (name: string, component: any) => void;
   registerOverride: (name: string, component: SlotComponent) => void;
   registerMenuItem: (item: MenuItem) => void;
   registerCollection: (collection: CollectionMetadata) => void;
+  registerPlugins: (plugins: any[]) => void;
   registerTheme: (slug: string, config: any) => void;
+  registerSettings: (settings: Record<string, any>) => void;
   loadFrontendConfig: () => Promise<void>;
   resolveContent: (slug: string) => Promise<{ type: string, doc: any, plugin: string } | null>;
   api: {
@@ -71,6 +77,9 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   const [themeLayouts, setThemeLayouts] = useState<Record<string, any>>({});
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [collections, setCollections] = useState<CollectionMetadata[]>([]);
+  const [fieldComponents, setFieldComponents] = useState<Record<string, any>>({});
+  const [plugins, setPlugins] = useState<any[]>([]);
+  const [settings, setSettings] = useState<Record<string, any>>({});
   const [translations, setTranslations] = useState<Record<string, any>>({});
   const [locale, setLocale] = useState<string>('en');
   const [refreshVersion, setRefreshVersion] = useState(0);
@@ -94,9 +103,15 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     
     const url = path.startsWith('http') ? path : `${base}/api/${version}${path.startsWith('/') ? '' : '/'}${path}`;
     
-    const res = await fetch(url, options);
+    console.debug(`[Fromcode API] Fetching: ${url}`, { credentials: options.credentials || 'include' });
+
+    const res = await fetch(url, {
+      ...options,
+      credentials: options.credentials || 'include'
+    });
     if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        console.error(`[Fromcode API] Error ${res.status} from ${url}:`, err);
         throw new Error(err.error || `Failed to fetch from ${url}`);
     }
     return res.json();
@@ -114,7 +129,21 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
 
   const resolveContent = useCallback(async (slug: string) => {
     try {
-        const result = await api.get(`/system/resolve?slug=${encodeURIComponent(slug)}`);
+        let query = `?slug=${encodeURIComponent(slug)}`;
+        if (typeof window !== 'undefined') {
+          // Check both current URL and possible referer URL for flags
+          const currentUrl = new URL(window.location.href);
+          const params = currentUrl.searchParams;
+          
+          if (params.get('preview') === '1') query += '&preview=1';
+          if (params.get('draft') === '1') query += '&draft=1';
+          
+          // Also check if we are in an iframe (preview mode often uses iframes)
+          if (window.self !== window.top) {
+             query += '&preview=1';
+          }
+        }
+        const result = await api.get(`/system/resolve${query}`);
         return result;
     } catch (e) {
         return null;
@@ -127,7 +156,11 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
       const endpoint = `${base}/api/${version}/system/frontend`;
       
-      const res = await fetch(endpoint);
+      console.debug(`[Fromcode] Loading frontend config from: ${endpoint}`);
+
+      const res = await fetch(endpoint, {
+        credentials: 'include'
+      });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       
@@ -135,11 +168,11 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       if (typeof document !== 'undefined' && !document.querySelector('script[type="importmap"]')) {
         const importMap = {
           imports: {
-            "react": "data:text/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, version } = window.React;",
-            "react-dom": "data:text/javascript,export default window.ReactDom; export const { render, hydrate, createRoot } = window.ReactDom || {};",
-            "@fromcode/react": "data:text/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider, getIcon, createProxyIcon } = window.Fromcode;",
-            "react/jsx-runtime": "data:text/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment;",
-            "lucide-react": "data:text/javascript,const proxy = (name) => (props) => { const Component = (window.FrameworkIcons && window.FrameworkIcons[name]) || (window.Fromcode && window.Fromcode[name]); return Component ? window.React.createElement(Component, props) : null; }; export const Loader2 = proxy('Loader2'); export const Search = proxy('Search'); export const Plus = proxy('Plus'); export const Trash2 = proxy('Trash2'); export const Pencil = proxy('Pencil'); export const Save = proxy('Save'); export const Download = proxy('Download'); export const Upload = proxy('Upload'); export const RefreshCw = proxy('RefreshCw'); export const ExternalLink = proxy('ExternalLink'); export const MoreHorizontal = proxy('MoreHorizontal'); export const Filter = proxy('Filter'); export const FileText = proxy('FileText'); export const Tag = proxy('Tag'); export const Layers = proxy('Layers'); export const ChevronDown = proxy('ChevronDown'); export const ChevronRight = proxy('ChevronRight'); export const Home = proxy('Home'); export const Info = proxy('Info'); export const AlertCircle = proxy('AlertCircle'); export const CheckCircle2 = proxy('CheckCircle2'); export const MoreVertical = proxy('MoreVertical'); export const Layout = proxy('Layout'); export const Columns = proxy('Columns'); export const Copy = proxy('Copy'); export const Settings = proxy('Settings'); export const BarChart3 = proxy('BarChart3'); export const PlusCircle = proxy('PlusCircle'); export default new Proxy({}, { get: (_, name) => proxy(name) });"
+            "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, version } = window.React;",
+            "react-dom": "data:application/javascript,const rd = window.ReactDOM || window.ReactDom; export default rd; export const render = (...args) => rd.render(...args); export const hydrate = (...args) => rd.hydrate(...args); export const createPortal = (...args) => rd.createPortal(...args); export const createRoot = (...args) => rd.createRoot(...args);",
+            "@fromcode/react": "data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider, getIcon, createProxyIcon } = window.Fromcode;",
+            "react/jsx-runtime": "data:application/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment;",
+            "lucide-react": "data:application/javascript,const createIcon = (name) => (props) => { const registry = window.Fromcode && window.Fromcode.getIcon; const Component = registry ? registry(name) : (window.Lucide && window.Lucide[name]); return Component ? window.React.createElement(Component, props) : null; }; export const Loader2 = createIcon('Loader2'); export const Loader = Loader2; export const Search = createIcon('Search'); export const Plus = createIcon('Plus'); export const Trash2 = createIcon('Trash2'); export const Pencil = createIcon('Pencil'); export const Save = createIcon('Save'); export const Download = createIcon('Download'); export const Upload = createIcon('Upload'); export const RefreshCw = createIcon('RefreshCw'); export const ExternalLink = createIcon('ExternalLink'); export const MoreHorizontal = createIcon('MoreHorizontal'); export const Filter = createIcon('Filter'); export const FileText = createIcon('FileText'); export const Tag = createIcon('Tag'); export const Layers = createIcon('Layers'); export const ChevronDown = createIcon('ChevronDown'); export const ChevronUp = createIcon('ChevronUp'); export const X = createIcon('X'); export const Image = createIcon('Image'); export const File = createIcon('File'); export const Film = createIcon('Film'); export const Play = createIcon('Play'); export const ChevronRight = createIcon('ChevronRight'); export const Home = createIcon('Home'); export const Info = createIcon('Info'); export const AlertCircle = createIcon('AlertCircle'); export const CheckCircle2 = createIcon('CheckCircle2'); export const MoreVertical = createIcon('MoreVertical'); export const Layout = createIcon('Layout'); export const Columns = createIcon('Columns'); export const Copy = createIcon('Copy'); export const Settings = createIcon('Settings'); export const BarChart3 = createIcon('BarChart3'); export const PlusCircle = createIcon('PlusCircle'); export const Trash = createIcon('Trash'); export const Edit = createIcon('Edit'); export const Zap = createIcon('Zap'); export const Maximize = createIcon('Maximize'); export default new Proxy({}, { get: (_, name) => createIcon(name) });"
           }
         };
         const script = document.createElement('script');
@@ -310,6 +343,11 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     });
   }, []);
 
+  const registerFieldComponent = useCallback((name: string, component: any) => {
+    console.log(`[Fromcode] Registering field component: ${name}`);
+    setFieldComponents(prev => ({ ...prev, [name]: component }));
+  }, []);
+
   const registerOverride = useCallback((name: string, component: any, pluginSlug?: string, priority?: number) => {
     const componentObj: SlotComponent = typeof component === 'function' || (component && component.$$typeof)
       ? { component, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
@@ -337,6 +375,14 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     });
   }, []);
 
+  const registerPlugins = useCallback((newPlugins: any[]) => {
+    setPlugins(newPlugins);
+  }, []);
+
+  const registerSettings = useCallback((newSettings: Record<string, any>) => {
+    setSettings(prev => ({ ...prev, ...newSettings }));
+  }, []);
+
   const registerTheme = useCallback((slug: string, config: any) => {
     if (config?.variables) {
       setThemeVariables(prev => ({ ...prev, ...config.variables }));
@@ -358,15 +404,18 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     fc.ReactDom = ReactDOM; // Compatibility
 
     const queueMethod = (type: string) => (...args: any[]) => {
+      console.log(`[Fromcode] Queuing method: ${type}`, args);
       if (!(window as any)._fromcodeQueue) (window as any)._fromcodeQueue = [];
       (window as any)._fromcodeQueue.push({ type, args });
     };
 
     if (!fc.registerSlotComponent) fc.registerSlotComponent = queueMethod('slot');
+    if (!fc.registerFieldComponent) fc.registerFieldComponent = queueMethod('field');
     if (!fc.registerOverride) fc.registerOverride = queueMethod('override');
     if (!fc.registerMenuItem) fc.registerMenuItem = queueMethod('menuItem');
     if (!fc.registerCollection) fc.registerCollection = queueMethod('collection');
     if (!fc.registerTheme) fc.registerTheme = queueMethod('theme');
+    if (!fc.registerSettings) fc.registerSettings = queueMethod('settings');
     
     if (!fc.t) fc.t = (key: string, _params?: any, defaultValue?: string) => defaultValue || key;
     if (!fc.locale) fc.locale = 'en';
@@ -417,11 +466,16 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         Settings: getIcon('Settings'),
         BarChart3: getIcon('BarChart3'),
         PlusCircle: getIcon('PlusCircle'),
+        File: getIcon('File'),
+        Film: getIcon('Film'),
         registerSlotComponent,
+        registerFieldComponent,
         registerOverride,
         registerMenuItem,
         registerCollection,
+        registerPlugins,
         registerTheme,
+        registerSettings,
         registerAPI,
         getAPI,
         emit,
@@ -438,17 +492,21 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
 
       // Flush queue
       if ((window as any)._fromcodeQueue) {
+        console.log(`[Fromcode] Flushing queue with ${(window as any)._fromcodeQueue.length} items`);
         const queue = (window as any)._fromcodeQueue;
-        delete (window as any)._fromcodeQueue; // Clear it before processing to avoid loops
+        delete (window as any)._fromcodeQueue;
 
         queue.forEach((item: any) => {
           try {
+            console.log(`[Fromcode] Processing queued item: ${item.type}`, item.args);
             switch (item.type) {
               case 'slot': (registerSlotComponent as any)(...(item.args || [item.name, item.comp])); break;
+              case 'field': (registerFieldComponent as any)(...(item.args || [item.name, item.component])); break;
               case 'override': (registerOverride as any)(...(item.args || [item.name, item.component])); break;
               case 'menuItem': (registerMenuItem as any)(...(item.args || [item.item])); break;
               case 'collection': (registerCollection as any)(...(item.args || [item.collection])); break;
               case 'theme': (registerTheme as any)(...(item.args || [item.slug, item.config])); break;
+              case 'settings': (registerSettings as any)(...(item.args || [item.settings])); break;
             }
           } catch (e) {
             console.error(`[Fromcode] Failed to flush queued item of type ${item.type}:`, e);
@@ -456,7 +514,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         });
       }
     }
-  }, [apiUrl, registerSlotComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, emit, on, registerAPI, getAPI, t, locale]);
+  }, [apiUrl, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, registerSettings, emit, on, registerAPI, getAPI, t, locale]);
 
   const value = React.useMemo(() => ({
     slots,
@@ -465,6 +523,9 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     themeLayouts,
     menuItems,
     collections,
+    fieldComponents,
+    plugins,
+    settings,
     translations,
     locale,
     refreshVersion,
@@ -476,14 +537,17 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     registerAPI,
     getAPI,
     registerSlotComponent,
+    registerFieldComponent,
     registerOverride,
     registerMenuItem,
     registerCollection,
+    registerPlugins,
     registerTheme,
+    registerSettings,
     loadFrontendConfig,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, loadFrontendConfig, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadFrontendConfig, resolveContent, api]);
 
   return (
     <PluginContext.Provider value={value}>

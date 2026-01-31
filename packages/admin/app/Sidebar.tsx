@@ -35,9 +35,10 @@ interface NavItemProps {
   children?: any[];
   isMini?: boolean;
   isGroupHeader?: boolean;
+  version?: string;
 }
 
-const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroupHeader }: NavItemProps) => {
+const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroupHeader, version }: NavItemProps) => {
   const { theme } = useTheme();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
@@ -91,9 +92,16 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
               {icon}
             </span>
             {!isMini && (
-              <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-bold' : 'font-semibold'}`}>
-                {label}
-              </span>
+              <div className="flex flex-col">
+                <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-bold' : 'font-semibold'}`}>
+                  {label}
+                </span>
+                {version && (
+                  <span className={`text-[8px] font-mono mt-0.5 opacity-60 ${isHighlighted ? 'text-white' : 'text-slate-400'}`}>
+                    v{version}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </Link>
@@ -177,7 +185,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   isMini?: boolean,
   onMiniToggle?: () => void
 }) {
-  const { menuItems } = usePlugins();
+  const { menuItems, plugins } = usePlugins();
   const { theme } = useTheme();
   const { user } = useAuth();
   const rawPathname = usePathname();
@@ -271,6 +279,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     children={menuItems.find(m => m.path === '/users')?.children}
                     isMini={isMini}
                   />
+
+                  <NavItem icon={<Media size={18}/>} label="Media" href="/media" active={pathname.startsWith('/media')} onClick={onClose} isMini={isMini} />
                   
                   <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname.startsWith('/plugins')} onClick={onClose} isMini={isMini} />
                   
@@ -300,7 +310,10 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     active={item.path ? (item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)) : false}
                     onClick={onClose}
                     children={item.children}
-                    isMini={isMini}                   isGroupHeader={item.isGroup}                  />
+                    isMini={isMini}
+                    isGroupHeader={item.isGroup}
+                    version={plugins.find(p => p.slug === item.pluginSlug)?.version}
+                  />
                 ))
               )}
             </React.Fragment>
@@ -319,7 +332,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         <div className="mt-auto pt-6">
           {!isMini && <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">System</p>}
           <NavItem icon={<Refresh size={18}/>} label="Updates" href="/settings/updates" active={pathname === '/settings/updates'} onClick={onClose} isMini={isMini} />
-          <NavItem icon={<Settings size={18}/>} label="Settings" href="/settings" active={pathname === '/settings'} onClick={onClose} isMini={isMini} />
+          <NavItem icon={<Settings size={18}/>} label="Settings" href="/settings/general" active={pathname.startsWith('/settings')} onClick={onClose} isMini={isMini} />
         </div>
         
         <div className="mt-4">

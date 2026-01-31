@@ -137,7 +137,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { registerSlotComponent } = usePlugins();
+  const { registerSlotComponent, registerFieldComponent } = usePlugins();
   const translation = useTranslation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isMini, setIsMini] = useState(() => {
@@ -158,11 +158,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       (window as any).Fromcode = {
         ...(window as any).Fromcode,
         registerSlotComponent,
+        registerFieldComponent,
         useTranslation: () => translation,
         usePlugins
       };
     }
-  }, [registerSlotComponent, translation]);
+  }, [registerSlotComponent, registerFieldComponent, translation]);
 
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
   const pathname = usePathname();

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { TagField } from '@/components/ui/TagField';
 import { Button } from '@/components/ui/Button';
+import { PermalinkInput } from '@/components/ui/PermalinkInput';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FrameworkIcons } from '@/lib/icons';
 import Cookies from 'js-cookie';
@@ -36,8 +37,13 @@ const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { fiel
 export default function CollectionEditPage() {
   const { pluginSlug, slug, id } = useParams() as { pluginSlug: string, slug: string, id: string };
   const router = useRouter();
-  const { collections } = usePlugins();
+  const plugins = usePlugins();
+  const { collections, settings } = plugins;
+  const fieldComponents = (plugins as any).fieldComponents || {};
+  console.log('[Admin] Field components available:', Object.keys(fieldComponents));
   const { theme } = useTheme();
+
+  const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   
   const isNew = id === 'new';
   const collection = collections.find(c => {
@@ -57,11 +63,45 @@ export default function CollectionEditPage() {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [slugWarning, setSlugWarning] = useState<string | null>(null);
   const [selectedRevision, setSelectedRevision] = useState<any | null>(null);
+  const [activeVersionId, setActiveVersionId] = useState<number | null>(null);
   const [revisions, setRevisions] = useState<any[]>([]);
 
   const currentRevIndex = selectedRevision ? revisions.findIndex(r => r.id === selectedRevision.id) : -1;
 
   const resolvedSlug = collection?.slug || slug;
+
+  const getPreviewUrl = () => {
+    if (!formData) return '#';
+    
+    // PRIORITY: If we have an explicit custom permalink override, use it directly
+    if (formData.customPermalink) {
+      return `${frontendUrl}/${formData.customPermalink.startsWith('/') ? formData.customPermalink.substring(1) : formData.customPermalink}?preview=1&draft=1`;
+    }
+
+    // FALLBACK: Use the global structure logic
+    const pathValue = formData.slug || id;
+    const structure = settings?.permalink_structure || '/:slug';
+    
+    const now = new Date();
+    const replacements: Record<string, string> = {
+      ':year': now.getFullYear().toString(),
+      ':month': (now.getMonth() + 1).toString().padStart(2, '0'),
+      ':day': now.getDate().toString().padStart(2, '0'),
+      ':id': id,
+      ':slug': pathValue,
+    };
+
+    let path = structure;
+    Object.entries(replacements).forEach(([key, val]) => {
+      path = path.replace(key, val);
+    });
+
+    // Clean up double slashes and ensure leading slash
+    path = path.replace(/\/+/g, '/');
+    if (!path.startsWith('/')) path = '/' + path;
+
+    return `${frontendUrl}${path}?preview=1&draft=1`;
+  };
 
   const slugify = (text: string) => {
     return text
@@ -87,13 +127,19 @@ export default function CollectionEditPage() {
         if (entryData.slug) setSlugManuallyEdited(true);
 
         if (versionData && versionData.docs) {
-           setRevisions(versionData.docs.map((v: any) => ({
+           const mappedRevisions = versionData.docs.map((v: any) => ({
               id: v.id,
+              version: v.version || 1,
               date: new Date(v.created_at || v.createdAt),
               user: v.updated_by || v.updatedBy || 'System',
               action: v.change_summary || 'Update',
               changes: v.version_data
-           })));
+           }));
+           setRevisions(mappedRevisions);
+           // Default to latest version as active if record exists
+           if (mappedRevisions.length > 0) {
+              setActiveVersionId(mappedRevisions[0].id);
+           }
         }
       } catch (err) {
         console.error("Failed to fetch entry:", err);
@@ -180,18 +226,31 @@ export default function CollectionEditPage() {
   }
 
   const handleInputChange = (name: string, value: any) => {
+    // If the value actually changed, clear active version highlight
+    if (formData[name] !== value) {
+      setActiveVersionId(null);
+    }
+
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
 
-      // Auto-generate slug logic
+      // Auto-generate slug and permalink logic
       const sourceField = collection.admin?.useAsTitle || (collection.fields.find(f => f.name === 'name' || f.name === 'title')?.name);
       
       if (name === sourceField && !slugManuallyEdited && isNew) {
-        newData.slug = slugify(value);
+        const newSlug = slugify(value);
+        newData.slug = newSlug;
+        if (!newData.customPermalink) {
+          newData.customPermalink = newSlug;
+        }
       }
 
       if (name === 'slug') {
         setSlugManuallyEdited(true);
+        // Sync permalink with slug if it hasn't been manually diversified
+        if (!prev.customPermalink || prev.customPermalink === prev.slug) {
+           newData.customPermalink = value;
+        }
       }
 
       return newData;
@@ -217,13 +276,18 @@ export default function CollectionEditPage() {
         try {
           const versionData = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/versions?ref_id=${id}&ref_collection=${resolvedSlug}&sort=-id&limit=20`);
           if (versionData && versionData.docs) {
-            setRevisions(versionData.docs.map((v: any) => ({
+            const mappedRevisions = versionData.docs.map((v: any) => ({
               id: v.id,
+              version: v.version || 1,
               date: new Date(v.created_at || v.createdAt),
               user: v.updated_by || v.updatedBy || 'System',
               action: v.change_summary || 'Update',
               changes: v.version_data
-            })));
+            }));
+            setRevisions(mappedRevisions);
+            if (mappedRevisions.length > 0) {
+              setActiveVersionId(mappedRevisions[0].id);
+            }
           }
         } catch (e) {}
       }
@@ -250,6 +314,8 @@ export default function CollectionEditPage() {
     }
   };
 
+  const hasSlug = collection.fields.some(f => f.name === 'slug');
+
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
       <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
@@ -275,17 +341,17 @@ export default function CollectionEditPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className={`text-2xl font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {isNew ? `Create ${collection.name || collection.slug}` : `Edit ${collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (collection.name || 'Entry')}`}
+                {isNew ? `Create ${collection.name || collection.slug}` : `Edit ${collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (formData.title || formData.name || collection.name || 'Entry')}`}
               </h1>
               <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-1">
-                {isNew ? 'Define a new record for this collection' : `Modify existing ${collection.name || collection.slug} entry`}
+                {isNew ? `Define a new record for ${collection.name || collection.slug}` : `Modify existing ${formData.title || formData.name || collection.name || 'entry'}`}
               </p>
             </div>
             
             <div className="flex items-center gap-3">
-              {!isNew && formData.slug && (
+              {!isNew && (
                 <a 
-                  href={`/${formData.slug}?preview=1&draft=1`}
+                  href={getPreviewUrl()}
                   target="_blank"
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
                     theme === 'dark' 
@@ -342,27 +408,56 @@ export default function CollectionEditPage() {
                         {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
                       </label>
                       
-                      {field.admin?.component === 'TagField' || field.admin?.component === 'Tags' || field.type === 'json' ? (
-                        <TagFieldLocal 
-                          field={field} 
-                          value={formData[field.name]} 
-                          onChange={(val) => handleInputChange(field.name, val)}
-                          theme={theme}
-                          collectionSlug={resolvedSlug}
-                        />
-                      ) : (field.type === 'textarea' || field.type === 'richText') ? (
-                        <textarea 
-                          value={formData[field.name] || ''}
-                          onChange={(e) => handleInputChange(field.name, e.target.value)}
-                          disabled={saving}
-                          className={`w-full min-h-[160px] rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-bold ${
-                            theme === 'dark' 
-                              ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900' 
-                              : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:bg-slate-50 shadow-sm'
-                          } ${field.required && !formData[field.name] ? 'border-amber-100' : ''}`}
-                          placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
-                        />
-                      ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
+                        {field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
+                          <TagFieldLocal 
+                            field={field} 
+                            value={formData[field.name]} 
+                            onChange={(val) => handleInputChange(field.name, val)}
+                            theme={theme}
+                            collectionSlug={resolvedSlug}
+                          />
+                        ) : field.admin?.component ? (() => {
+                          const componentName = field.admin.component;
+                          const CustomComponent = fieldComponents[componentName];
+                          
+                          if (CustomComponent) {
+                            return (
+                              <CustomComponent 
+                                value={formData[field.name]}
+                                onChange={(val: any) => handleInputChange(field.name, val)}
+                                theme={theme}
+                                field={field}
+                              />
+                            );
+                          }
+
+                          return (
+                            <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                               <FrameworkIcons.Alert size={12} />
+                               Component "{componentName}" not registered by any plugin.
+                            </div>
+                          );
+                        })() : (field.type === 'textarea' || field.type === 'richText') ? (
+                          <textarea 
+                            value={formData[field.name] || ''}
+                            onChange={(e) => handleInputChange(field.name, e.target.value)}
+                            disabled={saving}
+                            className={`w-full min-h-[160px] rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-bold ${
+                              theme === 'dark' 
+                                ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900' 
+                                : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:bg-slate-50 shadow-sm'
+                            } ${field.required && !formData[field.name] ? 'border-amber-100' : ''}`}
+                            placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
+                          />
+                        ) : field.type === 'json' ? (
+                          <TagFieldLocal 
+                            field={field} 
+                            value={formData[field.name]} 
+                            onChange={(val) => handleInputChange(field.name, val)}
+                            theme={theme}
+                            collectionSlug={resolvedSlug}
+                          />
+                        ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
                          <Input 
                           type="password"
                           value={formData[field.name] || ''}
@@ -416,11 +511,26 @@ export default function CollectionEditPage() {
               <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
               <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
               
+              {hasSlug && (
+                <Card title="Preview & Permalink">
+                   <PermalinkInput
+                      value={formData.customPermalink}
+                      onChange={(val) => handleInputChange('customPermalink', val)}
+                      disabled={saving}
+                      id={isNew ? undefined : id}
+                      slug={formData.slug}
+                    />
+                    <p className="mt-2 text-[9px] text-slate-400 font-bold uppercase tracking-tight opacity-50">
+                      Click the path component to override the automatically generated slug.
+                    </p>
+                </Card>
+              )}
+
               {collection.fields.some(f => f.admin?.position === 'sidebar' && !f.admin?.hidden) && (
                 <Card title="Settings">
                   <div className="space-y-6">
                     {collection.fields
-                      .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden)
+                      .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden && f.name !== 'customPermalink')
                       .map((field) => (
                         <div key={field.name}>
                           <label className={`block text-[9px] font-black uppercase tracking-widest mb-2 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -498,29 +608,39 @@ export default function CollectionEditPage() {
 
               {!isNew && (
                 <Card title="Version History">
-                   <div className="space-y-4">
+                   <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {revisions.length === 0 && (
+                        <p className="text-[10px] text-slate-400 font-bold italic py-2">No versions recorded yet.</p>
+                      )}
                       {revisions.map((v, i) => (
                         <div 
                           key={i} 
                           onClick={() => setSelectedRevision(v)}
-                          className="flex items-start gap-3 group cursor-pointer p-2 -m-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                          className={`flex items-start gap-3 group cursor-pointer p-2.5 -mx-2 rounded-xl transition-all border border-transparent ${v.id === activeVersionId ? 'bg-indigo-50/30 border-indigo-100/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                         >
-                           <div className={`mt-1 h-2 w-2 rounded-full ${i === 0 ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-200'} shrink-0`} />
-                           <div className="flex-1">
-                              <div className="flex justify-between items-center">
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">{v.user}</span>
-                                 <div className="flex items-center gap-2">
-                                    <button 
-                                      onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, ...v.changes }); }}
-                                      className="text-[9px] font-black uppercase text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
-                                    >
-                                       <FrameworkIcons.Refresh size={8} />
-                                       Restore
-                                    </button>
+                           <div className={`mt-1.5 h-1.5 w-1.5 rounded-full ${v.id === activeVersionId ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-300'} shrink-0`} />
+                           <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-center gap-2">
+                                 <div className="flex items-center gap-2 min-w-0">
+                                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white truncate">{v.user}</span>
                                  </div>
+                                 {v.id !== activeVersionId && (
+                                   <button 
+                                      onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        setFormData({ ...formData, ...v.changes });
+                                        setActiveVersionId(v.id);
+                                      }}
+                                      className="text-[9px] font-black uppercase text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
+                                   >
+                                      <FrameworkIcons.Refresh size={8} />
+                                      Restore
+                                   </button>
+                                 )}
                               </div>
-                              <p className="text-[10px] text-slate-500 font-medium">{v.action}</p>
-                              <p className="text-[8px] text-slate-400 uppercase tracking-widest mt-0.5">{v.date.toLocaleString()}</p>
+                              <p className="text-[10px] text-slate-500 font-bold truncate mt-0.5">{v.action}</p>
+                              <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
                            </div>
                         </div>
                       ))}
@@ -589,6 +709,7 @@ export default function CollectionEditPage() {
                     className="px-8 text-[10px] font-black uppercase tracking-widest"
                     onClick={() => {
                        setFormData({ ...formData, ...selectedRevision.changes });
+                       setActiveVersionId(selectedRevision.id);
                        setSelectedRevision(null);
                     }}
                  >

@@ -6,7 +6,7 @@ import {
   systemThemes
 } from '@fromcode/database';
 import { SystemUpdateService } from '@fromcode/core';
-import { RESTController } from '../rest-controller';
+import { RESTController } from './RESTController';
 
 export class SystemController {
   private db: any;
@@ -16,7 +16,22 @@ export class SystemController {
   }
 
   async getAdminMetadata(req: Request, res: Response) {
-    res.json(this.manager.getAdminMetadata());
+    const metadata = this.manager.getAdminMetadata();
+    
+    // Fetch global settings to include in metadata for the UI
+    try {
+      const settings = await (this.manager as any).db.find('_system_meta');
+      const settingsMap: Record<string, string> = {};
+      settings.forEach((s: any) => {
+        settingsMap[s.key] = s.value;
+      });
+      
+      (metadata as any).settings = settingsMap;
+    } catch (e) {
+      console.error('[SystemController] Failed to fetch settings for metadata:', e);
+    }
+
+    res.json(metadata);
   }
 
   async getFrontendMetadata(req: Request, res: Response) {
@@ -546,30 +561,149 @@ export class SystemController {
     const slug = req.query.slug as string;
     if (!slug) return res.status(400).json({ error: 'Slug is required' });
 
+    // Fetch the global permalink structure to know how to search
+    let permalinkStructure = '/:slug';
+    try {
+      const settings = await (this.manager as any).db.find('_system_meta');
+      const permSetting = settings.find((s: any) => s.key === 'permalink_structure');
+      if (permSetting) permalinkStructure = permSetting.value;
+    } catch (e) {
+      console.error('[SystemController] Failed to fetch permalink structure for resolution:', e);
+    }
+
+    const isNumericSearch = permalinkStructure.includes(':id') && !permalinkStructure.includes(':slug');
     const collections = this.manager.getCollections();
+    const isAdmin = (req as any).user && (req as any).user.roles && (req as any).user.roles.includes('admin');
+    const isPreview = req.query.preview === '1' || req.query.draft === '1';
     
-    // We search across all collections that have a 'slug' field
-    // TODO: In the future, we might want to restrict this to only 'viewable' collections
+    // Check if the referer has preview flags (fallback for frontend forwarding issues)
+    const referer = req.headers.referer || '';
+    const refererHasPreview = referer.includes('preview=1') || referer.includes('draft=1');
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isFromAdmin = referer && (referer.includes('admin.') || referer.includes(':3001'));
+    
+    // SECURE PREVIEW LOGIC:
+    const requestHasPreviewFlag = isPreview || refererHasPreview;
+    // In development mode or if coming from admin, we trust the preview flag more easily
+    const userHasAccess = isAdmin || isFromAdmin || (isDevelopment && requestHasPreviewFlag);
+    const effectivePreview = requestHasPreviewFlag && userHasAccess;
+
+    console.log(`[SystemController] Resolving slug: "${slug}" (Structure: ${permalinkStructure})`);
+
+    const normalizedSlug = slug.startsWith('/') ? slug.substring(1) : slug;
+    const pathSegments = normalizedSlug.split('/').filter(Boolean);
+    const structureSegments = permalinkStructure.split('/').filter(Boolean);
+
+    // 1. PRIORITY SEARCH: Check for exact "Custom Permalink" override first
     for (const collection of collections) {
-      const hasSlugField = collection.fields.some(f => f.name === 'slug');
-      if (!hasSlugField) continue;
+      if ((collection as any).system) continue;
+      const hasCustomField = collection.fields.some(f => f.name === 'customPermalink');
+      if (!hasCustomField) continue;
 
       try {
-        const tableName = collection.tableName || collection.slug;
-        const [doc] = await (this.manager as any).db.find(tableName, {
-          where: { slug: slug },
+        const table = (this.restController as any).getVirtualTable(collection);
+        
+        // Use Drizzle object for find to ensure correct column name mapping (camelCase -> snake_case)
+        const results = await (this.manager as any).db.find(table, { 
+          where: or(
+            eq(table.customPermalink, normalizedSlug),
+            eq(table.customPermalink, `/${normalizedSlug}`)
+          ),
           limit: 1
         });
-
+        
+        let doc = results && results.length > 0 ? results[0] : null;
+        
         if (doc) {
+          // Visibility check
+          const hasStatus = collection.fields.some(f => f.name === 'status');
+          const isPublished = doc.status === 'published';
+          
+          if (hasStatus && !isPublished && !effectivePreview) {
+            continue;
+          }
+
           return res.json({
             type: collection.shortSlug || collection.slug,
             plugin: collection.pluginSlug,
             doc
           });
         }
-      } catch (e) {
-        // Continue to next collection if search fails
+      } catch (e: any) {
+        console.error(`[SystemController] Priority search error for ${collection.slug}:`, e);
+      }
+    }
+
+    // 2. STRUCTURE SEARCH: Search based on the global permalink structure
+    for (const collection of collections) {
+      if ((collection as any).system) continue;
+      
+      // EXCLUDE VERSIONS COLLECTION: This is for internal governance, not public routing
+      if (collection.slug === 'versions' || (collection as any).shortSlug === 'versions') continue;
+      
+      const hasSlugField = collection.fields.some(f => f.name === 'slug');
+      if (!hasSlugField && !permalinkStructure.includes(':id')) continue;
+
+      try {
+        const table = (this.restController as any).getVirtualTable(collection);
+        
+        let searchId: number | null = null;
+        let searchSlug: string | null = null;
+
+        // A. Handle matching path segments to structure variables (e.g. /:slug/:id -> /post-name/123)
+        if (pathSegments.length === structureSegments.length) {
+          structureSegments.forEach((seg, idx) => {
+            if (seg === ':id') {
+              const val = parseInt(pathSegments[idx]);
+              if (!isNaN(val)) searchId = val;
+            } else if (seg === ':slug') {
+              searchSlug = pathSegments[idx];
+            }
+          });
+        }
+
+        // B. Fallback: If no exact mapping or count mismatch, use the last segment as primary identifier
+        // This handles cases like /:year/:month/:slug when the URL is /2026/01/post-name
+        if (!searchId && !searchSlug && pathSegments.length > 0) {
+          const lastSegment = pathSegments[pathSegments.length - 1];
+          if (permalinkStructure.includes(':id') && !permalinkStructure.includes(':slug')) {
+            const val = parseInt(lastSegment);
+            if (!isNaN(val)) searchId = val;
+          } else {
+            searchSlug = lastSegment;
+          }
+        }
+
+        let whereClause: any;
+        if (searchId !== null) {
+          whereClause = eq(table.id, searchId);
+        } else if (searchSlug !== null) {
+          whereClause = eq(table.slug, searchSlug);
+        } else {
+          continue;
+        }
+
+        const results = await (this.manager as any).db.find(table, { 
+          where: whereClause,
+          limit: 1
+        });
+
+        const doc = results && results.length > 0 ? results[0] : null;
+
+        if (doc) {
+          // Visibility check
+          const hasStatus = collection.fields.some(f => f.name === 'status');
+          if (hasStatus && doc.status !== 'published' && !effectivePreview) {
+            continue;
+          }
+
+          return res.json({
+            type: collection.shortSlug || collection.slug,
+            plugin: collection.pluginSlug,
+            doc
+          });
+        }
+      } catch (e: any) {
         continue;
       }
     }

@@ -17,9 +17,11 @@ import { Button } from '@/components/ui/Button';
 
 export default function CollectionListPage() {
   const { pluginSlug, slug } = useParams() as { pluginSlug: string; slug: string };
-  const { collections } = usePlugins();
+  const { collections, settings } = usePlugins();
   const { theme } = useTheme();
   const [data, setData] = useState<any[]>([]);
+
+  const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   
   // Find the collection by matching the short slug and the explicit pluginSlug
   const collection = collections.find(c => {
@@ -239,23 +241,66 @@ export default function CollectionListPage() {
             onSort={setSort}
             currentSort={sort}
             onRowClick={(row) => (window.location.href = `/${pluginSlug}/${slug}/${row.id}`)}
-            actions={(row) => (
-              <div className="flex items-center justify-end gap-2">
-                <Link 
-                  href={`/${pluginSlug}/${slug}/${row.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
-                >
-                  <FrameworkIcons.Edit size={16} />
-                </Link>
-                <button 
-                  onClick={(e) => handleDelete(row.id, e)}
-                  className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-rose-500/10 text-slate-500 hover:text-rose-400' : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'}`}
-                >
-                  <FrameworkIcons.Trash size={16} />
-                </button>
-              </div>
-            )}
+            actions={(row) => {
+              const getRowPreviewUrl = () => {
+                if (!frontendUrl) return '#';
+                
+                // PRIORITY: If we have an explicit custom permalink override, use it directly
+                if (row.customPermalink) {
+                  return `${frontendUrl}/${row.customPermalink.startsWith('/') ? row.customPermalink.substring(1) : row.customPermalink}?preview=1&draft=1`;
+                }
+
+                // FALLBACK: Use the global structure logic
+                const pathValue = row.slug || row.id;
+                const structure = settings?.permalink_structure || '/:slug';
+                
+                const now = new Date();
+                const replacements: Record<string, string> = {
+                  ':year': now.getFullYear().toString(),
+                  ':month': (now.getMonth() + 1).toString().padStart(2, '0'),
+                  ':day': now.getDate().toString().padStart(2, '0'),
+                  ':id': row.id,
+                  ':slug': pathValue,
+                };
+
+                let path = structure;
+                Object.entries(replacements).forEach(([key, val]) => {
+                  path = path.replace(key, val);
+                });
+
+                // Clean up double slashes and ensure leading slash
+                path = path.replace(/\/+/g, '/');
+                if (!path.startsWith('/')) path = '/' + path;
+
+                return `${frontendUrl}${path}?preview=1&draft=1`;
+              };
+
+              return (
+                <div className="flex items-center justify-end gap-2">
+                  <a 
+                    href={getRowPreviewUrl()}
+                    target="_blank"
+                    onClick={(e) => e.stopPropagation()}
+                    className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
+                  >
+                    <FrameworkIcons.Eye size={16} />
+                  </a>
+                  <Link 
+                    href={`/${pluginSlug}/${slug}/${row.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
+                  >
+                    <FrameworkIcons.Edit size={16} />
+                  </Link>
+                  <button 
+                    onClick={(e) => handleDelete(row.id, e)}
+                    className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-rose-500/10 text-slate-500 hover:text-rose-400' : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'}`}
+                  >
+                    <FrameworkIcons.Trash size={16} />
+                  </button>
+                </div>
+              );
+            }}
           />
         </div>
       </div>
