@@ -16,7 +16,7 @@ export class SystemController {
   }
 
   async getAdminMetadata(req: Request, res: Response) {
-    const metadata = this.manager.getAdminMetadata();
+    const metadata = this.manager.getAdminMetadata() as any;
     
     // Fetch global settings to include in metadata for the UI
     try {
@@ -26,7 +26,7 @@ export class SystemController {
         settingsMap[s.key] = s.value;
       });
       
-      (metadata as any).settings = settingsMap;
+      metadata.settings = settingsMap;
     } catch (e) {
       console.error('[SystemController] Failed to fetch settings for metadata:', e);
     }
@@ -35,7 +35,8 @@ export class SystemController {
   }
 
   async getFrontendMetadata(req: Request, res: Response) {
-    res.json(this.themeManager.getFrontendMetadata());
+    const runtimeModules = this.manager.getRuntimeModules();
+    res.json(this.themeManager.getFrontendMetadata(runtimeModules));
   }
 
   async getThemes(req: Request, res: Response) {
@@ -678,7 +679,15 @@ export class SystemController {
         if (searchId !== null) {
           whereClause = eq(table.id, searchId);
         } else if (searchSlug !== null) {
-          whereClause = eq(table.slug, searchSlug);
+          // If the slug contains slashes (nested content), try matching the whole normalizedSlug first
+          if (normalizedSlug.includes('/')) {
+            whereClause = or(
+              eq(table.slug, searchSlug),
+              eq(table.slug, normalizedSlug)
+            );
+          } else {
+            whereClause = eq(table.slug, searchSlug);
+          }
         } else {
           continue;
         }

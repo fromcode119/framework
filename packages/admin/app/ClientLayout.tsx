@@ -14,18 +14,17 @@ import { api } from '@/lib/api';
 import { API_BASE_URL, ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/Loader';
 
-// Destructure common icons for local use
 const { 
-  Menu, 
-  Search, 
-  Sun, 
-  Moon, 
-  Bell,
-  User,
-  Settings,
-  Logout,
-  Help
-} = FrameworkIcons;
+  Menu = () => null, 
+  Search = () => null, 
+  Sun = () => null, 
+  Moon = () => null, 
+  Bell = () => null,
+  User = () => null,
+  Settings = () => null,
+  Logout = () => null,
+  Help = () => null
+} = (FrameworkIcons || {}) as any;
 
 function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const { theme, toggleTheme } = useTheme();
@@ -137,9 +136,20 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { registerSlotComponent, registerFieldComponent } = usePlugins();
-  const translation = useTranslation();
+  const { loadConfig } = usePlugins();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const isSetupPath = pathname === '/setup' || pathname.startsWith('/setup/');
+  const isAuthPage = pathname === '/login' || isSetupPath;
+  
+  // Load dynamic framework configuration (import maps, etc)
+  useEffect(() => {
+    if (!isAuthPage && user) {
+      loadConfig(ENDPOINTS.SYSTEM.METADATA);
+    }
+  }, [loadConfig, user, isAuthPage]);
+
   const [isMini, setIsMini] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('fc_sidebar_mini') === 'true';
@@ -151,25 +161,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     localStorage.setItem('fc_sidebar_mini', isMini.toString());
   }, [isMini]);
 
-  // Expose Framework utilities to the global scope for the plugin bridge
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).FrameworkIcons = FrameworkIcons;
-      (window as any).Fromcode = {
-        ...(window as any).Fromcode,
-        registerSlotComponent,
-        registerFieldComponent,
-        useTranslation: () => translation,
-        usePlugins
-      };
-    }
-  }, [registerSlotComponent, registerFieldComponent, translation]);
-
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
-  const pathname = usePathname();
-  const router = useRouter();
-  const isSetupPath = pathname === '/setup' || pathname.startsWith('/setup/');
-  const isAuthPage = pathname === '/login' || isSetupPath;
 
   useEffect(() => {
     const checkInitialization = async () => {

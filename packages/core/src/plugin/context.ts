@@ -24,11 +24,29 @@ export interface PluginManagerInterface {
   auth: any;
   i18n: any;
   plugins: Map<string, LoadedPlugin>;
+  pluginsRoot: string;
   registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>;
   headInjections: Map<string, any[]>;
+  runtime: any;
+  getPlugins(): LoadedPlugin[];
+  enable(slug: string): Promise<void>;
+  disable(slug: string): Promise<void>;
+  delete(slug: string): Promise<void>;
+  getHeadInjections(slug: string): any[];
+  savePluginConfig(slug: string, config: any): Promise<void>;
+  getCollections(): Collection[];
+  getCollection(slug: string): { collection: Collection; pluginSlug: string } | undefined;
+  installFromZip(filePath: string, pluginsRoot?: string): Promise<void>;
   writeLog(level: string, message: string, pluginSlug?: string, context?: any): Promise<void>;
   disableWithError(slug: string, message: string): Promise<void>;
   emit(event: string, payload: any): void;
+  getImportMap(): { imports: Record<string, string> };
+  getRuntimeModules(): Record<string, any>;
+  getAdminMetadata(): any;
+  updatePlugin(slug: string, pkg: any): Promise<void>;
+  createContext(plugin: LoadedPlugin): PluginContext;
+  setAuth(auth: any): void;
+  setApiHost(host: any): void;
 }
 
 /**
@@ -351,6 +369,12 @@ export function createPluginContext(
           injections.push(injection);
         }
         manager.headInjections.set(slug, injections);
+      }
+    },
+    runtime: {
+      registerModule: (name: string, config: { keys: string[], type: 'icon' | 'lib' }) => {
+        manager.runtime.registerModule(name, config);
+        rootLogger.info(`Plugin "${plugin.manifest.slug}" registered runtime module bridge: ${name} (${config.type})`);
       }
     }
   };

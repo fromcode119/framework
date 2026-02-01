@@ -190,8 +190,20 @@ export class ThemeManager {
     }));
   }
 
-  getFrontendMetadata() {
+  getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
     const theme = this.getActiveThemeManifest();
+    
+    // Merge framework runtime modules with any theme-specific overrides
+    const finalModules = {
+      ...runtimeModules
+    };
+
+    // Themes can provide their own specific library overrides if needed
+    const themeAny = theme as any;
+    if (themeAny && themeAny.runtimeModules) {
+       Object.assign(finalModules, themeAny.runtimeModules);
+    }
+
     return {
       activeTheme: theme ? {
         slug: theme.slug,
@@ -199,7 +211,8 @@ export class ThemeManager {
         ui: theme.ui,
         layouts: theme.layouts,
         slots: theme.slots || []
-      } : null
+      } : null,
+      runtimeModules: finalModules
     };
   }
 }

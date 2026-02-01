@@ -43,3 +43,40 @@ export default definePlugin({
   }
 });
 ```
+
+## Runtime Extensions & Icons
+
+Fromcode supports a decentralized, metadata-driven extension model for runtime libraries like icon packs.
+
+### Adding a New Icon Pack (e.g., FontAwesome)
+
+1. **Register in Plugin Manifest**:
+   In your plugin's `manifest.json`, define the bridge:
+   ```json
+   {
+     "slug": "my-icons-plugin",
+     "runtimeModules": {
+       "fontawesome": "/framework/runtime/fontawesome"
+     }
+   }
+   ```
+
+2. **Register the Provider**:
+   In your plugin's UI entry point:
+   ```javascript
+   import * as FA from './lib/fa-icons.js';
+   import { FrameworkIconRegistry } from '@fromcode/react';
+
+   FrameworkIconRegistry.registerProvider('fontawesome', FA);
+   ```
+
+3. **Usage**:
+   Once registered, icons are available via the bridge:
+   ```tsx
+   import { FaUser } from 'fontawesome';
+   ```
+   Or dynamically:
+   ```tsx
+   import { getIcon } from '@fromcode/react';
+   const Icon = getIcon('FaUser');
+   ```

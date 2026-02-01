@@ -199,7 +199,10 @@ export class PluginController {
     }
     const filePath = (req.params as any)[0];
     const absolutePath = path.resolve(plugin.path, 'ui', filePath);
-    if (fs.existsSync(absolutePath)) res.sendFile(absolutePath);
-    else res.status(404).end();
+    if (fs.existsSync(absolutePath)) {
+      res.sendFile(absolutePath);
+    } else {
+      res.status(404).end();
+    }
   }
 }

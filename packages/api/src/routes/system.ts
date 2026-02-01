@@ -8,7 +8,7 @@ export function setupSystemRoutes(manager: PluginManager, themeManager: ThemeMan
   const router = express.Router();
   const controller = new SystemController(manager, themeManager, restController);
 
-  router.get('/admin/plugins', auth.guard(['admin']), (req, res) => controller.getAdminMetadata(req, res));
+  router.get('/admin/metadata', auth.guard(['admin']), (req, res) => controller.getAdminMetadata(req, res));
   router.get('/admin/stats/collections', auth.guard(['admin']), (req, res) => controller.getStats(req, res));
   router.get('/admin/activity', auth.guard(['admin']), (req, res) => controller.getActivity(req, res));
   router.get('/admin/logs', auth.guard(['admin']), (req, res) => controller.getLogs(req, res));
