@@ -515,6 +515,20 @@ plugin
       console.log(chalk.gray(`Entry: ${entryPoints[0]}`));
       console.log(chalk.gray(`Output: ${outFile}`));
 
+      let external = ['react', 'react-dom', '@fromcode/react', 'lucide-react', 'react/jsx-runtime'];
+      const manifestPath = path.join(pluginDir, 'manifest.json');
+      if (fs.existsSync(manifestPath)) {
+        try {
+          const manifest = await fs.readJson(manifestPath);
+          if (manifest.runtimeModules) {
+            const extraModules = Array.isArray(manifest.runtimeModules)
+              ? manifest.runtimeModules
+              : Object.keys(manifest.runtimeModules);
+            external = [...new Set([...external, ...extraModules])];
+          }
+        } catch (e) {}
+      }
+
       const buildOptions: esbuild.BuildOptions = {
         entryPoints: [entryPoints[0]],
         bundle: true,
@@ -537,7 +551,7 @@ plugin
         jsx: 'transform',
         jsxFactory: 'React.createElement',
         jsxFragment: 'React.Fragment',
-        external: ['react', 'react-dom', '@fromcode/react', 'react/jsx-runtime']
+        external
       };
 
       if (options.watch) {
@@ -867,6 +881,20 @@ theme
       // Compile styles first (supports SCSS -> CSS)
       await compileStyles(uiDir);
 
+      let external = ['react', 'react-dom', '@fromcode/react', 'lucide-react', 'react/jsx-runtime'];
+      const themeManifestPath = path.join(themeDir, 'theme.json');
+      if (fs.existsSync(themeManifestPath)) {
+        try {
+          const manifest = await fs.readJson(themeManifestPath);
+          if (manifest.runtimeModules) {
+            const extraModules = Array.isArray(manifest.runtimeModules)
+              ? manifest.runtimeModules
+              : Object.keys(manifest.runtimeModules);
+            external = [...new Set([...external, ...extraModules])];
+          }
+        } catch (e) {}
+      }
+
       const buildOptions: esbuild.BuildOptions = {
         entryPoints: [entryPoints[0]],
         bundle: true,
@@ -889,7 +917,7 @@ theme
         jsx: 'transform',
         jsxFactory: 'React.createElement',
         jsxFragment: 'React.Fragment',
-        external: ['react', 'react-dom', '@fromcode/react', 'react/jsx-runtime']
+        external
       };
 
       if (options.watch) {

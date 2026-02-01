@@ -31,7 +31,7 @@ export class RuntimeService {
       type: 'lib', 
       keys: ['createRoot', 'hydrateRoot'] 
     });
-    this.registry.set('fromcode-react', { 
+    this.registry.set('@fromcode/react', { 
       type: 'lib', 
       keys: ['Slot', 'Override', 'usePlugins', 'useTranslation', 'PluginsProvider', 'getIcon', 'createProxyIcon', 'FrameworkIcons', 'FrameworkIconRegistry', 'IconNames'] 
     });
@@ -40,7 +40,7 @@ export class RuntimeService {
     this.registry.set('react/jsx-dev-runtime', { type: 'lib', keys: ['jsxDEV', 'Fragment'] });
     this.registry.set('lucide-react', { 
       type: 'icon', 
-      keys: ['Dashboard', 'Plugins', 'Users', 'Settings', 'Media', 'Layout', 'System', 'Package', 'Menu', 'Search', 'Sun', 'Moon', 'Bell', 'User', 'Logout', 'Help', 'Down', 'Up', 'Right', 'Left', 'ChevronLeft', 'ChevronRight', 'ArrowLeft', 'ArrowRight', 'Close', 'X', 'Home', 'Plus', 'Trash', 'Edit', 'Save', 'Download', 'Upload', 'Refresh', 'External', 'More', 'MoreVertical', 'Filter', 'Calendar', 'UserCheck', 'Eye', 'Globe', 'Palette', 'Smartphone', 'Layers', 'Share', 'Copy', 'Maximize', 'PlusCircle', 'Minus', 'Check', 'Alert', 'Warning', 'Info', 'Loader', 'File', 'FileText', 'Text', 'Folder', 'Grid', 'List', 'FolderPlus', 'Box', 'ShoppingBag', 'Database', 'Terminal', 'Activity', 'Clock', 'History', 'TrendingUp', 'CheckSquare', 'Code', 'Chart', 'LayoutGrid', 'Columns', 'Quote', 'Star', 'BarChart', 'ArrowUpRight', 'Mail', 'Lock', 'Shield', 'ShieldCheck', 'ShieldAlert', 'UserPlus', 'Orbit', 'Zap']
+      keys: ['Dashboard', 'Plugins', 'Users', 'Settings', 'Media', 'Layout', 'System', 'Package', 'Menu', 'Search', 'Sun', 'Moon', 'Bell', 'User', 'Logout', 'Help', 'Down', 'Up', 'Right', 'Left', 'ChevronDown', 'ChevronUp', 'ChevronLeft', 'ChevronRight', 'ArrowLeft', 'ArrowRight', 'Close', 'X', 'Home', 'Plus', 'Trash', 'Edit', 'Save', 'Download', 'Upload', 'Refresh', 'External', 'ExternalLink', 'More', 'MoreVertical', 'Filter', 'Calendar', 'UserCheck', 'Eye', 'Globe', 'Palette', 'Smartphone', 'Layers', 'Share', 'Copy', 'Maximize', 'PlusCircle', 'Minus', 'Check', 'Alert', 'Warning', 'Info', 'Loader', 'Loader2', 'File', 'FileText', 'Text', 'Folder', 'Grid', 'List', 'FolderPlus', 'Box', 'ShoppingBag', 'Database', 'Terminal', 'Activity', 'Clock', 'History', 'TrendingUp', 'CheckSquare', 'Code', 'Chart', 'LayoutGrid', 'Columns', 'Quote', 'Star', 'BarChart', 'BarChart3', 'ArrowUpRight', 'Mail', 'Lock', 'Shield', 'ShieldCheck', 'ShieldAlert', 'UserPlus', 'Orbit', 'Zap', 'Tag']
     });
   }
 
@@ -82,7 +82,7 @@ export class RuntimeService {
         'react': 'window.React',
         'react-dom': 'window.ReactDOM || window.ReactDom',
         'react-dom/client': 'window.ReactDOM || window.ReactDom',
-        'fromcode-react': 'window.Fromcode'
+        '@fromcode/react': 'window.Fromcode'
       }[name] || 'window.Fromcode';
 
       source = (this.templates['lib'] || '')
