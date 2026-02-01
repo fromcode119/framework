@@ -21,7 +21,7 @@ interface ThemeManifest {
   iconUrl?: string;
 }
 
-export default function MarketplaceThemesPage() {
+export default function ThemesMarketplacePage() {
   const { theme } = useTheme();
   const { notify } = useNotify();
   const { triggerRefresh } = usePlugins();
