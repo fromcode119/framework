@@ -11,79 +11,14 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { RESTController } from './controllers/RESTController';
 import { API_ROUTES } from './constants';
-import { createCollectionMiddleware } from './middlewares/collection';
 import { setupAuthRoutes } from './routes/auth';
 import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
 import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
 import { setupSystemRoutes } from './routes/system';
 import { setupMediaRoutes } from './routes/media';
+import { setupCollectionRoutes, setupLegacyCollectionRoutes } from './routes/collections';
+import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
 import { generateOpenAPI } from './swagger';
-
-const UserCollection = {
-  slug: 'users',
-  name: 'Users',
-  system: true,
-  priority: 1,
-  fields: [
-    { name: 'email', label: 'E-Mail', type: 'text', required: true, unique: true },
-    { name: 'username', label: 'Username', type: 'text', unique: true },
-    { name: 'password', label: 'Password', type: 'password', required: true, admin: { hidden: true } },
-    { name: 'roles', label: 'Roles', type: 'json', admin: { component: 'Tags' } },
-    { name: 'permissions', label: 'Permissions', type: 'json', admin: { component: 'Tags' } },
-    { name: 'firstName', label: 'First Name', type: 'text' },
-    { name: 'lastName', label: 'Last Name', type: 'text' }
-  ],
-  admin: {
-    group: 'Platform',
-    icon: 'Users',
-    useAsTitle: 'email',
-    defaultColumns: ['email', 'username', 'roles', 'createdAt']
-  }
-};
-
-const MediaCollection = {
-  slug: 'media',
-  name: 'Media',
-  system: true,
-  priority: 2,
-  fields: [
-    { name: 'filename', label: 'Filename', type: 'text', required: true },
-    { name: 'alt', label: 'Alt Text', type: 'text' },
-    { name: 'mimeType', label: 'Type', type: 'text' },
-    { name: 'fileSize', label: 'Size', type: 'number' },
-    { name: 'width', label: 'Width', type: 'number' },
-    { name: 'height', label: 'Height', type: 'number' },
-    { name: 'folderId', label: 'Folder', type: 'number' }
-  ],
-  admin: {
-    group: 'Platform',
-    icon: 'Image',
-    useAsTitle: 'filename'
-  }
-};
-
-const SettingsCollection = {
-  slug: 'settings',
-  name: 'Global Settings',
-  tableName: '_system_meta',
-  primaryKey: 'key',
-  timestamps: false,
-  system: true,
-  priority: 3,
-  fields: [
-    { name: 'key', label: 'Setting Key', type: 'text', required: true, unique: true, admin: { readOnly: true } },
-    { name: 'value', label: 'Value', type: 'text', required: true },
-    { name: 'description', label: 'Description', type: 'textarea', admin: { readOnly: true } },
-    { name: 'group', label: 'Group', type: 'text', admin: { readOnly: true } },
-    { name: 'updatedAt', label: 'Updated At', type: 'date', admin: { readOnly: true } }
-  ],
-  admin: {
-    group: 'System',
-    icon: 'Settings',
-    useAsTitle: 'key',
-    defaultColumns: ['key', 'value', 'group', 'updatedAt']
-  }
-};
 
 export class APIServer {
   public app = express();
@@ -472,7 +407,7 @@ export class APIServer {
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     
     // Add collections to versioned API
-    this.setupCollectionRoutes(vApi);
+    vApi.use(setupCollectionRoutes(this.manager, this.restController));
 
     // Mount versioned API
     this.app.use(vPrefix, vApi);
@@ -488,7 +423,7 @@ export class APIServer {
     this.app.use('/plugins', setupPluginAssetRoutes(this.manager));
     this.app.use('/themes', setupThemeAssetRoutes(this.themeManager));
 
-    this.setupLegacyCollectionRoutes();
+    this.app.use(API_ROUTES.COLLECTIONS.BASE, setupLegacyCollectionRoutes(this.manager, this.restController));
   }
 
   private registerCoreCollection(slug: string, collection: any) {
@@ -499,31 +434,6 @@ export class APIServer {
         pluginSlug: 'system' 
       });
     }
-  }
-
-  private setupCollectionRoutes(router: express.Router) {
-    const collectionMiddleware = createCollectionMiddleware(this.manager);
-
-    router.get('/collections/:slug', collectionMiddleware, (req: any, res) => this.restController.find(req.collection, req, res));
-    router.get('/collections/:slug/suggestions/:field', collectionMiddleware, (req: any, res) => this.restController.getSuggestions(req.collection, req, res));
-    router.get('/collections/:slug/:id', collectionMiddleware, (req: any, res) => this.restController.findOne(req.collection, req, res));
-    router.post('/collections/:slug', collectionMiddleware, (req: any, res) => this.restController.create(req.collection, req, res));
-    router.put('/collections/:slug/:id', collectionMiddleware, (req: any, res) => this.restController.update(req.collection, req, res));
-    router.delete('/collections/:slug/:id', collectionMiddleware, (req: any, res) => this.restController.delete(req.collection, req, res));
-  }
-
-  private setupLegacyCollectionRoutes() {
-    const router = express.Router();
-    const collectionMiddleware = createCollectionMiddleware(this.manager);
-
-    router.get('/:slug', collectionMiddleware, (req: any, res) => this.restController.find(req.collection, req, res));
-    router.get('/:slug/suggestions/:field', collectionMiddleware, (req: any, res) => this.restController.getSuggestions(req.collection, req, res));
-    router.get('/:slug/:id', collectionMiddleware, (req: any, res) => this.restController.findOne(req.collection, req, res));
-    router.post('/:slug', collectionMiddleware, (req: any, res) => this.restController.create(req.collection, req, res));
-    router.put('/:slug/:id', collectionMiddleware, (req: any, res) => this.restController.update(req.collection, req, res));
-    router.delete('/:slug/:id', collectionMiddleware, (req: any, res) => this.restController.delete(req.collection, req, res));
-
-    this.app.use(API_ROUTES.COLLECTIONS.BASE, router);
   }
 
   start(port: number = 3000, host: string = '0.0.0.0') {

@@ -8,7 +8,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import Cookies from 'js-cookie';
+import { FrameworkIcons } from '@/lib/icons';
 import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
 
 export default function AdminPage() {

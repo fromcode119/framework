@@ -19,7 +19,7 @@ export const API_ROUTES = {
     UI: '/plugins/:slug/ui/*',
   },
   SYSTEM: {
-    ADMIN_PLUGINS: '/api/system/admin/plugins',
+    ADMIN_PLUGINS: '/api/system/admin/metadata',
     ADMIN_STATS: '/api/system/admin/stats/collections',
     HEALTH: '/api/health',
     OPENAPI: '/api/openapi.json',

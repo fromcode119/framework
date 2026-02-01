@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 import ReactDOM from 'react-dom';
 import { Slot } from './Slot';
 import { Override } from './Override';
-import { getIcon } from './Icons';
+import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './Icons';
 
 export interface SlotComponent {
   component: React.ComponentType<any>;
@@ -60,7 +60,7 @@ interface PluginContextValue {
   registerPlugins: (plugins: any[]) => void;
   registerTheme: (slug: string, config: any) => void;
   registerSettings: (settings: Record<string, any>) => void;
-  loadFrontendConfig: () => Promise<void>;
+  loadConfig: (path?: string) => Promise<void>;
   resolveContent: (slug: string) => Promise<{ type: string, doc: any, plugin: string } | null>;
   api: {
     get: (path: string, options?: any) => Promise<any>;
@@ -103,11 +103,19 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     
     const url = path.startsWith('http') ? path : `${base}/api/${version}${path.startsWith('/') ? '' : '/'}${path}`;
     
-    console.debug(`[Fromcode API] Fetching: ${url}`, { credentials: options.credentials || 'include' });
+    const token = typeof document !== 'undefined' 
+      ? document.cookie.split('; ').find(row => row.startsWith('fc_token='))?.split('=')[1]
+      : null;
+
+    console.debug(`[Fromcode API] Fetching: ${url}`, { credentials: options.credentials || 'include', hasToken: !!token });
 
     const res = await fetch(url, {
       ...options,
-      credentials: options.credentials || 'include'
+      credentials: options.credentials || 'include',
+      headers: {
+        ...(options.headers || {}),
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -150,34 +158,51 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     }
   }, [api]);
 
-  const loadFrontendConfig = useCallback(async () => {
+  const loadConfig = useCallback(async (path: string = '/system/frontend') => {
     try {
       const base = getBaseURL();
       const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
-      const endpoint = `${base}/api/${version}/system/frontend`;
       
-      console.debug(`[Fromcode] Loading frontend config from: ${endpoint}`);
+      // Handle paths that might already be versioned (/api/v1/...)
+      let endpoint = path;
+      if (!path.startsWith('http')) {
+        const relativePath = path.startsWith(`/api/${version}`) 
+          ? path.replace(`/api/${version}`, '') 
+          : path;
+        endpoint = `${base}/api/${version}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
+      }
+      
+      console.debug(`[Fromcode] Loading config from: ${endpoint}`);
+
+      const token = typeof document !== 'undefined' 
+        ? document.cookie.split('; ').find(row => row.startsWith('fc_token='))?.split('=')[1]
+        : null;
 
       const res = await fetch(endpoint, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       
-      // Inject Import Map for React modules to ensure plugins use the host's React
-      if (typeof document !== 'undefined' && !document.querySelector('script[type="importmap"]')) {
-        const importMap = {
-          imports: {
-            "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, version } = window.React;",
-            "react-dom": "data:application/javascript,const rd = window.ReactDOM || window.ReactDom; export default rd; export const render = (...args) => rd.render(...args); export const hydrate = (...args) => rd.hydrate(...args); export const createPortal = (...args) => rd.createPortal(...args); export const createRoot = (...args) => rd.createRoot(...args);",
-            "@fromcode/react": "data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, PluginsProvider, getIcon, createProxyIcon } = window.Fromcode;",
-            "react/jsx-runtime": "data:application/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment;",
-            "lucide-react": "data:application/javascript,const createIcon = (name) => (props) => { const registry = window.Fromcode && window.Fromcode.getIcon; const Component = registry ? registry(name) : (window.Lucide && window.Lucide[name]); return Component ? window.React.createElement(Component, props) : null; }; export const Loader2 = createIcon('Loader2'); export const Loader = Loader2; export const Search = createIcon('Search'); export const Plus = createIcon('Plus'); export const Trash2 = createIcon('Trash2'); export const Pencil = createIcon('Pencil'); export const Save = createIcon('Save'); export const Download = createIcon('Download'); export const Upload = createIcon('Upload'); export const RefreshCw = createIcon('RefreshCw'); export const ExternalLink = createIcon('ExternalLink'); export const MoreHorizontal = createIcon('MoreHorizontal'); export const Filter = createIcon('Filter'); export const FileText = createIcon('FileText'); export const Tag = createIcon('Tag'); export const Layers = createIcon('Layers'); export const ChevronDown = createIcon('ChevronDown'); export const ChevronUp = createIcon('ChevronUp'); export const X = createIcon('X'); export const Image = createIcon('Image'); export const File = createIcon('File'); export const Film = createIcon('Film'); export const Play = createIcon('Play'); export const ChevronRight = createIcon('ChevronRight'); export const Home = createIcon('Home'); export const Info = createIcon('Info'); export const AlertCircle = createIcon('AlertCircle'); export const CheckCircle2 = createIcon('CheckCircle2'); export const MoreVertical = createIcon('MoreVertical'); export const Layout = createIcon('Layout'); export const Columns = createIcon('Columns'); export const Copy = createIcon('Copy'); export const Settings = createIcon('Settings'); export const BarChart3 = createIcon('BarChart3'); export const PlusCircle = createIcon('PlusCircle'); export const Trash = createIcon('Trash'); export const Edit = createIcon('Edit'); export const Zap = createIcon('Zap'); export const Maximize = createIcon('Maximize'); export default new Proxy({}, { get: (_, name) => createIcon(name) });"
-          }
-        };
+      // Inject Import Map for core and plugin runtime modules
+      if (typeof document !== 'undefined' && !document.getElementById('fc-runtime-map')) {
+        const imports: Record<string, string> = {};
+        
+        if (data.runtimeModules) {
+          Object.entries(data.runtimeModules).forEach(([name, config]: [string, any]) => {
+            if (config.url) {
+              imports[name] = config.url.startsWith('/') ? `${base}${config.url}` : config.url;
+            } else if (config.source) {
+              imports[name] = `data:application/javascript;base64,${config.source}`;
+            }
+          });
+        }
+
         const script = document.createElement('script');
         script.type = 'importmap';
-        script.textContent = JSON.stringify(importMap);
+        script.id = 'fc-runtime-map';
+        script.textContent = JSON.stringify({ imports });
         document.head.prepend(script);
       }
 
@@ -213,9 +238,9 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         }
       }
     } catch (err) {
-      console.warn("[Theme] Failed to load frontend config:", err);
+      console.warn("[Fromcode] Failed to load config:", err);
     }
-  }, [apiUrl]);
+  }, [apiUrl, getBaseURL]);
 
   const registerAPI = useCallback((slug: string, api: any) => {
     pluginAPIs[slug] = api;
@@ -403,6 +428,12 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     fc.ReactDOM = ReactDOM;
     fc.ReactDom = ReactDOM; // Compatibility
 
+    (window as any).React = React;
+    (window as any).ReactDOM = ReactDOM;
+    (window as any).ReactDom = ReactDOM;
+    (window as any).FrameworkIcons = FrameworkIcons;
+    (window as any).FrameworkIconRegistry = FrameworkIconRegistry;
+
     const queueMethod = (type: string) => (...args: any[]) => {
       console.log(`[Fromcode] Queuing method: ${type}`, args);
       if (!(window as any)._fromcodeQueue) (window as any)._fromcodeQueue = [];
@@ -419,15 +450,19 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     
     if (!fc.t) fc.t = (key: string, _params?: any, defaultValue?: string) => defaultValue || key;
     if (!fc.locale) fc.locale = 'en';
-    if (!fc.getIcon) fc.getIcon = getIcon;
+
+    // Immediate population of icon symbols to prevent import race conditions
+    fc.getIcon = getIcon;
+    fc.FrameworkIcons = FrameworkIcons;
+    (window as any).FrameworkIcons = FrameworkIcons;
+    fc.FrameworkIconRegistry = FrameworkIconRegistry;
+    fc.IconNames = IconNames;
+    fc.createProxyIcon = createProxyIcon;
   }
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       if (apiUrl) (window as any).FROMCODE_API_URL = apiUrl;
-      (window as any).React = React;
-      (window as any).ReactDOM = ReactDOM;
-      (window as any).ReactDom = ReactDOM; // Consistency
       
       const bridge = {
         React: React,
@@ -436,7 +471,11 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         Slot,
         Override,
         getIcon,
-        createProxyIcon: (window as any).Fromcode?.createProxyIcon || (() => null),
+        IconRegistry: FrameworkIconRegistry,
+        FrameworkIconRegistry,
+        FrameworkIcons,
+        IconNames,
+        createProxyIcon,
         // Map Lucide names to their framework equivalents or direct proxies
         Loader2: getIcon('Loader2'),
         Search: getIcon('Search'),
@@ -478,17 +517,26 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         registerSettings,
         registerAPI,
         getAPI,
+        loadConfig,
         emit,
         on,
         t,
         locale,
+        setLocale,
         usePlugins,
         useTranslation,
+        // Non-hook versions for direct access from CJS/ESM bridge
+        getState: () => ({ slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, setLocale, t, emit, on, api, resolveContent, getAPI }),
         PluginsProvider
       };
 
       (window as any).Fromcode = bridge;
       (window as any).getIcon = getIcon;
+      (window as any).FrameworkIcons = FrameworkIcons;
+      (window as any).FrameworkIconRegistry = FrameworkIconRegistry;
+      (window as any).React = React;
+      (window as any).ReactDOM = ReactDOM;
+      (window as any).ReactDom = ReactDOM;
 
       // Flush queue
       if ((window as any)._fromcodeQueue) {
@@ -514,7 +562,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         });
       }
     }
-  }, [apiUrl, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerTheme, registerSettings, emit, on, registerAPI, getAPI, t, locale]);
+  }, [apiUrl, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, loadConfig, emit, on, t, locale, setLocale, slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, refreshVersion, triggerRefresh, api, resolveContent]);
 
   const value = React.useMemo(() => ({
     slots,
@@ -544,10 +592,10 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     registerPlugins,
     registerTheme,
     registerSettings,
-    loadFrontendConfig,
+    loadConfig,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadFrontendConfig, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, resolveContent, api]);
 
   return (
     <PluginContext.Provider value={value}>

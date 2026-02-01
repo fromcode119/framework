@@ -3,7 +3,12 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { FrameworkIcons } from '@/lib/icons';
 
-const { Check, Alert, Info, Close } = FrameworkIcons;
+const { 
+  Check = () => null, 
+  Alert = () => null, 
+  Info = () => null, 
+  Close = () => null 
+} = (FrameworkIcons || {}) as any;
 
 type NotificationType = 'success' | 'error' | 'info';
 

@@ -11,20 +11,20 @@ import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/env';
 
 const { 
-  Dashboard, 
-  Plugins, 
-  Users, 
-  Settings, 
-  Text, 
-  Media,
-  System,
-  Package,
-  Down,
-  Close,
-  Zap,
-  Activity,
-  Refresh
-} = FrameworkIcons;
+  Dashboard = () => null, 
+  Plugins = () => null, 
+  Users = () => null, 
+  Settings = () => null, 
+  Text = () => null, 
+  Media = () => null,
+  System = () => null,
+  Package = () => null,
+  Down = () => null,
+  Close = () => null,
+  Zap = () => null,
+  Activity = () => null,
+  Refresh = () => null
+} = (FrameworkIcons || {}) as any;
 
 interface NavItemProps {
   icon?: React.ReactNode;

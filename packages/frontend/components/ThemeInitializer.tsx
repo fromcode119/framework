@@ -4,11 +4,11 @@ import React, { useEffect } from 'react';
 import { usePlugins } from '@fromcode/react';
 
 export default function ThemeInitializer() {
-  const { loadFrontendConfig, themeVariables } = usePlugins();
+  const { loadConfig, themeVariables } = usePlugins();
 
   useEffect(() => {
-    loadFrontendConfig();
-  }, [loadFrontendConfig]);
+    loadConfig();
+  }, [loadConfig]);
 
   useEffect(() => {
     const root = document.documentElement;

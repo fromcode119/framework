@@ -3,15 +3,39 @@
 
 FROM node:20-alpine AS base
 
-RUN apk add --no-cache postgresql-client
+# Install dependencies for native modules (better-sqlite3) and postgres
+RUN apk add --no-cache \
+    postgresql-client \
+    python3 \
+    make \
+    g++ \
+    gcc \
+    libc-dev
 
 WORKDIR /app
 
-# Copy everything first
-COPY . .
+# Optimization: Copy package manifests first to leverage Docker cache
+COPY package.json package-lock.json ./
+COPY packages/core/package.json ./packages/core/
+COPY packages/react/package.json ./packages/react/
+COPY packages/database/package.json ./packages/database/
+COPY packages/api/package.json ./packages/api/
+COPY packages/admin/package.json ./packages/admin/
+COPY packages/frontend/package.json ./packages/frontend/
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/cache/package.json ./packages/cache/
+COPY packages/cli/package.json ./packages/cli/
+COPY packages/email/package.json ./packages/email/
+COPY packages/marketplace-client/package.json ./packages/marketplace-client/
+COPY packages/media/package.json ./packages/media/
+COPY packages/next/package.json ./packages/next/
+COPY packages/sdk/package.json ./packages/sdk/
 
 # Install dependencies
 RUN npm install --prefer-offline --no-audit
+
+# Now copy the rest of the source
+COPY . .
 
 # Clean any accidentally copied host artifacts from packages
 RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && \

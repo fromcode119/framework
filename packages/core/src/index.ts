@@ -11,9 +11,11 @@ export { I18nManager } from './i18n/manager';
 export * from './context/request-context';
 export type { LoggerOptions } from './logging/logger';
 
-// Security & Management
+// Security
 export * from './security/permissions';
 export * from './security/signature';
+
+// Management
 export * from './management/backup';
 export * from './management/manifest';
 export * from './management/migration-coordinator';

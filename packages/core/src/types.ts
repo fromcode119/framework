@@ -36,6 +36,7 @@ export interface ThemeManifest {
   slots?: string[]; // Defined slot names this theme provides
   dependencies?: Record<string, string>; // Plugins required by this theme
   variables?: Record<string, string>;
+  runtimeModules?: Record<string, string | { keys?: string[], type?: 'icon' | 'lib', url?: string }>;
   ui: {
     entry: string;
     css?: string[];
@@ -134,6 +135,9 @@ export interface PluginManifest {
 
   // Configuration
   config?: Record<string, any>;
+
+  // Runtime Bridge configurations
+  runtimeModules?: Record<string, string | { keys?: string[], type?: 'icon' | 'lib', url?: string }>;
 
   // Entry points
   entryPoint?: string;
@@ -257,6 +261,10 @@ export interface PluginContext {
 
   readonly ui: {
     registerHeadInjection(injection: { tag: string; props: Record<string, any>; content?: string }): void;
+  };
+
+  readonly runtime: {
+    registerModule(name: string, config: { keys: string[], type: 'icon' | 'lib' }): void;
   };
 }
 
