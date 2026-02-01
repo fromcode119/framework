@@ -18,6 +18,21 @@ export class RuntimeService {
     this.initializeDefaultRegistry();
   }
 
+  private discoverModuleKeys(name: string, type: 'icon' | 'lib' = 'lib'): string[] {
+    try {
+      const modulePath = require.resolve(name, { paths: [process.cwd()] });
+      const mod = require(modulePath);
+      const keys = Object.keys(mod);
+      
+      if (type === 'icon') {
+          return keys.filter(k => k[0] === k[0].toUpperCase());
+      }
+      return keys;
+    } catch (e) {
+      return [];
+    }
+  }
+
   private initializeDefaultRegistry() {
     this.registry.set('react', { 
       type: 'lib', 
@@ -38,9 +53,16 @@ export class RuntimeService {
     this.registry.set('react-jsx', { type: 'lib', keys: [] });
     this.registry.set('react/jsx-runtime', { type: 'lib', keys: ['jsx', 'jsxs', 'Fragment'] });
     this.registry.set('react/jsx-dev-runtime', { type: 'lib', keys: ['jsxDEV', 'Fragment'] });
+    
+    // Auto-discover Lucide icons if available, otherwise fallback to standard set
+    const fallbackLucideKeys = ['Dashboard', 'Plugins', 'Users', 'Settings', 'Media', 'Layout', 'System', 'Package', 'Menu', 'Search', 'Sun', 'Moon', 'Bell', 'User', 'Logout', 'Help', 'Down', 'Up', 'Right', 'Left', 'ChevronDown', 'ChevronUp', 'ChevronLeft', 'ChevronRight', 'ArrowLeft', 'ArrowRight', 'Close', 'X', 'Home', 'Plus', 'Trash', 'Edit', 'Save', 'Download', 'Upload', 'Refresh', 'External', 'ExternalLink', 'More', 'MoreVertical', 'Filter', 'Calendar', 'UserCheck', 'Eye', 'Globe', 'Palette', 'Smartphone', 'Layers', 'Share', 'Copy', 'Maximize', 'PlusCircle', 'Minus', 'Check', 'Alert', 'Warning', 'Info', 'Loader', 'Loader2', 'File', 'FileText', 'Text', 'Folder', 'Grid', 'List', 'FolderPlus', 'Box', 'ShoppingBag', 'Database', 'Terminal', 'Activity', 'Clock', 'History', 'TrendingUp', 'CheckSquare', 'Code', 'Chart', 'LayoutGrid', 'Columns', 'Quote', 'Star', 'BarChart', 'BarChart3', 'ArrowUpRight', 'Mail', 'Lock', 'Shield', 'ShieldCheck', 'ShieldAlert', 'UserPlus', 'Orbit', 'Zap', 'Tag'];
+    
+    let lucideKeys = this.discoverModuleKeys('lucide-react', 'icon');
+    if (lucideKeys.length === 0) lucideKeys = fallbackLucideKeys;
+
     this.registry.set('lucide-react', { 
       type: 'icon', 
-      keys: ['Dashboard', 'Plugins', 'Users', 'Settings', 'Media', 'Layout', 'System', 'Package', 'Menu', 'Search', 'Sun', 'Moon', 'Bell', 'User', 'Logout', 'Help', 'Down', 'Up', 'Right', 'Left', 'ChevronDown', 'ChevronUp', 'ChevronLeft', 'ChevronRight', 'ArrowLeft', 'ArrowRight', 'Close', 'X', 'Home', 'Plus', 'Trash', 'Edit', 'Save', 'Download', 'Upload', 'Refresh', 'External', 'ExternalLink', 'More', 'MoreVertical', 'Filter', 'Calendar', 'UserCheck', 'Eye', 'Globe', 'Palette', 'Smartphone', 'Layers', 'Share', 'Copy', 'Maximize', 'PlusCircle', 'Minus', 'Check', 'Alert', 'Warning', 'Info', 'Loader', 'Loader2', 'File', 'FileText', 'Text', 'Folder', 'Grid', 'List', 'FolderPlus', 'Box', 'ShoppingBag', 'Database', 'Terminal', 'Activity', 'Clock', 'History', 'TrendingUp', 'CheckSquare', 'Code', 'Chart', 'LayoutGrid', 'Columns', 'Quote', 'Star', 'BarChart', 'BarChart3', 'ArrowUpRight', 'Mail', 'Lock', 'Shield', 'ShieldCheck', 'ShieldAlert', 'UserPlus', 'Orbit', 'Zap', 'Tag']
+      keys: [...new Set([...fallbackLucideKeys, ...lucideKeys])]
     });
   }
 

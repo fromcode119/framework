@@ -49,6 +49,7 @@ class IconRegistry {
 
 // Global singleton instance
 const registry = new IconRegistry();
+registry.registerProvider('lucide', Lucide);
 export const FrameworkIconRegistry = registry;
 
 /**
@@ -167,6 +168,9 @@ export const FrameworkIcons = {
 export type IconName = keyof typeof FrameworkIcons;
 export const IconNames = Object.keys(FrameworkIcons) as IconName[];
 
+// All available icon names from the library
+export const AllIconNames = Object.keys(Lucide);
+
 /**
  * Creates a stable React component that proxies to the global Icon Registry.
  */
@@ -208,3 +212,6 @@ export const getIcon = (name: string) => {
     cache.set(name, Component);
     return Component;
 };
+
+// Re-export all Lucide icons for bridge/direct use
+export * from 'lucide-react';
