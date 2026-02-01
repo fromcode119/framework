@@ -39,8 +39,12 @@ yarn-error.log*
 # Project specific
 plugins/
 !plugins/.gitkeep
+!plugins/[slug]
+!plugins/marketplace
 themes/
 !themes/.gitkeep
+!themes/[slug]
+!themes/marketplace
 public/uploads/
 !public/uploads/.gitkeep
 !packages/admin/app/plugins/

@@ -121,7 +121,7 @@ const TagField = ({ field, value, onChange, theme }: { field: any, value: any, o
   );
 };
 
-export default function CollectionEditPage() {
+export default function ContentEditPage() {
   const { slug, id } = useParams() as { slug: string, id: string };
   const router = useRouter();
   const { collections } = usePlugins();

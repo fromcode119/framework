@@ -24,7 +24,7 @@ interface Theme {
   layouts?: { name: string; label: string; description?: string }[];
 }
 
-export default function ThemeDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
   const pathname = usePathname();

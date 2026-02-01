@@ -28,7 +28,7 @@ interface PluginEntry {
   iconUrl?: string;
 }
 
-export default function PluginMarketplaceDetailPage() {
+export default function MarketplaceDetailPage() {
   const { slug } = useParams();
   const router = useRouter();
   const { theme } = useTheme();

@@ -15,7 +15,7 @@ import { ENDPOINTS } from '@/lib/constants';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 
-export default function CollectionListPage() {
+export default function CollectionInventoryBrowser() {
   const { slug } = useParams() as { slug: string };
   const { collections } = usePlugins();
   const { theme } = useTheme();
