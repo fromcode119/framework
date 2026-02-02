@@ -84,7 +84,8 @@ export function createPluginContext(
       handleViolation('api');
     }
 
-    const prefix = `/api/${plugin.manifest.slug}`;
+    const apiVersion = process.env.API_VERSION_PREFIX || 'v1';
+    const prefix = `/api/${apiVersion}/${plugin.manifest.slug}`;
     const fullPath = path.startsWith('/') ? `${prefix}${path}` : `${prefix}/${path}`;
 
     if (!manager.apiHost) {
