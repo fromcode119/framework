@@ -108,6 +108,7 @@ export const FrameworkIcons = {
   Alert: Lucide.AlertCircle,
   Warning: Lucide.AlertTriangle,
   Clock: Lucide.Clock,
+  Terminal: Lucide.Terminal,
 
   // Shims for backward compatibility/bridge safety
   registerProvider: (name: string, provider: Record<string, any>) => {
