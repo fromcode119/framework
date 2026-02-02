@@ -408,12 +408,12 @@ export class APIServer {
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     
-    // Mount isolated plugin router
-    vApi.use(this.pluginRouter);
-    
     // Add collections to versioned API
     vApi.use(setupCollectionRoutes(this.manager, this.restController));
 
+    // Mount isolated plugin router
+    vApi.use(this.pluginRouter);
+    
     // Mount versioned API
     this.app.use(vPrefix, vApi);
 

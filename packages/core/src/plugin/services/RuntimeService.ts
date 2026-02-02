@@ -105,7 +105,11 @@ export class RuntimeService {
     if (name === 'react-jsx' || name === 'react/jsx-runtime' || name === 'react/jsx-dev-runtime') {
       source = this.templates['jsx'] || '';
     } else if (config.type === 'icon') {
-      source = (this.templates['icons'] || '').replace('{{KEYS}}', (config.keys || []).join(', '));
+      const exports = (config.keys || [])
+        .map((key: string) => `export const ${key} = window.Fromcode.getIcon('${key}');`)
+        .join('\n');
+      
+      source = (this.templates['icons'] || '').replace('{{EXPORTS}}', exports);
     } else {
       const globalObject = {
         'react': 'window.React',
@@ -114,8 +118,12 @@ export class RuntimeService {
         '@fromcode/react': 'window.Fromcode'
       }[name] || 'window.Fromcode';
 
+      const exports = (config.keys || [])
+        .map((key: string) => `export const ${key} = ${globalObject}['${key}'];`)
+        .join('\n');
+
       source = (this.templates['lib'] || '')
-        .replace(/{{KEYS}}/g, (config.keys || []).join(', '))
+        .replace('{{EXPORTS}}', exports)
         .replace(/{{SCOPE}}/g, globalObject);
     }
 

@@ -1,2 +1,2 @@
-export const { {{KEYS}} } = {{SCOPE}};
+{{EXPORTS}}
 export default {{SCOPE}};

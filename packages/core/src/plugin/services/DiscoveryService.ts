@@ -13,8 +13,9 @@ const manifestSchema = z.object({
   slug: z.string(),
   version: z.string(),
   description: z.string().optional(),
+  main: z.string().optional(),
   entry: z.string().optional(),
-  admin: z.string().optional(),
+  admin: z.any().optional(),
   ui: z.any().optional(),
   runtimeModules: z.any().optional(),
   capabilities: z.array(z.string()).optional(),
@@ -104,7 +105,13 @@ export class DiscoveryService {
               } catch (e) {}
 
               try {
-                const pluginModule = require(indexPath);
+                const rawModule = require(indexPath);
+                
+                // Handle ESM-to-CJS transpilation where exports are under .default
+                const pluginModule = (rawModule && rawModule.__esModule && rawModule.default)
+                  ? { ...rawModule.default, ...rawModule }
+                  : rawModule;
+
                 discovered.push({
                   plugin: { manifest, ...pluginModule },
                   path: pluginPath
