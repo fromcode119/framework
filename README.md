@@ -55,11 +55,10 @@ Fromcode supports a decentralized, metadata-driven extension model for runtime l
    ```json
    {
      "slug": "my-icons-plugin",
-     "runtimeModules": {
-       "fontawesome": "/framework/runtime/fontawesome"
-     }
+     "runtimeModules": ["fontawesome"]
    }
    ```
+   *Note: The framework automatically maps these to centralized ESM bridges.*
 
 2. **Register the Provider**:
    In your plugin's UI entry point:

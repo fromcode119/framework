@@ -44,9 +44,6 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
       // Calculate a "Did you mean?" suggestion
       const findBestMatch = (input: string, choices: string[]) => {
         const inputLo = input.toLowerCase();
-        let best = null;
-        let bestDist = 3; // Max distance
-
         for (const choice of choices) {
           const choiceLo = choice.toLowerCase();
           // Simple fuzzy logic: check if one contains other or simple distance
@@ -66,6 +63,15 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
           message: suggestion ? `Did you mean "${suggestion}"?` : `The collection "${slug}" does not exist in the platform registry.`,
           available: (req as any).user?.roles?.includes('admin') ? publicCollections : undefined,
           hint: suggestion ? `Try requesting /api/v1/collections/${suggestion} instead.` : undefined
+      });
+    }
+
+    // Security: If accessed via a plugin-scoped route (e.g. /api/v1/:pluginSlug/:slug),
+    // ensure the collection actually belongs to that plugin to prevent cross-plugin data access.
+    const { pluginSlug: requestedPluginSlug } = req.params;
+    if (requestedPluginSlug && collectionEntry.pluginSlug !== requestedPluginSlug) {
+      return res.status(404).json({
+          error: `Collection "${slug}" not found in plugin namespace "${requestedPluginSlug}"`
       });
     }
 

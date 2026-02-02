@@ -73,6 +73,37 @@ interface PluginContextValue {
 
 const PluginContext = createContext<PluginContextValue | null>(null);
 
+// --- Standalone Bridge Exports ---
+// These allow plugins to import { registerX } from '@fromcode/react' 
+// when running inside the framework's dynamic bridge environment.
+
+const getBridge = () => (typeof window !== 'undefined' ? (window as any).Fromcode : {});
+
+export const registerSlotComponent = (...args: any[]) => getBridge().registerSlotComponent?.(...args);
+export const registerFieldComponent = (...args: any[]) => getBridge().registerFieldComponent?.(...args);
+export const registerOverride = (...args: any[]) => getBridge().registerOverride?.(...args);
+export const registerMenuItem = (...args: any[]) => getBridge().registerMenuItem?.(...args);
+export const registerCollection = (...args: any[]) => getBridge().registerCollection?.(...args);
+export const registerPlugins = (...args: any[]) => getBridge().registerPlugins?.(...args);
+export const registerTheme = (...args: any[]) => getBridge().registerTheme?.(...args);
+export const registerSettings = (...args: any[]) => getBridge().registerSettings?.(...args);
+export const registerAPI = (...args: any[]) => getBridge().registerAPI?.(...args);
+export const getAPI = (...args: any[]) => getBridge().getAPI?.(...args);
+export const loadConfig = (...args: any[]) => getBridge().loadConfig?.(...args);
+export const resolveContent = (...args: any[]) => getBridge().resolveContent?.(...args);
+export const emit = (...args: any[]) => getBridge().emit?.(...args);
+export const on = (...args: any[]) => getBridge().on?.(...args);
+export const t = (...args: any[]) => getBridge().t?.(...args);
+export const locale = typeof window !== 'undefined' ? (window as any).Fromcode?.locale : 'en';
+export const setLocale = (...args: any[]) => getBridge().setLocale?.(...args);
+export const api = {
+  get: (...args: any[]) => getBridge().api?.get?.(...args),
+  post: (...args: any[]) => getBridge().api?.post?.(...args),
+  put: (...args: any[]) => getBridge().api?.put?.(...args),
+  patch: (...args: any[]) => getBridge().api?.patch?.(...args),
+  delete: (...args: any[]) => getBridge().api?.delete?.(...args),
+};
+
 export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, apiUrl?: string }) => {
   const [slots, setSlots] = useState<Record<string, SlotComponent[]>>({});
   const [overrides, setOverrides] = useState<Record<string, SlotComponent>>({});
