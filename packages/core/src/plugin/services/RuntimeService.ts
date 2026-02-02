@@ -29,7 +29,7 @@ export class RuntimeService {
       
       if (type === 'icon') {
           // Lucide icons are PascalCase
-          return keys.filter(k => k.length > 1 && k[0] === k[0].toUpperCase() && k !== 'default');
+          return keys.filter(k => k.length >= 1 && k[0] === k[0].toUpperCase() && k !== 'default');
       }
       return keys;
     } catch (e) {
