@@ -24,7 +24,11 @@ export class LifecycleService {
 
   async register(plugin: FromcodePlugin, pluginPath?: string): Promise<void> {
     const slug = plugin.manifest.slug;
-    if (this.manager.plugins.has(slug)) {
+    const existingEntry = this.manager.plugins.get(slug);
+    
+    // Only throw if the plugin is already registered AND it's not in an error state.
+    // If it's in an error state, we want to allow re-registration to attempt recovery.
+    if (existingEntry && existingEntry.state !== 'error') {
       throw new Error(`Plugin with slug "${slug}" is already registered.`);
     }
 

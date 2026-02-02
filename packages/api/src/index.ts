@@ -19,9 +19,11 @@ import { setupMediaRoutes } from './routes/media';
 import { setupCollectionRoutes, setupLegacyCollectionRoutes } from './routes/collections';
 import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
 import { generateOpenAPI } from './swagger';
+import { createCollectionMiddleware } from './middlewares/collection';
 
 export class APIServer {
   public app = express();
+  public pluginRouter = express.Router();
   private logger = new Logger({ namespace: 'APIServer' });
   private restController: RESTController;
   private mediaManager!: MediaManager;
@@ -406,6 +408,9 @@ export class APIServer {
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     
+    // Mount isolated plugin router
+    vApi.use(this.pluginRouter);
+    
     // Add collections to versioned API
     vApi.use(setupCollectionRoutes(this.manager, this.restController));
 
@@ -436,6 +441,20 @@ export class APIServer {
     }
   }
 
+  public setupPluginCollectionProxy() {
+    this.logger.info('Setting up automated Plugin Collection Proxy routes...');
+    const middleware = createCollectionMiddleware(this.manager);
+
+    // Standard CRUD Fallbacks for plugins
+    // Note: These will only be reached if the plugin didn't register a custom route for the same path
+    this.pluginRouter.get('/:pluginSlug/:slug', middleware, (req: any, res) => this.restController.find(req.collection, req, res));
+    this.pluginRouter.get('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.findOne(req.collection, req, res));
+    this.pluginRouter.post('/:pluginSlug/:slug', middleware, (req: any, res) => this.restController.create(req.collection, req, res));
+    this.pluginRouter.put('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.update(req.collection, req, res));
+    this.pluginRouter.patch('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.update(req.collection, req, res));
+    this.pluginRouter.delete('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.delete(req.collection, req, res));
+  }
+
   start(port: number = 3000, host: string = '0.0.0.0') {
     this.app.listen(port, host, () => {
       this.logger.info(`Running on http://${host}:${port}`);
@@ -444,40 +463,99 @@ export class APIServer {
 }
 
 async function bootstrap() {
-  const manager = new PluginManager();
-  await manager.init();
+  process.on('uncaughtException', (err) => {
+    console.error('CRITICAL: Uncaught Exception:', err);
+  });
 
-  const themeManager = new ThemeManager((manager as any).db);
-  await themeManager.init();
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+  });
 
-  const auth = new AuthManager();
-  const server = new APIServer(manager, themeManager, auth);
-  await server.initialize();
+  try {
+    const manager = new PluginManager();
+    
+    // 1. Manager Initialization (DB/Migrations)
+    try {
+      console.log('Step 1: Initializing PluginManager (Database/Migrations)...');
+      await manager.init();
+    } catch (err) {
+      console.error('FATAL: PluginManager init failed. This is usually due to missing DATABASE_URL or DB unavailability.', err);
+      process.exit(1);
+    }
 
-  manager.setAuth(auth);
-  manager.setApiHost((server as any).app);
-  await manager.discoverPlugins();
+    // 2. Theme Manager Initialization
+    const themeManager = new ThemeManager((manager as any).db);
+    try {
+      console.log('Step 2: Initializing ThemeManager...');
+      await themeManager.init();
+    } catch (err) {
+      console.error('ERROR: ThemeManager init failed. System may continue but themes will be unavailable.', err);
+    }
 
-  if (process.env.NODE_ENV === 'development') {
-    const hotReload = new HotReloadService(manager, manager.pluginsRoot);
-    hotReload.start();
+    // 3. API Server Infrastructure
+    const auth = new AuthManager();
+    const server = new APIServer(manager, themeManager, auth);
+    try {
+      console.log('Step 3: Initializing API Server Infrastructure...');
+      await server.initialize();
+    } catch (err) {
+      console.error('FATAL: API Server initialization failed.', err);
+      process.exit(1);
+    }
+
+    // 4. Plugin Discovery & Core Setup
+    manager.setAuth(auth);
+    manager.setApiHost(server.pluginRouter);
+    
+    try {
+      console.log('Step 4: Discovering Plugins...');
+      await manager.discoverPlugins();
+      server.setupPluginCollectionProxy();
+    } catch (err) {
+      console.error('ERROR: Initial plugin discovery failed. Check manifest files and permissions.', err);
+    }
+
+    // 5. Development Services
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        console.log('Step 5: Starting Hot Reload Service (Development Mode)...');
+        const hotReload = new HotReloadService(manager, manager.pluginsRoot);
+        hotReload.start();
+      } catch (err) {
+        console.warn('WARNING: Hot Reload Service failed to start:', err);
+      }
+    }
+
+    // 6. Final Start
+    const port = Number(process.env.PORT) || 3000;
+    server.start(port);
+    console.log(`Step 6: API Server listening on port ${port}`);
+    
+    manager.emit('system:ready', { timestamp: Date.now() });
+
+    // Handle graceful shutdown
+    const shutdown = async (signal: string) => {
+      console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
+      try {
+        await manager.close();
+      } catch (e) {
+        console.error('Error during shutdown:', e);
+      }
+      process.exit(0);
+    };
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+  } catch (err) {
+    console.error('FATAL SYSTEM ERROR: API Server failed to bootstrap fundamentally.', err);
+    process.exit(1);
   }
-
-  server.start(Number(process.env.PORT) || 3000);
-  manager.emit('system:ready', { timestamp: Date.now() });
-
-  // Handle graceful shutdown
-  const shutdown = async (signal: string) => {
-    console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
-    await manager.close();
-    process.exit(0);
-  };
-
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 if (require.main === module) {
-  bootstrap();
+  bootstrap().catch(err => {
+    console.error('Unhandled exception during bootstrap execution:', err);
+    process.exit(1);
+  });
 }
 

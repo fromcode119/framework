@@ -2,7 +2,8 @@ import {
   PluginContext, 
   LoadedPlugin, 
   Collection, 
-  TranslationMap
+  TranslationMap,
+  PluginManifest
 } from '../types';
 import { Logger } from '../logging/logger';
 import { sql, count, eq, and, or } from 'drizzle-orm';
@@ -36,7 +37,7 @@ export interface PluginManagerInterface {
   savePluginConfig(slug: string, config: any): Promise<void>;
   getCollections(): Collection[];
   getCollection(slug: string): { collection: Collection; pluginSlug: string } | undefined;
-  installFromZip(filePath: string, pluginsRoot?: string): Promise<void>;
+  installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest>;
   writeLog(level: string, message: string, pluginSlug?: string, context?: any): Promise<void>;
   disableWithError(slug: string, message: string): Promise<void>;
   emit(event: string, payload: any): void;
@@ -84,9 +85,15 @@ export function createPluginContext(
       handleViolation('api');
     }
 
-    const apiVersion = process.env.API_VERSION_PREFIX || 'v1';
-    const prefix = `/api/${apiVersion}/${plugin.manifest.slug}`;
-    const fullPath = path.startsWith('/') ? `${prefix}${path}` : `${prefix}/${path}`;
+    // Security: Prevent path traversal attempts
+    if (path.includes('..')) {
+      throw new Error(`Security Violation: Plugin "${plugin.manifest.slug}" attempted invalid API path: ${path}`);
+    }
+
+    // Paths are simplified because they are mounted on pluginRouter under /api/v1/
+    // Example: path "/posts" becomes "/cms/posts" which matches /api/v1/cms/posts
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    const fullPath = `/${plugin.manifest.slug}${cleanPath}`;
 
     if (!manager.apiHost) {
       pluginLogger.debug(`Registered ${method.toUpperCase()} ${fullPath} (MOCK)`);

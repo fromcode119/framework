@@ -48,7 +48,14 @@ export class RuntimeService {
     });
     this.registry.set('@fromcode/react', { 
       type: 'lib', 
-      keys: ['Slot', 'Override', 'usePlugins', 'useTranslation', 'PluginsProvider', 'getIcon', 'createProxyIcon', 'FrameworkIcons', 'FrameworkIconRegistry', 'IconNames'] 
+      keys: [
+        'Slot', 'Override', 'usePlugins', 'useTranslation', 'PluginsProvider', 
+        'getIcon', 'createProxyIcon', 'FrameworkIcons', 'FrameworkIconRegistry', 'IconNames',
+        'registerSlotComponent', 'registerFieldComponent', 'registerOverride', 'registerMenuItem', 
+        'registerCollection', 'registerPlugins', 'registerTheme', 'registerSettings', 
+        'registerAPI', 'getAPI', 'loadConfig', 'resolveContent', 'api', 'emit', 'on', 't', 
+        'locale', 'setLocale', 'usePluginAPI'
+      ] 
     });
     this.registry.set('react-jsx', { type: 'lib', keys: [] });
     this.registry.set('react/jsx-runtime', { type: 'lib', keys: ['jsx', 'jsxs', 'Fragment'] });

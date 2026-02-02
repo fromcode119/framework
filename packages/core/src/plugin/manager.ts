@@ -118,18 +118,55 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   async discoverPlugins() {
-    const discovered = this.discovery.discoverPlugins(this.plugins);
+    const { discovered, errored } = this.discovery.discoverPlugins(this.plugins);
+
+    // Add errored plugins to this.plugins
+    for (const error of errored) {
+      if (!this.plugins.has(error.manifest.slug)) {
+        this.plugins.set(error.manifest.slug, {
+          manifest: error.manifest,
+          path: error.path,
+          state: 'error',
+          error: error.error,
+          instanceId: `err-${error.manifest.slug}-${Date.now()}`
+        } as any);
+      }
+    }
+
     try {
       const sorted = this.discovery.resolveDependencies(discovered.map(d => d.plugin));
       await this.coordinator.coordinate(sorted.map(p => p.manifest));
 
       for (const plugin of sorted) {
-        if (this.plugins.has(plugin.manifest.slug)) continue;
-        const stage = discovered.find(d => d.plugin.manifest.slug === plugin.manifest.slug);
-        await this.lifecycle.register(plugin, stage!.path);
+        const slug = plugin.manifest.slug;
+        const stage = discovered.find(d => d.plugin.manifest.slug === slug);
+        
+        if (!stage) {
+          this.logger.warn(`Plugin metadata found for ${slug} but path discovery failed.`);
+          continue;
+        }
+
+        const existing = this.plugins.get(slug);
+        if (existing && existing.state !== 'error') {
+          continue;
+        }
+
+        try {
+          await this.lifecycle.register(plugin, stage.path);
+        } catch (err: any) {
+          this.logger.error(`Failed to register plugin "${slug}": ${err.message}`);
+          // Mark as errored in the local registry so it shows up in UI
+          this.plugins.set(slug, {
+            manifest: plugin.manifest,
+            path: stage.path,
+            state: 'error',
+            error: err.message,
+            instanceId: `err-reg-${slug}-${Date.now()}`
+          } as any);
+        }
       }
     } catch (err: any) {
-      this.logger.error(`Plugin discovery failed: ${err.message}`);
+      this.logger.error(`Plugin discovery coordination failed: ${err.message}`);
     }
   }
 
@@ -185,7 +222,7 @@ export class PluginManager implements PluginManagerInterface {
     return this.registeredCollections.get(slug);
   }
 
-  async installFromZip(filePath: string, pluginsRoot: string): Promise<void> {
+  async installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest> {
     return this.discovery.installFromZip(filePath);
   }
 

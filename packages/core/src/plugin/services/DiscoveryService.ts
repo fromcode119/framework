@@ -5,13 +5,31 @@ import AdmZip from 'adm-zip';
 import { Logger } from '../../logging/logger';
 import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
 import { BackupService } from '../../management/backup';
+import { validatePluginManifest as validateManifest } from '../../management/manifest';
+import { z } from 'zod';
+
+const manifestSchema = z.object({
+  name: z.string(),
+  slug: z.string(),
+  version: z.string(),
+  description: z.string().optional(),
+  entry: z.string().optional(),
+  admin: z.string().optional(),
+  ui: z.any().optional(),
+  runtimeModules: z.any().optional(),
+  capabilities: z.array(z.string()).optional(),
+  dependencies: z.record(z.string()).optional(),
+}).passthrough();
 
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'DiscoveryService' });
 
   constructor(private pluginsRoot: string, private projectRoot: string) {}
 
-  public discoverPlugins(existingPlugins: Map<string, LoadedPlugin>): { plugin: any, path: string }[] {
+  public discoverPlugins(existingPlugins: Map<string, LoadedPlugin>): { 
+    discovered: { plugin: any, path: string }[], 
+    errored: { manifest: any, path: string, error: string }[] 
+  } {
     this.logger.info(`Scanning for plugins in ${this.pluginsRoot}...`);
     const roots = [this.pluginsRoot];
     
@@ -27,6 +45,9 @@ export class DiscoveryService {
     }
 
     const discovered: { plugin: any, path: string }[] = [];
+    const errored: { manifest: any, path: string, error: string }[] = [];
+    const seenSlugs = new Set<string>();
+    const seenPaths = new Set<string>();
 
     for (const root of roots) {
       if (!fs.existsSync(root)) continue;
@@ -37,12 +58,34 @@ export class DiscoveryService {
 
         const pluginPath = path.join(root, dir);
         if (!fs.statSync(pluginPath).isDirectory()) continue;
+        if (seenPaths.has(pluginPath)) continue;
+        seenPaths.add(pluginPath);
 
         const manifestPath = path.join(pluginPath, 'manifest.json');
         if (fs.existsSync(manifestPath)) {
+          let manifest: any;
           try {
             const manifestContent = fs.readFileSync(manifestPath, 'utf8');
-            const manifest = JSON.parse(manifestContent);
+            manifest = JSON.parse(manifestContent);
+            
+            // Validate manifest structure early
+            const validation = manifestSchema.safeParse(manifest);
+            if (!validation.success) {
+              const errorMsg = `Manifest Validation Error: ${validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+              this.logger.warn(`Invalid manifest for ${dir}: ${errorMsg}`);
+              errored.push({
+                manifest: manifest || { slug: dir },
+                path: pluginPath,
+                error: errorMsg
+              });
+              continue;
+            }
+
+            if (seenSlugs.has(manifest.slug)) {
+              this.logger.debug(`Skipping duplicate plugin slug "${manifest.slug}" found at ${pluginPath}`);
+              continue;
+            }
+            seenSlugs.add(manifest.slug);
 
             let mainFile = manifest.main || 'index.js';
             let indexPath = path.join(pluginPath, mainFile);
@@ -60,20 +103,36 @@ export class DiscoveryService {
                   if (require.cache[resolved]) delete require.cache[resolved];
               } catch (e) {}
 
-              const pluginModule = require(indexPath);
-              discovered.push({
-                plugin: { manifest, ...pluginModule },
-                path: pluginPath
-              });
+              try {
+                const pluginModule = require(indexPath);
+                discovered.push({
+                  plugin: { manifest, ...pluginModule },
+                  path: pluginPath
+                });
+              } catch (err: any) {
+                this.logger.warn(`Failed to load plugin module from ${dir}: ${err.message}`);
+                errored.push({
+                   manifest,
+                   path: pluginPath,
+                   error: err.message
+                });
+              }
             }
           } catch (err: any) {
             this.logger.warn(`Failed to stage plugin from ${dir}: ${err.message}`);
+            if (manifest) {
+              errored.push({
+                manifest,
+                path: pluginPath,
+                error: err.message
+              });
+            }
           }
         }
       }
     }
 
-    return discovered;
+    return { discovered, errored };
   }
 
   public resolveDependencies(plugins: FromcodePlugin[]): FromcodePlugin[] {
@@ -171,7 +230,7 @@ export class DiscoveryService {
     }
   }
 
-  async installFromZip(filePath: string): Promise<void> {
+  async installFromZip(filePath: string): Promise<PluginManifest> {
     const tempDir = path.join(path.dirname(filePath), `ext-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
 
@@ -189,7 +248,7 @@ export class DiscoveryService {
       }
 
       const manifestContent = fs.readFileSync(path.join(contentDir, 'manifest.json'), 'utf8');
-      const manifest = JSON.parse(manifestContent);
+      const manifest: PluginManifest = JSON.parse(manifestContent);
       const targetDir = path.join(this.pluginsRoot, manifest.slug);
 
       if (fs.existsSync(targetDir)) {
@@ -199,6 +258,7 @@ export class DiscoveryService {
       fs.mkdirSync(targetDir, { recursive: true });
       
       this.moveDir(contentDir, targetDir);
+      return manifest;
     } finally {
       try {
         fs.rmSync(tempDir, { recursive: true, force: true });

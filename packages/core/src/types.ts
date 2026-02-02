@@ -285,6 +285,7 @@ export interface LoadedPlugin extends FromcodePlugin {
   state: 'inactive' | 'loading' | 'active' | 'error';
   path?: string; // Absolute path to the plugin folder
   approvedCapabilities?: string[];
+  error?: string; // Error message if state is 'error'
 }
 
 export interface SystemMigration {

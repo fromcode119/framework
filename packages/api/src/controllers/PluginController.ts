@@ -13,6 +13,7 @@ export class PluginController {
       ...p.manifest,
       state: p.state,
       path: p.path,
+      error: p.error,
       approvedCapabilities: p.approvedCapabilities
     })));
   }
@@ -153,6 +154,13 @@ export class PluginController {
       this.logger.info(`Installing ${slug} from ${pkg.downloadUrl}`);
       await this.manager.updatePlugin(slug, pkg);
       
+      try {
+        // Auto-enable plugin after marketplace installation
+        await this.manager.enable(slug);
+      } catch (enableErr: any) {
+        this.logger.warn(`Plugin ${slug} installed but failed to auto-enable: ${enableErr.message}`);
+      }
+
       this.logger.info(`Successfully installed plugin: ${slug}`);
       res.json({ success: true });
     } catch (err: any) {
@@ -181,8 +189,15 @@ export class PluginController {
   async upload(req: any, res: Response) {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     try {
-      const pluginsRoot = (this.manager as any).pluginsRoot;
-      await (this.manager as any).installFromZip(req.file.path, pluginsRoot);
+      const manifest = await this.manager.installFromZip(req.file.path);
+      // Discover newly added plugin files
+      await this.manager.discoverPlugins();
+      // Try to auto-enable
+      try {
+        await this.manager.enable(manifest.slug);
+      } catch (enableErr: any) {
+        this.logger.warn(`Uploaded plugin ${manifest.slug} failed to auto-enable: ${enableErr.message}`);
+      }
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
