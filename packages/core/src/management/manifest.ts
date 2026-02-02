@@ -83,7 +83,7 @@ export const PluginManifestSchema = z.object({
   migrations: z.string().optional(),
   seeds: z.string().optional(),
   collections: z.union([z.array(z.string()), z.string()]).optional(),
-});
+}).passthrough();
 
 /**
  * Validates a plugin manifest object
