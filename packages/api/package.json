@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --ignore '../../plugins' --ignore '../../themes' src/index.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {

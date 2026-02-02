@@ -65,6 +65,9 @@ interface PluginContextValue {
   api: {
     get: (path: string, options?: any) => Promise<any>;
     post: (path: string, body?: any, options?: any) => Promise<any>;
+    put: (path: string, body?: any, options?: any) => Promise<any>;
+    patch: (path: string, body?: any, options?: any) => Promise<any>;
+    delete: (path: string, options?: any) => Promise<any>;
   };
 }
 
@@ -101,7 +104,13 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
     const base = getBaseURL();
     const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
     
-    const url = path.startsWith('http') ? path : `${base}/api/${version}${path.startsWith('/') ? '' : '/'}${path}`;
+    let url = path;
+    if (!path.startsWith('http')) {
+      const vPrefix = `/api/${version}`;
+      // Prevent double prefixing if path already starts with /api/v1
+      const relativePath = path.startsWith(vPrefix) ? path.slice(vPrefix.length) : path;
+      url = `${base}${vPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
+    }
     
     const token = typeof document !== 'undefined' 
       ? document.cookie.split('; ').find(row => row.startsWith('fc_token='))?.split('=')[1]
@@ -127,12 +136,34 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
 
   const api = useMemo(() => ({
     get: (path: string, options?: any) => apiFetch(path, { ...options, method: 'GET' }),
-    post: (path: string, body?: any, options?: any) => apiFetch(path, { 
-        ...options, 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
-        body: JSON.stringify(body)
-    }),
+    post: (path: string, body?: any, options?: any) => {
+        const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+        return apiFetch(path, { 
+            ...options, 
+            method: 'POST', 
+            headers: isFormData ? (options?.headers || {}) : { 'Content-Type': 'application/json', ...(options?.headers || {}) },
+            body: isFormData ? body : JSON.stringify(body)
+        });
+    },
+    put: (path: string, body?: any, options?: any) => {
+        const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+        return apiFetch(path, { 
+            ...options, 
+            method: 'PUT', 
+            headers: isFormData ? (options?.headers || {}) : { 'Content-Type': 'application/json', ...(options?.headers || {}) },
+            body: isFormData ? body : JSON.stringify(body)
+        });
+    },
+    patch: (path: string, body?: any, options?: any) => {
+        const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+        return apiFetch(path, { 
+            ...options, 
+            method: 'PATCH', 
+            headers: isFormData ? (options?.headers || {}) : { 'Content-Type': 'application/json', ...(options?.headers || {}) },
+            body: isFormData ? body : JSON.stringify(body)
+        });
+    },
+    delete: (path: string, options?: any) => apiFetch(path, { ...options, method: 'DELETE' }),
   }), [apiFetch]);
 
   const resolveContent = useCallback(async (slug: string) => {
@@ -525,6 +556,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         setLocale,
         usePlugins,
         useTranslation,
+        usePluginAPI,
         // Non-hook versions for direct access from CJS/ESM bridge
         getState: () => ({ slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, setLocale, t, emit, on, api, resolveContent, getAPI }),
         PluginsProvider
@@ -615,4 +647,21 @@ export const usePlugins = () => {
 export const useTranslation = () => {
   const { t, locale, setLocale } = usePlugins();
   return { t, locale, setLocale };
+};
+
+export const usePluginAPI = (slug: string) => {
+  const { api } = usePlugins();
+  
+  return useMemo(() => ({
+    get: (path: string, options?: any) => 
+      api.get(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, options),
+    post: (path: string, body?: any, options?: any) => 
+      api.post(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+    put: (path: string, body?: any, options?: any) => 
+      api.put(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+    delete: (path: string, options?: any) => 
+      api.delete(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, options),
+    patch: (path: string, body?: any, options?: any) => 
+      api.patch(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+  }), [api, slug]);
 };
