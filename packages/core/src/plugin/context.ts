@@ -306,9 +306,13 @@ export function createPluginContext(
         // Automatically prefix plugin collections for isolation and security
         // We preserve the human-friendly identifier (shortSlug) if provided,
         // otherwise we use the technical slug provided by the plugin.
+        const tablePrefix = `fcp_${plugin.manifest.slug.replace(/-/g, '_')}_`;
         const inputSlug = collection.slug;
-        const shortSlug = collection.shortSlug || inputSlug;
-        const prefixedSlug = `${tablePrefix}${inputSlug}`;
+        
+        // If the slug already has the prefix (e.g. manually added), don't add it again
+        const prefixedSlug = inputSlug.startsWith(tablePrefix) ? inputSlug : `${tablePrefix}${inputSlug}`;
+        
+        const shortSlug = collection.shortSlug || (inputSlug.startsWith(tablePrefix) ? inputSlug.replace(tablePrefix, '') : inputSlug);
         
         const modifiedCollection: Collection = {
           ...collection,

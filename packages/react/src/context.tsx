@@ -431,14 +431,38 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   }, []);
 
   const registerFieldComponent = useCallback((name: string, component: any) => {
+    if (!component) {
+      console.warn(`[Fromcode] Attempted to register undefined field component "${name}". Ignored.`);
+      return;
+    }
+
+    // Handle CJS/ESM mismatch
+    let actualComponent = component;
+    if (component && !component.$$typeof && typeof component === 'object' && component.default) {
+      actualComponent = component.default;
+    }
+
+    if (!actualComponent) {
+      console.warn(`[Fromcode] Field component "${name}" resolved to undefined.`);
+      return;
+    }
+
     console.log(`[Fromcode] Registering field component: ${name}`);
-    setFieldComponents(prev => ({ ...prev, [name]: component }));
+    setFieldComponents(prev => ({ ...prev, [name]: actualComponent }));
   }, []);
 
   const registerOverride = useCallback((name: string, component: any, pluginSlug?: string, priority?: number) => {
-    const componentObj: SlotComponent = typeof component === 'function' || (component && component.$$typeof)
-      ? { component, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
-      : component;
+    if (!component) return;
+
+    // Handle CJS/ESM mismatch
+    let actualComponent = component;
+    if (component && !component.$$typeof && typeof component === 'object' && component.default) {
+      actualComponent = component.default;
+    }
+
+    const componentObj: SlotComponent = typeof actualComponent === 'function' || (actualComponent && (actualComponent as any).$$typeof)
+      ? { component: actualComponent, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
+      : actualComponent;
 
     setOverrides((prev) => {
       const existing = prev[name];

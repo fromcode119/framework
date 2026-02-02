@@ -18,7 +18,8 @@ export class AdminMetadataService {
           .filter(c => c.pluginSlug === p.manifest.slug)
           .map(c => ({
              ...c.collection,
-             pluginSlug: p.manifest.slug
+             pluginSlug: p.manifest.slug,
+             unprefixedSlug: (c.collection as any).unprefixedSlug || c.collection.slug
           }));
 
         return {

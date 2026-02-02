@@ -5,6 +5,10 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
   return (req: any, res: Response, next: NextFunction) => {
     const { slug } = req.params;
     
+    if (!slug) {
+      return res.status(400).json({ error: 'Collection slug is required' });
+    }
+
     // First try: Exact match (usually the full prefixed slug)
     let collectionEntry = manager.getCollection(slug);
     
@@ -13,9 +17,9 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
       const registeredCollections = (manager as any).registeredCollections as Map<string, any>;
       const targetSlug = slug.toLowerCase();
       
-      console.log(`[CollectionMiddleware] Attempting fallback for "${slug}". Registered:`, Array.from(registeredCollections.keys()));
+      const allEntries = Array.from(registeredCollections.entries());
 
-      for (const [key, entry] of Array.from(registeredCollections.entries())) {
+      for (const [key, entry] of allEntries) {
         const collectionSlug = entry.collection.slug?.toLowerCase();
         const shortSlug = entry.collection.shortSlug?.toLowerCase();
         const unprefixedSlug = entry.collection.unprefixedSlug?.toLowerCase();
@@ -36,52 +40,39 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
     }
     
     if (!collectionEntry) {
-      const allRegistered = Array.from(((manager as any).registeredCollections as Map<string, any>).entries());
+      const registeredCollections = (manager as any).registeredCollections as Map<string, any>;
+      const allRegistered = Array.from(registeredCollections.entries());
       const publicCollections = allRegistered
         .filter(([_, entry]) => !entry.collection.admin?.hidden)
         .map(([key, _]) => key);
       
-      // Calculate a "Did you mean?" suggestion
-      const findBestMatch = (input: string, choices: string[]) => {
-        const inputLo = input.toLowerCase();
-        for (const choice of choices) {
-          const choiceLo = choice.toLowerCase();
-          // Simple fuzzy logic: check if one contains other or simple distance
-          if (choiceLo.includes(inputLo) || inputLo.includes(choiceLo)) {
-             return choice;
-          }
-        }
-        return null;
-      };
-
-      const suggestion = findBestMatch(slug, publicCollections);
-      
-      console.error(`[CollectionMiddleware] Collection NOT FOUND: "${slug}". Suggestion: ${suggestion}. Available: ${publicCollections.join(', ')}`);
+      console.error(`[CollectionMiddleware] Collection NOT FOUND: "${slug}". Available: ${publicCollections.join(', ')}`);
       
       return res.status(404).json({ 
           error: `Collection "${slug}" not found`,
-          message: suggestion ? `Did you mean "${suggestion}"?` : `The collection "${slug}" does not exist in the platform registry.`,
-          available: (req as any).user?.roles?.includes('admin') ? publicCollections : undefined,
-          hint: suggestion ? `Try requesting /api/v1/collections/${suggestion} instead.` : undefined
+          available: (req as any).user?.roles?.includes('admin') ? publicCollections : undefined
       });
     }
 
     // Security: If accessed via a plugin-scoped route (e.g. /api/v1/:pluginSlug/:slug),
     // ensure the collection actually belongs to that plugin to prevent cross-plugin data access.
+    // NOTE: For /api/v1/collections/:slug, requestedPluginSlug will be undefined, so this check is skipped.
     const { pluginSlug: requestedPluginSlug } = req.params;
     if (requestedPluginSlug && collectionEntry.pluginSlug !== requestedPluginSlug) {
-      return res.status(404).json({
-          error: `Collection "${slug}" not found in plugin namespace "${requestedPluginSlug}"`
-      });
+       // Also allow if the slug matches the full prefixed name, indicating the caller is using the full identifier
+       if (slug !== collectionEntry.collection.slug) {
+          return res.status(404).json({
+              error: `Collection "${slug}" not found in plugin namespace "${requestedPluginSlug}"`
+          });
+       }
     }
 
     // Check if the plugin that registered this collection is active
-    // Special case for 'system' registered collections (which are always core)
     if (collectionEntry.pluginSlug !== 'system') {
       const plugin = manager.getPlugins().find(p => p.manifest.slug === collectionEntry.pluginSlug);
       if (!plugin || plugin.state !== 'active') {
         return res.status(403).json({ 
-          error: `Collection "${slug}" is currently unavailable because its parent plugin "${collectionEntry.pluginSlug}" is disabled`,
+          error: `Collection "${slug}" is unavailable because plugin "${collectionEntry.pluginSlug}" is ${plugin?.state || 'missing'}`,
           code: 'PLUGIN_DISABLED'
         });
       }
