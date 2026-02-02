@@ -13,22 +13,27 @@ export class RuntimeService {
   private templates: Record<string, string> = {};
   private logger = new Logger({ namespace: 'RuntimeService' });
 
-  constructor(rootDir: string) {
+  constructor(private rootDir: string) {
     this.templates = this.loadBridgeTemplates(rootDir);
     this.initializeDefaultRegistry();
   }
 
   private discoverModuleKeys(name: string, type: 'icon' | 'lib' = 'lib'): string[] {
     try {
-      const modulePath = require.resolve(name, { paths: [process.cwd()] });
+      // Anchor paths for module resolution. Node will crawl up from these locations.
+      const searchPaths = [process.cwd(), this.rootDir, __dirname];
+      const modulePath = require.resolve(name, { paths: searchPaths });
+
       const mod = require(modulePath);
       const keys = Object.keys(mod);
       
       if (type === 'icon') {
-          return keys.filter(k => k[0] === k[0].toUpperCase());
+          // Lucide icons are PascalCase
+          return keys.filter(k => k.length > 1 && k[0] === k[0].toUpperCase() && k !== 'default');
       }
       return keys;
     } catch (e) {
+      this.logger.warn(`Could not resolve module ${name} for discovery`);
       return [];
     }
   }
@@ -61,15 +66,12 @@ export class RuntimeService {
     this.registry.set('react/jsx-runtime', { type: 'lib', keys: ['jsx', 'jsxs', 'Fragment'] });
     this.registry.set('react/jsx-dev-runtime', { type: 'lib', keys: ['jsxDEV', 'Fragment'] });
     
-    // Auto-discover Lucide icons if available, otherwise fallback to standard set
-    const fallbackLucideKeys = ['Dashboard', 'Plugins', 'Users', 'Settings', 'Media', 'Layout', 'System', 'Package', 'Menu', 'Search', 'Sun', 'Moon', 'Bell', 'User', 'Logout', 'Help', 'Down', 'Up', 'Right', 'Left', 'ChevronDown', 'ChevronUp', 'ChevronLeft', 'ChevronRight', 'ArrowLeft', 'ArrowRight', 'Close', 'X', 'Home', 'Plus', 'Trash', 'Edit', 'Save', 'Download', 'Upload', 'Refresh', 'External', 'ExternalLink', 'More', 'MoreVertical', 'Filter', 'Calendar', 'UserCheck', 'Eye', 'Globe', 'Palette', 'Smartphone', 'Layers', 'Share', 'Copy', 'Maximize', 'PlusCircle', 'Minus', 'Check', 'Alert', 'Warning', 'Info', 'Loader', 'Loader2', 'File', 'FileText', 'Text', 'Folder', 'Grid', 'List', 'FolderPlus', 'Box', 'ShoppingBag', 'Database', 'Terminal', 'Activity', 'Clock', 'History', 'TrendingUp', 'CheckSquare', 'Code', 'Chart', 'LayoutGrid', 'Columns', 'Quote', 'Star', 'BarChart', 'BarChart3', 'ArrowUpRight', 'Mail', 'Lock', 'Shield', 'ShieldCheck', 'ShieldAlert', 'UserPlus', 'Orbit', 'Zap', 'Tag'];
-    
-    let lucideKeys = this.discoverModuleKeys('lucide-react', 'icon');
-    if (lucideKeys.length === 0) lucideKeys = fallbackLucideKeys;
+    // Auto-discover Lucide icons
+    const lucideKeys = this.discoverModuleKeys('lucide-react', 'icon');
 
     this.registry.set('lucide-react', { 
       type: 'icon', 
-      keys: [...new Set([...fallbackLucideKeys, ...lucideKeys])]
+      keys: lucideKeys
     });
   }
 
@@ -134,7 +136,7 @@ export class RuntimeService {
   public getModules(activePlugins: LoadedPlugin[]): Record<string, any> {
     const modules: Record<string, any> = {};
 
-    // 1. From registry
+    // 1. From registry (System defaults)
     for (const [name, config] of this.registry.entries()) {
       modules[name] = { 
         ...config,
@@ -155,6 +157,11 @@ export class RuntimeService {
         });
       } else {
         Object.entries(p.manifest.runtimeModules).forEach(([name, val]) => {
+          // If the module already exists in our registry, don't overwrite it with a generic one
+          if (modules[name] && typeof val === 'string' && modules[name].type === val) {
+             return;
+          }
+
           if (typeof val === 'string' && (val.startsWith('/') || val.startsWith('http'))) {
             modules[name] = { url: val };
           } else if (typeof val === 'object' && val !== null) {
