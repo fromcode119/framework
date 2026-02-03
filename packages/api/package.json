@@ -16,6 +16,7 @@
     "@fromcode/core": "*",
     "@fromcode/database": "*",
     "@fromcode/media": "*",
+    "@fromcode/scheduler": "*",
     "adm-zip": "^0.5.10",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

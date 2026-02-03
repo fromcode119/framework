@@ -204,10 +204,17 @@ export default function AdminPage() {
 
             {/* Main Resources Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stats.filter(s => !s.system).map(s => {
+              {stats.filter(s => (!s.system || s.slug === 'users' || s.slug === 'media') && !s.hidden).map(s => {
                 const colShortSlug = s.shortSlug || s.slug;
                 const colPluginSlug = s.pluginSlug || 'system';
-                const adminPath = `/${colPluginSlug}/${colShortSlug}`;
+                
+                // Content Routing: Platform core entities use root-level paths
+                // whilst plugins use /plugin/slug paths.
+                let adminPath = `/${colPluginSlug}/${colShortSlug}`;
+                if (colPluginSlug === 'system') {
+                    if (colShortSlug === 'users') adminPath = '/users';
+                    if (colShortSlug === 'media') adminPath = '/media';
+                }
                 
                 return (
                   <div key={s.slug} className="p-6 rounded-3xl border flex items-center justify-between transition-all hover:shadow-xl hover:shadow-indigo-500/5 group cursor-pointer bg-white border-slate-100 shadow-lg shadow-slate-200/50 dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none" onClick={() => window.location.href = adminPath}>

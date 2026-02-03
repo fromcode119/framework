@@ -3,12 +3,12 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-interface PortalProps {
+interface RootFrameworkProps {
   children: ReactNode;
   containerId?: string;
 }
 
-export function Portal({ children, containerId = 'portal-root' }: PortalProps) {
+export function RootFramework({ children, containerId = 'portal-root' }: RootFrameworkProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
   useEffect(() => {

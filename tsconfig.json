@@ -31,6 +31,7 @@
     { "path": "./packages/media" },
     { "path": "./packages/email" },
     { "path": "./packages/cache" },
+    { "path": "./packages/scheduler" },
     { "path": "./packages/marketplace-client" }
   ],
   "exclude": ["node_modules", "dist", "packages/admin", "packages/frontend"]

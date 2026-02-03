@@ -278,6 +278,56 @@ export class RESTController {
     }
   }
 
+  async bulkUpdate(collection: Collection, req: Request, res: Response) {
+    try {
+      const { ids, data } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'ids must be a non-empty array' });
+      }
+
+      const pk = collection.primaryKey || 'id';
+      const table = this.getVirtualTable(collection);
+      const updateData = await this.processIncomingData(collection, data, table);
+      
+      const results: any[] = [];
+      for (const id of ids) {
+        const where = { [pk]: pk === 'id' ? (typeof id === 'string' ? parseInt(id) : id) : id };
+        const updated = await this.db.update(table, where, updateData);
+        if (updated) {
+          await this.versioningService.createSnapshot(collection, String(id), updated, (req as any).user, `Bulk update ${collection.slug} records`);
+          results.push(id);
+        }
+      }
+
+      res.json({ success: true, count: results.length, updatedIds: results });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async bulkDelete(collection: Collection, req: Request, res: Response) {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'ids must be a non-empty array' });
+      }
+
+      const pk = collection.primaryKey || 'id';
+      const table = this.getVirtualTable(collection);
+      
+      let count = 0;
+      for (const id of ids) {
+        const where = { [pk]: pk === 'id' ? (typeof id === 'string' ? parseInt(id) : id) : id };
+        const success = await this.db.delete(table, where);
+        if (success) count++;
+      }
+
+      res.json({ success: true, count });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   async delete(collection: Collection, req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -303,6 +353,76 @@ export class RESTController {
       const { field } = req.params;
       const { q } = req.query as any;
       res.json(await this.suggestionService.getSuggestions(collection, field, q, this.getVirtualTable(collection)));
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async export(collection: Collection, req: Request, res: Response) {
+    try {
+      const { format = 'json' } = req.query;
+      const table = this.getVirtualTable(collection);
+      
+      const docs = await this.db.find(table, {
+        limit: 10000 
+      });
+
+      if (format === 'csv') {
+        const fields = collection.fields.map(f => f.name);
+        const csvRows = [fields.join(',')];
+        
+        docs.forEach(doc => {
+          const row = fields.map(f => {
+            const val = doc[f];
+            if (val === null || val === undefined) return '';
+            const str = typeof val === 'object' ? JSON.stringify(val) : String(val);
+            return `"${str.replace(/"/g, '""')}"`;
+          });
+          csvRows.push(row.join(','));
+        });
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename=${collection.slug}_export.csv`);
+        return res.send(csvRows.join('\n'));
+      }
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename=${collection.slug}_export.json`);
+      res.json(docs);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async import(collection: Collection, req: Request, res: Response) {
+    try {
+      const items = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'Payload must be an array of records' });
+      }
+
+      const table = this.getVirtualTable(collection);
+      const results: any[] = [];
+      
+      for (const item of items) {
+        const pk = collection.primaryKey || 'id';
+        const itemData = { ...item };
+        delete itemData[pk]; 
+        
+        try {
+          const insertData = await this.processIncomingData(collection, itemData, table);
+          const newItem = await this.db.insert(table, insertData);
+          results.push({ id: newItem.id, status: 'success' });
+        } catch (e: any) {
+          results.push({ item: item.name || item.title || 'unknown', status: 'error', error: e.message });
+        }
+      }
+
+      res.json({
+        total: items.length,
+        success: results.filter(r => r.status === 'success').length,
+        errors: results.filter(r => r.status === 'error')
+      });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

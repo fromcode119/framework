@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { Button } from './Button';
 import { FrameworkIcons } from '@/lib/icons';
-import { Portal } from './Portal';
+import { RootFramework } from '@fromcode/react';
 
 const { Warning: AlertTriangle, Close: X } = FrameworkIcons;
 
@@ -41,7 +41,7 @@ export const ConfirmDialog = ({
   if (!isOpen) return null;
 
   return (
-    <Portal>
+    <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         {/* Backdrop */}
         <div 
@@ -95,6 +95,6 @@ export const ConfirmDialog = ({
           </div>
         </div>
       </div>
-    </Portal>
+    </RootFramework>
   );
 };

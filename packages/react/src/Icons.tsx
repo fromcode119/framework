@@ -114,6 +114,18 @@ export const FrameworkIcons = {
   Down: Lucide.ArrowDown,
   Eye: Lucide.Eye,
   Code: Lucide.Code,
+  File: Lucide.File,
+  Upload: Lucide.Upload,
+  Grid: Lucide.LayoutGrid,
+  List: Lucide.List,
+  FolderPlus: Lucide.FolderPlus,
+  Folder: Lucide.Folder,
+  External: Lucide.ExternalLink,
+  Lock: Lucide.Lock,
+  UserCheck: Lucide.UserCheck,
+  Calendar: Lucide.Calendar,
+  Zap: Lucide.Zap,
+  Text: Lucide.Type,
 
   // Shims for backward compatibility/bridge safety
   registerProvider: (name: string, provider: Record<string, any>) => {

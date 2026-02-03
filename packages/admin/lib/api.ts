@@ -47,4 +47,20 @@ export const api = {
   put: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
   patch: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   delete: (path: string, options?: RequestInit) => request(path, { ...options, method: 'DELETE' }),
+  upload: (path: string, formData: FormData, options?: RequestInit) => {
+    const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+    const token = Cookies.get('fc_token');
+    const headers: Record<string, string> = {
+      ...options?.headers as any,
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    return fetch(url, {
+      ...options,
+      method: 'POST',
+      headers,
+      body: formData,
+      credentials: 'include',
+    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
+  }
 };

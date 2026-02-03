@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { Portal } from './Portal';
+import { RootFramework } from '@fromcode/react';
 import { FrameworkIcons } from '@/lib/icons';
 
 interface Option {
@@ -124,7 +124,7 @@ export const Select = ({
         </button>
 
         {isOpen && (
-          <Portal>
+          <RootFramework>
             <div 
               ref={menuRef}
               style={{
@@ -197,7 +197,7 @@ export const Select = ({
                 )}
               </div>
             </div>
-          </Portal>
+          </RootFramework>
         )}
       </div>
     </div>

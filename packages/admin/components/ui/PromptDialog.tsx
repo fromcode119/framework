@@ -5,7 +5,7 @@ import { useTheme } from '@/components/ThemeContext';
 import { Button } from './Button';
 import { Input } from './Input';
 import { FrameworkIcons } from '@/lib/icons';
-import { Portal } from './Portal';
+import { RootFramework } from '@fromcode/react';
 
 const { Close: X } = FrameworkIcons;
 
@@ -60,7 +60,7 @@ export const PromptDialog = ({
   if (!isOpen) return null;
 
   return (
-    <Portal>
+    <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         {/* Backdrop */}
         <div 
@@ -132,6 +132,6 @@ export const PromptDialog = ({
         </form>
       </div>
     </div>
-    </Portal>
+    </RootFramework>
   );
 };

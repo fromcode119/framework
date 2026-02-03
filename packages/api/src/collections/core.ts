@@ -1,3 +1,5 @@
+import { MediaCollection as Media } from '@fromcode/media';
+
 export const UserCollection = {
   slug: 'users',
   name: 'Users',
@@ -20,26 +22,7 @@ export const UserCollection = {
   }
 };
 
-export const MediaCollection = {
-  slug: 'media',
-  name: 'Media',
-  system: true,
-  priority: 2,
-  fields: [
-    { name: 'filename', label: 'Filename', type: 'text', required: true },
-    { name: 'alt', label: 'Alt Text', type: 'text' },
-    { name: 'mimeType', label: 'Type', type: 'text' },
-    { name: 'fileSize', label: 'Size', type: 'number' },
-    { name: 'width', label: 'Width', type: 'number' },
-    { name: 'height', label: 'Height', type: 'number' },
-    { name: 'folderId', label: 'Folder', type: 'number' }
-  ],
-  admin: {
-    group: 'Platform',
-    icon: 'Image',
-    useAsTitle: 'filename'
-  }
-};
+export { Media as MediaCollection };
 
 export const SettingsCollection = {
   slug: 'settings',

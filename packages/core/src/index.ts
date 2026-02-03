@@ -1,5 +1,6 @@
 export * from './types';
 export { RecordVersions } from './collections/RecordVersions';
+export { MediaCollection as Media } from '@fromcode/media';
 export { PluginManager } from './plugin/manager';
 export { ThemeManager } from './theme/manager';
 export { SchemaManager } from './database/schema-manager';

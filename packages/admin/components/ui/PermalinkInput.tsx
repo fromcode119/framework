@@ -82,7 +82,7 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
     return (
       <div 
         onClick={() => !disabled && setIsEditing(true)}
-        className={`group relative p-4 rounded-2xl border transition-all ${
+        className={`group relative p-4 rounded-2xl border transition-all overflow-hidden ${
           disabled 
             ? 'opacity-50 cursor-not-allowed' 
             : 'cursor-pointer hover:border-indigo-500/50 bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800'
@@ -90,17 +90,18 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
       >
         <div className="flex items-center justify-between gap-4">
            <div className="flex flex-col min-w-0">
-              <span className="text-[9px] text-slate-400 font-bold truncate opacity-60 mb-1">{baseUrl}{prefix}</span>
-              <span className={`text-[11px] font-black leading-tight ${isCustomMode ? 'text-indigo-500' : 'text-slate-900 dark:text-white'}`}>
+              <span className="text-xs text-slate-400 font-bold truncate opacity-60 mb-1">{baseUrl}{prefix}</span>
+              <span className={`text-xs font-black leading-tight truncate ${isCustomMode ? 'text-indigo-500' : 'text-slate-900 dark:text-white'}`}>
                 {displayValue}{suffix}
               </span>
            </div>
            <div className="flex items-center gap-2 shrink-0">
               {isCustomMode && (
-                 <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-500 text-[8px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
+                 <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
                     Custom
                  </div>
               )}
+<<<< (Edit icon part)
               <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 group-hover:text-indigo-500 group-hover:border-indigo-500/30 transition-all shadow-sm">
                  <FrameworkIcons.Edit size={12} />
               </div>
@@ -114,13 +115,13 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
     <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
       <div className="flex justify-between items-end px-1">
         <div className="flex flex-col gap-0.5">
-          <label className="text-[9px] font-black uppercase tracking-widest text-indigo-500">Edit Path Override</label>
+          <label className="text-xs font-black uppercase tracking-widest text-indigo-500">Edit Path Override</label>
         </div>
         {isCustomMode && (
           <button 
             type="button"
             onClick={(e) => { e.stopPropagation(); onChange(''); setIsEditing(false); }}
-            className="text-[8px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
+            className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
           >
             <FrameworkIcons.Refresh size={8} />
             Revert to Original
@@ -130,7 +131,7 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
 
       <div className="flex flex-col gap-2">
         <div className="p-4 rounded-2xl border bg-white dark:bg-slate-950 shadow-2xl transition-all border-indigo-500 ring-4 ring-indigo-500/10">
-           <div className="flex items-center gap-1.5 mb-1.5 text-[9px] font-bold text-slate-400 opacity-60">
+           <div className="flex items-center gap-1.5 mb-1.5 text-xs font-bold text-slate-400 opacity-60">
               <FrameworkIcons.Layout size={10} />
               <span>{baseUrl}/</span>
            </div>
@@ -149,21 +150,21 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
 
         <div className="flex gap-2">
            <Button 
-              className="flex-1 rounded-xl h-10 font-black uppercase tracking-[0.2em] text-[9px]"
+              className="flex-1 rounded-xl h-10 font-black uppercase tracking-[0.2em] text-xs"
               onClick={() => setIsEditing(false)}
            >
               Save Custom Permalink
            </Button>
            <Button 
               variant="ghost"
-              className="px-4 rounded-xl h-10 text-[9px] font-black uppercase tracking-widest"
+              className="px-4 rounded-xl h-10 text-xs font-black uppercase tracking-widest"
               onClick={() => setIsEditing(false)}
            >
               Cancel
            </Button>
         </div>
       </div>
-      <p className="px-1 text-[8px] text-slate-400 font-bold leading-relaxed uppercase tracking-tighter opacity-70">
+      <p className="px-1 text-xs text-slate-400 font-bold leading-relaxed uppercase tracking-tighter opacity-70">
         Changes made here override the global schema. For pattern-based slugs, use the title field.
       </p>
     </div>

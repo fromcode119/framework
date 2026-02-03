@@ -1,5 +1,5 @@
 {
-  "name": "@fromcode/sdk",
+  "name": "@fromcode/scheduler",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,10 @@
     "build": "tsc",
     "dev": "tsc -w"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@fromcode/sdk": "*",
+    "@fromcode/database": "*"
+  },
   "devDependencies": {
     "typescript": "^5.3.3"
   }

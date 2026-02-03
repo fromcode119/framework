@@ -29,6 +29,7 @@ COPY packages/email/package.json ./packages/email/
 COPY packages/marketplace-client/package.json ./packages/marketplace-client/
 COPY packages/media/package.json ./packages/media/
 COPY packages/next/package.json ./packages/next/
+COPY packages/scheduler/package.json ./packages/scheduler/
 COPY packages/sdk/package.json ./packages/sdk/
 
 # Install dependencies

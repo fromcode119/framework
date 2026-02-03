@@ -20,6 +20,7 @@ import { setupCollectionRoutes, setupLegacyCollectionRoutes } from './routes/col
 import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
 import { generateOpenAPI } from './swagger';
 import { createCollectionMiddleware } from './middlewares/collection';
+import { SchedulerService } from '@fromcode/scheduler';
 
 export class APIServer {
   public app = express();
@@ -29,11 +30,13 @@ export class APIServer {
   private mediaManager!: MediaManager;
   private cache: CacheManager;
   private settingsCache: Map<string, string> = new Map();
+  private scheduler: SchedulerService;
   
   constructor(private manager: PluginManager, private themeManager: ThemeManager, private auth: AuthManager) {
     const cacheDriver = process.env.REDIS_URL ? 'redis' : 'memory';
     const driver = CacheFactory.create(cacheDriver, { url: process.env.REDIS_URL });
     this.cache = new CacheManager(driver);
+    this.scheduler = manager.scheduler;
 
     this.restController = new RESTController(
       (manager as any).db, 
@@ -467,6 +470,8 @@ export class APIServer {
     this.pluginRouter.get('/:pluginSlug/:slug', middleware, (req: any, res) => this.restController.find(req.collection, req, res));
     this.pluginRouter.get('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.findOne(req.collection, req, res));
     this.pluginRouter.post('/:pluginSlug/:slug', middleware, (req: any, res) => this.restController.create(req.collection, req, res));
+    this.pluginRouter.post('/:pluginSlug/:slug/bulk-update', middleware, (req: any, res) => this.restController.bulkUpdate(req.collection, req, res));
+    this.pluginRouter.post('/:pluginSlug/:slug/bulk-delete', middleware, (req: any, res) => this.restController.bulkDelete(req.collection, req, res));
     this.pluginRouter.put('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.update(req.collection, req, res));
     this.pluginRouter.patch('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.update(req.collection, req, res));
     this.pluginRouter.delete('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.delete(req.collection, req, res));

@@ -1,6 +1,9 @@
 import path from 'path';
 import sharp from 'sharp';
 
+export * from './MediaService';
+export * from './MediaCollection';
+
 export interface StorageDriver {
   save(file: Buffer, filename: string, options?: any): Promise<string>;
   delete(filepath: string): Promise<void>;

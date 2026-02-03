@@ -8,6 +8,7 @@ import { CacheManager, CacheFactory } from '@fromcode/cache';
 import { Logger } from '../logging/logger';
 import { I18nManager } from '../i18n/manager';
 import { DatabaseManager, sql } from '@fromcode/database';
+import { SchedulerService } from '@fromcode/scheduler';
 import { loadMigrations } from '../database/migrations';
 import { BackupService } from '../management/backup';
 import { RegistryPlugin } from '../management/manifest';
@@ -33,6 +34,7 @@ export class PluginManager implements PluginManagerInterface {
   public email!: EmailManager;
   public cache!: CacheManager;
   public jobs!: QueueManager;
+  public scheduler!: SchedulerService;
   public i18n!: I18nManager;
   public auth: any = null;
   public headInjections: Map<string, any[]> = new Map();
@@ -58,6 +60,7 @@ export class PluginManager implements PluginManagerInterface {
     this.schemaManager = new SchemaManager(this.db);
     this.i18n = new I18nManager(process.env.DEFAULT_LOCALE || 'en');
     this.jobs = new QueueManager({ redisUrl: process.env.REDIS_URL });
+    this.scheduler = new SchedulerService(this.db);
 
     this.pluginsRoot = process.env.PLUGINS_DIR 
       ? path.resolve(process.env.PLUGINS_DIR)
@@ -71,6 +74,9 @@ export class PluginManager implements PluginManagerInterface {
     this.lifecycle = new LifecycleService(this, this.registry, this.discovery, this.schemaManager);
 
     this.initializeCoreDrivers();
+    
+    // Start scheduler
+    this.scheduler.start();
   }
 
   private initializeCoreDrivers() {
@@ -279,6 +285,7 @@ export class PluginManager implements PluginManagerInterface {
     for (const [slug, plugin] of this.plugins.entries()) {
       if (plugin.state === 'active') await this.disable(slug);
     }
+    this.scheduler.stop();
     await this.jobs.close();
   }
 }
