@@ -515,7 +515,7 @@ plugin
       console.log(chalk.gray(`Entry: ${entryPoints[0]}`));
       console.log(chalk.gray(`Output: ${outFile}`));
 
-      let external = ['react', 'react-dom', '@fromcode/react', 'lucide-react', 'react/jsx-runtime'];
+      let external = ['react', 'react-dom', '@fromcode/react', '@fromcode/admin', '@fromcode/admin/components', 'lucide-react', 'react/jsx-runtime'];
       const manifestPath = path.join(pluginDir, 'manifest.json');
       if (fs.existsSync(manifestPath)) {
         try {
@@ -881,7 +881,7 @@ theme
       // Compile styles first (supports SCSS -> CSS)
       await compileStyles(uiDir);
 
-      let external = ['react', 'react-dom', '@fromcode/react', 'lucide-react', 'react/jsx-runtime'];
+      let external = ['react', 'react-dom', '@fromcode/react', '@fromcode/admin', '@fromcode/admin/components', 'lucide-react', 'react/jsx-runtime'];
       const themeManifestPath = path.join(themeDir, 'theme.json');
       if (fs.existsSync(themeManifestPath)) {
         try {

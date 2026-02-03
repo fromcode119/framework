@@ -1,1 +1,1 @@
-export * from '../components/media/MediaPicker';
+export * from '../components/index';
