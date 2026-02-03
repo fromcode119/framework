@@ -296,7 +296,8 @@ This document tracks the progress of the `@fromcode` framework development based
 
 ## Phase 10: Standard Plugins & Ecosystem (Current Status: PLANNED)
 ### Core Plugins (Official)
-- [ ] **CMS Plugin**: Full content management system (posts, pages, media)
+- [x] **CMS Plugin**: Full content management system (posts, pages, media)
+- [ ] **Visual Menu & Navigation Builder**: UI for managing site-wide menus (Infrastructure & `useMenu` hook completed)
 - [ ] **E-commerce Plugin**: Complete shop solution (products, cart, checkout, orders)
 - [ ] **LMS Plugin**: Learning management (courses, lessons, quizzes, certificates)
 - [ ] **SEO Plugin**: Meta tags, sitemaps, social sharing, analytics
