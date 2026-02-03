@@ -11,6 +11,7 @@ import { TagField } from '@/components/ui/TagField';
 import { Button } from '@/components/ui/Button';
 import { PermalinkInput } from '@/components/ui/PermalinkInput';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ArrayField } from '@/components/ui/ArrayField';
 import { FrameworkIcons } from '@/lib/icons';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
@@ -315,6 +316,8 @@ export default function CollectionEditPage() {
   };
 
   const hasSlug = collection.fields.some(f => f.name === 'slug');
+  const showPreview = collection.admin?.preview !== false && !isNew;
+  const showPermalink = collection.admin?.preview !== false && hasSlug;
 
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
@@ -349,7 +352,7 @@ export default function CollectionEditPage() {
             </div>
             
             <div className="flex items-center gap-3">
-              {!isNew && (
+              {showPreview && (
                 <a 
                   href={getPreviewUrl()}
                   target="_blank"
@@ -408,7 +411,7 @@ export default function CollectionEditPage() {
                         {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
                       </label>
                       
-                        {field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
+                        {field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
                           <TagFieldLocal 
                             field={field} 
                             value={formData[field.name]} 
@@ -453,6 +456,14 @@ export default function CollectionEditPage() {
                           <TagFieldLocal 
                             field={field} 
                             value={formData[field.name]} 
+                            onChange={(val) => handleInputChange(field.name, val)}
+                            theme={theme}
+                            collectionSlug={resolvedSlug}
+                          />
+                        ) : field.type === 'array' ? (
+                          <ArrayField 
+                            field={field}
+                            value={formData[field.name]}
                             onChange={(val) => handleInputChange(field.name, val)}
                             theme={theme}
                             collectionSlug={resolvedSlug}
@@ -511,7 +522,7 @@ export default function CollectionEditPage() {
               <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
               <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
               
-              {hasSlug && (
+              {showPermalink && (
                 <Card title="Preview & Permalink">
                    <PermalinkInput
                       value={formData.customPermalink}
@@ -552,6 +563,14 @@ export default function CollectionEditPage() {
                               theme={theme}
                               collectionSlug={resolvedSlug}
                             />
+                          ) : field.type === 'array' ? (
+                            <ArrayField 
+                              field={field}
+                              value={formData[field.name]}
+                              onChange={(val) => handleInputChange(field.name, val)}
+                              theme={theme}
+                              collectionSlug={resolvedSlug}
+                            />
                           ) : field.type === 'boolean' ? (
                             <div className="flex items-center gap-2">
                                {/* Add boolean toggle here if needed, or use Select for now */}
@@ -583,7 +602,7 @@ export default function CollectionEditPage() {
 
               <Card title="Management">
                  <p className="text-[11px] text-slate-400 font-bold leading-relaxed italic">
-                   Version control and audit trails are active for this entry. All changes are snapshotted to the global governance layer.
+                   Automatic backups and revision history are active for this entry.
                  </p>
               </Card>
 

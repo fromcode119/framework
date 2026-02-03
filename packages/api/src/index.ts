@@ -169,7 +169,7 @@ export class APIServer {
   }
 
   private setupCors() {
-    this.app.use(cors({
+    const corsOptions: cors.CorsOptions = {
       origin: (origin, callback) => {
         // In development, handle wide-open CORS.
         const isDevelopment = process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === 'development';
@@ -216,10 +216,12 @@ export class APIServer {
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Framework-Client'],
       exposedHeaders: ['X-Framework-Maintenance']
-    }));
+    };
+
+    this.app.use(cors(corsOptions));
 
     // Explicitly handle OPTIONS for all routes to ensure preflights always pass
-    this.app.options('*', cors() as any);
+    this.app.options('*', cors(corsOptions) as any);
   }
 
   private setupAuthIntegration() {
