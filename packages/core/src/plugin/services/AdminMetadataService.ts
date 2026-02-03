@@ -60,6 +60,7 @@ export class AdminMetadataService {
       if (p.admin?.menu) {
         p.admin.menu.forEach(item => {
           let effectivePath = item.path;
+
           if (effectivePath && !effectivePath.startsWith('/admin/') && !effectivePath.startsWith(`/${p.slug}/`)) {
             const pathSlug = effectivePath.replace(/^\//, '');
             const registeredForPlugin = Array.from(registeredCollections.values())
@@ -79,7 +80,7 @@ export class AdminMetadataService {
             ...item,
             path: effectivePath,
             pluginSlug: p.slug,
-            group: item.group || p.admin.group || null
+            group: item.group || p.admin.group || p.name
           });
         });
       }
@@ -116,7 +117,7 @@ export class AdminMetadataService {
                 label,
                 path,
                 icon: col.admin?.icon || p.admin.icon || 'FileText',
-                group: col.admin?.group || p.admin.group || null,
+                group: col.admin?.group || p.admin.group || p.name,
                 priority: col.priority || 100,
                 pluginSlug: p.slug
               });
@@ -142,13 +143,11 @@ export class AdminMetadataService {
       pluginGroupBuckets[bucketKey].items.push(item);
     });
 
-    const alwaysSectionGroups = ['Platform', 'Content'];
-
     Object.values(pluginGroupBuckets).forEach(bucket => {
       const { pluginSlug, groupName, items } = bucket;
       const plugin = allPlugins.find(p => p.manifest.slug === pluginSlug);
       
-      let strategy: 'dropdown' | 'section' = alwaysSectionGroups.includes(groupName) ? 'section' : 'dropdown';
+      let strategy: 'dropdown' | 'section' = 'section';
       
       if (plugin?.manifest.admin?.groupStrategy) {
         const gs = plugin.manifest.admin.groupStrategy as any;

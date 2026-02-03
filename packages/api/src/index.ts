@@ -172,7 +172,8 @@ export class APIServer {
     this.app.use(cors({
       origin: (origin, callback) => {
         // In development, handle wide-open CORS.
-        if (!origin || process.env.NODE_ENV === 'development') {
+        const isDevelopment = process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === 'development';
+        if (!origin || isDevelopment) {
           return callback(null, true);
         }
 
@@ -213,9 +214,12 @@ export class APIServer {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Framework-Client'],
       exposedHeaders: ['X-Framework-Maintenance']
     }));
+
+    // Explicitly handle OPTIONS for all routes to ensure preflights always pass
+    this.app.options('*', cors() as any);
   }
 
   private setupAuthIntegration() {
@@ -319,6 +323,10 @@ export class APIServer {
 
     // Maintenance Mode Check
     this.app.use(async (req: any, res, next) => {
+      // ALWAYS allow preflight OPTIONS requests to pass through
+      // This is essential for CORS to work when maintenance mode is ON
+      if (req.method === 'OPTIONS') return next();
+
       const isMaintenance = await this.getMaintenanceStatus();
       
       if (!isMaintenance) return next();
@@ -350,6 +358,13 @@ export class APIServer {
       }
 
       this.logger.warn(`Maintenance: BLOCKED request to ${req.path} from ${req.user?.email || 'Guest'}`);
+
+      // If we got here, it's a non-admin, non-public route during maintenance
+      // We must still ensure CORS headers are present if it's an API request
+      if (req.headers.origin) {
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+      }
 
       res.status(503).json({
         error: 'Service Unavailable',
