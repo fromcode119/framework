@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { Portal } from './Portal';
+import { RootFramework } from '@fromcode/react';
 
 interface DropdownItem {
   label: string;
@@ -72,7 +72,7 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
       </div>
 
       {isOpen && (
-        <Portal>
+        <RootFramework>
           <div 
             ref={menuRef}
             style={{
@@ -134,7 +134,7 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
               })}
             </div>
           </div>
-        </Portal>
+        </RootFramework>
       )}
     </>
   );

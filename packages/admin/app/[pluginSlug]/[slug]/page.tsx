@@ -43,6 +43,7 @@ export default function CollectionListPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState('-createdAt');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const resolvedSlug = collection?.slug || slug;
 
@@ -80,6 +81,91 @@ export default function CollectionListPage() {
     fetchData();
   }, [resolvedSlug, debouncedSearch, page, sort]);
 
+  const handleExport = async (format: 'json' | 'csv', ids?: string[]) => {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('format', format);
+      queryParams.append('token', Cookies.get('fromcode_token') || '');
+      if (ids && ids.length > 0) {
+        queryParams.append('ids', ids.join(','));
+      }
+      window.open(`${api.getBaseUrl()}${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/export?${queryParams.toString()}`, '_blank');
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target?.result as string;
+        const data = JSON.parse(content);
+        const result = await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/import`, data);
+        alert(`Imported ${result.success} records successfully. ${result.errors.length} errors.`);
+        window.location.reload();
+      } catch (error: any) {
+        alert('Import failed: ' + error.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (confirm(`Are you sure you want to delete ${selectedIds.length} selected records?`)) {
+      setLoading(true);
+      try {
+        await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-delete`, { ids: selectedIds });
+        setSelectedIds([]);
+        // Refresh
+        setPage(1);
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', '1');
+        queryParams.append('limit', '10');
+        if (debouncedSearch) queryParams.append('search', debouncedSearch);
+        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
+        if (result.docs) {
+          setData(result.docs);
+          setTotal(result.totalDocs);
+        }
+      } catch (error) {
+        alert('Error performing bulk delete');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleBulkStatusChange = async (newStatus: string) => {
+    if (selectedIds.length === 0) return;
+    setLoading(true);
+    try {
+      await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-update`, { 
+        ids: selectedIds, 
+        data: { status: newStatus } 
+      });
+      setSelectedIds([]);
+      // Refresh
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', page.toString());
+      queryParams.append('limit', '10');
+      if (debouncedSearch) queryParams.append('search', debouncedSearch);
+      const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
+      if (result.docs) {
+        setData(result.docs);
+        setTotal(result.totalDocs);
+      }
+    } catch (error) {
+      alert('Error updating status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!collection) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in-95 duration-700">
@@ -93,14 +179,14 @@ export default function CollectionListPage() {
         </h2>
         
         <p className="text-slate-500 font-bold text-center max-w-sm leading-relaxed mb-10 px-6">
-          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-[10px] ml-1">{pluginSlug}</span> plugin registry.
+          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-xs ml-1">{pluginSlug}</span> plugin registry.
         </p>
 
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost"
             onClick={() => window.history.back()}
-            className="rounded-2xl px-8 font-black uppercase tracking-widest text-[10px] text-slate-400"
+            className="rounded-2xl px-8 font-black uppercase tracking-widest text-xs text-slate-400"
           >
             Go Back
           </Button>
@@ -108,7 +194,7 @@ export default function CollectionListPage() {
             variant="primary" 
             as={Link}
             href="/"
-            className="rounded-2xl px-10 py-5 font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-indigo-500/30"
+            className="rounded-2xl px-10 py-5 font-black uppercase tracking-widest text-xs shadow-2xl shadow-indigo-500/30"
             icon={<FrameworkIcons.Layout size={18} />}
           >
             Return to Dashboard
@@ -187,7 +273,7 @@ export default function CollectionListPage() {
               <Button 
                 variant="secondary"
                 size="sm"
-                className="h-11 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                className="h-11 rounded-xl font-bold uppercase tracking-widest text-xs"
                 icon={<FrameworkIcons.More size={18} />}
               >
                 Invite
@@ -198,7 +284,7 @@ export default function CollectionListPage() {
               size="sm"
               as={Link}
               href={`/${pluginSlug}/${slug}/new`}
-              className="px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-xl shadow-indigo-600/30"
+              className="px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-indigo-600/30"
               icon={<FrameworkIcons.Plus size={18} />}
             >
               {collection.slug === 'users' ? 'Create User' : 'New Entry'}
@@ -225,6 +311,58 @@ export default function CollectionListPage() {
               }`}
             />
           </div>
+
+          {selectedIds.length > 0 && (
+            <div className={`flex items-center flex-wrap gap-2 p-2 rounded-2xl animate-in slide-in-from-top-2 duration-300 ${
+              theme === 'dark' ? 'bg-slate-900 border border-slate-800' : 'bg-slate-100 border border-slate-200'
+            }`}>
+              <div className="px-4 text-xs font-black uppercase tracking-widest text-indigo-500 border-r border-slate-200 dark:border-slate-800 mr-2">
+                {selectedIds.length} Selected
+              </div>
+              
+              <div className="flex items-center gap-1 group/bulk">
+                {['published', 'draft', 'archived'].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => handleBulkStatusChange(s)}
+                    className={`h-10 px-4 text-[11px] font-black uppercase tracking-tighter rounded-xl transition-all ${
+                      theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-500 hover:text-indigo-600'
+                    }`}
+                  >
+                    Set {s}
+                  </button>
+                ))}
+              </div>
+
+              <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
+
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="rounded-xl h-10 px-4 text-[12px] font-black uppercase tracking-widest"
+                icon={<FrameworkIcons.Download size={14} />}
+                onClick={() => handleExport('json', selectedIds)}
+              >
+                Export
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="rounded-xl h-10 px-4 text-[12px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600"
+                icon={<FrameworkIcons.Trash size={14} />}
+                onClick={handleBulkDelete}
+              >
+                Delete
+              </Button>
+              <button 
+                onClick={() => setSelectedIds([])}
+                className="p-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                title="Clear selection"
+              >
+                <FrameworkIcons.Close size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className={`rounded-3xl border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 ${
@@ -241,6 +379,9 @@ export default function CollectionListPage() {
             onSort={setSort}
             currentSort={sort}
             onRowClick={(row) => (window.location.href = `/${pluginSlug}/${slug}/${row.id}`)}
+            selectable
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
             actions={(row) => {
               const getRowPreviewUrl = () => {
                 if (!frontendUrl) return '#';
@@ -316,21 +457,37 @@ export default function CollectionListPage() {
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2.5">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
                   Data Management Node // {slug.toUpperCase()}
                 </span>
               </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight opacity-70 text-center md:text-left">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-tight opacity-70 text-center md:text-left">
                 Connected to {total} records in the system cluster.
               </p>
             </div>
             
-            <div className="flex items-center gap-10 text-[11px] font-black uppercase tracking-widest text-slate-400">
-              <Link href="#" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Export Schema</Link>
+            <div className="flex items-center gap-10 text-xs font-black uppercase tracking-widest text-slate-400">
+              <button 
+                onClick={() => handleExport('json')}
+                className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
+              >
+                Export JSON
+              </button>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <Link href="#" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Bulk Import</Link>
+              <label 
+                className="cursor-pointer hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
+              >
+                Bulk Import
+                <input type="file" className="hidden" accept=".json" onChange={handleImport} />
+              </label>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <Link href="#" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">API Endpoint</Link>
+              <a 
+                href={`${api.getBaseUrl()}${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}`} 
+                target="_blank" 
+                className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
+              >
+                API Endpoint
+              </a>
             </div>
           </div>
         </div>

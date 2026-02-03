@@ -21,6 +21,7 @@ export interface PluginManagerInterface {
   email: any;
   cache: any;
   jobs: any;
+  scheduler: any;
   redis?: any;
   auth: any;
   i18n: any;
@@ -257,6 +258,24 @@ export function createPluginContext(
       worker: (processor: (job: any) => Promise<any>, options?: any) => {
         if (!hasCapability('jobs')) handleViolation('jobs');
         return manager.jobs.registerWorker(plugin.manifest.slug, processor, options);
+      }
+    },
+    scheduler: {
+      onTick: (name: string, callback: () => Promise<void>) => {
+        if (!hasCapability('scheduler')) handleViolation('scheduler');
+        return manager.scheduler.registerTask(`${plugin.manifest.slug}:${name}`, callback);
+      },
+      schedule: async (name: string, when: Date | string, data: any) => {
+        if (!hasCapability('scheduler') && !hasCapability('jobs')) handleViolation('scheduler');
+        
+        // This is where Jobs and Scheduler intersect
+        // A scheduled task is effectively a delayed job
+        const delay = new Date(when).getTime() - Date.now();
+        if (delay <= 0) {
+          return manager.jobs.addJob(plugin.manifest.slug, name, data);
+        } else {
+          return manager.jobs.addJob(plugin.manifest.slug, name, data, { delay });
+        }
       }
     },
     logger: {

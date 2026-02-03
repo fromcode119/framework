@@ -11,10 +11,12 @@
     "dev": "tsc -w"
   },
   "dependencies": {
+    "@fromcode/sdk": "*",
     "@fromcode/cache": "*",
     "@fromcode/database": "*",
     "@fromcode/email": "*",
     "@fromcode/media": "*",
+    "@fromcode/scheduler": "*",
     "adm-zip": "^0.5.10",
     "bull": "^4.16.5",
     "chokidar": "^3.6.0",

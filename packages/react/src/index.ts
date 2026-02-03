@@ -7,3 +7,4 @@ export {
 } from './context';
 export { Slot } from './Slot';
 export { Override } from './Override';
+export { RootFramework } from './RootFramework';

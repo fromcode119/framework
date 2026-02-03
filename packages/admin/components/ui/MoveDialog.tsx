@@ -6,7 +6,7 @@ import { Button } from './Button';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
-import { Portal } from './Portal';
+import { RootFramework } from '@fromcode/react';
 
 const { Folder, Left, Loader, Check } = FrameworkIcons;
 
@@ -67,7 +67,7 @@ export function MoveDialog({
   if (!isOpen) return null;
 
   return (
-    <Portal>
+    <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         {/* Backdrop */}
         <div 
@@ -161,6 +161,6 @@ export function MoveDialog({
         </div>
       </div>
     </div>
-    </Portal>
+    </RootFramework>
   );
 }

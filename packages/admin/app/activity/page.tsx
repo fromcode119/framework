@@ -9,7 +9,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { DataTable } from '@/components/ui/DataTable';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { Portal } from '@/components/ui/Portal';
+import { RootFramework } from '@fromcode/react';
 import Link from 'next/link';
 
 export default function ActivityPage() {
@@ -214,7 +214,7 @@ export default function ActivityPage() {
       </div>
 
       {selectedLog && (
-        <Portal>
+        <RootFramework>
           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-6 lg:p-12 animate-in fade-in duration-300">
              <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setSelectedLog(null)} />
            
@@ -306,7 +306,7 @@ export default function ActivityPage() {
               </div>
             </div>
           </div>
-        </Portal>
+        </RootFramework>
       )}
 
       {/* Premium Footer */}

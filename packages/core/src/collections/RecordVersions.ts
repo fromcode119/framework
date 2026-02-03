@@ -4,6 +4,7 @@ export const RecordVersions: Collection = {
   slug: '_system_record_versions',
   shortSlug: 'versions',
   name: 'Record Versions',
+  system: true,
   admin: {
     useAsTitle: 'id',
     group: 'Governance',

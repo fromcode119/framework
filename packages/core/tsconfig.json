@@ -7,9 +7,11 @@
   },
   "include": ["src/**/*"],
   "references": [
+    { "path": "../sdk" },
     { "path": "../database" },
     { "path": "../media" },
     { "path": "../email" },
-    { "path": "../cache" }
+    { "path": "../cache" },
+    { "path": "../scheduler" }
   ]
 }

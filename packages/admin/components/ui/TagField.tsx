@@ -222,8 +222,8 @@ export const TagField = ({
               className="group bg-indigo-600 text-white px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all"
             >
               <div className="flex flex-col leading-none">
-                 <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-0.5">{label}</span>
-                 {isRelation && label !== tag && <span className="text-[7px] font-black opacity-50 tracking-tighter uppercase leading-none">{tag}</span>}
+                 <span className="text-[12px] font-black uppercase tracking-widest leading-none mb-0.5">{label}</span>
+                 {isRelation && label !== tag && <span className="text-[11px] font-black opacity-50 tracking-tighter uppercase leading-none">{tag}</span>}
               </div>
               <button 
                 type="button" 
@@ -280,7 +280,7 @@ export const TagField = ({
           {suggestions.length > 0 && (
             <>
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Existing {sourceCollection || 'Tags'}</span>
+                    <span className="text-[12px] font-black uppercase tracking-widest text-slate-400">Existing {sourceCollection || 'Tags'}</span>
                     <FrameworkIcons.Search size={10} className="text-slate-400" />
                 </div>
                 {suggestions.map((suggestion) => (
@@ -297,7 +297,7 @@ export const TagField = ({
                     <div className="flex flex-col">
                         <span className="font-bold">{suggestion.label}</span>
                         {suggestion.label !== suggestion.value && (
-                           <span className="text-[10px] opacity-50 font-black uppercase tracking-widest">{suggestion.value}</span>
+                           <span className="text-[11px] opacity-50 font-black uppercase tracking-widest">{suggestion.value}</span>
                         )}
                     </div>
                     <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
@@ -320,7 +320,7 @@ export const TagField = ({
                     <FrameworkIcons.Plus size={16} strokeWidth={3} />
                 </div>
                 <div className="flex-1">
-                    <span className="font-black uppercase text-[10px] tracking-widest block">
+                    <span className="font-black uppercase text-[12px] tracking-widest block">
                       {allowCreate ? `Create New ${sourceCollection?.slice(0, -1) || 'Tag'}` : `Use Custom ${fieldName || 'Value'}`}
                     </span>
                     <span className="font-bold text-sm block mt-0.5">"{inputValue}"</span>

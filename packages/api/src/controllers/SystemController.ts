@@ -98,8 +98,9 @@ export class SystemController {
           pluginSlug: c.pluginSlug || 'system',
           name: c.name || c.slug,
           count: total,
-          system: !!(c as any).system,
-          priority: (c as any).priority || 100
+          system: !!c.system,
+          hidden: !!c.admin?.hidden,
+          priority: c.priority || 100
         };
       } catch (e) {
         return { slug: c.slug, count: 0, error: true };
@@ -597,7 +598,7 @@ export class SystemController {
 
     // 1. PRIORITY SEARCH: Check for exact "Custom Permalink" override first
     for (const collection of collections) {
-      if ((collection as any).system) continue;
+      if (collection.system) continue;
       const hasCustomField = collection.fields.some(f => f.name === 'customPermalink');
       if (!hasCustomField) continue;
 
@@ -637,7 +638,7 @@ export class SystemController {
 
     // 2. STRUCTURE SEARCH: Search based on the global permalink structure
     for (const collection of collections) {
-      if ((collection as any).system) continue;
+      if (collection.system) continue;
       
       // EXCLUDE VERSIONS COLLECTION: This is for internal governance, not public routing
       if (collection.slug === 'versions' || (collection as any).shortSlug === 'versions') continue;
