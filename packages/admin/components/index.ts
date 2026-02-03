@@ -10,4 +10,3 @@ export * from './ui/PromptDialog';
 export * from './Icon';
 export * from './ThemeContext';
 export * from './NotificationContext';
-export * from './AuthContext';
