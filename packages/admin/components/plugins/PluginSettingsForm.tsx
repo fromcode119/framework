@@ -20,16 +20,25 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
   const [saving, setSaving] = useState(false);
   const [schema, setSchema] = useState<any>(null);
   const [settings, setSettings] = useState<Record<string, any>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string | string[]>>({});
   const [activeTab, setActiveTab] = useState<string>('');
   const [isDirty, setIsDirty] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   useEffect(() => {
     loadSettings();
   }, [pluginSlug]);
 
+  useEffect(() => {
+    if (status) {
+      const timer = setTimeout(() => setStatus(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   const loadSettings = async () => {
     setLoading(true);
+    setStatus(null);
     try {
       const [schemaRes, settingsRes] = await Promise.all([
         api.get(ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(pluginSlug)),
@@ -47,6 +56,8 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
       // If schema fails with 404, it might mean no settings registered
       if (err.status === 404) {
         setSchema({ fields: [] });
+      } else {
+        setStatus({ type: 'error', message: 'Failed to load plugin settings.' });
       }
     } finally {
       setLoading(false);
@@ -56,16 +67,19 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
   const handleSave = async () => {
     setSaving(true);
     setErrors({});
+    setStatus(null);
     
     try {
       await api.put(ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settings);
       setIsDirty(false);
-      alert('Settings saved successfully!');
+      setStatus({ type: 'success', message: 'Settings saved successfully!' });
     } catch (err: any) {
-      if (err.errors) {
-        setErrors(err.errors);
+      console.error('Save error:', err);
+      if (err.data?.errors) {
+        setErrors(err.data.errors);
+        setStatus({ type: 'error', message: 'Validation failed. Please check the fields below.' });
       } else {
-        alert('Failed to save settings: ' + (err.message || 'Unknown error'));
+        setStatus({ type: 'error', message: err.message || 'Failed to save settings.' });
       }
     } finally {
       setSaving(false);
@@ -81,8 +95,9 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
       const res = await api.post(ENDPOINTS.PLUGINS.SETTINGS_RESET(pluginSlug));
       setSettings(res.settings || {});
       setIsDirty(false);
+      setStatus({ type: 'success', message: 'Settings reset to defaults.' });
     } catch (err: any) {
-      alert('Failed to reset settings: ' + (err.message || 'Unknown error'));
+      setStatus({ type: 'error', message: 'Failed to reset: ' + err.message });
     }
   };
 
@@ -178,6 +193,17 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
 
   return (
     <div className="space-y-6">
+      {status && (
+        <div className={`p-4 rounded-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+          status.type === 'success'
+            ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
+            : 'bg-rose-50 border-rose-100 text-rose-700'
+        }`}>
+          {status.type === 'success' ? <FrameworkIcons.Check size={18} /> : <FrameworkIcons.Alert size={18} />}
+          <p className="text-sm font-bold">{status.message}</p>
+        </div>
+      )}
+
       {/* Tabs */}
       {schema.tabs && schema.tabs.length > 0 && (
         <div className={`flex gap-2 p-2 rounded-2xl ${
@@ -216,7 +242,7 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
               onChange={(value) => handleFieldChange(field.name, value)}
               theme={theme}
               collectionSlug={`settings-${pluginSlug}`}
-              errors={errors[field.name] ? [errors[field.name]] : undefined}
+              errors={errors[field.name] ? (Array.isArray(errors[field.name]) ? (errors[field.name] as string[]) : [errors[field.name] as string]) : undefined}
             />
           ))}
         </div>

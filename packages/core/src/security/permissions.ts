@@ -6,11 +6,15 @@ import { PluginManifest } from '../types';
 export type PluginPermission = 
   | 'database:read'
   | 'database:write'
+  | 'database:*'
   | 'api:routes'
   | 'navigation'
   | 'hooks'
   | 'admin:ui'
   | 'collections:modify'
+  | 'file:read'
+  | 'file:write'
+  | 'network:outbound'
 
 /**
  * Plugin Permissions Service
@@ -19,17 +23,25 @@ export type PluginPermission =
 export class PluginPermissionsService {
   /**
    * Checks if a plugin has a specific permission
-   * @param manifest - The plugin manifest
-   * @param permission - The permission to check
-   * @returns boolean
+   * Supports wildcards like 'database:*'
    */
-  static hasPermission(manifest: PluginManifest, permission: PluginPermission | string): boolean {
-    // Core plugins or system-critical paths might have all permissions
-    // but for now we follow explicit manifest permissions or capabilities.
+  static hasPermission(manifest: PluginManifest, permission: string): boolean {
     const perms = manifest.permissions || [];
     const caps = manifest.capabilities || [];
+    const allAllowed = [...perms, ...caps];
+
+    if (allAllowed.includes('*')) return true;
+    if (allAllowed.includes(permission)) return true;
+
+    // Wildcard support (e.g., database:read matches database:*)
+    for (const allowed of allAllowed) {
+      if (allowed.endsWith(':*')) {
+        const prefix = allowed.slice(0, -1);
+        if (permission.startsWith(prefix)) return true;
+      }
+    }
     
-    return perms.includes(permission as string) || caps.includes(permission as any);
+    return false;
   }
 
   /**

@@ -214,6 +214,13 @@ export interface Field {
     position?: 'sidebar' | 'main';
     component?: string;
     width?: 'full' | 'half';
+    condition?: {
+      field: string;
+      operator: 'equals' | 'notEquals' | 'contains' | 'notContains' | 'greaterThan' | 'lessThan' | 'exists' | 'notExists';
+      value?: any;
+    };
+    tab?: string;
+    section?: string;
   };
 }
 
@@ -274,6 +281,16 @@ export interface Collection {
     group?: string;
     icon?: string;
     hidden?: boolean | ((args: { user: any }) => boolean);
+    tabs?: {
+      name: string;
+      label: string;
+      icon?: string;
+    }[];
+    sections?: {
+      name: string;
+      label: string;
+      description?: string;
+    }[];
   };
 }
 
@@ -327,6 +344,7 @@ export interface PluginContext {
   // Content Management
   readonly collections: {
     register(collection: Collection): void;
+    extend(targetPlugin: string, targetCollection: string, extensions: Partial<Collection>): void;
   };
 
   // Plugin Settings

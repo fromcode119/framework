@@ -18,9 +18,9 @@ export class VersioningService {
         },
         orderBy: { version: 'desc' },
         limit: 1
-      });
+      }) || [];
       
-      const nextVersion = lastVersions.length > 0 ? (Number(lastVersions[0].version) || 0) + 1 : 1;
+      const nextVersion = (lastVersions && lastVersions.length > 0) ? (Number(lastVersions[0].version) || 0) + 1 : 1;
       
       await this.db.insert(RecordVersions.slug, {
         ref_id: String(refId),

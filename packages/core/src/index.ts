@@ -9,6 +9,7 @@ export { QueueManager } from './queue/manager';
 export { NodePluginLoader } from './discovery/node-loader';
 export { LogLevel, Logger } from './logging/logger';
 export { I18nManager } from './i18n/manager';
+export { WebSocketManager } from './realtime/WebSocketManager';
 export * from './context/request-context';
 export type { LoggerOptions } from './logging/logger';
 

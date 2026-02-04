@@ -11,12 +11,13 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode/sdk": "*",
     "@fromcode/cache": "*",
     "@fromcode/database": "*",
     "@fromcode/email": "*",
     "@fromcode/media": "*",
     "@fromcode/scheduler": "*",
+    "@fromcode/sdk": "*",
+    "@types/ws": "^8.18.1",
     "adm-zip": "^0.5.10",
     "bull": "^4.16.5",
     "chokidar": "^3.6.0",
@@ -25,6 +26,7 @@
     "semver": "^7.6.0",
     "tar": "^7.5.7",
     "uuid": "^9.0.1",
+    "ws": "^8.19.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

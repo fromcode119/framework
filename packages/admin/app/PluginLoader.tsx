@@ -31,20 +31,56 @@ interface AdminPluginMetadata {
   };
   ui?: {
     entry?: string;
+    entryUrl?: string;
     css?: string[];
+    cssUrls?: string[];
   };
 }
 
 export default function PluginLoader() {
   const pluginsContext = usePlugins();
-  const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion } = pluginsContext;
+  const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion, triggerRefresh } = pluginsContext;
   const { user, isLoading: isAuthLoading } = useAuth();
   const [loaded, setLoaded] = useState(false);
+
+  // Hot Module Replacement Listener
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user || process.env.NODE_ENV !== 'development') return;
+
+    console.log("[HMR] Initializing EventSource connection...");
+    const eventSource = new EventSource(`${API_BASE_URL}${ENDPOINTS.SYSTEM.EVENTS}`, {
+        withCredentials: true
+    });
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'plugin:ui:reload') {
+          console.log(`[HMR] Changes detected in ${data.slug}. Triggering UI refresh...`);
+          // Note: triggerRefresh clears existing slots/menu items and increments refreshVersion
+          // which causes the main loader effect to re-run.
+          triggerRefresh();
+        }
+      } catch (err) {
+        console.error("[HMR] Failed to parse event data:", err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.warn("[HMR] EventSource connection lost. Retrying...", err);
+    };
+
+    return () => {
+      console.log("[HMR] Closing EventSource connection...");
+      eventSource.close();
+    };
+  }, [user, triggerRefresh]);
 
   useEffect(() => {
     console.debug("[Admin] PluginLoader Effect triggered", { 
       hasRegisterPlugins: typeof registerPlugins === 'function',
-      keys: Object.keys(pluginsContext)
+      keys: Object.keys(pluginsContext),
+      refreshVersion
     });
 
     if (typeof window === 'undefined' || isAuthLoading || !user) return;
@@ -57,8 +93,7 @@ export default function PluginLoader() {
         (!(window as any).FrameworkIcons || 
          !(window as any).React || 
          !(window as any).Lucide ||
-         !(window as any).Fromcode?.isReady ||
-         !(window as any).Fromcode?.components) && 
+         !(window as any).Fromcode?.isReady) && 
         retryCount < 100
       ) {
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -89,14 +124,21 @@ export default function PluginLoader() {
           registerPlugins(plugins);
           for (const plugin of plugins) {
             // Load UI entry points if defined (Phase 4)
-            if (plugin.ui?.entry) {
-              const src = `${API_BASE_URL}/plugins/${plugin.slug}/ui/${plugin.ui.entry}`;
+            const entryUrl = plugin.ui?.entryUrl;
+            if (entryUrl) {
+              const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
+              const src = `${API_BASE_URL}${entryUrl}${cacheBreaker}`;
               
-              // 1. Module Preload
+              // 1. Module Preload (only if it doesn't exist)
               if (!document.querySelector(`link[href="${src}"][rel="modulepreload"]`)) {
+                // Remove old reloads
+                const oldPreloads = document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`);
+                oldPreloads.forEach(el => el.remove());
+
                 const link = document.createElement('link');
                 link.rel = 'modulepreload';
                 link.href = src;
+                link.setAttribute('data-plugin', plugin.slug);
                 document.head.appendChild(link);
               }
 
@@ -113,32 +155,46 @@ export default function PluginLoader() {
                   });
                 }
                 
-                console.log(`[Admin] Plugin ${plugin.slug} UI module loaded and initialized.`);
+                console.log(`[Admin] Plugin ${plugin.slug} UI module loaded and initialized. (ver: ${refreshVersion})`);
               }).catch(err => {
                 console.warn(`[Admin] Failed to dynamic import plugin ${plugin.slug}:`, err);
                 
                 // Fallback: regular script tag if import fails (legacy or side-effect only)
                 if (!document.querySelector(`script[src="${src}"]`)) {
+                   // Remove old reloads
+                   const oldScripts = document.querySelectorAll(`script[data-plugin="${plugin.slug}"][data-type="ui-entry"]`);
+                   oldScripts.forEach(el => el.remove());
+
                   const script = document.createElement('script');
                   script.type = 'module';
                   script.src = src;
                   script.async = true;
+                  script.setAttribute('data-plugin', plugin.slug);
+                  script.setAttribute('data-type', 'ui-entry');
                   document.body.appendChild(script);
                 }
               });
             }
 
             // Load CSS if defined
-            if (plugin.ui?.css) {
-              for (const cssFile of plugin.ui.css) {
-                const href = `${API_BASE_URL}/plugins/${plugin.slug}/ui/${cssFile}`;
+            if (plugin.ui?.cssUrls) {
+              plugin.ui.cssUrls.forEach((cssUrl, index) => {
+                const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
+                const href = `${API_BASE_URL}${cssUrl}${cacheBreaker}`;
+                
                 if (!document.querySelector(`link[href="${href}"]`)) {
+                  // Remove old CSS versions
+                  const oldCSS = document.querySelectorAll(`link[rel="stylesheet"][data-plugin="${plugin.slug}"][data-index="${index}"]`);
+                  oldCSS.forEach(el => el.remove());
+
                   const link = document.createElement('link');
                   link.rel = 'stylesheet';
                   link.href = href;
+                  link.setAttribute('data-plugin', plugin.slug);
+                  link.setAttribute('data-index', index.toString());
                   document.head.appendChild(link);
                 }
-              }
+              });
             }
 
             if (!plugin.admin) continue;
@@ -164,7 +220,7 @@ export default function PluginLoader() {
     }
 
     loadPlugins();
-  }, [user, isAuthLoading, registerSlotComponent, registerMenuItem, registerCollection, registerPlugins, registerSettings, refreshVersion]);
+  }, [user, isAuthLoading, registerSlotComponent, registerMenuItem, registerCollection, registerPlugins, registerSettings, refreshVersion, triggerRefresh]);
 
   return null;
 }

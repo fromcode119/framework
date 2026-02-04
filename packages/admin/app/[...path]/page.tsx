@@ -6,15 +6,15 @@ import { useTheme } from '@/components/ThemeContext';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 
-const { Info, Plugins: Puzzle } = FrameworkIcons;
+const { Info = () => null, Package = () => null } = (FrameworkIcons || {}) as any;
 
 export default function DynamicPluginPage({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = use(params);
   const pathname = '/' + path.join('/');
-  const { menuItems, collections } = usePlugins();
+  const { menuItems } = usePlugins();
   const { theme } = useTheme();
 
-  // Find the most specific matching menu item or child
+  // Find the most specific matching menu item
   let activeItem = menuItems.find(item => item.path === pathname);
   
   if (!activeItem) {
@@ -39,7 +39,7 @@ export default function DynamicPluginPage({ params }: { params: Promise<{ path: 
         <Slot name={`admin.plugin.${pluginSlug}.page.${path.join('.')}`} fallback={
            <div className="space-y-8">
              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-xl flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-               <Puzzle size={14} />
+               <Package size={14} />
                Showing default workspace view for <strong>{pluginSlug}</strong>. Register a component for <code>admin.plugin.{pluginSlug}.page.{path.join('.')}</code> to customize this page.
              </div>
              

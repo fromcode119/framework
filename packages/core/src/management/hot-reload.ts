@@ -21,7 +21,7 @@ export class HotReloadService {
       ignored: /(^|[\/\\])\../, // ignore dotfiles
       persistent: true,
       ignoreInitial: true,
-      depth: 2 // plugin-slug/manifest.json or plugin-slug/index.js
+      depth: 5 // plugin-slug/ui/dist/bundle.js (max depth)
     });
 
     this.watcher.on('change', (filePath) => {
@@ -53,8 +53,17 @@ export class HotReloadService {
         // For this implementation we'll just log the intent and let the HMR of the host handle the rest
         // or trigger a manager re-registration if possible.
         
-        // Mark as requiring reload in UI
+        // 1. Emit internal hook for other services
         this.manager.emit(`plugin:${pluginSlug}:reload_required`, { path: filePath });
+
+        // 2. Emit global HMR event for the API (SSE)
+        const isUIBundle = filePath.endsWith('bundle.js');
+        this.manager.emit('system:hmr:reload', {
+          type: isUIBundle ? 'plugin:ui:reload' : 'plugin:reload',
+          slug: pluginSlug,
+          path: relative,
+          timestamp: Date.now()
+        });
       } catch (err) {
         this.logger.error(`Failed to hot-reload plugin "${pluginSlug}": ${err}`);
       }

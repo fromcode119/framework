@@ -10,9 +10,18 @@ vi.mock('@/lib/api', () => ({
     get: vi.fn(),
     put: vi.fn(),
     post: vi.fn(),
+    getURL: vi.fn((path) => `http://localhost:3000${path}`),
     getBaseUrl: vi.fn().mockReturnValue('http://localhost:3000/api')
   }
 }));
+
+vi.mock('@/lib/constants', async () => {
+  const actual = await vi.importActual('@/lib/constants') as any;
+  return {
+    ...actual,
+    // Ensure we use the real ENDPOINTS so paths match the component
+  };
+});
 
 vi.mock('@/components/ThemeContext', () => ({
   useTheme: () => ({ theme: 'light' })
@@ -111,7 +120,7 @@ describe('PluginSettingsForm', () => {
     fireEvent.click(saveButton);
     
     await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith('/plugins/cms/settings', expect.objectContaining({
+      expect(api.put).toHaveBeenCalledWith(expect.stringContaining('/plugins/cms/settings'), expect.objectContaining({
         siteName: 'New Name'
       }));
     });
@@ -129,7 +138,7 @@ describe('PluginSettingsForm', () => {
     fireEvent.click(resetButton);
     
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/plugins/cms/settings/reset');
+      expect(api.post).toHaveBeenCalledWith(expect.stringContaining('/plugins/cms/settings/reset'));
     });
   });
 
