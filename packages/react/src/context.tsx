@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import { Slot } from './Slot';
 import { Override } from './Override';
 import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './Icons';
+import { RootFramework } from './RootFramework';
 
 export interface SlotComponent {
   component: React.ComponentType<any>;
@@ -97,6 +98,7 @@ export const t = (...args: any[]) => getBridge().t?.(...args);
 export const locale = typeof window !== 'undefined' ? (window as any).Fromcode?.locale : 'en';
 export const setLocale = (...args: any[]) => getBridge().setLocale?.(...args);
 export const api = {
+  getBaseUrl: (...args: any[]) => getBridge().api?.getBaseUrl?.(...args),
   get: (...args: any[]) => getBridge().api?.get?.(...args),
   post: (...args: any[]) => getBridge().api?.post?.(...args),
   put: (...args: any[]) => getBridge().api?.put?.(...args),
@@ -104,7 +106,7 @@ export const api = {
   delete: (...args: any[]) => getBridge().api?.delete?.(...args),
 };
 
-export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, apiUrl?: string }) => {
+export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children: ReactNode, apiUrl?: string, runtimeModules?: Record<string, any> }) => {
   const [slots, setSlots] = useState<Record<string, SlotComponent[]>>({});
   const [overrides, setOverrides] = useState<Record<string, SlotComponent>>({});
   const [themeVariables, setThemeVariables] = useState<Record<string, string>>({});
@@ -119,6 +121,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [pluginAPIs] = useState<Record<string, any>>({});
   const [events] = useState(() => new Map<string, Set<(data: any) => void>>());
+  const [serverRuntimeModules, setServerRuntimeModules] = useState<Record<string, any>>({});
 
   const getBaseURL = useCallback(() => {
     const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
@@ -166,6 +169,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
   }, [getBaseURL]);
 
   const api = useMemo(() => ({
+    getBaseUrl: () => getBaseURL(),
     get: (path: string, options?: any) => apiFetch(path, { ...options, method: 'GET' }),
     post: (path: string, body?: any, options?: any) => {
         const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
@@ -247,25 +251,9 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       
-      // Inject Import Map for core and plugin runtime modules
-      if (typeof document !== 'undefined' && !document.getElementById('fc-runtime-map')) {
-        const imports: Record<string, string> = {};
-        
-        if (data.runtimeModules) {
-          Object.entries(data.runtimeModules).forEach(([name, config]: [string, any]) => {
-            if (config.url) {
-              imports[name] = config.url.startsWith('/') ? `${base}${config.url}` : config.url;
-            } else if (config.source) {
-              imports[name] = `data:application/javascript;base64,${config.source}`;
-            }
-          });
-        }
-
-        const script = document.createElement('script');
-        script.type = 'importmap';
-        script.id = 'fc-runtime-map';
-        script.textContent = JSON.stringify({ imports });
-        document.head.prepend(script);
+      // Store server runtime modules for the consolidated import map logic in useEffect
+      if (data.runtimeModules) {
+        setServerRuntimeModules(data.runtimeModules);
       }
 
       if (data.activeTheme) {
@@ -562,6 +550,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         FrameworkIcons,
         IconNames,
         createProxyIcon,
+        RootFramework,
         // Map Lucide names to their framework equivalents or direct proxies
         Loader2: getIcon('Loader2'),
         Search: getIcon('Search'),
@@ -612,6 +601,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         usePlugins,
         useTranslation,
         usePluginAPI,
+        isReady: true,
         // Non-hook versions for direct access from CJS/ESM bridge
         getState: () => ({ slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, setLocale, t, emit, on, api, resolveContent, getAPI }),
         PluginsProvider
@@ -624,6 +614,52 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
       (window as any).React = React;
       (window as any).ReactDOM = ReactDOM;
       (window as any).ReactDom = ReactDOM;
+
+      // --- Consolidated Runtime Import Map Generation ---
+      const imports: Record<string, string> = {
+          "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, createElement, cloneElement, Children, Fragment, StrictMode, Suspense } = window.React;",
+          "react-dom": "data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal } = window.ReactDOM;",
+          "lucide-react": "data:application/javascript," + encodeURIComponent(
+            Object.keys((window as any).Lucide || {}).map(key => `export const ${key} = window.Lucide.${key};`).join('\n') + `\nexport default window.Lucide;`
+          ),
+          "@fromcode/react": "data:application/javascript," + encodeURIComponent(
+            Object.keys(bridge).filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof)).map(key => `export const ${key} = window.Fromcode.${key};`).join('\n') + `\nexport default window.Fromcode;`
+          )
+      };
+
+      // Merge server-side modules from loadConfig
+      if (serverRuntimeModules) {
+        const base = getBaseURL();
+        Object.entries(serverRuntimeModules).forEach(([name, config]: [string, any]) => {
+          if (config.url) {
+            imports[name] = config.url.startsWith('/') ? `${base}${config.url}` : config.url;
+          } else if (config.source) {
+            imports[name] = `data:application/javascript;base64,${config.source}`;
+          }
+        });
+      }
+
+      // Merge client-side host modules from runtimeModules prop
+      if (runtimeModules) {
+          Object.entries(runtimeModules).forEach(([name, mod]) => {
+              const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
+              (window as any)[`_fc_mod_${safeName}`] = mod;
+              const keys = Object.keys(mod);
+              imports[name] = "data:application/javascript," + encodeURIComponent(
+                  keys.map(key => `export const ${key} = window._fc_mod_${safeName}.${key};`).join('\n') + `\nexport default window._fc_mod_${safeName};`
+              );
+          });
+      }
+
+      let script = document.getElementById('fc-runtime-import-map') as HTMLScriptElement;
+      if (!script) {
+        script = document.createElement('script');
+        script.id = 'fc-runtime-import-map';
+        script.type = 'importmap';
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify({ imports });
+      // --------------------------------------------------
 
       // Flush queue
       if ((window as any)._fromcodeQueue) {
@@ -649,7 +685,7 @@ export const PluginsProvider = ({ children, apiUrl }: { children: ReactNode, api
         });
       }
     }
-  }, [apiUrl, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, loadConfig, emit, on, t, locale, setLocale, slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, refreshVersion, triggerRefresh, api, resolveContent]);
+  }, [apiUrl, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, loadConfig, emit, on, t, locale, setLocale, slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, refreshVersion, triggerRefresh, api, resolveContent, serverRuntimeModules, runtimeModules]);
 
   const value = React.useMemo(() => ({
     slots,

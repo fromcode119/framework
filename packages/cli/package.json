@@ -9,9 +9,11 @@
     "dev": "tsc -w"
   },
   "dependencies": {
+    "@fromcode/database": "^0.1.0",
     "archiver": "^7.0.1",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
+    "dotenv": "^17.2.3",
     "esbuild": "^0.27.2",
     "extract-zip": "^2.0.1",
     "fs-extra": "^11.2.0",

@@ -96,6 +96,7 @@ export class AdminMetadataService {
           
           const shortSlug = col.shortSlug || col.slug;
           const path = `/${p.slug}/${shortSlug}`;
+          
           const label = col.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1);
           
           const isExplicitlyHandled = rawMenuItems.some(m => {
