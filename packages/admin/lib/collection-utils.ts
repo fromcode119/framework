@@ -12,8 +12,8 @@ export function resolveCollection(
   return collections.find(c => {
     // Check if the actual collection slug (prefixed) matches the URL slug (short)
     const isSlugMatch = c.shortSlug === slug || c.slug === slug || c.unprefixedSlug === slug;
-    const isPluginMatch = c.pluginSlug === pluginSlug;
     
+    const isPluginMatch = c.pluginSlug === pluginSlug;
     return isSlugMatch && isPluginMatch;
   });
 }

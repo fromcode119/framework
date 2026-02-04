@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService, RecordVersions } from '@fromcode/core';
+import * as http from 'http';
+import dotenv from 'dotenv';
+import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService, RecordVersions, WebSocketManager } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { MediaManager } from '@fromcode/media';
 import { CacheFactory, CacheManager } from '@fromcode/cache';
@@ -22,12 +24,16 @@ import { UserCollection, MediaCollection, SettingsCollection } from './collectio
 import { generateOpenAPI } from './swagger';
 import { createCollectionMiddleware } from './middlewares/collection';
 import { SchedulerService } from '@fromcode/scheduler';
+import { GraphQLService } from './services/GraphQLService';
+import { createHandler } from 'graphql-http/lib/use/express';
 
 export class APIServer {
   public app = express();
   public pluginRouter = express.Router();
   private logger = new Logger({ namespace: 'APIServer' });
   private restController: RESTController;
+  private graphQLService: GraphQLService;
+  private socket: WebSocketManager;
   private mediaManager!: MediaManager;
   private cache: CacheManager;
   private settingsCache: Map<string, string> = new Map();
@@ -49,6 +55,9 @@ export class APIServer {
       },
       manager.hooks
     );
+
+    this.graphQLService = new GraphQLService(manager, this.restController);
+    this.socket = new WebSocketManager(manager.hooks);
   }
 
   public async initialize() {
@@ -68,6 +77,10 @@ export class APIServer {
       },
       message: { error: 'Too many requests from this IP, please try again later' },
       skip: (req) => {
+        // Skip rate limiting for EventSource (SSE) and health checks
+        if (req.path.includes('/system/events') || req.path.includes('/health')) {
+          return true;
+        }
         return !!req.headers['x-skip-rate-limit'] && req.headers['x-skip-rate-limit'] === process.env.ADMIN_SECRET;
       }
     } as any);
@@ -83,6 +96,25 @@ export class APIServer {
     this.registerCoreCollection('_system_record_versions', RecordVersions);
     this.setupMiddleware();
     this.setupRoutes();
+
+    // Global Error Handler with CORS support
+    this.app.use((err: any, req: any, res: any, next: any) => {
+      this.logger.error(`Unhandled Error: ${err.message}`, { stack: err.stack, path: req.path });
+      
+      // Ensure CORS headers even on error
+      if (req.headers.origin) {
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client');
+      }
+      
+      res.status(err.status || 500).json({
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+      });
+    });
+
     this.logger.info('API Server initialized successfully.');
   }
 
@@ -109,18 +141,23 @@ export class APIServer {
           group: true
         }
       });
-      if (rows.length > 0) {
-        this.logger.debug(`Synced ${rows.length} settings from DB. First row keys: ${Object.keys(rows[0]).join(', ')}`);
+      
+      if (rows && rows.length > 0) {
+        if (rows[0]) {
+          this.logger.debug(`Synced ${rows.length} settings from DB. First row keys: ${Object.keys(rows[0]).join(', ')}`);
+        }
+        this.logger.debug(`Synced ${rows.length} settings from DB: ${rows.map((r: any) => r?.key || 'undefined').join(', ')}`);
       }
-      this.logger.debug(`Synced ${rows.length} settings from DB: ${rows.map((r: any) => r.key || 'undefined').join(', ')}`);
       
       // Update the cache without clearing it to avoid race conditions 
       // where requests see an empty cache for a few milliseconds.
-      for (const row of rows) {
-        if (row.key) {
-          this.settingsCache.set(row.key, row.value);
-          // Sync to global cache
-          await this.cache.set(`system_setting:${row.key}`, row.value);
+      if (Array.isArray(rows)) {
+        for (const row of rows) {
+          if (row && row.key) {
+            this.settingsCache.set(row.key, row.value);
+            // Sync to global cache
+            await this.cache.set(`system_setting:${row.key}`, row.value);
+          }
         }
       }
 
@@ -177,7 +214,9 @@ export class APIServer {
     const corsOptions: cors.CorsOptions = {
       origin: (origin, callback) => {
         // In development, handle wide-open CORS.
-        const isDevelopment = process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === 'development';
+        const nodeEnv = (process.env.NODE_ENV || 'development').toLowerCase();
+        const isDevelopment = nodeEnv === 'development' || nodeEnv === 'dev' || nodeEnv === 'test';
+        
         if (!origin || isDevelopment) {
           return callback(null, true);
         }
@@ -197,6 +236,7 @@ export class APIServer {
             'framework.local', 
             'api.framework.local',
             'admin.framework.local',
+            'frontend.framework.local',
             ...envAllowed
           ];
           
@@ -209,7 +249,7 @@ export class APIServer {
           if (isAllowed) {
             callback(null, true);
           } else {
-            this.logger.error(`CORS BLOCKED: Origin "${origin}" (hostname: "${hostname}") is not in whitelist: ${allowedDomains.join(', ')}`);
+            this.logger.warn(`CORS BLOCKED: Origin "${origin}" (hostname: "${hostname}") is not in whitelist: ${allowedDomains.join(', ')}`);
             callback(new Error('Not allowed by CORS'));
           }
         } catch (err) {
@@ -219,8 +259,18 @@ export class APIServer {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Framework-Client'],
-      exposedHeaders: ['X-Framework-Maintenance']
+      allowedHeaders: [
+        'Content-Type', 
+        'Authorization', 
+        'X-Requested-With', 
+        'Accept', 
+        'Origin', 
+        'X-Framework-Client',
+        'X-App-Locale',
+        'Cache-Control',
+        'Pragma'
+      ],
+      exposedHeaders: ['X-Framework-Maintenance', 'Content-Disposition']
     };
 
     this.app.use(cors(corsOptions));
@@ -353,6 +403,7 @@ export class APIServer {
         req.path.startsWith('/api/auth') || 
         req.path.startsWith('/api/v1/auth') ||
         req.path.endsWith('/system/i18n') ||
+        req.path.endsWith('/system/events') ||
         req.path.startsWith('/plugins/');
 
       if (isAdmin) {
@@ -371,6 +422,8 @@ export class APIServer {
       if (req.headers.origin) {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client');
       }
 
       res.status(503).json({
@@ -417,6 +470,14 @@ export class APIServer {
     const apiVersion = process.env.API_VERSION_PREFIX || 'v1';
     const vPrefix = `/api/${apiVersion}`;
     
+    // GraphQL Endpoint
+    this.app.all(`${vPrefix}/graphql`, (req, res, next) => {
+      createHandler({ 
+        schema: this.graphQLService.generateSchema(),
+        context: { req }
+      })(req, res, next);
+    });
+
     // Mount OpenAPI at both the generic and versioned path
     const openApiHandler = (req: any, res: any) => res.json(generateOpenAPI(this.manager.getCollections()));
     this.app.get('/api/openapi.json', openApiHandler);
@@ -482,13 +543,41 @@ export class APIServer {
   }
 
   start(port: number = 3000, host: string = '0.0.0.0') {
-    this.app.listen(port, host, () => {
+    const server = http.createServer(this.app);
+    const wss = this.socket.initialize(server);
+
+    server.on('upgrade', (request, socket, head) => {
+      const pathname = new URL(request.url || '', `http://${host}:${port}`).pathname;
+
+      if (pathname === '/socket') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit('connection', ws, request);
+        });
+      } else {
+        socket.destroy();
+      }
+    });
+
+    server.listen(port, host, () => {
       this.logger.info(`Running on http://${host}:${port}`);
     });
   }
 }
 
 async function bootstrap() {
+  // Load environment variables from .env files
+  const projectRoot = path.resolve(process.cwd(), '../../');
+  const envPaths = [
+    path.join(process.cwd(), '.env'),
+    path.join(projectRoot, '.env')
+  ];
+
+  for (const envPath of envPaths) {
+    if (fs.existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+    }
+  }
+
   process.on('uncaughtException', (err) => {
     console.error('CRITICAL: Uncaught Exception:', err);
   });
@@ -498,6 +587,13 @@ async function bootstrap() {
   });
 
   try {
+    if (!process.env.DATABASE_URL) {
+      console.error('FATAL ERROR: DATABASE_URL is not defined in environment or .env file.');
+      console.error('Looked in:', envPaths);
+      process.exit(1);
+    }
+
+    console.log('--- Initializing Fromcode API Server ---');
     const manager = new PluginManager();
     
     // 1. Manager Initialization (DB/Migrations)

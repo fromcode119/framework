@@ -10,6 +10,7 @@ export function setupCollectionRoutes(manager: PluginManager, restController: RE
   router.get('/collections/:slug', collectionMiddleware, (req: any, res) => restController.find(req.collection, req, res));
   router.get('/collections/:slug/export', collectionMiddleware, (req: any, res) => restController.export(req.collection, req, res));
   router.post('/collections/:slug/import', collectionMiddleware, (req: any, res) => restController.import(req.collection, req, res));
+  router.post('/collections/:slug/bulk', collectionMiddleware, (req: any, res) => restController.bulkCreate(req.collection, req, res));
   router.post('/collections/:slug/bulk-update', collectionMiddleware, (req: any, res) => restController.bulkUpdate(req.collection, req, res));
   router.post('/collections/:slug/bulk-delete', collectionMiddleware, (req: any, res) => restController.bulkDelete(req.collection, req, res));
   router.get('/collections/:slug/suggestions/:field', collectionMiddleware, (req: any, res) => restController.getSuggestions(req.collection, req, res));
@@ -28,6 +29,7 @@ export function setupLegacyCollectionRoutes(manager: PluginManager, restControll
   router.get('/:slug', collectionMiddleware, (req: any, res) => restController.find(req.collection, req, res));
   router.get('/:slug/export', collectionMiddleware, (req: any, res) => restController.export(req.collection, req, res));
   router.post('/:slug/import', collectionMiddleware, (req: any, res) => restController.import(req.collection, req, res));
+  router.post('/:slug/bulk', collectionMiddleware, (req: any, res) => restController.bulkCreate(req.collection, req, res));
   router.post('/:slug/bulk-update', collectionMiddleware, (req: any, res) => restController.bulkUpdate(req.collection, req, res));
   router.post('/:slug/bulk-delete', collectionMiddleware, (req: any, res) => restController.bulkDelete(req.collection, req, res));
   router.get('/:slug/suggestions/:field', collectionMiddleware, (req: any, res) => restController.getSuggestions(req.collection, req, res));

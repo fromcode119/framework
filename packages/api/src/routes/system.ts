@@ -29,6 +29,7 @@ export function setupSystemRoutes(manager: PluginManager, themeManager: ThemeMan
   router.get('/update/check', auth.guard(['admin']), (req, res) => controller.checkUpdate(req, res));
   router.post('/update/apply', auth.guard(['admin']), (req, res) => controller.applyUpdate(req, res));
 
+  router.get('/events', (req, res) => controller.getEvents(req, res));
   router.get('/frontend', (req, res) => controller.getFrontendMetadata(req, res));
   router.get('/i18n', (req, res) => controller.getI18n(req, res));
   router.get('/resolve', (req, res) => controller.resolveSlug(req, res));

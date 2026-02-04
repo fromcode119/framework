@@ -1,7 +1,22 @@
-export type HookHandler = (payload: any) => void | Promise<void>;
+import { HookMessagingAdapter } from './types';
+import { HookAdapterFactory } from './factory';
+
+export type HookHandler = (payload: any, event: string) => any | Promise<any>;
 
 export class HookManager {
   private handlers: Map<string, Set<HookHandler>> = new Map();
+  private adapter: HookMessagingAdapter;
+
+  constructor(options: { type?: string, redisUrl?: string, namespace?: string } = {}) {
+    this.adapter = HookAdapterFactory.create(options.type, options);
+    this.initDistributed();
+  }
+
+  private async initDistributed() {
+    await this.adapter.subscribe((event, payload) => {
+      this.emit(event, payload, true);
+    });
+  }
 
   /**
    * Subscribe to an event
@@ -26,19 +41,39 @@ export class HookManager {
   /**
    * Emit an event (fire and forget)
    */
-  emit(event: string, payload: any): void {
-    const set = this.handlers.get(event);
-    if (set) {
-      for (const handler of set) {
-        try {
-          const result = handler(payload);
-          if (result instanceof Promise) {
-            result.catch(err => console.error(`[HookManager] Error in async handler for ${event}:`, err));
-          }
-        } catch (err) {
-          console.error(`[HookManager] Error in handler for ${event}:`, err);
+  emit(event: string, payload: any, skipDistributed: boolean = false): void {
+    const handlersToCall = new Set<HookHandler>();
+
+    // 1. Exact match
+    const exactHandlers = this.handlers.get(event);
+    if (exactHandlers) {
+      exactHandlers.forEach(h => handlersToCall.add(h));
+    }
+
+    // 2. Wildcard match (e.g., collection:*:afterCreate)
+    for (const [registeredEvent, set] of this.handlers.entries()) {
+      if (registeredEvent.includes('*')) {
+        const pattern = new RegExp('^' + registeredEvent.replace(/\./g, '\\.').replace(/\*/g, '[^:]+') + '$');
+        if (pattern.test(event)) {
+          set.forEach(h => handlersToCall.add(h));
         }
       }
+    }
+
+    for (const handler of handlersToCall) {
+      try {
+        const result = handler(payload, event);
+        if (result instanceof Promise) {
+          result.catch(err => console.error(`[HookManager] Error in async handler for ${event}:`, err));
+        }
+      } catch (err) {
+        console.error(`[HookManager] Error in handler for ${event}:`, err);
+      }
+    }
+
+    // 3. Broadcast to other instances via adapter
+    if (!skipDistributed) {
+      this.adapter.publish(event, payload);
     }
   }
 
@@ -47,17 +82,25 @@ export class HookManager {
    * This is useful for filters like 'content.render'
    */
   async call<T = any>(event: string, payload: T): Promise<T> {
-    const set = this.handlers.get(event);
-    let currentPayload = payload;
+    const handlersToCall = new Set<HookHandler>();
 
-    if (set) {
-      for (const handler of set) {
-        // In call mode, we await each handler
-        const result = await handler(currentPayload);
-        // If handler returns something, it becomes the new payload (filter pattern)
-        if (result !== undefined) {
-          currentPayload = result;
-        }
+    // Exact match
+    const exactHandlers = this.handlers.get(event);
+    if (exactHandlers) exactHandlers.forEach(h => handlersToCall.add(h));
+
+    // Wildcard match
+    for (const [registeredEvent, set] of this.handlers.entries()) {
+      if (registeredEvent.includes('*')) {
+        const pattern = new RegExp('^' + registeredEvent.replace(/\./g, '\\.').replace(/\*/g, '[^:]+') + '$');
+        if (pattern.test(event)) set.forEach(h => handlersToCall.add(h));
+      }
+    }
+
+    let currentPayload = payload;
+    for (const handler of handlersToCall) {
+      const result = await handler(currentPayload, event);
+      if (result !== undefined) {
+        currentPayload = result;
       }
     }
 

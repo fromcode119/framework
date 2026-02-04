@@ -559,6 +559,43 @@ export class SystemController {
     }
   }
 
+  async getEvents(req: Request, res: Response) {
+    // Basic settings for long-lived keep-alive connection
+    req.socket.setKeepAlive(true);
+    req.socket.setNoDelay(true);
+    req.socket.setTimeout(0);
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx buffering
+    
+    // Tell the client to retry every 10 seconds if connection is lost
+    res.write('retry: 10000\n\n');
+    // Initial comment to help establish stream in some browsers/proxies
+    res.write(': ok\n\n');
+
+    const handler = (data: any) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      if ((res as any).flush) (res as any).flush();
+    };
+
+    this.manager.hooks.on('system:hmr:reload', handler);
+
+    // Keep connection alive with a heartbeat every 15 seconds
+    const heartbeat = setInterval(() => {
+      // Using a comment (starting with :) as a heartbeat is standard SSE practice
+      res.write(': heartbeat\n\n');
+      if ((res as any).flush) (res as any).flush();
+    }, 15000);
+
+    req.on('close', () => {
+      clearInterval(heartbeat);
+      this.manager.hooks.off('system:hmr:reload', handler);
+    });
+  }
+
   async resolveSlug(req: Request, res: Response) {
     const slug = req.query.slug as string;
     if (!slug) return res.status(400).json({ error: 'Slug is required' });

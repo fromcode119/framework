@@ -56,6 +56,7 @@ export const ENDPOINTS = {
     UPDATE_APPLY: v('/system/update/apply'),
     OPENAPI: '/api/openapi.json',
     I18N: v('/system/i18n'),
+    EVENTS: v('/system/events'),
   },
   COLLECTIONS: {
     BASE: v('/collections'),

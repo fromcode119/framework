@@ -128,14 +128,17 @@ export class RESTController {
     return processedData;
   }
 
-  async find(collection: Collection, req: Request, res: Response) {
+  /**
+   * Universal find (handles both REST and Internal/GraphQL)
+   */
+  async find(collection: Collection, req: any, res?: Response) {
     try {
-      const { limit = 10, offset = 0, sort, search, ...filters } = req.query as any;
+      const { limit = 10, offset = 0, sort, search, ...filters } = req.query || {};
       const table = this.getVirtualTable(collection);
       
       const whereChunks: any[] = [];
-      const isAdmin = (req as any).user && (req as any).user.roles && (req as any).user.roles.includes('admin');
-      const isPreview = req.query.preview === '1' || req.query.draft === '1';
+      const isAdmin = req.user && req.user.roles && req.user.roles.includes('admin');
+      const isPreview = String(req.query?.preview) === '1' || String(req.query?.draft) === '1';
 
       // 1. Handle Status/Visibility (Governance Layer)
       const statusField = collection.fields.find(f => f.name === 'status');
@@ -200,20 +203,24 @@ export class RESTController {
 
       const total = await this.db.count(collection.tableName || collection.slug, whereClause);
 
-      res.json({
+      const result = {
         docs: this.filterHiddenFields(collection, rowsResult),
         totalDocs: total,
         limit: limitVal,
         offset: offsetVal,
         totalPages: Math.ceil(total / limitVal),
         page: Math.floor(offsetVal / limitVal) + 1
-      });
+      };
+
+      if (!res) return result;
+      res.json(result);
     } catch (err: any) {
+      if (!res) throw err;
       res.status(500).json({ error: err.message });
     }
   }
 
-  async findOne(collection: Collection, req: Request, res: Response) {
+  async findOne(collection: Collection, req: any, res?: Response) {
     try {
       const { id } = req.params;
       const pk = collection.primaryKey || 'id';
@@ -221,23 +228,32 @@ export class RESTController {
       
       const result = await this.db.findOne(table, { [pk]: pk === 'id' ? parseInt(id) : id });
       
-      if (!result) return res.status(404).json({ error: 'Not found' });
+      if (!result) {
+        if (!res) return null;
+        return res.status(404).json({ error: 'Not found' });
+      }
 
       // Handle Status/Visibility
       const statusField = collection.fields.find(f => f.name === 'status');
       if (statusField && result.status !== 'published') {
-        const isAdmin = (req as any).user && (req as any).user.roles && (req as any).user.roles.includes('admin');
-        const isPreview = req.query.preview === '1' || req.query.draft === '1';
-        if (!isAdmin && !isPreview) return res.status(404).json({ error: 'Not found (draft)' });
+        const isAdmin = req.user && req.user.roles && req.user.roles.includes('admin');
+        const isPreview = String(req.query?.preview) === '1' || String(req.query?.draft) === '1';
+        if (!isAdmin && !isPreview) {
+          if (!res) return null;
+          return res.status(404).json({ error: 'Not found (draft)' });
+        }
       }
       
-      res.json(this.filterHiddenFields(collection, result));
+      const filtered = this.filterHiddenFields(collection, result);
+      if (!res) return filtered;
+      res.json(filtered);
     } catch (err: any) {
+      if (!res) throw err;
       res.status(500).json({ error: err.message });
     }
   }
 
-  async create(collection: Collection, req: Request, res: Response) {
+  async create(collection: Collection, req: any, res?: Response) {
     try {
       let data = req.body;
       const table = this.getVirtualTable(collection);
@@ -248,8 +264,11 @@ export class RESTController {
         data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
       }
 
-      const errors = collection.fields.filter(f => f.required && !data[f.name]).map(f => `Field "${f.name}" is required`);
-      if (errors.length > 0) return res.status(400).json({ errors });
+      // Restore REST-specific validation if in REST mode
+      if (res) {
+        const errors = collection.fields.filter(f => f.required && !data[f.name]).map(f => `Field "${f.name}" is required`);
+        if (errors.length > 0) return res.status(400).json({ errors });
+      }
 
       const insertData = await this.processIncomingData(collection, data, table);
       const newItem = await this.db.insert(table, insertData);
@@ -261,14 +280,18 @@ export class RESTController {
         finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
       }
 
-      await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, (req as any).user, `Initial creation of ${collection.slug} record`);
-      res.status(201).json(this.filterHiddenFields(collection, finalItem));
+      await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, `Initial creation of ${collection.slug} record`);
+      
+      const filtered = this.filterHiddenFields(collection, finalItem);
+      if (!res) return filtered;
+      res.status(201).json(filtered);
     } catch (err: any) {
+      if (!res) throw err;
       res.status(err.code === '23505' ? 409 : 500).json({ error: err.message });
     }
   }
 
-  async update(collection: Collection, req: Request, res: Response) {
+  async update(collection: Collection, req: any, res?: Response) {
     try {
       const { id } = req.params;
       let data = req.body;
@@ -283,13 +306,18 @@ export class RESTController {
         data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
       }
 
-      const errors = collection.fields.filter(f => data[f.name] !== undefined && f.required && !data[f.name]).map(f => `Field "${f.name}" cannot be empty`);
-      if (errors.length > 0) return res.status(400).json({ errors });
+      if (res) {
+        const errors = collection.fields.filter(f => data[f.name] !== undefined && f.required && !data[f.name]).map(f => `Field "${f.name}" cannot be empty`);
+        if (errors.length > 0) return res.status(400).json({ errors });
+      }
 
       const updateData = await this.processIncomingData(collection, data, table);
       const updated = await this.db.update(table, where, updateData);
       
-      if (!updated) return res.status(404).json({ error: 'Not found' });
+      if (!updated) {
+        if (!res) return null;
+        return res.status(404).json({ error: 'Not found' });
+      }
 
       // Hooks: After Update
       let finalItem = updated;
@@ -298,72 +326,123 @@ export class RESTController {
         finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
       }
 
-      await this.versioningService.createSnapshot(collection, id, finalItem, (req as any).user, `Update ${collection.slug} record`);
+      await this.versioningService.createSnapshot(collection, id, finalItem, req.user, `Update ${collection.slug} record`);
       
-      res.json(this.filterHiddenFields(collection, finalItem));
+      const filtered = this.filterHiddenFields(collection, finalItem);
+      if (!res) return filtered;
+      res.json(filtered);
     } catch (err: any) {
+      if (!res) throw err;
       res.status(err.code === '23505' ? 409 : 500).json({ error: err.message });
     }
   }
 
-  async bulkUpdate(collection: Collection, req: Request, res: Response) {
-    try {
-      const { ids, data } = req.body;
-      if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ error: 'ids must be a non-empty array' });
-      }
-
-      const pk = collection.primaryKey || 'id';
-      const table = this.getVirtualTable(collection);
-      const updateData = await this.processIncomingData(collection, data, table);
-      
-      const results: any[] = [];
-      for (const id of ids) {
-        const where = { [pk]: pk === 'id' ? (typeof id === 'string' ? parseInt(id) : id) : id };
-        const updated = await this.db.update(table, where, updateData);
-        if (updated) {
-          await this.versioningService.createSnapshot(collection, String(id), updated, (req as any).user, `Bulk update ${collection.slug} records`);
-          results.push(id);
-        }
-      }
-
-      res.json({ success: true, count: results.length, updatedIds: results });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-
-  async bulkDelete(collection: Collection, req: Request, res: Response) {
-    try {
-      const { ids } = req.body;
-      if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ error: 'ids must be a non-empty array' });
-      }
-
-      const pk = collection.primaryKey || 'id';
-      const table = this.getVirtualTable(collection);
-      
-      let count = 0;
-      for (const id of ids) {
-        const where = { [pk]: pk === 'id' ? (typeof id === 'string' ? parseInt(id) : id) : id };
-        const success = await this.db.delete(table, where);
-        if (success) count++;
-      }
-
-      res.json({ success: true, count });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-
-  async delete(collection: Collection, req: Request, res: Response) {
+  async delete(collection: Collection, req: any, res?: Response) {
     try {
       const { id } = req.params;
       const pk = collection.primaryKey || 'id';
       const table = this.getVirtualTable(collection);
       const success = await this.db.delete(table, { [pk]: pk === 'id' ? parseInt(id) : id });
+      
+      if (!res) return success;
       res.json(success ? { success: true, id } : { error: 'Not found' });
     } catch (err: any) {
+      if (!res) throw err;
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async bulkCreate(collection: Collection, req: any, res?: Response) {
+    try {
+      const items = Array.isArray(req.body) ? req.body : [req.body];
+      const table = this.getVirtualTable(collection);
+      const results: any[] = [];
+
+      for (let data of items) {
+        if (this.hooks) {
+          data = await this.hooks.call(`collection:${collection.slug}:beforeCreate`, data);
+          data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
+        }
+        const insertData = await this.processIncomingData(collection, data, table);
+        const newItem = await this.db.insert(table, insertData);
+        
+        let finalItem = newItem;
+        if (this.hooks) {
+          finalItem = await this.hooks.call(`collection:${collection.slug}:afterCreate`, newItem);
+          finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
+        }
+        await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, `Bulk creation of ${collection.slug}`);
+        results.push(this.filterHiddenFields(collection, finalItem));
+      }
+
+      if (!res) return results;
+      res.status(201).json(results);
+    } catch (err: any) {
+      if (!res) throw err;
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async bulkUpdate(collection: Collection, req: any, res?: Response) {
+    try {
+      const { ids, data } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        if (!res) throw new Error('ids must be a non-empty array');
+        return res.status(400).json({ error: 'ids must be a non-empty array' });
+      }
+
+      const table = this.getVirtualTable(collection);
+      const pk = collection.primaryKey || 'id';
+      
+      let updateData = data;
+      if (this.hooks) {
+        updateData = await this.hooks.call(`collection:${collection.slug}:beforeUpdate`, updateData);
+        updateData = await this.hooks.call(`collection:${collection.slug}:beforeSave`, updateData);
+      }
+
+      const processedUpdate = await this.processIncomingData(collection, updateData, table);
+      
+      // Update one by one to ensure hooks and versioning trigger correctly per item
+      const results: any[] = [];
+      for (const id of ids) {
+        const where = { [pk]: pk === 'id' ? parseInt(id) : id };
+        const updated = await this.db.update(table, where, processedUpdate);
+        if (updated) {
+          let finalItem = updated;
+          if (this.hooks) {
+            finalItem = await this.hooks.call(`collection:${collection.slug}:afterUpdate`, updated);
+            finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
+          }
+          await this.versioningService.createSnapshot(collection, id, finalItem, req.user, `Bulk update of ${collection.slug}`);
+          results.push(this.filterHiddenFields(collection, finalItem));
+        }
+      }
+
+      if (!res) return results;
+      res.json(results);
+    } catch (err: any) {
+      if (!res) throw err;
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async bulkDelete(collection: Collection, req: any, res?: Response) {
+    try {
+      const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+      if (ids.length === 0) {
+        if (!res) throw new Error('ids must be a non-empty array');
+        return res.status(400).json({ error: 'ids must be a non-empty array' });
+      }
+
+      const table = this.getVirtualTable(collection);
+      const pk = collection.primaryKey || 'id';
+      
+      const success = await this.db.delete(table, inArray(table[pk], ids.map((id: any) => pk === 'id' ? parseInt(id) : id)));
+      
+      if (!res) return success;
+      res.json({ success, count: ids.length });
+    } catch (err: any) {
+      if (!res) throw err;
       res.status(500).json({ error: err.message });
     }
   }

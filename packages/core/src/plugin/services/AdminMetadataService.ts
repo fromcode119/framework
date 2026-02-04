@@ -32,6 +32,8 @@ export class AdminMetadataService {
           config: p.manifest.config || {},
           ui: {
             ...(p.manifest.ui || {}),
+            entryUrl: p.manifest.ui?.entry ? `/plugins/${p.manifest.slug}/ui/${p.manifest.ui.entry}` : undefined,
+            cssUrls: p.manifest.ui?.css ? p.manifest.ui.css.map(css => `/plugins/${p.manifest.slug}/ui/${css}`) : [],
             headInjections: []
           }
         };

@@ -8,6 +8,11 @@ import {
 import { Logger } from '../logging/logger';
 import { sql, count, eq, and, or } from 'drizzle-orm';
 import { PluginPermissionsService } from '../security/permissions';
+import { RateLimiter } from '../security/rate-limiter';
+
+// Shared rate limiters for plugins
+const dbLimiter = new RateLimiter(5000, 60000); // 5000 queries per minute
+const apiLimiter = new RateLimiter(1000, 60000); // 1000 registrations per minute
 
 /**
  * Interface representing the necessary parts of PluginManager 
@@ -74,6 +79,11 @@ export function createPluginContext(
     throw new Error(`Security Violation: Missing "${cap}" capability.`);
   };
 
+  const handleRateLimit = (type: string) => {
+    rootLogger.warn(`Rate Limit Exceeded: Plugin "${plugin.manifest.slug}" reached ${type} quota.`);
+    throw new Error(`Rate Limit Exceeded: Plugin "${plugin.manifest.slug}" reached ${type} quota.`);
+  };
+
   // --- Hooks Proxy ---
   const hooksProxy = new Proxy(manager.hooks, {
     get: (target, prop) => {
@@ -86,6 +96,10 @@ export function createPluginContext(
   const createApiWrapper = (method: string) => (path: string, ...handlers: any[]) => {
     if (!hasCapability('api')) {
       handleViolation('api');
+    }
+
+    if (!apiLimiter.check(plugin.manifest.slug)) {
+      handleRateLimit('API Registration');
     }
 
     // Security: Prevent path traversal attempts
@@ -149,6 +163,12 @@ export function createPluginContext(
         handleViolation('database');
       }
 
+      if (typeof prop === 'string' && ['find', 'findOne', 'create', 'update', 'delete', 'execute'].includes(prop)) {
+        if (!dbLimiter.check(plugin.manifest.slug)) {
+          handleRateLimit('Database');
+        }
+      }
+
       // Expose drizzle-orm utilities through the db object
       if (prop === 'sql') return wrappedSql;
       if (prop === 'count') return count;
@@ -166,7 +186,23 @@ export function createPluginContext(
       if (!hasCapability('storage') && !hasCapability('filesystem:read') && !hasCapability('filesystem:write')) {
         handleViolation('storage');
       }
-      return (target as any)[prop];
+
+      const original = (target as any)[prop];
+      if (typeof original === 'function') {
+        return (...args: any[]) => {
+          // Force plugin-specific directory for storage operations
+          // Most storage methods take a 'path' or 'key' as first argument
+          if (['upload', 'delete', 'get', 'exists', 'getUrl'].includes(prop as string)) {
+            if (args.length > 0 && typeof args[0] === 'string') {
+               // Ensure path doesn't escape
+               const sanitizedPath = args[0].replace(/\.\./g, '');
+               args[0] = `plugins/${plugin.manifest.slug}/${sanitizedPath.startsWith('/') ? sanitizedPath.slice(1) : sanitizedPath}`;
+            }
+          }
+          return original.apply(target, args);
+        };
+      }
+      return original;
     }
   });
 
@@ -332,6 +368,14 @@ export function createPluginContext(
         
         // If the slug already has the prefix (e.g. manually added), don't add it again
         const prefixedSlug = inputSlug.startsWith(tablePrefix) ? inputSlug : `${tablePrefix}${inputSlug}`;
+
+        if (inputSlug.startsWith(plugin.manifest.slug) || inputSlug.startsWith('fcp_')) {
+          rootLogger.warn(
+            `Collection slug "${inputSlug}" in plugin "${plugin.manifest.slug}" may be redundantly prefixed. ` +
+            `The framework automatically handles table prefixing (final table: ${prefixedSlug}). ` +
+            `Recommendation: use a primitive slug like "${inputSlug.replace(plugin.manifest.slug, '').replace(/^[_-]/, '') || 'posts'}".`
+          );
+        }
         
         const shortSlug = collection.shortSlug || (inputSlug.startsWith(tablePrefix) ? inputSlug.replace(tablePrefix, '') : inputSlug);
         
@@ -360,6 +404,44 @@ export function createPluginContext(
           manager.registeredCollections.set(prefixedSlug, {
             collection: modifiedCollection,
             pluginSlug: plugin.manifest.slug
+          });
+        }
+
+        // Emit hook to allow other plugins to augment this collection
+        manager.emit('collection:registered', { 
+          collection: manager.registeredCollections.get(prefixedSlug)?.collection, 
+          pluginSlug: plugin.manifest.slug 
+        });
+      },
+      extend: (targetPlugin: string, targetCollection: string, extensions: Partial<Collection>) => {
+        const tablePrefix = `fcp_${targetPlugin.replace(/-/g, '_')}_`;
+        const fullSlug = `fcp_${targetPlugin.replace(/-/g, '_')}_${targetCollection}`;
+        
+        const entry = manager.getCollection(fullSlug);
+        if (entry) {
+          if (extensions.fields) {
+            const existingNames = new Set(entry.collection.fields.map(f => f.name));
+            extensions.fields.forEach(f => {
+              if (!existingNames.has(f.name)) {
+                entry.collection.fields.push(f);
+              }
+            });
+          }
+          rootLogger.info(`Plugin "${plugin.manifest.slug}" extended collection "${fullSlug}"`);
+        } else {
+          // If the collection isn't registered yet, we queue the extension for when it is
+          manager.hooks.on('collection:registered', (data: any) => {
+             if (data.pluginSlug === targetPlugin && data.collection.shortSlug === targetCollection) {
+                if (extensions.fields) {
+                  const existingNames = new Set(data.collection.fields.map(f => f.name));
+                  extensions.fields.forEach((f: any) => {
+                    if (!existingNames.has(f.name)) {
+                      data.collection.fields.push(f);
+                    }
+                  });
+                }
+                rootLogger.info(`Plugin "${plugin.manifest.slug}" applied delayed extension to collection "${fullSlug}"`);
+             }
           });
         }
       }
