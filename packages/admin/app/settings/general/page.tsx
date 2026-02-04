@@ -40,6 +40,9 @@ export default function GeneralSettingsPage() {
   const [settings, setSettings] = useState<Record<string, any>>({
     platform_name: '',
     email_notifications: true,
+    frontend_url: '',
+    permalink_structure: '/:slug',
+    timezone: 'UTC'
   });
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function GeneralSettingsPage() {
         const docs = response.docs || [];
         const newSettings = { ...settings };
         docs.forEach((s: any) => {
-          if (s.key === 'platform_name' || s.key === 'email_notifications') {
+          if (settings.hasOwnProperty(s.key)) {
             newSettings[s.key] = s.key === 'email_notifications' ? s.value === 'true' : s.value;
           }
         });
@@ -126,8 +129,22 @@ export default function GeneralSettingsPage() {
             <Input 
               value={settings.platform_name}
               onChange={(e) => setSettings(prev => ({ ...prev, platform_name: e.target.value }))}
-              className="w-full md:w-64"
+              className="w-full md:w-64 font-bold"
               placeholder="e.g. My Website"
+            />
+          </SettingRow>
+
+          <SettingRow 
+            theme={theme}
+            icon={FrameworkIcons.Globe} 
+            title="Frontend URL" 
+            description="The base URL where your website is hosted. Used for previews and sitemaps."
+          >
+            <Input 
+              value={settings.frontend_url}
+              onChange={(e) => setSettings(prev => ({ ...prev, frontend_url: e.target.value }))}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://example.com"
             />
           </SettingRow>
 
@@ -145,6 +162,45 @@ export default function GeneralSettingsPage() {
                 <FrameworkIcons.Moon size={14} /> Dark
               </button>
             </div>
+          </SettingRow>
+        </Card>
+
+        <Card title="SEO & Routing">
+           <SettingRow 
+            theme={theme}
+            icon={FrameworkIcons.LayoutTemplate} 
+            title="Permalink Structure" 
+            description="Global pattern for URL generation. Use :year, :month, :day, :id, :slug."
+          >
+            <Input 
+              value={settings.permalink_structure}
+              onChange={(e) => setSettings(prev => ({ ...prev, permalink_structure: e.target.value }))}
+              className="w-full md:w-64 font-mono font-bold text-xs"
+              placeholder="/:year/:month/:slug"
+            />
+          </SettingRow>
+
+          <SettingRow 
+            theme={theme}
+            icon={FrameworkIcons.Clock} 
+            title="System Timezone" 
+            description="The default timezone for content scheduling and logging."
+          >
+            <select
+              value={settings.timezone}
+              onChange={(e) => setSettings(prev => ({ ...prev, timezone: e.target.value }))}
+              className={`w-full md:w-64 rounded-xl py-2 px-4 outline-none border transition-all text-sm font-bold ${
+                theme === 'dark' 
+                  ? 'bg-slate-900 border-slate-800 text-white' 
+                  : 'bg-white border-slate-200 text-slate-900'
+              }`}
+            >
+              <option value="UTC">UTC (Universal Time)</option>
+              <option value="America/New_York">Eastern Time (ET)</option>
+              <option value="Europe/London">London (GMT/BST)</option>
+              <option value="Europe/Paris">Paris (CET/CEST)</option>
+              <option value="Asia/Tokyo">Tokyo (JST)</option>
+            </select>
           </SettingRow>
         </Card>
 

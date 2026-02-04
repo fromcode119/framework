@@ -101,7 +101,6 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
                     Custom
                  </div>
               )}
-<<<< (Edit icon part)
               <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 group-hover:text-indigo-500 group-hover:border-indigo-500/30 transition-all shadow-sm">
                  <FrameworkIcons.Edit size={12} />
               </div>

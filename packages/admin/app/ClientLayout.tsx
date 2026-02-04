@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Slot, PluginsProvider, useTranslation, usePlugins } from '@fromcode/react';
 import { ThemeProvider, useTheme } from '@/components/ThemeContext';
+import * as SharedComponents from '@/components';
 import Sidebar from './Sidebar';
 import PluginLoader from './PluginLoader';
 import { FrameworkIcons } from '@/lib/icons';
@@ -281,7 +282,12 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   return (
-    <PluginsProvider apiUrl={API_BASE_URL}>
+    <PluginsProvider 
+      apiUrl={API_BASE_URL} 
+      runtimeModules={{
+        '@fromcode/admin/components': SharedComponents
+      }}
+    >
       <ThemeProvider>
         <LayoutContent>
           {children}

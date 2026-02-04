@@ -619,12 +619,15 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       const imports: Record<string, string> = {
           "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, createElement, cloneElement, Children, Fragment, StrictMode, Suspense } = window.React;",
           "react-dom": "data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal } = window.ReactDOM;",
+          "react/jsx-runtime": "data:application/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsx, jsxs, Fragment };",
+          "react/jsx-dev-runtime": "data:application/javascript,export const jsxDEV = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsxDEV, Fragment };",
           "lucide-react": "data:application/javascript," + encodeURIComponent(
             Object.keys((window as any).Lucide || {}).map(key => `export const ${key} = window.Lucide.${key};`).join('\n') + `\nexport default window.Lucide;`
           ),
           "@fromcode/react": "data:application/javascript," + encodeURIComponent(
             Object.keys(bridge).filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof)).map(key => `export const ${key} = window.Fromcode.${key};`).join('\n') + `\nexport default window.Fromcode;`
-          )
+          ),
+          "@fromcode/admin/components": "data:application/javascript,export const MediaPicker = () => null; export default { MediaPicker: () => null };"
       };
 
       // Merge server-side modules from loadConfig

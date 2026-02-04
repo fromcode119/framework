@@ -225,7 +225,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
     if (a === 'Platform') return -1;
     if (b === 'Platform') return 1;
     return a.localeCompare(b);
-  });
+  }).filter(g => g !== 'Settings'); // We handle Settings at the bottom manually
 
   return (
     <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-20' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:relative lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none`}>
@@ -329,10 +329,23 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
           </>
         )}
 
-        <div className="mt-auto pt-6">
+        <div className="mt-auto pt-6 space-y-1">
           {!isMini && <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">System</p>}
           <NavItem icon={<Refresh size={18}/>} label="Updates" href="/settings/updates" active={pathname === '/settings/updates'} onClick={onClose} isMini={isMini} />
-          <NavItem icon={<Settings size={18}/>} label="Settings" href="/settings/general" active={pathname.startsWith('/settings')} onClick={onClose} isMini={isMini} />
+          <NavItem 
+            icon={<Settings size={18}/>} 
+            label="Settings" 
+            href="/settings/general" 
+            active={pathname.startsWith('/settings')} 
+            onClick={onClose} 
+            isMini={isMini} 
+            children={[
+              { label: 'General', path: '/settings/general', icon: 'Settings' },
+              { label: 'Permalinks', path: '/settings/permalinks', icon: 'Link' },
+              { label: 'Security', path: '/settings/security', icon: 'Shield' },
+              { label: 'Infrastructure', path: '/settings/infrastructure', icon: 'Activity' }
+            ]}
+          />
         </div>
         
         <div className="mt-4">

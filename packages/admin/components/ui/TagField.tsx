@@ -48,15 +48,18 @@ export const TagField = ({
   const [labels, setLabels] = useState<Record<string, string>>({});
 
   const tags = React.useMemo(() => {
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'string' && value.trim()) {
+    if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined);
+    if (value !== null && value !== undefined && typeof value === 'string' && value.trim()) {
       if (!hasMany) return [value];
       try {
         const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : [value];
+        return Array.isArray(parsed) ? parsed.filter(v => v !== null && v !== undefined) : [value];
       } catch (e) {
         return [value];
       }
+    }
+    if (value !== null && value !== undefined && !Array.isArray(value) && typeof value !== 'string') {
+        return [String(value)];
     }
     return [];
   }, [value, hasMany]);
@@ -116,20 +119,33 @@ export const TagField = ({
 
         const result = await api.get(url);
         if (Array.isArray(result)) {
-           // Mapping result to TagOption if it's not already
+           // Mapping result to TagOption with expanded fallback keys
            const mapped: TagOption[] = result.map(item => {
              if (typeof item === 'string') return { label: item, value: item };
-             return item;
+             if (typeof item === 'object' && item !== null) {
+                // Ensure we pick up the correct keys from the API
+                const label = item.label || item.name || item.title || item.username || item.email || String(item.value || '');
+                let val = item.value || item.slug || item.id || item.username || item.name || item.email;
+                
+                // Final fallback: if we have a label but no value, use the label as the value
+                if (!val && label) val = label;
+
+                return {
+                    label: String(label || 'Unknown'),
+                    value: String(val || '')
+                };
+             }
+             return { label: String(item), value: String(item) };
            });
 
+          // Filter out if value is missing or already selected
           setSuggestions(
-            mapped
-              .filter(s => s.label.toLowerCase().includes(inputValue.toLowerCase()) && !tags.includes(s.value))
+            mapped.filter(s => s.value && !tags.includes(s.value))
           );
           
           // Update labels map with suggestion info
           const newLabels = { ...labels };
-          mapped.forEach(m => { newLabels[m.value] = m.label; });
+          mapped.forEach(m => { if (m.value) newLabels[m.value] = m.label; });
           setLabels(newLabels);
         }
       } catch (err) {
@@ -151,58 +167,64 @@ export const TagField = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const addTag = async (tag: string) => {
-    const trimmed = tag.trim();
-    if (trimmed && !tags.includes(trimmed)) {
-      let finalValue = trimmed;
+  const addTag = (tag: any) => {
+    if (tag === null || tag === undefined) return;
+    const strValue = String(tag).trim();
+    if (!strValue) return;
 
-      // If we have a source collection, we ensure the entry exists
-      if (allowCreate && (sourceCollection || apiOverrides?.create)) {
+    // Filter out if already exists (for hasMany)
+    if (hasMany && tags.includes(strValue)) {
+      setInputValue('');
+      setShowSuggestions(false);
+      return;
+    }
+
+    const finalValue = strValue;
+
+    // UI update first for responsiveness
+    if (hasMany) {
+      onChange([...tags, finalValue]);
+    } else {
+      onChange(finalValue);
+    }
+    
+    setInputValue('');
+    setShowSuggestions(false);
+
+    // Then background auto-creation if enabled
+    if (allowCreate && (sourceCollection || apiOverrides?.create)) {
+      // Use IIFE or a separate async call to not block UI
+      (async () => {
         try {
           const searchKey = sourceField || 'slug';
           const searchUrl = apiOverrides?.search
-            ? `${apiOverrides.search}?q=${encodeURIComponent(trimmed)}`
-            : `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}?${searchKey}=${encodeURIComponent(trimmed)}&limit=1`;
+            ? `${apiOverrides.search}?q=${encodeURIComponent(strValue)}`
+            : `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}?${searchKey}=${encodeURIComponent(strValue)}&limit=1`;
 
           const existing = await api.get(searchUrl);
           const hasExisting = apiOverrides?.search ? !!existing : (existing.docs && existing.docs.length > 0);
           
           if (!hasExisting) {
-            // Auto-create the missing tag/category
             const slugify = (text: string) => text.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
-            
             const payload: Record<string, any> = {
-              name: trimmed,
-              slug: slugify(trimmed)
+              name: strValue,
+              slug: slugify(strValue)
             };
-            
             const createUrl = apiOverrides?.create || `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}`;
-            
-            // Try to create it. If it fails (e.g. fields don't match), we still add the tag to the local list
             await api.post(createUrl, payload);
           }
         } catch (err) {
-          console.error("Tag auto-creation failed, proceeding with local add only.", err);
+          console.error("Tag auto-creation failed:", err);
         }
-      }
-
-      if (hasMany) {
-        onChange([...tags, finalValue]);
-      } else {
-        onChange(finalValue);
-      }
-      
-      setInputValue('');
-      setShowSuggestions(false);
+      })();
     }
   };
 
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleAddClick = async (tag: string) => {
-      setIsCreating(true);
-      await addTag(tag);
-      setIsCreating(false);
+  const handleAddClick = (tag: any) => {
+      // Direct synchronous call to ensure state transitions happen immediately
+      addTag(tag);
   };
 
   return (
@@ -287,7 +309,10 @@ export const TagField = ({
                     <button
                     key={suggestion.value}
                     type="button"
-                    onClick={() => handleAddClick(suggestion.value)}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleAddClick(suggestion.value);
+                    }}
                     className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200 flex items-center justify-between group ${
                         theme === 'dark' 
                         ? 'hover:bg-slate-800 text-slate-300 hover:text-white' 
@@ -309,7 +334,10 @@ export const TagField = ({
           {inputValue.length > 0 && !suggestions.some(s => s.value === inputValue || s.label === inputValue) && (
               <button
                 type="button"
-                onClick={() => handleAddClick(inputValue)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleAddClick(inputValue);
+                }}
                 className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200 flex items-center gap-3 group mt-1 ${
                     theme === 'dark' 
                     ? 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400' 
