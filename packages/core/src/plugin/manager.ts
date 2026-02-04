@@ -40,6 +40,7 @@ export class PluginManager implements PluginManagerInterface {
   public headInjections: Map<string, any[]> = new Map();
   public logger = new Logger({ namespace: 'PluginManager' });
   public registeredCollections: Map<string, { collection: Collection; pluginSlug: string }> = new Map();
+  public pluginSettings: Map<string, any> = new Map();
   
   private coordinator: MigrationCoordinator;
   private schemaManager: SchemaManager;
@@ -213,7 +214,11 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   async savePluginConfig(slug: string, config: any) {
-    return this.registry.savePluginConfig(slug, config);
+    await this.registry.savePluginConfig(slug, config);
+    const plugin = this.plugins.get(slug);
+    if (plugin) {
+      plugin.manifest.config = config;
+    }
   }
 
   public getHeadInjections(slug: string): any[] {
@@ -226,6 +231,19 @@ export class PluginManager implements PluginManagerInterface {
 
   getCollection(slug: string) {
     return this.registeredCollections.get(slug);
+  }
+
+  public registerPluginSettings(pluginSlug: string, schema: any): void {
+    this.pluginSettings.set(pluginSlug, schema);
+    this.logger.info(`Settings registered for plugin: ${pluginSlug}`);
+  }
+
+  public getPluginSettings(pluginSlug: string): any | undefined {
+    return this.pluginSettings.get(pluginSlug);
+  }
+
+  public getAllPluginSettings(): Map<string, any> {
+    return new Map(this.pluginSettings);
   }
 
   async installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest> {

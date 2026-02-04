@@ -181,11 +181,15 @@ export type FieldType =
   | 'number' 
   | 'boolean' 
   | 'date' 
+  | 'datetime'
   | 'select' 
   | 'relationship' 
   | 'richText' 
   | 'upload'
-  | 'json';
+  | 'json'
+  | 'array'
+  | 'color'
+  | 'code';
 
 export interface Field {
   name: string;
@@ -196,13 +200,46 @@ export interface Field {
   defaultValue?: any;
   options?: { label: string; value: any }[]; // For select type
   relationTo?: string; // For relationship/upload type
+  hasMany?: boolean; // For relationship
+  min?: number; // For number
+  max?: number; // For number
+  minLength?: number; // For text
+  maxLength?: number; // For text
+  language?: 'javascript' | 'css' | 'html' | 'json' | 'typescript'; // For code
+  showTime?: boolean; // For date/datetime
   admin?: {
     hidden?: boolean;
     readOnly?: boolean;
     description?: string;
     position?: 'sidebar' | 'main';
     component?: string;
+    width?: 'full' | 'half';
   };
+}
+
+export interface SettingsTab {
+  id: string;
+  label: string;
+  icon?: string;
+  fields: string[]; // Field names
+}
+
+export interface PluginSettingsSchema {
+  fields: Field[];
+  tabs?: SettingsTab[];
+  
+  // Optional validation function
+  validate?: (
+    values: Record<string, any>,
+    context: any // Use any to avoid circular dependency
+  ) => Promise<Record<string, string> | null>;
+  
+  // Optional save hook
+  onSave?: (
+    oldValues: Record<string, any>,
+    newValues: Record<string, any>,
+    context: any // Use any to avoid circular dependency
+  ) => Promise<void>;
 }
 
 export type Access = (args: { req: any; user: any }) => boolean | Promise<boolean> | Record<string, any>;
@@ -290,6 +327,13 @@ export interface PluginContext {
   // Content Management
   readonly collections: {
     register(collection: Collection): void;
+  };
+
+  // Plugin Settings
+  readonly settings: {
+    register(schema: PluginSettingsSchema): void;
+    get(): Promise<Record<string, any>>;
+    update(values: Record<string, any>): Promise<void>;
   };
 
   readonly i18n: {

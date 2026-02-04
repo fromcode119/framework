@@ -186,3 +186,7 @@ export const getIcon = (name: string) => {
 
 // Re-export all Lucide icons for bridge/direct use
 export * from 'lucide-react';
+
+if (typeof window !== 'undefined') {
+  (window as any).Lucide = Lucide;
+}

@@ -38,6 +38,8 @@ export interface PluginManagerInterface {
   savePluginConfig(slug: string, config: any): Promise<void>;
   getCollections(): Collection[];
   getCollection(slug: string): { collection: Collection; pluginSlug: string } | undefined;
+  registerPluginSettings(pluginSlug: string, schema: any): void;
+  getPluginSettings(pluginSlug: string): any | undefined;
   installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest>;
   writeLog(level: string, message: string, pluginSlug?: string, context?: any): Promise<void>;
   disableWithError(slug: string, message: string): Promise<void>;
@@ -360,6 +362,41 @@ export function createPluginContext(
             pluginSlug: plugin.manifest.slug
           });
         }
+      }
+    },
+    settings: {
+      register: (schema: any) => {
+        manager.registerPluginSettings(plugin.manifest.slug, schema);
+      },
+      get: async () => {
+        const stored = await manager.db.findOne('_system_plugin_settings', { plugin_slug: plugin.manifest.slug });
+        const storedSettings = stored?.settings?.settings || {};
+        const schema = manager.getPluginSettings(plugin.manifest.slug);
+        
+        if (schema && schema.fields) {
+          const defaults: Record<string, any> = {};
+          schema.fields.forEach((field: any) => {
+            if (field.defaultValue !== undefined) {
+              defaults[field.name] = field.defaultValue;
+            }
+          });
+          return { ...defaults, ...storedSettings };
+        }
+        return storedSettings;
+      },
+      update: async (values: Record<string, any>) => {
+        const stored = await manager.db.findOne('_system_plugin_settings', { plugin_slug: plugin.manifest.slug });
+        const currentConfig = stored?.settings || {};
+        
+        await manager.savePluginConfig(plugin.manifest.slug, {
+          ...currentConfig,
+          settings: values
+        });
+        
+        manager.emit('plugin:settings:updated', {
+          pluginSlug: plugin.manifest.slug,
+          settings: values
+        });
       }
     },
     i18n: {
