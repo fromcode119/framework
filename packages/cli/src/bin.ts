@@ -507,7 +507,7 @@ plugin
       const outDir = uiDir;
       const outFile = path.join(outDir, 'bundle.js');
 
-      console.log(chalk.blue(t('cli.build.starting', { type: 'plugin', slug })));
+      console.log(chalk.blue(t('cli.build.starting', { type: 'plugin UI', slug })));
       
       // Compile styles first
       await compileStyles(uiDir);
@@ -557,10 +557,53 @@ plugin
       if (options.watch) {
         const ctx = await esbuild.context(buildOptions);
         await ctx.watch();
-        console.log(chalk.green('Build started in watch mode...'));
+        console.log(chalk.green('UI build started in watch mode...'));
       } else {
         await esbuild.build(buildOptions);
-        console.log(chalk.green('Build completed successfully!'));
+        console.log(chalk.green('UI build completed successfully!'));
+      }
+
+      // 2. Build the plugin backend (index.ts -> index.js) if it exists
+      const backendEntry = [
+        path.join(pluginDir, 'index.ts'),
+        path.join(pluginDir, 'index.js')
+      ].find(p => fs.existsSync(p));
+
+      // We only need to compile it if it's TypeScript. If it's already JS, it might be fine,
+      // but bundling it ensures dependencies (except SDK) are included.
+      if (backendEntry && backendEntry.endsWith('.ts')) {
+        console.log(chalk.blue(t('cli.build.starting', { type: 'plugin backend', slug })));
+        
+        await esbuild.build({
+          entryPoints: [backendEntry],
+          bundle: true,
+          platform: 'node',
+          format: 'cjs',
+          outfile: path.join(pluginDir, 'index.js'),
+          // The SDK and other core packages are PROVIDED by the host environment
+          external: [
+            '@fromcode/sdk', 
+            '@fromcode/core', 
+            '@fromcode/database', 
+            '@fromcode/media', 
+            '@fromcode/email', 
+            '@fromcode/cache', 
+            '@fromcode/scheduler',
+            'express',
+            'knex',
+            'drizzle-orm',
+            'pg'
+          ],
+          alias: {
+            // If we are running from a source build (monorepo), map the SDK to the local package
+            '@fromcode/sdk': path.resolve(__dirname, '../../sdk/src/index.ts')
+          },
+          sourcemap: true,
+          minify: false,
+          logLevel: 'info',
+        });
+        
+        console.log(chalk.green('Backend build completed successfully!'));
       }
 
     } catch (error) {
