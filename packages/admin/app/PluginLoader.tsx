@@ -56,16 +56,22 @@ export default function PluginLoader() {
       while (
         (!(window as any).FrameworkIcons || 
          !(window as any).React || 
-         !(window as any).Fromcode?.registerSlotComponent ||
-         typeof (window as any).Fromcode.registerSlotComponent !== 'function') && 
-        retryCount < 50
+         !(window as any).Lucide ||
+         !(window as any).Fromcode?.isReady ||
+         !(window as any).Fromcode?.components) && 
+        retryCount < 100
       ) {
         await new Promise(resolve => setTimeout(resolve, 50));
         retryCount++;
       }
 
-      if (!(window as any).FrameworkIcons || !(window as any).React) {
-        console.error("[Admin] Required globals not found on window. Plugin loading aborted.");
+      if (!(window as any).FrameworkIcons || !(window as any).React || !(window as any).Fromcode?.isReady) {
+        console.error("[Admin] Required globals not found on window. Plugin loading aborted.", {
+          icons: !!(window as any).FrameworkIcons,
+          react: !!(window as any).React,
+          lucide: !!(window as any).Lucide,
+          bridge: !!(window as any).Fromcode?.isReady
+        });
         return;
       }
 

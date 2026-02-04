@@ -25,6 +25,11 @@ export const ENDPOINTS = {
     CONFIG: (slug: string) => v(`/plugins/${slug}/config`),
     LOGS: (slug: string) => v(`/plugins/${slug}/logs`),
     DELETE: (slug: string) => v(`/plugins/${slug}`),
+    SETTINGS: (slug: string) => v(`/plugins/${slug}/settings`),
+    SETTINGS_SCHEMA: (slug: string) => v(`/plugins/${slug}/settings/schema`),
+    SETTINGS_RESET: (slug: string) => v(`/plugins/${slug}/settings/reset`),
+    SETTINGS_EXPORT: (slug: string) => v(`/plugins/${slug}/settings/export`),
+    SETTINGS_IMPORT: (slug: string) => v(`/plugins/${slug}/settings/import`),
   },
   THEMES: {
     BASE: v('/themes'),

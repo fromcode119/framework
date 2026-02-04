@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useEffect, useState, use } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { Slot, usePlugins } from '@fromcode/react';
 import { useTheme } from '@/components/ThemeContext';
 import { Card } from '@/components/ui/Card';
@@ -11,12 +11,14 @@ import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
+import { resolveCollection, generatePreviewUrl } from '@/lib/collection-utils';
 
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 
-export default function CollectionListPage() {
-  const { pluginSlug, slug } = useParams() as { pluginSlug: string; slug: string };
+export default function CollectionListPage({ params }: { params: Promise<{ pluginSlug: string; slug: string }> }) {
+  const { pluginSlug, slug } = use(params);
+  const router = useRouter();
   const { collections, settings } = usePlugins();
   const { theme } = useTheme();
   const [data, setData] = useState<any[]>([]);
@@ -24,17 +26,14 @@ export default function CollectionListPage() {
   const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   
   // Find the collection by matching the short slug and the explicit pluginSlug
-  const collection = collections.find(c => {
-    // Check if the actual collection slug (prefixed) matches the URL slug (short)
-    // We check against:
-    // 1. shortSlug (pretty name like 'pages')
-    // 2. slug (technical prefixed name like 'fcp_cms_cms-pages')
-    // 3. unprefixedSlug (the name the plugin dev gave it before framework prefixing like 'cms-pages')
-    const isSlugMatch = c.shortSlug === slug || c.slug === slug || c.unprefixedSlug === slug;
-    const isPluginMatch = c.pluginSlug === pluginSlug || (c.pluginSlug === 'cms' && pluginSlug === 'cms');
-    
-    return isSlugMatch && isPluginMatch;
-  });
+  const collection = resolveCollection(collections, pluginSlug, slug);
+
+  // Redirect if it's a global/singleton collection
+  useEffect(() => {
+    if (collection?.type === 'global') {
+      router.replace(`/${pluginSlug}/${slug}/settings`);
+    }
+  }, [collection, pluginSlug, slug, router]);
 
   // Basic search state
   const [total, setTotal] = useState(0);
@@ -384,36 +383,8 @@ export default function CollectionListPage() {
             onSelectionChange={setSelectedIds}
             actions={(row) => {
               const getRowPreviewUrl = () => {
-                if (!frontendUrl) return '#';
-                
-                // PRIORITY: If we have an explicit custom permalink override, use it directly
-                if (row.customPermalink) {
-                  return `${frontendUrl}/${row.customPermalink.startsWith('/') ? row.customPermalink.substring(1) : row.customPermalink}?preview=1&draft=1`;
-                }
-
-                // FALLBACK: Use the global structure logic
-                const pathValue = row.slug || row.id;
-                const structure = settings?.permalink_structure || '/:slug';
-                
-                const now = new Date();
-                const replacements: Record<string, string> = {
-                  ':year': now.getFullYear().toString(),
-                  ':month': (now.getMonth() + 1).toString().padStart(2, '0'),
-                  ':day': now.getDate().toString().padStart(2, '0'),
-                  ':id': row.id,
-                  ':slug': pathValue,
-                };
-
-                let path = structure;
-                Object.entries(replacements).forEach(([key, val]) => {
-                  path = path.replace(key, val);
-                });
-
-                // Clean up double slashes and ensure leading slash
-                path = path.replace(/\/+/g, '/');
-                if (!path.startsWith('/')) path = '/' + path;
-
-                return `${frontendUrl}${path}?preview=1&draft=1`;
+                if (!collection) return '#';
+                return generatePreviewUrl(settings?.frontend_url || '', row, collection, settings?.permalink_structure);
               };
 
               return (

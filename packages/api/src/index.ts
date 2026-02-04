@@ -13,6 +13,7 @@ import { RESTController } from './controllers/RESTController';
 import { API_ROUTES } from './constants';
 import { setupAuthRoutes } from './routes/auth';
 import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
+import { setupPluginSettingsRoutes } from './routes/plugin-settings';
 import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
 import { setupSystemRoutes } from './routes/system';
 import { setupMediaRoutes } from './routes/media';
@@ -45,7 +46,8 @@ export class APIServer {
         this.logger.info(`Setting updated: ${key} = ${value}`);
         this.settingsCache.set(key, value);
         await this.cache.set(`system_setting:${key}`, value);
-      }
+      },
+      manager.hooks
     );
   }
 
@@ -424,6 +426,7 @@ export class APIServer {
 
     vApi.use('/auth', setupAuthRoutes(this.manager, this.auth));
     vApi.use('/plugins', setupPluginRoutes(this.manager, this.auth));
+    vApi.use('/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
     vApi.use('/themes', setupThemeRoutes(this.themeManager, this.auth));
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
@@ -440,6 +443,7 @@ export class APIServer {
     // Legacy support (to avoid breaking current admin)
     this.app.use('/api/auth', setupAuthRoutes(this.manager, this.auth));
     this.app.use('/api/plugins', setupPluginRoutes(this.manager, this.auth));
+    this.app.use('/api/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
     this.app.use('/api/themes', setupThemeRoutes(this.themeManager, this.auth));
     this.app.use('/api/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     this.app.use('/api/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));

@@ -16,6 +16,7 @@ import { ENDPOINTS } from '@/lib/constants';
 import { useNotify } from '@/components/NotificationContext';
 import { Loader } from '@/components/ui/Loader';
 import { Select } from '@/components/ui/Select';
+import { PluginSettingsForm } from '@/components/plugins/PluginSettingsForm';
 
 interface Plugin {
   slug: string;
@@ -48,7 +49,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   const router = useRouter();
   const pathname = usePathname();
   const { notify } = useNotify();
-  const { triggerRefresh, refreshVersion } = usePlugins();
+  const { triggerRefresh, refreshVersion, collections } = usePlugins();
   const searchParams = useSearchParams();
   const [plugin, setPlugin] = useState<Plugin | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,11 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   const [logs, setLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const { theme } = useTheme();
+
+  const settingsCollections = collections.filter(c => 
+    c.pluginSlug === slug && 
+    c.admin?.group === 'Settings'
+  );
 
   const fetchPlugin = async () => {
     try {
@@ -339,110 +345,9 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           )}
 
           {activeTab === 'settings' && (
-            <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-               <h3 className={`text-[11px] font-black uppercase tracking-widest mb-10 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                 Configuration Parameters
-               </h3>
-               
-               {plugin.admin?.management?.settings && plugin.admin.management.settings.length > 0 ? (
-                 <div className="space-y-10">
-                    <div className="grid grid-cols-1 gap-10">
-                       {plugin.admin.management.settings.map(setting => (
-                         <div key={setting.name} className="space-y-4">
-                            <div className="flex items-center justify-between">
-                               <div className="space-y-1">
-                                 <label className={`text-sm font-black tracking-tight ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
-                                   {setting.label}
-                                 </label>
-                                 {setting.description && (
-                                   <p className="text-[11px] font-medium text-slate-500 max-w-md">{setting.description}</p>
-                                 )}
-                               </div>
-                               {setting.type === 'boolean' && (
-                                  <Switch 
-                                    checked={!!configValues[setting.name]} 
-                                    onChange={(checked) => setConfigValues(v => ({ ...v, [setting.name]: checked }))} 
-                                    className="scale-110"
-                                  />
-                               )}
-                            </div>
-                            {setting.type === 'select' && setting.options && (
-                               <div className="space-y-4">
-                                  <Select 
-                                    theme={theme}
-                                    options={setting.options}
-                                    value={setting.options.some(opt => opt.value === configValues[setting.name]) ? configValues[setting.name] : 'custom'}
-                                    onChange={(val) => {
-                                      if (val === 'custom') {
-                                        // Don't change the actual value yet, or set it to default if it was a predefined one
-                                        if (setting.options?.some(opt => opt.value === configValues[setting.name])) {
-                                          setConfigValues(v => ({ ...v, [setting.name]: '/:slug' })); // default custom
-                                        }
-                                      } else {
-                                        setConfigValues(v => ({ ...v, [setting.name]: val }));
-                                      }
-                                    }}
-                                  />
-                                  {(!setting.options.some(opt => opt.value === configValues[setting.name]) || 
-                                    setting.options.find(opt => opt.value === configValues[setting.name])?.value === 'custom') && (
-                                     <div className="animate-in slide-in-from-top-2 duration-300">
-                                       <input 
-                                         type="text" 
-                                         value={configValues[setting.name] === 'custom' ? '' : configValues[setting.name] || ''}
-                                         onChange={(e) => setConfigValues(v => ({ ...v, [setting.name]: e.target.value }))}
-                                         placeholder="Enter custom value..."
-                                         className={`w-full rounded-xl py-3 px-6 outline-none border transition-all font-bold ${
-                                           theme === 'dark' 
-                                             ? 'bg-slate-950 border-slate-800 text-white focus:ring-2 ring-indigo-500/30' 
-                                             : 'bg-slate-100/50 border-slate-200/60 text-slate-900 focus:bg-white focus:ring-4 ring-indigo-500/5 shadow-inner focus:shadow-indigo-500/5'
-                                         }`}
-                                       />
-                                       <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mt-2 ml-2">Custom Pattern Active</p>
-                                     </div>
-                                  )}
-                               </div>
-                            )}
-                            {setting.type !== 'boolean' && setting.type !== 'select' && (
-                               <input 
-                                 type="text" 
-                                 value={configValues[setting.name] || ''}
-                                 onChange={(e) => setConfigValues(v => ({ ...v, [setting.name]: e.target.value }))}
-                                 placeholder={setting.description}
-                                 className={`w-full rounded-xl py-3 px-6 outline-none border transition-all font-bold ${
-                                   theme === 'dark' 
-                                     ? 'bg-slate-950 border-slate-800 text-white focus:ring-2 ring-indigo-500/30' 
-                                     : 'bg-slate-100/50 border-slate-200/60 text-slate-900 focus:bg-white focus:ring-4 ring-indigo-500/5 shadow-inner focus:shadow-indigo-500/5'
-                                 }`}
-                               />
-                            )}
-                         </div>
-                       ))}
-                    </div>
-                    <div className={`-mx-8 -mb-8 mt-12 p-8 border-t flex justify-end transition-colors ${
-                      theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50/50 border-slate-100/60'
-                    }`}>
-                      <button 
-                        onClick={handleSaveConfig}
-                        disabled={isSaving}
-                        className={`px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 active:scale-95 disabled:opacity-50`}>
-                        {isSaving ? 'Processing...' : 'Save'}
-                      </button>
-                    </div>
-                 </div>
-               ) : (
-                 <div className={`py-20 flex flex-col items-center justify-center border-2 border-dashed rounded-[2rem] ${
-                   theme === 'dark' ? 'border-slate-800' : 'border-slate-100 bg-slate-50/30'
-                 }`}>
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ${
-                      theme === 'dark' ? 'bg-slate-800' : 'bg-white shadow-sm ring-1 ring-slate-100'
-                    }`}>
-                       <FrameworkIcons.Settings className="text-slate-300" size={32} />
-                    </div>
-                    <p className="text-slate-500 font-bold">No settings available</p>
-                    <p className="text-[11px] text-slate-400 mt-1 uppercase tracking-widest">This plugin is self-configuring</p>
-                 </div>
-               )}
-            </Card>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <PluginSettingsForm pluginSlug={slug} />
+            </div>
           )}
 
           {activeTab === 'permissions' && (

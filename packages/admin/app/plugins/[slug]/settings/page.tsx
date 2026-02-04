@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
+import { PluginSettingsForm } from '@/components/plugins/PluginSettingsForm';
 
 interface Plugin {
   slug: string;
@@ -93,8 +94,16 @@ export default function PluginSettingsPage({ params }: { params: React.Usable<{ 
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
+          {/* Plugin Configuration (New Settings API) */}
+          <div className="space-y-4">
+            <h2 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              Plugin Configuration
+            </h2>
+            <PluginSettingsForm pluginSlug={slug} />
+          </div>
+
           <Card className="p-8">
-            <h3 className="text-sm font-bold uppercase text-slate-500 mb-6">Core Configuration</h3>
+            <h3 className="text-sm font-bold uppercase text-slate-500 mb-6">Core Registry Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">

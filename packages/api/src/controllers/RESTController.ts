@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Collection, Logger, RecordVersions } from '@fromcode/core';
+import { Collection, Logger, RecordVersions, HookManager } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { 
   IDatabaseManager, 
@@ -29,7 +29,8 @@ export class RESTController {
   constructor(
     private db: IDatabaseManager, 
     private auth?: AuthManager,
-    private onSettingsUpdate?: (key: string, value: any) => void
+    private onSettingsUpdate?: (key: string, value: any) => void,
+    private hooks?: HookManager
   ) {
     this.activityService = new ActivityService(db);
     this.versioningService = new VersioningService(db);
@@ -217,6 +218,7 @@ export class RESTController {
       const { id } = req.params;
       const pk = collection.primaryKey || 'id';
       const table = this.getVirtualTable(collection);
+      
       const result = await this.db.findOne(table, { [pk]: pk === 'id' ? parseInt(id) : id });
       
       if (!result) return res.status(404).json({ error: 'Not found' });
@@ -237,17 +239,30 @@ export class RESTController {
 
   async create(collection: Collection, req: Request, res: Response) {
     try {
-      const data = req.body;
+      let data = req.body;
       const table = this.getVirtualTable(collection);
       
+      // Hooks: Before Create
+      if (this.hooks) {
+        data = await this.hooks.call(`collection:${collection.slug}:beforeCreate`, data);
+        data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
+      }
+
       const errors = collection.fields.filter(f => f.required && !data[f.name]).map(f => `Field "${f.name}" is required`);
       if (errors.length > 0) return res.status(400).json({ errors });
 
       const insertData = await this.processIncomingData(collection, data, table);
       const newItem = await this.db.insert(table, insertData);
 
-      await this.versioningService.createSnapshot(collection, newItem.id, newItem, (req as any).user, `Initial creation of ${collection.slug} record`);
-      res.status(201).json(this.filterHiddenFields(collection, newItem));
+      // Hooks: After Create
+      let finalItem = newItem;
+      if (this.hooks) {
+        finalItem = await this.hooks.call(`collection:${collection.slug}:afterCreate`, newItem);
+        finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
+      }
+
+      await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, (req as any).user, `Initial creation of ${collection.slug} record`);
+      res.status(201).json(this.filterHiddenFields(collection, finalItem));
     } catch (err: any) {
       res.status(err.code === '23505' ? 409 : 500).json({ error: err.message });
     }
@@ -256,10 +271,17 @@ export class RESTController {
   async update(collection: Collection, req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = req.body;
+      let data = req.body;
       const pk = collection.primaryKey || 'id';
       const table = this.getVirtualTable(collection);
+      
       const where = { [pk]: pk === 'id' ? parseInt(id) : id };
+
+      // Hooks: Before Update
+      if (this.hooks) {
+        data = await this.hooks.call(`collection:${collection.slug}:beforeUpdate`, data);
+        data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
+      }
 
       const errors = collection.fields.filter(f => data[f.name] !== undefined && f.required && !data[f.name]).map(f => `Field "${f.name}" cannot be empty`);
       if (errors.length > 0) return res.status(400).json({ errors });
@@ -269,10 +291,16 @@ export class RESTController {
       
       if (!updated) return res.status(404).json({ error: 'Not found' });
 
-      await this.versioningService.createSnapshot(collection, id, updated, (req as any).user, `Update ${collection.slug} record`);
-      if (collection.slug === 'settings' && this.onSettingsUpdate) this.onSettingsUpdate(id, data.value);
+      // Hooks: After Update
+      let finalItem = updated;
+      if (this.hooks) {
+        finalItem = await this.hooks.call(`collection:${collection.slug}:afterUpdate`, updated);
+        finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
+      }
+
+      await this.versioningService.createSnapshot(collection, id, finalItem, (req as any).user, `Update ${collection.slug} record`);
       
-      res.json(this.filterHiddenFields(collection, updated));
+      res.json(this.filterHiddenFields(collection, finalItem));
     } catch (err: any) {
       res.status(err.code === '23505' ? 409 : 500).json({ error: err.message });
     }

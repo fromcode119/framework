@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql, and, ilike, isNotNull } from '@fromcode/database';
+import { IDatabaseManager, sql, and, or, ilike, isNotNull } from '@fromcode/database';
 import { Collection, Logger } from '@fromcode/core';
 
 export class SuggestionService {
@@ -9,7 +9,12 @@ export class SuggestionService {
   async getSuggestions(collection: Collection, field: string, q?: string, table?: any) {
     try {
       const config = collection.fields.find(f => f.name === field);
-      if (!config) throw new Error(`Field ${field} does not exist in ${collection.slug}`);
+      
+      // Safety: If field doesn't exist, don't crash the suggestions API, just return empty
+      if (!config && field !== 'id' && field !== 'slug' && field !== 'username') {
+        this.logger.warn(`Suggestions requested for non-existent field "${field}" in collection "${collection.slug}"`);
+        return [];
+      }
 
       const actualTable = table || (this.db as any).createDynamicTable({
         slug: collection.tableName || collection.slug,
@@ -18,7 +23,7 @@ export class SuggestionService {
         timestamps: collection.timestamps !== false
       });
 
-      if (config.type === 'json' || config.admin?.component === 'TagField' || config.admin?.component === 'Tags') {
+      if (config && (config.type === 'json' || config.admin?.component === 'TagField' || config.admin?.component === 'Tags')) {
         let query: any = sql`SELECT DISTINCT jsonb_array_elements_text(${actualTable[field]}) as value FROM ${actualTable} WHERE ${actualTable[field]} IS NOT NULL AND jsonb_typeof(${actualTable[field]}) = 'array'`;
         
         if (q) {
@@ -29,9 +34,13 @@ export class SuggestionService {
         const result = await this.db.drizzle.execute(query);
         
         return result.rows.map((r: any) => ({ label: r.value, value: r.value }));
-      } else {
+      } else if (actualTable[field]) {
         const isUserSearch = collection.slug === 'users' && (field === 'username' || field === 'email');
-        const conditions: any[] = isUserSearch ? [] : [ isNotNull(actualTable[field]) ];
+        const conditions: any[] = [];
+        
+        if (!isUserSearch) {
+            conditions.push(isNotNull(actualTable[field]));
+        }
         
         if (q) {
           if (isUserSearch) {
@@ -40,7 +49,7 @@ export class SuggestionService {
              if (actualTable['email']) userConditions.push(ilike(actualTable['email'], `%${q}%`));
              
              if (userConditions.length > 0) {
-              // We need to use or(...userConditions) but wait, drizzle and() handles multiple
+                conditions.push(or(...userConditions));
              }
           } else {
              conditions.push(ilike(actualTable[field], `%${q}%`));
@@ -63,6 +72,10 @@ export class SuggestionService {
           .limit(50);
         
         return result.map((r: any) => ({ label: r.label, value: r.value }));
+      } else {
+        // Field not in table and no special handling
+        this.logger.warn(`Suggestions field "${field}" not found in table for collection "${collection.slug}"`);
+        return [];
       }
     } catch (err: any) {
       this.logger.error(`Suggestions error in ${collection.slug} for ${field}:`, err);

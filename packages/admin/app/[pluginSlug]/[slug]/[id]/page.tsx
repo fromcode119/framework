@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, use, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Slot, usePlugins } from '@fromcode/react';
 import { useTheme } from '@/components/ThemeContext';
@@ -9,60 +9,83 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { TagField } from '@/components/ui/TagField';
 import { Button } from '@/components/ui/Button';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import { ColorPicker } from '@/components/ui/ColorPicker';
+import { CodeEditor } from '@/components/ui/CodeEditor';
 import { PermalinkInput } from '@/components/ui/PermalinkInput';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ArrayField } from '@/components/ui/ArrayField';
+import { FieldRenderer } from '@/components/collection/FieldRenderer';
 import { FrameworkIcons } from '@/lib/icons';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
+import { resolveCollection, generatePreviewUrl } from '@/lib/collection-utils';
+import { useCollectionForm } from '@/components/collection/hooks/useCollectionForm';
+import { useSlugGeneration } from '@/components/collection/hooks/useSlugGeneration';
+import { useSlugValidation } from '@/components/collection/hooks/useSlugValidation';
 
-const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { field: any, value: any, onChange: (val: any) => void, theme: string, collectionSlug: string }) => {
-  const sourceCollection = field.admin?.sourceCollection || field.relationTo;
-  return (
-    <TagField 
-      collectionSlug={collectionSlug}
-      fieldName={field.name}
-      value={value}
-      onChange={onChange}
-      theme={theme}
-      sourceCollection={sourceCollection}
-      sourceField={field.admin?.sourceField || (sourceCollection === 'users' ? 'username' : 'slug')}
-      hasMany={field.hasMany !== undefined ? field.hasMany : (field.admin?.component === 'TagField' || field.admin?.component === 'Tags')}
-      allowCreate={sourceCollection !== 'users'}
-    />
-  );
-};
-
-export default function CollectionEditPage() {
-  const { pluginSlug, slug, id } = useParams() as { pluginSlug: string, slug: string, id: string };
+export default function CollectionEditPage({ params }: { params: Promise<{ pluginSlug: string; slug: string; id: string }> }) {
+  const { pluginSlug, slug, id } = use(params);
   const router = useRouter();
-  const plugins = usePlugins();
-  const { collections, settings } = plugins;
-  const fieldComponents = (plugins as any).fieldComponents || {};
-  console.log('[Admin] Field components available:', Object.keys(fieldComponents));
   const { theme } = useTheme();
+  const { collections, settings } = usePlugins();
 
   const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   
   const isNew = id === 'new';
-  const collection = collections.find(c => {
-    // Check if the actual collection slug (prefixed) matches the URL slug (short)
-    const isSlugMatch = c.shortSlug === slug || c.slug === slug || c.unprefixedSlug === slug;
-    const isPluginMatch = c.pluginSlug === pluginSlug || (c.pluginSlug === 'cms' && pluginSlug === 'cms');
-    
-    return isSlugMatch && isPluginMatch;
-  });
-  
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const collection = resolveCollection(collections, pluginSlug, slug);
+  const resolvedSlug = collection?.slug || slug;
+
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [loading, setLoading] = useState(!isNew);
-  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-  const [slugWarning, setSlugWarning] = useState<string | null>(null);
+  
+  const {
+    formData,
+    setFormData,
+    setFieldValue,
+    handleSubmit,
+    isSubmitting: saving,
+  } = useCollectionForm({
+    collectionSlug: resolvedSlug,
+    isNew,
+    onSuccess: (result) => {
+      setStatus({ type: 'success', message: `Entry ${isNew ? 'created' : 'updated'} successfully` });
+      if (!isNew) fetchRevisions(1);
+      if (isNew) router.push(`/${pluginSlug}/${slug}/${result.id}`);
+    },
+    onError: (err) => setStatus({ type: 'error', message: err.message || 'Operation failed' })
+  });
+
+  const formDataRef = React.useRef(formData);
+  formDataRef.current = formData;
+
+  const sourceField = collection?.admin?.useAsTitle || (collection?.fields.find(f => f.name === 'name' || f.name === 'title')?.name);
+  
+  const onSlugGenerate = useCallback((newSlugValue: string) => {
+    setFieldValue('slug', newSlugValue);
+    if (!formDataRef.current.customPermalink || formDataRef.current.customPermalink === formDataRef.current.slug) {
+      setFieldValue('customPermalink', newSlugValue);
+    }
+  }, [setFieldValue]);
+
+  const { manuallyEdited: slugManuallyEdited, setManuallyEdited: setSlugManuallyEdited } = useSlugGeneration({
+    sourceValue: sourceField ? formData[sourceField] : '',
+    isNew,
+    manuallyEdited: false,
+    onSlugGenerate
+  });
+
+  const { warning: slugWarning } = useSlugValidation({
+    slug: formData.slug,
+    collectionSlug: resolvedSlug,
+    currentId: id,
+    isNew
+  });
+
   const [selectedRevision, setSelectedRevision] = useState<any | null>(null);
   const [activeVersionId, setActiveVersionId] = useState<number | null>(null);
   const [revisions, setRevisions] = useState<any[]>([]);
@@ -83,8 +106,6 @@ export default function CollectionEditPage() {
   }, [formData, saving]);
 
   const currentRevIndex = selectedRevision ? revisions.findIndex(r => r.id === selectedRevision.id) : -1;
-
-  const resolvedSlug = collection?.slug || slug;
 
   async function fetchRevisions(page: number) {
     setRevisionsLoading(true);
@@ -121,46 +142,8 @@ export default function CollectionEditPage() {
   };
 
   const getPreviewUrl = () => {
-    if (!formData) return '#';
-    
-    // PRIORITY: If we have an explicit custom permalink override, use it directly
-    if (formData.customPermalink) {
-      return `${frontendUrl}/${formData.customPermalink.startsWith('/') ? formData.customPermalink.substring(1) : formData.customPermalink}?preview=1&draft=1`;
-    }
-
-    // FALLBACK: Use the global structure logic
-    const pathValue = formData.slug || id;
-    const structure = settings?.permalink_structure || '/:slug';
-    
-    const now = new Date();
-    const replacements: Record<string, string> = {
-      ':year': now.getFullYear().toString(),
-      ':month': (now.getMonth() + 1).toString().padStart(2, '0'),
-      ':day': now.getDate().toString().padStart(2, '0'),
-      ':id': id,
-      ':slug': pathValue,
-    };
-
-    let path = structure;
-    Object.entries(replacements).forEach(([key, val]) => {
-      path = path.replace(key, val);
-    });
-
-    // Clean up double slashes and ensure leading slash
-    path = path.replace(/\/+/g, '/');
-    if (!path.startsWith('/')) path = '/' + path;
-
-    return `${frontendUrl}${path}?preview=1&draft=1`;
-  };
-
-  const slugify = (text: string) => {
-    return text
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')     // Replace spaces with -
-      .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-      .replace(/\-\-+/g, '-');  // Replace multiple - with single -
+    if (!collection) return '#';
+    return generatePreviewUrl(settings?.frontend_url || '', formData, collection, settings?.permalink_structure);
   };
 
   useEffect(() => {
@@ -176,7 +159,7 @@ export default function CollectionEditPage() {
         // Fetch revisions with pagination
         fetchRevisions(1);
 
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to fetch entry:", err);
         setStatus({ type: 'error', message: 'Failed to load entry' });
       } finally {
@@ -186,41 +169,6 @@ export default function CollectionEditPage() {
 
     fetchData();
   }, [resolvedSlug, id, isNew, collection]);
-
-  // Debounced slug uniqueness check
-  useEffect(() => {
-    if (!formData.slug || !collection) {
-      setSlugWarning(null);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        // Query the collection for existing slug using direct matching
-        const query = `?slug=${encodeURIComponent(formData.slug)}&limit=1`;
-        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}${query}`);
-        
-        // Handle result Doc structure
-        const results = response.docs || [];
-        
-        if (Array.isArray(results) && results.length > 0) {
-          const match = results[0];
-          // If it's a different record, it's a duplicate
-          if (isNew || String(match.id) !== String(id)) {
-            setSlugWarning(`This slug is already taken by "${match.name || match.title || match.id}".`);
-          } else {
-            setSlugWarning(null);
-          }
-        } else {
-          setSlugWarning(null);
-        }
-      } catch (err) {
-        // Silent fail for validation helper
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [formData.slug, resolvedSlug, id, isNew, collection]);
 
   if (!collection) {
     return (
@@ -266,59 +214,8 @@ export default function CollectionEditPage() {
       setActiveVersionId(null);
     }
 
-    setFormData(prev => {
-      const newData = { ...prev, [name]: value };
-
-      // Auto-generate slug and permalink logic
-      const sourceField = collection.admin?.useAsTitle || (collection.fields.find(f => f.name === 'name' || f.name === 'title')?.name);
-      
-      if (name === sourceField && !slugManuallyEdited && isNew) {
-        const newSlug = slugify(value);
-        newData.slug = newSlug;
-        if (!newData.customPermalink) {
-          newData.customPermalink = newSlug;
-        }
-      }
-
-      if (name === 'slug') {
-        setSlugManuallyEdited(true);
-        // Sync permalink with slug if it hasn't been manually diversified
-        if (!prev.customPermalink || prev.customPermalink === prev.slug) {
-           newData.customPermalink = value;
-        }
-      }
-
-      return newData;
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setStatus(null);
-
-    try {
-      const url = isNew 
-        ? `${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}` 
-        : `${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`;
-
-      const result = await (isNew ? api.post(url, formData) : api.put(url, formData));
-
-      setStatus({ type: 'success', message: `Entry ${isNew ? 'created' : 'updated'} successfully` });
-      
-      // Refresh revisions
-      if (!isNew) {
-        fetchRevisions(1);
-      }
-
-      if (isNew) {
-        router.push(`/${pluginSlug}/${slug}/${result.id}`);
-      }
-    } catch (err: any) {
-      setStatus({ type: 'error', message: err.message || 'Operation failed' });
-    } finally {
-      setSaving(false);
-    }
+    if (name === 'slug') setSlugManuallyEdited(true);
+    setFieldValue(name, value);
   };
 
   const handleDelete = async () => {
@@ -333,9 +230,9 @@ export default function CollectionEditPage() {
     }
   };
 
-  const hasSlug = collection.fields.some(f => f.name === 'slug');
-  const showPreview = collection.admin?.preview !== false && !isNew;
-  const showPermalink = collection.admin?.preview !== false && hasSlug;
+  const hasSlug = collection?.fields.some(f => f.name === 'slug');
+  const showPreview = (collection?.admin as any)?.preview !== false && !isNew;
+  const showPermalink = (collection?.admin as any)?.preview !== false && hasSlug;
 
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
@@ -362,7 +259,7 @@ export default function CollectionEditPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className={`text-2xl font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {isNew ? `Create ${collection.name || collection.slug}` : `Edit ${collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (formData.title || formData.name || collection.name || 'Entry')}`}
+                {isNew ? `Create ${collection.name || collection.slug}` : (collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (formData.title || formData.name || collection.name || 'Entry'))}
               </h1>
               <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-1">
                 {isNew ? `Define a new record for ${collection.name || collection.slug}` : `Modify existing ${formData.title || formData.name || collection.name || 'entry'}`}
@@ -390,7 +287,23 @@ export default function CollectionEditPage() {
                   Preview
                 </a>
               )}
-<<<< (Rest of buttons)
+              
+              <Button 
+                variant="ghost"
+                onClick={() => window.history.back()}
+                className="rounded-2xl px-6 font-black uppercase tracking-widest text-xs text-slate-400"
+              >
+                Discard Changes
+              </Button>
+              <Button 
+                className="px-8 font-black uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-600/30" 
+                onClick={handleSubmit}
+                isLoading={saving}
+                icon={<FrameworkIcons.Save size={18} />}
+              >
+                {isNew ? 'Create' : 'Save Changes'}
+              </Button>
+
               {!isNew && (
                 <button 
                   onClick={() => setShowDeleteConfirm(true)}
@@ -430,80 +343,19 @@ export default function CollectionEditPage() {
                   {collection.fields
                     .filter(f => !f.admin?.hidden && f.admin?.position !== 'sidebar')
                     .map((field) => (
-                    <div key={field.name} className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
-                      <label className={`block text-xs font-black uppercase tracking-widest mb-3 pl-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                        {field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()}
-                        {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
-                      </label>
-                      
-                        {field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
-                          <TagFieldLocal 
-                            field={field} 
-                            value={formData[field.name]} 
-                            onChange={(val) => handleInputChange(field.name, val)}
-                            theme={theme}
-                            collectionSlug={resolvedSlug}
-                          />
-                        ) : field.admin?.component ? (() => {
-                          const componentName = field.admin.component;
-                          const CustomComponent = fieldComponents[componentName];
-                          
-                          if (CustomComponent) {
-                            return (
-                              <CustomComponent 
-                                value={formData[field.name]}
-                                onChange={(val: any) => handleInputChange(field.name, val)}
-                                theme={theme}
-                                field={field}
-                              />
-                            );
-                          }
-
-                          return (
-                            <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                               <FrameworkIcons.Alert size={12} />
-                               Component "{componentName}" not registered by any plugin.
-                            </div>
-                          );
-                        })() : (field.type === 'textarea' || field.type === 'richText') ? (
-                          {/* ... existing textarea ... */}
-                        ) : field.type === 'json' ? (
-                          {/* ... existing json ... */}
-                        ) : field.type === 'array' ? (
-                          {/* ... existing array ... */}
-                        ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
-                          {/* ... existing password ... */}
-                        ) : field.type === 'select' ? (
-                          {/* ... existing select ... */}
-                        ) : (
-                        <div className="relative">
-                          <Input 
-                            type={field.type === 'number' ? 'number' : 'text'}
-                            value={formData[field.name] || ''}
-                            onChange={(e) => handleInputChange(field.name, e.target.value)}
-                            placeholder={`Enter ${field.label || field.name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}...`}
-                            disabled={saving}
-                            className={`font-bold ${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20' : ''}`}
-                          />
-                          {field.name === 'slug' && slugWarning && (
-                            <div className="absolute top-full left-0 mt-2 flex items-center gap-2 text-xs font-bold text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">
-                               <FrameworkIcons.Alert size={12} />
-                               <span>{slugWarning}</span>
-                            </div>
-                          )}
-                          {field.name === 'slug' && !slugManuallyEdited && isNew && formData[field.name] && (
-                             <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[10px] font-black uppercase tracking-widest animate-pulse border border-indigo-500/20 pointer-events-none">
-                                <FrameworkIcons.Refresh size={8} />
-                                Auto
-                             </div>
-                          )}
-                        </div>
-                      )}
-                      {field.admin?.description && (
-                        <p className="mt-2.5 text-xs text-slate-400 font-bold uppercase tracking-tight opacity-60 ml-1">{field.admin.description}</p>
-                      )}
-                    </div>
-                  ))}
+                      <FieldRenderer 
+                        key={field.name}
+                        field={field}
+                        value={formData[field.name]}
+                        onChange={(val) => handleInputChange(field.name, val)}
+                        theme={theme}
+                        collectionSlug={resolvedSlug}
+                        disabled={saving}
+                        isNew={isNew}
+                        slugWarning={field.name === 'slug' ? slugWarning : undefined}
+                        slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
+                      />
+                    ))}
                 </div>
               </Card>
             </div>
@@ -533,58 +385,16 @@ export default function CollectionEditPage() {
                     {collection.fields
                       .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden && f.name !== 'customPermalink')
                       .map((field) => (
-                        <div key={field.name}>
-                          <label className={`block text-xs font-black uppercase tracking-widest mb-2 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()}
-                          </label>
-                          {field.type === 'select' ? (
-                            <Select
-                              value={formData[field.name] || field.defaultValue || ''}
-                              options={field.options || []}
-                              onChange={(val) => handleInputChange(field.name, val)}
-                              disabled={saving}
-                              theme={theme}
-                            />
-                          ) : (field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags') ? (
-                            <TagFieldLocal 
-                              field={field} 
-                              value={formData[field.name]} 
-                              onChange={(val) => handleInputChange(field.name, val)}
-                              theme={theme}
-                              collectionSlug={resolvedSlug}
-                            />
-                          ) : field.type === 'array' ? (
-                            <ArrayField 
-                              field={field}
-                              value={formData[field.name]}
-                              onChange={(val) => handleInputChange(field.name, val)}
-                              theme={theme}
-                              collectionSlug={resolvedSlug}
-                            />
-                          ) : field.type === 'boolean' ? (
-                            <div className="flex items-center gap-2">
-                               {/* Add boolean toggle here if needed, or use Select for now */}
-                               <Select
-                                value={formData[field.name]?.toString() || field.defaultValue?.toString() || 'false'}
-                                options={[{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]}
-                                onChange={(val) => handleInputChange(field.name, val === 'true')}
-                                disabled={saving}
-                                theme={theme}
-                              />
-                            </div>
-                          ) : (
-                            <Input 
-                              value={formData[field.name] || ''}
-                              onChange={(e) => handleInputChange(field.name, e.target.value)}
-                              placeholder={`Enter ${field.label || field.name}...`}
-                              disabled={saving}
-                              className="text-xs h-10 font-bold"
-                            />
-                          )}
-                          {field.admin?.description && (
-                            <p className="mt-1.5 text-xs text-slate-400 font-bold uppercase tracking-tight opacity-50">{field.admin.description}</p>
-                          )}
-                        </div>
+                        <FieldRenderer 
+                          key={field.name}
+                          field={field}
+                          value={formData[field.name]}
+                          onChange={(val) => handleInputChange(field.name, val)}
+                          theme={theme}
+                          collectionSlug={resolvedSlug}
+                          disabled={saving}
+                          isNew={isNew}
+                        />
                       ))}
                   </div>
                 </Card>
@@ -592,7 +402,7 @@ export default function CollectionEditPage() {
 
               <Card title="Management">
                  <p className="text-xs text-slate-400 font-bold leading-relaxed italic">
-                   Revision history and version tracking are active for this entry.
+                   All changes are saved with a full history, allowing you to roll back to any previous version at any time.
                  </p>
               </Card>
 
