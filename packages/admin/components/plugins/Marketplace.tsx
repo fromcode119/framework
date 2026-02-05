@@ -25,6 +25,10 @@ interface PluginEntry {
   capabilities?: string[];
   screenshots?: string[];
   iconUrl?: string;
+  rating?: {
+    average: number;
+    count: number;
+  };
 }
 
 const Marketplace: React.FC = () => {
@@ -32,7 +36,7 @@ const Marketplace: React.FC = () => {
   const { theme } = useTheme();
   const { notify } = useNotify();
   const { triggerRefresh } = usePlugins();
-  const [registryPlugins, setRegistryPlugins] = useState<PluginEntry[]>([]);
+  const [marketplacePlugins, setMarketplacePlugins] = useState<PluginEntry[]>([]);
   const [installedPlugins, setInstalledPlugins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,16 +46,16 @@ const Marketplace: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [regData, instData] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.REGISTRY),
+      const [marketData, instData] = await Promise.all([
+        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
         api.get(ENDPOINTS.PLUGINS.LIST)
       ]);
       
-      setRegistryPlugins(regData.plugins || []);
+      setMarketplacePlugins(marketData.plugins || []);
       setInstalledPlugins(Array.isArray(instData) ? instData : []);
     } catch (err) {
       console.error('Failed to load marketplace data', err);
-      setError('Failed to connect to the marketplace registry.');
+      setError('Failed to connect to the marketplace.');
     } finally {
       setLoading(false);
     }
@@ -83,7 +87,7 @@ const Marketplace: React.FC = () => {
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
         <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-          Connecting to Global Registry...
+          Connecting to Global Marketplace...
         </p>
       </div>
     );
@@ -113,7 +117,7 @@ const Marketplace: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {registryPlugins.map(plugin => {
+        {marketplacePlugins.map(plugin => {
           const installed = installedPlugins.find(p => p.slug === plugin.slug);
           const hasUpdate = installed && plugin.version !== installed.version;
           const hasImageError = imageErrors[plugin.slug];
@@ -150,6 +154,23 @@ const Marketplace: React.FC = () => {
                     <h3 className={`text-3xl font-black tracking-tighter transition-colors duration-300 group-hover:text-indigo-500 truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                       {plugin.name}
                     </h3>
+                    
+                    {plugin.rating && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <FrameworkIcons.Star 
+                              key={star} 
+                              size={12} 
+                              className={star <= Math.round(plugin.rating!.average) ? 'text-amber-400 fill-amber-400' : 'text-slate-600'} 
+                            />
+                          ))}
+                        </div>
+                        <span className={`text-[10px] font-bold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                          {plugin.rating.average} ({plugin.rating.count})
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

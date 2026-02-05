@@ -11,6 +11,7 @@ import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useNotify } from '@/components/NotificationContext';
 import { APP_NAME } from '@/lib/env';
+import { purgeAuth } from '@/lib/auth-utils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,6 +25,10 @@ export default function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   useEffect(() => {
+    // SELF-HEALING: Purge any conflicting cookies on landing to the login page.
+    // This resolves the "multiple fc_token" error without requiring user to clear cache.
+    purgeAuth();
+
     async function checkStatus() {
       try {
         const data = await api.get(ENDPOINTS.AUTH.STATUS);
@@ -32,7 +37,6 @@ export default function LoginPage() {
         }
       } catch (err) {
         console.warn("API health check failed. Defaulting to manual login.", err);
-        // We don't force redirect if we can't confirm state
       } finally {
         setIsCheckingStatus(false);
       }

@@ -12,9 +12,9 @@ export class ThemeController {
     res.json(this.manager.getThemes());
   }
 
-  async getRegistry(req: Request, res: Response) {
+  async getMarketplace(req: Request, res: Response) {
     try {
-      const themes = await this.manager.getRegistryThemes();
+      const themes = await this.manager.getMarketplaceThemes();
       res.json({ themes });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -25,11 +25,11 @@ export class ThemeController {
     const { slug } = req.params;
     const { version } = req.query;
     try {
-      const themes = await this.manager.getRegistryThemes();
+      const themes = await this.manager.getMarketplaceThemes();
       const pkg = themes.find((t: any) => 
         t.slug === slug && (!version || t.version === version)
       );
-      if (!pkg) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in registry` });
+      if (!pkg) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
 
       await this.manager.installTheme(pkg);
       res.json({ success: true });
@@ -44,6 +44,27 @@ export class ThemeController {
     try {
       await this.manager.activateTheme(slug);
       res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async getConfig(req: Request, res: Response) {
+    try {
+      const { slug } = req.params;
+      const config = await this.manager.getThemeConfig(slug);
+      res.json({ success: true, config });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async saveConfig(req: Request, res: Response) {
+    try {
+      const { slug } = req.params;
+      const config = req.body;
+      await this.manager.saveThemeConfig(slug, config);
+      res.json({ success: true, message: `Theme ${slug} configuration saved` });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

@@ -2,6 +2,13 @@
   "name": "@fromcode/core",
   "version": "0.1.0",
   "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -14,6 +21,7 @@
     "@fromcode/cache": "*",
     "@fromcode/database": "*",
     "@fromcode/email": "*",
+    "@fromcode/marketplace-client": "^0.1.0",
     "@fromcode/media": "*",
     "@fromcode/scheduler": "*",
     "@fromcode/sdk": "*",
@@ -23,6 +31,7 @@
     "chokidar": "^3.6.0",
     "drizzle-orm": "^0.45.1",
     "ioredis": "^5.9.2",
+    "isolated-vm": "^6.0.2",
     "semver": "^7.6.0",
     "tar": "^7.5.7",
     "uuid": "^9.0.1",

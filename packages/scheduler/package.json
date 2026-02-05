@@ -11,10 +11,12 @@
     "dev": "tsc -w"
   },
   "dependencies": {
+    "@fromcode/database": "*",
     "@fromcode/sdk": "*",
-    "@fromcode/database": "*"
+    "node-cron": "^4.2.1"
   },
   "devDependencies": {
+    "@types/node-cron": "^3.0.11",
     "typescript": "^5.3.3"
   }
 }

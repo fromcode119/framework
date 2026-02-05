@@ -14,8 +14,8 @@ export const API_ROUTES = {
     CONFIG: (slug: string) => `/api/plugins/${slug}/config`,
     SAVE_CONFIG: (slug: string) => `/api/plugins/${slug}/config`,
     DELETE: (slug: string) => `/api/plugins/${slug}`,
-    REGISTRY: '/api/plugins/registry',
-    INSTALL: (slug: string) => `/api/plugins/install/${slug}`,
+    MARKETPLACE: '/api/marketplace/plugins',
+    INSTALL: (slug: string) => `/api/marketplace/install/${slug}`,
     UI: '/plugins/:slug/ui/*',
   },
   SYSTEM: {

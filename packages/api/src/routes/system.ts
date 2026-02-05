@@ -10,8 +10,10 @@ export function setupSystemRoutes(manager: PluginManager, themeManager: ThemeMan
 
   router.get('/admin/metadata', auth.guard(['admin']), (req, res) => controller.getAdminMetadata(req, res));
   router.get('/admin/stats/collections', auth.guard(['admin']), (req, res) => controller.getStats(req, res));
+  router.get('/admin/stats/security', auth.guard(['admin']), (req, res) => controller.getSecurityStats(req, res));
   router.get('/admin/activity', auth.guard(['admin']), (req, res) => controller.getActivity(req, res));
   router.get('/admin/logs', auth.guard(['admin']), (req, res) => controller.getLogs(req, res));
+  router.get('/admin/audit', auth.guard(['admin']), (req, res) => controller.getAuditLogs(req, res));
   router.get('/admin/roles', auth.guard(['admin']), (req, res) => controller.getRoles(req, res));
   router.post('/admin/roles', auth.guard(['admin']), (req, res) => controller.saveRole(req, res));
   router.get('/admin/roles/:slug', auth.guard(['admin']), (req, res) => controller.getRole(req, res));

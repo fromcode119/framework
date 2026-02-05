@@ -7,6 +7,7 @@ import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
 import { BackupService } from '../../management/backup';
 import { validatePluginManifest as validateManifest } from '../../management/manifest';
 import { z } from 'zod';
+import { pathToFileURL } from 'url';
 
 const manifestSchema = z.object({
   name: z.string(),
@@ -27,10 +28,10 @@ export class DiscoveryService {
 
   constructor(private pluginsRoot: string, private projectRoot: string) {}
 
-  public discoverPlugins(existingPlugins: Map<string, LoadedPlugin>): { 
+  public async discoverPlugins(existingPlugins: Map<string, LoadedPlugin>): Promise<{ 
     discovered: { plugin: any, path: string }[], 
     errored: { manifest: any, path: string, error: string }[] 
-  } {
+  }> {
     this.logger.info(`Scanning for plugins in ${this.pluginsRoot}...`);
     const roots = [this.pluginsRoot];
     
@@ -88,7 +89,7 @@ export class DiscoveryService {
             }
             seenSlugs.add(manifest.slug);
 
-            let mainFile = manifest.main || 'index.js';
+            let mainFile = manifest.main || manifest.entry || 'index.js';
             let indexPath = path.join(pluginPath, mainFile);
             
             if (!fs.existsSync(indexPath) && mainFile.endsWith('.js')) {
@@ -100,22 +101,31 @@ export class DiscoveryService {
 
             if (fs.existsSync(indexPath)) {
               try {
-                  const resolved = require.resolve(indexPath);
-                  if (require.cache[resolved]) delete require.cache[resolved];
-              } catch (e) {}
+                if (manifest.sandbox) {
+                  this.logger.info(`Staging sandboxed plugin: ${manifest.slug}`);
+                  discovered.push({
+                    plugin: { 
+                      manifest,
+                      isSandboxed: true,
+                      entryPath: indexPath
+                    },
+                    path: pluginPath
+                  });
+                } else {
+                  // Using Dynamic Import instead of require for ESM support and modern Node compliance
+                  const fileUrl = pathToFileURL(indexPath).href;
+                  const rawModule = await import(fileUrl);
+                  
+                  // Handle ESM exports and standard Node modules
+                  const pluginModule = (rawModule && rawModule.default)
+                    ? { ...rawModule.default, ...rawModule }
+                    : rawModule;
 
-              try {
-                const rawModule = require(indexPath);
-                
-                // Handle ESM-to-CJS transpilation where exports are under .default
-                const pluginModule = (rawModule && rawModule.__esModule && rawModule.default)
-                  ? { ...rawModule.default, ...rawModule }
-                  : rawModule;
-
-                discovered.push({
-                  plugin: { manifest, ...pluginModule },
-                  path: pluginPath
-                });
+                  discovered.push({
+                    plugin: { manifest, ...pluginModule },
+                    path: pluginPath
+                  });
+                }
               } catch (err: any) {
                 this.logger.warn(`Failed to load plugin module from ${dir}: ${err.message}`);
                 errored.push({
@@ -159,6 +169,10 @@ export class DiscoveryService {
           if (pluginMap.has(depSlug)) {
             adj.get(depSlug)!.push(p.manifest.slug);
             inDegree.set(p.manifest.slug, (inDegree.get(p.manifest.slug) || 0) + 1);
+          } else {
+            // Log missing dependency but don't block sorting here
+            // validation should happen elsewhere or we can throw here
+            this.logger.warn(`Plugin "${p.manifest.slug}" depends on "${depSlug}" but it's not installed.`);
           }
         });
       }
@@ -170,9 +184,12 @@ export class DiscoveryService {
     });
 
     const result: FromcodePlugin[] = [];
+    const processed = new Set<string>();
+
     while (queue.length > 0) {
       const u = queue.shift()!;
       result.push(pluginMap.get(u)!);
+      processed.add(u);
 
       adj.get(u)?.forEach(v => {
         inDegree.set(v, inDegree.get(v)! - 1);
@@ -181,7 +198,24 @@ export class DiscoveryService {
     }
 
     if (result.length !== plugins.length) {
-      const cycleNodes = Array.from(inDegree.keys()).filter(slug => inDegree.get(slug)! > 0);
+      const missing = plugins.filter(p => !processed.has(p.manifest.slug));
+      const cycleNodes = missing.map(p => p.manifest.slug);
+      
+      // Check if it's really a cycle or just missing dependencies
+      const realMissingDeps = new Set<string>();
+      cycleNodes.forEach(slug => {
+         const p = pluginMap.get(slug);
+         if (p?.manifest.dependencies) {
+            Object.keys(p.manifest.dependencies).forEach(dep => {
+               if (!pluginMap.has(dep)) realMissingDeps.add(dep);
+            });
+         }
+      });
+
+      if (realMissingDeps.size > 0) {
+         throw new Error(`Missing dependencies detected: ${Array.from(realMissingDeps).join(', ')}. Please install them.`);
+      }
+
       throw new Error(`Circular dependency detected involving plugins: ${cycleNodes.join(', ')}`);
     }
 

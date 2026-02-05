@@ -27,7 +27,7 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
 
   const isNumericOnly = structure.includes(':id') && !structure.includes(':slug');
   const isCustomMode = !!value;
-  const displayValue = value || (isNumericOnly ? (id || '') : (slug || 'unnamed-post'));
+  const displayValue = value || (isNumericOnly ? (id || '') : (slug || 'unnamed-resource'));
 
   // Calculate the path based on structure
   const now = new Date();

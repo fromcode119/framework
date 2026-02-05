@@ -9,7 +9,9 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode/database": "^0.1.0",
+    "@fromcode/core": "*",
+    "@fromcode/database": "*",
+    "@fromcode/marketplace-client": "^0.1.0",
     "archiver": "^7.0.1",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",

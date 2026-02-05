@@ -43,9 +43,15 @@ plugins/
 !plugins/marketplace
 themes/
 !themes/.gitkeep
-!themes/[slug]
+!themes/installed
+!themes/installed/*
 !themes/marketplace
+!themes/marketplace/*
+!themes/[slug]
+!themes/[slug]/*
 public/uploads/
 !public/uploads/.gitkeep
 !packages/admin/app/plugins/
+!packages/admin/app/themes/
 !packages/admin/components/plugins
+!packages/admin/components/themes

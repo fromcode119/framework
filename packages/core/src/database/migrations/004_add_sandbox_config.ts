@@ -1,0 +1,39 @@
+import { SystemMigration } from '../../types';
+import { executeForDialect } from '../helpers/dialect';
+
+export const AddSandboxConfigMigration: SystemMigration = {
+  version: 4,
+  name: 'Add sandbox configuration to plugins table',
+  up: async (db, sql) => {
+    await executeForDialect(db.dialect, {
+      postgres: async () => {
+        await db.execute(sql`
+          ALTER TABLE "_system_plugins" 
+          ADD COLUMN IF NOT EXISTS "sandbox_config" JSONB DEFAULT '{}'::jsonb
+        `);
+      },
+      sqlite: async () => {
+        await db.execute(sql`
+          ALTER TABLE "_system_plugins" 
+          ADD COLUMN "sandbox_config" TEXT DEFAULT '{}'
+        `);
+      }
+    });
+  },
+  down: async (db, sql) => {
+    await executeForDialect(db.dialect, {
+      postgres: async () => {
+        await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN IF EXISTS "sandbox_config"`);
+      },
+      sqlite: async () => {
+        // SQLite doesn't support DROP COLUMN easily in older versions, 
+        // but we'll try it anyway as it's a newer feature in 3.35+
+        try {
+          await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN "sandbox_config"`);
+        } catch (e) {
+          console.warn('Could not drop column sandbox_config from _system_plugins (SQLite version limitation)');
+        }
+      }
+    });
+  }
+};

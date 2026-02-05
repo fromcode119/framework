@@ -50,6 +50,19 @@ export enum PluginCapability {
   REDIS_GLOBAL = 'redis:global'
 }
 
+export enum MiddlewareStage {
+  PRE_AUTH = 'pre_auth',
+  POST_AUTH = 'post_auth',
+  PRE_ROUTING = 'pre_routing'
+}
+
+export interface MiddlewareConfig {
+  id: string;
+  priority?: number;
+  stage: MiddlewareStage;
+  handler: (req: any, res: any, next: (err?: any) => void) => void;
+}
+
 export interface ThemeManifest {
   slug: string;
   name: string;
@@ -62,8 +75,16 @@ export interface ThemeManifest {
     description?: string;
   }[];
   slots?: string[]; // Defined slot names this theme provides
+  overrides?: { name: string; component: string; priority?: number }[]; // Component overrides
   dependencies?: Record<string, string>; // Plugins required by this theme
   variables?: Record<string, string>;
+  variableSchema?: Record<string, {
+    label: string;
+    type: 'color' | 'text' | 'number' | 'select' | 'font' | 'image';
+    description?: string;
+    options?: { label: string; value: string }[];
+    group?: string;
+  }>;
   runtimeModules?: Record<string, string | { keys?: string[], type?: 'icon' | 'lib', url?: string }>;
   ui: {
     entry: string;
@@ -124,9 +145,11 @@ export interface PluginManifest {
       settings?: {
         name: string;
         label: string;
-        type: FieldType;
+        type: FieldType | string;
         description?: string;
         defaultValue?: any;
+        options?: { label: string; value: any }[];
+        placeholder?: string;
       }[];
     };
   };
@@ -163,6 +186,11 @@ export interface PluginManifest {
 
   // Configuration
   config?: Record<string, any>;
+  sandbox?: boolean | {
+    memoryLimit?: number; // In MB
+    timeout?: number;     // In ms
+    allowNative?: boolean; // If true, runs in main process (trusted)
+  };
 
   // Runtime Bridge configurations
   runtimeModules?: Record<string, string | { keys?: string[], type?: 'icon' | 'lib', url?: string }>;
@@ -173,6 +201,19 @@ export interface PluginManifest {
 
   // Collections
   collections?: string[]; // Path to collections folder or list of slugs
+}
+
+/**
+ * Represents an installed plugin at runtime, combining manifest data with system state.
+ * This is primarily used in Admin UI and API responses.
+ */
+export interface Plugin extends PluginManifest {
+  state: 'inactive' | 'loading' | 'active' | 'error';
+  healthStatus?: 'healthy' | 'warning' | 'error';
+  approvedCapabilities?: string[];
+  iconUrl?: string; // Resolved absolute URL for the plugin icon
+  error?: string;   // Error message if state is 'error'
+  path?: string;    // Local file path
 }
 
 export type FieldType = 
@@ -260,6 +301,8 @@ export interface Collection {
   tableName?: string; // Optional: specify a different table name
   primaryKey?: string; // Optional: default is 'id'
   timestamps?: boolean; // Optional: default is true
+  versions?: boolean;   // Optional: enable versioning
+  workflow?: boolean;   // Optional: enable draft/review/publish workflow
   priority?: number;    // Optional: for sorting in the menu
   system?: boolean;      // Optional: mark as system collection
   fields: Field[];
@@ -296,7 +339,15 @@ export interface Collection {
 
 export interface PluginContext {
   readonly db: IDatabaseManager;
-  readonly api: any;
+  readonly api: {
+    get(path: string, ...handlers: any[]): void;
+    post(path: string, ...handlers: any[]): void;
+    put(path: string, ...handlers: any[]): void;
+    delete(path: string, ...handlers: any[]): void;
+    patch(path: string, ...handlers: any[]): void;
+    use(path: string, ...handlers: any[]): void;
+    registerMiddleware(config: MiddlewareConfig): void;
+  };
   readonly hooks: any;
   readonly auth: any;
   readonly logger: {
@@ -308,6 +359,7 @@ export interface PluginContext {
   readonly storage: IMediaManager;
   readonly email: IEmailManager;
   readonly redis: any;
+  readonly fetch: (url: string, init?: any) => Promise<any>;
   readonly jobs: {
     enqueue(name: string, data: any, options?: any): Promise<any>;
     worker(processor: (job: any) => Promise<any>, options?: any): void;
@@ -317,9 +369,14 @@ export interface PluginContext {
 
   readonly scheduler: {
     /**
-     * Register a callback to run on every scheduler pulse (default 5m)
+     * Register a task with a specific schedule (Cron or Interval)
      */
-    onTick(name: string, callback: () => Promise<void>): void;
+    register(name: string, schedule: string, handler: (data?: any) => Promise<void>, options?: { type?: 'cron' | 'interval' }): Promise<void>;
+    
+    /**
+     * Run a task immediately
+     */
+    runNow(name: string): Promise<void>;
     
     /**
      * Schedule a one-time task (conceptually, would likely enqueue a Job)

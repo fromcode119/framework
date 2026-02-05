@@ -50,7 +50,7 @@ export class SchemaManager {
     const columnDefs: any[] = [];
 
     // primary key
-    if (dialect === 'postgresql') {
+    if (dialect === 'postgres') {
       columnDefs.push(sql`id SERIAL PRIMARY KEY`);
     } else if (dialect === 'mysql') {
       columnDefs.push(sql`id INT AUTO_INCREMENT PRIMARY KEY`);
@@ -59,7 +59,7 @@ export class SchemaManager {
     }
 
     // common timestamps
-    if (dialect === 'postgresql') {
+    if (dialect === 'postgres') {
         columnDefs.push(sql`created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
         columnDefs.push(sql`updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
     } else if (dialect === 'mysql') {
@@ -121,13 +121,13 @@ export class SchemaManager {
         type = dialect === 'mysql' ? sql`BOOLEAN` : (dialect === 'sqlite' ? sql`INTEGER` : sql`BOOLEAN`);
         break;
       case 'date':
-        type = dialect === 'postgresql' ? sql`TIMESTAMP WITH TIME ZONE` : (dialect === 'mysql' ? sql`DATETIME` : sql`TEXT`);
+        type = dialect === 'postgres' ? sql`TIMESTAMP WITH TIME ZONE` : (dialect === 'mysql' ? sql`DATETIME` : sql`TEXT`);
         break;
       case 'json':
       case 'relationship':
       case 'upload':
       case 'richText':
-        type = dialect === 'postgresql' ? sql`JSONB` : (dialect === 'mysql' ? sql`JSON` : sql`TEXT`);
+        type = dialect === 'postgres' ? sql`JSONB` : (dialect === 'mysql' ? sql`JSON` : sql`TEXT`);
         break;
       case 'textarea':
       case 'text':

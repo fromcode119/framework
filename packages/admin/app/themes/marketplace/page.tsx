@@ -33,17 +33,17 @@ export default function ThemesMarketplacePage() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [registryRes, installedRes] = await Promise.all([
-        api.get(ENDPOINTS.THEMES.REGISTRY),
+      const [marketData, installedRes] = await Promise.all([
+        api.get(ENDPOINTS.THEMES.MARKETPLACE),
         api.get(ENDPOINTS.THEMES.LIST)
       ]);
       
-      const registry = Array.isArray(registryRes) ? registryRes : (registryRes.themes || []);
+      const marketplace = Array.isArray(marketData) ? marketData : (marketData.themes || []);
       const installed = Array.isArray(installedRes) ? installedRes : (installedRes.themes || []);
       
       // Group by slug to show only latest in the list
       const grouped: Record<string, ThemeManifest> = {};
-      registry.forEach((t: ThemeManifest) => {
+      marketplace.forEach((t: ThemeManifest) => {
         if (!grouped[t.slug] || t.version > grouped[t.slug].version) {
           grouped[t.slug] = t;
         }
@@ -53,7 +53,7 @@ export default function ThemesMarketplacePage() {
       setInstalledThemes(installed);
     } catch (err) {
       console.error("Failed to fetch marketplace themes", err);
-      notify('error', 'Registry Error', 'Could not load marketplace themes.');
+      notify('error', 'Marketplace Error', 'Could not load marketplace themes.');
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ export default function ThemesMarketplacePage() {
               <FrameworkIcons.ShoppingBag size={32} className="text-slate-300 dark:text-slate-700" />
             </div>
             <h3 className={`text-xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Marketplace empty</h3>
-            <p className="text-slate-500 font-medium">Check your registry connection or try again later.</p>
+            <p className="text-slate-500 font-medium">Check your marketplace connection or try again later.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">

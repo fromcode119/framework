@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PluginManager, ThemeManager } from '@fromcode/core';
 import { 
-  count, sql, systemLogs, systemRoles, users, desc, eq, or, ilike,
+  count, sql, systemLogs, systemAuditLogs, systemRoles, users, desc, eq, or, and, ilike,
   systemUsersToRoles, systemRolesToPermissions, systemPermissions,
   systemThemes
 } from '@fromcode/database';
@@ -36,7 +36,7 @@ export class SystemController {
 
   async getFrontendMetadata(req: Request, res: Response) {
     const runtimeModules = this.manager.getRuntimeModules();
-    res.json(this.themeManager.getFrontendMetadata(runtimeModules));
+    res.json(await this.themeManager.getFrontendMetadata(runtimeModules));
   }
 
   async getThemes(req: Request, res: Response) {
@@ -47,11 +47,11 @@ export class SystemController {
     }
   }
 
-  async getRegistryThemes(req: Request, res: Response) {
+  async getMarketplaceThemes(req: Request, res: Response) {
     try {
-      res.json(await this.themeManager.getRegistryThemes());
+      res.json(await this.themeManager.getMarketplaceThemes());
     } catch (err: any) {
-      res.status(500).json({ error: 'Failed to fetch registry themes: ' + err.message });
+      res.status(500).json({ error: 'Failed to fetch marketplace themes: ' + err.message });
     }
   }
 
@@ -109,6 +109,15 @@ export class SystemController {
     res.json(stats);
   }
 
+  async getSecurityStats(req: Request, res: Response) {
+    try {
+      const summary = await (this.manager as any).getSecuritySummary();
+      res.json(summary);
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to fetch security stats: ' + err.message });
+    }
+  }
+
   async getActivity(req: Request, res: Response) {
     const collections = this.manager.getCollections();
     await this.restController.getGlobalActivity(collections, req, res);
@@ -151,6 +160,55 @@ export class SystemController {
     } catch (err) {
       console.error('[SystemController] Log Fetch Error:', err);
       res.status(500).json({ error: 'Failed to fetch logs' });
+    }
+  }
+
+  async getAuditLogs(req: Request, res: Response) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const search = (req.query.search as string || '');
+      const status = req.query.status as string;
+      const offset = (page - 1) * limit;
+
+      let whereClause: any = undefined;
+      const conditions: any[] = [];
+
+      if (search) {
+        conditions.push(or(
+          ilike(systemAuditLogs.resource, `%${search}%`),
+          ilike(systemAuditLogs.action, `%${search}%`),
+          ilike(systemAuditLogs.pluginSlug, `%${search}%`)
+        ));
+      }
+
+      if (status) {
+        conditions.push(eq(systemAuditLogs.status, status));
+      }
+
+      const totalResult = await this.db.select({ value: count() })
+        .from(systemAuditLogs)
+        .where(conditions.length > 0 ? and(...conditions) : undefined);
+      
+      const totalDocs = Number(totalResult[0]?.value || 0);
+
+      const logs = await this.db.select()
+        .from(systemAuditLogs)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(systemAuditLogs.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      res.json({
+        docs: logs,
+        totalDocs,
+        limit,
+        page,
+        totalPages: Math.ceil(totalDocs / limit)
+      });
+    } catch (err) {
+      console.error('[SystemController] Audit Log Fetch Error:', err);
+      res.status(500).json({ error: 'Failed to fetch audit logs' });
     }
   }
 

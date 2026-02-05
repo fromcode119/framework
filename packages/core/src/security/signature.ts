@@ -41,3 +41,15 @@ export class PluginSignatureService {
     return process.env.NODE_ENV === 'production' && process.env.ENFORCE_PLUGIN_SIGNATURES === 'true';
   }
 }
+
+/**
+ * Signs a payload using a secret key (HMAC-SHA256)
+ * @param payload - String content to sign
+ * @param secret - Secret key
+ */
+export function signPayload(payload: string, secret: string): string {
+    return crypto
+        .createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex');
+}

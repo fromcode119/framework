@@ -19,6 +19,14 @@ interface PluginEntry {
   category: string;
   iconUrl?: string;
   author?: string;
+  isVerified?: boolean;
+  isFeatured?: boolean;
+  isTrending?: boolean;
+  downloads?: number;
+  rating?: {
+    average: number;
+    count: number;
+  };
 }
 
 export default function MarketplacePage() {
@@ -36,11 +44,11 @@ export default function MarketplacePage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [regData, instData] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.REGISTRY),
+      const [marketData, instData] = await Promise.all([
+        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
         api.get(ENDPOINTS.PLUGINS.LIST)
       ]);
-      const rawPlugins = regData.plugins || [];
+      const rawPlugins = marketData.plugins || [];
       
       // Group by slug to show only latest
       const grouped: Record<string, PluginEntry> = {};
@@ -97,7 +105,7 @@ export default function MarketplacePage() {
         <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={16} />
         <input 
           type="text" 
-          placeholder="Search global registry..." 
+          placeholder="Search global marketplace..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className={`w-full rounded-2xl py-2.5 pl-11 pr-6 outline-none border-0 font-bold transition-all ${theme === 'dark' ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/5' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-xl shadow-slate-200/50'}`} 
@@ -115,7 +123,7 @@ export default function MarketplacePage() {
                 <FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" />
              </div>
              <h3 className={`text-xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No plugins found</h3>
-             <p className="text-slate-500 font-medium">Try a different search term or check your registry connection.</p>
+             <p className="text-slate-500 font-medium">Try a different search term or check your marketplace connection.</p>
           </div>
         ) : (
           filtered.map(plugin => {
@@ -143,15 +151,29 @@ export default function MarketplacePage() {
                         <FrameworkIcons.Box size={32} strokeWidth={1.5} />
                       )}
                     </div>
-                    <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0">
-                      {installed ? "Installed" : (plugin.category || "Available")}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {plugin.isFeatured && (
+                        <Badge variant="blue" className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
+                          Featured
+                        </Badge>
+                      )}
+                      <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0">
+                        {installed ? "Installed" : (plugin.category || "Available")}
+                      </Badge>
+                    </div>
                   </div>
 
                   <div className="space-y-3">
-                    <h3 className={`text-2xl font-black tracking-tighter leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-2 min-h-[4rem] ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                      {plugin.name}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                       <h3 className={`text-2xl font-black tracking-tighter leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-2 min-h-[4rem] flex-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                        {plugin.name}
+                      </h3>
+                      {plugin.isVerified && (
+                        <div className="bg-emerald-500/10 p-1.5 rounded-full text-emerald-500" title="Verified Publisher">
+                          <FrameworkIcons.Shield size={18} fill="currentColor" className="opacity-80" />
+                        </div>
+                      )}
+                    </div>
                     <p className={`text-sm leading-relaxed font-medium line-clamp-3 h-[4rem] transition-colors duration-300 ${theme === 'dark' ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>
                       {plugin.description}
                     </p>
@@ -165,8 +187,22 @@ export default function MarketplacePage() {
                      <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                      <div className="flex items-center gap-1.5 min-w-0">
                        <FrameworkIcons.User size={12} className="text-indigo-500/70" />
-                       <span className="truncate">{plugin.author || 'Official Developer'}</span>
+                       <span className="truncate flex items-center gap-1">
+                        {plugin.author || 'Official Developer'}
+                        {plugin.isVerified && (
+                          <FrameworkIcons.Check size={10} className="text-emerald-500" strokeWidth={3} />
+                        )}
+                       </span>
                      </div>
+                     {plugin.isTrending && (
+                       <>
+                         <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                         <div className="flex items-center gap-1.5 text-rose-500">
+                           <FrameworkIcons.Refresh size={10} className="animate-spin-slow" />
+                           Trending
+                         </div>
+                       </>
+                     )}
                   </div>
                 </div>
 

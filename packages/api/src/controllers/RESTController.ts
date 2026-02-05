@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import { Collection, Logger, RecordVersions, HookManager } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { 
@@ -46,6 +46,7 @@ export class RESTController {
     }
 
     const useTimestamps = collection.timestamps !== undefined ? collection.timestamps : true;
+    const hasWorkflow = !!collection.workflow;
 
     const table = createDynamicTable({
       slug: collection.tableName || collection.slug,
@@ -54,7 +55,8 @@ export class RESTController {
         type: f.type 
       })),
       primaryKey: collection.primaryKey || 'id',
-      timestamps: useTimestamps
+      timestamps: useTimestamps,
+      workflow: hasWorkflow
     });
 
     // Manually add timestamp column definitions to the table object if they are missing
@@ -280,7 +282,9 @@ export class RESTController {
         finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
       }
 
-      await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, `Initial creation of ${collection.slug} record`);
+      if (collection.versions !== false) {
+        await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, `Initial creation of ${collection.slug} record`);
+      }
       
       const filtered = this.filterHiddenFields(collection, finalItem);
       if (!res) return filtered;
@@ -295,6 +299,13 @@ export class RESTController {
     try {
       const { id } = req.params;
       let data = req.body;
+      const changeSummary = data._change_summary || `Update ${collection.slug} record`;
+      
+      // Strip metadata
+      if (data._change_summary) {
+        delete data._change_summary;
+      }
+
       const pk = collection.primaryKey || 'id';
       const table = this.getVirtualTable(collection);
       
@@ -326,7 +337,9 @@ export class RESTController {
         finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
       }
 
-      await this.versioningService.createSnapshot(collection, id, finalItem, req.user, `Update ${collection.slug} record`);
+      if (collection.versions !== false) {
+        await this.versioningService.createSnapshot(collection, id, finalItem, req.user, changeSummary);
+      }
       
       const filtered = this.filterHiddenFields(collection, finalItem);
       if (!res) return filtered;
@@ -357,12 +370,17 @@ export class RESTController {
       const items = Array.isArray(req.body) ? req.body : [req.body];
       const table = this.getVirtualTable(collection);
       const results: any[] = [];
+      const globalSummary = req.body._change_summary || `Bulk creation of ${collection.slug}`;
 
       for (let data of items) {
         if (this.hooks) {
           data = await this.hooks.call(`collection:${collection.slug}:beforeCreate`, data);
           data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
         }
+        
+        const individualSummary = data._change_summary || globalSummary;
+        if (data._change_summary) delete data._change_summary;
+
         const insertData = await this.processIncomingData(collection, data, table);
         const newItem = await this.db.insert(table, insertData);
         
@@ -371,7 +389,7 @@ export class RESTController {
           finalItem = await this.hooks.call(`collection:${collection.slug}:afterCreate`, newItem);
           finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
         }
-        await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, `Bulk creation of ${collection.slug}`);
+        await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, individualSummary);
         results.push(this.filterHiddenFields(collection, finalItem));
       }
 
@@ -386,6 +404,8 @@ export class RESTController {
   async bulkUpdate(collection: Collection, req: any, res?: Response) {
     try {
       const { ids, data } = req.body;
+      const changeSummary = req.body._change_summary || `Bulk update of ${collection.slug}`;
+      
       if (!Array.isArray(ids) || ids.length === 0) {
         if (!res) throw new Error('ids must be a non-empty array');
         return res.status(400).json({ error: 'ids must be a non-empty array' });
@@ -395,6 +415,8 @@ export class RESTController {
       const pk = collection.primaryKey || 'id';
       
       let updateData = data;
+      if (updateData._change_summary) delete updateData._change_summary;
+
       if (this.hooks) {
         updateData = await this.hooks.call(`collection:${collection.slug}:beforeUpdate`, updateData);
         updateData = await this.hooks.call(`collection:${collection.slug}:beforeSave`, updateData);
@@ -413,7 +435,7 @@ export class RESTController {
             finalItem = await this.hooks.call(`collection:${collection.slug}:afterUpdate`, updated);
             finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
           }
-          await this.versioningService.createSnapshot(collection, id, finalItem, req.user, `Bulk update of ${collection.slug}`);
+          await this.versioningService.createSnapshot(collection, id, finalItem, req.user, changeSummary);
           results.push(this.filterHiddenFields(collection, finalItem));
         }
       }
@@ -529,6 +551,46 @@ export class RESTController {
         total: items.length,
         success: results.filter(r => r.status === 'success').length,
         errors: results.filter(r => r.status === 'error')
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  // --- Versioning Endpoints ---
+
+  async getVersions(collection: Collection, req: any, res: Response) {
+    try {
+      const { id } = req.params;
+      const { limit, offset } = req.query;
+      const result = await this.versioningService.getVersions(collection.slug, id, {
+        limit: limit ? parseInt(limit as string) : 10,
+        offset: offset ? parseInt(offset as string) : 0
+      });
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async getVersion(collection: Collection, req: any, res: Response) {
+    try {
+      const { id, version } = req.params;
+      const result = await this.versioningService.getVersion(collection.slug, id, parseInt(version));
+      if (!result) return res.status(404).json({ error: 'Version not found' });
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async restoreVersion(collection: Collection, req: any, res: Response) {
+    try {
+      const { id, version } = req.params;
+      const restoredData = await this.versioningService.restoreVersion(collection, id, parseInt(version), req.user);
+      res.json({
+        message: `Successfully restored to version ${version}`,
+        data: restoredData
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });

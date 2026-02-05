@@ -1,16 +1,21 @@
 import { API_BASE_URL } from './constants';
 import Cookies from 'js-cookie';
+import { purgeAuth } from './auth-utils';
 
 async function request(path: string, options: RequestInit = {}) {
-  // Extract token from cookie (if available to JS) to add to Authorization header
-  // This serves as a fallback for HttpOnly cookies when cross-subdomain fetch has issues
+  // Extract token from cookie (if available to JS).
+  // Note: Backend cookies are usually HttpOnly, so this is rarely used now.
   const token = Cookies.get('fc_token');
+  const csrfToken = Cookies.get('fc_csrf');
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'X-Framework-Client': 'admin-ui',
+    ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
     ...options.headers as any,
   };
 
+  // Only add Bearer if it's explicitly available to JS
   if (token && !headers['Authorization']) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -20,14 +25,13 @@ async function request(path: string, options: RequestInit = {}) {
   const response = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include', // Automatically send HttpOnly cookies
+    credentials: 'include', // Automatically send HttpOnly cookies from backend
   });
 
   if (response.status === 401 && !url.includes('/api/auth/status') && !url.includes('/api/auth/login')) {
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-      // Clear client-side session marker
-      document.cookie = "fc_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      // Redirect to login page
+      console.warn("[API] 401 Unauthorized detected. Purging session.");
+      purgeAuth();
       window.location.href = '/login?reason=session_expired';
     }
   }
@@ -54,7 +58,10 @@ export const api = {
   upload: async (path: string, formData: FormData, options?: RequestInit) => {
     const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
     const token = Cookies.get('fc_token');
+    const csrfToken = Cookies.get('fc_csrf');
     const headers: Record<string, string> = {
+      'X-Framework-Client': 'admin-ui',
+      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
       ...options?.headers as any,
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;

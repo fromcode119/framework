@@ -7,7 +7,7 @@ import { IDatabaseManager } from '../index';
 export class PostgresDatabaseManager implements IDatabaseManager {
   private pool: Pool;
   public readonly drizzle: any;
-  public readonly dialect = 'postgresql' as const;
+  public readonly dialect = 'postgres' as const;
 
   constructor(connection: string) {
     this.pool = new Pool({ connectionString: connection });

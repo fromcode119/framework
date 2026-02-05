@@ -3,12 +3,14 @@ import {
   LoadedPlugin, 
   Collection, 
   TranslationMap,
-  PluginManifest
+  PluginManifest,
+  MiddlewareConfig
 } from '../types';
 import { Logger } from '../logging/logger';
 import { sql, count, eq, and, or } from 'drizzle-orm';
 import { PluginPermissionsService } from '../security/permissions';
 import { RateLimiter } from '../security/rate-limiter';
+import { MiddlewareManager } from './services/MiddlewareManager';
 
 // Shared rate limiters for plugins
 const dbLimiter = new RateLimiter(5000, 60000); // 5000 queries per minute
@@ -22,6 +24,7 @@ export interface PluginManagerInterface {
   hooks: any;
   apiHost: any;
   db: any;
+  audit: any;
   storage: any;
   email: any;
   cache: any;
@@ -30,6 +33,7 @@ export interface PluginManagerInterface {
   redis?: any;
   auth: any;
   i18n: any;
+  middlewares: MiddlewareManager;
   plugins: Map<string, LoadedPlugin>;
   pluginsRoot: string;
   registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>;
@@ -75,12 +79,14 @@ export function createPluginContext(
 
   const handleViolation = (cap: string) => {
     rootLogger.error(`Security Violation: Plugin "${plugin.manifest.slug}" attempted to use "${cap}" without declaration.`);
+    manager.audit.logAction(plugin.manifest.slug, 'Capability Check', cap, 'violation');
     manager.disableWithError(plugin.manifest.slug, `Security Violation: Missing "${cap}" capability.`);
     throw new Error(`Security Violation: Missing "${cap}" capability.`);
   };
 
   const handleRateLimit = (type: string) => {
     rootLogger.warn(`Rate Limit Exceeded: Plugin "${plugin.manifest.slug}" reached ${type} quota.`);
+    manager.audit.logAction(plugin.manifest.slug, 'Rate Limit', type, 'denied');
     throw new Error(`Rate Limit Exceeded: Plugin "${plugin.manifest.slug}" reached ${type} quota.`);
   };
 
@@ -138,7 +144,25 @@ export function createPluginContext(
     put: createApiWrapper('put'),
     delete: createApiWrapper('delete'),
     patch: createApiWrapper('patch'),
-    use: createApiWrapper('use')
+    use: createApiWrapper('use'),
+    registerMiddleware: (config: MiddlewareConfig) => {
+      if (!hasCapability('api')) {
+        handleViolation('api');
+      }
+
+      // Wrap the handler with a check that verifies the plugin is still active
+      const originalHandler = config.handler;
+      config.handler = (req: any, res: any, next: any) => {
+        const currentPlugin = manager.plugins.get(plugin.manifest.slug);
+        if (!currentPlugin || currentPlugin.state !== 'active') {
+          return next();
+        }
+        return originalHandler(req, res, next);
+      };
+
+      manager.middlewares.register(config);
+      pluginLogger.debug(`Registered global middleware: ${config.id} (${config.stage})`);
+    }
   };
 
   // --- Database Proxy ---
@@ -166,6 +190,11 @@ export function createPluginContext(
       if (typeof prop === 'string' && ['find', 'findOne', 'create', 'update', 'delete', 'execute'].includes(prop)) {
         if (!dbLimiter.check(plugin.manifest.slug)) {
           handleRateLimit('Database');
+        }
+
+        // Audit writing operations
+        if (['create', 'update', 'delete', 'execute'].includes(prop)) {
+            manager.audit.logAction(plugin.manifest.slug, 'Database Write', prop, 'allowed');
         }
       }
 
@@ -269,6 +298,23 @@ export function createPluginContext(
     }
   });
 
+  // --- Fetch Bridge ---
+  const fetchBridge = async (url: string, init?: any) => {
+    if (!hasCapability('network')) {
+      handleViolation('network');
+    }
+    
+    // Log outgoing requests for auditing
+    manager.audit.logAction(plugin.manifest.slug, 'Network Request', url, 'allowed');
+    
+    // We use global fetch (Node 18+)
+    const response = await fetch(url, init);
+    
+    // Return a simplified response object or the actual one if it's not too complex
+    // For now, let's keep it simple
+    return response;
+  };
+
   const ctx: PluginContext = {
     db: dbProxy as any,
     api,
@@ -283,6 +329,7 @@ export function createPluginContext(
     storage: storageProxy,
     email: emailProxy,
     redis: redisProxy,
+    fetch: fetchBridge,
     jobs: {
       enqueue: (name: string, data: any, options?: any) => {
         if (!hasCapability('jobs')) handleViolation('jobs');
@@ -299,9 +346,17 @@ export function createPluginContext(
       }
     },
     scheduler: {
-      onTick: (name: string, callback: () => Promise<void>) => {
+      register: async (name: string, schedule: string, handler: any, options: { type?: 'cron' | 'interval' } = {}) => {
         if (!hasCapability('scheduler')) handleViolation('scheduler');
-        return manager.scheduler.registerTask(`${plugin.manifest.slug}:${name}`, callback);
+        const fullName = `${plugin.manifest.slug}:${name}`;
+        await manager.scheduler.register(fullName, schedule, handler, {
+          ...options,
+          plugin_slug: plugin.manifest.slug
+        });
+      },
+      runNow: (name: string) => {
+        if (!hasCapability('scheduler')) handleViolation('scheduler');
+        return manager.scheduler.runTask(`${plugin.manifest.slug}:${name}`);
       },
       schedule: async (name: string, when: Date | string, data: any) => {
         if (!hasCapability('scheduler') && !hasCapability('jobs')) handleViolation('scheduler');
@@ -388,6 +443,53 @@ export function createPluginContext(
           // Keep pretty name if not provided
           name: collection.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
         };
+
+        // Add auto-generated fields for workflow and versions if enabled
+        if (modifiedCollection.workflow) {
+          if (!modifiedCollection.fields.find(f => f.name === 'status')) {
+             modifiedCollection.fields.push({
+               name: 'status',
+               type: 'select',
+               label: 'Status',
+               defaultValue: 'draft',
+               options: [
+                 { label: 'Draft', value: 'draft' },
+                 { label: 'In Review', value: 'review' },
+                 { label: 'Published', value: 'published' }
+               ],
+               admin: {
+                 position: 'sidebar',
+                 section: 'Review Process'
+               }
+             } as any);
+          }
+
+          if (!modifiedCollection.fields.find(f => f.name === 'publishedAt')) {
+            modifiedCollection.fields.push({
+              name: 'publishedAt',
+              type: 'datetime',
+              label: 'Published Date',
+              admin: {
+                position: 'sidebar',
+                section: 'Review Process',
+                description: 'The date this content was officially published.'
+              }
+            } as any);
+          }
+
+          if (!modifiedCollection.fields.find(f => f.name === 'scheduledPublishAt')) {
+            modifiedCollection.fields.push({
+              name: 'scheduledPublishAt',
+              type: 'datetime',
+              label: 'Schedule Release',
+              admin: {
+                position: 'sidebar',
+                section: 'Review Process',
+                description: 'Automatically set status to Published at this date/time.'
+              }
+            } as any);
+          }
+        }
 
         rootLogger.info(`Plugin "${plugin.manifest.slug}" registered collection "${inputSlug}" as "${prefixedSlug}" (shortSlug: ${shortSlug})`);
 

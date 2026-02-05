@@ -43,6 +43,7 @@ interface PluginContextValue {
   fieldComponents: Record<string, React.ComponentType<any>>;
   plugins: any[];
   settings: Record<string, any>;
+  pluginState: Record<string, Record<string, any>>;
   translations: Record<string, any>;
   locale: string;
   refreshVersion: number;
@@ -53,6 +54,7 @@ interface PluginContextValue {
   on: (event: string, handler: (data: any) => void) => () => void;
   registerAPI: (slug: string, api: any) => void;
   getAPI: (slug: string) => any;
+  setPluginState: (pluginSlug: string, key: string, value: any) => void;
   registerSlotComponent: (slotName: string, component: SlotComponent) => void;
   registerFieldComponent: (name: string, component: any) => void;
   registerOverride: (name: string, component: SlotComponent) => void;
@@ -90,6 +92,7 @@ export const registerTheme = (...args: any[]) => getBridge().registerTheme?.(...
 export const registerSettings = (...args: any[]) => getBridge().registerSettings?.(...args);
 export const registerAPI = (...args: any[]) => getBridge().registerAPI?.(...args);
 export const getAPI = (...args: any[]) => getBridge().getAPI?.(...args);
+export const setPluginState = (...args: any[]) => getBridge().setPluginState?.(...args);
 export const loadConfig = (...args: any[]) => getBridge().loadConfig?.(...args);
 export const resolveContent = (...args: any[]) => getBridge().resolveContent?.(...args);
 export const emit = (...args: any[]) => getBridge().emit?.(...args);
@@ -116,6 +119,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   const [fieldComponents, setFieldComponents] = useState<Record<string, any>>({});
   const [plugins, setPlugins] = useState<any[]>([]);
   const [settings, setSettings] = useState<Record<string, any>>({});
+  const [pluginState, setPluginStateInternal] = useState<Record<string, Record<string, any>>>({});
   const [translations, setTranslations] = useState<Record<string, any>>({});
   const [locale, setLocale] = useState<string>('en');
   const [refreshVersion, setRefreshVersion] = useState(0);
@@ -256,6 +260,16 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         setServerRuntimeModules(data.runtimeModules);
       }
 
+      if (data.cssVariables) {
+        let style = document.getElementById('fc-theme-variables');
+        if (!style) {
+          style = document.createElement('style');
+          style.id = 'fc-theme-variables';
+          document.head.appendChild(style);
+        }
+        style.textContent = data.cssVariables;
+      }
+
       if (data.activeTheme) {
         setThemeVariables(data.activeTheme.variables || {});
         
@@ -299,6 +313,16 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   const getAPI = useCallback((slug: string) => {
     return pluginAPIs[slug];
   }, [pluginAPIs]);
+
+  const setPluginState = useCallback((pluginSlug: string, key: string, value: any) => {
+    setPluginStateInternal(prev => ({
+      ...prev,
+      [pluginSlug]: {
+        ...(prev[pluginSlug] || {}),
+        [key]: value
+      }
+    }));
+  }, []);
 
   const emit = useCallback((event: string, data: any) => {
     const handlers = events.get(event);
@@ -486,10 +510,24 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     if (config?.variables) {
       setThemeVariables(prev => ({ ...prev, ...config.variables }));
     }
-    if (config?.layouts) {
+    // Layouts are usually provided as a map: { layoutName: Component }
+    if (config?.layouts && !Array.isArray(config.layouts)) {
       setThemeLayouts(prev => ({ ...prev, ...config.layouts }));
     }
-  }, []);
+    if (config?.overrides) {
+      if (Array.isArray(config.overrides)) {
+        config.overrides.forEach((o: any) => {
+           if (o.name && o.component) {
+             registerOverride(o.name, o.component, slug, o.priority || 10);
+           }
+        });
+      } else {
+        Object.entries(config.overrides).forEach(([name, component]) => {
+          registerOverride(name, component, slug, 10);
+        });
+      }
+    }
+  }, [registerOverride]);
 
   // Set up global bridge for dynamic plugins
   if (typeof window !== 'undefined') {
@@ -592,6 +630,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         registerSettings,
         registerAPI,
         getAPI,
+        setPluginState,
         loadConfig,
         emit,
         on,
@@ -601,9 +640,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         usePlugins,
         useTranslation,
         usePluginAPI,
+        usePluginState,
         isReady: true,
         // Non-hook versions for direct access from CJS/ESM bridge
-        getState: () => ({ slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, setLocale, t, emit, on, api, resolveContent, getAPI }),
+        getState: () => ({ slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, setLocale, t, emit, on, api, resolveContent, getAPI }),
         PluginsProvider
       };
 
@@ -627,7 +667,9 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           "@fromcode/react": "data:application/javascript," + encodeURIComponent(
             Object.keys(bridge).filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof)).map(key => `export const ${key} = window.Fromcode.${key};`).join('\n') + `\nexport default window.Fromcode;`
           ),
-          "@fromcode/admin/components": "data:application/javascript,export const MediaPicker = () => null; export default { MediaPicker: () => null };"
+          "@fromcode/admin/components": "data:application/javascript," + encodeURIComponent(
+            Object.keys((window as any).FromcodeAdmin || {}).map(key => `export const ${key} = window.FromcodeAdmin.${key};`).join('\n') + `\nexport default window.FromcodeAdmin;`
+          )
       };
 
       // Merge server-side modules from loadConfig
@@ -700,6 +742,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     fieldComponents,
     plugins,
     settings,
+    pluginState,
     translations,
     locale,
     refreshVersion,
@@ -710,6 +753,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     on,
     registerAPI,
     getAPI,
+    setPluginState,
     registerSlotComponent,
     registerFieldComponent,
     registerOverride,
@@ -721,7 +765,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     loadConfig,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, resolveContent, api]);
 
   return (
     <PluginContext.Provider value={value}>
@@ -758,4 +802,26 @@ export const usePluginAPI = (slug: string) => {
     patch: (path: string, body?: any, options?: any) => 
       api.patch(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
   }), [api, slug]);
+};
+
+export const usePluginState = (pluginSlug: string, key?: string) => {
+  const { pluginState, setPluginState } = usePlugins();
+  const state = pluginState[pluginSlug] || {};
+  
+  const setter = useCallback((value: any) => {
+    if (key) {
+      setPluginState(pluginSlug, key, value);
+    } else {
+      // If no key, assume we are setting the whole namespaced object
+      Object.entries(value).forEach(([k, v]) => {
+        setPluginState(pluginSlug, k, v);
+      });
+    }
+  }, [pluginSlug, key, setPluginState]);
+
+  if (key) {
+    return [state[key], setter] as const;
+  }
+
+  return [state, setter] as const;
 };

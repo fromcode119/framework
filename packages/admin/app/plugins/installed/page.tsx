@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins, Plugin } from '@fromcode/react';
 import { useTheme } from '@/components/ThemeContext';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
@@ -14,25 +14,12 @@ import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { Loader } from '@/components/ui/Loader';
 
-interface Plugin {
-  slug: string;
-  name: string;
-  version: string;
-  category: string;
-  description?: string;
-  state: 'inactive' | 'loading' | 'active' | 'error';
-  author?: string;
-  capabilities?: string[];
-  approvedCapabilities?: string[];
-  config?: Record<string, any>;
-}
-
 export default function InstalledPluginsPage() {
   const { theme } = useTheme();
   const { notify } = useNotify();
   const { triggerRefresh, refreshVersion } = usePlugins();
   const [plugins, setPlugins] = useState<Plugin[]>([]);
-  const [registryData, setRegistryData] = useState<any[]>([]);
+  const [marketplaceData, setMarketplaceData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -46,10 +33,10 @@ export default function InstalledPluginsPage() {
     try {
       const [data, reg] = await Promise.all([
         api.get(ENDPOINTS.PLUGINS.LIST),
-        api.get(ENDPOINTS.PLUGINS.REGISTRY)
+        api.get(ENDPOINTS.PLUGINS.MARKETPLACE)
       ]);
       setPlugins(Array.isArray(data) ? data : []);
-      setRegistryData(reg.plugins || []);
+      setMarketplaceData(reg.plugins || []);
     } catch (err) {
       console.error("Failed to fetch plugins", err);
     } finally {
@@ -135,7 +122,7 @@ export default function InstalledPluginsPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {loading ? (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Synchronizing Global Plugin Registry" />
+          <Loader label="Synchronizing Global Marketplace Catalog" />
         </div>
       ) : (
         <>
@@ -172,8 +159,8 @@ export default function InstalledPluginsPage() {
           </div>
         ) : (
           filteredPlugins.map(plugin => {
-            const regEntry = registryData.find(r => r.slug === plugin.slug);
-            const hasUpdate = regEntry && regEntry.version !== plugin.version;
+            const marketEntry = marketplaceData.find(r => r.slug === plugin.slug);
+            const hasUpdate = marketEntry && marketEntry.version !== plugin.version;
             const hasImageError = imageErrors[plugin.slug];
 
             return (
@@ -200,6 +187,14 @@ export default function InstalledPluginsPage() {
                           <Badge variant={plugin.state === 'active' ? 'success' : 'gray'} className="flex-shrink-0">
                               {plugin.state === 'active' ? 'Active' : 'Inactive'}
                           </Badge>
+                          
+                          {plugin.healthStatus && plugin.healthStatus !== 'healthy' && (
+                             <Badge variant={plugin.healthStatus === 'error' ? 'rose' : 'amber'} className="animate-pulse flex items-center gap-1.5">
+                                <FrameworkIcons.Zap size={10} />
+                                {plugin.healthStatus === 'error' ? 'Security Alert' : 'Heuristic Warning'}
+                             </Badge>
+                          )}
+
                           {hasUpdate && (
                              <Link 
                                href={`/plugins/marketplace/${plugin.slug}`}
@@ -233,7 +228,9 @@ export default function InstalledPluginsPage() {
                           theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-100 text-slate-600'
                         }`}>
                           <FrameworkIcons.User size={10} className="text-indigo-500" />
-                          <span className="truncate">{plugin.author || 'Official'}</span>
+                          <span className="truncate">
+                            {typeof plugin.author === 'object' ? (plugin.author as any).name : (plugin.author || 'Official')}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -277,6 +274,20 @@ export default function InstalledPluginsPage() {
                         >
                           <FrameworkIcons.Settings size={14} />
                         </Link>
+
+                        {plugin.healthStatus && plugin.healthStatus !== 'healthy' && (
+                          <button 
+                            onClick={() => handleToggle(plugin.slug, true)}
+                            className={`col-span-2 sm:col-span-1 h-9 rounded-lg flex items-center justify-center transition-all border group/kill ${
+                              theme === 'dark' 
+                                ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white' 
+                                : 'bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white shadow-sm'
+                            }`}
+                            title="Emergency Deactivate"
+                          >
+                             <FrameworkIcons.Zap size={14} className="group-hover/kill:animate-ping" />
+                          </button>
+                        )}
 
                         <button 
                           onClick={() => { setPluginToDelete(plugin.slug); setShowDeleteConfirm(true); }}

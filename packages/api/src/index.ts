@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import * as http from 'http';
 import dotenv from 'dotenv';
-import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService, RecordVersions, WebSocketManager } from '@fromcode/core';
+import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService, RecordVersions, WebSocketManager, validateEnv } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { MediaManager } from '@fromcode/media';
 import { CacheFactory, CacheManager } from '@fromcode/cache';
@@ -17,12 +17,15 @@ import { setupAuthRoutes } from './routes/auth';
 import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
 import { setupPluginSettingsRoutes } from './routes/plugin-settings';
 import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
+import { setupMarketplaceRoutes } from './routes/marketplace';
 import { setupSystemRoutes } from './routes/system';
 import { setupMediaRoutes } from './routes/media';
+import { setupVersioningRoutes } from './routes/versioning';
 import { setupCollectionRoutes, setupLegacyCollectionRoutes } from './routes/collections';
 import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
 import { generateOpenAPI } from './swagger';
 import { createCollectionMiddleware } from './middlewares/collection';
+import { csrfMiddleware, xssMiddleware } from './middlewares/security';
 import { SchedulerService } from '@fromcode/scheduler';
 import { GraphQLService } from './services/GraphQLService';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -63,9 +66,17 @@ export class APIServer {
   public async initialize() {
     this.logger.info('Initializing API Server infrastructure...');
     this.setupCors();
-    this.app.set('trust proxy', 1);
+    
+    // Support nested proxies (e.g. Traefik -> Nginx -> Node)
+    this.app.set('trust proxy', (ip: string) => {
+      if (process.env.NODE_ENV === 'development') return true;
+      return ip === '127.0.0.1' || ip === '::1';
+    });
+
     this.app.use(express.json());
+    this.app.use(xssMiddleware);
     this.app.use(cookieParser());
+    this.app.use(csrfMiddleware);
 
     await this.setupSettingsSync();
 
@@ -266,11 +277,12 @@ export class APIServer {
         'Accept', 
         'Origin', 
         'X-Framework-Client',
+        'X-CSRF-Token',
         'X-App-Locale',
         'Cache-Control',
         'Pragma'
       ],
-      exposedHeaders: ['X-Framework-Maintenance', 'Content-Disposition']
+      exposedHeaders: ['X-Framework-Maintenance', 'X-CSRF-Token', 'Content-Disposition']
     };
 
     this.app.use(cors(corsOptions));
@@ -370,6 +382,9 @@ export class APIServer {
   }
 
   private setupMiddleware() {
+    // Dynamic Pre-Auth Plugin Middlewares
+    this.app.use((req, res, next) => this.manager.middlewares.dispatch('pre_auth' as any, req, res, next));
+
     this.app.use((req: any, res, next) => {
       const locale = req.query.locale || req.cookies?.fc_locale || 'en';
       req.locale = locale;
@@ -377,6 +392,9 @@ export class APIServer {
     });
 
     this.app.use(this.auth.middleware());
+
+    // Dynamic Post-Auth Plugin Middlewares
+    this.app.use((req, res, next) => this.manager.middlewares.dispatch('post_auth' as any, req, res, next));
 
     // Maintenance Mode Check
     this.app.use(async (req: any, res, next) => {
@@ -431,6 +449,9 @@ export class APIServer {
         message: 'System is currently undergoing maintenance. Please try again later.'
       });
     });
+
+    // Dynamic Pre-Routing Plugin Middlewares
+    this.app.use((req, res, next) => this.manager.middlewares.dispatch('pre_routing' as any, req, res, next));
 
     this.app.use((req: any, res, next) => {
       const hasToken = !!(req.cookies?.fc_token || req.headers.authorization);
@@ -488,9 +509,11 @@ export class APIServer {
     vApi.use('/auth', setupAuthRoutes(this.manager, this.auth));
     vApi.use('/plugins', setupPluginRoutes(this.manager, this.auth));
     vApi.use('/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
+    vApi.use('/marketplace', setupMarketplaceRoutes(this.manager, this.auth));
     vApi.use('/themes', setupThemeRoutes(this.themeManager, this.auth));
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
+    vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
     
     // Add collections to versioned API
     vApi.use(setupCollectionRoutes(this.manager, this.restController));
@@ -587,6 +610,9 @@ async function bootstrap() {
   });
 
   try {
+    // Validate required environment variables early
+    validateEnv();
+
     if (!process.env.DATABASE_URL) {
       console.error('FATAL ERROR: DATABASE_URL is not defined in environment or .env file.');
       console.error('Looked in:', envPaths);

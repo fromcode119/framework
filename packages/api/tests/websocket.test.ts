@@ -28,6 +28,7 @@ describe('WebSocketManager', () => {
   });
 
   afterAll((done) => {
+    manager.close();
     server.close(done);
   });
 
@@ -41,8 +42,8 @@ describe('WebSocketManager', () => {
     ws.on('message', (data) => {
       const msg = JSON.parse(data.toString());
       if (msg.type === 'system:ready') {
+        ws.on('close', () => done());
         ws.close();
-        done();
       }
     });
   });
@@ -58,8 +59,8 @@ describe('WebSocketManager', () => {
       const msg = JSON.parse(data.toString());
       if (msg.type === 'test:event') {
         expect(msg.payload.foo).toBe('bar');
+        ws.on('close', () => done());
         ws.close();
-        done();
       }
     });
   });
@@ -75,8 +76,8 @@ describe('WebSocketManager', () => {
       const msg = JSON.parse(data.toString());
       if (msg.type === 'collection:posts:created') {
         expect(msg.payload.title).toBe('Test');
+        ws.on('close', () => done());
         ws.close();
-        done();
       }
     });
   });

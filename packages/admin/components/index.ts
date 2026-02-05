@@ -10,6 +10,7 @@ export * from './ui/PromptDialog';
 export * from './ui/DateTimePicker';
 export * from './ui/ColorPicker';
 export * from './ui/CodeEditor';
+export * from './ui/VisualMenuField';
 export * from './Icon';
 export * from './ThemeContext';
 export * from './NotificationContext';

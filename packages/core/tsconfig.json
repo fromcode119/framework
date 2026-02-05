@@ -12,6 +12,7 @@
     { "path": "../media" },
     { "path": "../email" },
     { "path": "../cache" },
-    { "path": "../scheduler" }
+    { "path": "../scheduler" },
+    { "path": "../marketplace-client" }
   ]
 }

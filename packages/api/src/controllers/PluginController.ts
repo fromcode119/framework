@@ -9,19 +9,20 @@ export class PluginController {
   constructor(private manager: PluginManager) {}
 
   async list(req: Request, res: Response) {
-    res.json(this.manager.getPlugins().map(p => ({
+    res.json(this.manager.getSortedPlugins().map(p => ({
       ...p.manifest,
       state: p.state,
       path: p.path,
       error: p.error,
-      approvedCapabilities: p.approvedCapabilities
+      approvedCapabilities: p.approvedCapabilities,
+      healthStatus: p.healthStatus || 'healthy'
     })));
   }
 
   async active(req: Request, res: Response) {
-    const activePlugins = this.manager.getPlugins()
-      .filter(p => p.state === 'active')
-      .map(p => ({
+    const activePlugins = this.manager.getSortedPlugins(
+      this.manager.getPlugins().filter(p => p.state === 'active')
+    ).map(p => ({
         slug: p.manifest.slug,
         version: p.manifest.version,
         name: p.manifest.name,
@@ -67,6 +68,16 @@ export class PluginController {
     }
   }
 
+  async saveSandboxConfig(req: Request, res: Response) {
+    const { slug } = req.params;
+    try {
+      await (this.manager as any).saveSandboxConfig(slug, req.body);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   async delete(req: Request, res: Response) {
     const { slug } = req.params;
     try {
@@ -84,87 +95,39 @@ export class PluginController {
     }
   }
 
-  async registry(req: Request, res: Response) {
+  async marketplace(req: Request, res: Response) {
     try {
-      const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
-      this.logger.debug(`Fetching plugin registry from: ${registryUrl}`);
-      
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
-
-      try {
-        const response = await fetch(registryUrl, { signal: controller.signal });
-        clearTimeout(timeout);
-        
-        if (!response.ok) {
-          this.logger.warn(`Registry responded with status: ${response.status}`);
-          throw new Error(`Registry unavailable`);
-        }
-        
-        const data = await response.json();
-        res.json(data);
-      } catch (err: any) {
-        clearTimeout(timeout);
-        throw err;
-      }
+      const plugins = await this.manager.marketplace.fetchCatalog();
+      res.json({ plugins }); // Admin UI expects { plugins: [...] }
     } catch (err: any) {
-      this.logger.error(`Marketplace registry error: ${err.message}`);
-      // Return 200 with empty list or specialized error to avoid breaking UI/Proxy
+      this.logger.error(`Marketplace error: ${err.message}`);
       res.status(503).json({ 
-        error: 'Marketplace registry currently unavailable.',
-        message: err.message === 'The user aborted a request.' ? 'Request timed out' : err.message
+        error: 'Marketplace currently unavailable.',
+        message: err.message
       });
     }
   }
 
   async install(req: Request, res: Response) {
     const { slug } = req.params;
-    const { version } = req.query;
-    this.logger.info(`Installation request received for plugin: ${slug} (version: ${version || 'latest'})`);
+    this.logger.info(`Installation request received for plugin: ${slug}`);
     
     try {
-      const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
-      this.logger.debug(`Fetching registry from: ${registryUrl}`);
+      const manifest = await this.manager.installOrUpdateFromMarketplace(slug);
       
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000); // 10s for installation lookup
-
-      const response = await fetch(registryUrl, { signal: controller.signal });
-      clearTimeout(timeout);
-      
-      if (!response.ok) {
-        throw new Error(`Registry returned status ${response.status}: ${response.statusText}`);
-      }
-      
-      const registryData: any = await response.json();
-      
-      const pkg = registryData.plugins.find((p: any) => 
-        p.slug === slug && (!version || p.version === version)
-      );
-      
-      if (!pkg) {
-        this.logger.warn(`Plugin ${slug} not found in registry`);
-        return res.status(404).json({ error: `Plugin ${slug} ${version ? 'v'+version : ''} not found` });
+      // Attempt to enable if not already active
+      const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
+      if (plugin && plugin.state !== 'active') {
+        try {
+          await this.manager.enable(slug);
+        } catch (enableErr: any) {
+          this.logger.warn(`Plugin ${slug} installed but failed to auto-enable: ${enableErr.message}`);
+        }
       }
 
-      if (pkg.downloadUrl && !pkg.downloadUrl.startsWith('http')) {
-        pkg.downloadUrl = new URL(pkg.downloadUrl, registryUrl).toString();
-      }
-      
-      this.logger.info(`Installing ${slug} from ${pkg.downloadUrl}`);
-      await this.manager.updatePlugin(slug, pkg);
-      
-      try {
-        // Auto-enable plugin after marketplace installation
-        await this.manager.enable(slug);
-      } catch (enableErr: any) {
-        this.logger.warn(`Plugin ${slug} installed but failed to auto-enable: ${enableErr.message}`);
-      }
-
-      this.logger.info(`Successfully installed plugin: ${slug}`);
-      res.json({ success: true });
+      res.json({ success: true, manifest });
     } catch (err: any) {
-      this.logger.error(`Failed to install plugin ${slug}: ${err.message}`, err);
+      this.logger.error(`Failed to install plugin ${slug}: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
   }

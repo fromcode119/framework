@@ -5,12 +5,10 @@ export class AdminMetadataService {
   private logger = new Logger({ namespace: 'AdminMetadataService' });
 
   public getAdminMetadata(
-    plugins: Map<string, LoadedPlugin>,
+    allPlugins: LoadedPlugin[],
     registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>,
     runtimeModules: any
   ) {
-    const allPlugins = Array.from(plugins.values());
-    
     const pluginMetadata = allPlugins
       .filter(p => p.state === 'active' && p.manifest.admin)
       .map(p => {
