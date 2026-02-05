@@ -141,6 +141,7 @@ export class AuthManager {
       }
 
       // Try all candidates until one works
+      let hasExpiredToken = false;
       for (const t of tokenCandidates) {
         try {
           const user = await this.verifyToken(t);
@@ -149,15 +150,52 @@ export class AuthManager {
             console.debug(`[AuthManager] Session validated using token candidate (${t.substring(0, 10)}...) for ${req.url || 'unknown'}`);
             break;
           }
-        } catch (err) {
+        } catch (err: any) {
           // Candidate failed, move to next
-          console.debug(`[AuthManager] Token candidate failed: ${err instanceof Error ? err.message : String(err)}`);
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg.includes('expired')) {
+            hasExpiredToken = true;
+          }
+          console.debug(`[AuthManager] Token candidate failed: ${msg}`);
         }
       }
 
       if (tokenCandidates.length > 0 && !req.user) {
          if (req.url && !req.url.includes('/status') && !req.url.includes('/health')) {
             console.warn(`[AuthManager] All ${tokenCandidates.length} token candidates failed for ${req.url}`);
+         }
+
+         // SELF-HEALING: If we have an expired token, clear it to prevent redirect loops or stale sessions
+         if (hasExpiredToken && res.clearCookie) {
+            console.log(`[AuthManager] Expired token detected for ${req.url}. Clearing auth/security cookies.`);
+            
+            const isProd = process.env.NODE_ENV === 'production';
+            const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' || req.get('x-forwarded-port') === '443';
+            
+            const baseOptions: any = {
+                path: '/',
+                httpOnly: true,
+                secure: isProd && isHttps,
+                sameSite: 'lax'
+            };
+
+            // 1. Clear for exact host
+            res.clearCookie('fc_token', baseOptions);
+            res.clearCookie('fc_csrf', { ...baseOptions, httpOnly: false });
+
+            // 2. Clear for domain if possible
+            let domain = process.env.COOKIE_DOMAIN;
+            if (!domain && req.hostname && req.hostname.includes('.') && !req.hostname.match(/^\d+\.\d+\.\d+\.\d+$/) && req.hostname !== 'localhost') {
+                const parts = req.hostname.split('.');
+                if (parts.length >= 2) {
+                    domain = '.' + parts.slice(-2).join('.');
+                }
+            }
+
+            if (domain) {
+                res.clearCookie('fc_token', { ...baseOptions, domain });
+                res.clearCookie('fc_csrf', { ...baseOptions, domain, httpOnly: false });
+            }
          }
       }
 
