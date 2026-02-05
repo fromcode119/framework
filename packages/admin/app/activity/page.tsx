@@ -14,6 +14,7 @@ import Link from 'next/link';
 
 export default function ActivityPage() {
   const { theme } = useTheme();
+  const [mode, setMode] = useState<'system' | 'security'>('system');
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -26,9 +27,15 @@ export default function ActivityPage() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const userFilter = searchParams.get('user');
+    const modeParam = searchParams.get('mode');
+    
     if (userFilter && !searchQuery) {
       setSearchQuery(userFilter);
       setActiveSearch(userFilter);
+    }
+    
+    if (modeParam === 'security') {
+      setMode('security');
     }
   }, []);
 
@@ -36,17 +43,18 @@ export default function ActivityPage() {
     async function loadLogs() {
       setLoading(true);
       try {
-        const response = await api.get(`${ENDPOINTS.SYSTEM.LOGS}?page=${page}&limit=${limit}&search=${activeSearch}`);
+        const endpoint = mode === 'system' ? ENDPOINTS.SYSTEM.LOGS : ENDPOINTS.SYSTEM.AUDIT;
+        const response = await api.get(`${endpoint}?page=${page}&limit=${limit}&search=${activeSearch}`);
         setLogs(response.docs || []);
         setTotalDocs(response.totalDocs || 0);
       } catch (error) {
-        console.error('Failed to fetch audit logs:', error);
+        console.error(`Failed to fetch ${mode} logs:`, error);
       } finally {
         setLoading(false);
       }
     }
     loadLogs();
-  }, [page, activeSearch]);
+  }, [page, activeSearch, mode]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,13 +66,13 @@ export default function ActivityPage() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(log, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `log-${log.id}-${new Date().getTime()}.json`);
+    downloadAnchorNode.setAttribute("download", `log-${log.id || 'export'}-${new Date().getTime()}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
   };
 
-  const columns = useMemo(() => [
+  const systemColumns = useMemo(() => [
     {
       header: 'Event',
       id: 'event',
@@ -91,7 +99,7 @@ export default function ActivityPage() {
       header: 'Actor',
       id: 'actor',
       accessor: (row: any) => {
-        const actor = row.actor_id || row.context?.email || (row.message.includes('for ') ? row.message.split('for ')[1] : 'SYSTEM');
+        const actor = row.actor_id || row.context?.email || (row.message && row.message.includes('for ') ? row.message.split('for ')[1] : 'SYSTEM');
         return (
           <div className="flex items-center gap-3">
             <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-black border-2 ${
@@ -125,10 +133,10 @@ export default function ActivityPage() {
       accessor: (row: any) => (
         <div className="flex flex-col">
           <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">
-             {new Date(row.timestamp).toLocaleTimeString()}
+             {new Date(row.timestamp || row.createdAt).toLocaleTimeString()}
           </span>
           <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5 italic">
-             {new Date(row.timestamp).toLocaleDateString()}
+             {new Date(row.timestamp || row.createdAt).toLocaleDateString()}
           </span>
         </div>
       )
@@ -142,6 +150,66 @@ export default function ActivityPage() {
     }
   ], [theme]);
 
+  const securityColumns = useMemo(() => [
+    {
+      header: 'Status',
+      id: 'status',
+      accessor: (row: any) => {
+        const style = row.status === 'violation' 
+          ? (theme === 'dark' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-rose-50 border-rose-100 text-rose-700')
+          : row.status === 'denied'
+          ? (theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-100 text-amber-700')
+          : (theme === 'dark' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700');
+
+        return (
+          <div className="flex flex-col gap-1">
+            <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-black w-fit uppercase tracking-tighter ${style}`}>
+               {row.status}
+            </span>
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Plugin',
+      id: 'plugin',
+      accessor: (row: any) => (
+        <div className="flex items-center gap-2">
+          <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-black">
+             {row.plugin_slug ? row.plugin_slug[0].toUpperCase() : 'C'}
+          </div>
+          <span className="font-bold text-[11px] text-slate-600 dark:text-slate-200 uppercase tracking-widest">{row.plugin_slug || 'CORE'}</span>
+        </div>
+      )
+    },
+    {
+      header: 'Action',
+      id: 'action',
+      accessor: (row: any) => (
+        <div className="flex flex-col">
+           <span className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-tight">{row.action}</span>
+           <span className="text-[10px] font-medium text-slate-400 mt-0.5">{row.resource}</span>
+        </div>
+      )
+    },
+    {
+      header: 'Time',
+      id: 'timestamp',
+      accessor: (row: any) => (
+        <div className="flex flex-col">
+          <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">
+             {new Date(row.createdAt).toLocaleTimeString()}
+          </span>
+          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5 italic">
+             {new Date(row.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+      )
+    }
+  ], [theme]);
+
+  const columns = mode === 'system' ? systemColumns : securityColumns;
+
   return (
     <div className="w-full pb-24 animate-in fade-in duration-500">
       {/* Premium Activity Header */}
@@ -152,27 +220,47 @@ export default function ActivityPage() {
       }`}>
         <div className="w-full px-6 lg:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
+            <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className={`h-11 w-11 rounded-full flex items-center justify-center shadow-lg transform rotate-3 transition-transform hover:rotate-0 ${
                   theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-600 text-white'
                 }`}>
-                  <FrameworkIcons.Check size={22} strokeWidth={2.5} />
+                  <FrameworkIcons.Activity size={22} strokeWidth={2.5} />
                 </div>
                 <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  System Activity
+                   {mode === 'system' ? 'System Activity' : 'Security Audit'}
                 </h1>
               </div>
-              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-                Tracking user actions and system events across all plugins and core modules.
-              </p>
+              
+              <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl w-fit">
+                 <button 
+                  onClick={() => { setMode('system'); setPage(1); }}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    mode === 'system' 
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                 >
+                   System Events
+                 </button>
+                 <button 
+                  onClick={() => { setMode('security'); setPage(1); }}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    mode === 'security' 
+                      ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                 >
+                   Security Audit
+                 </button>
+              </div>
             </div>
             
             <div className="flex items-center gap-4">
               <form onSubmit={handleSearch} className="flex items-center gap-2">
                 <input 
                   type="text" 
-                  placeholder="Search activity..." 
+                  placeholder={`Search ${mode} logs...`} 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={`px-4 py-2.5 rounded-xl border text-sm font-medium outline-none transition-all w-64 ${
@@ -255,7 +343,7 @@ export default function ActivityPage() {
                           <div className="flex flex-col">
                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Timestamp</span>
                              <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
-                               {new Date(selectedLog.timestamp).toLocaleString()}
+                               {new Date(selectedLog.timestamp || selectedLog.createdAt).toLocaleString()}
                              </span>
                           </div>
                        </div>
@@ -267,23 +355,36 @@ export default function ActivityPage() {
                              <span className="text-sm font-bold text-indigo-500">{selectedLog.actor_id || 'System'}</span>
                           </div>
                           <div className="flex flex-col">
-                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Privilege</span>
-                             <Badge variant="blue">Root / Admin</Badge>
+                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Type</span>
+                             <Badge variant={mode === 'security' ? (selectedLog.status === 'violation' ? 'rose' : 'blue') : 'blue'}>
+                                {mode === 'system' ? 'System Log' : `Audit: ${selectedLog.status}`}
+                             </Badge>
                           </div>
                        </div>
                     </Card>
                  </div>
 
-                 <Card title="Activity Message">
-                    <p className="text-sm font-medium text-slate-500 leading-relaxed italic">
-                      "{selectedLog.message}"
-                    </p>
-                 </Card>
+                 {mode === 'system' ? (
+                    <Card title="Activity Message">
+                        <p className="text-sm font-medium text-slate-500 leading-relaxed italic">
+                        "{selectedLog.message}"
+                        </p>
+                    </Card>
+                 ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                        <Card title="Action Taken">
+                            <span className="text-sm font-black text-slate-900 dark:text-white uppercase">{selectedLog.action}</span>
+                        </Card>
+                        <Card title="Resource Pool">
+                            <span className="text-sm font-mono text-slate-500">{selectedLog.resource}</span>
+                        </Card>
+                    </div>
+                 )}
 
-                 {selectedLog.context && (
+                 {(selectedLog.context || selectedLog.metadata) && (
                    <Card title="Raw Metadata" className="overflow-hidden">
                       <div className={`p-6 rounded-2xl font-mono text-xs overflow-x-auto ${theme === 'dark' ? 'bg-slate-900 text-slate-400' : 'bg-slate-50 text-slate-600'}`}>
-                        <pre>{JSON.stringify(selectedLog.context, null, 2)}</pre>
+                        <pre>{JSON.stringify(selectedLog.context || (typeof selectedLog.metadata === 'string' ? JSON.parse(selectedLog.metadata) : selectedLog.metadata), null, 2)}</pre>
                       </div>
                    </Card>
                  )}

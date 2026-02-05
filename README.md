@@ -2,6 +2,11 @@
 
 The "WordPress of TypeScript" - a plugin-first, enterprise-grade framework.
 
+## Prerequisites
+- **Node.js**: v22.0.0 or later (Required for `isolated-vm` based plugin sandboxing)
+- **npm**: v11.0.0 or later (Recommended)
+- **Docker**: For production-ready builds and orchestration
+
 ## Documentation
 - [Framework Plan](docs/framework-plan.md) - Detailed technical architecture and vision.
 - [Development Roadmap](docs/framework-roadmap.md) - Current progress and future tasks.

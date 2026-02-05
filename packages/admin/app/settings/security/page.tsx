@@ -11,6 +11,7 @@ import { api } from '@/lib/api';
 import { useNotification } from '@/components/NotificationContext';
 import { ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/Loader';
+import { Badge } from '@/components/ui/Badge';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
   <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
@@ -34,11 +35,22 @@ export default function SecuritySettingsPage() {
   const { addNotification } = useNotification();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
+  const [stats, setStats] = useState<any>(null);
   const [settings, setSettings] = useState<Record<string, any>>({
     two_factor_enabled: false,
     rate_limit_max: '100',
     rate_limit_window: '900000',
   });
+
+  const fetchStats = async () => {
+    try {
+      const data = await api.get(ENDPOINTS.SYSTEM.STATS.SECURITY);
+      setStats(data);
+    } catch (e) {
+      console.error("Failed to fetch security stats", e);
+    }
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -56,8 +68,10 @@ export default function SecuritySettingsPage() {
         setIsLoading(false);
       }
     };
+    
     fetchSettings();
-  }, []);
+    if (activeTab === 'dashboard') fetchStats();
+  }, [activeTab]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -83,68 +97,185 @@ export default function SecuritySettingsPage() {
       <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
         theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
       }`}>
-        <div>
-          <h1 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            Security & Defense
-          </h1>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
-            Access protocols and API enforcement
-          </p>
+        <div className="flex items-center gap-6">
+          <div>
+            <h1 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              Security & Defense
+            </h1>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
+              Runtime isolation and protection
+            </p>
+          </div>
+          
+          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-white/5">
+              <button 
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === 'dashboard' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+              >
+                Dashboard
+              </button>
+              <button 
+                onClick={() => setActiveTab('settings')}
+                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === 'settings' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+              >
+                Settings
+              </button>
+          </div>
         </div>
-        <Button 
-          icon={<FrameworkIcons.Shield size={14} strokeWidth={3} />}
-          onClick={handleSave}
-          isLoading={isSaving}
-          className="px-6 rounded-xl shadow-lg shadow-indigo-600/10"
-        >
-          Update Security
-        </Button>
+        
+        {activeTab === 'settings' && (
+          <Button 
+            icon={<FrameworkIcons.Shield size={14} strokeWidth={3} />}
+            onClick={handleSave}
+            isLoading={isSaving}
+            className="px-6 rounded-xl shadow-lg shadow-indigo-600/10"
+          >
+            Update Security
+          </Button>
+        )}
       </div>
 
-      <div className="p-8 lg:p-12 max-w-5xl space-y-8">
-        <Card title="Account Defense">
-          <SettingRow 
-            theme={theme}
-            icon={FrameworkIcons.ShieldCheck} 
-            title="Two-Factor Security" 
-            description="Add an extra layer of security to administrative accounts."
-          >
-            <Switch 
-              checked={settings.two_factor_enabled} 
-              onChange={(val) => setSettings(prev => ({ ...prev, two_factor_enabled: val }))} 
-            />
-          </SettingRow>
-        </Card>
+      <div className="p-8 lg:p-12 max-w-5xl space-y-8 pb-24">
+        {activeTab === 'dashboard' && stats && (
+          <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="p-6 relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sandbox Contexts</span>
+                        <FrameworkIcons.Box size={16} className="text-indigo-500" />
+                    </div>
+                    <div className="text-3xl font-black">{stats.sandbox?.activeContexts || 0}</div>
+                    <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase">V8 Isolated Instances</div>
+                </Card>
+                <Card className="p-6 relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Memory Usage</span>
+                        <FrameworkIcons.Zap size={16} className="text-amber-500" />
+                    </div>
+                    <div className="text-3xl font-black">
+                        {stats.sandbox?.heap ? Math.round(stats.sandbox.heap.used_heap_size / (1024 * 1024)) : 0} MB
+                    </div>
+                    <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Aggregate Sandbox Heap</div>
+                </Card>
+                <Card className="p-6 relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Threat Alerts</span>
+                        <FrameworkIcons.ShieldAlert size={16} className={stats.monitor?.violations24h > 0 ? 'text-red-500' : 'text-green-500'} />
+                    </div>
+                    <div className={`text-3xl font-black ${stats.monitor?.violations24h > 0 ? 'text-red-500' : ''}`}>
+                        {stats.monitor?.violations24h || 0}
+                    </div>
+                    <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Policy Violations (24h)</div>
+                </Card>
+             </div>
 
-        <Card title="API Firewall">
-          <SettingRow 
-             theme={theme}
-            icon={FrameworkIcons.ShieldAlert} 
-            title="Rate Limit (Max Requests)" 
-            description="The maximum number of requests a single IP can make."
-          >
-            <Input 
-              type="number"
-              value={settings.rate_limit_max}
-              onChange={(e) => setSettings(prev => ({ ...prev, rate_limit_max: e.target.value }))}
-              className="w-full md:w-32"
-            />
-          </SettingRow>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card title="Defense Modules" className="h-full">
+                    <div className="space-y-6 pt-4">
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                            <div className="flex items-center gap-3">
+                                <FrameworkIcons.Fingerprint size={18} className="text-indigo-500" />
+                                <span className="text-xs font-black uppercase tracking-tight">Integrity Checking</span>
+                            </div>
+                            <Badge variant="success">Active</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                            <div className="flex items-center gap-3">
+                                <FrameworkIcons.Key size={18} className="text-indigo-500" />
+                                <span className="text-xs font-black uppercase tracking-tight">Signature Enforcement</span>
+                            </div>
+                            <Badge variant={stats.signatureEnforced ? 'success' : 'gray'}>
+                                {stats.signatureEnforced ? 'Enforced' : 'Optional'}
+                            </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                            <div className="flex items-center gap-3">
+                                <FrameworkIcons.Eye size={18} className="text-indigo-500" />
+                                <span className="text-xs font-black uppercase tracking-tight">Anomaly Detection</span>
+                            </div>
+                            <Badge variant="success">Active</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                            <div className="flex items-center gap-3">
+                                <FrameworkIcons.Shield size={18} className="text-green-500" />
+                                <span className="text-xs font-black uppercase tracking-tight">Hardening Level</span>
+                            </div>
+                            <Badge variant="success">Production</Badge>
+                        </div>
+                    </div>
+                </Card>
 
-          <SettingRow 
-             theme={theme}
-            icon={FrameworkIcons.Clock} 
-            title="Rate Limit Window" 
-            description="The time window in milliseconds (900000 = 15m)."
-          >
-            <Input 
-              type="number"
-              value={settings.rate_limit_window}
-              onChange={(e) => setSettings(prev => ({ ...prev, rate_limit_window: e.target.value }))}
-              className="w-full md:w-32"
-            />
-          </SettingRow>
-        </Card>
+                <Card title="Suspicious Activity" className="h-full">
+                    <div className="space-y-4 pt-4">
+                        {stats.monitor?.suspiciousPlugins?.length > 0 ? (
+                           stats.monitor.suspiciousPlugins.map((p: any) => (
+                               <div key={p.slug} className="flex items-center justify-between p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
+                                   <div className="flex flex-col">
+                                       <span className="text-[11px] font-black uppercase tracking-widest">{p.slug}</span>
+                                       <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">{p.count} denials recorded</span>
+                                   </div>
+                                    <div className="h-2 w-2 rounded-full bg-red-500" />
+                               </div>
+                           ))
+                        ) : (
+                            <div className="p-10 flex flex-col items-center justify-center opacity-40">
+                                <FrameworkIcons.Check size={32} className="text-green-500 mb-3" />
+                                <p className="text-[10px] font-black uppercase tracking-widest">No suspicious patterns detected</p>
+                            </div>
+                        )}
+                    </div>
+                </Card>
+             </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <>
+            <Card title="Account Defense">
+              <SettingRow 
+                theme={theme}
+                icon={FrameworkIcons.ShieldCheck} 
+                title="Two-Factor Security" 
+                description="Add an extra layer of security to administrative accounts."
+              >
+                <Switch 
+                  checked={settings.two_factor_enabled} 
+                  onChange={(val) => setSettings(prev => ({ ...prev, two_factor_enabled: val }))} 
+                />
+              </SettingRow>
+            </Card>
+
+            <Card title="API Firewall">
+              <SettingRow 
+                theme={theme}
+                icon={FrameworkIcons.ShieldAlert} 
+                title="Rate Limit (Max Requests)" 
+                description="The maximum number of requests a single IP can make."
+              >
+                <Input 
+                  type="number"
+                  value={settings.rate_limit_max}
+                  onChange={(e) => setSettings(prev => ({ ...prev, rate_limit_max: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+
+              <SettingRow 
+                theme={theme}
+                icon={FrameworkIcons.Clock} 
+                title="Rate Limit Window" 
+                description="The time window in milliseconds (900000 = 15m)."
+              >
+                <Input 
+                  type="number"
+                  value={settings.rate_limit_window}
+                  onChange={(e) => setSettings(prev => ({ ...prev, rate_limit_window: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );

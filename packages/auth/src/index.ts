@@ -42,32 +42,56 @@ export class AuthManager {
       ...user,
       jti: user.jti || Math.random().toString(36).substring(7),
     };
-    return jwt.sign(payload, this.secret, { expiresIn: '7d' });
+    return jwt.sign(payload, this.secret, { expiresIn: '15m' }); // Short-lived access token
+  }
+
+  async generateRefreshToken(user: User): Promise<string> {
+    const payload = {
+      id: user.id,
+      jti: user.jti || Math.random().toString(36).substring(7),
+      type: 'refresh'
+    };
+    return jwt.sign(payload, this.secret, { expiresIn: '7d' }); // Long-lived refresh token
   }
 
   async verifyToken(token: string): Promise<User> {
     try {
-      const decoded = jwt.verify(token, this.secret) as User;
+      const decoded = jwt.verify(token, this.secret) as any;
       
+      if (decoded.type === 'refresh') {
+          throw new Error('Cannot use refresh token as access token');
+      }
+
       // If server-side session tracking is enabled, check if session is still valid
       if (this.sessionValidator && decoded.jti && !decoded.isApiKey) {
         const isValid = await this.sessionValidator(decoded.jti);
         if (!isValid) throw new Error('Session revoked or expired');
       }
 
-      return decoded;
+      return decoded as User;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Invalid or expired token');
     }
+  }
+
+  async verifyRefreshToken(token: string): Promise<{ id: string, jti: string }> {
+      try {
+          const decoded = jwt.verify(token, this.secret) as any;
+          if (decoded.type !== 'refresh') throw new Error('Invalid refresh token');
+          return { id: decoded.id, jti: decoded.jti };
+      } catch (err) {
+          throw new Error('Invalid refresh token');
+      }
   }
 
   // Middleware for Express to be used in Context
   middleware() {
     return async (req: any, res: any, next: any) => {
       let token: string | undefined;
+      const tokenCandidates: string[] = [];
 
       // 1. Check for API Key in Header
-      const apiKey = req.headers['x-api-key'] || req.query.api_key;
+      const apiKey = req.headers?.['x-api-key'] || req.query?.api_key;
       if (apiKey && this.apiKeyValidator) {
           try {
               const user = await this.apiKeyValidator(String(apiKey));
@@ -80,60 +104,63 @@ export class AuthManager {
           }
       }
 
-      // 2. Check Authorization Header
+      // 2. Check Authorization Header (highest priority for SPA/Mobile)
       const authHeader = req.headers.authorization;
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const t = authHeader.split(' ')[1];
         if (t && t !== 'undefined' && t !== 'null') {
-          token = t;
+          tokenCandidates.push(t);
         }
       }
 
-      // 3. Check Cookies (if cookie-parser is used)
-      if (!token && req.cookies) {
-        token = req.cookies.fc_token;
-        if (token) {
-          console.debug(`[AuthManager] Found fc_token in req.cookies for ${req.url}`);
-        }
-      }
-
-      // 4. Check Cookie in raw header (if cookie-parser is not used or failed)
-      if (!token && req.headers.cookie) {
+      // 3. Extract ALL cookies with the name 'fc_token' from the raw Cookie header
+      // This is the most reliable way to handle the host-specific vs domain-specific cookie conflict.
+      if (req.headers.cookie) {
         const rawCookies = String(req.headers.cookie).split(';');
-        const cookies: Record<string, string> = {};
         rawCookies.forEach(c => {
           const parts = c.trim().split('=');
           if (parts.length >= 2) {
             const name = parts[0].trim();
             const value = parts.slice(1).join('=').trim();
-            cookies[name] = value;
+            if (name === 'fc_token' && value && value !== 'undefined' && value !== 'null') {
+              tokenCandidates.push(value);
+            }
           }
         });
-        token = cookies['fc_token'];
-        if (token) {
-          console.debug(`[AuthManager] Found fc_token in raw headers for ${req.url}`);
-        } else {
-           // Debug log what cookies ARE present
-           const cookieNames = Object.keys(cookies).join(', ');
-           if (cookieNames && !req.url.includes('/status') && !req.url.includes('/health')) {
-             console.debug(`[AuthManager] No fc_token found in Cookie header for ${req.url}. Available cookies: ${cookieNames}`);
-           }
+      }
+
+      // 4. Fallback to req.cookies if populated by middleware
+      if (req.cookies?.fc_token) {
+        if (Array.isArray(req.cookies.fc_token)) {
+          req.cookies.fc_token.forEach((t: string) => {
+             if (t && !tokenCandidates.includes(t)) tokenCandidates.push(t);
+          });
+        } else if (typeof req.cookies.fc_token === 'string' && !tokenCandidates.includes(req.cookies.fc_token)) {
+          tokenCandidates.push(req.cookies.fc_token);
         }
       }
 
-      if (token && token !== 'undefined' && token !== 'null') {
+      // Try all candidates until one works
+      for (const t of tokenCandidates) {
         try {
-          req.user = await this.verifyToken(token);
-        } catch (err) {
-          if (!req.url.includes('/status') && !req.url.includes('/health') && !req.url.includes('/login')) {
-            console.error(`[AuthManager] Token verification failed for ${req.url}: ${err instanceof Error ? err.message : String(err)}`);
+          const user = await this.verifyToken(t);
+          if (user) {
+            req.user = user;
+            console.debug(`[AuthManager] Session validated using token candidate (${t.substring(0, 10)}...) for ${req.url || 'unknown'}`);
+            break;
           }
-        }
-      } else {
-        if (!req.url.includes('/status') && !req.url.includes('/health')) {
-            console.debug(`[AuthManager] No token found for ${req.url}`);
+        } catch (err) {
+          // Candidate failed, move to next
+          console.debug(`[AuthManager] Token candidate failed: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
+
+      if (tokenCandidates.length > 0 && !req.user) {
+         if (req.url && !req.url.includes('/status') && !req.url.includes('/health')) {
+            console.warn(`[AuthManager] All ${tokenCandidates.length} token candidates failed for ${req.url}`);
+         }
+      }
+
       next();
     };
   }

@@ -1,7 +1,7 @@
 import { Collection } from '@fromcode/core';
 
 /**
- * Resolves a collection from the registry based on URL slugs.
+ * Resolves a collection from the system manifest based on URL slugs.
  * Handles framework-prefixed Slugs, shortSlugs and plugin context.
  */
 export function resolveCollection(

@@ -17,10 +17,10 @@ export const ENDPOINTS = {
     BASE: v('/plugins'),
     LIST: v('/plugins'),
     ACTIVE: v('/plugins/active'),
-    REGISTRY: v('/plugins/registry'),
+    MARKETPLACE: v('/marketplace/plugins'),
     UPLOAD: v('/plugins/upload'),
     STAGED: v('/system/admin/metadata'),
-    INSTALL: (slug: string) => v(`/plugins/install/${slug}`),
+    INSTALL: (slug: string) => v(`/marketplace/install/${slug}`),
     TOGGLE: (slug: string) => v(`/plugins/${slug}/toggle`),
     CONFIG: (slug: string) => v(`/plugins/${slug}/config`),
     LOGS: (slug: string) => v(`/plugins/${slug}/logs`),
@@ -34,18 +34,20 @@ export const ENDPOINTS = {
   THEMES: {
     BASE: v('/themes'),
     LIST: v('/themes'),
-    REGISTRY: v('/themes/registry'),
-    MARKETPLACE: v('/themes/registry'),
+    MARKETPLACE: v('/themes/marketplace'),
     ACTIVATE: (slug: string) => v(`/themes/${slug}/activate`),
     INSTALL: (slug: string) => v(`/themes/${slug}/install`),
+    CONFIG: (slug: string) => v(`/themes/${slug}/config`),
     DELETE: (slug: string) => v(`/themes/${slug}`),
   },
   SYSTEM: {
     HEALTH: '/api/health',
     STATS: {
       COLLECTIONS: v('/system/admin/stats/collections'),
+      SECURITY: v('/system/admin/stats/security'),
     },
     LOGS: v('/system/admin/logs'),
+    AUDIT: v('/system/admin/audit'),
     ROLES: v('/system/admin/roles'),
     PERMISSIONS: v('/system/admin/permissions'),
     USERS: v('/system/admin/users'),
@@ -64,5 +66,10 @@ export const ENDPOINTS = {
   MEDIA: {
     BASE: v('/media'),
     UPLOAD: v('/media/upload'),
+  },
+  VERSIONS: {
+    BASE: v('/versions'),
+    GET: (slug: string, id: string) => v(`/versions/${slug}/${id}`),
+    RESTORE: (slug: string, id: string, version: number) => v(`/versions/${slug}/${id}/${version}/restore`),
   }
 };

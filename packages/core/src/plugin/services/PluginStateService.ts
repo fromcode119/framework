@@ -1,26 +1,30 @@
-import { DatabaseManager, sql } from '@fromcode/database';
+import { DatabaseManager } from '@fromcode/database';
 import { Logger } from '../../logging/logger';
 
-export class RegistryService {
-  private logger = new Logger({ namespace: 'RegistryService' });
+export class PluginStateService {
+  private logger = new Logger({ namespace: 'PluginState' });
 
   constructor(private db: DatabaseManager) {}
 
-  async loadRegistry(): Promise<Record<string, { state: string; approvedCapabilities: string[] }>> {
+  async loadInstalledPluginsState(): Promise<Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any }>> {
     try {
       const result = await this.db.find('_system_plugins', {
         columns: {
           slug: true,
           state: true,
-          capabilities: true
+          capabilities: true,
+          health_status: true,
+          sandbox_config: true
         }
       });
 
-      const registry: Record<string, { state: string; approvedCapabilities: string[] }> = {};
+      const registry: Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any }> = {};
       result.forEach((row) => {
         registry[row.slug] = { 
           state: row.state,
-          approvedCapabilities: row.capabilities ? (typeof row.capabilities === 'string' ? JSON.parse(row.capabilities) : row.capabilities) : []
+          approvedCapabilities: row.capabilities ? (typeof row.capabilities === 'string' ? JSON.parse(row.capabilities) : row.capabilities) : [],
+          healthStatus: row.health_status || 'healthy',
+          sandboxConfig: row.sandbox_config
         };
       });
       return registry;
@@ -30,7 +34,7 @@ export class RegistryService {
     }
   }
 
-  async saveRegistryItem(slug: string, state: string, capabilities?: string[], version?: string) {
+  async savePluginState(slug: string, state: string, capabilities?: string[], version?: string) {
     try {
       const values: any = { 
         slug, 

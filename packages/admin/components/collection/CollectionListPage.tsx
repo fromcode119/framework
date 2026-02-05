@@ -178,7 +178,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
         </h2>
         
         <p className="text-slate-500 font-bold text-center max-w-sm leading-relaxed mb-10 px-6">
-          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-xs ml-1">{pluginSlug}</span> plugin registry.
+          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-xs ml-1">{pluginSlug}</span> plugin manifest.
         </p>
 
         <div className="flex items-center gap-4">

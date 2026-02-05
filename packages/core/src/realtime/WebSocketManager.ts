@@ -12,6 +12,7 @@ export class WebSocketManager {
   private wss: WebSocketServer | null = null;
   private logger = new Logger({ namespace: 'WebSocket' });
   private clients: Set<WebSocket> = new Set();
+  private isClosing = false;
 
   constructor(private hooks: HookManager) {
     this.setupHooks();
@@ -21,7 +22,7 @@ export class WebSocketManager {
     this.wss = new WebSocketServer({ noServer: true });
     
     this.wss.on('connection', (ws: WebSocket) => {
-      this.logger.debug('New client connected');
+      if (!this.isClosing) this.logger.debug('Client connected');
       this.clients.add(ws);
 
       ws.on('message', (data: string) => {
@@ -34,7 +35,9 @@ export class WebSocketManager {
       });
 
       ws.on('close', () => {
-        this.logger.debug('Client disconnected');
+        if (!this.isClosing) {
+          this.logger.debug('Client disconnected');
+        }
         this.clients.delete(ws);
       });
 
@@ -43,6 +46,17 @@ export class WebSocketManager {
     });
 
     return this.wss;
+  }
+
+  public close() {
+    this.isClosing = true;
+    this.clients.forEach(client => {
+      client.close();
+    });
+    this.clients.clear();
+    if (this.wss) {
+      this.wss.close();
+    }
   }
 
   private handleMessage(ws: WebSocket, message: Message) {

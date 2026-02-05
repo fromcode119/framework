@@ -21,9 +21,9 @@ describe('GraphQLService', () => {
     };
 
     mockRestController = {
-      findInternal: jest.fn().mockResolvedValue({ docs: [{ id: 1, title: 'GraphQL Post' }], totalDocs: 1 }),
-      findOneInternal: jest.fn().mockResolvedValue({ id: 1, title: 'GraphQL Post' }),
-      createInternal: jest.fn().mockResolvedValue({ id: 2, title: 'New Post' })
+      find: jest.fn().mockResolvedValue({ docs: [{ id: 1, title: 'GraphQL Post' }], totalDocs: 1 }),
+      findOne: jest.fn().mockResolvedValue({ id: 1, title: 'GraphQL Post' }),
+      create: jest.fn().mockResolvedValue({ id: 2, title: 'New Post' })
     };
 
     service = new GraphQLService(mockManager, mockRestController);

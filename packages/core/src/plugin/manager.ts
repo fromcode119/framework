@@ -3,29 +3,38 @@ import { HookManager } from '../hooks/manager';
 import { QueueManager } from '../queue/manager';
 import { MediaManager, StorageFactory } from '@fromcode/media';
 import { SchemaManager } from '../database/schema-manager';
+import { MigrationManager } from '../database/MigrationManager';
 import { EmailManager, EmailFactory } from '@fromcode/email';
 import { CacheManager, CacheFactory } from '@fromcode/cache';
 import { Logger } from '../logging/logger';
 import { I18nManager } from '../i18n/manager';
 import { DatabaseManager, sql } from '@fromcode/database';
 import { SchedulerService } from '@fromcode/scheduler';
-import { loadMigrations } from '../database/migrations';
 import { BackupService } from '../management/backup';
-import { RegistryPlugin } from '../management/manifest';
 import { MigrationCoordinator } from '../management/migration-coordinator';
 import { RecordVersions } from '../collections/RecordVersions';
+import { AuditManager } from '../security/AuditManager';
+import { SecurityMonitor } from '../security/SecurityMonitor';
+import { MarketplaceCatalogService } from '../marketplace/MarketplaceCatalogService';
 import path from 'path';
 import fs from 'fs';
 import { createPluginContext, PluginManagerInterface } from './context';
 
 // Services
 import { RuntimeService } from './services/RuntimeService';
-import { RegistryService } from './services/RegistryService';
+import { PluginStateService } from './services/PluginStateService';
 import { DiscoveryService } from './services/DiscoveryService';
 import { AdminMetadataService } from './services/AdminMetadataService';
 import { LifecycleService } from './services/LifecycleService';
+import { MiddlewareManager } from './services/MiddlewareManager';
+import { WorkflowService } from './services/WorkflowService';
+import { WebhookService } from '../webhook/WebhookService';
+import { WebhooksCollection } from '../collections/Webhooks';
 
 export class PluginManager implements PluginManagerInterface {
+  public audit: AuditManager;
+  public security: SecurityMonitor;
+  public marketplace: MarketplaceCatalogService;
   public plugins: Map<string, LoadedPlugin> = new Map();
   public apiHost: any = null;
   public hooks: HookManager = new HookManager();
@@ -36,6 +45,7 @@ export class PluginManager implements PluginManagerInterface {
   public jobs!: QueueManager;
   public scheduler!: SchedulerService;
   public i18n!: I18nManager;
+  public middlewares: MiddlewareManager = new MiddlewareManager();
   public auth: any = null;
   public headInjections: Map<string, any[]> = new Map();
   public logger = new Logger({ namespace: 'PluginManager' });
@@ -44,24 +54,32 @@ export class PluginManager implements PluginManagerInterface {
   
   private coordinator: MigrationCoordinator;
   private schemaManager: SchemaManager;
+  private migrationManager: MigrationManager;
   private projectRoot: string;
   public pluginsRoot: string;
 
   // Refactored Services
   public runtime: RuntimeService;
-  public registry: RegistryService;
+  public registry: PluginStateService;
   private discovery: DiscoveryService;
   private admin: AdminMetadataService;
   private lifecycle: LifecycleService;
+  private workflow: WorkflowService;
+  private webhooks: WebhookService;
 
   constructor() {
     this.projectRoot = this.getProjectRoot();
     this.db = new DatabaseManager(process.env.DATABASE_URL || '');
+    this.audit = new AuditManager(this.db);
+    this.security = new SecurityMonitor(this.db, this);
     this.coordinator = new MigrationCoordinator(this.db);
     this.schemaManager = new SchemaManager(this.db);
+    this.migrationManager = new MigrationManager(this.db);
     this.i18n = new I18nManager(process.env.DEFAULT_LOCALE || 'en');
     this.jobs = new QueueManager({ redisUrl: process.env.REDIS_URL });
-    this.scheduler = new SchedulerService(this.db);
+    this.scheduler = new SchedulerService(this.db, { queueManager: this.jobs });
+    this.workflow = new WorkflowService(this.db, this.hooks);
+    this.webhooks = new WebhookService(this.db, this.hooks);
 
     this.pluginsRoot = process.env.PLUGINS_DIR 
       ? path.resolve(process.env.PLUGINS_DIR)
@@ -69,15 +87,13 @@ export class PluginManager implements PluginManagerInterface {
 
     // Initialize Services
     this.runtime = new RuntimeService(this.projectRoot);
-    this.registry = new RegistryService(this.db);
+    this.registry = new PluginStateService(this.db);
     this.discovery = new DiscoveryService(this.pluginsRoot, this.projectRoot);
+    this.marketplace = new MarketplaceCatalogService(this.discovery);
     this.admin = new AdminMetadataService();
     this.lifecycle = new LifecycleService(this, this.registry, this.discovery, this.schemaManager);
 
     this.initializeCoreDrivers();
-    
-    // Start scheduler
-    this.scheduler.start();
   }
 
   private initializeCoreDrivers() {
@@ -113,19 +129,37 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   async init() {
-    await this.runSystemMigrations();
+    await this.migrationManager.migrate();
     await this.coordinator.validateDatabaseState();
+    
+    // Register background workers - MUST happen after migrations but before scheduler starts
+    this.jobs.registerWorker('scheduler', async (job) => {
+      const { taskName } = job.data;
+      await this.scheduler.runHandler(taskName);
+    });
+
+    // Register global content workflow task - MUST happen after migrations
+    await this.scheduler.register('content-workflows', '2m', async () => {
+      await this.workflow.processScheduledContent(this.getCollections());
+    });
     
     // Register system collections
     this.registeredCollections.set('versions', { collection: RecordVersions, pluginSlug: 'system' });
+    this.registeredCollections.set('webhooks', { collection: WebhooksCollection, pluginSlug: 'system' });
     
     for (const entry of Array.from(this.registeredCollections.values())) {
       if (entry.pluginSlug === 'system') await this.schemaManager.syncCollection(entry.collection);
     }
+
+    await this.webhooks.initialize();
+
+    // Start background services after migrations and system collections are ready
+    await this.scheduler.start();
+    this.security.start();
   }
 
   async discoverPlugins() {
-    const { discovered, errored } = this.discovery.discoverPlugins(this.plugins);
+    const { discovered, errored } = await this.discovery.discoverPlugins(this.plugins);
 
     // Add errored plugins to this.plugins
     for (const error of errored) {
@@ -177,30 +211,31 @@ export class PluginManager implements PluginManagerInterface {
     }
   }
 
-  async updatePlugin(slug: string, pkg: RegistryPlugin): Promise<void> {
+  async updatePlugin(slug: string, pkg?: any): Promise<void> {
+    await this.installOrUpdateFromMarketplace(slug);
+  }
+
+  async installOrUpdateFromMarketplace(slug: string): Promise<PluginManifest> {
+    const pkg = await this.marketplace.getPluginInfo(slug);
+    if (!pkg) throw new Error(`Plugin "${slug}" not found in marketplace.`);
+
     const existing = this.plugins.get(slug);
-    if (existing && existing.path) await BackupService.create(slug, existing.path, 'plugins');
-
-    const tempDir = path.join(this.pluginsRoot, `.tmp-update-${slug}-${Date.now()}`);
-    fs.mkdirSync(tempDir, { recursive: true });
-
-    try {
-      if (existing?.state === 'active') await this.disable(slug);
-      const targetDir = existing?.path || path.join(this.pluginsRoot, slug);
-      
-      await BackupService.downloadAndExtract(pkg.downloadUrl, tempDir);
-      const contentDir = this.discovery.findManifestDir(tempDir);
-      if (!contentDir) throw new Error('manifest.json not found');
-
-      if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
-      fs.mkdirSync(targetDir, { recursive: true });
-      this.discovery.moveDir(contentDir, targetDir);
-
-      this.plugins.delete(slug);
-      await this.discoverPlugins();
-    } finally {
-      if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
+    if (existing && existing.path) {
+      this.logger.info(`Creating backup for ${slug} before update...`);
+      await BackupService.create(slug, existing.path, 'plugins');
     }
+
+    const manifest = await this.marketplace.downloadAndInstall(slug);
+    
+    // Refresh discovery
+    await this.discoverPlugins();
+    
+    // Auto-enable if it was previously active (or if it's new, we'll let the controller decide)
+    if (existing?.state === 'active') {
+      await this.enable(slug);
+    }
+    
+    return manifest;
   }
 
   // Delegate Lifecycle
@@ -219,6 +254,25 @@ export class PluginManager implements PluginManagerInterface {
     if (plugin) {
       plugin.manifest.config = config;
     }
+  }
+
+  async saveSandboxConfig(slug: string, config: any) {
+    const { systemPlugins, eq } = require('@fromcode/database');
+    await (this.db as any).update(systemPlugins, { slug }, { 
+      sandboxConfig: config 
+    });
+    
+    const plugin = this.plugins.get(slug);
+    if (plugin) {
+      // Merge into the manifest representation
+      if (!plugin.manifest.sandbox || typeof plugin.manifest.sandbox === 'boolean') {
+        plugin.manifest.sandbox = config;
+      } else {
+        plugin.manifest.sandbox = { ...plugin.manifest.sandbox, ...config };
+      }
+    }
+    
+    this.logger.info(`Sandbox configuration updated for plugin: ${slug}`);
   }
 
   public getHeadInjections(slug: string): any[] {
@@ -258,8 +312,37 @@ export class PluginManager implements PluginManagerInterface {
     }
   }
 
+  public async getSecuritySummary() {
+    return {
+      sandbox: await this.lifecycle.getSandboxStats(),
+      monitor: await this.security.getSecurityStats(),
+      integrityEnforced: true,
+      signatureEnforced: !!process.env.REQUIRE_SIGNATURES
+    };
+  }
+
+  /**
+   * Returns plugins in topological order based on their dependencies.
+   * If a list of plugins is provided, it sorts that list; otherwise, it sorts all known plugins.
+   */
+  public getSortedPlugins(pluginsToSort?: LoadedPlugin[]): LoadedPlugin[] {
+    const list = pluginsToSort || Array.from(this.plugins.values());
+    try {
+      return this.discovery.resolveDependencies(list as any) as LoadedPlugin[];
+    } catch (err: any) {
+      this.logger.warn(`Topological sort failed: ${err.message}. Returning unsorted list.`);
+      return list;
+    }
+  }
+
   getRuntimeModules() { return this.runtime.getModules(this.getPlugins().filter(p => p.state === 'active')); }
-  getAdminMetadata() { return this.admin.getAdminMetadata(this.plugins, this.registeredCollections, this.getRuntimeModules()); }
+  getAdminMetadata() { 
+    return this.admin.getAdminMetadata(
+      this.getSortedPlugins(), 
+      this.registeredCollections, 
+      this.getRuntimeModules()
+    ); 
+  }
 
   getImportMap() {
     const modules = this.getRuntimeModules();
@@ -281,22 +364,10 @@ export class PluginManager implements PluginManagerInterface {
   getPlugins(): LoadedPlugin[] { return Array.from(this.plugins.values()); }
   setAuth(auth: any) { this.auth = auth; }
   setApiHost(host: any) { this.apiHost = host; }
-  emit(event: string, payload: any) { this.hooks.emit(event, payload); }
 
-  private async runSystemMigrations() {
-    // Basic table check
-    await this.db.execute(sql`CREATE TABLE IF NOT EXISTS _system_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, description TEXT, "group" TEXT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
-    
-    const row = await this.db.findOne('_system_meta', { key: 'platform_migration_version' });
-    const currentVersion = parseInt(row?.value || '0');
-    const sortedMigrations = loadMigrations().sort((a, b) => a.version - b.version);
-
-    for (const migration of sortedMigrations) {
-      if (migration.version > currentVersion) {
-        await migration.up(this.db, sql);
-        await this.db.update('_system_meta', { key: 'platform_migration_version' }, { value: migration.version.toString() });
-      }
-    }
+  emit(event: string, payload: any) { 
+    this.hooks.emit(event, payload); 
+    this.webhooks.processEvent(event, payload).catch(err => this.logger.error(`Webhook delivery failed for ${event}:`, err));
   }
 
   async close() {
@@ -304,6 +375,7 @@ export class PluginManager implements PluginManagerInterface {
       if (plugin.state === 'active') await this.disable(slug);
     }
     this.scheduler.stop();
+    this.security.stop();
     await this.jobs.close();
   }
 }

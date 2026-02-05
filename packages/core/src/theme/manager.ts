@@ -3,20 +3,21 @@ import path from 'path';
 import fs from 'fs';
 import { Logger } from '../logging/logger';
 import { BackupService } from '../management/backup';
+import { MarketplaceClient } from '@fromcode/marketplace-client';
 
 export class ThemeManager {
   private activeTheme: string | null = null;
   private themes: Map<string, ThemeManifest> = new Map();
   private themesRoot: string;
   private logger = new Logger({ namespace: 'ThemeManager' });
-  private registryUrl: string;
+  private client: MarketplaceClient;
 
   constructor(private db: any) {
     const rootDir = this.getProjectRoot();
     this.themesRoot = process.env.THEMES_DIR 
       ? path.resolve(process.env.THEMES_DIR)
       : path.resolve(rootDir, 'themes');
-    this.registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
+    this.client = new MarketplaceClient();
   }
 
   private getProjectRoot(): string {
@@ -39,15 +40,13 @@ export class ThemeManager {
     await this.loadActiveTheme();
   }
 
-  async getRegistryThemes() {
+  async getMarketplaceThemes() {
     try {
-      this.logger.debug(`Fetching themes from registry: ${this.registryUrl}`);
-      const res = await fetch(this.registryUrl);
-      if (!res.ok) throw new Error(`Registry returned ${res.status}`);
-      const data: any = await res.json();
+      this.logger.debug(`Fetching themes from marketplace...`);
+      const data = await this.client.fetch();
       return data.themes || [];
     } catch (err: any) {
-      this.logger.error(`Failed to fetch themes from registry: ${err.message}`);
+      this.logger.error(`Failed to fetch themes from marketplace: ${err.message}`);
       return [];
     }
   }
@@ -55,9 +54,7 @@ export class ThemeManager {
   async installTheme(pkg: any): Promise<void> {
     const { slug, downloadUrl: rawDownloadUrl } = pkg;
     
-    const downloadUrl = rawDownloadUrl.startsWith('.') 
-        ? new URL(rawDownloadUrl, this.registryUrl).href
-        : rawDownloadUrl;
+    const downloadUrl = this.client.resolveDownloadUrl(rawDownloadUrl);
 
     this.logger.info(`Installing theme "${slug}" from ${downloadUrl}...`);
     
@@ -155,6 +152,28 @@ export class ThemeManager {
     this.logger.info(`Theme "${slug}" activated.`);
   }
 
+  async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
+    if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
+    
+    const existing = await this.db.findOne('_system_themes', { slug });
+    if (existing) {
+      const mergedConfig = {
+        ...(existing.config || {}),
+        ...config
+      };
+      await this.db.update('_system_themes', { slug }, { config: mergedConfig, updated_at: new Date() });
+    } else {
+      await this.db.insert('_system_themes', { slug, config, updated_at: new Date() });
+    }
+    
+    this.logger.info(`Configuration saved for theme: ${slug}`);
+  }
+
+  async getThemeConfig(slug: string): Promise<any> {
+    const row = await this.db.findOne('_system_themes', { slug });
+    return row?.config || {};
+  }
+
   async deleteTheme(slug: string) {
     if (this.activeTheme === slug) {
       throw new Error(`Cannot delete theme "${slug}" because it is currently active.`);
@@ -190,8 +209,15 @@ export class ThemeManager {
     }));
   }
 
-  getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
+  async getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
     const theme = this.getActiveThemeManifest();
+    if (!theme) return { activeTheme: null, runtimeModules };
+
+    const config = await this.getThemeConfig(theme.slug);
+    const variables = {
+      ...(theme.variables || {}),
+      ...(config.variables || {})
+    };
     
     // Merge framework runtime modules with any theme-specific overrides
     const finalModules = {
@@ -205,14 +231,25 @@ export class ThemeManager {
     }
 
     return {
-      activeTheme: theme ? {
+      activeTheme: {
         slug: theme.slug,
-        variables: theme.variables || {},
+        variables,
         ui: theme.ui,
         layouts: theme.layouts,
-        slots: theme.slots || []
-      } : null,
-      runtimeModules: finalModules
+        slots: theme.slots || [],
+        overrides: (theme as any).overrides || []
+      },
+      runtimeModules: finalModules,
+      cssVariables: this.generateCssVariables(variables)
     };
+  }
+
+  private generateCssVariables(variables: Record<string, string>): string {
+    const lines = Object.entries(variables).map(([key, value]) => {
+      // Convert camelCase or whatever to --theme-variable-name
+      const cssKey = `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+      return `${cssKey}: ${value};`;
+    });
+    return `:root {\n  ${lines.join('\n  ')}\n}`;
   }
 }

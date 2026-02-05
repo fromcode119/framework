@@ -34,7 +34,7 @@ export function useCollectionForm({
     });
   }, []);
 
-  const handleSubmit = async (e?: FormEvent) => {
+  const handleSubmit = async (e?: FormEvent, summary?: string) => {
     if (e) e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
@@ -44,7 +44,10 @@ export function useCollectionForm({
         ? `${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}` 
         : `${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}/${formData.id || initialData.id}`;
 
-      const result = await (isNew ? api.post(url, formData) : api.put(url, formData));
+      // Attach change summary if provided
+      const payload = summary ? { ...formData, _change_summary: summary } : formData;
+
+      const result = await (isNew ? api.post(url, payload) : api.put(url, payload));
       
       setIsDirty(false);
       if (onSuccess) onSuccess(result);

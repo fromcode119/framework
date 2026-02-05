@@ -2,13 +2,18 @@
   "name": "@fromcode/marketplace-client",
   "version": "0.1.0",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
+    "fs-extra": "^11.3.3"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
+    "@types/fs-extra": "^11.0.4",
     "typescript": "^5.3.3"
   }
 }

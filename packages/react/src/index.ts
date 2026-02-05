@@ -5,6 +5,7 @@ export {
   registerCollection, registerPlugins, registerTheme, registerSettings,
   registerAPI, getAPI, loadConfig, resolveContent, emit, on, t, locale, setLocale, api
 } from './context';
+export * from '@fromcode/sdk';
 export { Slot } from './Slot';
 export { Override } from './Override';
 export { RootFramework } from './RootFramework';

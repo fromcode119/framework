@@ -6,21 +6,34 @@ import { LoadedPlugin, FromcodePlugin } from '../../types';
 import { PluginManagerInterface } from '../context';
 import { PluginPermissionsService } from '../../security/permissions';
 import { PluginSignatureService } from '../../security/signature';
-import { RegistryService } from './RegistryService';
+import { PluginStateService } from './PluginStateService';
 import { DiscoveryService } from './DiscoveryService';
 import { SchemaManager } from '../../database/schema-manager';
 
 import { validatePluginManifest as validateManifest } from '../../management/manifest';
+import { SandboxManager } from '../../security/SandboxManager';
+import { IntegrityService } from '../../security/IntegrityService';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'LifecycleService' });
+  private sandbox?: SandboxManager;
 
   constructor(
     private manager: PluginManagerInterface,
-    private registry: RegistryService,
+    private registry: PluginStateService,
     private discovery: DiscoveryService,
     private schemaManager: SchemaManager
-  ) {}
+  ) {
+    try {
+      this.sandbox = new SandboxManager();
+    } catch (e) {
+      this.logger.warn('SandboxManager failed to initialize (isolated-vm might not be supported in this environment)');
+    }
+  }
+
+  public async getSandboxStats() {
+    return this.sandbox ? await this.sandbox.getStats() : null;
+  }
 
   async register(plugin: FromcodePlugin, pluginPath?: string): Promise<void> {
     const slug = plugin.manifest.slug;
@@ -38,6 +51,14 @@ export class LifecycleService {
       throw new Error(`Invalid manifest for "${slug}": ${err}`);
     }
 
+    // Integrity Check
+    if (pluginPath && plugin.manifest.checksum) {
+      const isHealthy = await IntegrityService.verifyPluginIntegrity(pluginPath, plugin.manifest.checksum);
+      if (!isHealthy) {
+        throw new Error(`Security Violation: Integrity check failed for plugin "${slug}"`);
+      }
+    }
+
     if (PluginSignatureService.isEnforced()) {
       const isValid = PluginSignatureService.verify(plugin.manifest, plugin.manifest.signature || '', '');
       if (!isValid) {
@@ -47,7 +68,7 @@ export class LifecycleService {
 
     this.discovery.validateDependencies(plugin.manifest, this.manager.plugins);
 
-    const registryData = await this.registry.loadRegistry();
+    const registryData = await this.registry.loadInstalledPluginsState();
     const saved = registryData[slug];
     let state = saved?.state || 'inactive';
 
@@ -57,7 +78,7 @@ export class LifecycleService {
 
       if (currentCaps !== approvedCaps) {
         state = 'inactive';
-        await this.registry.saveRegistryItem(slug, 'inactive', undefined, plugin.manifest.version); 
+        await this.registry.savePluginState(slug, 'inactive', undefined, plugin.manifest.version); 
       }
     }
 
@@ -66,13 +87,23 @@ export class LifecycleService {
       instanceId: uuidv4(),
       state: 'inactive',
       path: pluginPath,
-      approvedCapabilities: saved?.approvedCapabilities || []
+      approvedCapabilities: saved?.approvedCapabilities || [],
+      healthStatus: saved?.healthStatus || 'healthy'
     };
+
+    // Override manifest sandbox config with database-stored values if they exist
+    if (saved?.sandboxConfig) {
+      if (!loadedPlugin.manifest.sandbox || typeof loadedPlugin.manifest.sandbox === 'boolean') {
+        loadedPlugin.manifest.sandbox = saved.sandboxConfig;
+      } else {
+        loadedPlugin.manifest.sandbox = { ...loadedPlugin.manifest.sandbox, ...saved.sandboxConfig };
+      }
+    }
 
     loadedPlugin.manifest.config = await this.registry.getPluginConfig(slug);
     this.manager.plugins.set(slug, loadedPlugin);
     
-    await this.registry.saveRegistryItem(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
+    await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
 
     if (state === 'active') {
       await this.enable(slug);
@@ -88,8 +119,17 @@ export class LifecycleService {
     
     try {
       plugin.state = 'loading';
-      if (plugin.onInit) await plugin.onInit(ctx);
-      if (plugin.onEnable) await plugin.onEnable(ctx);
+      
+      if (plugin.isSandboxed && plugin.entryPath && this.sandbox) {
+        this.logger.info(`Initializing sandbox for "${slug}"...`);
+        await this.sandbox.initPluginContext(slug, ctx, plugin.manifest);
+        
+        const code = fs.readFileSync(plugin.entryPath, 'utf8');
+        await this.sandbox.runInPluginContext(slug, code);
+      } else {
+        if (plugin.onInit) await plugin.onInit(ctx);
+        if (plugin.onEnable) await plugin.onEnable(ctx);
+      }
       
       await this.syncPluginCollections(slug);
 
@@ -97,7 +137,7 @@ export class LifecycleService {
       const currentCaps = plugin.manifest.capabilities as string[] || [];
       plugin.approvedCapabilities = currentCaps;
       
-      await this.registry.saveRegistryItem(slug, 'active', currentCaps, plugin.manifest.version);
+      await this.registry.savePluginState(slug, 'active', currentCaps, plugin.manifest.version);
       await this.registry.writeLog('INFO', `Plugin "${slug}" successfully enabled.`, slug);
     } catch (error) {
       plugin.state = 'error';
@@ -112,9 +152,13 @@ export class LifecycleService {
 
     const ctx = (this.manager as any).createContext(plugin);
     try {
-      if (plugin.onDisable) await plugin.onDisable(ctx);
+      if (plugin.isSandboxed && this.sandbox) {
+        this.sandbox.disposePluginContext(slug);
+      } else {
+        if (plugin.onDisable) await plugin.onDisable(ctx);
+      }
       plugin.state = 'inactive';
-      await this.registry.saveRegistryItem(slug, 'inactive', undefined, plugin.manifest.version);
+      await this.registry.savePluginState(slug, 'inactive', undefined, plugin.manifest.version);
       await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);
     } catch (error) {
       this.logger.error(`Error disabling plugin "${slug}": ${error}`);

@@ -2,6 +2,7 @@
 
 import React, { use, useState, useEffect } from 'react';
 import { useTheme } from '@/components/ThemeContext';
+import { Plugin } from '@fromcode/react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Switch } from '@/components/ui/Switch';
@@ -11,17 +12,6 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { PluginSettingsForm } from '@/components/plugins/PluginSettingsForm';
-
-interface Plugin {
-  slug: string;
-  name: string;
-  version: string;
-  category: string;
-  description?: string;
-  state: string;
-  author?: string;
-  capabilities?: string[];
-}
 
 export default function PluginSettingsPage({ params }: { params: React.Usable<{ slug: string }> }) {
   const { slug } = use(params);

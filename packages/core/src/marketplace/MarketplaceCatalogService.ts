@@ -1,0 +1,122 @@
+import { Logger } from '../logging/logger';
+import { PluginManifest } from '@fromcode/sdk';
+import { DiscoveryService } from '../plugin/services/DiscoveryService';
+import { MarketplaceClient, MarketplacePlugin } from '@fromcode/marketplace-client';
+import path from 'path';
+import fs from 'fs';
+import { pipeline } from 'stream/promises';
+
+export class MarketplaceCatalogService {
+  private logger = new Logger({ namespace: 'Marketplace' });
+  private client: MarketplaceClient;
+  private manifestCache = new Map<string, PluginManifest>();
+
+  constructor(private discovery: DiscoveryService) {
+    const marketplaceUrl = process.env.MARKETPLACE_URL || 'http://marketplace.fromcode.local/marketplace.json';
+    this.client = new MarketplaceClient(marketplaceUrl);
+  }
+
+  /**
+   * Fetch the full plugin catalog from the marketplace
+   */
+  public async fetchCatalog(): Promise<MarketplacePlugin[]> {
+    const data = await this.client.fetch();
+    return data.plugins || [];
+  }
+
+  /**
+   * Search for plugins in the catalog
+   */
+  public async searchPlugins(query: string): Promise<MarketplacePlugin[]> {
+    const catalog = await this.fetchCatalog();
+    const q = query.toLowerCase();
+    return catalog.filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      p.slug.toLowerCase().includes(q) || 
+      p.description?.toLowerCase().includes(q)
+    );
+  }
+
+  /**
+   * Get detailed information for a single plugin
+   */
+  public async getPluginInfo(slug: string): Promise<MarketplacePlugin | undefined> {
+    const catalog = await this.fetchCatalog();
+    return catalog.find(p => p.slug === slug);
+  }
+
+  /**
+   * Download and install a plugin from the marketplace, including its dependencies
+   */
+  public async downloadAndInstall(slug: string, visited: Set<string> = new Set()): Promise<PluginManifest> {
+    if (visited.has(slug)) {
+      this.logger.debug(`Skipping already processed dependency: ${slug}`);
+      const cached = this.manifestCache.get(slug);
+      if (cached) return cached;
+      
+      // If visited but not in cache, it might be a circular dependency or already installed
+      // Attempt to return a basic manifest if we can't find anything better
+      return { slug, version: 'current' } as any; 
+    }
+    visited.add(slug);
+
+    const plugin = await this.getPluginInfo(slug);
+    if (!plugin) {
+      throw new Error(`Plugin "${slug}" not found in marketplace catalog.`);
+    }
+
+    // 1. Resolve and install dependencies first
+    if (plugin.dependencies && Object.keys(plugin.dependencies).length > 0) {
+      this.logger.info(`Installing dependencies for ${slug}: ${Object.keys(plugin.dependencies).join(', ')}`);
+      for (const depSlug of Object.keys(plugin.dependencies)) {
+        try {
+          await this.downloadAndInstall(depSlug, visited);
+        } catch (err: any) {
+          this.logger.error(`Dependency "${depSlug}" failed for "${slug}": ${err.message}`);
+          throw new Error(`Failed to install dependency "${depSlug}" for plugin "${slug}": ${err.message}`);
+        }
+      }
+    }
+
+    this.logger.info(`Downloading and installing plugin: ${slug} v${plugin.version}`);
+
+    // Resolve absolute download URL
+    const downloadUrl = this.client.resolveDownloadUrl(plugin.downloadUrl);
+
+    const tempDir = path.join(process.cwd(), '.tmp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    const tempZipPath = path.join(tempDir, `${slug}-${Date.now()}.zip`);
+
+    try {
+      this.logger.debug(`Downloading from ${downloadUrl}...`);
+      const response = await fetch(downloadUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to download plugin: ${response.statusText}`);
+      }
+      
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      const fileStream = fs.createWriteStream(tempZipPath);
+      // @ts-ignore - native fetch body is not exactly same as node streams but pipeline handles it in Node 18+
+      await pipeline(response.body, fileStream);
+
+      const manifest = await this.discovery.installFromZip(tempZipPath);
+      this.manifestCache.set(slug, manifest);
+      this.logger.info(`Successfully installed plugin: ${slug} (v${manifest.version})`);
+      return manifest;
+    } catch (error: any) {
+      this.logger.error(`Installation failed for ${slug}: ${error.message}`);
+      throw error;
+    } finally {
+      if (fs.existsSync(tempZipPath)) {
+        fs.unlinkSync(tempZipPath);
+      }
+    }
+  }
+}

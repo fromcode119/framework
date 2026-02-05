@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
+import { purgeAuth, getCookieDomain } from '@/lib/auth-utils';
 
 interface User {
   id: string;
@@ -30,9 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for existing session profile (token is in HttpOnly cookie, we can't read it)
     const savedUser = Cookies.get('fc_user');
 
-    if (savedUser) {
+    if (savedUser && savedUser !== 'null' && savedUser !== 'undefined') {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        if (parsed && typeof parsed === 'object' && parsed.email) {
+          setUser(parsed);
+        }
       } catch (err) {
         console.error("Failed to parse user session");
       }
@@ -41,14 +45,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (token: string | undefined, userData: User) => {
-    // Note: token is primarily handled by HttpOnly cookie from backend for security.
-    // However, we also store it in a companion cookie for client-side API calls 
-    // that might need to send it via Authorization header if cookies fail.
-    if (token) {
-      Cookies.set('fc_token', token, { expires: 7, path: '/' });
-    }
+    // Note: We no longer set 'fc_token' manually on the client. 
+    // The backend now provides a secure HttpOnly cookie on the correct domain scope.
+    // Setting it here again would cause duplicate cookies on different domain levels
+    // (e.g. host-only 'admin.framework.local' vs global '.framework.local').
     
-    Cookies.set('fc_user', JSON.stringify(userData), { expires: 7, path: '/' });
+    // We only store the user profile for UI hydration.
+    // We set it on the widest possible domain to match the auth token scope.
+    const domain = getCookieDomain();
+    const cookieOptions: any = { expires: 7, path: '/' };
+    if (domain) cookieOptions.domain = domain;
+
+    Cookies.set('fc_user', JSON.stringify(userData), cookieOptions);
     setUser(userData);
     router.push('/');
   };
@@ -59,10 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error("Logout request failed", e);
     }
-    Cookies.remove('fc_token', { path: '/' });
-    Cookies.remove('fc_user', { path: '/' });
+
+    purgeAuth();
     setUser(null);
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   return (

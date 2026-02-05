@@ -15,6 +15,10 @@ export function setupPluginSettingsRoutes(manager: PluginManager, auth: AuthMana
   router.put('/:slug/settings', auth.guard(['admin']), (req, res) =>
     controller.updateSettings(req, res)
   );
+
+  router.post('/:slug/settings', auth.guard(['admin']), (req, res) =>
+    controller.updateSettings(req, res)
+  );
   
   router.get('/:slug/settings/schema', auth.guard(['admin']), (req, res) =>
     controller.getSchema(req, res)

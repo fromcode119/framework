@@ -1,5 +1,7 @@
 module.exports = {
-  preset: 'ts-jest',
+  transform: {
+    '^.+\\.tsx?$': [require.resolve('ts-jest'), { tsconfig: 'tsconfig.json' }],
+  },
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.ts'],
   moduleNameMapper: {
@@ -11,6 +13,7 @@ module.exports = {
     '^@fromcode/cache$': '<rootDir>/../cache/src',
     '^@fromcode/email$': '<rootDir>/../email/src',
     '^@fromcode/scheduler$': '<rootDir>/../scheduler/src',
+    '^@fromcode/marketplace-client$': '<rootDir>/../marketplace-client/src',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
 };

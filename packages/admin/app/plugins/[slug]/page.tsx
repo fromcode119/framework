@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use, useState, useEffect } from 'react';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins, Plugin } from '@fromcode/react';
 import { useTheme } from '@/components/ThemeContext';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -18,32 +18,6 @@ import { Loader } from '@/components/ui/Loader';
 import { Select } from '@/components/ui/Select';
 import { PluginSettingsForm } from '@/components/plugins/PluginSettingsForm';
 
-interface Plugin {
-  slug: string;
-  name: string;
-  version: string;
-  category: string;
-  description?: string;
-  state: string;
-  author?: string;
-  capabilities?: string[];
-  approvedCapabilities?: string[];
-  config?: Record<string, any>;
-  admin?: {
-    management?: {
-      settings?: {
-        name: string;
-        label: string;
-        type: string;
-        description?: string;
-        defaultValue?: any;
-        options?: { label: string; value: string }[];
-        placeholder?: string;
-      }[];
-    };
-  };
-}
-
 export default function PluginDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
@@ -58,10 +32,15 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [registryItem, setRegistryItem] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'permissions'>('overview');
+  const [marketplaceItem, setMarketplaceItem] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'permissions' | 'resources'>('overview');
   const [logs, setLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [sandboxSettings, setSandboxSettings] = useState({
+    memoryLimit: 128,
+    timeout: 1000,
+    allowNative: false
+  });
   const { theme } = useTheme();
 
   const settingsCollections = collections.filter(c => 
@@ -82,6 +61,15 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           defaults[s.name] = s.defaultValue;
         });
         setConfigValues({ ...defaults, ...(found.config || {}) });
+
+        // Initialize sandbox settings
+        if (found.sandbox && typeof found.sandbox === 'object') {
+          setSandboxSettings({
+            memoryLimit: found.sandbox.memoryLimit || 128,
+            timeout: found.sandbox.timeout || 1000,
+            allowNative: found.sandbox.allowNative || false
+          });
+        }
       } else {
         router.push('/plugins');
       }
@@ -99,9 +87,9 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   useEffect(() => {
     async function checkUpdates() {
       try {
-        const data = await api.get(ENDPOINTS.PLUGINS.REGISTRY);
+        const data = await api.get(ENDPOINTS.PLUGINS.MARKETPLACE);
         const pkg = data.plugins?.find((p: any) => p.slug === slug);
-        if (pkg) setRegistryItem(pkg);
+        if (pkg) setMarketplaceItem(pkg);
       } catch (e) {}
     }
     checkUpdates();
@@ -109,7 +97,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'settings' || tab === 'permissions' || tab === 'overview') {
+    if (['settings', 'permissions', 'overview', 'resources'].includes(tab as any)) {
       setActiveTab(tab as any);
     }
   }, [searchParams]);
@@ -186,6 +174,21 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     }
   };
 
+  const handleSaveSandbox = async () => {
+    if (!plugin) return;
+    setIsSaving(true);
+    try {
+      await api.post(`${ENDPOINTS.PLUGINS.BASE}/${plugin.slug}/sandbox`, sandboxSettings);
+      notify('success', 'Resources Updated', `Sandbox limits for ${plugin.name} updated.`);
+      triggerRefresh();
+    } catch (err: any) {
+      console.error("Save sandbox error:", err);
+      notify('error', 'Save Failed', err.message || "Failed to update sandbox limits.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!plugin) return;
     setIsDeleting(true);
@@ -203,7 +206,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     }
   };
 
-  const handleTabChange = (tabId: 'overview' | 'settings' | 'permissions') => {
+  const handleTabChange = (tabId: 'overview' | 'settings' | 'permissions' | 'resources') => {
     setActiveTab(tabId);
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', tabId);
@@ -241,10 +244,10 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           <div className="flex items-center gap-2 mt-2">
             <span className={`text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.slug}</span>
             <span className="text-slate-500 opacity-30">•</span>
-            <span className={`text-[11px] font-black uppercase tracking-widest ${registryItem?.version && registryItem.version !== plugin.version ? 'text-amber-500' : 'text-slate-400'}`}>
+            <span className={`text-[11px] font-black uppercase tracking-widest ${marketplaceItem?.version && marketplaceItem.version !== plugin.version ? 'text-amber-500' : 'text-slate-400'}`}>
               Version {plugin.version}
             </span>
-            {registryItem?.version && registryItem.version !== plugin.version && (
+            {marketplaceItem?.version && marketplaceItem.version !== plugin.version && (
               <button 
                 onClick={handleUpdate}
                 disabled={isUpdating}
@@ -256,6 +259,16 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             )}
           </div>
         </div>
+
+        {activeTab === 'resources' && (
+           <Button 
+            onClick={handleSaveSandbox}
+            isLoading={isSaving}
+            className="px-8 rounded-xl shadow-lg shadow-indigo-600/10"
+          >
+            Update Policy
+          </Button>
+        )}
       </div>
 
       <div className={`flex gap-2 p-1.5 rounded-2xl w-fit backdrop-blur-xl border transition-all duration-300 ${
@@ -266,7 +279,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           {[
             { id: 'overview', label: 'Overview', icon: FrameworkIcons.Plugins },
             { id: 'settings', label: 'Configuration', icon: FrameworkIcons.Settings },
-            { id: 'permissions', label: 'Security', icon: FrameworkIcons.Shield }
+            { id: 'permissions', label: 'Security', icon: FrameworkIcons.Shield },
+            { id: 'resources', label: 'Resource Limits', icon: FrameworkIcons.Zap }
           ].map(tab => (
             <button 
               key={tab.id}
@@ -304,13 +318,13 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                 </div>
               </div>
 
-              {registryItem?.version && registryItem.version !== plugin.version && registryItem.changelog && (
+              {marketplaceItem?.version && marketplaceItem.version !== plugin.version && marketplaceItem.changelog && (
                 <div className={`mt-10 p-6 rounded-3xl border-2 border-dashed ${theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-100'}`}>
                   <h4 className="text-[11px] font-black uppercase tracking-widest text-indigo-500 mb-4 flex items-center gap-2">
-                    <FrameworkIcons.Zap size={14} /> New in v{registryItem.version}
+                    <FrameworkIcons.Zap size={14} /> New in v{marketplaceItem.version}
                   </h4>
                   <ul className="space-y-3">
-                    {registryItem.changelog.map((item: string) => (
+                    {marketplaceItem.changelog.map((item: string) => (
                       <li key={item} className="flex gap-3 text-sm font-medium text-slate-500">
                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 flex-shrink-0" />
                         {item}
@@ -401,6 +415,66 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             </Card>
           )}
 
+          {activeTab === 'resources' && (
+             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <Card title="Sandbox Isolation Policy" className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+                   <div className="space-y-10 py-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex gap-4">
+                          <div className={`p-2.5 rounded-xl h-fit ${theme === 'dark' ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                            <FrameworkIcons.Zap size={20} />
+                          </div>
+                          <div>
+                            <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>Memory Heap Limit</h3>
+                            <p className="text-sm text-slate-500 mt-1 max-w-sm">Maximum RAM allocated to the V8 isolate. (MB)</p>
+                          </div>
+                        </div>
+                        <input 
+                          type="number"
+                          value={sandboxSettings.memoryLimit}
+                          onChange={(e) => setSandboxSettings(prev => ({ ...prev, memoryLimit: parseInt(e.target.value) }))}
+                          className={`w-full md:w-32 px-4 py-2 rounded-xl text-center font-bold ${theme === 'dark' ? 'bg-slate-800 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
+                        />
+                      </div>
+
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex gap-4">
+                          <div className={`p-2.5 rounded-xl h-fit ${theme === 'dark' ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                            <FrameworkIcons.Clock size={20} />
+                          </div>
+                          <div>
+                            <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>Execution Timeout</h3>
+                            <p className="text-sm text-slate-500 mt-1 max-w-sm">Kill plugin execution if it takes longer than this. (ms)</p>
+                          </div>
+                        </div>
+                        <input 
+                          type="number"
+                          value={sandboxSettings.timeout}
+                          onChange={(e) => setSandboxSettings(prev => ({ ...prev, timeout: parseInt(e.target.value) }))}
+                          className={`w-full md:w-32 px-4 py-2 rounded-xl text-center font-bold ${theme === 'dark' ? 'bg-slate-800 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
+                        />
+                      </div>
+
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex gap-4">
+                          <div className={`p-2.5 rounded-xl h-fit ${theme === 'dark' ? 'bg-slate-800 text-amber-500' : 'bg-amber-50 text-amber-600'}`}>
+                            <FrameworkIcons.ShieldAlert size={20} />
+                          </div>
+                          <div>
+                            <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>Bypass Sandbox</h3>
+                            <p className="text-sm text-slate-500 mt-1 max-w-sm italic">UNSAFE: Run in main process with full system access. Only for trusted core modules.</p>
+                          </div>
+                        </div>
+                        <Switch 
+                          checked={sandboxSettings.allowNative}
+                          onChange={(val) => setSandboxSettings(prev => ({ ...prev, allowNative: val }))}
+                        />
+                      </div>
+                   </div>
+                </Card>
+             </div>
+          )}
+
           {/* Logs Section */}
           {activeTab === 'overview' && (
             <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
@@ -487,7 +561,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
               <div className="flex justify-between items-center">
                  <span className="text-xs font-black uppercase tracking-widest text-slate-500">Author</span>
                  <span className={`text-sm font-black ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                    {plugin.author || 'Official Core'}
+                    {typeof plugin.author === 'object' ? (plugin.author as any).name : (plugin.author || 'Official Core')}
                  </span>
               </div>
             </div>

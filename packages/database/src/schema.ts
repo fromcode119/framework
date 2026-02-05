@@ -66,6 +66,7 @@ export const systemPlugins = pgTable('_system_plugins', {
   backupPath: text('backup_path'),
   signatureVerified: boolean('signature_verified').default(false),
   healthStatus: text('health_status').default('healthy'), // healthy, error, warning
+  sandboxConfig: jsonb('sandbox_config'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
@@ -112,6 +113,16 @@ export const systemLogs = pgTable('_system_logs', {
   message: text('message').notNull(),
   context: jsonb('context'),
   timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow(),
+});
+
+export const systemAuditLogs = pgTable('_system_audit_logs', {
+  id: serial('id').primaryKey(),
+  pluginSlug: text('plugin_slug'),
+  action: text('action').notNull(),
+  resource: text('resource').notNull(),
+  status: text('status').notNull(), // allowed, denied, violation
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
 export const systemThemes = pgTable('_system_themes', {

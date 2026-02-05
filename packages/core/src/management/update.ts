@@ -2,11 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { BackupService } from './backup';
 import { Logger } from '../logging/logger';
+import { MarketplaceClient } from '@fromcode/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
+  private static client = new MarketplaceClient();
 
   private static getFileHash(filePath: string): string {
     if (!fs.existsSync(filePath)) return '';
@@ -39,13 +41,10 @@ export class SystemUpdateService {
   }
 
   static async checkUpdate() {
-    const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
     try {
-      const response = await fetch(registryUrl);
-      if (!response.ok) throw new Error(`Registry unavailable`);
-      const registry: any = await response.json();
+      const marketplaceData = await this.client.fetch();
       
-      if (!registry.core) return null;
+      if (!marketplaceData.core) return null;
 
       let currentVersion = '0.0.0';
       const rootDir = this.getProjectRoot();
@@ -57,10 +56,10 @@ export class SystemUpdateService {
 
       return {
         current: currentVersion,
-        latest: registry.core.version,
-        hasUpdate: semver.gt(registry.core.version, currentVersion),
-        downloadUrl: registry.core.downloadUrl,
-        lastUpdated: registry.core.lastUpdated
+        latest: marketplaceData.core.version,
+        hasUpdate: semver.gt(marketplaceData.core.version, currentVersion),
+        downloadUrl: marketplaceData.core.downloadUrl,
+        lastUpdated: marketplaceData.core.lastUpdated
       };
     } catch (err: any) {
       this.logger.error(`Failed to check for updates: ${err.message}`);
@@ -74,10 +73,7 @@ export class SystemUpdateService {
       throw new Error('No update available');
     }
 
-    const registryUrl = process.env.MARKETPLACE_REGISTRY_URL || 'http://registry.fromcode.com/registry.json';
-    const downloadUrl = status.downloadUrl.startsWith('http') 
-        ? status.downloadUrl 
-        : new URL(status.downloadUrl, registryUrl).toString();
+    const downloadUrl = this.client.resolveDownloadUrl(status.downloadUrl);
     
     this.logger.info(`Starting System Update from v${status.current} to v${status.latest}...`);
 

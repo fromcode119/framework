@@ -10,13 +10,20 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "paths": {
+      "@fromcode/core": ["packages/core/src"],
+      "@fromcode/database": ["packages/database/src"],
+      "@fromcode/sdk": ["packages/sdk/src"],
+      "@fromcode/auth": ["packages/auth/src"],
+      "@fromcode/media": ["packages/media/src"],
+      "@fromcode/email": ["packages/email/src"],
+      "@fromcode/cache": ["packages/cache/src"],
+      "@fromcode/scheduler": ["packages/scheduler/src"],
+      "@fromcode/marketplace-client": ["packages/marketplace-client/src"]
+    },
     "composite": true,
     "jsx": "react-jsx",
-    "noImplicitAny": false,
-    "paths": {
-      "@fromcode/*": ["packages/*/src"],
-      "@plugins/*": ["plugins/*"]
-    }
+    "noImplicitAny": false
   },
   "files": [],
   "references": [

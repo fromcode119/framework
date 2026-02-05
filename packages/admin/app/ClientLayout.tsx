@@ -14,6 +14,7 @@ import { useAuth } from '@/components/AuthContext';
 import { api } from '@/lib/api';
 import { API_BASE_URL, ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/Loader';
+import { purgeAuth } from '@/lib/auth-utils';
 
 const { 
   Menu = () => null, 
@@ -140,9 +141,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { loadConfig } = usePlugins();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const isSetupPath = pathname === '/setup' || pathname.startsWith('/setup/');
-  const isAuthPage = pathname === '/login' || isSetupPath;
+  
+  // Robust auth page detection
+  const isAuthPage = React.useMemo(() => {
+    return pathname?.includes('/login') || pathname?.includes('/setup');
+  }, [pathname]);
+
+  const isSetupPath = React.useMemo(() => {
+     return pathname?.includes('/setup');
+  }, [pathname]);
   
   // Load dynamic framework configuration (import maps, etc)
   useEffect(() => {
@@ -168,39 +175,35 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     const checkInitialization = async () => {
       try {
         const data = await api.get(ENDPOINTS.AUTH.STATUS);
-        setIsInitialized(data.initialized);
+        const initialized = data.initialized;
         
-        if (data.initialized === false && !isSetupPath) {
-          // Clear stale cookies if system isn't initialized
-          document.cookie = "fc_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-          document.cookie = "fc_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-          
-          router.replace('/setup');
-        } else if (data.initialized === true && isSetupPath) {
-          router.replace('/login');
+        setIsInitialized(initialized);
+        
+        if (initialized === false && !isSetupPath) {
+          console.log("[ClientLayout] System uninitialized -> setup");
+          purgeAuth();
+          window.location.href = '/setup';
+        } else if (initialized === true && isSetupPath) {
+          console.log("[ClientLayout] System initialized -> login");
+          window.location.href = '/login';
         }
       } catch (e) {
-        console.error("Failed to check system initialization status", e);
+        console.error("Initialization check failed", e);
+        if (isInitialized === null) setIsInitialized(true);
       }
     };
     checkInitialization();
-  }, [pathname, router, isSetupPath]);
+  }, [isSetupPath]); 
 
-  // Handle Authentication Redirects
+  // Guard: Redirect to login if user is missing and we aren't loading or on auth page
   useEffect(() => {
     if (isInitialized === true && !user && !isAuthPage && !isAuthLoading) {
-      router.replace('/login');
+      console.log("[ClientLayout] Guard: Moving to login");
+      window.location.href = '/login';
     }
-    
-    // GUARD: If user is logged in but has no admin role, block access to the admin dashboard
-    if (user && !isAuthPage && !user.roles?.includes('admin')) {
-      // We'll show a "Forbidden" state or redirect to a landing page if one exists.
-      // For now, we redirect to login (the auth logic will then prevent them as they're authenticated but not authorized)
-      console.warn("Unauthorized access attempt: User lacks admin role", user.email);
-    }
-  }, [user, isInitialized, isAuthPage, isAuthLoading, router]);
+  }, [user, isInitialized, isAuthPage, isAuthLoading]);
 
-  // Handle Unauthorized State
+  // Handle Unauthorized State (RBAC)
   if (user && !isAuthPage && !user.roles?.includes('admin')) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#020617]">
@@ -216,9 +219,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           </div>
           <button 
             onClick={() => {
-               // Clear cookies and go to login
-               document.cookie = "fc_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-               document.cookie = "fc_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+               purgeAuth();
                window.location.href = '/login';
             }}
             className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl hover:scale-[1.02] transition-transform"
@@ -235,6 +236,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center transition-colors duration-500 bg-slate-50 dark:bg-[#020617]">
         <Loader label="Initializing Secure Session" />
+      </div>
+    );
+  }
+
+  // Prevent UI flashing for unauthenticated users
+  if (!user && !isAuthPage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center transition-colors duration-500 bg-slate-50 dark:bg-[#020617]">
+        <Loader label="Forwarding to Authentication..." />
       </div>
     );
   }

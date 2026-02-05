@@ -113,25 +113,30 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const [revisionsLoading, setRevisionsLoading] = useState(false);
   const [hasMoreRevisions, setHasMoreRevisions] = useState(false);
   const [revisionPage, setRevisionPage] = useState(1);
+  const [showOnlyChanges, setShowOnlyChanges] = useState(true);
+  const [restoringPermanently, setRestoringPermanently] = useState(false);
+  const [changeSummary, setChangeSummary] = useState('');
 
   // Keyboard shortcut for saving
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
-        handleSubmit(new Event('submit') as any);
+        handleSubmit(new Event('submit') as any, changeSummary);
+        setChangeSummary('');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [formData, saving]);
+  }, [formData, saving, changeSummary]);
 
   const currentRevIndex = selectedRevision ? revisions.findIndex(r => r.id === selectedRevision.id) : -1;
 
   async function fetchRevisions(page: number) {
     setRevisionsLoading(true);
     try {
-      const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/versions?ref_id=${id}&ref_collection=${resolvedSlug}&sort=-id&limit=10&page=${page}`);
+      // Use the new dedicated versioning API
+      const result = await api.get(`${ENDPOINTS.VERSIONS.BASE}/${resolvedSlug}/${id}?limit=20&page=${page}`);
       
       const mapped = (result.docs || []).map((v: any) => ({
         id: v.id,
@@ -160,6 +165,24 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     const nextPage = revisionPage + 1;
     setRevisionPage(nextPage);
     fetchRevisions(nextPage);
+  };
+
+  const handleHardRestore = async (version: number) => {
+    if (!confirm(`Are you sure you want to PERMANENTLY restore the live record to version ${version}? This will update the database immediately.`)) return;
+    
+    setRestoringPermanently(true);
+    try {
+      const response = await api.post(ENDPOINTS.VERSIONS.RESTORE(resolvedSlug, id, version), {});
+      setFormData(response.data);
+      setStatus({ type: 'success', message: `Record permanently restored to version ${version}` });
+      setSelectedRevision(null);
+      fetchRevisions(1);
+    } catch (err: any) {
+      console.error("Hard restore failed:", err);
+      setStatus({ type: 'error', message: err.message || 'Failed to restore record' });
+    } finally {
+      setRestoringPermanently(false);
+    }
   };
 
   const getPreviewUrl = () => {
@@ -204,7 +227,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         </h2>
         
         <p className="text-slate-500 font-bold text-center max-w-sm leading-relaxed mb-10 px-6">
-          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-xs ml-1">{pluginSlug}</span> plugin registry.
+          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-xs ml-1">{pluginSlug}</span> plugin marketplace.
         </p>
 
         <div className="flex items-center gap-4">
@@ -288,6 +311,19 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
             </div>
             
             <div className="flex items-center gap-3">
+              {!isNew && (
+                <div className="hidden lg:block relative group">
+                   <Input 
+                      placeholder="Commit summary (optional)"
+                      value={changeSummary}
+                      onChange={(e) => setChangeSummary(e.target.value)}
+                      className="w-48 xl:w-64 text-[10px] uppercase font-black tracking-widest h-10 bg-transparent border-slate-200 dark:border-slate-800 focus:w-80 transition-all placeholder:opacity-50"
+                   />
+                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <FrameworkIcons.Terminal size={14} className="text-slate-300" />
+                   </div>
+                </div>
+              )}
               {formData?.scheduledPublishAt && (formData.status === 'draft' || !formData.status) && (
                 <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 font-black uppercase tracking-widest text-[12px] animate-pulse">
                   <FrameworkIcons.Clock size={14} />
@@ -318,7 +354,10 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
               </Button>
               <Button 
                 className="px-8 font-black uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-600/30" 
-                onClick={handleSubmit}
+                onClick={(e) => {
+                   handleSubmit(e, changeSummary);
+                   setChangeSummary('');
+                }}
                 isLoading={saving}
                 icon={<FrameworkIcons.Save size={18} />}
               >
@@ -541,30 +580,72 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
       {selectedRevision && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 animate-in fade-in duration-300">
            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setSelectedRevision(null)} />
-           <Card className="relative w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
+           <Card className="relative w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
               <div className="flex justify-between items-center mb-6">
                  <div>
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-indigo-500">Revision Details</h2>
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-indigo-500">Version V{selectedRevision.version} Comparison</h2>
                     <p className="text-xs text-slate-500 font-bold mt-1">{selectedRevision.date.toLocaleString()} by {selectedRevision.user}</p>
                  </div>
-                 <button onClick={() => setSelectedRevision(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <FrameworkIcons.Close size={20} />
-                 </button>
+                 <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => setShowOnlyChanges(!showOnlyChanges)}
+                      className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${showOnlyChanges ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-slate-100 text-slate-500 border-slate-200'}`}
+                    >
+                      {showOnlyChanges ? 'Showing Changes' : 'Showing All Fields'}
+                    </button>
+                    <button onClick={() => setSelectedRevision(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                        <FrameworkIcons.Close size={20} />
+                    </button>
+                 </div>
               </div>
 
-              <div className={`rounded-xl p-4 mb-6 max-h-[40vh] overflow-y-auto ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'}`}>
-                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Snapshot Changes</h3>
-                 <div className="space-y-3">
+              <div className={`rounded-xl border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'} overflow-hidden`}>
+                 <div className="grid grid-cols-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50">
+                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Current Values</div>
+                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Version V{selectedRevision.version} Values</div>
+                 </div>
+                 <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
                     {Object.entries(selectedRevision.changes)
-                      .filter(([key]) => !['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key))
-                      .map(([key, val]) => (
-                       <div key={key} className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-2 last:border-0">
-                          <span className="text-[12px] font-black text-indigo-500 uppercase">{key}</span>
-                          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">
-                            {typeof val === 'object' ? JSON.stringify(val) : String(val)}
-                          </span>
-                       </div>
-                    ))}
+                      .filter(([key]) => {
+                         if (['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key)) return false;
+                         if (showOnlyChanges) {
+                            const curVal = formData[key];
+                            const revVal = selectedRevision.changes[key];
+                            return JSON.stringify(curVal) !== JSON.stringify(revVal);
+                         }
+                         return true;
+                      })
+                      .map(([key, val]) => {
+                         const curVal = formData[key];
+                         const hasChanged = JSON.stringify(curVal) !== JSON.stringify(val);
+                         
+                         return (
+                          <div key={key} className={`grid grid-cols-2 group border-b border-slate-100 dark:border-slate-800 last:border-0 ${hasChanged ? 'bg-indigo-500/5' : ''}`}>
+                             <div className="p-4 border-r border-slate-100 dark:border-slate-800">
+                                <span className="text-[10px] font-black text-slate-400 uppercase block mb-1">{key}</span>
+                                <div className="text-xs font-bold text-slate-500 line-clamp-3">
+                                   {typeof curVal === 'object' ? JSON.stringify(curVal) : (curVal === undefined ? <span className="italic opacity-50">Empty</span> : String(curVal))}
+                                </div>
+                             </div>
+                             <div className="p-4">
+                                <span className="text-[10px] font-black text-indigo-500 uppercase block mb-1">{key}</span>
+                                <div className={`text-xs font-bold line-clamp-3 ${hasChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
+                                   {typeof val === 'object' ? JSON.stringify(val) : (val === undefined ? <span className="italic opacity-50">Empty</span> : String(val))}
+                                </div>
+                             </div>
+                          </div>
+                         );
+                      })}
+                    {showOnlyChanges && Object.entries(selectedRevision.changes).filter(([key]) => {
+                         if (['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key)) return false;
+                         const curVal = formData[key];
+                         const revVal = selectedRevision.changes[key];
+                         return JSON.stringify(curVal) !== JSON.stringify(revVal);
+                    }).length === 0 && (
+                      <div className="p-12 text-center">
+                         <p className="text-sm text-slate-400 font-bold italic">No changes detected between current state and this version.</p>
+                      </div>
+                    )}
                  </div>
               </div>
 
@@ -572,33 +653,45 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                  <div className="flex items-center gap-2">
                     <Button 
                       variant="ghost" 
-                      className="text-xs font-black uppercase tracking-widest disabled:opacity-30" 
+                      className="text-[10px] font-black uppercase tracking-widest disabled:opacity-30" 
                       disabled={currentRevIndex >= revisions.length - 1}
                       onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
                     >
-                       <FrameworkIcons.Left size={14} className="mr-2" />
+                       <FrameworkIcons.Left size={12} className="mr-2" />
                        Older
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="text-xs font-black uppercase tracking-widest disabled:opacity-30" 
+                      className="text-[10px] font-black uppercase tracking-widest disabled:opacity-30" 
                       disabled={currentRevIndex <= 0}
                       onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
                     >
                        Newer
-                       <FrameworkIcons.Right size={14} className="ml-2" />
+                       <FrameworkIcons.Right size={12} className="ml-2" />
                     </Button>
                  </div>
-                 <Button 
-                    className="px-8 text-xs font-black uppercase tracking-widest"
-                    onClick={() => {
-                       setFormData({ ...formData, ...selectedRevision.changes });
-                       setActiveVersionId(selectedRevision.id);
-                       setSelectedRevision(null);
-                    }}
-                 >
-                    Apply Revision
-                 </Button>
+                 <div className="flex items-center gap-3">
+                    <Button 
+                       variant="ghost"
+                       className="px-6 text-[10px] font-black uppercase tracking-widest text-slate-500"
+                       onClick={() => {
+                          setFormData({ ...formData, ...selectedRevision.changes });
+                          setActiveVersionId(selectedRevision.id);
+                          setSelectedRevision(null);
+                          setStatus({ type: 'success', message: 'Revision applied to form. Click "Save Changes" to persist.' });
+                       }}
+                    >
+                       Preview in Form
+                    </Button>
+                    <Button 
+                       className="px-8 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/30"
+                       isLoading={restoringPermanently}
+                       onClick={() => handleHardRestore(selectedRevision.version)}
+                       icon={<FrameworkIcons.Refresh size={14} />}
+                    >
+                       Restore Permanently
+                    </Button>
+                 </div>
               </div>
            </Card>
         </div>
@@ -629,7 +722,10 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
             </Button>
             <Button 
               className="rounded-xl px-12 shadow-2xl shadow-indigo-600/30 text-xs font-black uppercase tracking-widest py-4.5"
-              onClick={handleSubmit}
+              onClick={(e) => {
+                 handleSubmit(e, changeSummary);
+                 setChangeSummary('');
+              }}
               isLoading={saving}
               icon={<FrameworkIcons.Save size={16} strokeWidth={3} />}
             >

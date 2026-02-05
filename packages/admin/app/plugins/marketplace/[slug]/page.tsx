@@ -48,14 +48,14 @@ export default function MarketplaceDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const [regData, instData] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.REGISTRY),
+      const [marketData, instData] = await Promise.all([
+        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
         api.get(ENDPOINTS.PLUGINS.LIST)
       ]);
       
-      const versions = (regData.plugins || []).filter((p: any) => p.slug === slug);
+      const versions = (marketData.plugins || []).filter((p: any) => p.slug === slug);
       if (versions.length === 0) {
-        setError('Plugin not found in registry.');
+        setError('Plugin not found in marketplace.');
       } else {
         // Sort descending
         versions.sort((a: any, b: any) => b.version.localeCompare(a.version));
@@ -72,7 +72,7 @@ export default function MarketplaceDetailPage() {
       }
     } catch (err) {
       console.error('Failed to load plugin details', err);
-      setError('Failed to connect to the marketplace registry.');
+      setError('Failed to connect to the marketplace.');
     } finally {
       setLoading(false);
     }

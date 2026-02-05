@@ -12,7 +12,9 @@ import {
   Access,
   Collection,
   PluginContext,
-  FromcodePlugin
+  FromcodePlugin,
+  MiddlewareStage,
+  MiddlewareConfig
 } from '@fromcode/sdk';
 
 export { 
@@ -29,7 +31,9 @@ export {
   Access,
   Collection,
   PluginContext,
-  FromcodePlugin
+  FromcodePlugin,
+  MiddlewareStage,
+  MiddlewareConfig
 };
 
 // Aliases for compatibility
@@ -43,6 +47,9 @@ export interface LoadedPlugin extends FromcodePlugin {
   path?: string; // Absolute path to the plugin folder
   approvedCapabilities?: string[];
   error?: string; // Error message if state is 'error'
+  isSandboxed?: boolean;
+  entryPath?: string;
+  healthStatus?: 'healthy' | 'warning' | 'error';
 }
 
 export interface SystemMigration {

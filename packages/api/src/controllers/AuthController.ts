@@ -22,6 +22,13 @@ export class AuthController {
       if (!initialized) {
         const cookieOptions = this.getCookieOptions(req, true);
         res.clearCookie('fc_token', cookieOptions);
+        res.clearCookie('fc_csrf', { ...cookieOptions, httpOnly: false });
+        
+        // Also try to clear host-specific cookie if we are on a subdomain
+        const hostOptions = { ...cookieOptions };
+        delete hostOptions.domain;
+        res.clearCookie('fc_token', hostOptions);
+        res.clearCookie('fc_csrf', { ...hostOptions, httpOnly: false });
       }
       
       res.json({ initialized });
@@ -230,8 +237,16 @@ export class AuthController {
       } catch (e) {}
     }
 
+    // Force clear cookies on BOTH host and domain levels to resolve conflicts
     const cookieOptions = this.getCookieOptions(req, true);
     res.clearCookie('fc_token', cookieOptions);
+    res.clearCookie('fc_csrf', { ...cookieOptions, httpOnly: false });
+    
+    const hostOptions = { ...cookieOptions };
+    delete hostOptions.domain;
+    res.clearCookie('fc_token', hostOptions);
+    res.clearCookie('fc_csrf', { ...hostOptions, httpOnly: false });
+
     res.json({ success: true });
   }
 

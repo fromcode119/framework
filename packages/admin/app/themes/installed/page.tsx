@@ -30,22 +30,22 @@ export default function InstalledThemesPage() {
   const { notify } = useNotify();
   const { triggerRefresh } = usePlugins();
   const [themes, setThemes] = useState<ThemeManifest[]>([]);
-  const [registryThemes, setRegistryThemes] = useState<ThemeManifest[]>([]);
+  const [marketplaceThemes, setMarketplaceThemes] = useState<ThemeManifest[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function fetchThemes() {
     setLoading(true);
     try {
-      const [installedData, registryData] = await Promise.all([
+      const [installedData, marketplaceData] = await Promise.all([
         api.get(ENDPOINTS.THEMES.LIST),
-        api.get(ENDPOINTS.THEMES.REGISTRY)
+        api.get(ENDPOINTS.THEMES.MARKETPLACE)
       ]);
       
       const installed = Array.isArray(installedData) ? installedData : (installedData.themes || []);
-      const registry = Array.isArray(registryData) ? registryData : (registryData.themes || []);
+      const marketplace = Array.isArray(marketplaceData) ? marketplaceData : (marketplaceData.themes || []);
       
       setThemes(installed);
-      setRegistryThemes(registry);
+      setMarketplaceThemes(marketplace);
     } catch (err) {
       console.error("Failed to fetch themes", err);
       notify('error', 'Fetch Failed', 'Could not load themes.');
@@ -117,8 +117,8 @@ export default function InstalledThemesPage() {
         </div>
       ) : themes.map(t => {
         const isActive = t.state === 'active';
-        const registryMatch = registryThemes.find(r => r.slug === t.slug);
-        const hasUpdate = registryMatch && registryMatch.version !== t.version;
+        const marketplaceMatch = marketplaceThemes.find(r => r.slug === t.slug);
+        const hasUpdate = marketplaceMatch && marketplaceMatch.version !== t.version;
 
         return (
           <Card 
@@ -177,7 +177,7 @@ export default function InstalledThemesPage() {
                     className="w-full mb-3 py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
                   >
                     <FrameworkIcons.Clock size={16} />
-                    Upgrade to v{registryMatch.version}
+                    Upgrade to v{marketplaceMatch.version}
                   </button>
                 )}
                 {isActive ? (

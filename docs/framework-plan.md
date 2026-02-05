@@ -2152,7 +2152,62 @@ export const overrides = {
 // - Demo site link
 ```
 
-### 8.13 Theme Marketplace Categories
+### 37. Frontend Navigation Management
+
+Fromcode provides a built-in system for managing frontend navigation menus (Header, Footer, Sidebar, etc.) through the Admin UI. This data is managed by the CMS plugin and consumed by themes via the CMS UI plugin.
+
+#### 37.1 Navigation Hook (useMenu)
+
+Themes can fetch menu data dynamically using the `useMenu(slug)` hook from the CMS plugin.
+
+```typescript
+import { useMenu } from '@fromcode-plugin/cms-ui';
+
+function Header() {
+  const { menu, loading, error } = useMenu('header');
+
+  if (loading) return <Spinner />;
+  if (error) return null;
+  if (!menu) return null;
+
+  return (
+    <nav>
+      {menu.items.map(item => (
+        <a 
+          key={item.path} 
+          href={item.path}
+          target={item.target}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+```
+
+#### 37.2 Data Structure
+
+The `Navigation` collection in the CMS plugin defines the structure for these menus:
+
+```typescript
+interface NavigationMenu {
+  name: string;      // Human readable name (e.g., "Main Header")
+  slug: string;      // Unique identifier (e.g., "header")
+  items: {
+    label: string;   // Display text
+    url: string;     // Target URL
+    target: string;  // _self or _blank
+    priority: number; // For sorting
+  }[];
+}
+```
+
+The `useMenu` hook returns `menu` as an array of items already sorted by priority.
+
+---
+
+## 8.13 Theme Marketplace Categories
 
 Themes in the marketplace are organized by:
 

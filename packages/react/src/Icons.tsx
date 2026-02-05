@@ -126,6 +126,8 @@ export const FrameworkIcons = {
   Calendar: Lucide.Calendar,
   Zap: Lucide.Zap,
   Text: Lucide.Type,
+  Star: Lucide.Star,
+  Webhook: Lucide.Webhook,
 
   // Shims for backward compatibility/bridge safety
   registerProvider: (name: string, provider: Record<string, any>) => {

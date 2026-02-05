@@ -17,6 +17,7 @@ export interface DynamicTableOptions {
   slug: string;
   fields: DynamicField[];
   timestamps?: boolean;
+  workflow?: boolean;
   primaryKey?: string;
 }
 
@@ -24,7 +25,7 @@ export interface DynamicTableOptions {
  * Creates a Drizzle PG table object dynamically from a field list.
  */
 export function createDynamicTable(options: DynamicTableOptions) {
-  const { slug, fields, timestamps = true, primaryKey = 'id' } = options;
+  const { slug, fields, timestamps = true, workflow = false, primaryKey = 'id' } = options;
   
   // Helper to convert camelCase to snake_case
   const toSnakeCase = (str: string) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -70,6 +71,10 @@ export function createDynamicTable(options: DynamicTableOptions) {
   if (timestamps) {
     if (!columns.createdAt) columns.createdAt = timestamp('created_at', { withTimezone: true }).defaultNow();
     if (!columns.updatedAt) columns.updatedAt = timestamp('updated_at', { withTimezone: true }).defaultNow();
+  }
+
+  if (workflow) {
+    if (!columns.status) columns.status = text('status').notNull().default('draft');
   }
 
   return pgTable(slug, columns);
