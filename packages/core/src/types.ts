@@ -14,7 +14,11 @@ import {
   PluginContext,
   FromcodePlugin,
   MiddlewareStage,
-  MiddlewareConfig
+  MiddlewareConfig,
+  MarketplacePlugin,
+  PluginEntry,
+  MarketplaceTheme,
+  MarketplaceData
 } from '@fromcode/sdk';
 
 export { 
@@ -33,7 +37,11 @@ export {
   PluginContext,
   FromcodePlugin,
   MiddlewareStage,
-  MiddlewareConfig
+  MiddlewareConfig,
+  MarketplacePlugin,
+  PluginEntry,
+  MarketplaceTheme,
+  MarketplaceData
 };
 
 // Aliases for compatibility

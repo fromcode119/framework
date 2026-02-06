@@ -1,31 +1,9 @@
 import path from 'path';
 import fs from 'fs-extra';
 import archiver from 'archiver';
+import { MarketplacePlugin, MarketplaceData } from '@fromcode/sdk';
 
-export interface MarketplacePlugin {
-  slug: string;
-  name: string;
-  version: string;
-  description: string;
-  downloadUrl: string;
-  category: string;
-  author: string;
-  iconUrl?: string;
-  capabilities?: string[];
-  dependencies?: Record<string, string>;
-  screenshots?: string[];
-  changelog?: any[];
-}
-
-export interface MarketplaceData {
-  core?: {
-    version: string;
-    downloadUrl: string;
-    lastUpdated: string;
-  };
-  plugins: MarketplacePlugin[];
-  themes: any[];
-}
+export { MarketplacePlugin, MarketplaceData };
 
 export class MarketplaceClient {
   private marketplaceUrl: string;

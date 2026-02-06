@@ -11,22 +11,14 @@ import { Badge } from '@/components/ui/Badge';
 import { useNotify } from '@/components/NotificationContext';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
-
-interface ThemeManifest {
-  slug: string;
-  name: string;
-  version: string;
-  description?: string;
-  author?: string;
-  iconUrl?: string;
-}
+import { MarketplaceTheme } from '@fromcode/core';
 
 export default function ThemesMarketplacePage() {
   const { theme } = useTheme();
   const { notify } = useNotify();
   const { triggerRefresh } = usePlugins();
   const router = useRouter();
-  const [themes, setThemes] = useState<ThemeManifest[]>([]);
+  const [themes, setThemes] = useState<MarketplaceTheme[]>([]);
   const [installedThemes, setInstalledThemes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,8 +34,8 @@ export default function ThemesMarketplacePage() {
       const installed = Array.isArray(installedRes) ? installedRes : (installedRes.themes || []);
       
       // Group by slug to show only latest in the list
-      const grouped: Record<string, ThemeManifest> = {};
-      marketplace.forEach((t: ThemeManifest) => {
+      const grouped: Record<string, MarketplaceTheme> = {};
+      marketplace.forEach((t: MarketplaceTheme) => {
         if (!grouped[t.slug] || t.version > grouped[t.slug].version) {
           grouped[t.slug] = t;
         }

@@ -13,21 +13,7 @@ import { useNotify } from '@/components/NotificationContext';
 import { usePlugins } from '@fromcode/react';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Lightbox } from '@/components/ui/Lightbox';
-
-interface MarketplaceTheme {
-  slug: string;
-  name: string;
-  version: string;
-  description: string;
-  iconUrl?: string;
-  screenshots?: string[];
-  author: string;
-  authorUrl?: string;
-  downloadUrl?: string;
-  dependencies?: Record<string, string>;
-  labels?: string[];
-  changelog?: { version: string; date: string; changes: string[] }[];
-}
+import { MarketplaceTheme } from '@fromcode/core';
 
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -117,6 +103,9 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
 
   const hasUpdate = installedTheme && theme.version !== installedTheme.version;
 
+  // Normalize screenshots for display
+  const screenshots = (theme.screenshots || []).map(s => typeof s === 'string' ? s : s.url);
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <div className="flex items-center gap-6">
@@ -184,7 +173,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-32">
         <div className="lg:col-span-2 space-y-12">
-            {theme.screenshots && theme.screenshots.length > 0 ? (
+            {screenshots.length > 0 ? (
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -201,7 +190,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                           }`}
                         >
                             <img 
-                                src={theme.screenshots[activeImageIndex]} 
+                                src={screenshots[activeImageIndex]} 
                                 alt={theme.name} 
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             />
@@ -212,10 +201,10 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                             </div>
                         </div>
                         
-                        {theme.screenshots.length > 1 && (
+                        {screenshots.length > 1 && (
                             <div className="px-4 -mx-4 pt-8 pb-8 overflow-x-auto scrollbar-hide">
                                 <div className="flex gap-6 w-fit min-w-full">
-                                    {theme.screenshots.map((s, idx) => (
+                                    {screenshots.map((s, idx) => (
                                         <button 
                                             key={idx}
                                             onClick={() => setActiveImageIndex(idx)}
@@ -436,7 +425,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
       </div>
 
       <Lightbox 
-        images={theme.screenshots || []}
+        images={screenshots}
         currentIndex={activeImageIndex}
         isOpen={showLightbox}
         onClose={() => setShowLightbox(false)}

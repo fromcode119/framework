@@ -10,23 +10,9 @@ import { FrameworkIcons } from '@/lib/icons';
 import { useTheme } from '@/components/ThemeContext';
 import { useNotify } from '@/components/NotificationContext';
 import { usePlugins } from '@fromcode/react';
+import { PluginEntry } from '@fromcode/core';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Lightbox } from '@/components/ui/Lightbox';
-
-interface PluginEntry {
-  slug: string;
-  name: string;
-  description: string;
-  version: string;
-  category: string;
-  downloadUrl?: string;
-  changelog?: string[];
-  author?: string;
-  homepage?: string;
-  capabilities?: string[];
-  screenshots?: string[];
-  iconUrl?: string;
-}
 
 export default function MarketplaceDetailPage() {
   const { slug } = useParams();
@@ -244,7 +230,7 @@ export default function MarketplaceDetailPage() {
                   }`}
                 >
                     <img 
-                      src={plugin.screenshots[activeImageIndex]} 
+                      src={typeof plugin.screenshots[activeImageIndex] === 'string' ? (plugin.screenshots[activeImageIndex] as string) : (plugin.screenshots[activeImageIndex] as any).url} 
                       alt="Main Screenshot" 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
                     />
@@ -257,30 +243,33 @@ export default function MarketplaceDetailPage() {
 
                 {plugin.screenshots.length > 1 && (
                   <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {plugin.screenshots.map((src, idx) => (
-                      <button 
-                        key={idx}
-                        onClick={() => setActiveImageIndex(idx)}
-                        className={`relative h-24 min-w-[160px] rounded-2xl overflow-hidden border-2 transition-all duration-300 active:scale-95 ${
-                          activeImageIndex === idx 
-                            ? 'border-indigo-500 ring-4 ring-indigo-500/20 z-10 scale-105' 
-                            : (theme === 'dark' ? 'border-white/5 opacity-50 hover:opacity-100' : 'border-white shadow-lg shadow-slate-200/50 opacity-60 hover:opacity-100')
-                        }`}
-                      >
-                        <img 
-                          src={src} 
-                          alt={`Thumbnail ${idx + 1}`} 
-                          className="w-full h-full object-cover" 
-                        />
-                         {activeImageIndex === idx && (
-                            <div className="absolute inset-0 bg-indigo-500/10 flex items-center justify-center">
-                               <div className="h-6 w-6 rounded-full bg-indigo-500 text-white flex items-center justify-center">
-                                  <FrameworkIcons.Check size={12} strokeWidth={4} />
-                               </div>
-                            </div>
-                         )}
-                      </button>
-                    ))}
+                    {plugin.screenshots.map((item, idx) => {
+                      const src = typeof item === 'string' ? item : item.url;
+                      return (
+                        <button 
+                          key={idx}
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={`relative h-24 min-w-[160px] rounded-2xl overflow-hidden border-2 transition-all duration-300 active:scale-95 ${
+                            activeImageIndex === idx 
+                              ? 'border-indigo-500 ring-4 ring-indigo-500/20 z-10 scale-105' 
+                              : (theme === 'dark' ? 'border-white/5 opacity-50 hover:opacity-100' : 'border-white shadow-lg shadow-slate-200/50 opacity-60 hover:opacity-100')
+                          }`}
+                        >
+                          <img 
+                            src={src} 
+                            alt={`Thumbnail ${idx + 1}`} 
+                            className="w-full h-full object-cover" 
+                          />
+                           {activeImageIndex === idx && (
+                              <div className="absolute inset-0 bg-indigo-500/10 flex items-center justify-center">
+                                 <div className="h-6 w-6 rounded-full bg-indigo-500 text-white flex items-center justify-center">
+                                    <FrameworkIcons.Check size={12} strokeWidth={4} />
+                                 </div>
+                              </div>
+                           )}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -416,7 +405,7 @@ export default function MarketplaceDetailPage() {
       </div>
 
       <Lightbox 
-        images={plugin.screenshots || []}
+        images={(plugin.screenshots || []).map(s => typeof s === 'string' ? s : s.url)}
         currentIndex={activeImageIndex}
         isOpen={showLightbox}
         onClose={() => setShowLightbox(false)}
