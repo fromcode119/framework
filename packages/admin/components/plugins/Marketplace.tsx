@@ -11,25 +11,7 @@ import { useNotify } from '../NotificationContext';
 import { usePlugins } from '@fromcode/react';
 
 import { useRouter } from 'next/navigation';
-
-interface PluginEntry {
-  slug: string;
-  name: string;
-  description: string;
-  version: string;
-  category: string;
-  downloadUrl?: string;
-  changelog?: string[];
-  author?: string;
-  homepage?: string;
-  capabilities?: string[];
-  screenshots?: string[];
-  iconUrl?: string;
-  rating?: {
-    average: number;
-    count: number;
-  };
-}
+import { PluginEntry } from '@fromcode/core';
 
 const Marketplace: React.FC = () => {
   const router = useRouter();

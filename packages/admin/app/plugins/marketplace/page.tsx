@@ -10,24 +10,7 @@ import { useTheme } from '@/components/ThemeContext';
 import { useNotify } from '@/components/NotificationContext';
 import { usePlugins } from '@fromcode/react';
 import { useRouter } from 'next/navigation';
-
-interface PluginEntry {
-  slug: string;
-  name: string;
-  description: string;
-  version: string;
-  category: string;
-  iconUrl?: string;
-  author?: string;
-  isVerified?: boolean;
-  isFeatured?: boolean;
-  isTrending?: boolean;
-  downloads?: number;
-  rating?: {
-    average: number;
-    count: number;
-  };
-}
+import { PluginEntry } from '@fromcode/core';
 
 export default function MarketplacePage() {
   const router = useRouter();
