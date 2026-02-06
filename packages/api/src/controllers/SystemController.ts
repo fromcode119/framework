@@ -629,6 +629,9 @@ export class SystemController {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx buffering
     
+    // Explicitly flush headers to prevent browser from timing out or seeing incomplete chunked encoding
+    if ((res as any).flushHeaders) (res as any).flushHeaders();
+
     // Tell the client to retry every 10 seconds if connection is lost
     res.write('retry: 10000\n\n');
     // Initial comment to help establish stream in some browsers/proxies
@@ -651,6 +654,7 @@ export class SystemController {
     req.on('close', () => {
       clearInterval(heartbeat);
       this.manager.hooks.off('system:hmr:reload', handler);
+      res.end();
     });
   }
 

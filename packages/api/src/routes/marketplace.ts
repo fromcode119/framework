@@ -20,7 +20,7 @@ export const setupMarketplaceRoutes = (manager: PluginManager, auth: AuthManager
   router.get('/plugins', async (req, res) => {
     try {
       const plugins = await manager.marketplace.fetchCatalog();
-      res.json(plugins);
+      res.json({ plugins });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
