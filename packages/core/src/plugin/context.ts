@@ -206,9 +206,6 @@ export function createPluginContext(
       if (prop === 'and') return and;
       if (prop === 'or') return or;
 
-      // COMPATIBILITY: Map legacy select() to modern find()
-      if (prop === 'select') return (target as any)['find'];
-
       return (target as any)[prop];
     }
   });
@@ -356,14 +353,6 @@ export function createPluginContext(
         const fullName = `${plugin.manifest.slug}:${name}`;
         await manager.scheduler.register(fullName, schedule, handler, {
           ...options,
-          plugin_slug: plugin.manifest.slug
-        });
-      },
-      // COMPATIBILITY: Legacy onTick mapped to register with 1m default
-      onTick: async (name: string, handler: any) => {
-        if (!hasCapability('scheduler')) handleViolation('scheduler');
-        const fullName = `${plugin.manifest.slug}:${name}`;
-        await manager.scheduler.register(fullName, '1m', handler, {
           plugin_slug: plugin.manifest.slug
         });
       },
