@@ -126,7 +126,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   const [pluginAPIs] = useState<Record<string, any>>({});
   const [events] = useState(() => new Map<string, Set<(data: any) => void>>());
   const [serverRuntimeModules, setServerRuntimeModules] = useState<Record<string, any>>({});
-
+  
   const getBaseURL = useCallback(() => {
     const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
     let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.fromcode.local';
@@ -353,8 +353,9 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   // Helper to load translations
   const loadTranslations = useCallback(async (newLocale: string) => {
     try {
+      const currentApiUrl = (stabilityRef.current as any).apiUrl;
       const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-      let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.fromcode.local';
+      let effectiveApiUrl = currentApiUrl || bridgeUrl || 'http://api.fromcode.local';
       
       // Ensure effectiveApiUrl is absolute or properly handled
       if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
@@ -375,11 +376,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     } catch (err) {
       console.warn("[I18n] Failed to load translations from:", err);
     }
-  }, [apiUrl]);
-
-  React.useEffect(() => {
-    loadTranslations(locale);
-  }, [locale, loadTranslations]);
+  }, []); // Truly stable
 
   const t = useCallback((key: string, params: Record<string, any> = {}, defaultValue?: string) => {
     let value: any = translations;
@@ -400,6 +397,40 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       return params[paramKey] !== undefined ? String(params[paramKey]) : `{{${paramKey}}}`;
     });
   }, [translations]);
+
+  React.useEffect(() => {
+    loadTranslations(locale);
+  }, [locale, loadTranslations]);
+
+  // Use a ref for state and logic that the bridge needs but should not trigger effect re-runs
+  const stabilityRef = React.useRef({
+    slots, overrides, themeVariables, themeLayouts, menuItems, collections, 
+    fieldComponents, plugins, settings, translations, locale, refreshVersion, 
+    triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
+    loadConfig, serverRuntimeModules, runtimeModules, apiUrl
+  });
+
+  React.useEffect(() => {
+    stabilityRef.current = {
+      slots, overrides, themeVariables, themeLayouts, menuItems, collections, 
+      fieldComponents, plugins, settings, translations, locale, refreshVersion, 
+      triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
+      loadConfig, serverRuntimeModules, runtimeModules, apiUrl
+    };
+  }, [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, serverRuntimeModules, runtimeModules, apiUrl]);
+
+  // NEW: Stable bridge wrappers to prevent re-injection loops for functions with volatile dependencies
+  const stableT = useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
+  const stableLoadConfig = useCallback((...args: any[]) => (stabilityRef.current.loadConfig as any)(...args), []);
+
+  const stableApiBridge = useMemo(() => ({
+    getBaseUrl: (...args: any[]) => (stabilityRef.current.api as any).getBaseUrl(...args),
+    get: (...args: any[]) => (stabilityRef.current.api as any).get(...args),
+    post: (...args: any[]) => (stabilityRef.current.api as any).post(...args),
+    put: (...args: any[]) => (stabilityRef.current.api as any).put(...args),
+    patch: (...args: any[]) => (stabilityRef.current.api as any).patch(...args),
+    delete: (...args: any[]) => (stabilityRef.current.api as any).delete(...args),
+  }), []);
 
   const registerSlotComponent = useCallback((slotName: string, component: any, pluginSlug?: string, priority?: number) => {
     if (!component) {
@@ -631,10 +662,11 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         registerAPI,
         getAPI,
         setPluginState,
-        loadConfig,
+        loadConfig: stableLoadConfig,
         emit,
         on,
-        t,
+        t: stableT,
+        api: stableApiBridge,
         locale,
         setLocale,
         usePlugins,
@@ -643,7 +675,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         usePluginState,
         isReady: true,
         // Non-hook versions for direct access from CJS/ESM bridge
-        getState: () => ({ slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, setLocale, t, emit, on, api, resolveContent, getAPI }),
+        getState: () => stabilityRef.current,
         PluginsProvider
       };
 
@@ -672,10 +704,13 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           )
       };
 
-      // Merge server-side modules from loadConfig
-      if (serverRuntimeModules) {
-        const base = getBaseURL();
-        Object.entries(serverRuntimeModules).forEach(([name, config]: [string, any]) => {
+      // Merge server-side and client-side modules from stabilityRef
+      const currentServerModules = stabilityRef.current.serverRuntimeModules;
+      const currentClientModules = stabilityRef.current.runtimeModules;
+
+      if (currentServerModules) {
+        const base = (stabilityRef.current as any).apiUrl || (window as any).FROMCODE_API_URL || '';
+        Object.entries(currentServerModules).forEach(([name, config]: [string, any]) => {
           if (config.url) {
             imports[name] = config.url.startsWith('/') ? `${base}${config.url}` : config.url;
           } else if (config.source) {
@@ -684,9 +719,8 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         });
       }
 
-      // Merge client-side host modules from runtimeModules prop
-      if (runtimeModules) {
-          Object.entries(runtimeModules).forEach(([name, mod]) => {
+      if (currentClientModules) {
+          Object.entries(currentClientModules).forEach(([name, mod]) => {
               const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
               (window as any)[`_fc_mod_${safeName}`] = mod;
               const keys = Object.keys(mod);
@@ -730,7 +764,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         });
       }
     }
-  }, [apiUrl, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, loadConfig, emit, on, t, locale, setLocale, slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, refreshVersion, triggerRefresh, api, resolveContent, serverRuntimeModules, runtimeModules]);
+  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, setPluginState, stableLoadConfig, emit, on, stableT, locale, setLocale, triggerRefresh, stableApiBridge]);
 
   const value = React.useMemo(() => ({
     slots,

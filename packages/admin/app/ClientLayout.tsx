@@ -291,12 +291,14 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const runtimeModules = React.useMemo(() => ({
+    '@fromcode/admin/components': SharedComponents
+  }), []);
+
   return (
     <PluginsProvider 
       apiUrl={API_BASE_URL} 
-      runtimeModules={{
-        '@fromcode/admin/components': SharedComponents
-      }}
+      runtimeModules={runtimeModules}
     >
       <ThemeProvider>
         <LayoutContent>
