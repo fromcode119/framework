@@ -341,15 +341,6 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     };
   }, [events]);
 
-  const triggerRefresh = useCallback(() => {
-    setRefreshVersion(v => v + 1);
-    // Clear slots and menu items so they can be re-registered
-    setSlots({});
-    setOverrides({});
-    setMenuItems([]);
-    setCollections([]);
-  }, []);
-
   // Helper to load translations
   const loadTranslations = useCallback(async (newLocale: string) => {
     try {
@@ -377,6 +368,18 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       console.warn("[I18n] Failed to load translations from:", err);
     }
   }, []); // Truly stable
+
+  const triggerRefresh = useCallback(() => {
+    setRefreshVersion(v => v + 1);
+    // Clear slots and menu items so they can be re-registered
+    setSlots({});
+    setOverrides({});
+    setMenuItems([]);
+    setCollections([]);
+    
+    // Reload translations to pick up any newly activated plugin languages
+    loadTranslations(locale);
+  }, [locale, loadTranslations]);
 
   const t = useCallback((key: string, params: Record<string, any> = {}, defaultValue?: string) => {
     let value: any = translations;

@@ -60,7 +60,10 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug 
     const val = item[f.name];
     const fieldProps = {
       value: val,
-      onChange: (v: any) => handleUpdateItem(index, f.name, v),
+      onChange: (v: any) => {
+        const value = v?.target ? v.target.value : v;
+        handleUpdateItem(index, f.name, value);
+      },
       theme,
       placeholder: `Enter ${f.label || f.name}...`,
     };
@@ -107,36 +110,36 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug 
          });
 
          return (
-            <div key={index} className={`relative p-6 rounded-3xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
+            <div key={index} className={`relative p-4 rounded-3xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
               theme === 'dark' ? 'bg-slate-900/30 border-slate-800' : 'bg-slate-50 border-slate-200'
             }`}>
-              <div className="absolute top-4 right-4 flex items-center gap-1.5">
+              <div className="absolute top-3 right-3 flex items-center gap-1">
                 <button 
                   onClick={() => handleMoveUp(index)}
                   disabled={index === 0}
-                  className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-white text-slate-400'} disabled:opacity-20`}
+                  className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-white text-slate-400'} disabled:opacity-20`}
                 >
-                  <FrameworkIcons.ChevronUp size={14} />
+                  <FrameworkIcons.ChevronUp size={12} />
                 </button>
                 <button 
                   onClick={() => handleMoveDown(index)}
                   disabled={index === items.length - 1}
-                  className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-white text-slate-400'} disabled:opacity-20`}
+                  className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-white text-slate-400'} disabled:opacity-20`}
                 >
-                  <FrameworkIcons.ChevronDown size={14} />
+                  <FrameworkIcons.ChevronDown size={12} />
                 </button>
                 <button 
                   onClick={() => handleRemoveItem(index)}
-                  className="p-1.5 rounded-lg hover:bg-rose-500 hover:text-white text-rose-500/50 transition-all ml-1"
+                  className="p-1 rounded-lg hover:bg-rose-500 hover:text-white text-rose-500/50 transition-all ml-0.5"
                 >
-                  <FrameworkIcons.Trash size={14} />
+                  <FrameworkIcons.Trash size={12} />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {visibleFields.map((f: any) => (
                   <div key={f.name} className={f.type === 'textarea' || f.type === 'relationship' || f.type === 'array' ? 'md:col-span-2' : ''}>
-                    <label className={`block text-[9px] font-black uppercase tracking-widest mb-2 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                    <label className={`block text-[9px] font-black uppercase tracking-widest mb-1.5 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                       {f.label || f.name}
                     </label>
                     {renderField(f, item, index)}

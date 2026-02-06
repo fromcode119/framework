@@ -53,11 +53,36 @@ const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { fiel
                      (sourceCollectionSlug === 'users' ? 'username' : 
                       sourceCollectionSlug === 'media' ? 'filename' : 'slug');
 
+  // Ensure relationship values that might be raw objects or slugs are handled correctly
+  const safeValue = React.useMemo(() => {
+    if (!value) return field.hasMany ? [] : '';
+    
+    // If it's single-select and we have a string, it's already a slug/ID
+    if (!field.hasMany && typeof value === 'string') return value;
+    
+    // If it's an object with a label, it's from the Select/TagField UI or API
+    // We want the underlying ID/slug for the input/logic
+    if (!field.hasMany && typeof value === 'object' && value !== null) {
+      return value.value || value.slug || value.id || value;
+    }
+
+    if (field.hasMany && Array.isArray(value)) {
+       return value.map(item => {
+          if (typeof item === 'object' && item !== null) {
+             return item.value || item.slug || item.id || item;
+          }
+          return item;
+       });
+    }
+
+    return value;
+  }, [value, field.hasMany]);
+
   return (
     <TagField 
       collectionSlug={collectionSlug}
       fieldName={field.name}
-      value={value}
+      value={safeValue}
       onChange={onChange}
       theme={theme}
       sourceCollection={sourceCollectionSlug}
@@ -87,7 +112,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   return (
     <div className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
-      <label className={`block text-xs font-black uppercase tracking-widest mb-3 pl-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+      <label className={`block text-[11px] font-bold mb-2.5 pl-0.5 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
         {label}
         {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
       </label>
@@ -229,7 +254,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       </div>
     )}
     {field.admin?.description && (
-      <p className="mt-2.5 text-xs text-slate-400 font-bold uppercase tracking-tight opacity-60 ml-1">{field.admin.description}</p>
+      <p className="mt-2 text-[11px] text-slate-400 font-medium leading-relaxed ml-0.5">{field.admin.description}</p>
     )}
     {errors && errors.length > 0 && (
       <p className="mt-2 text-xs text-rose-500 font-bold">{errors[0]}</p>

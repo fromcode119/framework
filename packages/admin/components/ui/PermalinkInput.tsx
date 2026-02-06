@@ -91,13 +91,13 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
         <div className="flex items-center justify-between gap-4">
            <div className="flex flex-col min-w-0">
               <span className="text-xs text-slate-400 font-bold truncate opacity-60 mb-1">{baseUrl}{prefix}</span>
-              <span className={`text-xs font-black leading-tight truncate ${isCustomMode ? 'text-indigo-500' : 'text-slate-900 dark:text-white'}`}>
+              <span className={`text-xs font-bold leading-tight truncate ${isCustomMode ? 'text-indigo-500' : 'text-slate-900 dark:text-white'}`}>
                 {displayValue}{suffix}
               </span>
            </div>
            <div className="flex items-center gap-2 shrink-0">
               {isCustomMode && (
-                 <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
+                 <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-500 text-[10px] font-bold rounded-md border border-indigo-500/20">
                     Custom
                  </div>
               )}
@@ -114,13 +114,13 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
     <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
       <div className="flex justify-between items-end px-1">
         <div className="flex flex-col gap-0.5">
-          <label className="text-xs font-black uppercase tracking-widest text-indigo-500">Edit Path Override</label>
+          <label className="text-xs font-bold text-indigo-500">Edit Path Override</label>
         </div>
         {isCustomMode && (
           <button 
             type="button"
             onClick={(e) => { e.stopPropagation(); onChange(''); setIsEditing(false); }}
-            className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
+            className="text-[10px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
           >
             <FrameworkIcons.Refresh size={8} />
             Revert to Original
@@ -136,34 +136,34 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
            </div>
            <input 
               autoFocus
-              value={displayValue}
+              value={displayValue ?? ''}
               onChange={(e) => onChange(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') setIsEditing(false);
                 if (e.key === 'Escape') setIsEditing(false);
               }}
-              className="w-full bg-transparent text-lg font-black text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700"
+              className="w-full bg-transparent text-lg font-bold text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700"
               placeholder="my-secret-path"
            />
         </div>
 
         <div className="flex gap-2">
            <Button 
-              className="flex-1 rounded-xl h-10 font-black uppercase tracking-[0.2em] text-xs"
+              className="flex-1 rounded-xl h-10 font-bold text-xs"
               onClick={() => setIsEditing(false)}
            >
               Save Custom Permalink
            </Button>
            <Button 
               variant="ghost"
-              className="px-4 rounded-xl h-10 text-xs font-black uppercase tracking-widest"
+              className="px-4 rounded-xl h-10 text-xs font-bold"
               onClick={() => setIsEditing(false)}
            >
               Cancel
            </Button>
         </div>
       </div>
-      <p className="px-1 text-xs text-slate-400 font-bold leading-relaxed uppercase tracking-tighter opacity-70">
+      <p className="px-1 text-xs text-slate-400 font-bold leading-relaxed opacity-70">
         Changes made here override the global schema. For pattern-based slugs, use the title field.
       </p>
     </div>

@@ -185,6 +185,7 @@ export const TagField = ({
     if (hasMany) {
       onChange([...tags, finalValue]);
     } else {
+      // Direct pass-through of the string value to prevent object wrapping
       onChange(finalValue);
     }
     
