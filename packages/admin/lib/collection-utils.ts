@@ -19,6 +19,18 @@ export function resolveCollection(
 }
 
 /**
+ * Resolves the collection-specific prefix from settings.
+ */
+export function getCollectionPrefix(collection: Collection, pluginSettings?: Record<string, any>): string {
+  if (!pluginSettings || !collection.admin?.previewPrefixSettingsKey) return '';
+  
+  const prefixKey = collection.admin.previewPrefixSettingsKey;
+  if (!pluginSettings[prefixKey]) return '';
+  
+  return String(pluginSettings[prefixKey]).replace(/^\//, '').replace(/\/$/, '');
+}
+
+/**
  * Generates a preview URL for a record based on global settings and record data.
  */
 export function generatePreviewUrl(
@@ -38,13 +50,7 @@ export function generatePreviewUrl(
   }
 
   // Determine collection-specific prefix from plugin settings
-  let prefix = '';
-  if (pluginSettings && collection.admin?.previewPrefixSettingsKey) {
-    const prefixKey = collection.admin.previewPrefixSettingsKey;
-    if (pluginSettings[prefixKey]) {
-      prefix = String(pluginSettings[prefixKey]).replace(/^\//, '').replace(/\/$/, '');
-    }
-  }
+  const prefix = getCollectionPrefix(collection, pluginSettings);
 
   // FALLBACK: Use the global structure logic
   const idValue = record.id || 'new';
