@@ -18,6 +18,7 @@ export interface Field {
   maxLength?: number; // For text
   language?: 'javascript' | 'css' | 'html' | 'json' | 'typescript'; // For code
   showTime?: boolean; // For date/datetime
+  fields?: Field[]; // For array/group fields
   admin?: {
     hidden?: boolean;
     readOnly?: boolean;

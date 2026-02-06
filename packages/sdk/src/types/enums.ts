@@ -36,5 +36,6 @@ export type FieldType =
   | 'upload'
   | 'json'
   | 'array'
+  | 'group'
   | 'color'
   | 'code';
