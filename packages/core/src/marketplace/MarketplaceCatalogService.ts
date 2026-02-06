@@ -20,8 +20,15 @@ export class MarketplaceCatalogService {
    * Fetch the full plugin catalog from the marketplace
    */
   public async fetchCatalog(): Promise<MarketplacePlugin[]> {
-    const data = await this.client.fetch();
-    return data.plugins || [];
+    try {
+      this.logger.debug(`Fetching marketplace catalog from: ${process.env.MARKETPLACE_URL}`);
+      const data = await this.client.fetch();
+      this.logger.info(`Successfully fetched ${data.plugins?.length || 0} plugins from marketplace.`);
+      return data.plugins || [];
+    } catch (err: any) {
+      this.logger.error(`Failed to fetch marketplace catalog: ${err.message}`);
+      return [];
+    }
   }
 
   /**

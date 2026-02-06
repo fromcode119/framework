@@ -187,7 +187,8 @@ export function createPluginContext(
         handleViolation('database');
       }
 
-      if (typeof prop === 'string' && ['find', 'findOne', 'create', 'update', 'delete', 'execute'].includes(prop)) {
+      const dbMethods = ['find', 'findOne', 'create', 'update', 'delete', 'execute', 'count'];
+      if (typeof prop === 'string' && dbMethods.includes(prop)) {
         if (!dbLimiter.check(plugin.manifest.slug)) {
           handleRateLimit('Database');
         }
@@ -204,6 +205,9 @@ export function createPluginContext(
       if (prop === 'eq') return eq;
       if (prop === 'and') return and;
       if (prop === 'or') return or;
+
+      // COMPATIBILITY: Map legacy select() to modern find()
+      if (prop === 'select') return (target as any)['find'];
 
       return (target as any)[prop];
     }
@@ -264,7 +268,8 @@ export function createPluginContext(
 
   // --- Redis Proxy with Prefixing ---
   const redisPrefix = `redis:${plugin.manifest.slug}:`;
-  const redisProxy = new Proxy(manager.jobs.redis, {
+  const redisTarget = manager.jobs.redis || {};
+  const redisProxy = new Proxy(redisTarget, {
     get: (target, prop) => {
       if (prop === 'global') {
         if (!hasCapability('redis:global')) handleViolation('redis:global');
@@ -351,6 +356,14 @@ export function createPluginContext(
         const fullName = `${plugin.manifest.slug}:${name}`;
         await manager.scheduler.register(fullName, schedule, handler, {
           ...options,
+          plugin_slug: plugin.manifest.slug
+        });
+      },
+      // COMPATIBILITY: Legacy onTick mapped to register with 1m default
+      onTick: async (name: string, handler: any) => {
+        if (!hasCapability('scheduler')) handleViolation('scheduler');
+        const fullName = `${plugin.manifest.slug}:${name}`;
+        await manager.scheduler.register(fullName, '1m', handler, {
           plugin_slug: plugin.manifest.slug
         });
       },
