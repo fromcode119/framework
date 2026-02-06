@@ -619,23 +619,27 @@ export class SystemController {
 
   async getEvents(req: Request, res: Response) {
     // Basic settings for long-lived keep-alive connection
-    req.socket.setKeepAlive(true);
+    req.socket.setKeepAlive(true, 1000); // Send TCP keep-alive every second
     req.socket.setNoDelay(true);
     req.socket.setTimeout(0);
 
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx buffering
-    
-    // Explicitly flush headers to prevent browser from timing out or seeing incomplete chunked encoding
-    if ((res as any).flushHeaders) (res as any).flushHeaders();
+    // Atomic header write to prevent "incomplete chunked encoding" errors
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': req.headers.origin || '*',
+      'Access-Control-Allow-Credentials': 'true',
+      'X-Accel-Buffering': 'no', // Disable Nginx buffering
+      'Content-Encoding': 'identity' // Prevent compression from breaking the stream
+    });
 
+    // Padding (2KB) to satisfy some proxies and browsers that buffer small responses
+    res.write(':' + ' '.repeat(2048) + '\n\n');
+    
     // Tell the client to retry every 10 seconds if connection is lost
     res.write('retry: 10000\n\n');
-    // Initial comment to help establish stream in some browsers/proxies
-    res.write(': ok\n\n');
+    res.write(': connection established\n\n');
 
     const handler = (data: any) => {
       res.write(`data: ${JSON.stringify(data)}\n\n`);
@@ -644,7 +648,7 @@ export class SystemController {
 
     this.manager.hooks.on('system:hmr:reload', handler);
 
-    // Keep connection alive with a heartbeat every 15 seconds
+    // Heartbeat every 15 seconds to keep the connection alive thru proxies
     const heartbeat = setInterval(() => {
       // Using a comment (starting with :) as a heartbeat is standard SSE practice
       res.write(': heartbeat\n\n');
@@ -654,7 +658,7 @@ export class SystemController {
     req.on('close', () => {
       clearInterval(heartbeat);
       this.manager.hooks.off('system:hmr:reload', handler);
-      res.end();
+      // No need to call res.end() here as the socket is already closing/closed
     });
   }
 
