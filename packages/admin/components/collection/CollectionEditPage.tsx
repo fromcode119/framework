@@ -289,23 +289,28 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
           <div className="flex items-center gap-2 mb-4">
             <Link 
               href={`/${pluginSlug}/${slug}`}
-              className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-widest transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}
+              className={`flex items-center gap-1.5 text-[11px] font-bold transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}
             >
               <FrameworkIcons.Left size={14} />
               {collection.name || slug}
             </Link>
             <span className="text-slate-300">/</span>
-            <span className={`text-xs font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>
+            <span className={`text-[11px] font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>
               {isNew ? 'New Entry' : (id.length > 8 ? `${id.substring(0, 8)}...` : id)}
             </span>
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h1 className={`text-2xl font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {isNew ? `Create ${collection.name || collection.slug}` : (collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] ? formData[collection.admin.useAsTitle] : (formData.title || formData.name || collection.name || 'Entry'))}
+              <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                {isNew 
+                  ? `Create ${collection.name || collection.slug}` 
+                  : (collection.admin?.useAsTitle && formData[collection.admin.useAsTitle] 
+                      ? formData[collection.admin.useAsTitle] 
+                      : (formData.title || formData.name || `Untitled ${collection.name || 'Entry'}`))
+                }
               </h1>
-              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-1">
+              <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70 mt-1">
                 {isNew ? `Define a new record for ${collection.name || collection.slug}` : `Modify existing ${formData.title || formData.name || collection.name || 'entry'}`}
               </p>
             </div>
@@ -317,30 +322,27 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                       placeholder="Commit summary (optional)"
                       value={changeSummary}
                       onChange={(e) => setChangeSummary(e.target.value)}
-                      className="w-48 xl:w-64 text-[10px] uppercase font-black tracking-widest h-10 bg-transparent border-slate-200 dark:border-slate-800 focus:w-80 transition-all placeholder:opacity-50"
+                      className="w-48 xl:w-64 text-[10px] font-bold h-9 bg-transparent border-slate-200 dark:border-slate-800 transition-all placeholder:opacity-50"
                    />
-                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <FrameworkIcons.Terminal size={14} className="text-slate-300" />
-                   </div>
                 </div>
               )}
               {formData?.scheduledPublishAt && (formData.status === 'draft' || !formData.status) && (
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 font-black uppercase tracking-widest text-[12px] animate-pulse">
-                  <FrameworkIcons.Clock size={14} />
-                  Scheduled: {new Date(formData.scheduledPublishAt).toLocaleDateString()}
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold text-[10px] animate-pulse">
+                  <FrameworkIcons.Clock size={12} />
+                  {new Date(formData.scheduledPublishAt).toLocaleDateString()}
                 </div>
               )}
               {showPreview && (
                 <a 
                   href={getPreviewUrl()}
                   target="_blank"
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-black uppercase tracking-widest transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${
                     theme === 'dark' 
                       ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700' 
                       : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100'
                   }`}
                 >
-                  <FrameworkIcons.Eye size={14} />
+                  <FrameworkIcons.Eye size={12} />
                   Preview
                 </a>
               )}
@@ -348,28 +350,28 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
               <Button 
                 variant="ghost"
                 onClick={() => window.history.back()}
-                className="rounded-2xl px-6 font-black uppercase tracking-widest text-xs text-slate-400"
+                className="rounded-xl px-4 font-bold text-[10px] text-slate-400"
               >
-                Discard Changes
+                Discard
               </Button>
               <Button 
-                className="px-8 font-black uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-600/30" 
+                className="px-6 font-bold text-[10px] shadow-lg shadow-indigo-600/20 h-9" 
                 onClick={(e) => {
                    handleSubmit(e, changeSummary);
                    setChangeSummary('');
                 }}
                 isLoading={saving}
-                icon={<FrameworkIcons.Save size={18} />}
+                icon={<FrameworkIcons.Save size={14} />}
               >
-                {isNew ? 'Create' : 'Save Changes'}
+                {isNew ? 'Create' : 'Save'}
               </Button>
 
               {!isNew && (
                 <button 
                   onClick={() => setShowDeleteConfirm(true)}
-                  className={`p-3 rounded-xl border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === 'dark' ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
+                  className={`p-2 rounded-lg border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === 'dark' ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
                 >
-                  <FrameworkIcons.Trash size={20} />
+                  <FrameworkIcons.Trash size={16} />
                 </button>
               )}
             </div>
@@ -462,7 +464,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                       id={isNew ? undefined : id}
                       slug={formData.slug}
                     />
-                    <p className="mt-2 text-[12px] text-slate-400 font-bold uppercase tracking-tight opacity-50">
+                    <p className="mt-3 text-[11px] text-slate-400 font-medium leading-relaxed">
                       Click the path component to override the automatically generated slug.
                     </p>
                 </Card>
@@ -490,7 +492,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
               )}
 
               <Card title="Management">
-                 <p className="text-xs text-slate-400 font-bold leading-relaxed italic">
+                 <p className="text-[11px] text-slate-400 font-medium leading-relaxed italic">
                    All changes are saved with a full history, allowing you to roll back to any previous version at any time.
                  </p>
               </Card>
@@ -499,16 +501,16 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                 <Card title="Record Info">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-black uppercase tracking-widest">Identifier</span>
-                      <span className="text-slate-500 font-black tracking-tighter bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">{id}</span>
+                      <span className="text-slate-400 font-bold">Identifier</span>
+                      <span className="text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">{id}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-black uppercase tracking-widest">Created</span>
-                      <span className="text-slate-500 font-bold">{new Date(formData.createdAt).toLocaleString()}</span>
+                      <span className="text-slate-400 font-bold">Created</span>
+                      <span className="text-slate-500 font-medium font-sans">{new Date(formData.createdAt).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-black uppercase tracking-widest">Last Update</span>
-                      <span className="text-slate-500 font-bold">{new Date(formData.updatedAt).toLocaleString()}</span>
+                      <span className="text-slate-400 font-bold">Last Update</span>
+                      <span className="text-slate-500 font-medium font-sans">{new Date(formData.updatedAt).toLocaleString()}</span>
                     </div>
                   </div>
                 </Card>
@@ -530,8 +532,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                            <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-center gap-2">
                                  <div className="flex items-center gap-2 min-w-0">
-                                    <span className={`text-[12px] font-black px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
-                                    <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white truncate">{v.user}</span>
+                                    <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
+                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{v.user}</span>
                                  </div>
                                  {v.id !== activeVersionId && (
                                    <button 
@@ -540,15 +542,15 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                                         setFormData({ ...formData, ...v.changes });
                                         setActiveVersionId(v.id);
                                       }}
-                                      className="text-xs font-black uppercase text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
+                                      className="text-xs font-bold text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
                                    >
                                       <FrameworkIcons.Refresh size={8} />
                                       Restore
                                    </button>
                                  )}
                               </div>
-                              <p className="text-xs text-slate-500 font-bold truncate mt-0.5">{v.action}</p>
-                              <p className="text-[12px] text-slate-400 font-black uppercase tracking-widest mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
+                              <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{v.action}</p>
+                              <p className="text-[11px] text-slate-400 font-medium mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
                            </div>
                         </div>
                       ))}
@@ -706,8 +708,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
               <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
-              <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                Persistence Layer // {collection.slug.toUpperCase()}
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                Persistence Layer // {collection.slug}
               </span>
             </div>
           </div>

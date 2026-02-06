@@ -39,7 +39,12 @@ export const Select = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
-  const selectedOption = options.find(opt => String(opt.value) === String(value));
+  const selectedOption = options.find(opt => {
+    // Ensure both are treated as strings for stable comparison
+    const optVal = opt.value && typeof opt.value === 'object' ? (opt.value as any).value || (opt.value as any).id || (opt.value as any).slug : String(opt.value);
+    const curVal = value && typeof value === 'object' ? (value as any).value || (value as any).id || (value as any).slug : String(value);
+    return optVal === curVal;
+  });
 
   const filteredOptions = options.filter(opt => 
     opt.label.toLowerCase().includes(searchValue.toLowerCase())
@@ -100,20 +105,26 @@ export const Select = ({
 
   return (
     <div className={`flex flex-col gap-2 w-full ${className}`}>
-      {label && <label className="text-[11px] font-black uppercase tracking-widest text-slate-500">{label}</label>}
+      {label && <label className="text-xs font-bold text-slate-500">{label}</label>}
       <div className="relative w-full" ref={triggerRef}>
         <button
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`w-full rounded-2xl py-3.5 pl-5 pr-12 outline-none border transition-all text-sm font-bold flex items-center justify-between text-left group overflow-hidden relative shadow-sm ${
+          className={`w-full rounded-2xl py-1.5 pl-4 pr-4 outline-none border transition-all text-sm font-bold flex items-center justify-between text-left group overflow-hidden relative shadow-sm ${
             theme === 'dark' 
               ? 'bg-slate-900/60 border-slate-800 text-white hover:border-indigo-500/50' 
               : 'bg-white border-slate-200 text-slate-900 hover:border-indigo-500'
           } ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <span className={`truncate relative z-10 ${!selectedOption ? 'text-slate-400 font-medium' : ''}`}>
-            {selectedOption ? selectedOption.label : placeholder}
+             <div className="flex flex-col leading-none">
+                {selectedOption ? (
+                  <span className="truncate">{selectedOption.label}</span>
+                ) : (
+                  <span className="truncate">{placeholder ?? ''}</span>
+                )}
+             </div>
           </span>
           
           <div className={`transition-transform duration-300 relative z-10 ${isOpen ? 'rotate-180 text-indigo-500' : 'text-slate-400'}`}>
@@ -165,29 +176,30 @@ export const Select = ({
               <div className="flex-1 overflow-y-auto p-1.5 scrollbar-hide">
                 {filteredOptions.length === 0 ? (
                   <div className="px-4 py-8 text-center">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 opacity-50">No results found</p>
+                    <p className="text-xs font-bold text-slate-500 opacity-50">No results found</p>
                   </div>
                 ) : (
                   filteredOptions.map((opt) => (
                     <button
-                      key={opt.value}
+                      key={typeof opt.value === 'object' ? JSON.stringify(opt.value) : opt.value}
                       type="button"
                       onClick={() => {
-                        onChange(opt.value);
+                        const finalVal = opt.value && typeof opt.value === 'object' ? (opt.value as any).value || (opt.value as any).id || (opt.value as any).slug : opt.value;
+                        onChange(finalVal);
                         setIsOpen(false);
                       }}
                       className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
-                        String(value) === String(opt.value)
+                        (selectedOption && selectedOption === opt)
                           ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                           : theme === 'dark'
                             ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
                             : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
                       }`}
                     >
-                      <span className={`relative z-10 font-bold truncate ${String(value) === String(opt.value) ? 'font-black uppercase text-[10px] tracking-widest' : ''}`}>
+                      <span className={`relative z-10 font-bold truncate`}>
                         {opt.label}
                       </span>
-                      {String(value) === String(opt.value) ? (
+                      {(selectedOption && selectedOption === opt) ? (
                         <FrameworkIcons.Check size={14} className="relative z-10 flex-shrink-0" />
                       ) : (
                         <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100 flex-shrink-0" />
