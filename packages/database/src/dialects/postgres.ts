@@ -14,19 +14,19 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     this.drizzle = drizzle(this.pool);
   }
 
-  async connect() {
+  async connect(): Promise<void> {
     const client = await this.pool.connect();
     client.release();
   }
 
-  async execute(query: any) {
+  async execute(query: any): Promise<any> {
     if (typeof query === 'string') {
       return this.pool.query(query);
     }
     return this.drizzle.execute(query);
   }
 
-  private getDynamicTable(tableName: string, columns: string[]) {
+  private getDynamicTable(tableName: string, columns: string[]): any {
     const tableColumns: Record<string, any> = {};
     for (const col of columns) {
       tableColumns[col] = text(col);
@@ -34,7 +34,7 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     return pgTable(tableName, tableColumns);
   }
 
-  async find(tableOrName: any, options: any = {}) {
+  async find(tableOrName: any, options: any = {}): Promise<any[]> {
     const { limit, offset, orderBy, where, columns } = options;
     
     // If it's a string (dynamic table), use raw SQL to ensure all columns are retrieved
@@ -90,7 +90,6 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     let query = this.drizzle.select().from(tableOrName);
 
     if (where) {
-      // If where is a simple record, convert it. If it's already a Drizzle clause (SQL object), use it directly.
       if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
         const conditions = Object.entries(where).map(([k, v]) => eq(sql`${sql.identifier(k)}`, v as any));
         if (conditions.length > 0) {
@@ -119,12 +118,12 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     return await query;
   }
 
-  async findOne(tableOrName: any, where: any) {
+  async findOne(tableOrName: any, where: any): Promise<any | null> {
     const results = await this.find(tableOrName, { where, limit: 1 });
     return results[0] || null;
   }
 
-  async insert(tableOrName: any, data: any) {
+  async insert(tableOrName: any, data: any): Promise<any> {
     let table;
     if (typeof tableOrName === 'string') {
       const columns = Object.keys(data);
@@ -136,7 +135,7 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     return result;
   }
 
-  async update(tableOrName: any, where: any, data: any) {
+  async update(tableOrName: any, where: any, data: any): Promise<any> {
     let table;
     if (typeof tableOrName === 'string') {
       const allColumns = [...new Set([...Object.keys(where), ...Object.keys(data)])];
@@ -158,7 +157,7 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     return result;
   }
 
-  async delete(tableOrName: any, where: any) {
+  async delete(tableOrName: any, where: any): Promise<boolean> {
     let table;
     if (typeof tableOrName === 'string') {
       const columns = Object.keys(where);
@@ -175,7 +174,7 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     return result.length > 0;
   }
 
-  async count(tableName: string, where: any = {}) {
+  async count(tableName: string, where: any = {}): Promise<number> {
     let query = this.drizzle.select({ total: drizzleCount() }).from(sql`${sql.identifier(tableName)}`);
     
     if (where) {
@@ -190,6 +189,7 @@ export class PostgresDatabaseManager implements IDatabaseManager {
     }
 
     const [result] = await query;
-    return Number(result.total || 0);
+    return Number(result?.total || 0);
   }
 }
+
