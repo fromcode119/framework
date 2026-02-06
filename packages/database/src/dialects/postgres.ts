@@ -57,12 +57,14 @@ export class PostgresDatabaseManager implements IDatabaseManager {
       const values: any[] = [];
       
       if (where) {
-        Object.entries(where).forEach(([k, v], i) => {
-          conditions.push(`"${k}" = $${i + 1}`);
-          values.push(v);
-        });
-        if (conditions.length > 0) {
-          sqlQuery += ` WHERE ` + conditions.join(' AND ');
+        if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
+          Object.entries(where).forEach(([k, v]) => {
+            conditions.push(`"${k}" = $${values.length + 1}`);
+            values.push(v);
+          });
+          if (conditions.length > 0) {
+            sqlQuery += ` WHERE ` + conditions.join(' AND ');
+          }
         }
       }
       
@@ -70,9 +72,10 @@ export class PostgresDatabaseManager implements IDatabaseManager {
         sqlQuery += ` ORDER BY `;
         if (typeof orderBy === 'string') {
           sqlQuery += orderBy;
-        } else {
-          // Simplified order by for objects
-          sqlQuery += Object.entries(orderBy).map(([k, v]) => `"${k}" ${v}`).join(', ');
+        } else if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
+          sqlQuery += Object.entries(orderBy)
+            .map(([k, v]) => `"${k}" ${String(v).toUpperCase()}`)
+            .join(', ');
         }
       }
       
