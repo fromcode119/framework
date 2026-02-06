@@ -25,7 +25,8 @@ export function generatePreviewUrl(
   frontendUrl: string,
   record: any,
   collection: Collection,
-  permalinkStructure?: string
+  permalinkStructure?: string,
+  pluginSettings?: Record<string, any>
 ): string {
   if (!record || !frontendUrl) return '#';
   
@@ -34,6 +35,15 @@ export function generatePreviewUrl(
   // PRIORITY: If we have an explicit custom permalink override, use it directly
   if (record.customPermalink) {
     return `${cleanFrontendUrl}/${record.customPermalink.startsWith('/') ? record.customPermalink.substring(1) : record.customPermalink}?preview=1&draft=1`;
+  }
+
+  // Determine collection-specific prefix from plugin settings
+  let prefix = '';
+  if (pluginSettings && collection.admin?.previewPrefixSettingsKey) {
+    const prefixKey = collection.admin.previewPrefixSettingsKey;
+    if (pluginSettings[prefixKey]) {
+      prefix = String(pluginSettings[prefixKey]).replace(/^\//, '').replace(/\/$/, '');
+    }
   }
 
   // FALLBACK: Use the global structure logic
@@ -58,6 +68,11 @@ export function generatePreviewUrl(
   // Clean up double slashes and ensure leading slash
   path = path.replace(/\/+/g, '/');
   if (!path.startsWith('/')) path = '/' + path;
+
+  // Prepend the collection-specific prefix
+  if (prefix) {
+    path = `/${prefix}${path}`;
+  }
 
   return `${cleanFrontendUrl}${path}?preview=1&draft=1`;
 }

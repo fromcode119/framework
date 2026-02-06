@@ -103,5 +103,6 @@ export interface Collection {
       label: string;
       description?: string;
     }[];
+    previewPrefixSettingsKey?: string;
   };
 }
