@@ -37,6 +37,7 @@ interface FieldRendererProps {
   onChange: (value: any) => void;
   theme: 'light' | 'dark';
   collectionSlug: string;
+  pluginSettings?: Record<string, any>;
   disabled?: boolean;
   isNew?: boolean;
   errors?: string[];
@@ -148,6 +149,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   onChange,
   theme,
   collectionSlug,
+  pluginSettings,
   disabled = false,
   isNew = false,
   errors,
@@ -234,6 +236,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           onChange={onChange}
           theme={theme}
           collectionSlug={collectionSlug}
+          pluginSettings={pluginSettings}
         />
       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
         <Input 

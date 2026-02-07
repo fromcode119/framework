@@ -47,9 +47,9 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
   const fetchMedia = async () => {
     setLoading(true);
     try {
-      const query = search ? `?search=${encodeURIComponent(search)}` : '';
-      const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/media${query}`);
-      setItems(result.docs || []);
+      const query = search ? `?q=${encodeURIComponent(search)}` : '';
+      const result = await api.get(`${ENDPOINTS.MEDIA.BASE}${query}`);
+      setItems(Array.isArray(result) ? result : result.docs || []);
     } catch (error) {
       console.error('Failed to fetch media:', error);
     } finally {

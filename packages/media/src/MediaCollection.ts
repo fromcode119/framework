@@ -50,11 +50,6 @@ export const MediaCollection: Collection = {
       type: 'number',
     },
     {
-      name: 'url',
-      type: 'text',
-      required: true,
-    },
-    {
       name: 'path',
       type: 'text',
       required: true,

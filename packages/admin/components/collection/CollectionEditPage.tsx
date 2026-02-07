@@ -460,6 +460,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                         onChange={(val) => handleInputChange(field.name, val)}
                         theme={theme}
                         collectionSlug={resolvedSlug}
+                        pluginSettings={pluginSettings}
                         disabled={saving}
                         isNew={isNew}
                         slugWarning={field.name === 'slug' ? slugWarning : undefined}
@@ -504,6 +505,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                           onChange={(val) => handleInputChange(field.name, val)}
                           theme={theme}
                           collectionSlug={resolvedSlug}
+                          pluginSettings={pluginSettings}
                           disabled={saving}
                           isNew={isNew}
                         />
