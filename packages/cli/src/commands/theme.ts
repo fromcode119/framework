@@ -242,6 +242,17 @@ export const init = () => {
 
         console.log(chalk.blue(`\nPacking theme ${chalk.bold(slug)} v${version}...`));
         
+        // Ensure theme is built before packing
+        if (fs.existsSync(path.join(themePath, 'package.json'))) {
+           console.log(chalk.gray('Running theme build...'));
+           const { execSync } = require('child_process');
+           try {
+             execSync('npm run build', { cwd: themePath, stdio: 'inherit' });
+           } catch (e) {
+             console.warn(chalk.yellow('Warning: Build failed, packing as-is.'));
+           }
+        }
+
         const output = fs.createWriteStream(zipPath);
         const archive = archiver('zip', { zlib: { level: 9 } });
 

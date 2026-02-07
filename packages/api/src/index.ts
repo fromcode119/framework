@@ -632,7 +632,7 @@ async function bootstrap() {
     }
 
     // 2. Theme Manager Initialization
-    const themeManager = new ThemeManager((manager as any).db);
+    const themeManager = new ThemeManager((manager as any).db, manager);
     try {
       console.log('Step 2: Initializing ThemeManager...');
       await themeManager.init();

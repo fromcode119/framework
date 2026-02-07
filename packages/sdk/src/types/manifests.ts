@@ -14,6 +14,7 @@ export interface ThemeManifest {
   version: string;
   description?: string;
   author?: string;
+  updateUrl?: string; // External URL to check for updates
   layouts: {
     name: string;
     label: string;
@@ -59,6 +60,7 @@ export interface PluginManifest {
   license?: string;
   homepage?: string;
   repository?: string;
+  updateUrl?: string; // External URL to check for updates
   
   // Dependencies
   dependencies?: Record<string, string>; // pluginSlug -> semver

@@ -126,7 +126,13 @@ export class BackupService {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       
-      const isZip = url.toLowerCase().includes('.zip') || url.includes('/zip/');
+      const contentType = response.headers.get('content-type');
+      const isZip = url.toLowerCase().includes('.zip') || 
+                    url.includes('/zip/') || 
+                    response.url.toLowerCase().includes('.zip') ||
+                    contentType === 'application/zip' || 
+                    contentType === 'application/x-zip-compressed';
+
       const tempFile = path.join(this.getBackupsDir(), `download-${Date.now()}${isZip ? '.zip' : '.tar.gz'}`);
       fs.writeFileSync(tempFile, buffer);
 

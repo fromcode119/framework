@@ -507,7 +507,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                  </Card>
 
                  {/* Component Overrides */}
-                 themeDetail.overrides && themeDetail.overrides.length > 0 && (
+                 {themeDetail.overrides && themeDetail.overrides.length > 0 && (
                     <Card className={`border-0 p-10 rounded-[2.5rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
                         <div className="flex items-center gap-4 mb-10">
                             <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
