@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Upload, X, Check, Image as ImageIcon, File, Loader2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { ENDPOINTS } from '../../lib/constants';
@@ -32,11 +33,16 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchMedia();
   }, [search]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchMedia = async () => {
     setLoading(true);
@@ -82,9 +88,11 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
 
   const selectedItem = items.find(i => i.id === selectedId);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <RootFramework>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
         <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-[32px] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
           
           {/* Header */}
@@ -248,6 +256,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
           </div>
         </div>
       </div>
-    </RootFramework>
+    </RootFramework>,
+    document.body
   );
 };

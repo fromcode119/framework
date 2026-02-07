@@ -22,6 +22,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const { collections, settings } = usePlugins();
   const { theme } = useTheme();
   const [data, setData] = useState<any[]>([]);
+  const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
 
   const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   
@@ -45,6 +46,15 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const resolvedSlug = collection?.slug || slug;
+
+  // Load plugin settings if the collection belongs to a plugin
+  useEffect(() => {
+    if (collection?.pluginSlug) {
+      api.get(`${ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
+        .then(res => setPluginSettings(res || {}))
+        .catch(err => console.error('Failed to load plugin settings:', err));
+    }
+  }, [collection?.pluginSlug]);
 
   // Simple debounce
   useEffect(() => {
@@ -384,7 +394,13 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             actions={(row) => {
               const getRowPreviewUrl = () => {
                 if (!collection) return '#';
-                return generatePreviewUrl(settings?.frontend_url || '', row, collection, settings?.permalink_structure);
+                return generatePreviewUrl(
+                  settings?.frontend_url || '', 
+                  row, 
+                  collection, 
+                  settings?.permalink_structure,
+                  pluginSettings
+                );
               };
 
               return (

@@ -5,6 +5,8 @@ import { Input } from './Input';
 import { Button } from './Button';
 import { usePlugins } from '@fromcode/react';
 import { FrameworkIcons } from '@/lib/icons';
+import { Collection } from '@fromcode/core';
+import { getCollectionPrefix } from '@/lib/collection-utils';
 
 interface PermalinkInputProps {
   value: string;
@@ -13,9 +15,11 @@ interface PermalinkInputProps {
   disabled?: boolean;
   id?: string;
   slug?: string;
+  collection?: Collection;
+  pluginSettings?: Record<string, any>;
 }
 
-export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slug }: PermalinkInputProps) => {
+export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slug, collection, pluginSettings }: PermalinkInputProps) => {
   const { settings } = usePlugins();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -24,6 +28,9 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
                       'http://localhost:3002';
   const baseUrl = frontendUrl.endsWith('/') ? frontendUrl.slice(0, -1) : frontendUrl;
   const structure = settings?.permalink_structure || '/:slug';
+
+  // Get collection-specific prefix (e.g. /posts or /blog)
+  const collectionPrefix = collection ? getCollectionPrefix(collection, pluginSettings) : '';
 
   const isNumericOnly = structure.includes(':id') && !structure.includes(':slug');
   const isCustomMode = !!value;
@@ -63,20 +70,24 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
   let prefix = '/';
   let suffix = '';
 
-  if (isCustomMode) {
-    prefix = '/';
-    suffix = '';
-  } else if (isNumericOnly) {
+  if (isNumericOnly && !isCustomMode) {
     const parts = formattedStructure.split(':id');
-    prefix = parts[0] || '/';
+    prefix = (parts[0] || '/');
     suffix = parts[1] || '';
-  } else {
+  } else if (!isCustomMode) {
     const parts = formattedStructure.split('{SLUG}');
-    prefix = parts[0] || '/';
+    prefix = (parts[0] || '/');
     suffix = parts[1] || '';
   }
 
-  const fullPrefix = `${baseUrl}${prefix}`;
+  // Inject the collection prefix between the domain and the structure-based prefix
+  // e.g. domain.com + /posts + /2026/slug -> domain.com/posts/2026/slug
+  let finalPrefix = prefix;
+  if (collectionPrefix) {
+    finalPrefix = `/${collectionPrefix}${prefix}`.replace(/\/+/g, '/');
+  }
+
+  const fullDisplayPrefix = `${baseUrl}${finalPrefix}`;
 
   if (!isEditing) {
     return (
@@ -90,7 +101,7 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
       >
         <div className="flex items-center justify-between gap-4">
            <div className="flex flex-col min-w-0">
-              <span className="text-xs text-slate-400 font-bold truncate opacity-60 mb-1">{baseUrl}{prefix}</span>
+              <span className="text-xs text-slate-400 font-bold truncate opacity-60 mb-1">{fullDisplayPrefix}</span>
               <span className={`text-xs font-bold leading-tight truncate ${isCustomMode ? 'text-indigo-500' : 'text-slate-900 dark:text-white'}`}>
                 {displayValue}{suffix}
               </span>
@@ -132,7 +143,7 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
         <div className="p-4 rounded-2xl border bg-white dark:bg-slate-950 shadow-2xl transition-all border-indigo-500 ring-4 ring-indigo-500/10">
            <div className="flex items-center gap-1.5 mb-1.5 text-xs font-bold text-slate-400 opacity-60">
               <FrameworkIcons.Layout size={10} />
-              <span>{baseUrl}/</span>
+              <span>{baseUrl}{finalPrefix}</span>
            </div>
            <input 
               autoFocus

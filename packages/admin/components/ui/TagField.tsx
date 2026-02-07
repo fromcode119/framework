@@ -84,10 +84,24 @@ export const TagField = ({
                : `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}?${searchKey}=${encodeURIComponent(t)}&limit=1`;
              
              const res = await api.get(url);
-             const doc = apiOverrides?.search ? res : res.docs?.[0];
+             let doc = apiOverrides?.search ? res : res.docs?.[0];
              
+             // Fallback: If no document found by the source field (e.g. slug/username),
+             // and the tag value is a number, try fetching by ID directly
+             if (!doc && !apiOverrides?.search && !isNaN(Number(t)) && sourceCollection) {
+                try {
+                    const fallbackUrl = `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}/${t}`;
+                    const fallbackRes = await api.get(fallbackUrl);
+                    if (fallbackRes && (fallbackRes.id || fallbackRes._id)) {
+                        doc = fallbackRes;
+                    }
+                } catch (fallbackErr) {
+                    // Ignore fallback error
+                }
+             }
+
              if (doc) {
-                newLabels[t] = doc.name || doc.title || t;
+                newLabels[t] = doc.name || doc.title || doc.username || doc.label || t;
              } else {
                 newLabels[t] = t;
              }
@@ -101,7 +115,8 @@ export const TagField = ({
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (inputValue.length < 1) {
+      // If it's a relationship field (sourceCollection exists), we allow empty input to show initial suggestions
+      if (inputValue.length < 1 && !sourceCollection) {
         setSuggestions([]);
         return;
       }
@@ -113,14 +128,24 @@ export const TagField = ({
 
         if (!targetCollection && !apiOverrides?.suggest) return;
 
+        // Use source collection search for relationships, or suggestions for flat tags
+        const isRelationship = !!sourceCollection;
+        const q = encodeURIComponent(inputValue);
+
         const url = apiOverrides?.suggest
-          ? `${apiOverrides.suggest}?q=${inputValue}`
-          : `${ENDPOINTS.COLLECTIONS.BASE}/${targetCollection}/suggestions/${targetField}?q=${inputValue}`;
+          ? `${apiOverrides.suggest}?q=${q}`
+          : isRelationship
+            ? `${ENDPOINTS.COLLECTIONS.BASE}/${targetCollection}?limit=10${inputValue ? `&search=${q}` : ''}`
+            : `${ENDPOINTS.COLLECTIONS.BASE}/${targetCollection}/suggestions/${targetField}?q=${q}&limit=10`;
 
         const result = await api.get(url);
-        if (Array.isArray(result)) {
+        
+        // Handle both array responses and paginated responses
+        const docs = Array.isArray(result) ? result : (result.docs || []);
+        
+        if (docs.length > 0) {
            // Mapping result to TagOption with expanded fallback keys
-           const mapped: TagOption[] = result.map(item => {
+           const mapped: TagOption[] = docs.map(item => {
              if (typeof item === 'string') return { label: item, value: item };
              if (typeof item === 'object' && item !== null) {
                 // Ensure we pick up the correct keys from the API
@@ -149,13 +174,13 @@ export const TagField = ({
           setLabels(newLabels);
         }
       } catch (err) {
-        console.error("Failed to fetch suggestions");
+        console.error("Failed to fetch suggestions", err);
       }
     };
 
     const timer = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timer);
-  }, [inputValue, collectionSlug, fieldName, tags, sourceCollection, sourceField]);
+  }, [inputValue, collectionSlug, fieldName, tags, sourceCollection, sourceField, showSuggestions]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

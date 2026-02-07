@@ -43,14 +43,20 @@ export function generatePreviewUrl(
   if (!record || !frontendUrl) return '#';
   
   const cleanFrontendUrl = frontendUrl.replace(/\/$/, '');
-  
-  // PRIORITY: If we have an explicit custom permalink override, use it directly
-  if (record.customPermalink) {
-    return `${cleanFrontendUrl}/${record.customPermalink.startsWith('/') ? record.customPermalink.substring(1) : record.customPermalink}?preview=1&draft=1`;
-  }
-
-  // Determine collection-specific prefix from plugin settings
   const prefix = getCollectionPrefix(collection, pluginSettings);
+  
+  // PRIORITY: If we have an explicit custom permalink override, use it
+  if (record.customPermalink) {
+    let path = record.customPermalink.startsWith('/') ? record.customPermalink.substring(1) : record.customPermalink;
+    
+    // If we have a collection prefix, and the custom permalink doesn't already start with it, prepend it
+    // This ensures consistency between UI display and actual preview URL
+    if (prefix && !path.startsWith(prefix + '/')) {
+      path = `${prefix}/${path}`.replace(/\/+/g, '/');
+    }
+
+    return `${cleanFrontendUrl}/${path.startsWith('/') ? path.substring(1) : path}?preview=1&draft=1`;
+  }
 
   // FALLBACK: Use the global structure logic
   const idValue = record.id || 'new';

@@ -52,6 +52,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const { collections, settings } = usePlugins();
 
   const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
+  const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
   
   const isNew = id === 'new';
   const collection = resolveCollection(collections, pluginSlug, slug);
@@ -187,7 +188,13 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
 
   const getPreviewUrl = () => {
     if (!collection) return '#';
-    return generatePreviewUrl(settings?.frontend_url || '', formData, collection, settings?.permalink_structure);
+    return generatePreviewUrl(
+      settings?.frontend_url || '', 
+      formData, 
+      collection, 
+      settings?.permalink_structure,
+      pluginSettings
+    );
   };
 
   useEffect(() => {
@@ -213,6 +220,18 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
 
     fetchData();
   }, [resolvedSlug, id, isNew, collection]);
+
+  // Load plugin settings if the collection belongs to a plugin
+  useEffect(() => {
+    if (collection?.pluginSlug) {
+      api.get(`${ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
+        .then(res => {
+          const normalized = res?.settings?.settings ?? res?.settings ?? res ?? {};
+          setPluginSettings(normalized);
+        })
+        .catch(err => console.error('Failed to load plugin settings:', err));
+    }
+  }, [collection?.pluginSlug]);
 
   if (!collection) {
     return (
@@ -463,6 +482,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                       disabled={saving}
                       id={isNew ? undefined : id}
                       slug={formData.slug}
+                      collection={collection}
+                      pluginSettings={pluginSettings}
                     />
                     <p className="mt-3 text-[11px] text-slate-400 font-medium leading-relaxed">
                       Click the path component to override the automatically generated slug.

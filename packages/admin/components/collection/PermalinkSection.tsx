@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { PermalinkInput } from '@/components/ui/PermalinkInput';
+import { Collection } from '@fromcode/core';
 
 interface PermalinkSectionProps {
   value: string;
@@ -8,6 +9,8 @@ interface PermalinkSectionProps {
   id?: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  collection?: Collection;
+  pluginSettings?: Record<string, any>;
 }
 
 export const PermalinkSection: React.FC<PermalinkSectionProps> = ({
@@ -15,7 +18,9 @@ export const PermalinkSection: React.FC<PermalinkSectionProps> = ({
   slug,
   id,
   onChange,
-  disabled
+  disabled,
+  collection,
+  pluginSettings
 }) => {
   return (
     <Card title="Preview & Permalink">
@@ -25,6 +30,8 @@ export const PermalinkSection: React.FC<PermalinkSectionProps> = ({
           disabled={disabled}
           id={id}
           slug={slug}
+          collection={collection}
+          pluginSettings={pluginSettings}
         />
         <p className="mt-2 text-[12px] text-slate-400 font-bold uppercase tracking-tight opacity-50">
           Click the path component to override the automatically generated slug.
