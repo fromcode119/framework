@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation';
+"use client";
+
+import InstalledPluginsPage from './installed/page';
 
 export default function PluginsPage() {
-  redirect('/plugins/installed');
+  return <InstalledPluginsPage />;
 }

@@ -88,6 +88,19 @@ export class RESTController {
         delete cleanData[field.name];
       }
     });
+    const arrayFields = collection.fields.filter(f => f.type === 'array').map(f => f.name);
+    if (arrayFields.length > 0) {
+      arrayFields.forEach((name) => {
+        const value = cleanData[name];
+        if (typeof value === 'string') {
+          try {
+            cleanData[name] = JSON.parse(value);
+          } catch (err) {
+            // Leave as-is if parsing fails.
+          }
+        }
+      });
+    }
     return cleanData;
   }
 
@@ -114,6 +127,14 @@ export class RESTController {
         if (isJsonType) {
           if (value === '' || value === undefined || value === null) {
             value = null;
+          }
+        }
+
+        if (fieldConfig && fieldConfig.type === 'array') {
+          if (value === '' || value === undefined || value === null) {
+            value = null;
+          } else if (typeof value !== 'string') {
+            value = JSON.stringify(value);
           }
         }
 

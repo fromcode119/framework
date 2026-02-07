@@ -189,6 +189,8 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
               onChange={onChange}
               theme={theme}
               field={field}
+              collectionSlug={collectionSlug}
+              pluginSettings={pluginSettings}
             />
           );
         }
