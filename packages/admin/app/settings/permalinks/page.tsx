@@ -181,7 +181,7 @@ export default function PermalinksPage() {
                 </Button>
               </div>
               <p className="mt-4 text-[11px] text-slate-500 font-medium italic">
-                Note: Changing this structure will immediately affect all front-end routing for CMS-controlled content.
+                Note: Changing this structure will immediately affect all front-end routing for matched content.
               </p>
             </div>
           </div>

@@ -59,4 +59,48 @@ describe('generatePreviewUrl', () => {
     const url = generatePreviewUrl('http://test.com', record, mockCollection, structure);
     expect(url).toBe('http://test.com/2026/02/test-post?preview=1&draft=1');
   });
+
+  it('should include collection prefix from plugin settings', () => {
+    const record = { slug: 'test-post' };
+    const collectionWithPrefix: any = {
+      ...mockCollection,
+      admin: { previewPrefixSettingsKey: 'postsPrefix' }
+    };
+    const pluginSettings = { postsPrefix: 'blog' };
+    const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
+    expect(url).toBe('http://test.com/blog/test-post?preview=1&draft=1');
+  });
+
+  it('should handle nested collection prefixes', () => {
+    const record = { slug: 'test-post' };
+    const collectionWithPrefix: any = {
+      ...mockCollection,
+      admin: { previewPrefixSettingsKey: 'postsPrefix' }
+    };
+    const pluginSettings = { postsPrefix: '/news/weekly' };
+    const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
+    expect(url).toBe('http://test.com/news/weekly/test-post?preview=1&draft=1');
+  });
+
+  it('should prepend collection prefix to customPermalink if missing', () => {
+    const record = { customPermalink: 'my-custom-path' };
+    const collectionWithPrefix: any = {
+      ...mockCollection,
+      admin: { previewPrefixSettingsKey: 'postsPrefix' }
+    };
+    const pluginSettings = { postsPrefix: 'blog' };
+    const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
+    expect(url).toBe('http://test.com/blog/my-custom-path?preview=1&draft=1');
+  });
+
+  it('should not prepend collection prefix if it is already in customPermalink', () => {
+    const record = { customPermalink: 'blog/my-custom-path' };
+    const collectionWithPrefix: any = {
+      ...mockCollection,
+      admin: { previewPrefixSettingsKey: 'postsPrefix' }
+    };
+    const pluginSettings = { postsPrefix: 'blog' };
+    const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
+    expect(url).toBe('http://test.com/blog/my-custom-path?preview=1&draft=1');
+  });
 });

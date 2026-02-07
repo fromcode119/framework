@@ -18,6 +18,11 @@ export const TYPOGRAPHY = {
   SUBTEXT: 'text-[11px] font-bold uppercase tracking-tight opacity-60', // Exception for secondary metadata, but will use text-xs if requested
   DETAIL: 'text-xs font-bold leading-relaxed',
   NAV: 'text-[11px] font-black uppercase tracking-widest',
+
+  // Headings (admin UI)
+  HEADING: {
+    SUBTLE: 'text-xl font-black uppercase tracking-tight',
+  },
 };
 
 // Re-defining to strictly meet the >=12px requirement for all primary labels

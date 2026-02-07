@@ -8,6 +8,7 @@ import { ColorPicker } from '@/components/ui/ColorPicker';
 import { CodeEditor } from '@/components/ui/CodeEditor';
 import { ArrayField } from '@/components/ui/ArrayField';
 import { FrameworkIcons } from '@/lib/icons';
+import { MediaPicker } from '@/components/media/MediaPicker';
 
 interface CollectionField {
   name: string;
@@ -89,7 +90,55 @@ const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { fiel
       sourceField={targetField}
       hasMany={field.hasMany !== undefined ? field.hasMany : (field.admin?.component === 'TagField' || field.admin?.component === 'Tags')}
       allowCreate={sourceCollectionSlug !== 'users' && sourceCollectionSlug !== 'media'}
+      placeholder={sourceCollectionSlug ? 'Search and select…' : undefined}
     />
+  );
+};
+
+const MediaRelationField: React.FC<{ value: any; onChange: (val: any) => void; theme: string; }> = ({ value, onChange, theme }) => {
+  const [open, setOpen] = React.useState(false);
+  const [preview, setPreview] = React.useState<{ url?: string; filename?: string } | null>(null);
+
+  const handleSelect = (item: any) => {
+    onChange(item?.id || item?._id || item);
+    setPreview({ url: item.url, filename: item.filename });
+  };
+
+  return (
+    <div className="space-y-3">
+      {preview?.url ? (
+        <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          <img src={preview.url} alt={preview.filename || 'Selected media'} className="w-full h-full object-cover" />
+        </div>
+      ) : value ? (
+        <div className={`px-3 py-2 rounded-xl text-xs font-bold ${theme === 'dark' ? 'bg-slate-900/50 text-slate-200 border border-slate-800' : 'bg-slate-50 text-slate-600 border border-slate-200'}`}>
+          Selected media ID: {String(value)}
+        </div>
+      ) : (
+        <div className={`px-3 py-2 rounded-xl text-xs font-bold ${theme === 'dark' ? 'bg-slate-900/30 text-slate-500 border border-dashed border-slate-800' : 'bg-slate-50 text-slate-400 border border-dashed border-slate-200'}`}>
+          No media selected
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest shadow-sm hover:shadow-md active:scale-[0.99] transition-all"
+      >
+        <FrameworkIcons.Image size={14} />
+        Select Media
+      </button>
+
+      {open && (
+        <MediaPicker
+          onSelect={(item) => {
+            handleSelect(item);
+            setOpen(false);
+          }}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </div>
   );
 };
 
@@ -117,7 +166,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
       </label>
       
-      {field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
+      {field.type === 'relationship' && field.relationTo === 'media' ? (
+        <MediaRelationField value={value} onChange={onChange} theme={theme} />
+      ) : field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
         <TagFieldLocal 
           field={field} 
           value={value} 

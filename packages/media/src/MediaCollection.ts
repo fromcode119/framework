@@ -15,13 +15,19 @@ export const MediaCollection: Collection = {
       required: true,
     },
     {
+      name: 'originalName',
+      type: 'text',
+      required: true,
+    },
+    {
       name: 'mimeType',
       type: 'text',
       required: true,
     },
     {
-      name: 'filesize',
+      name: 'fileSize',
       type: 'number',
+      required: true,
     },
     {
       name: 'width',

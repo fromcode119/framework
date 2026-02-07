@@ -149,6 +149,7 @@ export const media = pgTable('media', {
   width: integer('width'),
   height: integer('height'),
   alt: text('alt'),
+  caption: text('caption'),
   path: text('path').notNull(),
   folderId: integer('folder_id').references(() => mediaFolders.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
