@@ -26,6 +26,7 @@ export default function MarketplaceDetailPage() {
   const [installedPlugin, setInstalledPlugin] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [installing, setInstalling] = useState(false);
   
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
@@ -71,13 +72,26 @@ export default function MarketplaceDetailPage() {
   const handleInstall = async (pluginSlug: string) => {
     if (!plugin) return;
     try {
+      setInstalling(true);
       notify('info', 'Installation Started', `Downloading and staging ${pluginSlug} v${plugin.version}...`);
       await api.post(`${ENDPOINTS.PLUGINS.INSTALL(pluginSlug)}?version=${plugin.version}`, {});
+      // Optimistically reflect the newly installed version so users do not need a manual refresh.
+      setInstalledPlugin((current: any) => ({
+        ...(current || {}),
+        slug: plugin.slug,
+        version: plugin.version,
+        state: current?.state || 'active'
+      }));
+      if (triggerRefresh) {
+        await Promise.resolve(triggerRefresh());
+      }
+      await fetchData();
       notify('success', 'Installation Complete', `Plugin "${pluginSlug}" v${plugin.version} installed successfully.`);
-      triggerRefresh();
-      fetchData();
     } catch (err: any) {
       notify('error', 'Installation Failed', err.message || 'Failed to install plugin.');
+    }
+    finally {
+      setInstalling(false);
     }
   };
 
@@ -315,14 +329,15 @@ export default function MarketplaceDetailPage() {
                   {!installedPlugin ? (
                     <button 
                       onClick={() => handleInstall(plugin.slug)}
-                      className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black transition-all shadow-xl active:scale-95 group ${
+                      disabled={installing}
+                      className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black transition-all shadow-xl active:scale-95 group disabled:opacity-60 disabled:cursor-not-allowed ${
                         theme === 'dark' 
                           ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20' 
                           : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/30'
                       }`}
                     >
                       <FrameworkIcons.Download size={20} strokeWidth={3} className="group-hover:translate-y-0.5 transition-transform" />
-                      <span className="uppercase tracking-[0.15em] text-xs">Install Extension</span>
+                      <span className="uppercase tracking-[0.15em] text-xs">{installing ? 'Installing…' : 'Install Extension'}</span>
                     </button>
                   ) : hasUpdate ? (
                     <div className={`p-1 rounded-[2rem] ${theme === 'dark' ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
@@ -335,9 +350,10 @@ export default function MarketplaceDetailPage() {
                         
                         <button 
                           onClick={() => handleInstall(plugin.slug)}
-                          className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-amber-500/20 active:scale-95"
+                          disabled={installing}
+                          className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-amber-500/20 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                          Apply Update Now
+                          {installing ? 'Updating…' : 'Apply Update Now'}
                         </button>
                       </div>
                     </div>

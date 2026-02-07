@@ -101,7 +101,7 @@ export const TagField = ({
              }
 
              if (doc) {
-                newLabels[t] = doc.name || doc.title || doc.username || doc.label || t;
+               newLabels[t] = doc.name || doc.title || doc.username || doc.label || t;
              } else {
                 newLabels[t] = t;
              }
@@ -149,15 +149,16 @@ export const TagField = ({
              if (typeof item === 'string') return { label: item, value: item };
              if (typeof item === 'object' && item !== null) {
                 // Ensure we pick up the correct keys from the API
-                const label = item.label || item.name || item.title || item.username || item.email || String(item.value || '');
+                const labelBase = item.label || item.name || item.title || item.username || item.email || String(item.value || '');
                 let val = item.value || item.slug || item.id || item.username || item.name || item.email;
+                const label = labelBase;
                 
                 // Final fallback: if we have a label but no value, use the label as the value
                 if (!val && label) val = label;
 
                 return {
-                    label: String(label || 'Unknown'),
-                    value: String(val || '')
+                  label: String(label || 'Unknown'),
+                  value: String(val || '')
                 };
              }
              return { label: String(item), value: String(item) };
