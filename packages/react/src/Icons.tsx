@@ -130,6 +130,7 @@ export const FrameworkIcons = {
   Webhook: Lucide.Webhook,
   Orbit: Lucide.Orbit,
   Image: Lucide.Image,
+  Info: Lucide.Info,
 
   // Shims for backward compatibility/bridge safety
   registerProvider: (name: string, provider: Record<string, any>) => {

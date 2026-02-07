@@ -12,6 +12,16 @@ export class ThemeController {
     res.json(this.manager.getThemes());
   }
 
+  async checkUpdate(req: Request, res: Response) {
+    const { slug } = req.params;
+    try {
+      const result = await this.manager.checkForUpdates(slug);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   async getMarketplace(req: Request, res: Response) {
     try {
       const themes = await this.manager.getMarketplaceThemes();
@@ -23,8 +33,18 @@ export class ThemeController {
 
   async install(req: Request, res: Response) {
     const { slug } = req.params;
-    const { version } = req.query;
+    const { version, url } = req.query;
+    const { url: bodyUrl } = req.body;
+
+    const downloadUrl = (url as string) || (bodyUrl as string);
+
     try {
+      if (downloadUrl) {
+         this.logger.info(`Installing theme "${slug}" from direct URL: ${downloadUrl}`);
+         await this.manager.installTheme({ slug, downloadUrl });
+         return res.json({ success: true, mode: 'direct' });
+      }
+
       const themes = await this.manager.getMarketplaceThemes();
       const pkg = themes.find((t: any) => 
         t.slug === slug && (!version || t.version === version)
@@ -32,7 +52,7 @@ export class ThemeController {
       if (!pkg) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
 
       await this.manager.installTheme(pkg);
-      res.json({ success: true });
+      res.json({ success: true, mode: 'marketplace' });
     } catch (err: any) {
       this.logger.error(`Failed to install theme ${slug}: ${err.message}`);
       res.status(500).json({ error: err.message });

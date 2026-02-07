@@ -12,12 +12,43 @@ export class ThemeManager {
   private logger = new Logger({ namespace: 'ThemeManager' });
   private client: MarketplaceClient;
 
-  constructor(private db: any) {
+  constructor(private db: any, private pluginManager?: any) {
     const rootDir = this.getProjectRoot();
     this.themesRoot = process.env.THEMES_DIR 
       ? path.resolve(process.env.THEMES_DIR)
       : path.resolve(rootDir, 'themes');
     this.client = new MarketplaceClient();
+  }
+
+  async checkForUpdates(slug: string): Promise<{ available: boolean; currentVersion: string; latestVersion?: string; updateUrl?: string }> {
+    const theme = this.themes.get(slug);
+    if (!theme) throw new Error(`Theme "${slug}" not found.`);
+
+    // 1. Check external updateUrl if defined in manifest
+    if ((theme as any).updateUrl) {
+      try {
+        const response = await fetch((theme as any).updateUrl.replace('.zip', '.json'));
+        if (response.ok) {
+           const data = await response.json();
+           if (data.version && data.version !== theme.version) {
+             return { available: true, currentVersion: theme.version, latestVersion: data.version, updateUrl: data.downloadUrl || (theme as any).updateUrl };
+           }
+        }
+      } catch (e) {
+        this.logger.warn(`Failed to check external update URL for ${slug}: ${(e as Error).message}`);
+      }
+    }
+
+    // 2. Fallback to Marketplace
+    try {
+      const marketplaceThemes = await this.getMarketplaceThemes();
+      const pkg = marketplaceThemes.find((t: any) => t.slug === slug);
+      if (pkg && pkg.version !== theme.version) {
+        return { available: true, currentVersion: theme.version, latestVersion: pkg.version, updateUrl: pkg.downloadUrl };
+      }
+    } catch (e) {}
+
+    return { available: false, currentVersion: theme.version };
   }
 
   private getProjectRoot(): string {
@@ -73,8 +104,29 @@ export class ThemeManager {
       // Move files
       this.moveDir(tempDir, targetDir);
       
-      // Reload themes
+      // Reload themes to read manifest
       await this.discoverThemes();
+      const installedManifest = this.themes.get(slug);
+
+      // Handle Plugin Dependencies
+      if (installedManifest?.dependencies && this.pluginManager) {
+        const depSlugs = Object.keys(installedManifest.dependencies);
+        this.logger.info(`Installing dependencies for theme "${slug}": ${depSlugs.join(', ')}`);
+        
+        for (const depSlug of depSlugs) {
+          try {
+            // Check if already installed and active
+            const existing = this.pluginManager.plugins.get(depSlug);
+            if (existing && existing.state === 'active') continue;
+
+            await this.pluginManager.installOrUpdateFromMarketplace(depSlug);
+            this.logger.info(`Dependency "${depSlug}" installed for theme "${slug}".`);
+          } catch (err: any) {
+            this.logger.error(`Failed to install dependency "${depSlug}" for theme "${slug}": ${err.message}`);
+          }
+        }
+      }
+
       this.logger.info(`Theme "${slug}" installed successfully.`);
     } finally {
       if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
