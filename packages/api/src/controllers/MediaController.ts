@@ -60,10 +60,49 @@ export class MediaController {
         conditions.push(targetFolder === null ? isNull(media.folderId) : eq(media.folderId, targetFolder));
       }
 
-      const files = await this.db.select()
-        .from(media)
-        .where(conditions.length > 0 ? (conditions.length === 1 ? conditions[0] : and(...conditions)) : undefined)
-        .orderBy(desc(media.createdAt));
+      const whereClause = conditions.length > 0 ? (conditions.length === 1 ? conditions[0] : and(...conditions)) : undefined;
+
+      const selectFilesFull = async () => {
+        return this.db.select({
+          id: media.id,
+          filename: media.filename,
+          originalName: media.originalName,
+          mimeType: media.mimeType,
+          fileSize: media.fileSize,
+          width: media.width,
+          height: media.height,
+          alt: media.alt,
+          caption: media.caption,
+          path: media.path,
+          folderId: media.folderId,
+          createdAt: media.createdAt,
+          updatedAt: media.updatedAt,
+        }).from(media)
+          .where(whereClause)
+          .orderBy(desc(media.createdAt));
+      };
+
+      const selectFilesBasic = async () => {
+        return this.db.select({
+          id: media.id,
+          filename: media.filename,
+          mimeType: media.mimeType,
+          fileSize: media.fileSize,
+          path: media.path,
+          createdAt: media.createdAt,
+        }).from(media)
+          .where(whereClause)
+          .orderBy(desc(media.createdAt));
+      };
+
+      let files: any[] = [];
+      try {
+        files = await selectFilesFull();
+      } catch (err) {
+        // Fallback for older schemas missing optional columns
+        this.logger.warn('Media list fallback to basic columns', err);
+        files = await selectFilesBasic();
+      }
 
       res.json(files.map((f: any) => ({
         ...f,

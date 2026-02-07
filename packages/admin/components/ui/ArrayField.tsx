@@ -13,9 +13,10 @@ interface ArrayFieldProps {
   onChange: (value: any[]) => void;
   theme?: string;
   collectionSlug: string;
+  pluginSettings?: Record<string, any>;
 }
 
-export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug }: ArrayFieldProps) => {
+export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug, pluginSettings }: ArrayFieldProps) => {
   const items = Array.isArray(value) ? value : [];
 
   const handleAddItem = () => {
@@ -32,9 +33,49 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug 
     onChange(newItems);
   };
 
+  const deriveNavigationUrl = (item: Record<string, any>) => {
+    const type = item.type;
+    if (type !== 'page' && type !== 'post') return;
+
+    const target = type === 'page' ? item.page : item.post;
+    if (!target) return;
+
+    const slug = typeof target === 'object'
+      ? target.slug || target.value || target.id || target
+      : target;
+
+    const prefix = type === 'page'
+      ? pluginSettings?.pagesPrefix ?? ''
+      : pluginSettings?.postsPrefix ?? '/posts';
+
+    const cleanedPrefix = (prefix || '').replace(/\/$/, '');
+    const composed = `${cleanedPrefix || ''}/${slug}`.replace(/\/+/g, '/');
+    const normalized = composed.startsWith('/') ? composed : `/${composed}`;
+    item.url = normalized;
+  };
+
   const handleUpdateItem = (index: number, name: string, val: any) => {
     const newItems = [...items];
-    newItems[index] = { ...newItems[index], [name]: val };
+    const nextItem = { ...newItems[index], [name]: val };
+
+    if (collectionSlug === 'navigation') {
+      if (name === 'type') {
+        if (val === 'page') {
+          nextItem.post = null;
+        } else if (val === 'post') {
+          nextItem.page = null;
+        } else if (val === 'url') {
+          nextItem.page = null;
+          nextItem.post = null;
+        }
+      }
+
+      if (nextItem.type === 'page' || nextItem.type === 'post') {
+        deriveNavigationUrl(nextItem);
+      }
+    }
+
+    newItems[index] = nextItem;
     onChange(newItems);
   };
 
