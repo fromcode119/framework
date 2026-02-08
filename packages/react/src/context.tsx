@@ -692,12 +692,12 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
       // --- Consolidated Runtime Import Map Generation ---
       const imports: Record<string, string> = {
-          "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, createElement, cloneElement, Children, Fragment, StrictMode, Suspense } = window.React;",
-          "react-dom": "data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal } = window.ReactDOM;",
+          "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = window.React;",
+          "react-dom": "data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = window.ReactDOM;",
           "react/jsx-runtime": "data:application/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsx, jsxs, Fragment };",
           "react/jsx-dev-runtime": "data:application/javascript,export const jsxDEV = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsxDEV, Fragment };",
           "lucide-react": "data:application/javascript," + encodeURIComponent(
-            Object.keys((window as any).Lucide || {}).map(key => `export const ${key} = window.Lucide.${key};`).join('\n') + `\nexport default window.Lucide;`
+            Object.keys((window as any).Lucide || (window as any).FrameworkIcons || {}).map(key => `export const ${key} = (window.Lucide || window.FrameworkIcons).${key};`).join('\n') + `\nexport default (window.Lucide || window.FrameworkIcons);`
           ),
           "@fromcode/react": "data:application/javascript," + encodeURIComponent(
             Object.keys(bridge).filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof)).map(key => `export const ${key} = window.Fromcode.${key};`).join('\n') + `\nexport default window.Fromcode;`

@@ -19,7 +19,7 @@ function SystemGate({ children }: { children: ReactNode }) {
   }
 
   // Use Theme's MainLayout if provided
-  const MainLayout = themeLayouts?.['MainLayout'];
+  const MainLayout = themeLayouts?.['MainLayout'] || themeLayouts?.['StandardLayout'] || themeLayouts?.['AppLayout'];
   const content = MainLayout ? (
     <MainLayout>{children}</MainLayout>
   ) : (

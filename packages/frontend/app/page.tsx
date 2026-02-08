@@ -1,9 +1,21 @@
 "use client";
 
 import React from 'react';
-import { Slot } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode/react';
 
 export default function Home() {
+  const { themeLayouts } = usePlugins();
+
+  console.log('[Frontend: Home] themeLayouts available:', Object.keys(themeLayouts || {}));
+
+  // If a theme has registered a Landing or Home layout, give it priority for the root page
+  const HomeLayout = themeLayouts?.LandingLayout || themeLayouts?.Home || themeLayouts?.Main || themeLayouts?.['StandardLayout'];
+
+  if (HomeLayout) {
+    console.log('[Frontend: Home] Rendering theme layout');
+    return <HomeLayout />;
+  }
+
   return (
     <div className="text-center space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
       <h1 className="text-4xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-6xl">

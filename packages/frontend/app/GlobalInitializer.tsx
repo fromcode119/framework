@@ -7,6 +7,11 @@ import { getIcon, useTranslation } from '@fromcode/react';
 
 export default function GlobalInitializer() {
     if (typeof window !== 'undefined') {
+        // Polyfill process for browser compatibility in themes/plugins
+        (window as any).process = {
+            env: { NODE_ENV: 'production' }
+        };
+
         (window as any).React = React;
         (window as any).ReactDOM = ReactDOM;
         (window as any).FrameworkIcons = FrameworkIcons;

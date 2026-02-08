@@ -39,9 +39,14 @@ export default function PluginLoader() {
       {theme && theme.ui?.entry && (
         <script key={`theme-js-${theme.slug}`} src={`${apiUrl}/themes/${theme.slug}/ui/${theme.ui.entry}`} type="module" async />
       )}
-      {(theme && (theme.ui?.css || theme.ui?.styles))?.map((style: string) => (
-        <link key={`theme-css-${theme.slug}-${style}`} rel="stylesheet" href={`${apiUrl}/themes/${theme.slug}/ui/${style}`} />
-      ))}
+      {(() => {
+        const css = theme?.ui?.css || theme?.ui?.styles;
+        if (!css) return null;
+        const cssArray = Array.isArray(css) ? css : [css];
+        return cssArray.map((style: string) => (
+          <link key={`theme-css-${theme.slug}-${style}`} rel="stylesheet" href={`${apiUrl}/themes/${theme.slug}/ui/${style}`} />
+        ));
+      })()}
     </>
   );
 }
