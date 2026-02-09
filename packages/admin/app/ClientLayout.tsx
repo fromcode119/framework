@@ -295,6 +295,11 @@ export default function ClientLayout({
     '@fromcode/admin/components': SharedComponents
   }), []);
 
+  // Expose components for the dynamic import map bridge
+  if (typeof window !== 'undefined') {
+    (window as any).FromcodeAdmin = SharedComponents;
+  }
+
   return (
     <PluginsProvider 
       apiUrl={API_BASE_URL} 

@@ -66,6 +66,16 @@ export class RuntimeService {
     this.registry.set('react/jsx-runtime', { type: 'lib', keys: ['jsx', 'jsxs', 'Fragment'] });
     this.registry.set('react/jsx-dev-runtime', { type: 'lib', keys: ['jsxDEV', 'Fragment'] });
     
+    // Core Admin Components (Available as a bridge for plugins)
+    this.registry.set('@fromcode/admin/components', {
+      type: 'lib',
+      keys: [
+        'MediaPicker', 'Button', 'Input', 'Select', 'TagField', 'Loader', 'Switch', 
+        'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 
+        'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext'
+      ]
+    });
+    
     // Auto-discover Lucide icons
     const lucideKeys = this.discoverModuleKeys('lucide-react', 'icon');
 
@@ -117,7 +127,8 @@ export class RuntimeService {
         'react': 'window.React',
         'react-dom': 'window.ReactDOM || window.ReactDom',
         'react-dom/client': 'window.ReactDOM || window.ReactDom',
-        '@fromcode/react': 'window.Fromcode'
+        '@fromcode/react': 'window.Fromcode',
+        '@fromcode/admin/components': 'window.FromcodeAdmin'
       }[name] || 'window.Fromcode';
 
       const exports = (config.keys || [])

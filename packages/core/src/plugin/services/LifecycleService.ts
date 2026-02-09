@@ -13,10 +13,12 @@ import { SchemaManager } from '../../database/schema-manager';
 import { validatePluginManifest as validateManifest } from '../../management/manifest';
 import { SandboxManager } from '../../security/SandboxManager';
 import { IntegrityService } from '../../security/IntegrityService';
+import { Seeder } from '../../database/Seeder';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'LifecycleService' });
   private sandbox?: SandboxManager;
+  private seeder: Seeder;
 
   constructor(
     private manager: PluginManagerInterface,
@@ -24,6 +26,7 @@ export class LifecycleService {
     private discovery: DiscoveryService,
     private schemaManager: SchemaManager
   ) {
+    this.seeder = new Seeder(manager.db);
     try {
       this.sandbox = new SandboxManager();
     } catch (e) {
@@ -132,6 +135,7 @@ export class LifecycleService {
       }
       
       await this.syncPluginCollections(slug);
+      await this.runSeeds(slug);
 
       plugin.state = 'active';
       const currentCaps = plugin.manifest.capabilities as string[] || [];
@@ -143,6 +147,21 @@ export class LifecycleService {
       plugin.state = 'error';
       await this.registry.writeLog('ERROR', `Initialization failed for "${slug}": ${error}`, slug);
       throw error;
+    }
+  }
+
+  private async runSeeds(slug: string) {
+    const plugin = this.manager.plugins.get(slug);
+    if (!plugin || !plugin.manifest.seeds || !plugin.path) return;
+
+    const seedPath = path.resolve(plugin.path, plugin.manifest.seeds);
+    if (fs.existsSync(seedPath)) {
+      this.logger.info(`Running seeds for plugin "${slug}"...`);
+      try {
+        await this.seeder.seed(seedPath);
+      } catch (err: any) {
+        this.logger.error(`Failed to run seeds for plugin "${slug}": ${err.message}`);
+      }
     }
   }
 

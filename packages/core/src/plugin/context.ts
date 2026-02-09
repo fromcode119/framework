@@ -99,6 +99,8 @@ export function createPluginContext(
   });
 
   // --- API Wrapper ---
+  const reservedPaths = ['config', 'settings', 'toggle', 'logs', 'sandbox', 'active', 'marketplace', 'install', 'upload'];
+
   const createApiWrapper = (method: string) => (path: string, ...handlers: any[]) => {
     if (!hasCapability('api')) {
       handleViolation('api');
@@ -113,10 +115,15 @@ export function createPluginContext(
       throw new Error(`Security Violation: Plugin "${plugin.manifest.slug}" attempted invalid API path: ${path}`);
     }
 
-    // Paths are simplified because they are mounted on pluginRouter under /api/v1/
-    // Example: path "/posts" becomes "/cms/posts" which matches /api/v1/cms/posts
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    const fullPath = `/${plugin.manifest.slug}${cleanPath}`;
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    const firstSegment = cleanPath.split('/')[0];
+
+    if (reservedPaths.includes(firstSegment)) {
+      throw new Error(`Conflict: Plugin "${plugin.manifest.slug}" attempted to register a reserved system path: /${firstSegment}. Please use a different path segment.`);
+    }
+
+    // Paths are simplified because they are mounted on pluginRouter under /api/v1/plugins/
+    const fullPath = `/${plugin.manifest.slug}/${cleanPath}`;
 
     if (!manager.apiHost) {
       pluginLogger.debug(`Registered ${method.toUpperCase()} ${fullPath} (MOCK)`);

@@ -21,7 +21,7 @@ import { setupMarketplaceRoutes } from './routes/marketplace';
 import { setupSystemRoutes } from './routes/system';
 import { setupMediaRoutes } from './routes/media';
 import { setupVersioningRoutes } from './routes/versioning';
-import { setupCollectionRoutes, setupLegacyCollectionRoutes } from './routes/collections';
+import { setupCollectionRoutes, setupBaseCollectionRoutes } from './routes/collections';
 import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
 import { generateOpenAPI } from './swagger';
 import { createCollectionMiddleware } from './middlewares/collection';
@@ -518,25 +518,17 @@ export class APIServer {
     // Add collections to versioned API
     vApi.use(setupCollectionRoutes(this.manager, this.restController));
 
-    // Mount isolated plugin router
-    vApi.use(this.pluginRouter);
-    
     // Mount versioned API
     this.app.use(vPrefix, vApi);
 
-    // Legacy support (to avoid breaking current admin)
-    this.app.use('/api/auth', setupAuthRoutes(this.manager, this.auth));
-    this.app.use('/api/plugins', setupPluginRoutes(this.manager, this.auth));
-    this.app.use('/api/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
-    this.app.use('/api/themes', setupThemeRoutes(this.themeManager, this.auth));
-    this.app.use('/api/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
-    this.app.use('/api/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
+    // Mount unversioned API (default)
+    this.app.use('/api', vApi);
     
     // Mount assets at root
     this.app.use('/plugins', setupPluginAssetRoutes(this.manager));
     this.app.use('/themes', setupThemeAssetRoutes(this.themeManager));
 
-    this.app.use(API_ROUTES.COLLECTIONS.BASE, setupLegacyCollectionRoutes(this.manager, this.restController));
+    this.app.use(API_ROUTES.COLLECTIONS.BASE, setupBaseCollectionRoutes(this.manager, this.restController));
   }
 
   private registerCoreCollection(slug: string, collection: any) {
