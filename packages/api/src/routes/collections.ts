@@ -22,7 +22,7 @@ export function setupCollectionRoutes(manager: PluginManager, restController: RE
   return router;
 }
 
-export function setupLegacyCollectionRoutes(manager: PluginManager, restController: RESTController) {
+export function setupBaseCollectionRoutes(manager: PluginManager, restController: RESTController) {
   const router = express.Router();
   const collectionMiddleware = createCollectionMiddleware(manager);
 

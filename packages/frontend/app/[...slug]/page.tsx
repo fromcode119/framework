@@ -16,7 +16,9 @@ export default function DynamicContentPage() {
   useEffect(() => {
     async function fetchContent() {
       try {
+        console.log(`[Frontend] Fetching content for slug: ${slug}`);
         const result = await resolveContent(slug);
+        console.log(`[Frontend] Resolution result:`, result);
         if (result && result.doc) {
           setContent(result.doc);
         }

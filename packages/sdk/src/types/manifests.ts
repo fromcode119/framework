@@ -23,6 +23,7 @@ export interface ThemeManifest {
   slots?: string[]; // Defined slot names this theme provides
   overrides?: { name: string; component: string; priority?: number }[]; // Component overrides
   dependencies?: Record<string, string>; // Plugins required by this theme
+  seeds?: string; // Path to seed file
   variables?: Record<string, string>;
   variableSchema?: Record<string, {
     label: string;

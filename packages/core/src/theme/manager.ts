@@ -4,6 +4,7 @@ import fs from 'fs';
 import { Logger } from '../logging/logger';
 import { BackupService } from '../management/backup';
 import { MarketplaceClient } from '@fromcode/marketplace-client';
+import { Seeder } from '../database/Seeder';
 
 export class ThemeManager {
   private activeTheme: string | null = null;
@@ -11,6 +12,7 @@ export class ThemeManager {
   private themesRoot: string;
   private logger = new Logger({ namespace: 'ThemeManager' });
   private client: MarketplaceClient;
+  private seeder: Seeder;
 
   constructor(private db: any, private pluginManager?: any) {
     const rootDir = this.getProjectRoot();
@@ -18,6 +20,7 @@ export class ThemeManager {
       ? path.resolve(process.env.THEMES_DIR)
       : path.resolve(rootDir, 'themes');
     this.client = new MarketplaceClient();
+    this.seeder = new Seeder(db);
   }
 
   async checkForUpdates(slug: string): Promise<{ available: boolean; currentVersion: string; latestVersion?: string; updateUrl?: string }> {
@@ -108,28 +111,59 @@ export class ThemeManager {
       await this.discoverThemes();
       const installedManifest = this.themes.get(slug);
 
-      // Handle Plugin Dependencies
-      if (installedManifest?.dependencies && this.pluginManager) {
-        const depSlugs = Object.keys(installedManifest.dependencies);
-        this.logger.info(`Installing dependencies for theme "${slug}": ${depSlugs.join(', ')}`);
-        
-        for (const depSlug of depSlugs) {
-          try {
-            // Check if already installed and active
-            const existing = this.pluginManager.plugins.get(depSlug);
-            if (existing && existing.state === 'active') continue;
-
-            await this.pluginManager.installOrUpdateFromMarketplace(depSlug);
-            this.logger.info(`Dependency "${depSlug}" installed for theme "${slug}".`);
-          } catch (err: any) {
-            this.logger.error(`Failed to install dependency "${depSlug}" for theme "${slug}": ${err.message}`);
-          }
-        }
+      if (installedManifest) {
+        await this.installDependencies(installedManifest);
       }
 
       this.logger.info(`Theme "${slug}" installed successfully.`);
     } finally {
       if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+
+  private async installDependencies(manifest: ThemeManifest) {
+    if (manifest.dependencies && this.pluginManager) {
+      const depSlugs = Object.keys(manifest.dependencies);
+      this.logger.info(`Checking dependencies for theme "${manifest.slug}": ${depSlugs.join(', ')}`);
+      
+      for (const depSlug of depSlugs) {
+        try {
+          // Check if already installed
+          const existing = this.pluginManager.plugins.get(depSlug);
+          if (existing) {
+            if (existing.state !== 'active') {
+              this.logger.info(`Activating existing dependency "${depSlug}" for theme "${manifest.slug}"...`);
+              await this.pluginManager.enable(depSlug);
+            }
+            continue;
+          }
+
+          this.logger.info(`Installing dependency "${depSlug}" from marketplace for theme "${manifest.slug}"...`);
+          await this.pluginManager.installOrUpdateFromMarketplace(depSlug);
+          this.logger.info(`Dependency "${depSlug}" installed for theme "${manifest.slug}".`);
+        } catch (err: any) {
+          this.logger.error(`Failed to install dependency "${depSlug}" for theme "${manifest.slug}": ${err.message}`);
+        }
+      }
+    }
+  }
+
+  private async runSeeds(manifest: ThemeManifest) {
+    const seeds = (manifest as any).seeds;
+    if (!seeds) return;
+
+    const themePath = path.join(this.themesRoot, manifest.slug);
+    const seedPath = path.resolve(themePath, seeds);
+
+    if (fs.existsSync(seedPath)) {
+      this.logger.info(`Executing seeds for theme "${manifest.slug}" from ${seedPath}...`);
+      try {
+        await this.seeder.seed(seedPath);
+      } catch (err: any) {
+        this.logger.error(`Failed to execute seeds for theme "${manifest.slug}": ${err.message}`);
+      }
+    } else {
+      this.logger.warn(`Seed file specified in manifest not found: ${seedPath}`);
     }
   }
 
@@ -187,7 +221,8 @@ export class ThemeManager {
 
   async activateTheme(slug: string) {
     await this.discoverThemes(); // Ensure we have latest themes from disk
-    if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
+    const manifest = this.themes.get(slug);
+    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
     
     // Deactivate previous
     await this.db.update('_system_themes', { state: 'active' }, { state: 'inactive' });
@@ -201,7 +236,13 @@ export class ThemeManager {
     }
     
     this.activeTheme = slug;
-    this.logger.info(`Theme "${slug}" activated.`);
+    this.logger.info(`Theme "${slug}" activated. Processing dependencies and seeds...`);
+
+    // Process Dependencies and Seeds
+    await this.installDependencies(manifest);
+    await this.runSeeds(manifest);
+
+    this.logger.info(`Theme "${slug}" activation complete.`);
   }
 
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {

@@ -701,38 +701,45 @@ export class SystemController {
 
     // 1. PRIORITY SEARCH: Check for exact "Custom Permalink" override first
     for (const collection of collections) {
-      if (collection.system) continue;
+      if (collection.slug.startsWith('_') || collection.system) continue;
       const hasCustomField = collection.fields.some(f => f.name === 'customPermalink');
-      if (!hasCustomField) continue;
+      const hasSlugField = collection.fields.some(f => f.name === 'slug');
+      if (!hasCustomField && !hasSlugField) continue;
 
       try {
-        const table = (this.restController as any).getVirtualTable(collection);
-        
-        // Use Drizzle object for find to ensure correct column name mapping (camelCase -> snake_case)
-        const results = await (this.manager as any).db.find(table, { 
-          where: or(
-            eq(table.customPermalink, normalizedSlug),
-            eq(table.customPermalink, `/${normalizedSlug}`)
-          ),
-          limit: 1
-        });
-        
-        let doc = results && results.length > 0 ? results[0] : null;
-        
-        if (doc) {
-          // Visibility check
-          const hasStatus = collection.fields.some(f => f.name === 'status');
-          const isPublished = doc.status === 'published';
+        // Try searching by customPermalink first
+        if (hasCustomField) {
+          const results = await this.restController.find(collection, {
+            query: { customPermalink: normalizedSlug, limit: 1, preview: effectivePreview ? '1' : '0' },
+            user: (req as any).user
+          } as any);
           
-          if (hasStatus && !isPublished && !effectivePreview) {
-            continue;
+          if (results && results.docs && results.docs.length > 0) {
+            console.log(`[SystemController] Match found via customPermalink in ${collection.slug}`);
+            return res.json({
+              type: collection.shortSlug || collection.slug,
+              plugin: (collection as any).pluginSlug,
+              doc: results.docs[0]
+            });
           }
+        }
 
-          return res.json({
-            type: collection.shortSlug || collection.slug,
-            plugin: collection.pluginSlug,
-            doc
-          });
+        // If it's a single segment slug (e.g. /my-post), try direct slug match 
+        // to support top-level dynamic routing if desired
+        if (hasSlugField && pathSegments.length === 1 && !permalinkStructure.includes(':slug')) {
+          const results = await this.restController.find(collection, {
+            query: { slug: normalizedSlug, limit: 1, preview: effectivePreview ? '1' : '0' },
+            user: (req as any).user
+          } as any);
+
+          if (results && results.docs && results.docs.length > 0) {
+            console.log(`[SystemController] Match found via top-level slug in ${collection.slug}`);
+            return res.json({
+              type: collection.shortSlug || collection.slug,
+              plugin: (collection as any).pluginSlug,
+              doc: results.docs[0]
+            });
+          }
         }
       } catch (e: any) {
         console.error(`[SystemController] Priority search error for ${collection.slug}:`, e);
@@ -740,23 +747,29 @@ export class SystemController {
     }
 
     // 2. STRUCTURE SEARCH: Search based on the global permalink structure
+    // We only perform this if the URL doesn't look like a direct collection access (e.g. /posts/my-post)
+    // Wait, the user is requesting /posts/industrial-excellence.
+    // If permalinkStructure is /:slug, this matches.
+    
     for (const collection of collections) {
-      if (collection.system) continue;
-      
-      // EXCLUDE VERSIONS COLLECTION: This is for internal governance, not public routing
-      if (collection.slug === 'versions' || (collection as any).shortSlug === 'versions') continue;
+      if (collection.slug.startsWith('_') || collection.system) continue;
       
       const hasSlugField = collection.fields.some(f => f.name === 'slug');
       if (!hasSlugField && !permalinkStructure.includes(':id')) continue;
 
       try {
-        const table = (this.restController as any).getVirtualTable(collection);
-        
         let searchId: number | null = null;
         let searchSlug: string | null = null;
 
         // A. Handle matching path segments to structure variables (e.g. /:slug/:id -> /post-name/123)
-        if (pathSegments.length === structureSegments.length) {
+        // Check if the current collection matches the prefix IF THERE IS ONE
+        const collectionPrefix = (collection as any).shortSlug || collection.slug;
+        
+        if (pathSegments.length > 0 && pathSegments[0] === collectionPrefix) {
+           // This is /posts/my-post, and we are looking at the 'posts' collection
+           // In this case, the rest of pathSegments is the slug
+           searchSlug = pathSegments.slice(1).join('/');
+        } else if (pathSegments.length === structureSegments.length) {
           structureSegments.forEach((seg, idx) => {
             if (seg === ':id') {
               const val = parseInt(pathSegments[idx]);
@@ -767,60 +780,32 @@ export class SystemController {
           });
         }
 
-        // B. Fallback: If no exact mapping or count mismatch, use the last segment as primary identifier
-        // This handles cases like /:year/:month/:slug when the URL is /2026/01/post-name
-        if (!searchId && !searchSlug && pathSegments.length > 0) {
-          const lastSegment = pathSegments[pathSegments.length - 1];
-          if (permalinkStructure.includes(':id') && !permalinkStructure.includes(':slug')) {
-            const val = parseInt(lastSegment);
-            if (!isNaN(val)) searchId = val;
-          } else {
-            searchSlug = lastSegment;
-          }
-        }
+        // Execute search
+        if (searchId || searchSlug) {
+           const query: any = { limit: 1, preview: effectivePreview ? '1' : '0' };
+           if (searchId) query.id = searchId;
+           if (searchSlug) query.slug = searchSlug;
 
-        let whereClause: any;
-        if (searchId !== null) {
-          whereClause = eq(table.id, searchId);
-        } else if (searchSlug !== null) {
-          // If the slug contains slashes (nested content), try matching the whole normalizedSlug first
-          if (normalizedSlug.includes('/')) {
-            whereClause = or(
-              eq(table.slug, searchSlug),
-              eq(table.slug, normalizedSlug)
-            );
-          } else {
-            whereClause = eq(table.slug, searchSlug);
-          }
-        } else {
-          continue;
-        }
+           const result = await this.restController.find(collection, {
+             query,
+             user: (req as any).user
+           } as any);
 
-        const results = await (this.manager as any).db.find(table, { 
-          where: whereClause,
-          limit: 1
-        });
-
-        const doc = results && results.length > 0 ? results[0] : null;
-
-        if (doc) {
-          // Visibility check
-          const hasStatus = collection.fields.some(f => f.name === 'status');
-          if (hasStatus && doc.status !== 'published' && !effectivePreview) {
-            continue;
-          }
-
-          return res.json({
-            type: collection.shortSlug || collection.slug,
-            plugin: collection.pluginSlug,
-            doc
-          });
+           if (result && result.docs && result.docs.length > 0) {
+              console.log(`[SystemController] Match found via structure in ${collection.slug}: ${result.docs[0].title || result.docs[0].slug}`);
+              return res.json({
+                type: (collection as any).shortSlug || collection.slug,
+                plugin: (collection as any).pluginSlug,
+                doc: result.docs[0]
+              });
+           }
         }
       } catch (e: any) {
-        continue;
+        console.error(`[SystemController] Structure search error for ${collection.slug}:`, e.message);
       }
     }
 
     res.status(404).json({ error: 'Not found' });
   }
 }
+

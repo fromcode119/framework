@@ -568,6 +568,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     if (!(window as any).Fromcode) {
       (window as any).Fromcode = {};
     }
+
+    if (!(window as any).FromcodeAdmin) {
+      (window as any).FromcodeAdmin = {};
+    }
     
     const fc = (window as any).Fromcode;
     fc.React = React;
@@ -703,7 +707,8 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
             Object.keys(bridge).filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof)).map(key => `export const ${key} = window.Fromcode.${key};`).join('\n') + `\nexport default window.Fromcode;`
           ),
           "@fromcode/admin/components": "data:application/javascript," + encodeURIComponent(
-            Object.keys((window as any).FromcodeAdmin || {}).map(key => `export const ${key} = window.FromcodeAdmin.${key};`).join('\n') + `\nexport default window.FromcodeAdmin;`
+            ['MediaPicker', 'Button', 'Input', 'Select', 'TagField', 'Loader', 'Switch', 'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext']
+              .map(key => `export const ${key} = window.FromcodeAdmin ? window.FromcodeAdmin.${key} : undefined;`).join('\n') + `\nexport default window.FromcodeAdmin;`
           )
       };
 
