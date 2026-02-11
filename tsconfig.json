@@ -19,6 +19,7 @@
       "@fromcode/email": ["packages/email/src"],
       "@fromcode/cache": ["packages/cache/src"],
       "@fromcode/scheduler": ["packages/scheduler/src"],
+      "@fromcode/plugins": ["packages/plugins/src"],
       "@fromcode/marketplace-client": ["packages/marketplace-client/src"]
     },
     "composite": true,
@@ -39,6 +40,7 @@
     { "path": "./packages/email" },
     { "path": "./packages/cache" },
     { "path": "./packages/scheduler" },
+    { "path": "./packages/plugins" },
     { "path": "./packages/marketplace-client" }
   ],
   "exclude": ["node_modules", "dist", "packages/admin", "packages/frontend"]

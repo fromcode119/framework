@@ -30,6 +30,7 @@ import { MiddlewareManager } from './services/MiddlewareManager';
 import { WorkflowService } from './services/WorkflowService';
 import { WebhookService } from '../webhook/WebhookService';
 import { WebhooksCollection } from '../collections/Webhooks';
+import { registry } from '@fromcode/plugins';
 
 export class PluginManager implements PluginManagerInterface {
   public audit: AuditManager;
@@ -80,6 +81,9 @@ export class PluginManager implements PluginManagerInterface {
     this.scheduler = new SchedulerService(this.db, { queueManager: this.jobs });
     this.workflow = new WorkflowService(this.db, this.hooks);
     this.webhooks = new WebhookService(this.db, this.hooks);
+
+    // Initialize Global Plugin Registry for cohesion
+    registry.setDatabase(this.db);
 
     this.pluginsRoot = process.env.PLUGINS_DIR 
       ? path.resolve(process.env.PLUGINS_DIR)
