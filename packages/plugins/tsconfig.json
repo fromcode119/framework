@@ -7,13 +7,7 @@
   },
   "include": ["src/**/*"],
   "references": [
-    { "path": "../sdk" },
     { "path": "../database" },
-    { "path": "../media" },
-    { "path": "../email" },
-    { "path": "../cache" },
-    { "path": "../scheduler" },
-    { "path": "../plugins" },
-    { "path": "../marketplace-client" }
+    { "path": "../sdk" }
   ]
 }

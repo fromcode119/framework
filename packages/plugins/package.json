@@ -1,0 +1,27 @@
+{
+  "name": "@fromcode/plugins",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "dependencies": {
+    "@fromcode/database": "*",
+    "@fromcode/sdk": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

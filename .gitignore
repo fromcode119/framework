@@ -37,11 +37,11 @@ yarn-error.log*
 *.log
 
 # Project specific
-plugins/
+/plugins/
 !plugins/.gitkeep
 !plugins/[slug]
 !plugins/marketplace
-themes/
+/themes/
 !themes/.gitkeep
 !themes/installed
 !themes/installed/*

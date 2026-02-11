@@ -21,6 +21,7 @@
     "@fromcode/cache": "*",
     "@fromcode/database": "*",
     "@fromcode/email": "*",
+    "@fromcode/plugins": "*",
     "@fromcode/marketplace-client": "^0.1.0",
     "@fromcode/media": "*",
     "@fromcode/scheduler": "*",

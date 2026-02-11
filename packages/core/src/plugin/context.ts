@@ -11,6 +11,7 @@ import { sql, count, eq, and, or } from 'drizzle-orm';
 import { PluginPermissionsService } from '../security/permissions';
 import { RateLimiter } from '../security/rate-limiter';
 import { MiddlewareManager } from './services/MiddlewareManager';
+import { registry } from '@fromcode/plugins';
 
 // Shared rate limiters for plugins
 const dbLimiter = new RateLimiter(5000, 60000); // 5000 queries per minute
@@ -517,6 +518,9 @@ export function createPluginContext(
             pluginSlug: plugin.manifest.slug
           });
         }
+
+        // COHESION: Register entity in the global plugin registry
+        registry.registerEntity(plugin.manifest.slug, shortSlug, prefixedSlug);
 
         // Emit hook to allow other plugins to augment this collection
         manager.emit('collection:registered', { 

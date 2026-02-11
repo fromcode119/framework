@@ -1,40 +1,13 @@
 
 export * from './schema';
 export * from './dynamic-schema';
+export * from './types';
+export * from './resolver';
 export { sql, and, or, eq, ne, gt, gte, lt, lte, inArray, notInArray, isNull, isNotNull, exists, notExists, between, notBetween, like, notLike, ilike, notIlike, not, asc, desc, count, avg, sum, min, max, relations, extractTablesRelationalConfig } from 'drizzle-orm';
 export * from 'drizzle-orm/pg-core';
 
-/**
- * Interface representing a database manager that provides access to Drizzle ORM
- * and high-level CRUD operations.
- */
-export interface IDatabaseManager {
-  readonly drizzle: any; 
-  readonly dialect: string;
-  execute(query: any): Promise<any>;
-  connect(): Promise<void>;
-  
-  // High-level agnostic API
-  find(tableOrName: any, options?: { 
-    where?: any; 
-    limit?: number; 
-    offset?: number; 
-    orderBy?: any;
-    columns?: Record<string, boolean>;
-  }): Promise<any[]>;
-  
-  findOne(tableOrName: any, where: any): Promise<any | null>;
-  
-  insert(tableOrName: any, data: any): Promise<any>;
-  
-  update(tableOrName: any, where: any, data: any): Promise<any>;
-  
-  delete(tableOrName: any, where: any): Promise<boolean>;
-  
-  count(tableName: string, where?: any): Promise<number>;
-}
-
-export type DatabaseDriverCreator = (connection: string) => IDatabaseManager;
+import { IDatabaseManager, DatabaseDriverCreator } from './types';
+import { TableResolver } from './resolver';
 
 /**
  * Universal Database Factory.
@@ -72,7 +45,25 @@ export class DatabaseFactory {
       throw new Error(`Unsupported database dialect for connection string: ${connection} (Protocol: ${protocol})`);
     }
 
-    return creator(connection);
+    const manager = creator(connection);
+
+    // Return a proxy that handles @plugin/table resolution
+    return new Proxy(manager, {
+      get: (target, prop) => {
+        const value = (target as any)[prop];
+        if (typeof value === 'function') {
+          return (...args: any[]) => {
+            // Intercept methods that take a table name as first argument
+            const tableMethods = ['find', 'findOne', 'insert', 'update', 'delete', 'count', 'syncCollection'];
+            if (typeof prop === 'string' && tableMethods.includes(prop) && args.length > 0) {
+              args[0] = TableResolver.resolve(args[0]);
+            }
+            return value.apply(target, args);
+          };
+        }
+        return value;
+      }
+    });
   }
 
   private static registerDefaults() {
