@@ -186,6 +186,7 @@ export class APIServer {
       const defaults = [
         { key: 'platform_name', value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
         { key: 'frontend_url', value: 'http://frontend.framework.local', description: 'The primary URL for your frontend application.', group: 'General' },
+        { key: 'routing_home_target', value: 'auto', description: 'Homepage route target. Examples: auto, layout:<name>, collection:<slug>:<id>', group: 'Routing' },
         { key: 'permalink_structure', value: '/:slug', description: 'The default URL structure for your content (e.g. /:year/:month/:slug)', group: 'General' },
         { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'System' },
         { key: 'rate_limit_max', value: '100', description: 'Maximum requests per window per IP', group: 'Security' },
@@ -698,4 +699,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-

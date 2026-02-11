@@ -41,7 +41,6 @@ export default function GeneralSettingsPage() {
     platform_name: '',
     email_notifications: true,
     frontend_url: '',
-    permalink_structure: '/:slug',
     timezone: 'UTC'
   });
 
@@ -165,21 +164,7 @@ export default function GeneralSettingsPage() {
           </SettingRow>
         </Card>
 
-        <Card title="SEO & Routing">
-           <SettingRow 
-            theme={theme}
-            icon={FrameworkIcons.LayoutTemplate} 
-            title="Permalink Structure" 
-            description="Global pattern for URL generation. Use :year, :month, :day, :id, :slug."
-          >
-            <Input 
-              value={settings.permalink_structure}
-              onChange={(e) => setSettings(prev => ({ ...prev, permalink_structure: e.target.value }))}
-              className="w-full md:w-64 font-mono font-bold text-xs"
-              placeholder="/:year/:month/:slug"
-            />
-          </SettingRow>
-
+        <Card title="Localization">
           <SettingRow 
             theme={theme}
             icon={FrameworkIcons.Clock} 

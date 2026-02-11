@@ -12,6 +12,7 @@ export function setupThemeRoutes(manager: ThemeManager, auth: AuthManager) {
   router.get('/:slug/check-update', auth.guard(['admin']), (req, res) => controller.checkUpdate(req, res));
   router.get('/:slug/activate', auth.guard(['admin']), (req, res) => controller.activate(req, res));
   router.post('/:slug/activate', auth.guard(['admin']), (req, res) => controller.activate(req, res));
+  router.post('/:slug/reset', auth.guard(['admin']), (req, res) => controller.reset(req, res));
   router.post('/:slug/install', auth.guard(['admin']), (req, res) => controller.install(req, res));
   router.get('/:slug/config', auth.guard(['admin']), (req, res) => controller.getConfig(req, res));
   router.post('/:slug/config', auth.guard(['admin']), (req, res) => controller.saveConfig(req, res));

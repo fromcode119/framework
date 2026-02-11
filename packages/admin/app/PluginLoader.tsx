@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePlugins } from '@fromcode/react';
 import { api } from '@/lib/api';
@@ -42,6 +42,7 @@ export default function PluginLoader() {
   const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion, triggerRefresh } = pluginsContext;
   const { user, isLoading: isAuthLoading } = useAuth();
   const [loaded, setLoaded] = useState(false);
+  const bootVersionRef = useRef<number>(Date.now());
 
   // Hot Module Replacement Listener
   useEffect(() => {
@@ -126,8 +127,10 @@ export default function PluginLoader() {
             // Load UI entry points if defined (Phase 4)
             const entryUrl = plugin.ui?.entryUrl;
             if (entryUrl) {
-              const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
+              const cacheToken = refreshVersion > 0 ? refreshVersion : bootVersionRef.current;
+              const cacheBreaker = process.env.NODE_ENV === 'development' ? `?v=${cacheToken}` : (refreshVersion > 0 ? `?v=${refreshVersion}` : '');
               const src = `${API_BASE_URL}${entryUrl}${cacheBreaker}`;
+              console.debug(`[Admin] Loading plugin UI from: ${src}`);
               
               // 1. Module Preload (only if it doesn't exist)
               if (!document.querySelector(`link[href="${src}"][rel="modulepreload"]`)) {
@@ -179,8 +182,10 @@ export default function PluginLoader() {
             // Load CSS if defined
             if (plugin.ui?.cssUrls) {
               plugin.ui.cssUrls.forEach((cssUrl, index) => {
-                const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
+                const cacheToken = refreshVersion > 0 ? refreshVersion : bootVersionRef.current;
+                const cacheBreaker = process.env.NODE_ENV === 'development' ? `?v=${cacheToken}` : (refreshVersion > 0 ? `?v=${refreshVersion}` : '');
                 const href = `${API_BASE_URL}${cssUrl}${cacheBreaker}`;
+                console.debug(`[Admin] Loading plugin CSS from: ${href}`);
                 
                 if (!document.querySelector(`link[href="${href}"]`)) {
                   // Remove old CSS versions

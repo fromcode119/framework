@@ -152,7 +152,7 @@ export class ThemeManager {
     const seeds = (manifest as any).seeds;
     if (!seeds) return;
 
-    const themePath = path.join(this.themesRoot, manifest.slug);
+    const themePath = this.resolveThemeDirectory(manifest.slug);
     const seedPath = path.resolve(themePath, seeds);
 
     if (fs.existsSync(seedPath)) {
@@ -180,6 +180,38 @@ export class ThemeManager {
         catch (e) { fs.copyFileSync(srcFile, destFile); fs.unlinkSync(srcFile); }
       }
     }
+  }
+
+  private resolveThemeDirectory(slug: string): string {
+    const directPath = path.join(this.themesRoot, slug);
+    if (fs.existsSync(directPath)) return directPath;
+
+    if (!fs.existsSync(this.themesRoot)) {
+      throw new Error(`Themes root not found: ${this.themesRoot}`);
+    }
+
+    const dirs = fs.readdirSync(this.themesRoot);
+    for (const dir of dirs) {
+      if (dir.startsWith('.')) continue;
+      const candidate = path.join(this.themesRoot, dir);
+      if (!fs.statSync(candidate).isDirectory()) continue;
+
+      const manifestPath = path.join(candidate, 'theme.json');
+      if (!fs.existsSync(manifestPath)) continue;
+
+      try {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        if (manifest?.slug === slug) return candidate;
+      } catch {
+        // Ignore invalid manifests during path resolution.
+      }
+    }
+
+    throw new Error(`Theme directory for slug "${slug}" not found in ${this.themesRoot}`);
+  }
+
+  public getThemeDirectory(slug: string): string {
+    return this.resolveThemeDirectory(slug);
   }
 
   async discoverThemes() {
@@ -245,6 +277,36 @@ export class ThemeManager {
     this.logger.info(`Theme "${slug}" activation complete.`);
   }
 
+  async resetTheme(slug: string, options?: { runSeeds?: boolean; resetConfig?: boolean }) {
+    await this.discoverThemes();
+    const manifest = this.themes.get(slug);
+    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
+
+    const runSeeds = options?.runSeeds !== false;
+    const resetConfig = options?.resetConfig === true;
+
+    if (resetConfig) {
+      const existing = await this.db.findOne('_system_themes', { slug });
+      const state = existing?.state || 'inactive';
+
+      if (existing) {
+        await this.db.update('_system_themes', { slug }, { config: {}, updated_at: new Date() });
+      } else {
+        await this.db.insert('_system_themes', { slug, state, config: {} });
+      }
+
+      this.logger.info(`Theme "${slug}" configuration reset to defaults.`);
+    }
+
+    if (runSeeds) {
+      this.logger.info(`Theme "${slug}" reset requested: running dependencies + seeds.`);
+      await this.installDependencies(manifest);
+      await this.runSeeds(manifest);
+    }
+
+    this.logger.info(`Theme "${slug}" reset complete.`);
+  }
+
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
     
@@ -272,7 +334,7 @@ export class ThemeManager {
       throw new Error(`Cannot delete theme "${slug}" because it is currently active.`);
     }
     
-    const targetDir = path.join(this.themesRoot, slug);
+    const targetDir = this.resolveThemeDirectory(slug);
     if (fs.existsSync(targetDir)) {
       this.logger.info(`Deleting theme files at ${targetDir}`);
       fs.rmSync(targetDir, { recursive: true, force: true });

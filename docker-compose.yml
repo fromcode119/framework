@@ -11,6 +11,9 @@ services:
       target: base
     command: npm run dev --workspace=@fromcode/api
     env_file: .env
+    environment:
+      - PLUGINS_DIR=/app/plugins
+      - THEMES_DIR=/app/themes
     depends_on:
       - db
       - redis
@@ -22,7 +25,8 @@ services:
       - /app/packages/admin/node_modules
       - /app/packages/frontend/node_modules
       - ./public/uploads:/app/public/uploads
-      - ./plugins:/app/plugins
+      - ${SHARED_PLUGINS_DIR:-./plugins}:/app/plugins
+      - ${SHARED_THEMES_DIR:-./themes}:/app/themes
     networks:
       - framework
       - docker_web

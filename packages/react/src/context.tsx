@@ -207,7 +207,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
   const resolveContent = useCallback(async (slug: string) => {
     try {
-        let query = `?slug=${encodeURIComponent(slug)}`;
+        const normalizedSlug = (slug || '').trim();
+        if (!normalizedSlug) return null;
+
+        let query = `?slug=${encodeURIComponent(normalizedSlug)}`;
         if (typeof window !== 'undefined') {
           // Check both current URL and possible referer URL for flags
           const currentUrl = new URL(window.location.href);
@@ -435,6 +438,39 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     delete: (...args: any[]) => (stabilityRef.current.api as any).delete(...args),
   }), []);
 
+  const getSlotComponentSignature = useCallback((componentObj: any) => {
+    const component = componentObj?.component;
+    if (!component) return `missing:${componentObj?.pluginSlug || 'unknown'}`;
+
+    if (typeof component === 'string') {
+      return `string:${component}`;
+    }
+
+    if (typeof component === 'function') {
+      return `fn:${component.displayName || component.name || 'anonymous'}`;
+    }
+
+    if ((component as any)?.$$typeof && (component as any)?.type) {
+      const type = (component as any).type;
+      if (typeof type === 'function') {
+        return `react-element:${type.displayName || type.name || 'anonymous'}`;
+      }
+      if (typeof type === 'string') {
+        return `react-element:${type}`;
+      }
+    }
+
+    if (typeof component === 'object') {
+      const obj = component as any;
+      if (obj.id) return `object-id:${String(obj.id)}`;
+      if (obj.slug) return `object-slug:${String(obj.slug)}`;
+      if (obj.name) return `object-name:${String(obj.name)}`;
+      if (obj.type && typeof obj.type === 'string') return `object-type:${obj.type}`;
+    }
+
+    return `unknown:${componentObj?.pluginSlug || 'unknown'}`;
+  }, []);
+
   const registerSlotComponent = useCallback((slotName: string, component: any, pluginSlug?: string, priority?: number) => {
     if (!component) {
       console.warn(`[Fromcode] Attempted to register undefined component for slot "${slotName}" from plugin "${pluginSlug || 'unknown'}". Ignored.`);
@@ -464,17 +500,32 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
     setSlots((prev) => {
       const existing = prev[slotName] || [];
-      const isAlreadyRegistered = existing.some(
-        (item) => item.pluginSlug === componentObj.pluginSlug && 
-                  (item.component === componentObj.component)
-      );
-      if (isAlreadyRegistered) return prev;
-      return { 
-        ...prev, 
-        [slotName]: [...existing, componentObj].sort((a, b) => a.priority - b.priority) 
+      const incomingSignature = getSlotComponentSignature(componentObj);
+      const existingIndex = existing.findIndex((item) => {
+        if (item.pluginSlug !== componentObj.pluginSlug) return false;
+        if (item.component === componentObj.component) return true;
+        return getSlotComponentSignature(item) === incomingSignature;
+      });
+
+      if (existingIndex >= 0) {
+        const current = existing[existingIndex];
+        if (current.component === componentObj.component && current.priority === componentObj.priority) {
+          return prev;
+        }
+        const next = [...existing];
+        next[existingIndex] = componentObj;
+        return {
+          ...prev,
+          [slotName]: next.sort((a, b) => a.priority - b.priority)
+        };
+      }
+
+      return {
+        ...prev,
+        [slotName]: [...existing, componentObj].sort((a, b) => a.priority - b.priority)
       };
     });
-  }, []);
+  }, [getSlotComponentSignature]);
 
   const registerFieldComponent = useCallback((name: string, component: any) => {
     if (!component) {

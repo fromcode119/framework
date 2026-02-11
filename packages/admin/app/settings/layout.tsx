@@ -12,7 +12,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   const navItems = [
     { label: 'General', href: '/settings/general', icon: FrameworkIcons.Settings },
-    { label: 'Permalinks', href: '/settings/permalinks', icon: FrameworkIcons.Link },
+    { label: 'Routing', href: '/settings/routing', icon: FrameworkIcons.Link },
     { label: 'Security', href: '/settings/security', icon: FrameworkIcons.Shield },
     { label: 'Infrastructure', href: '/settings/infrastructure', icon: FrameworkIcons.Activity },
   ];
