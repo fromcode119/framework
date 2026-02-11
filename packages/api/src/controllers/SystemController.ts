@@ -17,6 +17,30 @@ export class SystemController {
 
   async getAdminMetadata(req: Request, res: Response) {
     const metadata = this.manager.getAdminMetadata() as any;
+
+    // Include active theme runtime for admin so theme-extended CMS block
+    // definitions can register in the editor (without injecting theme CSS).
+    try {
+      const runtimeModules = this.manager.getRuntimeModules();
+      const frontendMeta = await this.themeManager.getFrontendMetadata(runtimeModules);
+
+      if (frontendMeta?.activeTheme) {
+        const theme = frontendMeta.activeTheme;
+        metadata.activeTheme = {
+          ...theme,
+          ui: {
+            ...(theme.ui || {}),
+            css: []
+          }
+        };
+      }
+
+      if (frontendMeta?.runtimeModules) {
+        metadata.runtimeModules = frontendMeta.runtimeModules;
+      }
+    } catch (e) {
+      console.error('[SystemController] Failed to attach theme metadata for admin:', e);
+    }
     
     // Fetch global settings to include in metadata for the UI
     try {
@@ -808,4 +832,3 @@ export class SystemController {
     res.status(404).json({ error: 'Not found' });
   }
 }
-

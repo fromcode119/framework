@@ -7,6 +7,8 @@ import { FrameworkIcons } from '@/lib/icons';
 interface Option {
   label: string;
   value: string;
+  group?: string;
+  section?: string;
 }
 
 interface SelectProps {
@@ -19,6 +21,7 @@ interface SelectProps {
   className?: string;
   label?: string;
   searchable?: boolean;
+  onSearchChange?: (value: string) => void;
 }
 
 export const Select = ({ 
@@ -30,7 +33,8 @@ export const Select = ({
   theme = 'light',
   className = '',
   label,
-  searchable = true
+  searchable = true,
+  onSearchChange
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -49,6 +53,17 @@ export const Select = ({
   const filteredOptions = options.filter(opt => 
     opt.label.toLowerCase().includes(searchValue.toLowerCase())
   );
+  const groupedFilteredOptions = filteredOptions.reduce((acc, opt) => {
+    const groupName = opt.group || 'Options';
+    const existingGroup = acc.find((g) => g.name === groupName);
+    if (existingGroup) {
+      existingGroup.options.push(opt);
+    } else {
+      acc.push({ name: groupName, options: [opt] });
+    }
+    return acc;
+  }, [] as Array<{ name: string; options: Option[] }>);
+  const showGroupHeaders = groupedFilteredOptions.length > 1 || (groupedFilteredOptions.length === 1 && groupedFilteredOptions[0].name !== 'Options');
 
   const updatePosition = () => {
     if (triggerRef.current) {
@@ -100,8 +115,11 @@ export const Select = ({
   }, []);
 
   useEffect(() => {
-    if (!isOpen) setSearchValue('');
-  }, [isOpen]);
+    if (!isOpen) {
+      setSearchValue('');
+      onSearchChange?.('');
+    }
+  }, [isOpen, onSearchChange]);
 
   return (
     <div className={`flex flex-col gap-2 w-full ${className}`}>
@@ -162,7 +180,11 @@ export const Select = ({
                       type="text"
                       placeholder="Search options..."
                       value={searchValue}
-                      onChange={(e) => setSearchValue(e.target.value)}
+                      onChange={(e) => {
+                        const nextValue = e.target.value;
+                        setSearchValue(nextValue);
+                        onSearchChange?.(nextValue);
+                      }}
                       className={`w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border outline-none transition-all ${
                         theme === 'dark'
                           ? 'bg-slate-900/50 border-slate-800 focus:border-indigo-500/50 text-white'
@@ -179,33 +201,68 @@ export const Select = ({
                     <p className="text-xs font-bold text-slate-500 opacity-50">No results found</p>
                   </div>
                 ) : (
-                  filteredOptions.map((opt) => (
-                    <button
-                      key={typeof opt.value === 'object' ? JSON.stringify(opt.value) : opt.value}
-                      type="button"
-                      onClick={() => {
-                        const finalVal = opt.value && typeof opt.value === 'object' ? (opt.value as any).value || (opt.value as any).id || (opt.value as any).slug : opt.value;
-                        onChange(finalVal);
-                        setIsOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
-                        (selectedOption && selectedOption === opt)
-                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                          : theme === 'dark'
-                            ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
-                      }`}
-                    >
-                      <span className={`relative z-10 font-bold truncate`}>
-                        {opt.label}
-                      </span>
-                      {(selectedOption && selectedOption === opt) ? (
-                        <FrameworkIcons.Check size={14} className="relative z-10 flex-shrink-0" />
-                      ) : (
-                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100 flex-shrink-0" />
+                  groupedFilteredOptions.map((group) => {
+                    const sections = group.options.reduce((acc, opt) => {
+                      const sectionName = opt.section || '';
+                      const existing = acc.find((s) => s.name === sectionName);
+                      if (existing) {
+                        existing.options.push(opt);
+                      } else {
+                        acc.push({ name: sectionName, options: [opt] });
+                      }
+                      return acc;
+                    }, [] as Array<{ name: string; options: Option[] }>);
+                    const showSectionHeaders = sections.length > 1 || (sections.length === 1 && sections[0].name !== '');
+
+                    return (
+                    <div key={group.name} className="mb-1">
+                      {showGroupHeaders && (
+                        <div className={`px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest ${
+                          theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+                        }`}>
+                          {group.name}
+                        </div>
                       )}
-                    </button>
-                  ))
+                      {sections.map((section) => (
+                        <div key={`${group.name}:${section.name || 'default'}`}>
+                          {showSectionHeaders && section.name ? (
+                            <div className={`px-4 pt-1 pb-1 text-[10px] font-bold tracking-wide ${
+                              theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+                            }`}>
+                              {section.name}
+                            </div>
+                          ) : null}
+                          {section.options.map((opt) => (
+                        <button
+                          key={`${group.name}:${section.name}:${typeof opt.value === 'object' ? JSON.stringify(opt.value) : opt.value}`}
+                          type="button"
+                          onClick={() => {
+                            const finalVal = opt.value && typeof opt.value === 'object' ? (opt.value as any).value || (opt.value as any).id || (opt.value as any).slug : opt.value;
+                            onChange(finalVal);
+                            setIsOpen(false);
+                          }}
+                          className={`w-full text-left ${section.name ? 'pl-8 pr-4' : 'px-4'} py-3 text-sm rounded-xl transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
+                            (selectedOption && selectedOption === opt)
+                              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                              : theme === 'dark'
+                                ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
+                          }`}
+                        >
+                          <span className={`relative z-10 font-bold truncate`}>
+                            {opt.label}
+                          </span>
+                          {(selectedOption && selectedOption === opt) ? (
+                            <FrameworkIcons.Check size={14} className="relative z-10 flex-shrink-0" />
+                          ) : (
+                            <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100 flex-shrink-0" />
+                          )}
+                        </button>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )})
                 )}
               </div>
             </div>

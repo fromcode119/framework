@@ -5,16 +5,41 @@ import { Slot, usePlugins } from '@fromcode/react';
 
 export default function Home() {
   const [content, setContent] = useState<any>(null);
+  const [forcedLayout, setForcedLayout] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const { themeLayouts, resolveContent } = usePlugins();
+  const { themeLayouts, api } = usePlugins();
 
   useEffect(() => {
     async function fetchContent() {
       try {
-        // Try to resolve empty slug (homepage)
-        const result = await resolveContent('');
-        if (result && result.doc) {
-          setContent(result.doc);
+        const routingSettingResult = await api.get('/collections/settings?key=routing_home_target&limit=1');
+        const routingSetting = Array.isArray(routingSettingResult)
+          ? routingSettingResult[0]
+          : routingSettingResult?.docs?.[0];
+
+        const target = (routingSetting?.value || 'auto').toString().trim();
+
+        if (target.startsWith('layout:')) {
+          const layoutName = target.slice('layout:'.length).trim();
+          if (layoutName) {
+            setForcedLayout(layoutName);
+            return;
+          }
+        }
+
+        if (target.startsWith('collection:')) {
+          const parts = target.split(':');
+          const collectionSlug = parts[1];
+          const recordId = parts.slice(2).join(':');
+
+          if (collectionSlug && recordId) {
+            const result = await api.get(`/collections/${encodeURIComponent(collectionSlug)}?id=${encodeURIComponent(recordId)}&limit=1`);
+            const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
+            if (doc) {
+              setContent(doc);
+              return;
+            }
+          }
         }
       } catch (err) {
         console.error("[Frontend: Home] Content Resolve Error:", err);
@@ -23,7 +48,7 @@ export default function Home() {
       }
     }
     fetchContent();
-  }, [resolveContent]);
+  }, [api]);
 
   // If we have CMS content for the home page, render it using the selected layout
   if (content) {
@@ -46,7 +71,11 @@ export default function Home() {
     );
   }
 
-  // Fallback if no CMS page is found for "" slug
+  if (forcedLayout && themeLayouts?.[forcedLayout] && !loading) {
+    const ForcedLayoutComponent = themeLayouts[forcedLayout];
+    return <ForcedLayoutComponent />;
+  }
+
   const FallbackLayout = themeLayouts?.LandingLayout || themeLayouts?.Home || themeLayouts?.Main || themeLayouts?.['StandardLayout'];
 
   if (FallbackLayout && !loading) {
@@ -81,5 +110,3 @@ export default function Home() {
     </div>
   );
 }
-
-

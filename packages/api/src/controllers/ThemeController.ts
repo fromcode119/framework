@@ -69,6 +69,20 @@ export class ThemeController {
     }
   }
 
+  async reset(req: Request, res: Response) {
+    const { slug } = req.params;
+    const runSeeds = req.body?.runSeeds !== false;
+    const resetConfig = req.body?.resetConfig === true;
+
+    try {
+      await this.manager.resetTheme(slug, { runSeeds, resetConfig });
+      res.json({ success: true, runSeeds, resetConfig });
+    } catch (err: any) {
+      this.logger.error(`Failed to reset theme ${slug}: ${err.message}`);
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   async getConfig(req: Request, res: Response) {
     try {
       const { slug } = req.params;
@@ -106,9 +120,11 @@ export class ThemeController {
     const theme = this.manager.getThemes().find(t => t.slug === slug);
     if (!theme) return res.status(404).end();
 
-    const themesRoot = (this.manager as any).themesRoot;
     const filePath = (req.params as any)[0];
-    const absolutePath = path.resolve(themesRoot, slug, 'ui', filePath);
+    const themeDir = (this.manager as any).getThemeDirectory
+      ? (this.manager as any).getThemeDirectory(slug)
+      : path.resolve((this.manager as any).themesRoot, slug);
+    const absolutePath = path.resolve(themeDir, 'ui', filePath);
     
     if (fs.existsSync(absolutePath)) res.sendFile(absolutePath);
     else res.status(404).end();

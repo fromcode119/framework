@@ -131,6 +131,8 @@ export const FrameworkIcons = {
   Orbit: Lucide.Orbit,
   Image: Lucide.Image,
   Info: Lucide.Info,
+  Fingerprint: Lucide.Fingerprint,
+  Key: Lucide.Key,
 
   // Shims for backward compatibility/bridge safety
   registerProvider: (name: string, provider: Record<string, any>) => {

@@ -63,6 +63,8 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   const [activeTab, setActiveTab] = useState<'overview' | 'settings'>('overview');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isReseeding, setIsReseeding] = useState(false);
+  const [isResettingTheme, setIsResettingTheme] = useState(false);
   const [dbConfig, setDbConfig] = useState<any>({});
   const [tempVariables, setTempVariables] = useState<Record<string, string>>({});
   const [tempLayouts, setTempLayouts] = useState<Record<string, string>>({});
@@ -173,6 +175,40 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
       triggerRefresh();
     } catch (err: any) {
       notify('error', 'Deletion Failed', err.message);
+    }
+  };
+
+  const handleRunSeeds = async () => {
+    if (!themeDetail) return;
+    if (!confirm(`Run seed script for "${themeDetail.name}"? This may overwrite seeded CMS content.`)) return;
+
+    setIsReseeding(true);
+    try {
+      await api.post(ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: false });
+      notify('success', 'Seeds Executed', `Seed script executed for ${themeDetail.name}.`);
+      await fetchTheme();
+      triggerRefresh();
+    } catch (err: any) {
+      notify('error', 'Seed Failed', err.message);
+    } finally {
+      setIsReseeding(false);
+    }
+  };
+
+  const handleResetTheme = async () => {
+    if (!themeDetail) return;
+    if (!confirm(`Reset "${themeDetail.name}" theme config to defaults and re-run seed data?`)) return;
+
+    setIsResettingTheme(true);
+    try {
+      await api.post(ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: true });
+      notify('success', 'Theme Reset', `${themeDetail.name} config reset and seeds executed.`);
+      await fetchTheme();
+      triggerRefresh();
+    } catch (err: any) {
+      notify('error', 'Reset Failed', err.message);
+    } finally {
+      setIsResettingTheme(false);
     }
   };
 
@@ -605,6 +641,33 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                       <div className="h-4 w-4 rounded-full" style={{ backgroundColor: tempVariables.foreground }} />
                   </div>
               </div>
+            </Card>
+
+            <Card className={`border-0 p-8 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+              <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                Theme Maintenance
+              </h3>
+              <div className="space-y-3">
+                <button
+                  onClick={handleRunSeeds}
+                  disabled={isReseeding || isResettingTheme}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                >
+                  {isReseeding ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Refresh size={14} />}
+                  {isReseeding ? 'Running Seeds...' : 'Run Seeds'}
+                </button>
+                <button
+                  onClick={handleResetTheme}
+                  disabled={isReseeding || isResettingTheme}
+                  className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                >
+                  {isResettingTheme ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Warning size={14} />}
+                  {isResettingTheme ? 'Resetting Theme...' : 'Reset Theme + Seeds'}
+                </button>
+              </div>
+              <p className={`mt-4 text-[10px] font-bold leading-relaxed ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                Run Seeds replays theme seed data. Reset Theme + Seeds clears saved theme config and replays seeds.
+              </p>
             </Card>
 
             {themeDetail.state !== 'active' && (

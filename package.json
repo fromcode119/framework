@@ -14,7 +14,9 @@
     "test": "npm run test --workspaces --if-present",
     "fromcode": "tsx packages/cli/src/bin.ts",
     "start:all": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\" \"PORT=3002 npm run start --workspace=@fromcode/frontend\"",
-    "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\""
+    "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\"",
+    "start:all:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\" \"PORT=3002 npm run start --workspace=@fromcode/frontend\"",
+    "start:api-admin:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\""
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

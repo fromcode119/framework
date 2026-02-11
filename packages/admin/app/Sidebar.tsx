@@ -341,7 +341,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
             isMini={isMini} 
             children={[
               { label: 'General', path: '/settings/general', icon: 'Settings' },
-              { label: 'Permalinks', path: '/settings/permalinks', icon: 'Link' },
+              { label: 'Routing', path: '/settings/routing', icon: 'Link' },
               { label: 'Security', path: '/settings/security', icon: 'Shield' },
               { label: 'Infrastructure', path: '/settings/infrastructure', icon: 'Activity' }
             ]}
