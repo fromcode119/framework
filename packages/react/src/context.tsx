@@ -38,6 +38,7 @@ interface PluginContextValue {
   overrides: Record<string, SlotComponent>;
   themeVariables: Record<string, string>;
   themeLayouts: Record<string, any>;
+  activeTheme: any;
   menuItems: MenuItem[];
   collections: CollectionMetadata[];
   fieldComponents: Record<string, React.ComponentType<any>>;
@@ -114,6 +115,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   const [overrides, setOverrides] = useState<Record<string, SlotComponent>>({});
   const [themeVariables, setThemeVariables] = useState<Record<string, string>>({});
   const [themeLayouts, setThemeLayouts] = useState<Record<string, any>>({});
+  const [activeTheme, setActiveTheme] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [collections, setCollections] = useState<CollectionMetadata[]>([]);
   const [fieldComponents, setFieldComponents] = useState<Record<string, any>>({});
@@ -129,7 +131,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   
   const getBaseURL = useCallback(() => {
     const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-    let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.fromcode.local';
+    let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.framework.local';
     
     if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
       effectiveApiUrl = `http://${effectiveApiUrl}`;
@@ -138,7 +140,8 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     return effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
   }, [apiUrl]);
 
-  const apiFetch = useCallback(async (path: string, options: RequestInit = {}) => {
+  const apiFetch = useCallback(async (path: string, options: (RequestInit & { silent?: boolean }) = {}) => {
+    const { silent, ...fetchOptions } = options as any;
     const base = getBaseURL();
     const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
     
@@ -154,19 +157,23 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       ? document.cookie.split('; ').find(row => row.startsWith('fc_token='))?.split('=')[1]
       : null;
 
-    console.debug(`[Fromcode API] Fetching: ${url}`, { credentials: options.credentials || 'include', hasToken: !!token });
+    if (!silent) {
+      console.debug(`[Fromcode API] Fetching: ${url}`, { credentials: fetchOptions.credentials || 'include', hasToken: !!token });
+    }
 
     const res = await fetch(url, {
-      ...options,
-      credentials: options.credentials || 'include',
+      ...fetchOptions,
+      credentials: fetchOptions.credentials || 'include',
       headers: {
-        ...(options.headers || {}),
+        ...(fetchOptions.headers || {}),
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       }
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-        console.error(`[Fromcode API] Error ${res.status} from ${url}:`, err);
+        if (!silent) {
+          console.error(`[Fromcode API] Error ${res.status} from ${url}:`, err);
+        }
         throw new Error(err.error || `Failed to fetch from ${url}`);
     }
     return res.json();
@@ -224,7 +231,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
              query += '&preview=1';
           }
         }
-        const result = await api.get(`/system/resolve${query}`);
+        const result = await api.get(`/system/resolve${query}`, { silent: true });
         return result;
     } catch (e) {
         return null;
@@ -274,6 +281,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       }
 
       if (data.activeTheme) {
+        setActiveTheme(data.activeTheme);
         setThemeVariables(data.activeTheme.variables || {});
         
         const theme = data.activeTheme;
@@ -349,7 +357,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     try {
       const currentApiUrl = (stabilityRef.current as any).apiUrl;
       const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-      let effectiveApiUrl = currentApiUrl || bridgeUrl || 'http://api.fromcode.local';
+      let effectiveApiUrl = currentApiUrl || bridgeUrl || 'http://api.framework.local';
       
       // Ensure effectiveApiUrl is absolute or properly handled
       if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
@@ -410,7 +418,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
   // Use a ref for state and logic that the bridge needs but should not trigger effect re-runs
   const stabilityRef = React.useRef({
-    slots, overrides, themeVariables, themeLayouts, menuItems, collections, 
+    slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
     fieldComponents, plugins, settings, translations, locale, refreshVersion, 
     triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
     loadConfig, serverRuntimeModules, runtimeModules, apiUrl
@@ -418,12 +426,12 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
   React.useEffect(() => {
     stabilityRef.current = {
-      slots, overrides, themeVariables, themeLayouts, menuItems, collections, 
+      slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
       fieldComponents, plugins, settings, translations, locale, refreshVersion, 
       triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
       loadConfig, serverRuntimeModules, runtimeModules, apiUrl
     };
-  }, [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, serverRuntimeModules, runtimeModules, apiUrl]);
+  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, serverRuntimeModules, runtimeModules, apiUrl]);
 
   // NEW: Stable bridge wrappers to prevent re-injection loops for functions with volatile dependencies
   const stableT = useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
@@ -830,6 +838,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     overrides,
     themeVariables,
     themeLayouts,
+    activeTheme,
     menuItems,
     collections,
     fieldComponents,
@@ -858,7 +867,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     loadConfig,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, resolveContent, api]);
 
   return (
     <PluginContext.Provider value={value}>

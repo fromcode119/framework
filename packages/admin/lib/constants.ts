@@ -1,8 +1,7 @@
 
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.fromcode.local';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.framework.local';
 
-// Helper to construct versioned URLs
 const v = (path: string) => `/api/${API_VERSION}${path}`;
 
 export const ENDPOINTS = {
