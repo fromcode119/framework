@@ -24,13 +24,22 @@ export const createCollectionMiddleware = (manager: PluginManager) => {
         const shortSlug = entry.collection.shortSlug?.toLowerCase();
         const unprefixedSlug = entry.collection.unprefixedSlug?.toLowerCase();
         
+        const hasSuffixMatch = (value?: string) => {
+          if (!value) return false;
+          return (
+            value.endsWith(`_${targetSlug}`) ||
+            value.endsWith(`/${targetSlug}`) ||
+            value.endsWith(`-${targetSlug}`)
+          );
+        };
+
         if (
           key.toLowerCase() === targetSlug || 
           collectionSlug === targetSlug || 
           shortSlug === targetSlug ||
           unprefixedSlug === targetSlug ||
-          key.toLowerCase().endsWith(`_${targetSlug}`) ||
-          (collectionSlug && collectionSlug.endsWith(`_${targetSlug}`))
+          hasSuffixMatch(key.toLowerCase()) ||
+          hasSuffixMatch(collectionSlug)
         ) {
           console.log(`[CollectionMiddleware] Found match via fallback: ${key} for requested ${slug}`);
           collectionEntry = entry;

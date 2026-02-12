@@ -1,6 +1,7 @@
 import { API_BASE_URL } from './constants';
 import Cookies from 'js-cookie';
 import { purgeAuth } from './auth-utils';
+import { normalizeRequestPath } from './url-utils';
 
 async function request(path: string, options: RequestInit = {}) {
   // Extract token from cookie (if available to JS).
@@ -20,7 +21,8 @@ async function request(path: string, options: RequestInit = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+  const normalizedPath = normalizeRequestPath(path);
+  const url = normalizedPath.startsWith('http') ? normalizedPath : `${API_BASE_URL}${normalizedPath}`;
 
   const response = await fetch(url, {
     ...options,
@@ -49,14 +51,18 @@ async function request(path: string, options: RequestInit = {}) {
 
 export const api = {
   getBaseUrl: () => API_BASE_URL,
-  getURL: (path: string) => path.startsWith('http') ? path : `${API_BASE_URL}${path}`,
+  getURL: (path: string) => {
+    const normalizedPath = normalizeRequestPath(path);
+    return normalizedPath.startsWith('http') ? normalizedPath : `${API_BASE_URL}${normalizedPath}`;
+  },
   get: (path: string, options?: RequestInit) => request(path, { ...options, method: 'GET' }),
   post: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'POST', body: body ? JSON.stringify(body) : undefined }),
   put: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
   patch: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   delete: (path: string, options?: RequestInit) => request(path, { ...options, method: 'DELETE' }),
   upload: async (path: string, formData: FormData, options?: RequestInit) => {
-    const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+    const normalizedPath = normalizeRequestPath(path);
+    const url = normalizedPath.startsWith('http') ? normalizedPath : `${API_BASE_URL}${normalizedPath}`;
     const token = Cookies.get('fc_token');
     const csrfToken = Cookies.get('fc_csrf');
     const headers: Record<string, string> = {

@@ -49,6 +49,40 @@ function getRecordDisplayTitle(doc: any, collectionLabel: string) {
   return `${collectionLabel} #${doc?.id ?? 'unknown'}`;
 }
 
+function getCollectionSourceTag(pluginLabel: string, collectionLabel: string) {
+  const plugin = (pluginLabel || 'system').trim();
+  const section = (collectionLabel || 'record').trim();
+  return `${plugin}/${section}`;
+}
+
+function getFieldNames(collection: any): Set<string> {
+  const fields = Array.isArray(collection?.fields) ? collection.fields : [];
+  return new Set(fields.map((f: any) => String(f?.name || '').trim()).filter(Boolean));
+}
+
+function getAutoCollectionPriority(collection: any): number {
+  const fields = getFieldNames(collection);
+  let score = 100;
+
+  if (fields.has('content')) score -= 30;
+  if (fields.has('themeLayout')) score -= 20;
+  if (fields.has('customPermalink') || fields.has('path')) score -= 20;
+  if (fields.has('title') || fields.has('name')) score -= 10;
+
+  return score;
+}
+
+function detectAutoFallbackLayout(frontendMeta: any): string | null {
+  const rawLayouts = frontendMeta?.activeTheme?.layouts;
+  const layoutKeys = Array.isArray(rawLayouts)
+    ? rawLayouts.map((layout: any) => String(layout?.slug || layout?.name || layout?.key || layout?.id || '')).filter(Boolean)
+    : Object.keys(rawLayouts || {});
+
+  const fallbackPriority = ['LandingLayout', 'Home', 'Main', 'StandardLayout'];
+  const matched = fallbackPriority.find((name) => layoutKeys.includes(name));
+  return matched || null;
+}
+
 export default function RoutingPage() {
   const { theme } = useTheme();
   const { addNotification } = useNotification();
@@ -59,7 +93,8 @@ export default function RoutingPage() {
   const [homeTarget, setHomeTarget] = useState('auto');
   const [searchTerm, setSearchTerm] = useState('');
   const [frontendMeta, setFrontendMeta] = useState<any>(null);
-  const [homeOptions, setHomeOptions] = useState<{ label: string; value: string; group?: string; section?: string }[]>([
+  const [autoResolvedSource, setAutoResolvedSource] = useState<string | null>(null);
+  const [homeOptions, setHomeOptions] = useState<{ label: string; value: string; group?: string; section?: string; sourceKind?: string }[]>([
     { value: 'auto', label: 'Auto detect', group: 'System' }
   ]);
   const optionsRequestRef = useRef(0);
@@ -92,7 +127,7 @@ export default function RoutingPage() {
     const requestId = ++optionsRequestRef.current;
     const query = searchTerm.trim().toLowerCase();
     const timeout = setTimeout(async () => {
-      const options: { label: string; value: string; group?: string; section?: string }[] = [{ value: 'auto', label: 'Auto detect', group: 'System' }];
+      const options: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [{ value: 'auto', label: 'Auto detect', group: 'System', sourceKind: 'Auto' }];
       const optionSet = new Set(options.map((o) => o.value));
 
       const rawLayouts = frontendMeta?.activeTheme?.layouts;
@@ -117,7 +152,8 @@ export default function RoutingPage() {
         options.push({
           value,
           label,
-          group: 'Theme Layouts'
+          group: 'Theme Layouts',
+          sourceKind: 'Layout'
         });
       });
 
@@ -155,13 +191,15 @@ export default function RoutingPage() {
 
           const pluginLabel = collection.pluginSlug || 'system';
           const groupLabel = `Collection Records · ${pluginLabel}`;
+          const sourceTag = getCollectionSourceTag(pluginLabel, collectionLabel);
 
           optionSet.add(value);
           options.push({
             value,
             label: `${title} (${permalinkLabel})`,
             group: groupLabel,
-            section: collectionLabel
+            section: collectionLabel,
+            sourceKind: sourceTag
           });
         });
       });
@@ -190,6 +228,59 @@ export default function RoutingPage() {
 
     return () => clearTimeout(timeout);
   }, [api, collections, frontendMeta, searchTerm]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const detectAutoSource = async () => {
+      if (homeTarget !== 'auto') {
+        setAutoResolvedSource(null);
+        return;
+      }
+      const candidateCollections = (collections || [])
+        .filter((c: any) => {
+          if (!c || c.system) return false;
+          return getFieldNames(c).has('slug');
+        })
+        .map((c: any) => ({
+          collectionSlug: c.shortSlug || c.slug,
+          collectionLabel: c.label || c.name || c.shortSlug || c.slug,
+          priority: getAutoCollectionPriority(c)
+        }))
+        .sort((a: any, b: any) => a.priority - b.priority || a.collectionSlug.localeCompare(b.collectionSlug));
+
+      const queries = [
+        { label: '"/"', query: 'customPermalink=%2F' },
+        { label: '"/"', query: 'path=%2F' },
+        { label: '"home"', query: 'slug=home' },
+      ];
+
+      for (const { label, query } of queries) {
+        for (const candidate of candidateCollections) {
+          try {
+            const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(candidate.collectionSlug)}?${query}&limit=1`);
+            const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
+            if (doc) {
+              const title = getRecordDisplayTitle(doc, candidate.collectionLabel);
+              if (!cancelled) {
+                setAutoResolvedSource(`Matched ${label} -> ${title} (${candidate.collectionLabel})`);
+              }
+              return;
+            }
+          } catch {
+            // Candidate collection unavailable or no access; continue.
+          }
+        }
+      }
+      if (!cancelled) {
+        setAutoResolvedSource('No content match for "/" or "home" (using theme fallback).');
+      }
+    };
+
+    detectAutoSource();
+    return () => {
+      cancelled = true;
+    };
+  }, [api, collections, homeTarget]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -231,6 +322,14 @@ export default function RoutingPage() {
       </div>
     );
   }
+
+  const selectedHomeOption = homeOptions.find((opt) => opt.value === homeTarget);
+  const autoFallbackLayout = detectAutoFallbackLayout(frontendMeta);
+  const resolvedSourceLabel = homeTarget === 'auto'
+    ? `${autoResolvedSource || 'Auto mode: checking "/" and "home"...'}${autoFallbackLayout ? ` Theme fallback: ${autoFallbackLayout}.` : ''}`
+    : selectedHomeOption
+    ? `${selectedHomeOption.sourceKind || selectedHomeOption.group || 'Source'} · ${selectedHomeOption.label}`
+    : `Custom target · ${homeTarget}`;
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
@@ -274,6 +373,12 @@ export default function RoutingPage() {
               <p className="mt-3 text-[11px] text-slate-500 font-medium italic">
                 Targets are discovered from available theme layouts and public collections.
               </p>
+              <div className={`mt-3 rounded-xl border px-3 py-2 text-[11px] ${
+                theme === 'dark' ? 'border-slate-800 bg-slate-900/50 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'
+              }`}>
+                <span className="font-black uppercase tracking-wider text-[10px] opacity-70">Resolved Homepage Source</span>
+                <div className="mt-1 font-semibold">{resolvedSourceLabel}</div>
+              </div>
             </div>
           </div>
         </Card>

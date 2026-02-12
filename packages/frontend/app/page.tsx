@@ -3,13 +3,63 @@
 import React, { useEffect, useState } from 'react';
 import { Slot, usePlugins } from '@fromcode/react';
 
+function getFieldNames(collection: any): Set<string> {
+  const fields = Array.isArray(collection?.fields) ? collection.fields : [];
+  return new Set(fields.map((f: any) => String(f?.name || '').trim()).filter(Boolean));
+}
+
+function getAutoCollectionPriority(collection: any): number {
+  const fields = getFieldNames(collection);
+  let score = 100;
+
+  if (fields.has('content')) score -= 30;
+  if (fields.has('themeLayout')) score -= 20;
+  if (fields.has('customPermalink') || fields.has('path')) score -= 20;
+  if (fields.has('title') || fields.has('name')) score -= 10;
+
+  return score;
+}
+
 export default function Home() {
   const [content, setContent] = useState<any>(null);
   const [forcedLayout, setForcedLayout] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const { themeLayouts, api } = usePlugins();
+  const { themeLayouts, api, collections } = usePlugins();
 
   useEffect(() => {
+    async function detectAutoHomeRecord() {
+      const candidates = (collections || [])
+        .filter((c: any) => {
+          if (!c || c.system) return false;
+          return getFieldNames(c).has('slug');
+        })
+        .map((c: any) => ({
+          collectionSlug: c.shortSlug || c.slug,
+          collectionLabel: c.label || c.name || c.shortSlug || c.slug,
+          priority: getAutoCollectionPriority(c)
+        }))
+        .sort((a: any, b: any) => a.priority - b.priority || a.collectionSlug.localeCompare(b.collectionSlug));
+
+      const queries = [
+        'customPermalink=%2F',
+        'path=%2F',
+        'slug=home',
+      ];
+
+      for (const query of queries) {
+        for (const candidate of candidates) {
+          try {
+            const result = await api.get(`/collections/${encodeURIComponent(candidate.collectionSlug)}?${query}&limit=1`);
+            const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
+            if (doc) return doc;
+          } catch {
+            // Continue scanning.
+          }
+        }
+      }
+      return null;
+    }
+
     async function fetchContent() {
       try {
         const routingSettingResult = await api.get('/collections/settings?key=routing_home_target&limit=1');
@@ -19,15 +69,19 @@ export default function Home() {
 
         const target = (routingSetting?.value || 'auto').toString().trim();
 
-        if (target.startsWith('layout:')) {
+        if (target === 'auto') {
+          const autoDoc = await detectAutoHomeRecord();
+          if (autoDoc) {
+            setContent(autoDoc);
+            return;
+          }
+        } else if (target.startsWith('layout:')) {
           const layoutName = target.slice('layout:'.length).trim();
           if (layoutName) {
             setForcedLayout(layoutName);
             return;
           }
-        }
-
-        if (target.startsWith('collection:')) {
+        } else if (target.startsWith('collection:')) {
           const parts = target.split(':');
           const collectionSlug = parts[1];
           const recordId = parts.slice(2).join(':');
@@ -48,12 +102,12 @@ export default function Home() {
       }
     }
     fetchContent();
-  }, [api]);
+  }, [api, collections]);
 
   // If we have CMS content for the home page, render it using the selected layout
   if (content) {
-    const selectedLayoutName = content.themeLayout || 'LandingLayout';
-    const LayoutComponent = themeLayouts?.[selectedLayoutName] || themeLayouts?.['LandingLayout'] || themeLayouts?.['DefaultLayout'] || (({ children }: any) => <>{children}</>);
+    const selectedLayoutName = content.themeLayout || 'DefaultLayout';
+    const LayoutComponent = themeLayouts?.[selectedLayoutName] || themeLayouts?.['DefaultLayout'] || themeLayouts?.['LandingLayout'] || (({ children }: any) => <>{children}</>);
     
     return (
       <LayoutComponent page={content}>
@@ -66,6 +120,10 @@ export default function Home() {
               <div dangerouslySetInnerHTML={{ __html: content.content || '' }} />
             </div>
           )}
+
+          <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
+            <Slot name="frontend.content.footer" props={{ content }} />
+          </div>
         </div>
       </LayoutComponent>
     );

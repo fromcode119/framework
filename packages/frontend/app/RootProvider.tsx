@@ -42,7 +42,7 @@ function SystemGate({ children }: { children: ReactNode }) {
 }
 
 export default function RootProvider({ children }: { children: ReactNode }) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://api.fromcode.local';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://api.framework.local';
 
   return (
     <PluginsProvider apiUrl={apiUrl}>

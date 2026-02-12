@@ -388,6 +388,7 @@ export class ThemeManager {
     return {
       activeTheme: {
         slug: theme.slug,
+        version: (theme as any).version || '0.0.0',
         variables,
         ui: theme.ui,
         layouts: theme.layouts,
