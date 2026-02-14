@@ -3,9 +3,9 @@
 import React, { ReactNode, useEffect } from 'react';
 import { PluginsProvider, Override, usePlugins, Slot } from '@fromcode/react';
 import { useRouter } from 'next/navigation';
-import { useSystemStatus } from '../lib/useSystemStatus';
-import MaintenanceScreen from '../components/MaintenanceScreen';
-import ThemeInitializer from '../components/ThemeInitializer';
+import { useSystemStatus } from '../lib/use-system-status';
+import MaintenanceScreen from '../components/maintenance-screen';
+import ThemeInitializer from '../components/theme-initializer';
 
 function SystemGate({ children }: { children: ReactNode }) {
   const status = useSystemStatus();

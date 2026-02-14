@@ -1,5 +1,5 @@
 import HomeClient from './home-client';
-import { serverFetchJson } from '../lib/serverApi';
+import { serverFetchJson } from '../lib/server-api';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 
