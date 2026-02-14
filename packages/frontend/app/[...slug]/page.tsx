@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import DynamicContentClient from '../dynamic-content-client';
-import { serverFetchJson, serverFetchResponse } from '../../lib/serverApi';
+import { serverFetchJson, serverFetchResponse } from '../../lib/server-api';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 
