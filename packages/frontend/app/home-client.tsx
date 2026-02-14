@@ -1,0 +1,75 @@
+"use client";
+
+import React from 'react';
+import { Slot, usePlugins } from '@fromcode/react';
+
+type HomeClientProps = {
+  initialContent: any | null;
+  forcedLayout: string | null;
+};
+
+function renderContent(content: any) {
+  return (
+    <div className="w-full">
+      <Slot name="frontend.content.display" props={{ content: content.content }} />
+
+      {(!content.content || typeof content.content === 'string') && (
+        <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
+          <h1 className="text-4xl font-black mb-8">{content.title}</h1>
+          <div dangerouslySetInnerHTML={{ __html: content.content || '' }} />
+        </div>
+      )}
+
+      <Slot name="frontend.content.footer" props={{ content }} />
+    </div>
+  );
+}
+
+export default function HomeClient({ initialContent, forcedLayout }: HomeClientProps) {
+  const { themeLayouts } = usePlugins();
+
+  if (initialContent) {
+    const selectedLayoutName = initialContent.themeLayout || 'DefaultLayout';
+    const LayoutComponent =
+      themeLayouts?.[selectedLayoutName] ||
+      themeLayouts?.DefaultLayout ||
+      themeLayouts?.LandingLayout ||
+      (({ children }: any) => <>{children}</>);
+
+    return <LayoutComponent page={initialContent}>{renderContent(initialContent)}</LayoutComponent>;
+  }
+
+  if (forcedLayout && themeLayouts?.[forcedLayout]) {
+    const ForcedLayoutComponent = themeLayouts[forcedLayout];
+    return <ForcedLayoutComponent />;
+  }
+
+  const FallbackLayout =
+    themeLayouts?.LandingLayout ||
+    themeLayouts?.Home ||
+    themeLayouts?.Main ||
+    themeLayouts?.StandardLayout;
+
+  if (FallbackLayout) {
+    return <FallbackLayout />;
+  }
+
+  return (
+    <div className="text-center space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
+      <h1 className="text-4xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-6xl">
+        Fromcode Framework
+      </h1>
+      <p className="text-lg text-[var(--foreground)] opacity-70">
+        The open-source platform for building scalable applications.
+      </p>
+      <div className="flex gap-4 justify-center">
+        <a href="/admin" className="btn-primary">
+          Go to Admin
+        </a>
+        <a href="https://docs.fromcode.com" className="btn-secondary">
+          Documentation
+        </a>
+      </div>
+    </div>
+  );
+}

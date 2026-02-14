@@ -55,6 +55,8 @@ export const ENDPOINTS = {
     USER: (id: string | number) => v(`/system/admin/users/${id}`),
     USER_ROLES: v('/system/admin/users/roles'),
     METADATA: v('/system/admin/metadata'),
+    INTEGRATIONS: v('/system/admin/integrations'),
+    INTEGRATION: (type: string) => v(`/system/admin/integrations/${type}`),
     UPDATE_CHECK: v('/system/update/check'),
     UPDATE_APPLY: v('/system/update/apply'),
     OPENAPI: '/api/openapi.json',

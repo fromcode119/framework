@@ -9,6 +9,15 @@ export interface IDatabaseManager {
   update(tableOrName: any, where: any, data: any): Promise<any>;
   delete(tableOrName: any, where: any): Promise<boolean>;
   count(tableName: string, where?: any): Promise<number>;
+  
+  // Schema Management
+  getTables(): Promise<string[]>;
+  tableExists(tableName: string): Promise<boolean>;
+  getColumns(tableName: string): Promise<string[]>;
+  createTable(collection: any): Promise<void>;
+  addColumn(tableName: string, field: any): Promise<void>;
+  ensureMigrationTable(tableName: string): Promise<void>;
+  resetDatabase(): Promise<void>;
 }
 
 export interface IMediaManager {

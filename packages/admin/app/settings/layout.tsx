@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/ThemeContext';
+import { useTheme } from '@/components/theme-context';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -12,7 +12,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   const navItems = [
     { label: 'General', href: '/settings/general', icon: FrameworkIcons.Settings },
+    { label: 'Localization', href: '/settings/localization', icon: FrameworkIcons.Globe },
     { label: 'Routing', href: '/settings/routing', icon: FrameworkIcons.Link },
+    { label: 'Integrations', href: '/settings/integrations', icon: FrameworkIcons.Orbit },
     { label: 'Security', href: '/settings/security', icon: FrameworkIcons.Shield },
     { label: 'Infrastructure', href: '/settings/infrastructure', icon: FrameworkIcons.Activity },
   ];

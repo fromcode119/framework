@@ -1,17 +1,17 @@
 "use client";
 
 import React, { use, useState, useEffect } from 'react';
-import { useTheme } from '@/components/ThemeContext';
+import { useTheme } from '@/components/theme-context';
 import { Plugin } from '@fromcode/react';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Switch } from '@/components/ui/Switch';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { PluginSettingsForm } from '@/components/plugins/PluginSettingsForm';
+import { PluginSettingsForm } from '@/components/plugins/plugin-settings-form';
 
 export default function PluginSettingsPage({ params }: { params: React.Usable<{ slug: string }> }) {
   const { slug } = use(params);

@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import * as readline from 'readline';
 import chalk from 'chalk';
-import { DatabaseManager } from '@fromcode/database';
+import { DatabaseFactory, DatabaseManager } from '@fromcode/database';
 import { DiscoveryService, MarketplaceCatalogService } from '@fromcode/core';
 import { MarketplaceClient } from '@fromcode/marketplace-client';
 
@@ -57,7 +57,7 @@ export async function getDatabase(): Promise<DatabaseManager> {
   if (!url) {
     throw new Error('DATABASE_URL is not defined. Please check your .env file.');
   }
-  const db = new DatabaseManager(url);
+  const db = DatabaseFactory.create(url);
   await db.connect();
   return db;
 }

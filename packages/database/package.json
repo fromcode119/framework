@@ -9,6 +9,20 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "browser": {
+    "./src/dialects/postgres-database-manager": false,
+    "./src/dialects/mysql-database-manager": false,
+    "./src/dialects/sqlite-database-manager": false,
+    "better-sqlite3": false,
+    "pg": false,
+    "mysql2": false,
+    "fs": false,
+    "path": false,
+    "net": false,
+    "tls": false,
+    "dns": false,
+    "crypto": false
+  },
   "types": "dist/index.d.ts",
   "files": [
     "dist"

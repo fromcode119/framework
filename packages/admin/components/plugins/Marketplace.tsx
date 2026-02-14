@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
+import { Card } from '../ui/card';
+import { Badge } from '../ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '../ThemeContext';
-import { useNotify } from '../NotificationContext';
+import { useTheme } from '../theme-context';
+import { useNotify } from '../notification-context';
 import { usePlugins } from '@fromcode/react';
 
 import { useRouter } from 'next/navigation';
-import { PluginEntry } from '@fromcode/core';
+import type { PluginEntry } from '@fromcode/core';
 
 const Marketplace: React.FC = () => {
   const router = useRouter();

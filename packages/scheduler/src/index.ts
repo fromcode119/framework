@@ -1,8 +1,8 @@
-import { DatabaseManager, sql } from '@fromcode/database';
+import { IDatabaseManager, sql } from '@fromcode/database';
 import { Logger } from '@fromcode/sdk';
 import cron, { ScheduledTask } from 'node-cron';
 
-const logger = new Logger({ namespace: 'Scheduler' });
+const logger = new Logger({ namespace: 'scheduler' });
 
 export type SchedulerTaskHandler = (data?: any) => Promise<void>;
 
@@ -27,13 +27,13 @@ export interface SchedulerOptions {
 }
 
 export class SchedulerService {
-  private db: DatabaseManager;
+  private db: IDatabaseManager;
   private queueManager?: IQueueManager;
   private pulseInterval: NodeJS.Timeout | null = null;
   private handlers: Map<string, SchedulerTaskHandler> = new Map();
   private cronJobs: Map<string, ScheduledTask> = new Map();
 
-  constructor(db: DatabaseManager, options: SchedulerOptions = {}) {
+  constructor(db: IDatabaseManager, options: SchedulerOptions = {}) {
     this.db = db;
     this.queueManager = options.queueManager;
   }

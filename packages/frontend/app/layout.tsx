@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import GlobalInitializer from "./GlobalInitializer";
-import RootProvider from "./RootProvider";
-import PluginLoader from "./PluginLoader";
+import GlobalInitializer from "./global-initializer";
+import RootProvider from "./root-provider";
+import PluginLoader from "./plugin-loader";
 
 export const metadata: Metadata = {
   title: "Fromcode Frontend",

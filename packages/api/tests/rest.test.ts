@@ -1,6 +1,6 @@
-import { RESTController } from '../src/controllers/RESTController';
+import { RESTController } from '../src/controllers/rest-controller';
 
-describe('RESTController', () => {
+describe('rest-controller', () => {
   let controller: RESTController;
   let mockDb: any;
 

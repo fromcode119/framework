@@ -7,9 +7,42 @@
       "import": "./src/index.ts",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./utils": {
+      "import": "./src/utils/index.ts",
+      "require": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
     }
   },
+  "browser": {
+    "./src/hooks/hook-adapter-factory.ts": "./src/hooks/hook-adapter-factory.browser.ts",
+    "./src/queue/queue-adapter-factory.ts": "./src/queue/queue-adapter-factory.browser.ts",
+    "fs": false,
+    "path": false,
+    "os": false,
+    "crypto": false,
+    "stream": false,
+    "http": false,
+    "https": false,
+    "net": false,
+    "tls": false,
+    "dns": false,
+    "zlib": false,
+    "child_process": false,
+    "adm-zip": false,
+    "chokidar": false,
+    "tar": false,
+    "isolated-vm": false,
+    "ioredis": false,
+    "bull": false,
+    "better-sqlite3": false,
+    "pg": false,
+    "mysql2": false,
+    "archiver": false,
+    "zip-stream": false
+  },
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist"
   ],

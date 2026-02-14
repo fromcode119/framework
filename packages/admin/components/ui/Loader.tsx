@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/ThemeContext';
+import { useTheme } from '@/components/theme-context';
 
 interface LoaderProps {
   label?: string;

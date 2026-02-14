@@ -1,13 +1,16 @@
 
 export * from './schema';
+export { createDynamicTable, type DynamicField, type DynamicTableOptions } from './dynamic-schema';
 export * from './dynamic-schema';
 export * from './types';
-export * from './resolver';
+export * from './table-resolver';
+export * from './naming-strategy';
 export { sql, and, or, eq, ne, gt, gte, lt, lte, inArray, notInArray, isNull, isNotNull, exists, notExists, between, notBetween, like, notLike, ilike, notIlike, not, asc, desc, count, avg, sum, min, max, relations, extractTablesRelationalConfig } from 'drizzle-orm';
 export * from 'drizzle-orm/pg-core';
 
-import { IDatabaseManager, DatabaseDriverCreator } from './types';
-import { TableResolver } from './resolver';
+import { IDatabaseManager, DatabaseDriverCreator, ISchemaCollection, ISchemaField } from './types';
+export { IDatabaseManager, IDatabaseManager as DatabaseManager, ISchemaCollection, ISchemaField };
+import { TableResolver } from './table-resolver';
 
 /**
  * Universal Database Factory.
@@ -31,21 +34,29 @@ export class DatabaseFactory {
       this.registerDefaults();
     }
 
-    const url = new URL(connection.includes('://') ? connection : `sqlite://${connection}`);
-    const protocol = url.protocol.replace(':', '');
-    
-    // SQLite special case for files
-    if (connection.endsWith('.db') && !connection.includes('://')) {
-        const creator = this.drivers.get('sqlite');
-        if (creator) return creator(connection);
+    // Resolve protocol from connection string
+    let protocol = 'postgres';
+    let processedConn = connection;
+
+    if (connection.includes('://')) {
+        const url = new URL(connection);
+        protocol = url.protocol.replace(':', '');
+    } else if (connection.endsWith('.db') || connection === ':memory:') {
+        protocol = 'sqlite';
+    } else if (connection.startsWith('file:')) {
+        protocol = 'sqlite';
     }
 
-    const creator = this.drivers.get(protocol);
+    // Map postgresql -> postgres for convenience
+    const aliasProtocol = protocol === 'postgresql' ? 'postgres' : protocol;
+    const creator = this.drivers.get(aliasProtocol);
+
     if (!creator) {
-      throw new Error(`Unsupported database dialect for connection string: ${connection} (Protocol: ${protocol})`);
+      const available = Array.from(this.drivers.keys()).join(', ');
+      throw new Error(`Unsupported database dialect "${protocol}" for connection string. Available: ${available}`);
     }
 
-    const manager = creator(connection);
+    const manager = creator(processedConn);
 
     // Return a proxy that handles @plugin/table resolution
     return new Proxy(manager, {
@@ -67,41 +78,26 @@ export class DatabaseFactory {
   }
 
   private static registerDefaults() {
+    if (typeof window !== 'undefined') {
+      return;
+    }
+
     this.register('postgres', (conn) => {
-      const { PostgresDatabaseManager } = require('./dialects/postgres');
+      const { PostgresDatabaseManager } = require('./dialects/postgres-database-manager');
       return new PostgresDatabaseManager(conn);
     });
     this.register('postgresql', (conn) => {
-      const { PostgresDatabaseManager } = require('./dialects/postgres');
+      const { PostgresDatabaseManager } = require('./dialects/postgres-database-manager');
       return new PostgresDatabaseManager(conn);
     });
     this.register('mysql', (conn) => {
-      const { MysqlDatabaseManager } = require('./dialects/mysql');
+      const { MysqlDatabaseManager } = require('./dialects/mysql-database-manager');
       return new MysqlDatabaseManager(conn);
     });
     this.register('sqlite', (conn) => {
-      const { SqliteDatabaseManager } = require('./dialects/sqlite');
+      const { SqliteDatabaseManager } = require('./dialects/sqlite-database-manager');
       return new SqliteDatabaseManager(conn);
     });
   }
 }
 
-// Legacy alias for compatibility during migration
-export class DatabaseManager implements IDatabaseManager {
-    private instance: IDatabaseManager;
-    constructor(connection: string) {
-        this.instance = DatabaseFactory.create(connection);
-    }
-    get drizzle() { return this.instance.drizzle; }
-    get dialect() { return this.instance.dialect; }
-    async connect() { return this.instance.connect(); }
-    async execute(query: any) { return this.instance.execute(query); }
-    
-    // Delegate new high-level methods
-    async find(tableName: string, options?: any) { return this.instance.find(tableName, options); }
-    async findOne(tableName: string, where: any) { return this.instance.findOne(tableName, where); }
-    async insert(tableName: string, data: any) { return this.instance.insert(tableName, data); }
-    async update(tableName: string, where: any, data: any) { return this.instance.update(tableName, where, data); }
-    async delete(tableName: string, where: any) { return this.instance.delete(tableName, where); }
-    async count(tableName: string, where?: any) { return this.instance.count(tableName, where); }
-}

@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/ThemeContext';
-import { useNotify } from '@/components/NotificationContext';
-import { useAuth } from '@/components/AuthContext';
+import { useTheme } from '@/components/theme-context';
+import { useNotify } from '@/components/notification-context';
+import { useAuth } from '@/components/auth-context';
 import { api } from '@/lib/api';
 
 const PublisherPortal = () => {

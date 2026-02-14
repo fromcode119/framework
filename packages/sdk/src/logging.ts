@@ -15,7 +15,7 @@ export class Logger {
   private minLevel: LogLevel;
 
   constructor(options: LoggerOptions = {}) {
-    this.namespace = options.namespace || 'System';
+    this.namespace = options.namespace || 'system';
     this.minLevel = options.minLevel !== undefined ? options.minLevel : LogLevel.DEBUG;
   }
 

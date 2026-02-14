@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/components/AuthContext';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { useAuth } from '@/components/auth-context';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';

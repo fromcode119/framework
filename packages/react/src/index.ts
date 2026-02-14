@@ -1,4 +1,4 @@
-export * from './Icons';
+export * from './icons';
 export { 
   PluginsProvider, usePlugins, useTranslation, usePluginAPI,
   registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem,
@@ -6,6 +6,6 @@ export {
   registerAPI, getAPI, loadConfig, resolveContent, emit, on, t, locale, setLocale, api
 } from './context';
 export * from '@fromcode/sdk';
-export { Slot } from './Slot';
-export { Override } from './Override';
-export { RootFramework } from './RootFramework';
+export { Slot } from './slot';
+export { Override } from './override';
+export { RootFramework } from './root-framework';

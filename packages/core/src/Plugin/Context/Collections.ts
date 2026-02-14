@@ -1,0 +1,119 @@
+import { Collection, LoadedPlugin } from '../../types';
+import { Logger } from '../../logging/logger';
+import { PluginManagerInterface, createSecurityHelpers } from './utils';
+import { registry } from '@fromcode/plugins';
+
+export function createCollectionsProxy(
+  plugin: LoadedPlugin,
+  manager: PluginManagerInterface,
+  rootLogger: Logger,
+  security: ReturnType<typeof createSecurityHelpers>
+) {
+  const { hasCapability, handleViolation } = security;
+
+  return {
+    register: (collection: Collection) => {
+      if (!hasCapability('database') && !hasCapability('content')) {
+        handleViolation('content');
+      }
+
+      const tablePrefix = `fcp_${plugin.manifest.slug.replace(/-/g, '_')}_`;
+      const inputSlug = collection.slug;
+      const prefixedSlug = inputSlug.startsWith(tablePrefix) ? inputSlug : `${tablePrefix}${inputSlug}`;
+
+      if (inputSlug.startsWith(plugin.manifest.slug) || inputSlug.startsWith('fcp_')) {
+        rootLogger.warn(
+          `Collection slug "${inputSlug}" in plugin "${plugin.manifest.slug}" may be redundantly prefixed. ` +
+          `The framework automatically handles table prefixing (final table: ${prefixedSlug}).`
+        );
+      }
+      
+      const shortSlug = collection.shortSlug || (inputSlug.startsWith(tablePrefix) ? inputSlug.replace(tablePrefix, '') : inputSlug);
+      
+      const modifiedCollection: Collection = {
+        ...collection,
+        slug: prefixedSlug,
+        shortSlug,
+        unprefixedSlug: inputSlug,
+        pluginSlug: plugin.manifest.slug,
+        name: collection.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
+      };
+
+      if (modifiedCollection.workflow) {
+        if (!modifiedCollection.fields.find(f => f.name === 'status')) {
+             modifiedCollection.fields.push({
+               name: 'status',
+               type: 'select',
+               label: 'Status',
+               defaultValue: 'draft',
+               options: [
+                 { label: 'Draft', value: 'draft' },
+                 { label: 'In Review', value: 'review' },
+                 { label: 'Published', value: 'published' }
+               ],
+               admin: { position: 'sidebar', section: 'Review Process' }
+             } as any);
+        }
+
+        if (!modifiedCollection.fields.find(f => f.name === 'publishedAt')) {
+          modifiedCollection.fields.push({
+            name: 'publishedAt',
+            type: 'datetime',
+            label: 'Published Date',
+            admin: { position: 'sidebar', section: 'Review Process' }
+          } as any);
+        }
+      }
+
+      const existing = manager.registeredCollections.get(prefixedSlug);
+      if (existing) {
+        const fieldNames = new Set(existing.collection.fields.map(f => f.name));
+        for (const field of modifiedCollection.fields) {
+          if (!fieldNames.has(field.name)) {
+            existing.collection.fields.push(field);
+          }
+        }
+      } else {
+        manager.registeredCollections.set(prefixedSlug, {
+          collection: modifiedCollection,
+          pluginSlug: plugin.manifest.slug
+        });
+      }
+
+      registry.registerEntity(plugin.manifest.slug, shortSlug, prefixedSlug);
+
+      manager.emit('collection:registered', { 
+        collection: manager.registeredCollections.get(prefixedSlug)?.collection, 
+        pluginSlug: plugin.manifest.slug 
+      });
+    },
+    extend: (targetPlugin: string, targetCollection: string, extensions: Partial<Collection>) => {
+      const fullSlug = `fcp_${targetPlugin.replace(/-/g, '_')}_${targetCollection}`;
+      
+      const entry = manager.getCollection(fullSlug);
+      if (entry) {
+        if (extensions.fields) {
+          const existingNames = new Set(entry.collection.fields.map(f => f.name));
+          extensions.fields.forEach(f => {
+            if (!existingNames.has(f.name)) {
+              entry.collection.fields.push(f);
+            }
+          });
+        }
+      } else {
+        manager.hooks.on('collection:registered', (data: any) => {
+           if (data.pluginSlug === targetPlugin && data.collection.shortSlug === targetCollection) {
+              if (extensions.fields) {
+                const existingNames = new Set(data.collection.fields.map(f => f.name));
+                extensions.fields.forEach((f: any) => {
+                  if (!existingNames.has(f.name)) {
+                    data.collection.fields.push(f);
+                  }
+                });
+              }
+           }
+        });
+      }
+    }
+  };
+}

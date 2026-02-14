@@ -1,7 +1,7 @@
 
-import { PluginSettingsController } from '../src/controllers/PluginSettingsController';
+import { PluginSettingsController } from '../src/controllers/plugin-settings-controller';
 
-describe('PluginSettingsController', () => {
+describe('plugin-settings-controller', () => {
   let controller: PluginSettingsController;
   let mockPluginManager: any;
 

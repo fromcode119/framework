@@ -1,19 +1,19 @@
 "use client";
 
 import React, { use, useState, useEffect } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { useNotify } from '@/components/NotificationContext';
+import { useNotify } from '@/components/notification-context';
 import { usePlugins } from '@fromcode/react';
-import { Dropdown } from '@/components/ui/Dropdown';
-import { Lightbox } from '@/components/ui/Lightbox';
-import { MarketplaceTheme } from '@fromcode/core';
+import { Dropdown } from '@/components/ui/dropdown';
+import { Lightbox } from '@/components/ui/lightbox';
+import type { MarketplaceTheme } from '@fromcode/core';
 
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);

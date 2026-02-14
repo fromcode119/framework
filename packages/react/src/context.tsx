@@ -2,10 +2,10 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import { Slot } from './Slot';
-import { Override } from './Override';
-import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './Icons';
-import { RootFramework } from './RootFramework';
+import { Slot } from './slot';
+import { Override } from './override';
+import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './icons';
+import { RootFramework } from './root-framework';
 
 export interface SlotComponent {
   component: React.ComponentType<any>;
@@ -170,6 +170,9 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       }
     });
     if (!res.ok) {
+        if (res.status === 404 && url.includes('/system/resolve')) {
+          return null;
+        }
         const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
         if (!silent) {
           console.error(`[Fromcode API] Error ${res.status} from ${url}:`, err);
@@ -218,6 +221,18 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         if (!normalizedSlug) return null;
 
         let query = `?slug=${encodeURIComponent(normalizedSlug)}`;
+        if (locale) {
+          query += `&locale=${encodeURIComponent(String(locale))}`;
+        }
+        const fallbackLocale = String(
+          settings?.fallback_locale ||
+          settings?.frontend_default_locale ||
+          settings?.default_locale ||
+          ''
+        ).trim();
+        if (fallbackLocale) {
+          query += `&fallback_locale=${encodeURIComponent(fallbackLocale)}`;
+        }
         if (typeof window !== 'undefined') {
           // Check both current URL and possible referer URL for flags
           const currentUrl = new URL(window.location.href);
@@ -236,7 +251,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     } catch (e) {
         return null;
     }
-  }, [api]);
+  }, [api, locale, settings?.default_locale, settings?.frontend_default_locale, settings?.fallback_locale]);
 
   const loadConfig = useCallback(async (path: string = '/system/frontend') => {
     try {
@@ -268,6 +283,29 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       // Store server runtime modules for the consolidated import map logic in useEffect
       if (data.runtimeModules) {
         setServerRuntimeModules(data.runtimeModules);
+      }
+
+      // Handle Admin Metadata if present
+      if (data.plugins) {
+        setPlugins(data.plugins);
+        const allCollections: CollectionMetadata[] = [];
+        data.plugins.forEach((p: any) => {
+          if (p.admin?.collections) {
+            allCollections.push(...p.admin.collections.map((c: any) => ({
+              ...c,
+              pluginSlug: p.slug // Ensure pluginSlug is present for resolution
+            })));
+          }
+        });
+        setCollections(allCollections);
+      }
+
+      if (data.menu) {
+        setMenuItems(data.menu);
+      }
+
+      if (data.settings) {
+        setSettings(data.settings);
       }
 
       if (data.cssVariables) {
@@ -712,7 +750,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         Layout: getIcon('Layout'),
         Columns: getIcon('Columns'),
         Copy: getIcon('Copy'),
-        Settings: getIcon('Settings'),
+        Settings: getIcon('settings'),
         BarChart3: getIcon('BarChart3'),
         PlusCircle: getIcon('PlusCircle'),
         File: getIcon('File'),

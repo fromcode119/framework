@@ -5,13 +5,21 @@ import sharp from 'sharp';
 import { StorageDriver } from '../index';
 
 export class LocalStorageDriver implements StorageDriver {
+  public readonly provider = 'local';
   constructor(private uploadDir: string, private publicUrlBase: string) {}
 
   async save(file: Buffer, filename: string, options?: any): Promise<string> {
     const ext = path.extname(filename);
-    const basename = path.basename(filename, ext);
+    const rawBasename = path.basename(filename, ext);
+    // Sanitize filename to avoid issues with spaces or special characters on disk
+    const slugifiedBasename = rawBasename
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+        
     const id = uuidv4();
-    const newFilename = `${basename}-${id}${ext}`;
+    const newFilename = `${slugifiedBasename || 'file'}-${id}${ext.toLowerCase()}`;
     const fullPath = path.join(this.uploadDir, newFilename);
 
     await fs.mkdir(this.uploadDir, { recursive: true });
@@ -34,6 +42,6 @@ export class LocalStorageDriver implements StorageDriver {
   }
 
   getUrl(filepath: string): string {
-    return `${this.publicUrlBase}/${filepath}`;
+    return `${this.publicUrlBase}/${encodeURIComponent(filepath)}`;
   }
 }

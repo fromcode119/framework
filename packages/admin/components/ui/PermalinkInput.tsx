@@ -5,7 +5,7 @@ import { Input } from './Input';
 import { Button } from './Button';
 import { usePlugins } from '@fromcode/react';
 import { FrameworkIcons } from '@/lib/icons';
-import { Collection } from '@fromcode/core';
+import type { Collection } from '@fromcode/core';
 import { getCollectionPrefix } from '@/lib/collection-utils';
 
 interface PermalinkInputProps {

@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Switch } from '@/components/ui/Switch';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
-import { useNotification } from '@/components/NotificationContext';
+import { useNotification } from '@/components/notification-context';
 import { ENDPOINTS } from '@/lib/constants';
-import { Loader } from '@/components/ui/Loader';
+import { Loader } from '@/components/ui/loader';
 
 export default function InfrastructureSettingsPage() {
   const { theme } = useTheme();

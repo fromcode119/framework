@@ -1,6 +1,3 @@
-import path from 'path';
-import fs from 'fs-extra';
-import archiver from 'archiver';
 import { MarketplacePlugin, MarketplaceData } from '@fromcode/sdk';
 
 export { MarketplacePlugin, MarketplaceData };
@@ -24,6 +21,8 @@ export class MarketplaceClient {
         }
         return await response.json() as MarketplaceData;
       } else {
+        const fs = require('fs-extra');
+        const path = require('path');
         const localPath = path.resolve(this.marketplaceUrl);
         if (!fs.existsSync(localPath)) {
           throw new Error(`Local marketplace file not found: ${localPath}`);
@@ -40,6 +39,10 @@ export class MarketplaceClient {
    * Pack a plugin into a ZIP file
    */
   public async pack(pluginPath: string, outPath: string): Promise<string> {
+    const fs = require('fs-extra');
+    const archiver = require('archiver');
+    const path = require('path');
+
     if (!fs.existsSync(pluginPath)) {
       throw new Error(`Plugin path does not exist: ${pluginPath}`);
     }
@@ -78,6 +81,8 @@ export class MarketplaceClient {
    * Publish a plugin to the marketplace
    */
   public async publish(zipPath: string, token?: string): Promise<any> {
+    const fs = require('fs-extra');
+    const path = require('path');
     if (!fs.existsSync(zipPath)) {
       throw new Error(`ZIP file not found: ${zipPath}`);
     }

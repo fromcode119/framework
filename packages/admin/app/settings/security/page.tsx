@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Switch } from '@/components/ui/Switch';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
-import { useNotification } from '@/components/NotificationContext';
+import { useNotification } from '@/components/notification-context';
 import { ENDPOINTS } from '@/lib/constants';
-import { Loader } from '@/components/ui/Loader';
-import { Badge } from '@/components/ui/Badge';
+import { Loader } from '@/components/ui/loader';
+import { Badge } from '@/components/ui/badge';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
   <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
@@ -41,6 +41,7 @@ export default function SecuritySettingsPage() {
     two_factor_enabled: false,
     rate_limit_max: '100',
     rate_limit_window: '900000',
+    auth_session_duration_minutes: '10080',
   });
 
   const fetchStats = async () => {
@@ -59,7 +60,7 @@ export default function SecuritySettingsPage() {
         const docs = response.docs || [];
         const newSettings = { ...settings };
         docs.forEach((s: any) => {
-          if (['two_factor_enabled', 'rate_limit_max', 'rate_limit_window'].includes(s.key)) {
+          if (['two_factor_enabled', 'rate_limit_max', 'rate_limit_window', 'auth_session_duration_minutes'].includes(s.key)) {
             newSettings[s.key] = s.key === 'two_factor_enabled' ? s.value === 'true' : s.value;
           }
         });
@@ -232,6 +233,22 @@ export default function SecuritySettingsPage() {
         {activeTab === 'settings' && (
           <>
             <Card title="Account Defense">
+              <SettingRow 
+                theme={theme}
+                icon={FrameworkIcons.Clock}
+                title="Login Session Duration (minutes)" 
+                description="How long a user stays logged in before re-authentication is required."
+              >
+                <Input 
+                  type="number"
+                  min={15}
+                  max={43200}
+                  value={settings.auth_session_duration_minutes}
+                  onChange={(e) => setSettings(prev => ({ ...prev, auth_session_duration_minutes: e.target.value }))}
+                  className="w-full md:w-40"
+                />
+              </SettingRow>
+
               <SettingRow 
                 theme={theme}
                 icon={FrameworkIcons.ShieldCheck} 

@@ -4,14 +4,25 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import * as http from 'http';
 import dotenv from 'dotenv';
-import { PluginManager, ThemeManager, Logger, requestContext, HotReloadService, RecordVersions, WebSocketManager, validateEnv } from '@fromcode/core';
+import { 
+  PluginManager, 
+  ThemeManager, 
+  Logger, 
+  requestContext, 
+  HotReloadService, 
+  RecordVersions, 
+  WebSocketManager, 
+  validateEnv,
+  HookAdapterFactory,
+  QueueAdapterFactory
+} from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { MediaManager } from '@fromcode/media';
 import { CacheFactory, CacheManager } from '@fromcode/cache';
 import { systemSessions, eq, and, gt } from '@fromcode/database';
 import * as path from 'path';
 import * as fs from 'fs';
-import { RESTController } from './controllers/RESTController';
+import { RESTController } from './controllers/rest-controller';
 import { API_ROUTES } from './constants';
 import { setupAuthRoutes } from './routes/auth';
 import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
@@ -27,7 +38,7 @@ import { generateOpenAPI } from './swagger';
 import { createCollectionMiddleware } from './middlewares/collection';
 import { csrfMiddleware, xssMiddleware } from './middlewares/security';
 import { SchedulerService } from '@fromcode/scheduler';
-import { GraphQLService } from './services/GraphQLService';
+import { GraphQLService } from './services/graph-ql-service';
 import { createHandler } from 'graphql-http/lib/use/express';
 
 export class APIServer {
@@ -98,8 +109,24 @@ export class APIServer {
 
     this.app.use('/api/', limiter);
     this.mediaManager = (this.manager as any).storage;
-    const systemUploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(process.cwd(), 'public/uploads');
+    
+    // Resolve absolute upload directory based on framework root to ensure consistency
+    const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
+    const systemUploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(frameworkRoot, 'public/uploads');
+    const publicUrl = process.env.STORAGE_PUBLIC_URL || '/uploads';
+    
+    if (!this.mediaManager) {
+      this.logger.warn('Storage integration not initialized. Falling back to default LocalMediaManager.');
+      const { StorageFactory } = require('@fromcode/media');
+      this.mediaManager = new MediaManager(StorageFactory.create('local', { uploadDir: systemUploadDir, publicUrlBase: publicUrl }));
+    }
+
+    // Serve uploads from both the base path and any configured public URL
     this.app.use('/uploads', express.static(systemUploadDir));
+    if (publicUrl !== '/uploads') {
+      this.app.use(publicUrl, express.static(systemUploadDir));
+    }
+
     this.setupAuthIntegration();
     this.registerCoreCollection('users', UserCollection);
     this.registerCoreCollection('media', MediaCollection);
@@ -188,10 +215,17 @@ export class APIServer {
         { key: 'frontend_url', value: 'http://frontend.framework.local', description: 'The primary URL for your frontend application.', group: 'General' },
         { key: 'routing_home_target', value: 'auto', description: 'Homepage route target. Examples: auto, layout:<name>, collection:<slug>:<id>', group: 'Routing' },
         { key: 'permalink_structure', value: '/:slug', description: 'The default URL structure for your content (e.g. /:year/:month/:slug)', group: 'General' },
-        { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'System' },
-        { key: 'rate_limit_max', value: '100', description: 'Maximum requests per window per IP', group: 'Security' },
-        { key: 'rate_limit_window', value: '900000', description: 'Rate limit window in milliseconds (15min = 900000)', group: 'Security' },
-        { key: 'two_factor_enabled', value: 'false', description: 'Enable two-factor authentication for admin accounts.', group: 'Security' },
+        { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'system' },
+        { key: 'rate_limit_max', value: '100', description: 'Maximum requests per window per IP', group: 'security' },
+        { key: 'rate_limit_window', value: '900000', description: 'Rate limit window in milliseconds (15min = 900000)', group: 'security' },
+        { key: 'auth_session_duration_minutes', value: '10080', description: 'Login session duration in minutes for access token/cookie/session expiry.', group: 'security' },
+        { key: 'two_factor_enabled', value: 'false', description: 'Enable two-factor authentication for admin accounts.', group: 'security' },
+        { key: 'localization_locales', value: '[{"code":"en","name":"English","enabled":true}]', description: 'JSON array of available locales with code, name and enabled state.', group: 'Localization' },
+        { key: 'enabled_locales', value: 'en', description: 'Comma-separated list of enabled locale codes for compatibility layers.', group: 'Localization' },
+        { key: 'default_locale', value: 'en', description: 'Default locale for system-level operations.', group: 'Localization' },
+        { key: 'admin_default_locale', value: 'en', description: 'Default language for the admin interface.', group: 'Localization' },
+        { key: 'frontend_default_locale', value: 'en', description: 'Default language for public frontend rendering.', group: 'Localization' },
+        { key: 'locale_url_strategy', value: 'query', description: 'Locale URL strategy for frontend routes: query, path, or none.', group: 'Localization' },
         { key: 'email_notifications', value: 'true', description: 'Receive system alerts and audit snapshots via email.', group: 'Engagement' }
       ];
 
@@ -510,15 +544,23 @@ export class APIServer {
     vApi.use('/auth', setupAuthRoutes(this.manager, this.auth));
     vApi.use('/plugins', setupPluginRoutes(this.manager, this.auth));
     vApi.use('/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
+    
+    // Mount plugin routes under /plugins for backward compatibility (e.g. /api/v1/plugins/forms/submit)
+    vApi.use('/plugins', this.pluginRouter);
+
     vApi.use('/marketplace', setupMarketplaceRoutes(this.manager, this.auth));
     vApi.use('/themes', setupThemeRoutes(this.themeManager, this.auth));
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
     
-    // Add collections to versioned API
+    // Add collections to versioned API - Mount this BEFORE pluginRouter to ensure 
+    // /api/v1/collections/:slug takes precedence over /api/v1/:plugin/:slug
     vApi.use(setupCollectionRoutes(this.manager, this.restController));
 
+    // Mount plugin routes directly under the API root to allow for shorter URLs: /api/v1/cms/pages
+    vApi.use(this.pluginRouter);
+    
     // Mount versioned API
     this.app.use(vPrefix, vApi);
 
@@ -565,7 +607,7 @@ export class APIServer {
     server.on('upgrade', (request, socket, head) => {
       const pathname = new URL(request.url || '', `http://${host}:${port}`).pathname;
 
-      if (pathname === '/socket') {
+      if (pathname === '/socket' && wss) {
         wss.handleUpgrade(request, socket, head, (ws) => {
           wss.emit('connection', ws, request);
         });
@@ -613,6 +655,27 @@ async function bootstrap() {
     }
 
     console.log('--- Initializing Fromcode API Server ---');
+    
+    // Register Default Adapters (Lazy)
+    HookAdapterFactory.register('local', () => {
+      const { LocalHookAdapter } = require('@fromcode/core/src/hooks/adapters/local-hook-adapter');
+      return new LocalHookAdapter();
+    });
+    HookAdapterFactory.register('redis', (opts) => {
+      const { RedisHookAdapter } = require('@fromcode/core/src/hooks/adapters/redis-hook-adapter');
+      return new RedisHookAdapter(opts.redisUrl || process.env.REDIS_URL!, opts.namespace);
+    });
+    
+    QueueAdapterFactory.register('local', () => {
+      const { LocalQueueAdapter } = require('@fromcode/core/src/queue/adapters/local-queue-adapter');
+      return new LocalQueueAdapter();
+    });
+    QueueAdapterFactory.register('bull', (opts) => {
+      const { BullQueueAdapter } = require('@fromcode/core/src/queue/adapters/bull-queue-adapter');
+      return new BullQueueAdapter(opts.redisUrl || process.env.REDIS_URL!, opts.namespace);
+    });
+    QueueAdapterFactory.register('redis', (opts) => QueueAdapterFactory.create('bull', opts));
+
     const manager = new PluginManager();
     
     // 1. Manager Initialization (DB/Migrations)
@@ -651,6 +714,11 @@ async function bootstrap() {
     try {
       console.log('Step 4: Discovering Plugins...');
       await manager.discoverPlugins();
+      try {
+        await themeManager.ensureActiveThemeDependencies();
+      } catch (err) {
+        console.error('ERROR: Active theme dependency enforcement failed.', err);
+      }
       server.setupPluginCollectionProxy();
     } catch (err) {
       console.error('ERROR: Initial plugin discovery failed. Check manifest files and permissions.', err);

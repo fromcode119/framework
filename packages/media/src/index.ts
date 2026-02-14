@@ -1,10 +1,11 @@
 import path from 'path';
 import sharp from 'sharp';
 
-export * from './MediaService';
-export * from './MediaCollection';
+export * from './media-service';
+export * from './media-collection';
 
 export interface StorageDriver {
+  readonly provider: string;
   save(file: Buffer, filename: string, options?: any): Promise<string>;
   delete(filepath: string): Promise<void>;
   getUrl(filepath: string): string;
@@ -39,11 +40,11 @@ export class StorageFactory {
     });
     this.register('s3', (config) => {
       const { S3StorageDriver } = require('./drivers/s3-driver');
-      return new S3StorageDriver(config);
+      return new S3StorageDriver({ ...config, provider: 's3' });
     });
     this.register('r2', (config) => {
       const { S3StorageDriver } = require('./drivers/s3-driver');
-      return new S3StorageDriver(config);
+      return new S3StorageDriver({ ...config, provider: 'r2' });
     });
   }
 }
@@ -55,7 +56,9 @@ export class MediaManager {
     this.driver = driver;
   }
 
-  async upload(file: Buffer, filename: string): Promise<{ url: string; path: string; width?: number; height?: number; size: number; mimeType: string }> {
+  get provider() { return this.driver.provider; }
+
+  async upload(file: Buffer, filename: string): Promise<{ url: string; path: string; width?: number; height?: number; size: number; mimeType: string; provider: string }> {
     const ext = path.extname(filename).toLowerCase();
     const mimeMap: Record<string, string> = {
       '.jpg': 'image/jpeg',
@@ -86,7 +89,8 @@ export class MediaManager {
       width,
       height,
       size: file.length,
-      mimeType
+      mimeType,
+      provider: this.driver.provider
     };
   }
 

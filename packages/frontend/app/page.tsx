@@ -1,170 +1,113 @@
-"use client";
+import HomeClient from './home-client';
+import { serverFetchJson } from '../lib/serverApi';
+import { cookies } from 'next/headers';
+import { cache } from 'react';
 
-import React, { useEffect, useState } from 'react';
-import { Slot, usePlugins } from '@fromcode/react';
+export const dynamic = 'force-dynamic';
 
-function getFieldNames(collection: any): Set<string> {
-  const fields = Array.isArray(collection?.fields) ? collection.fields : [];
-  return new Set(fields.map((f: any) => String(f?.name || '').trim()).filter(Boolean));
+type SearchParams = Record<string, string | string[] | undefined>;
+type MaybePromise<T> = T | Promise<T>;
+
+type HomePageProps = {
+  searchParams?: MaybePromise<SearchParams>;
+};
+
+function normalizeLocaleCode(value: any): string {
+  return String(value || '').trim().toLowerCase().replace(/_/g, '-');
 }
 
-function getAutoCollectionPriority(collection: any): number {
-  const fields = getFieldNames(collection);
-  let score = 100;
-
-  if (fields.has('content')) score -= 30;
-  if (fields.has('themeLayout')) score -= 20;
-  if (fields.has('customPermalink') || fields.has('path')) score -= 20;
-  if (fields.has('title') || fields.has('name')) score -= 10;
-
-  return score;
+async function readSettingValue(key: string): Promise<string> {
+  const map = await readSettingsMap();
+  return String(map.get(key) || '').trim();
 }
 
-export default function Home() {
-  const [content, setContent] = useState<any>(null);
-  const [forcedLayout, setForcedLayout] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { themeLayouts, api, collections } = usePlugins();
+const readSettingsMap = cache(async () => {
+  const result = await serverFetchJson('/collections/settings?limit=500');
+  const docs = Array.isArray(result?.docs)
+    ? result.docs
+    : Array.isArray(result)
+      ? result
+      : [];
 
-  useEffect(() => {
-    async function detectAutoHomeRecord() {
-      const candidates = (collections || [])
-        .filter((c: any) => {
-          if (!c || c.system) return false;
-          return getFieldNames(c).has('slug');
-        })
-        .map((c: any) => ({
-          collectionSlug: c.shortSlug || c.slug,
-          collectionLabel: c.label || c.name || c.shortSlug || c.slug,
-          priority: getAutoCollectionPriority(c)
-        }))
-        .sort((a: any, b: any) => a.priority - b.priority || a.collectionSlug.localeCompare(b.collectionSlug));
+  const map = new Map<string, string>();
+  for (const doc of docs) {
+    const key = String(doc?.key || '').trim();
+    if (!key) continue;
+    map.set(key, String(doc?.value ?? '').trim());
+  }
+  return map;
+});
 
-      const queries = [
-        'customPermalink=%2F',
-        'path=%2F',
-        'slug=home',
-      ];
+async function getLocaleUrlStrategy(): Promise<'query' | 'path' | 'none'> {
+  const value = (await readSettingValue('locale_url_strategy')).toLowerCase();
+  if (value === 'path' || value === 'none') return value;
+  return 'query';
+}
 
-      for (const query of queries) {
-        for (const candidate of candidates) {
-          try {
-            const result = await api.get(`/collections/${encodeURIComponent(candidate.collectionSlug)}?${query}&limit=1`);
-            const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
-            if (doc) return doc;
-          } catch {
-            // Continue scanning.
-          }
-        }
-      }
-      return null;
+async function resolveSearchParams(searchParams?: MaybePromise<SearchParams>): Promise<SearchParams | undefined> {
+  if (!searchParams) return undefined;
+  return await searchParams;
+}
+
+function readSearchValue(searchParams: SearchParams | undefined, key: string): string {
+  const value = searchParams?.[key];
+  if (Array.isArray(value)) return String(value[0] || '').trim();
+  return String(value || '').trim();
+}
+
+async function resolveLocale(searchParams: SearchParams | undefined, strategy: 'query' | 'path' | 'none') {
+  if (strategy === 'query') {
+    const fromQuery = normalizeLocaleCode(readSearchValue(searchParams, 'locale') || readSearchValue(searchParams, 'lang'));
+    if (fromQuery) return fromQuery;
+  }
+  const cookieStore = await cookies();
+  const fromCookie = normalizeLocaleCode(cookieStore.get('fc_locale')?.value || '');
+  return fromCookie || '';
+}
+
+async function resolveBySlug(slug: string, locale: string, fallbackLocale: string) {
+  const query = new URLSearchParams();
+  query.set('slug', slug);
+  if (locale) query.set('locale', locale);
+  if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
+  const result = await serverFetchJson(`/system/resolve?${query.toString()}`);
+  return result?.doc || null;
+}
+
+async function resolveHomeTarget(locale: string, fallbackLocale: string) {
+  const target = (await readSettingValue('routing_home_target')) || 'auto';
+
+  if (target.startsWith('layout:')) {
+    const forcedLayout = target.slice('layout:'.length).trim();
+    return { content: null, forcedLayout: forcedLayout || null };
+  }
+
+  if (target.startsWith('collection:')) {
+    const parts = target.split(':');
+    const collectionSlug = parts[1];
+    const recordId = parts.slice(2).join(':');
+    if (collectionSlug && recordId) {
+      const result = await serverFetchJson(`/collections/${encodeURIComponent(collectionSlug)}?id=${encodeURIComponent(recordId)}&limit=1`);
+      const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
+      if (doc) return { content: doc, forcedLayout: null };
     }
-
-    async function fetchContent() {
-      try {
-        const routingSettingResult = await api.get('/collections/settings?key=routing_home_target&limit=1');
-        const routingSetting = Array.isArray(routingSettingResult)
-          ? routingSettingResult[0]
-          : routingSettingResult?.docs?.[0];
-
-        const target = (routingSetting?.value || 'auto').toString().trim();
-
-        if (target === 'auto') {
-          const autoDoc = await detectAutoHomeRecord();
-          if (autoDoc) {
-            setContent(autoDoc);
-            return;
-          }
-        } else if (target.startsWith('layout:')) {
-          const layoutName = target.slice('layout:'.length).trim();
-          if (layoutName) {
-            setForcedLayout(layoutName);
-            return;
-          }
-        } else if (target.startsWith('collection:')) {
-          const parts = target.split(':');
-          const collectionSlug = parts[1];
-          const recordId = parts.slice(2).join(':');
-
-          if (collectionSlug && recordId) {
-            const result = await api.get(`/collections/${encodeURIComponent(collectionSlug)}?id=${encodeURIComponent(recordId)}&limit=1`);
-            const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
-            if (doc) {
-              setContent(doc);
-              return;
-            }
-          }
-        }
-      } catch (err) {
-        console.error("[Frontend: Home] Content Resolve Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchContent();
-  }, [api, collections]);
-
-  // If we have CMS content for the home page, render it using the selected layout
-  if (content) {
-    const selectedLayoutName = content.themeLayout || 'DefaultLayout';
-    const LayoutComponent = themeLayouts?.[selectedLayoutName] || themeLayouts?.['DefaultLayout'] || themeLayouts?.['LandingLayout'] || (({ children }: any) => <>{children}</>);
-    
-    return (
-      <LayoutComponent page={content}>
-        <div className="w-full">
-          <Slot name="frontend.content.display" props={{ content: content.content }} />
-          
-          {(!content.content || typeof content.content === 'string') && (
-            <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
-              <h1 className="text-4xl font-black mb-8">{content.title}</h1>
-              <div dangerouslySetInnerHTML={{ __html: content.content || '' }} />
-            </div>
-          )}
-
-          <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
-            <Slot name="frontend.content.footer" props={{ content }} />
-          </div>
-        </div>
-      </LayoutComponent>
-    );
   }
 
-  if (forcedLayout && themeLayouts?.[forcedLayout] && !loading) {
-    const ForcedLayoutComponent = themeLayouts[forcedLayout];
-    return <ForcedLayoutComponent />;
-  }
+  // Auto mode: prefer root path, then "home".
+  const byRoot = await resolveBySlug('/', locale, fallbackLocale);
+  if (byRoot) return { content: byRoot, forcedLayout: null };
 
-  const FallbackLayout = themeLayouts?.LandingLayout || themeLayouts?.Home || themeLayouts?.Main || themeLayouts?.['StandardLayout'];
+  const byHome = await resolveBySlug('home', locale, fallbackLocale);
+  if (byHome) return { content: byHome, forcedLayout: null };
 
-  if (FallbackLayout && !loading) {
-    return <FallbackLayout />;
-  }
+  return { content: null, forcedLayout: null };
+}
 
-  return (
-    <div className="text-center space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
-      <h1 className="text-4xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-6xl">
-        {loading ? 'Loading...' : 'Fromcode Framework'}
-      </h1>
-      <p className="text-lg text-[var(--foreground)] opacity-70">
-        The open-source platform for building scalable applications.
-      </p>
-
-      {!loading && (
-        <div className="flex gap-4 justify-center">
-          <a
-            href="/admin"
-            className="btn-primary"
-          >
-            Go to Admin
-          </a>
-          <a
-            href="https://docs.fromcode.com"
-            className="btn-secondary"
-          >
-            Documentation
-          </a>
-        </div>
-      )}
-    </div>
-  );
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const resolvedSearchParams = await resolveSearchParams(searchParams);
+  const localeStrategy = await getLocaleUrlStrategy();
+  const locale = await resolveLocale(resolvedSearchParams, localeStrategy);
+  const fallbackLocale = normalizeLocaleCode(readSearchValue(resolvedSearchParams, 'fallback_locale'));
+  const { content, forcedLayout } = await resolveHomeTarget(locale, fallbackLocale);
+  return <HomeClient initialContent={content} forcedLayout={forcedLayout} />;
 }

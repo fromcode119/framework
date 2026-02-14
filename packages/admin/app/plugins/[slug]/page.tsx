@@ -2,21 +2,22 @@
 
 import React, { use, useState, useEffect } from 'react';
 import { Slot, usePlugins, Plugin } from '@fromcode/react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Switch } from '@/components/ui/Switch';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { useNotify } from '@/components/NotificationContext';
-import { Loader } from '@/components/ui/Loader';
-import { Select } from '@/components/ui/Select';
-import { PluginSettingsForm } from '@/components/plugins/PluginSettingsForm';
+import { useNotify } from '@/components/notification-context';
+import { Loader } from '@/components/ui/loader';
+import { Select } from '@/components/ui/select';
+import { PluginSettingsForm } from '@/components/plugins/plugin-settings-form';
 
 export default function PluginDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -45,7 +46,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
   const settingsCollections = collections.filter(c => 
     c.pluginSlug === slug && 
-    c.admin?.group === 'Settings'
+    c.admin?.group === 'settings'
   );
 
   const fetchPlugin = async () => {
@@ -538,12 +539,12 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
         {/* Right Column: Metadata & Details */}
         <div className="space-y-8">
           <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-            <h3 className={`text-[11px] font-black uppercase tracking-widest mb-8 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+            <h3 className={`text-[11px] font-black tracking-widest mb-8 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
               Manifest Details
             </h3>
             <div className="space-y-8">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-black uppercase tracking-widest text-slate-500">Security Layers</span>
+                <span className="text-xs font-black tracking-widest text-slate-500">Security Layers</span>
                 <div className="flex -space-x-1.5">
                    {plugin.capabilities && plugin.capabilities.length > 0 ? (
                      plugin.capabilities.slice(0, 4).map(c => (
@@ -559,7 +560,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
               </div>
 
               <div className="flex justify-between items-center">
-                 <span className="text-xs font-black uppercase tracking-widest text-slate-500">Author</span>
+                 <span className="text-xs font-black tracking-widest text-slate-500">Author</span>
                  <span className={`text-sm font-black ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
                     {typeof plugin.author === 'object' ? (plugin.author as any).name : (plugin.author || 'Official Core')}
                  </span>

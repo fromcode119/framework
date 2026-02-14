@@ -3,7 +3,7 @@ import { HookManager } from '@fromcode/core';
 import { WebSocket } from 'ws';
 import * as http from 'http';
 
-describe('WebSocketManager', () => {
+describe('web-socket-manager', () => {
   let manager: WebSocketManager;
   let hooks: HookManager;
   let server: http.Server;

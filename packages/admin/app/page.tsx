@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { Slot, usePlugins } from '@fromcode/react';
-import { useAuth } from '@/components/AuthContext';
-import { StatCard } from '@/components/ui/StatCard';
-import { Card, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/components/auth-context';
+import { StatCard } from '@/components/ui/stat-card';
+import { Card, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
@@ -206,12 +206,14 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {stats.filter(s => (!s.system || s.slug === 'users' || s.slug === 'media') && !s.hidden).map(s => {
                 const colShortSlug = s.shortSlug || s.slug;
-                const colPluginSlug = s.pluginSlug || 'system';
+                const colPluginSlug = s.pluginSlug || 'System';
                 
                 // Content Routing: Platform core entities use root-level paths
                 // whilst plugins use /plugin/slug paths.
                 let adminPath = `/${colPluginSlug}/${colShortSlug}`;
-                if (colPluginSlug === 'system') {
+                const displayPluginSlug = colPluginSlug.charAt(0).toUpperCase() + colPluginSlug.slice(1);
+                
+                if (colPluginSlug.toLowerCase() === 'system') {
                     if (colShortSlug === 'users') adminPath = '/users';
                     if (colShortSlug === 'media') adminPath = '/media';
                 }
@@ -225,11 +227,13 @@ export default function AdminPage() {
                       <div>
                         <div className="flex items-center gap-2">
                            <p className="text-xs font-black uppercase tracking-widest text-slate-400">{s.name || colShortSlug}</p>
-                           {s.system && (
-                             <span className="text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400">
-                               Platform
-                             </span>
-                           )}
+                           <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter ${
+                             s.system 
+                               ? 'bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400' 
+                               : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                           }`}>
+                             {s.system ? 'Core' : displayPluginSlug}
+                           </span>
                         </div>
                         <h4 className="text-2xl font-black tracking-tight mt-0.5 text-slate-900 dark:text-white">{s.count}</h4>
                       </div>
@@ -289,7 +293,9 @@ export default function AdminPage() {
                         </div>
                         <div className="flex items-center gap-2 mt-1.5">
                           <span className="text-[9px] font-black uppercase tracking-widest opacity-40 text-slate-900 dark:text-slate-400">Source:</span>
-                          <span className="text-[10px] font-black uppercase tracking-widest transition-colors text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-white">{item.plugin || 'System'}</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest transition-colors text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-white">
+                            {item.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : 'System'}
+                          </span>
                         </div>
                       </div>
                     </div>
