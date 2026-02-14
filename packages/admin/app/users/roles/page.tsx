@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import Link from 'next/link';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { useNotify } from '@/components/NotificationContext';
-import { Loader } from '@/components/ui/Loader';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useNotify } from '@/components/notification-context';
+import { Loader } from '@/components/ui/loader';
 
 export default function RolesPage() {
   const { theme } = useTheme();
@@ -273,8 +273,11 @@ export default function RolesPage() {
                               {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter flex items-center gap-1.5 mt-0.5 opacity-70">
-                             {log.plugin_slug || 'System'}
+                          <span className="text-[10px] text-slate-500 font-black uppercase tracking-tight flex items-center gap-1.5 mt-0.5 opacity-70">
+                             {(() => {
+                               const slug = log.plugin_slug || 'System';
+                               return slug.charAt(0).toUpperCase() + slug.slice(1);
+                             })()}
                           </span>
                         </div>
                       </div>

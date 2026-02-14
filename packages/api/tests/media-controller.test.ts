@@ -1,6 +1,6 @@
-import { MediaController } from '../src/controllers/MediaController';
+import { MediaController } from '../src/controllers/media-controller';
 
-describe('MediaController.listFiles', () => {
+describe('media-controller.listFiles', () => {
   const buildResponse = () => {
     const res: any = {
       json: jest.fn(),

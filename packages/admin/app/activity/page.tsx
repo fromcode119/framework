@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
-import { DataTable } from '@/components/ui/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { RootFramework } from '@fromcode/react';
@@ -123,7 +123,7 @@ export default function ActivityPage() {
       accessor: (row: any) => (
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-indigo-500/60 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-          <span className="font-bold text-[11px] text-slate-500 uppercase tracking-[0.1em]">{row.plugin_slug || 'CORE'}</span>
+          <span className="font-bold text-[11px] text-slate-500 uppercase tracking-[0.1em]">{row.plugin_slug ? (row.plugin_slug.charAt(0).toUpperCase() + row.plugin_slug.slice(1)) : 'System'}</span>
         </div>
       )
     },
@@ -171,14 +171,14 @@ export default function ActivityPage() {
       }
     },
     {
-      header: 'Plugin',
+      header: 'plugin',
       id: 'plugin',
       accessor: (row: any) => (
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-black">
-             {row.plugin_slug ? row.plugin_slug[0].toUpperCase() : 'C'}
+             {row.plugin_slug ? row.plugin_slug[0].toUpperCase() : 'S'}
           </div>
-          <span className="font-bold text-[11px] text-slate-600 dark:text-slate-200 uppercase tracking-widest">{row.plugin_slug || 'CORE'}</span>
+          <span className="font-bold text-[11px] text-slate-600 dark:text-slate-200 uppercase tracking-widest">{row.plugin_slug ? (row.plugin_slug.charAt(0).toUpperCase() + row.plugin_slug.slice(1)) : 'System'}</span>
         </div>
       )
     },
@@ -338,7 +338,7 @@ export default function ActivityPage() {
                        <div className="space-y-4">
                           <div className="flex flex-col">
                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Resource</span>
-                             <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedLog.plugin_slug || 'Core System'}</span>
+                             <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedLog.plugin_slug ? (selectedLog.plugin_slug.charAt(0).toUpperCase() + selectedLog.plugin_slug.slice(1)) : 'System'}</span>
                           </div>
                           <div className="flex flex-col">
                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Timestamp</span>

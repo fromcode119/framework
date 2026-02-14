@@ -20,15 +20,49 @@ export interface PluginContext {
     warn: (message: string) => void;
     error: (message: string) => void;
   };
-  readonly cache: ICacheManager;
+  
+  readonly integrations: {
+    /**
+     * Register a new integration type (e.g. 'payment', 'search', 'sms')
+     */
+    registerType(definition: {
+      key: string;
+      label: string;
+      description?: string;
+      defaultProvider: string;
+      providers?: any[];
+      resolveFromEnv?: () => { provider?: string; config?: Record<string, any> } | null;
+    }): void;
+
+    /**
+     * Register a new provider for an existing integration type
+     */
+    registerProvider(typeKey: string, provider: {
+      key: string;
+      label: string;
+      description?: string;
+      fields?: any[];
+      create: (config: Record<string, any>) => any | Promise<any>;
+      normalizeConfig?: (config: Record<string, any>) => Record<string, any>;
+    }): void;
+
+    /**
+     * Resolve and instantiate an integration by its type key
+     */
+    get<T = any>(typeKey: string): Promise<T>;
+  };
+
+  /**
+   * Shortcuts for core integrations
+   */
   readonly storage: IMediaManager;
   readonly email: IEmailManager;
+  readonly cache: ICacheManager;
+
   readonly redis: any;
   readonly fetch: (url: string, init?: any) => Promise<any>;
   readonly jobs: {
-    enqueue(name: string, data: any, options?: any): Promise<any>;
     worker(processor: (job: any) => Promise<any>, options?: any): void;
-    // Namespaced enqueue
     add(name: string, data: any, options?: any): Promise<any>;
   };
 
@@ -59,7 +93,7 @@ export interface PluginContext {
   readonly plugins: {
     isEnabled(slug: string): boolean;
     getAPI(slug: string): any;
-    emit(event: string, data: any): void;
+    emit(event: string, payload: any): void;
     on(event: string, handler: (payload: any) => void | Promise<void>): void;
   };
 
@@ -82,7 +116,10 @@ export interface PluginContext {
     registerTranslations(locale: string, translations: Record<string, any>): void;
   };
 
-  t(key: string, params?: Record<string, any>): string;
+  /**
+   * Shortcut for i18n.t
+   */
+  readonly t: (key: string, params?: Record<string, any>) => string;
 
   readonly ui: {
     registerHeadInjection(injection: { tag: string; props: Record<string, any>; content?: string }): void;

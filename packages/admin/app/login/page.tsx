@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth } from '@/components/AuthContext';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { useAuth } from '@/components/auth-context';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { useNotify } from '@/components/NotificationContext';
+import { useNotify } from '@/components/notification-context';
 import { APP_NAME } from '@/lib/env';
 import { purgeAuth } from '@/lib/auth-utils';
 

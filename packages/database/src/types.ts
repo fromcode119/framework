@@ -1,4 +1,20 @@
 /**
+ * Minimal schema interfaces to avoid circular dependency with core
+ */
+export interface ISchemaField {
+  name: string;
+  type: string;
+  required?: boolean;
+  unique?: boolean;
+  defaultValue?: any;
+}
+
+export interface ISchemaCollection {
+  slug: string;
+  fields: ISchemaField[];
+}
+
+/**
  * Interface representing a database manager that provides access to Drizzle ORM
  * and high-level CRUD operations.
  */
@@ -26,6 +42,15 @@ export interface IDatabaseManager {
   delete(tableOrName: any, where: any): Promise<boolean>;
   
   count(tableName: string, where?: any): Promise<number>;
+
+  // Schema Management (Agnostic)
+  getTables(): Promise<string[]>;
+  tableExists(tableName: string): Promise<boolean>;
+  getColumns(tableName: string): Promise<string[]>;
+  createTable(collection: ISchemaCollection): Promise<void>;
+  addColumn(tableName: string, field: ISchemaField): Promise<void>;
+  ensureMigrationTable(tableName: string): Promise<void>;
+  resetDatabase(): Promise<void>;
 }
 
 export type TableNameResolver = (name: any) => any;

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Slot } from '@fromcode/react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
@@ -20,12 +20,12 @@ interface User {
   status?: string;
 }
 
-import { DataTable } from '@/components/ui/DataTable';
-import { Button } from '@/components/ui/Button';
-import { StatCard } from '@/components/ui/StatCard';
-import { Loader } from '@/components/ui/Loader';
-import { Dropdown } from '@/components/ui/Dropdown';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { DataTable } from '@/components/ui/data-table';
+import { Button } from '@/components/ui/button';
+import { StatCard } from '@/components/ui/stat-card';
+import { Loader } from '@/components/ui/loader';
+import { Dropdown } from '@/components/ui/dropdown';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useRouter } from 'next/navigation';
 
 export default function UsersPage() {

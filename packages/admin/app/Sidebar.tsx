@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { Slot, usePlugins } from '@fromcode/react';
-import { useTheme } from '@/components/ThemeContext';
-import { useAuth } from '@/components/AuthContext';
-import { Icon } from '@/components/Icon';
+import { useTheme } from '@/components/theme-context';
+import { useAuth } from '@/components/auth-context';
+import { Icon } from '@/components/icon';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -208,24 +208,33 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
 
   // Group menu items by their group property
   const groupedMenu = authorizedMenuItems.reduce((acc: Record<string, any[]>, item) => {
-    const group = item.group;
-    if (!group) {
-        // Items without a group go into Platform or remain ungrouped
-        if (!acc['Platform']) acc['Platform'] = [];
-        acc['Platform'].push(item);
-    } else {
-        if (!acc[group]) acc[group] = [];
-        acc[group].push(item);
+    // Slugs are always lowercase
+    const rawGroup = (item.group || 'management').toLowerCase();
+    
+    // Manual mapping for core items if they don't have a group
+    let groupKey = rawGroup;
+    if (['/', '/users', '/media'].includes(item.path)) {
+      groupKey = 'core';
+    } else if (['/plugins', '/activity'].includes(item.path)) {
+      groupKey = 'management';
     }
+
+    if (!acc[groupKey]) acc[groupKey] = [];
+    acc[groupKey].push(item);
     return acc;
   }, {});
 
-  // Sort groups: Platform first, then alphabetical
+  // Sort order: Core -> Management -> Plugins -> System (bottom)
+  const GROUP_PRIORITY = ['core', 'management'];
+  
   const sortedGroups = Object.keys(groupedMenu).sort((a, b) => {
-    if (a === 'Platform') return -1;
-    if (b === 'Platform') return 1;
+    const ai = GROUP_PRIORITY.indexOf(a);
+    const bi = GROUP_PRIORITY.indexOf(b);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
     return a.localeCompare(b);
-  }).filter(g => g !== 'Settings'); // We handle Settings at the bottom manually
+  }).filter(g => g !== 'settings' && g !== 'system'); // We handle Settings and System at the bottom manually
 
   return (
     <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-20' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:relative lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none`}>
@@ -254,18 +263,20 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         </div>
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group];
+          const displayGroup = group === 'core' ? 'Core' : (group.charAt(0).toUpperCase() + group.slice(1));
+          
           // If a group has only one item and that item is a group wrapper (dropdown),
           // we should skip the redundant section header.
-          const isRedundantHeader = !isMini && items.length === 1 && items[0].isGroup && items[0].label.toLowerCase() === group.toLowerCase();
+          const isRedundantHeader = !isMini && items.length === 1 && items[0].isGroup && items[0].label.toLowerCase() === group;
 
           return (
             <React.Fragment key={group}>
               {!isMini && !isRedundantHeader && (
                 <p className={`px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}>
-                  {group}
+                  {displayGroup}
                 </p>
               )}
-              {group === 'Platform' ? (
+              {group === 'core' ? (
                 <>
                   <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
                   
@@ -282,12 +293,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
 
                   <NavItem icon={<Media size={18}/>} label="Media" href="/media" active={pathname.startsWith('/media')} onClick={onClose} isMini={isMini} />
                   
-                  <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname.startsWith('/plugins')} onClick={onClose} isMini={isMini} />
-                  
-                  <NavItem icon={<Activity size={18}/>} label="Activity" href="/activity" active={pathname.startsWith('/activity')} onClick={onClose} isMini={isMini} />
-                  
-                  {/* Other Platform items (excluding the ones we just handled manually) */}
-                  {items.filter(i => !['/', '/plugins', '/media', '/users', '/activity'].includes(i.path)).map((item, idx) => (
+                  {/* Other Core items */}
+                  {items.filter(i => !['/', '/media', '/users'].includes(i.path)).map((item, idx) => (
                     <NavItem 
                       key={`${item.pluginSlug}-${idx}`}
                       icon={<Icon name={item.icon || 'Package'} size={18} />}
@@ -297,6 +304,27 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                       onClick={onClose}
                       children={item.children}
                       isMini={isMini}
+                    />
+                  ))}
+                </>
+              ) : group === 'management' ? (
+                <>
+                  <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname.startsWith('/plugins')} onClick={onClose} isMini={isMini} />
+                  <NavItem icon={<Activity size={18}/>} label="Activity" href="/activity" active={pathname.startsWith('/activity')} onClick={onClose} isMini={isMini} />
+                  
+                  {/* Other Management items */}
+                  {items.filter(i => !['/plugins', '/activity'].includes(i.path)).map((item, idx) => (
+                    <NavItem 
+                      key={`${item.pluginSlug}-${idx}`}
+                      icon={<Icon name={item.icon || 'Package'} size={18} />}
+                      label={item.label}
+                      href={item.path}
+                      active={item.path ? (item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)) : false}
+                      onClick={onClose}
+                      children={item.children}
+                      isMini={isMini}
+                      isGroupHeader={item.isGroup}
+                      version={plugins.find(p => p.slug === item.pluginSlug)?.version}
                     />
                   ))}
                 </>
@@ -320,10 +348,10 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
           );
         })}
 
-        {/* If Platform group doesn't exist for some reason, ensure basic nav is there */}
-        {!groupedMenu['Platform'] && (
+        {/* If Core group doesn't exist for some reason, ensure basic nav is there */}
+        {!groupedMenu['core'] && (
           <>
-            {!isMini && <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Platform</p>}
+            {!isMini && <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Core</p>}
             <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
             <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname === '/plugins'} onClick={onClose} isMini={isMini} />
           </>
@@ -341,6 +369,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
             isMini={isMini} 
             children={[
               { label: 'General', path: '/settings/general', icon: 'Settings' },
+              { label: 'Localization', path: '/settings/localization', icon: 'Globe' },
               { label: 'Routing', path: '/settings/routing', icon: 'Link' },
               { label: 'Security', path: '/settings/security', icon: 'Shield' },
               { label: 'Infrastructure', path: '/settings/infrastructure', icon: 'Activity' }

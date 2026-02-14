@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, use } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
-import { Badge } from '@/components/ui/Badge';
-import { useNotify } from '@/components/NotificationContext';
-import { Loader } from '@/components/ui/Loader';
+import { Badge } from '@/components/ui/badge';
+import { useNotify } from '@/components/notification-context';
+import { Loader } from '@/components/ui/loader';
 
 export default function EditRolePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug: roleSlug } = use(params);

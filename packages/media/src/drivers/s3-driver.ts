@@ -6,17 +6,20 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { StorageDriver } from '../index';
 
 export class S3StorageDriver implements StorageDriver {
+    public readonly provider: string;
     private client: S3Client;
     private bucket: string;
     private publicUrlBase: string;
 
     constructor(options: { 
+        provider?: string;
         region: string; 
         bucket: string; 
         endpoint?: string; 
         credentials: { accessKeyId: string; secretAccessKey: string };
         publicUrlBase?: string;
     }) {
+        this.provider = options.provider || 's3';
         this.client = new S3Client({
             region: options.region,
             endpoint: options.endpoint,

@@ -1,7 +1,7 @@
-import { GraphQLService } from '../src/services/GraphQLService';
+import { GraphQLService } from '../src/services/graph-ql-service';
 import { graphql } from 'graphql';
 
-describe('GraphQLService', () => {
+describe('graph-ql-service', () => {
   let service: GraphQLService;
   let mockManager: any;
   let mockRestController: any;

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, Upload, X, Check, Image as ImageIcon, File, Loader2 } from 'lucide-react';
 import { api } from '../../lib/api';
-import { ENDPOINTS } from '../../lib/constants';
+import { ENDPOINTS } from '../../lib/Constants';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { RootFramework } from '@fromcode/react';

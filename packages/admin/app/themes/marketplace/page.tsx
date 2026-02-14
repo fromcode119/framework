@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePlugins } from '@fromcode/react';
-import { useTheme } from '@/components/ThemeContext';
+import { useTheme } from '@/components/theme-context';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { useNotify } from '@/components/NotificationContext';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useNotify } from '@/components/notification-context';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
-import { MarketplaceTheme } from '@fromcode/core';
+import type { MarketplaceTheme } from '@fromcode/core';
 
 export default function ThemesMarketplacePage() {
   const { theme } = useTheme();

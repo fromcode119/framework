@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 
 export default function NewRolePage() {
   const { theme } = useTheme();

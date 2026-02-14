@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Select';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
-import { useNotification } from '@/components/NotificationContext';
+import { useNotification } from '@/components/notification-context';
 import { usePlugins } from '@fromcode/react';
 import { ENDPOINTS } from '@/lib/constants';
-import { Loader } from '@/components/ui/Loader';
+import { Loader } from '@/components/ui/loader';
 
 const PLACEHOLDERS = [
   { label: ':slug', description: 'The sanitized post title (recommended)', example: 'hello-world' },
@@ -50,7 +50,7 @@ function getRecordDisplayTitle(doc: any, collectionLabel: string) {
 }
 
 function getCollectionSourceTag(pluginLabel: string, collectionLabel: string) {
-  const plugin = (pluginLabel || 'system').trim();
+  const plugin = (pluginLabel || 'System').trim();
   const section = (collectionLabel || 'record').trim();
   return `${plugin}/${section}`;
 }
@@ -94,6 +94,7 @@ export default function RoutingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [frontendMeta, setFrontendMeta] = useState<any>(null);
   const [autoResolvedSource, setAutoResolvedSource] = useState<string | null>(null);
+  const [availableCollections, setAvailableCollections] = useState<any[]>([]);
   const [homeOptions, setHomeOptions] = useState<{ label: string; value: string; group?: string; section?: string; sourceKind?: string }[]>([
     { value: 'auto', label: 'Auto detect', group: 'System' }
   ]);
@@ -102,9 +103,10 @@ export default function RoutingPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const [settingsResponse, frontendMeta] = await Promise.all([
+        const [settingsResponse, frontendMeta, collectionStats] = await Promise.all([
           api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`),
-          api.get(ENDPOINTS.SYSTEM.FRONTEND).catch(() => null)
+          api.get(ENDPOINTS.SYSTEM.FRONTEND).catch(() => null),
+          api.get(ENDPOINTS.SYSTEM.STATS.COLLECTIONS).catch(() => [])
         ]);
 
         const docs = settingsResponse.docs || [];
@@ -114,6 +116,7 @@ export default function RoutingPage() {
         if (foundPermalink?.value) setStructure(foundPermalink.value);
         if (foundHomeTarget?.value) setHomeTarget(String(foundHomeTarget.value));
         setFrontendMeta(frontendMeta);
+        setAvailableCollections(Array.isArray(collectionStats) ? collectionStats : []);
       } finally {
         setIsLoading(false);
       }
@@ -129,6 +132,11 @@ export default function RoutingPage() {
     const timeout = setTimeout(async () => {
       const options: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [{ value: 'auto', label: 'Auto detect', group: 'System', sourceKind: 'Auto' }];
       const optionSet = new Set(options.map((o) => o.value));
+      const availableCollectionSet = new Set(
+        (availableCollections || [])
+          .flatMap((c: any) => [String(c?.shortSlug || ''), String(c?.slug || '')])
+          .filter(Boolean)
+      );
 
       const rawLayouts = frontendMeta?.activeTheme?.layouts;
       const themeLayoutEntries = Array.isArray(rawLayouts)
@@ -159,6 +167,14 @@ export default function RoutingPage() {
 
       const collectionCandidates = (collections || []).filter((c: any) => {
         if (!c || c.system) return false;
+        if (availableCollectionSet.size > 0) {
+          const shortSlug = String(c.shortSlug || c.slug || '');
+          const fullSlug = String(c.slug || '');
+          if (!availableCollectionSet.has(shortSlug) && !availableCollectionSet.has(fullSlug)) return false;
+        } else {
+          // If system collection stats are unavailable, avoid probing unknown collection routes.
+          return false;
+        }
         const fields = Array.isArray(c.fields) ? c.fields : [];
         return fields.some((f: any) => f.name === 'slug');
       });
@@ -189,9 +205,10 @@ export default function RoutingPage() {
           const searchableText = `${title} ${permalinkLabel} ${collectionLabel}`.toLowerCase();
           if (query && !searchableText.includes(query)) return;
 
-          const pluginLabel = collection.pluginSlug || 'system';
+          const pluginSlug = collection.pluginSlug || 'System';
+          const pluginLabel = pluginSlug.charAt(0).toUpperCase() + pluginSlug.slice(1);
           const groupLabel = `Collection Records · ${pluginLabel}`;
-          const sourceTag = getCollectionSourceTag(pluginLabel, collectionLabel);
+          const sourceTag = getCollectionSourceTag(pluginSlug, collectionLabel);
 
           optionSet.add(value);
           options.push({
@@ -227,7 +244,7 @@ export default function RoutingPage() {
     }, 250);
 
     return () => clearTimeout(timeout);
-  }, [api, collections, frontendMeta, searchTerm]);
+  }, [api, availableCollections, collections, frontendMeta, searchTerm]);
 
   useEffect(() => {
     let cancelled = false;
@@ -236,9 +253,22 @@ export default function RoutingPage() {
         setAutoResolvedSource(null);
         return;
       }
+      const availableCollectionSet = new Set(
+        (availableCollections || [])
+          .flatMap((c: any) => [String(c?.shortSlug || ''), String(c?.slug || '')])
+          .filter(Boolean)
+      );
       const candidateCollections = (collections || [])
         .filter((c: any) => {
           if (!c || c.system) return false;
+          if (availableCollectionSet.size > 0) {
+            const shortSlug = String(c.shortSlug || c.slug || '');
+            const fullSlug = String(c.slug || '');
+            if (!availableCollectionSet.has(shortSlug) && !availableCollectionSet.has(fullSlug)) return false;
+          } else {
+            // Skip probing collections when admin stats endpoint is unavailable.
+            return false;
+          }
           return getFieldNames(c).has('slug');
         })
         .map((c: any) => ({
@@ -280,7 +310,7 @@ export default function RoutingPage() {
     return () => {
       cancelled = true;
     };
-  }, [api, collections, homeTarget]);
+  }, [api, availableCollections, collections, homeTarget]);
 
   const handleSave = async () => {
     setIsSaving(true);

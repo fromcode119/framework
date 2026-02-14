@@ -3,14 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/ThemeContext';
-import { useNotify } from '@/components/NotificationContext';
+import { useTheme } from '@/components/theme-context';
+import { useNotify } from '@/components/notification-context';
 import { usePlugins } from '@fromcode/react';
 import { useRouter } from 'next/navigation';
-import { PluginEntry } from '@fromcode/core';
+import type { PluginEntry } from '@fromcode/core';
 
 export default function MarketplacePage() {
   const router = useRouter();

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import './admin.css';
-import ClientLayout from './ClientLayout';
-import { AuthProvider } from '@/components/AuthContext';
-import { NotificationProvider } from '@/components/NotificationContext';
+import ClientLayout from './client-layout';
+import { AuthProvider } from '@/components/auth-context';
+import { NotificationProvider } from '@/components/notification-context';
 import { FrameworkIcons } from '@/lib/icons';
 
 export const metadata: Metadata = {

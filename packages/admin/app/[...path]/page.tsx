@@ -2,7 +2,7 @@
 
 import React, { use } from 'react';
 import { usePlugins, Slot } from '@fromcode/react';
-import { useTheme } from '@/components/ThemeContext';
+import { useTheme } from '@/components/theme-context';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 

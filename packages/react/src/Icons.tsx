@@ -54,7 +54,7 @@ export const FrameworkIconRegistry = registry;
 
 /**
  * Framework Standard Icon Mapping
- * This defines the "System" icons used by the framework UI (Sidebar, Header, etc).
+ * This defines the "system" icons used by the framework UI (Sidebar, Header, etc).
  */
 export const FrameworkIcons = {
   // Navigation & Shell
@@ -91,6 +91,9 @@ export const FrameworkIcons = {
   Left: Lucide.ArrowLeft,
   Right: Lucide.ArrowRight,
   ArrowRight: Lucide.ArrowRight,
+  ArrowLeft: Lucide.ArrowLeft,
+  ArrowUp: Lucide.ArrowUp,
+  ArrowDown: Lucide.ArrowDown,
   Home: Lucide.Home,
   Layers: Lucide.Layers,
   ShoppingBag: Lucide.ShoppingBag,
@@ -133,14 +136,13 @@ export const FrameworkIcons = {
   Info: Lucide.Info,
   Fingerprint: Lucide.Fingerprint,
   Key: Lucide.Key,
+};
 
-  // Shims for backward compatibility/bridge safety
-  registerProvider: (name: string, provider: Record<string, any>) => {
-    registry.registerProvider(name, provider);
-  },
-  getIcon: (name: string) => {
-    return registry.getIcon(name);
-  }
+/**
+ * Register a new icon provider.
+ */
+export const registerIconProvider = (name: string, provider: Record<string, any>) => {
+  registry.registerProvider(name, provider);
 };
 
 export type IconName = keyof typeof FrameworkIcons;

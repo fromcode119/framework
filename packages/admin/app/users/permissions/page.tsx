@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
-import { DataTable } from '@/components/ui/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { Loader } from '@/components/ui/Loader';
+import { Loader } from '@/components/ui/loader';
 import Link from 'next/link';
 
 export default function PermissionsPage() {
@@ -61,9 +61,12 @@ export default function PermissionsPage() {
       header: 'Domain',
       id: 'group',
       accessor: (p: any) => (
-        <Badge variant={p.group === 'System' || p.group === 'Core' ? 'amber' : 'blue'} className="font-black uppercase tracking-[0.2em] text-[8px] px-3 border-none flex items-center gap-2">
-          <div className={`h-1 w-1 rounded-full ${p.group === 'System' || p.group === 'Core' ? 'bg-amber-500' : 'bg-blue-500'}`} />
-          {p.group || 'General'}
+        <Badge variant={p.group === 'system' || p.group === 'core' ? 'amber' : 'blue'} className="font-black uppercase tracking-[0.1em] text-[10px] px-3 border-none flex items-center gap-2">
+          <div className={`h-1.5 w-1.5 rounded-full ${p.group === 'system' || p.group === 'core' ? 'bg-amber-500' : 'bg-blue-500'}`} />
+          {(() => {
+            const label = p.group || 'General';
+            return label.charAt(0).toUpperCase() + label.slice(1);
+          })()}
         </Badge>
       )
     },
@@ -76,7 +79,7 @@ export default function PermissionsPage() {
               <FrameworkIcons.Plugins size={12} className="text-slate-400" />
            </div>
            <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">
-             {p.pluginSlug || 'System Core'}
+             {p.pluginSlug ? (p.pluginSlug.charAt(0).toUpperCase() + p.pluginSlug.slice(1)) : 'System'}
            </span>
         </div>
       )

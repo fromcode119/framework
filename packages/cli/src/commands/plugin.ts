@@ -110,7 +110,7 @@ export default DashboardWidget;
 `;
         await fs.writeFile(path.join(pluginPath, 'admin/DashboardWidget.tsx'), dashboardWidget.trim() + '\n');
 
-        // 4. ui/Banner.tsx
+        // 4. ui/banner.tsx
         const banner = `
 import React from 'react';
 
@@ -124,11 +124,11 @@ const Banner = () => {
 
 export default Banner;
 `;
-        await fs.writeFile(path.join(pluginPath, 'ui/Banner.tsx'), banner.trim() + '\n');
+        await fs.writeFile(path.join(pluginPath, 'ui/banner.tsx'), banner.trim() + '\n');
 
         // 5. ui/index.ts
         const uiIndex = `
-import Banner from './Banner';
+import Banner from './banner';
 
 export const slots = {
   'frontend.home.hero': {

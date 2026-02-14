@@ -4,15 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/ThemeContext';
-import { useNotify } from '@/components/NotificationContext';
+import { useTheme } from '@/components/theme-context';
+import { useNotify } from '@/components/notification-context';
 import { usePlugins } from '@fromcode/react';
-import { PluginEntry } from '@fromcode/core';
-import { Dropdown } from '@/components/ui/Dropdown';
-import { Lightbox } from '@/components/ui/Lightbox';
+import type { PluginEntry } from '@fromcode/core';
+import { Dropdown } from '@/components/ui/dropdown';
+import { Lightbox } from '@/components/ui/lightbox';
 
 export default function MarketplaceDetailPage() {
   const { slug } = useParams();

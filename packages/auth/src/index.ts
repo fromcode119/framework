@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
+import type { SignOptions } from 'jsonwebtoken';
 
 export interface User {
   id: string;
@@ -37,12 +38,12 @@ export class AuthManager {
     return bcrypt.compare(password, hash);
   }
 
-  async generateToken(user: User): Promise<string> {
+  async generateToken(user: User, options: { expiresIn?: SignOptions['expiresIn'] } = {}): Promise<string> {
     const payload = {
       ...user,
       jti: user.jti || Math.random().toString(36).substring(7),
     };
-    return jwt.sign(payload, this.secret, { expiresIn: '15m' }); // Short-lived access token
+    return jwt.sign(payload, this.secret, { expiresIn: options.expiresIn ?? '15m' }); // Short-lived access token
   }
 
   async generateRefreshToken(user: User): Promise<string> {
@@ -226,6 +227,6 @@ export class AuthManager {
 export interface IAuthService {
   hashPassword(password: string): Promise<string>;
   comparePassword(password: string, hash: string): Promise<boolean>;
-  generateToken(user: User): Promise<string>;
+  generateToken(user: User, options?: { expiresIn?: SignOptions['expiresIn'] }): Promise<string>;
   verifyToken(token: string): Promise<User>;
 }

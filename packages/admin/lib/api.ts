@@ -12,6 +12,7 @@ async function request(path: string, options: RequestInit = {}) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Framework-Client': 'admin-ui',
+    'X-Requested-With': 'XMLHttpRequest',
     ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
     ...options.headers as any,
   };
@@ -67,6 +68,7 @@ export const api = {
     const csrfToken = Cookies.get('fc_csrf');
     const headers: Record<string, string> = {
       'X-Framework-Client': 'admin-ui',
+      'X-Requested-With': 'XMLHttpRequest',
       ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
       ...options?.headers as any,
     };

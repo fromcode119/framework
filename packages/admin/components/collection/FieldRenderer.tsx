@@ -9,11 +9,13 @@ import { CodeEditor } from '@/components/ui/CodeEditor';
 import { ArrayField } from '@/components/ui/ArrayField';
 import { FrameworkIcons } from '@/lib/icons';
 import { MediaPicker } from '@/components/media/MediaPicker';
+import { normalizeLocaleCode, isLocaleLikeKey } from '@/lib/utils';
 
 interface CollectionField {
   name: string;
   label?: string;
   type: string;
+  localized?: boolean;
   required?: boolean;
   defaultValue?: any;
   options?: { label: string; value: any }[];
@@ -43,6 +45,50 @@ interface FieldRendererProps {
   errors?: string[];
   slugWarning?: string | null;
   slugManuallyEdited?: boolean;
+}
+
+function parseLocaleRegistry(settings: Record<string, any> | undefined) {
+  const parsed: Array<{ code: string; label: string }> = [];
+  const raw = settings?.localization_locales;
+
+  const ingestItems = (items: any[]) => {
+    items.forEach((item: any) => {
+      const code = normalizeLocaleCode(item?.code || item?.isoCode || item?.locale);
+      if (!code) return;
+      if (item?.enabled === false) return;
+      parsed.push({
+        code,
+        label: String(item?.name || code)
+      });
+    });
+  };
+
+  if (Array.isArray(raw)) {
+    ingestItems(raw);
+  } else if (typeof raw === 'string' && raw.trim()) {
+    try {
+      const items = JSON.parse(raw);
+      if (Array.isArray(items)) ingestItems(items);
+    } catch {
+      // no-op
+    }
+  } else if (raw && typeof raw === 'object') {
+    const values = Object.values(raw);
+    if (values.length && values.every((item) => item && typeof item === 'object')) {
+      ingestItems(values as any[]);
+    }
+  }
+
+  if (!parsed.length) {
+    String(settings?.enabled_locales || 'en')
+      .split(',')
+      .map((value) => normalizeLocaleCode(value))
+      .filter(Boolean)
+      .forEach((code) => parsed.push({ code, label: code.toUpperCase() }));
+  }
+
+  if (!parsed.length) parsed.push({ code: 'en', label: 'English' });
+  return parsed;
 }
 
 const TagFieldLocal = ({ field, value, onChange, theme, collectionSlug }: { field: any, value: any, onChange: (val: any) => void, theme: string, collectionSlug: string }) => {
@@ -158,23 +204,138 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
 }) => {
   const plugins = usePlugins();
   const fieldComponents = (plugins as any).fieldComponents || {};
+  const settings = (plugins as any)?.settings || {};
+  const isLocalizedField = Boolean(field.localized);
 
   const label = field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+  const localeRegistry = React.useMemo(() => parseLocaleRegistry(settings), [settings]);
+  const defaultLocale = React.useMemo(
+    () => normalizeLocaleCode(settings?.default_locale || settings?.admin_default_locale || localeRegistry[0]?.code || 'en') || 'en',
+    [localeRegistry, settings]
+  );
+  const [activeLocale, setActiveLocale] = React.useState(defaultLocale);
+  const [isLocaleMenuOpen, setIsLocaleMenuOpen] = React.useState(false);
+  const localeMenuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!isLocalizedField) return;
+    const exists = localeRegistry.some((item) => item.code === activeLocale);
+    if (!exists) setActiveLocale(defaultLocale);
+  }, [activeLocale, defaultLocale, isLocalizedField, localeRegistry]);
+
+  React.useEffect(() => {
+    if (!isLocalizedField || !isLocaleMenuOpen) return;
+    const onClickOutside = (event: MouseEvent) => {
+      if (!localeMenuRef.current) return;
+      if (!localeMenuRef.current.contains(event.target as Node)) {
+        setIsLocaleMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [isLocalizedField, isLocaleMenuOpen]);
+
+  const localizedMap = React.useMemo(() => {
+    if (!isLocalizedField) return null;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const entries = Object.entries(value);
+      if (entries.every(([key]) => isLocaleLikeKey(key))) {
+        const normalized: Record<string, any> = {};
+        entries.forEach(([localeKey, localeValue]) => {
+          const code = normalizeLocaleCode(localeKey);
+          if (code) normalized[code] = localeValue;
+        });
+        return normalized;
+      }
+    }
+    return { [defaultLocale]: value };
+  }, [defaultLocale, isLocalizedField, value]);
+
+  const currentValue = isLocalizedField
+    ? (localizedMap?.[activeLocale] ?? '')
+    : value;
+
+  const updateValue = (nextValue: any) => {
+    if (!isLocalizedField) {
+      onChange(nextValue);
+      return;
+    }
+
+    const nextMap = { ...(localizedMap || {}) };
+    nextMap[activeLocale] = nextValue;
+    onChange(nextMap);
+  };
+  
+  const activeLocaleMeta = localeRegistry.find((item) => item.code === activeLocale) || localeRegistry[0];
 
   return (
     <div className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
-      <label className={`block text-[11px] font-bold mb-2.5 pl-0.5 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-        {label}
-        {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
-      </label>
+      <div className="flex items-center justify-between gap-3 mb-2.5">
+        <label className={`block text-[11px] font-bold pl-0.5 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+          {label}
+          {field.required && <span className="text-rose-500 ml-1 font-bold font-sans">*</span>}
+        </label>
+
+        {isLocalizedField && (
+          <div className="relative" ref={localeMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsLocaleMenuOpen((prev) => !prev)}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${
+                theme === 'dark'
+                  ? 'bg-slate-900 border-slate-700 text-slate-200 hover:border-indigo-500/60'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-400'
+              }`}
+            >
+              <FrameworkIcons.Globe size={11} />
+              <span>{(activeLocaleMeta?.code || activeLocale || 'en').toUpperCase()}</span>
+              <FrameworkIcons.Down size={11} className={`${isLocaleMenuOpen ? 'rotate-180' : ''} transition-transform`} />
+            </button>
+
+            {isLocaleMenuOpen && (
+              <div
+                className={`absolute right-0 mt-2 min-w-[220px] rounded-xl border shadow-xl z-30 p-1.5 ${
+                  theme === 'dark'
+                    ? 'bg-slate-950 border-slate-800'
+                    : 'bg-white border-slate-200'
+                }`}
+              >
+                {localeRegistry.map((locale) => {
+                  const isActive = locale.code === activeLocale;
+                  return (
+                    <button
+                      key={locale.code}
+                      type="button"
+                      onClick={() => {
+                        setActiveLocale(locale.code);
+                        setIsLocaleMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-between ${
+                        isActive
+                          ? 'bg-indigo-600 text-white'
+                          : theme === 'dark'
+                            ? 'text-slate-200 hover:bg-slate-800'
+                            : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="truncate">{locale.label}</span>
+                      <span className={`ml-2 ${isActive ? 'text-indigo-100' : 'opacity-70'}`}>{locale.code.toUpperCase()}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       
       {field.type === 'relationship' && field.relationTo === 'media' ? (
-        <MediaRelationField value={value} onChange={onChange} theme={theme} />
+        <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} />
       ) : field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
         <TagFieldLocal 
           field={field} 
-          value={value} 
-          onChange={onChange}
+          value={currentValue} 
+          onChange={updateValue}
           theme={theme}
           collectionSlug={collectionSlug}
         />
@@ -185,8 +346,8 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         if (CustomComponent) {
           return (
             <CustomComponent 
-              value={value}
-              onChange={onChange}
+              value={currentValue}
+              onChange={updateValue}
               theme={theme}
               field={field}
               collectionSlug={collectionSlug}
@@ -203,25 +364,25 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         );
       })() : (field.type === 'textarea' || field.type === 'richText') ? (
         <textarea 
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          value={currentValue || ''}
+          onChange={(e) => updateValue(e.target.value)}
           disabled={disabled}
           className={`w-full min-h-[160px] rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-bold ${
             theme === 'dark' 
               ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900' 
               : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:bg-slate-50 shadow-sm'
-          } ${field.required && !value ? 'border-amber-100/50' : ''}`}
+          } ${field.required && !currentValue ? 'border-amber-100/50' : ''}`}
           placeholder={`Enter ${label}...`}
         />
       ) : field.type === 'json' ? (
         <textarea 
-          value={typeof value === 'object' ? JSON.stringify(value, null, 2) : value || ''}
+          value={typeof currentValue === 'object' ? JSON.stringify(currentValue, null, 2) : currentValue || ''}
           onChange={(e) => {
             try {
               const val = JSON.parse(e.target.value);
-              onChange(val);
+              updateValue(val);
             } catch (err) {
-              onChange(e.target.value);
+              updateValue(e.target.value);
             }
           }}
           disabled={disabled}
@@ -234,8 +395,8 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       ) : field.type === 'array' ? (
         <ArrayField 
           field={field}
-          value={value}
-          onChange={onChange}
+          value={currentValue}
+          onChange={updateValue}
           theme={theme}
           collectionSlug={collectionSlug}
           pluginSettings={pluginSettings}
@@ -243,45 +404,45 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
         <Input 
           type="password"
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          value={currentValue || ''}
+          onChange={(e) => updateValue(e.target.value)}
           placeholder="••••••••"
           disabled={disabled}
           className="font-bold"
         />
       ) : field.type === 'select' ? (
         <Select
-          value={value || field.defaultValue || ''}
+          value={currentValue || field.defaultValue || ''}
           options={field.options || []}
-          onChange={onChange}
+          onChange={updateValue}
           disabled={disabled}
           theme={theme}
         />
       ) : field.type === 'boolean' ? (
         <Select
-          value={value?.toString() || field.defaultValue?.toString() || 'false'}
+          value={currentValue?.toString() || field.defaultValue?.toString() || 'false'}
           options={[{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]}
-          onChange={(val) => onChange(val === 'true')}
+          onChange={(val) => updateValue(val === 'true')}
           disabled={disabled}
           theme={theme}
         />
       ) : (field.type === 'date' || field.type === 'datetime') ? (
         <DateTimePicker 
-          value={value}
-          onChange={onChange}
+          value={currentValue}
+          onChange={updateValue}
           showTime={field.type === 'datetime'}
           disabled={disabled}
         />
       ) : field.type === 'color' ? (
         <ColorPicker 
-          value={value}
-          onChange={onChange}
+          value={currentValue}
+          onChange={updateValue}
           disabled={disabled}
         />
       ) : (field.type === 'code' || field.admin?.component === 'CodeEditor') ? (
         <CodeEditor 
-          value={value}
-          onChange={onChange}
+          value={currentValue}
+          onChange={updateValue}
           language={field.admin?.language || 'javascript'}
           disabled={disabled}
         />
@@ -289,8 +450,8 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       <div className="relative">
         <Input 
           type={field.type === 'number' ? 'number' : 'text'}
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          value={currentValue || ''}
+          onChange={(e) => updateValue(e.target.value)}
           placeholder={`Enter ${label}...`}
           disabled={disabled}
           className={`font-bold ${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20' : ''}`}
@@ -301,7 +462,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
              <span>{slugWarning}</span>
           </div>
         )}
-        {field.name === 'slug' && !slugManuallyEdited && isNew && value && (
+        {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
            <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[10px] font-black uppercase tracking-widest animate-pulse border border-indigo-500/20 pointer-events-none">
               <FrameworkIcons.Refresh size={8} />
               Auto

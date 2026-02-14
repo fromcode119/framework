@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';

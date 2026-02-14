@@ -2,22 +2,23 @@
 
 import React, { use, useState, useEffect } from 'react';
 import { usePlugins } from '@fromcode/react';
-import { useTheme } from '@/components/ThemeContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Switch } from '@/components/ui/Switch';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { useNotify } from '@/components/NotificationContext';
+import { useNotify } from '@/components/notification-context';
 
 const CORE_LAYOUTS = [
     { id: 'core/layouts/Default', label: 'Default Page', description: 'Used for standard content pages.' },
     { id: 'core/layouts/Blank', label: 'Blank Canvas', description: 'Minimal layout without header or footer.' },
     { id: 'core/layouts/Home', label: 'Homepage', description: 'Specific layout for the front page.' },
-    { id: 'core/layouts/Auth', label: 'Authentication', description: 'Layout for login and register screens.' }
+    { id: 'core/layouts/auth', label: 'Authentication', description: 'Layout for login and register screens.' }
 ];
 
 interface Theme {
@@ -65,6 +66,10 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   const [isSaving, setIsSaving] = useState(false);
   const [isReseeding, setIsReseeding] = useState(false);
   const [isResettingTheme, setIsResettingTheme] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isRunSeedsConfirmOpen, setIsRunSeedsConfirmOpen] = useState(false);
+  const [isResetThemeConfirmOpen, setIsResetThemeConfirmOpen] = useState(false);
   const [dbConfig, setDbConfig] = useState<any>({});
   const [tempVariables, setTempVariables] = useState<Record<string, string>>({});
   const [tempLayouts, setTempLayouts] = useState<Record<string, string>>({});
@@ -165,9 +170,15 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     }
   };
 
+  const openDeleteConfirm = () => {
+    if (!themeDetail) return;
+    setIsDeleteConfirmOpen(true);
+  };
+
   const handleDelete = async () => {
     if (!themeDetail) return;
-    if (!confirm(`Are you sure you want to delete theme "${themeDetail.name}"? This cannot be undone.`)) return;
+    setIsDeleting(true);
+    setIsDeleteConfirmOpen(false);
     try {
       await api.delete(ENDPOINTS.THEMES.DELETE(themeDetail.slug));
       notify('success', 'Theme Deleted', `${themeDetail.name} has been removed.`);
@@ -175,13 +186,19 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
       triggerRefresh();
     } catch (err: any) {
       notify('error', 'Deletion Failed', err.message);
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const openRunSeedsConfirm = () => {
+    if (!themeDetail) return;
+    setIsRunSeedsConfirmOpen(true);
   };
 
   const handleRunSeeds = async () => {
     if (!themeDetail) return;
-    if (!confirm(`Run seed script for "${themeDetail.name}"? This may overwrite seeded CMS content.`)) return;
-
+    setIsRunSeedsConfirmOpen(false);
     setIsReseeding(true);
     try {
       await api.post(ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: false });
@@ -195,10 +212,14 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     }
   };
 
+  const openResetThemeConfirm = () => {
+    if (!themeDetail) return;
+    setIsResetThemeConfirmOpen(true);
+  };
+
   const handleResetTheme = async () => {
     if (!themeDetail) return;
-    if (!confirm(`Reset "${themeDetail.name}" theme config to defaults and re-run seed data?`)) return;
-
+    setIsResetThemeConfirmOpen(false);
     setIsResettingTheme(true);
     try {
       await api.post(ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: true });
@@ -649,7 +670,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
               </h3>
               <div className="space-y-3">
                 <button
-                  onClick={handleRunSeeds}
+                  onClick={openRunSeedsConfirm}
                   disabled={isReseeding || isResettingTheme}
                   className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                 >
@@ -657,7 +678,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                   {isReseeding ? 'Running Seeds...' : 'Run Seeds'}
                 </button>
                 <button
-                  onClick={handleResetTheme}
+                  onClick={openResetThemeConfirm}
                   disabled={isReseeding || isResettingTheme}
                   className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                 >
@@ -682,7 +703,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                       Removing this theme artifact is permanent. All local layout variations will be destroyed.
                   </p>
                   <button 
-                      onClick={handleDelete}
+                      onClick={openDeleteConfirm}
                       className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-black/10 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white"
                   >
                       Destroy Theme
@@ -701,6 +722,42 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isRunSeedsConfirmOpen}
+        onClose={() => setIsRunSeedsConfirmOpen(false)}
+        onConfirm={handleRunSeeds}
+        title="Run Theme Seeds?"
+        description={`This will replay seed content for "${themeDetail?.name || 'this theme'}" and may overwrite existing records.`}
+        confirmLabel="Run Seeds"
+        cancelLabel="Cancel"
+        variant="primary"
+        isLoading={isReseeding}
+      />
+
+      <ConfirmDialog
+        isOpen={isResetThemeConfirmOpen}
+        onClose={() => setIsResetThemeConfirmOpen(false)}
+        onConfirm={handleResetTheme}
+        title="Reset Theme + Re-seed?"
+        description={`This resets "${themeDetail?.name || 'this theme'}" config to defaults and then runs seeds again.`}
+        confirmLabel="Reset & Run Seeds"
+        cancelLabel="Cancel"
+        variant="danger"
+        isLoading={isResettingTheme}
+      />
+
+      <ConfirmDialog
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Theme?"
+        description={`Are you sure you want to delete "${themeDetail?.name || 'this theme'}"? This action cannot be undone.`}
+        confirmLabel="Delete Theme"
+        cancelLabel="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
