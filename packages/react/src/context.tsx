@@ -140,6 +140,22 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     return effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
   }, [apiUrl]);
 
+  const getCookieValue = useCallback((name: string): string => {
+    if (typeof document === 'undefined') return '';
+    const cookie = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split('=')
+      .slice(1)
+      .join('=');
+    if (!cookie) return '';
+    try {
+      return decodeURIComponent(cookie);
+    } catch {
+      return cookie;
+    }
+  }, []);
+
   const apiFetch = useCallback(async (path: string, options: (RequestInit & { silent?: boolean }) = {}) => {
     const { silent, ...fetchOptions } = options as any;
     const base = getBaseURL();
@@ -153,9 +169,11 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       url = `${base}${vPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
     }
     
-    const token = typeof document !== 'undefined' 
-      ? document.cookie.split('; ').find(row => row.startsWith('fc_token='))?.split('=')[1]
-      : null;
+    const token = getCookieValue('fc_token');
+    const csrfToken = getCookieValue('fc_csrf');
+    const method = String(fetchOptions.method || 'GET').toUpperCase();
+    const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(method);
+    const existingHeaders = (fetchOptions.headers || {}) as Record<string, string>;
 
     if (!silent) {
       console.debug(`[Fromcode API] Fetching: ${url}`, { credentials: fetchOptions.credentials || 'include', hasToken: !!token });
@@ -165,7 +183,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       ...fetchOptions,
       credentials: fetchOptions.credentials || 'include',
       headers: {
-        ...(fetchOptions.headers || {}),
+        ...existingHeaders,
+        ...(existingHeaders['X-Framework-Client'] ? {} : { 'X-Framework-Client': 'frontend-ui' }),
+        ...(existingHeaders['X-Requested-With'] ? {} : { 'X-Requested-With': 'XMLHttpRequest' }),
+        ...(isUnsafeMethod && csrfToken && !existingHeaders['X-CSRF-Token'] ? { 'X-CSRF-Token': csrfToken } : {}),
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       }
     });
@@ -180,7 +201,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         throw new Error(err.error || `Failed to fetch from ${url}`);
     }
     return res.json();
-  }, [getBaseURL]);
+  }, [getBaseURL, getCookieValue]);
 
   const api = useMemo(() => ({
     getBaseUrl: () => getBaseURL(),

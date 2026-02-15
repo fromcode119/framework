@@ -27,9 +27,9 @@ const App = () => {
   const renderContent = () => {
     switch(currentView) {
       case 'Dashboard': return <DashboardView theme={theme} selectedRows={selectedRows} setSelectedRows={setSelectedRows} />;
-      case 'Plugins': return <PluginsView theme={theme} onConfig={(name) => { setCurrentView('PluginDetail') }} />;
+      case 'plugins': return <PluginsView theme={theme} onConfig={(name) => { setCurrentView('PluginDetail') }} />;
       case 'Users': return <UsersView theme={theme} />;
-      case 'Settings': return <ConfigurationView theme={theme} />;
+      case 'settings': return <ConfigurationView theme={theme} />;
       default: return <div className="flex items-center justify-center h-96 text-slate-500 font-mono">Module "{currentView}" Initializing...</div>;
     }
   };
@@ -47,10 +47,10 @@ const App = () => {
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-8 scrollbar-hide">
           <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-4">Platform</p>
           <NavItem icon={<LayoutDashboard size={18}/>} label="Dashboard" active={currentView === 'Dashboard'} onClick={() => setCurrentView('Dashboard')} theme={theme} />
-          <NavItem icon={<Puzzle size={18}/>} label="Plugins" active={currentView === 'Plugins'} onClick={() => setCurrentView('Plugins')} theme={theme} />
+          <NavItem icon={<Puzzle size={18}/>} label="plugins" active={currentView === 'plugins'} onClick={() => setCurrentView('plugins')} theme={theme} />
           <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-6">Administration</p>
           <NavItem icon={<Users size={18}/>} label="Users & Auth" active={currentView === 'Users'} onClick={() => setCurrentView('Users')} theme={theme} />
-          <NavItem icon={<Settings size={18}/>} label="Configuration" active={currentView === 'Settings'} onClick={() => setCurrentView('Settings')} theme={theme} />
+          <NavItem icon={<Settings size={18}/>} label="Configuration" active={currentView === 'settings'} onClick={() => setCurrentView('settings')} theme={theme} />
         </nav>
       </aside>
 

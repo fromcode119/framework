@@ -78,7 +78,7 @@ function detectAutoFallbackLayout(frontendMeta: any): string | null {
     ? rawLayouts.map((layout: any) => String(layout?.slug || layout?.name || layout?.key || layout?.id || '')).filter(Boolean)
     : Object.keys(rawLayouts || {});
 
-  const fallbackPriority = ['LandingLayout', 'Home', 'Main', 'StandardLayout'];
+  const fallbackPriority = ['DefaultLayout', 'Home', 'Main'];
   const matched = fallbackPriority.find((name) => layoutKeys.includes(name));
   return matched || null;
 }
