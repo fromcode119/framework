@@ -18,7 +18,7 @@ export default function NewPermissionPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    group: 'Management',
+    group: 'Structure',
     impact: 'Medium',
     pluginSlug: 'System'
   });

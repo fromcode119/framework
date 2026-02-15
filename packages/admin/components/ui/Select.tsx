@@ -129,7 +129,7 @@ export const Select = ({
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`w-full rounded-2xl py-1.5 pl-4 pr-4 outline-none border transition-all text-sm font-bold flex items-center justify-between text-left group overflow-hidden relative shadow-sm ${
+          className={`w-full rounded-xl py-1.5 pl-4 pr-4 outline-none border transition-all text-sm font-bold flex items-center justify-between text-left group overflow-hidden relative shadow-sm ${
             theme === 'dark' 
               ? 'bg-slate-900/60 border-slate-800 text-white hover:border-indigo-500/50' 
               : 'bg-white border-slate-200 text-slate-900 hover:border-indigo-500'

@@ -65,7 +65,7 @@ export class DataProcessorService {
       if (fieldConfig && fieldConfig.type === 'array') {
         if (value === '' || value === undefined || value === null) {
           value = null;
-        } else if (typeof value !== 'string' && !Array.isArray(value)) {
+        } else if (typeof value !== 'string') {
            value = JSON.stringify(value);
         }
       }

@@ -3,7 +3,7 @@ import { Collection } from '@fromcode/sdk';
 export const WebhooksCollection: Collection = {
   slug: '_system_webhooks',
   admin: {
-    group: 'system',
+    group: 'Settings',
     icon: 'webhook',
     useAsTitle: 'name',
     defaultColumns: ['name', 'url', 'active', 'lastStatus', 'lastTriggeredAt'],

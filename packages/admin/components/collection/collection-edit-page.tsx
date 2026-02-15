@@ -310,6 +310,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const hasSlug = collection?.fields.some(f => f.name === 'slug');
   const showPreview = (collection?.admin as any)?.preview !== false && !isNew;
   const showPermalink = (collection?.admin as any)?.preview !== false && hasSlug;
+  const isFullWidth = (collection?.admin as any)?.fullWidth === true;
 
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
@@ -448,7 +449,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-32">
-            <div className="lg:col-span-2 space-y-6">
+            <div className={`${isFullWidth ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-6`}>
               <Card>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                   {collection.fields
@@ -483,131 +484,133 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
               </Card>
             </div>
 
-            <div className="space-y-6">
-              <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
-              <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
-              
-              {showPermalink && (
-                <Card title="Preview & Permalink">
-                   <PermalinkInput
-                      value={formData.customPermalink}
-                      onChange={(val) => handleInputChange('customPermalink', val)}
-                      disabled={saving}
-                      id={isNew ? undefined : id}
-                      slug={formData.slug}
-                      collection={collection}
-                      pluginSettings={pluginSettings}
-                    />
-                    <p className="mt-3 text-[11px] text-slate-400 font-medium leading-relaxed">
-                      Click the path component to override the automatically generated slug.
-                    </p>
-                </Card>
-              )}
+            {!isFullWidth && (
+              <div className="space-y-6">
+                <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
+                <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
+                
+                {showPermalink && (
+                  <Card title="Preview & Permalink">
+                    <PermalinkInput
+                        value={formData.customPermalink}
+                        onChange={(val) => handleInputChange('customPermalink', val)}
+                        disabled={saving}
+                        id={isNew ? undefined : id}
+                        slug={formData.slug}
+                        collection={collection}
+                        pluginSettings={pluginSettings}
+                      />
+                      <p className="mt-3 text-[11px] text-slate-400 font-medium leading-relaxed">
+                        Click the path component to override the automatically generated slug.
+                      </p>
+                  </Card>
+                )}
 
-              {collection.fields.some(f => f.admin?.position === 'sidebar' && !f.admin?.hidden) && (
-                <Card title="Settings">
-                  <div className="space-y-6">
-                    {collection.fields
-                      .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden && f.name !== 'customPermalink' && shouldShowField(f, formData))
-                      .map((field) => (
-                        <FieldRenderer 
-                          key={field.name}
-                          field={field}
-                          value={formData[field.name]}
-                          onChange={(val) => handleInputChange(field.name, val)}
-                          theme={theme}
-                          collectionSlug={resolvedSlug}
-                          pluginSettings={pluginSettings}
-                          disabled={saving}
-                          isNew={isNew}
-                        />
-                      ))}
-                  </div>
-                </Card>
-              )}
-
-              <Card title="Management">
-                 <p className="text-[11px] text-slate-400 font-medium leading-relaxed italic">
-                   All changes are saved with a full history, allowing you to roll back to any previous version at any time.
-                 </p>
-              </Card>
-
-              {!isNew && (
-                <Card title="Record Info">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-bold">Identifier</span>
-                      <span className="text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">{id}</span>
+                {collection.fields.some(f => f.admin?.position === 'sidebar' && !f.admin?.hidden) && (
+                  <Card title="Settings">
+                    <div className="space-y-6">
+                      {collection.fields
+                        .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden && f.name !== 'customPermalink' && shouldShowField(f, formData))
+                        .map((field) => (
+                          <FieldRenderer 
+                            key={field.name}
+                            field={field}
+                            value={formData[field.name]}
+                            onChange={(val) => handleInputChange(field.name, val)}
+                            theme={theme}
+                            collectionSlug={resolvedSlug}
+                            pluginSettings={pluginSettings}
+                            disabled={saving}
+                            isNew={isNew}
+                          />
+                        ))}
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-bold">Created</span>
-                      <span className="text-slate-500 font-medium font-sans">{new Date(formData.createdAt).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-bold">Last Update</span>
-                      <span className="text-slate-500 font-medium font-sans">{new Date(formData.updatedAt).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </Card>
-              )}
+                  </Card>
+                )}
 
-              {!isNew && (
-                <Card title="Version History">
-                   <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {revisions.length === 0 && !revisionsLoading && (
-                        <p className="text-xs text-slate-400 font-bold italic py-2">No versions recorded yet.</p>
-                      )}
-                      {revisions.map((v, i) => (
-                        <div 
-                          key={i} 
-                          onClick={() => setSelectedRevision(v)}
-                          className={`flex items-start gap-3 group cursor-pointer p-2.5 -mx-2 rounded-xl transition-all border border-transparent ${v.id === activeVersionId ? 'bg-indigo-50/30 border-indigo-100/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
-                        >
-                           <div className={`mt-1.5 h-1.5 w-1.5 rounded-full ${v.id === activeVersionId ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-300'} shrink-0`} />
-                           <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-center gap-2">
-                                 <div className="flex items-center gap-2 min-w-0">
-                                    <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
-                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{v.user}</span>
-                                 </div>
-                                 {v.id !== activeVersionId && (
-                                   <button 
-                                      onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        setFormData({ ...formData, ...v.changes });
-                                        setActiveVersionId(v.id);
-                                      }}
-                                      className="text-xs font-bold text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
-                                   >
-                                      <FrameworkIcons.Refresh size={8} />
-                                      Restore
-                                   </button>
-                                 )}
-                              </div>
-                              <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{v.action}</p>
-                              <p className="text-[11px] text-slate-400 font-medium mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
-                           </div>
-                        </div>
-                      ))}
-                      
-                      {revisionsLoading && (
-                        <div className="flex items-center justify-center py-4">
-                           <FrameworkIcons.Loader size={16} className="animate-spin text-indigo-500" />
-                        </div>
-                      )}
-
-                      {hasMoreRevisions && !revisionsLoading && (
-                        <button 
-                          onClick={loadMoreRevisions}
-                          className="w-full py-3 text-[12px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
-                        >
-                          Load More History
-                        </button>
-                      )}
-                   </div>
+                <Card title="Management">
+                  <p className="text-[11px] text-slate-400 font-medium leading-relaxed italic">
+                    All changes are saved with a full history, allowing you to roll back to any previous version at any time.
+                  </p>
                 </Card>
-              )}
-            </div>
+
+                {!isNew && (
+                  <Card title="Record Info">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold">Identifier</span>
+                        <span className="text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">{id}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold">Created</span>
+                        <span className="text-slate-500 font-medium font-sans">{new Date(formData.createdAt).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-bold">Last Update</span>
+                        <span className="text-slate-500 font-medium font-sans">{new Date(formData.updatedAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {!isNew && (
+                  <Card title="Version History">
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {revisions.length === 0 && !revisionsLoading && (
+                          <p className="text-xs text-slate-400 font-bold italic py-2">No versions recorded yet.</p>
+                        )}
+                        {revisions.map((v, i) => (
+                          <div 
+                            key={i} 
+                            onClick={() => setSelectedRevision(v)}
+                            className={`flex items-start gap-3 group cursor-pointer p-2.5 -mx-2 rounded-xl transition-all border border-transparent ${v.id === activeVersionId ? 'bg-indigo-50/30 border-indigo-100/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                          >
+                            <div className={`mt-1.5 h-1.5 w-1.5 rounded-full ${v.id === activeVersionId ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-300'} shrink-0`} />
+                            <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                      <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
+                                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{v.user}</span>
+                                  </div>
+                                  {v.id !== activeVersionId && (
+                                    <button 
+                                        onClick={(e) => { 
+                                          e.stopPropagation(); 
+                                          setFormData({ ...formData, ...v.changes });
+                                          setActiveVersionId(v.id);
+                                        }}
+                                        className="text-xs font-bold text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
+                                    >
+                                        <FrameworkIcons.Refresh size={8} />
+                                        Restore
+                                    </button>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{v.action}</p>
+                                <p className="text-[11px] text-slate-400 font-medium mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {revisionsLoading && (
+                          <div className="flex items-center justify-center py-4">
+                            <FrameworkIcons.Loader size={16} className="animate-spin text-indigo-500" />
+                          </div>
+                        )}
+
+                        {hasMoreRevisions && !revisionsLoading && (
+                          <button 
+                            onClick={loadMoreRevisions}
+                            className="w-full py-3 text-[12px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
+                          >
+                            Load More History
+                          </button>
+                        )}
+                    </div>
+                  </Card>
+                )}
+              </div>
+            )}
           </div>
           
           <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew }} />

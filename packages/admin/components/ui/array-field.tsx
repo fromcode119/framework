@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FrameworkIcons } from '@/lib/icons';
+import { GripVertical } from 'lucide-react';
 import { Card } from './card';
 import { Input } from './input';
 import { Select } from './select';
@@ -18,6 +19,8 @@ interface ArrayFieldProps {
 
 export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug, pluginSettings }: ArrayFieldProps) => {
   const items = Array.isArray(value) ? value : [];
+  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
+  const [isHandleHovered, setIsHandleHovered] = React.useState<number | null>(null);
 
   const handleAddItem = () => {
     const newItem: Record<string, any> = {};
@@ -33,6 +36,14 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
     onChange(newItems);
   };
 
+  const handleReorder = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const newItems = [...items];
+    const item = newItems.splice(fromIndex, 1)[0];
+    newItems.splice(toIndex, 0, item);
+    onChange(newItems);
+  };
+
   const handleUpdateItem = (index: number, name: string, val: any) => {
     const newItems = [...items];
     const nextItem = { ...newItems[index], [name]: val };
@@ -43,20 +54,12 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
 
   const handleMoveUp = (index: number) => {
     if (index === 0) return;
-    const newItems = [...items];
-    const temp = newItems[index];
-    newItems[index] = newItems[index - 1];
-    newItems[index - 1] = temp;
-    onChange(newItems);
+    handleReorder(index, index - 1);
   };
 
   const handleMoveDown = (index: number) => {
     if (index === items.length - 1) return;
-    const newItems = [...items];
-    const temp = newItems[index];
-    newItems[index] = newItems[index + 1];
-    newItems[index + 1] = temp;
-    onChange(newItems);
+    handleReorder(index, index + 1);
   };
 
   const renderField = (f: any, item: any, index: number) => {
@@ -119,10 +122,39 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
          });
 
          return (
-            <div key={index} className={`relative p-4 rounded-3xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
-              theme === 'dark' ? 'bg-slate-900/30 border-slate-800' : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="absolute top-3 right-3 flex items-center gap-1">
+            <div 
+              key={index} 
+              draggable={isHandleHovered === index || draggedIndex === index}
+              onDragStart={(e) => {
+                setDraggedIndex(index);
+                e.dataTransfer.effectAllowed = 'move';
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (draggedIndex === null || draggedIndex === index) return;
+                handleReorder(draggedIndex, index);
+                setDraggedIndex(index);
+              }}
+              onDragEnd={() => {
+                setDraggedIndex(null);
+                setIsHandleHovered(null);
+              }}
+              className={`relative p-5 rounded-xl border transition-all duration-300 ${
+                draggedIndex === index ? 'opacity-20 scale-[0.98]' : ''
+              } ${
+                theme === 'dark' ? 'bg-slate-900/30 border-slate-800' : 'bg-slate-50 border-slate-200'
+              }`}
+            >
+              <div className="absolute top-4 right-4 flex items-center gap-1">
+                <div 
+                  onMouseEnter={() => setIsHandleHovered(index)}
+                  onMouseLeave={() => setIsHandleHovered(null)}
+                  className={`cursor-grab active:cursor-grabbing p-1.5 rounded-lg transition-colors mr-2 ${
+                    theme === 'dark' ? 'text-slate-700 hover:text-indigo-400' : 'text-slate-200 hover:text-indigo-500'
+                  }`}
+                >
+                  <GripVertical size={16} className="opacity-50" />
+                </div>
                 <button 
                   onClick={() => handleMoveUp(index)}
                   disabled={index === 0}
@@ -145,7 +177,7 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 {visibleFields.map((f: any) => (
                   <div key={f.name} className={f.type === 'textarea' || f.type === 'relationship' || f.type === 'array' ? 'md:col-span-2' : ''}>
                     <label className={`block text-[9px] font-black uppercase tracking-widest mb-1.5 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -161,13 +193,13 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
 
       <button
         onClick={handleAddItem}
-        className={`w-full py-6 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all group ${
+        className={`w-full py-6 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all group ${
           theme === 'dark' 
             ? 'border-slate-800 hover:border-indigo-500/50 bg-slate-900/10 hover:bg-indigo-500/5 text-slate-500 hover:text-indigo-400' 
             : 'border-slate-200 hover:border-indigo-300 bg-slate-50/50 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'
         }`}
       >
-        <div className={`p-3 rounded-2xl transition-all shadow-sm ${
+        <div className={`p-3 rounded-xl transition-all shadow-sm ${
           theme === 'dark' 
             ? 'bg-slate-800 group-hover:bg-indigo-500 group-hover:text-white' 
             : 'bg-white group-hover:bg-indigo-600 group-hover:text-white shadow-slate-200'
