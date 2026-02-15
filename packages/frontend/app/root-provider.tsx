@@ -11,10 +11,10 @@ function SystemGate({ children }: { children: ReactNode }) {
   const status = useSystemStatus();
   const { themeLayouts } = usePlugins();
 
-  // Use Theme's MainLayout if provided
-  const MainLayout = themeLayouts?.['MainLayout'] || themeLayouts?.['StandardLayout'] || themeLayouts?.['AppLayout'];
-  const content = MainLayout ? (
-    <MainLayout>{children}</MainLayout>
+  // Use one canonical base layout for page chrome.
+  const BaseLayout = themeLayouts?.DefaultLayout;
+  const content = BaseLayout ? (
+    <BaseLayout>{children}</BaseLayout>
   ) : (
     <main className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] text-[var(--foreground)] p-4 text-center">
       <div className="max-w-7xl mx-auto w-full">
@@ -49,9 +49,11 @@ function RouterBridge() {
 
       if (detail?.replace) {
         router.replace(href);
+        router.refresh();
         return;
       }
       router.push(href);
+      router.refresh();
     };
 
     window.addEventListener('fromcode:navigate', onNavigate as EventListener);

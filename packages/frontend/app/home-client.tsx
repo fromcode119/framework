@@ -33,7 +33,6 @@ export default function HomeClient({ initialContent, forcedLayout }: HomeClientP
     const LayoutComponent =
       themeLayouts?.[selectedLayoutName] ||
       themeLayouts?.DefaultLayout ||
-      themeLayouts?.LandingLayout ||
       (({ children }: any) => <>{children}</>);
 
     return <LayoutComponent page={initialContent}>{renderContent(initialContent)}</LayoutComponent>;
@@ -44,11 +43,7 @@ export default function HomeClient({ initialContent, forcedLayout }: HomeClientP
     return <ForcedLayoutComponent />;
   }
 
-  const FallbackLayout =
-    themeLayouts?.LandingLayout ||
-    themeLayouts?.Home ||
-    themeLayouts?.Main ||
-    themeLayouts?.StandardLayout;
+  const FallbackLayout = themeLayouts?.DefaultLayout || themeLayouts?.Home || themeLayouts?.Main;
 
   if (FallbackLayout) {
     return <FallbackLayout />;

@@ -23,7 +23,7 @@ export class ResolutionService {
     // Fetch permalink structure
     let permalinkStructure = '/:slug';
     try {
-      const settings = await (this.manager as any).db.find('_system_meta');
+      const settings = await this.manager.db.find('_system_meta');
       const permSetting = settings.find((s: any) => s.key === 'permalink_structure');
       if (permSetting) permalinkStructure = permSetting.value;
     } catch {}
@@ -47,9 +47,8 @@ export class ResolutionService {
     const collections = this.manager.registeredCollections;
 
     // 1. Priority Search (Custom Permalinks)
-    for (const entry of Array.from(collections.values())) {
-      const collection = entry.collection;
-      const pluginSlug = entry.pluginSlug;
+    for (const { collection, pluginSlug } of collections.values()) {
+      if (!collection) continue;
       if (pluginSlug !== 'system' && !activePlugins.has(pluginSlug)) continue;
 
       if (collection.slug.startsWith('_') || collection.system) continue;
@@ -70,7 +69,7 @@ export class ResolutionService {
             } as any);
 
             if (results?.docs?.length > 0) {
-              return { type: collection.shortSlug || collection.slug, plugin: (collection as any).pluginSlug, doc: results.docs[0] };
+              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc: results.docs[0] };
             }
           }
         }
@@ -86,7 +85,7 @@ export class ResolutionService {
               user: options.user
             } as any);
             if (results?.docs?.length > 0) {
-              return { type: collection.shortSlug || collection.slug, plugin: (collection as any).pluginSlug, doc: results.docs[0] };
+              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc: results.docs[0] };
             }
           }
         }
@@ -96,16 +95,15 @@ export class ResolutionService {
     }
 
     // 2. Structure Search
-    for (const entry of Array.from(collections.values())) {
-      const collection = entry.collection;
-      const pluginSlug = entry.pluginSlug;
+    for (const { collection, pluginSlug } of collections.values()) {
+      if (!collection) continue;
       if (pluginSlug !== 'system' && !activePlugins.has(pluginSlug)) continue;
       
       if (collection.slug.startsWith('_') || collection.system) continue;
       try {
         let searchId: number | null = null;
         let searchSlug: string | null = null;
-        const prefix = (collection as any).shortSlug || collection.slug;
+        const prefix = collection.shortSlug || collection.slug;
 
         if (pathSegments.length > 0 && pathSegments[0] === prefix) {
           searchSlug = pathSegments.slice(1).join('/');
@@ -127,7 +125,7 @@ export class ResolutionService {
 
           const result: any = await this.restController.find(collection, { query, user: options.user } as any);
           if (result?.docs?.length > 0) {
-            return { type: (collection as any).shortSlug || collection.slug, plugin: (collection as any).pluginSlug, doc: result.docs[0] };
+            return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc: result.docs[0] };
           }
         }
       } catch {}
