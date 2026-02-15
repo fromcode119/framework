@@ -40,7 +40,7 @@ export const SettingsCollection = {
     { name: 'updatedAt', label: 'Updated At', type: 'date', admin: { readOnly: true } }
   ],
   admin: {
-    group: 'system',
+    group: 'Settings',
     icon: 'settings',
     useAsTitle: 'key',
     defaultColumns: ['key', 'value', 'group', 'updatedAt']

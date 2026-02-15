@@ -269,7 +269,16 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   const activeLocaleMeta = localeRegistry.find((item) => item.code === activeLocale) || localeRegistry[0];
 
   return (
-    <div className={`${field.type === 'textarea' || field.type === 'richText' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' || field.type === 'json' ? 'md:col-span-2' : ''}`}>
+    <div className={`w-full ${
+      field.type === 'textarea' || 
+      field.type === 'richText' || 
+      field.type === 'array' ||
+      field.type === 'json' ||
+      field.admin?.width === 'full' ||
+      field.admin?.component === 'TagField' || 
+      field.admin?.component === 'Tags' 
+        ? 'col-span-full' : ''
+    }`}>
       <div className="flex items-center justify-between gap-3 mb-2.5">
         <label className={`block text-[11px] font-bold pl-0.5 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
           {label}
@@ -367,7 +376,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           value={currentValue || ''}
           onChange={(e) => updateValue(e.target.value)}
           disabled={disabled}
-          className={`w-full min-h-[160px] rounded-2xl py-3 px-4 outline-none border transition-all text-sm font-bold ${
+          className={`w-full min-h-[160px] rounded-xl py-3 px-4 outline-none border transition-all text-sm font-bold ${
             theme === 'dark' 
               ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900' 
               : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:bg-slate-50 shadow-sm'
@@ -386,7 +395,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             }
           }}
           disabled={disabled}
-          className={`w-full min-h-[160px] font-mono rounded-2xl py-3 px-4 outline-none border transition-all text-[12px] font-bold ${
+          className={`w-full min-h-[160px] font-mono rounded-xl py-3 px-4 outline-none border transition-all text-[12px] font-bold ${
             theme === 'dark' 
               ? 'bg-slate-900/50 border-slate-800 text-indigo-400 focus:border-indigo-500/50 focus:bg-slate-900' 
               : 'bg-white border-slate-200 text-indigo-600 focus:border-indigo-500 focus:bg-slate-50 shadow-sm'

@@ -9,6 +9,12 @@ import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/env';
+import { 
+  normalizeNavPath, 
+  isPathMatch, 
+  resolveBestMatchPath, 
+  isPathActive 
+} from '@/lib/nav-utils';
 
 const { 
   Dashboard = () => null, 
@@ -44,11 +50,15 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
   const pathname = rawPathname || '';
   const hasChildren = children && children.length > 0;
   
-  // A child is active if the pathname matches its path exactly
-  const isChildActive = React.useMemo(() => {
-    if (!children) return false;
-    return children.some(child => pathname === child.path);
-  }, [children, pathname]);
+  const childPaths = React.useMemo(
+    () => (children || []).map((child) => normalizeNavPath(child.path)).filter(Boolean),
+    [children]
+  );
+  const activeChildPath = React.useMemo(
+    () => resolveBestMatchPath(pathname, childPaths as string[]) || '',
+    [pathname, childPaths]
+  );
+  const isChildActive = !!activeChildPath;
 
   const [expanded, setExpanded] = React.useState(!!(active || isChildActive));
 
@@ -135,7 +145,7 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
           <div className="absolute left-[21px] top-0 bottom-6 w-px bg-slate-100 dark:bg-slate-800/80" />
 
           {children.map((child) => {
-            const isSubActive = pathname === child.path || (child.path !== '/' && pathname.startsWith(child.path + '/'));
+            const isSubActive = normalizeNavPath(child.path) === activeChildPath;
             const subIcon = child.icon || 'Circle';
             
             return (
@@ -300,7 +310,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                       icon={<Icon name={item.icon || 'Package'} size={18} />}
                       label={item.label}
                       href={item.path}
-                      active={item.path ? (item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)) : false}
+                      active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
                       onClick={onClose}
                       children={item.children}
                       isMini={isMini}
@@ -319,7 +329,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                       icon={<Icon name={item.icon || 'Package'} size={18} />}
                       label={item.label}
                       href={item.path}
-                      active={item.path ? (item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)) : false}
+                      active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
                       onClick={onClose}
                       children={item.children}
                       isMini={isMini}
@@ -335,7 +345,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     icon={<Icon name={item.icon || 'Package'} size={18} />}
                     label={item.label}
                     href={item.path}
-                    active={item.path ? (item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)) : false}
+                    active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
                     onClick={onClose}
                     children={item.children}
                     isMini={isMini}

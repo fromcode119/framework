@@ -215,7 +215,7 @@ export class APIServer {
         { key: 'frontend_url', value: 'http://frontend.framework.local', description: 'The primary URL for your frontend application.', group: 'General' },
         { key: 'routing_home_target', value: 'auto', description: 'Homepage route target. Examples: auto, layout:<name>, collection:<slug>:<id>', group: 'Routing' },
         { key: 'permalink_structure', value: '/:slug', description: 'The default URL structure for your content (e.g. /:year/:month/:slug)', group: 'General' },
-        { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'system' },
+        { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'Settings' },
         { key: 'rate_limit_max', value: '100', description: 'Maximum requests per window per IP', group: 'security' },
         { key: 'rate_limit_window', value: '900000', description: 'Rate limit window in milliseconds (15min = 900000)', group: 'security' },
         { key: 'auth_session_duration_minutes', value: '10080', description: 'Login session duration in minutes for access token/cookie/session expiry.', group: 'security' },

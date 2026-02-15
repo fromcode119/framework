@@ -25,9 +25,10 @@ export const Input = ({ label, error, className = '', inputClassName = '', value
       <input
         {...props}
         value={normalizedValue}
-        className={`w-full rounded-2xl py-1.5 px-3 text-sm font-medium outline-none border transition-all 
+        className={`w-full rounded-xl outline-none border transition-all font-medium
           bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm
           dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:ring-0
+          ${!inputClassName.includes('py-') ? 'py-2 ' : ''}${!inputClassName.includes('px-') ? 'px-3 ' : ''}${!inputClassName.includes('text-') ? 'text-sm ' : ''}
           ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''} ${inputClassName}`}
       />
       {error && (
