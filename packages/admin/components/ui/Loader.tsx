@@ -29,7 +29,7 @@ export const Loader = ({
         </div>
       </div>
       <div className="flex flex-col items-center gap-2">
-        <p className={`font-black text-[10px] uppercase tracking-[0.2em] animate-pulse transition-colors duration-500 ${
+        <p className={`font-semibold text-[10px] tracking-widest animate-pulse transition-colors duration-500 ${
           theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'
         }`}>
           {label}

@@ -70,7 +70,7 @@ export class RuntimeService {
     this.registry.set('@fromcode/admin/components', {
       type: 'lib',
       keys: [
-        'MediaPicker', 'Button', 'Input', 'Select', 'TagField', 'Loader', 'Switch', 
+        'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 
         'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 
         'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext'
       ]

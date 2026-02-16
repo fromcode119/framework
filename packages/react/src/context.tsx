@@ -825,7 +825,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
             Object.keys(bridge).filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof)).map(key => `export const ${key} = window.Fromcode.${key};`).join('\n') + `\nexport default window.Fromcode;`
           ),
           "@fromcode/admin/components": "data:application/javascript," + encodeURIComponent(
-            ['MediaPicker', 'Button', 'Input', 'Select', 'TagField', 'Loader', 'Switch', 'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext']
+            ['MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext']
               .map(key => `export const ${key} = window.FromcodeAdmin ? window.FromcodeAdmin.${key} : undefined;`).join('\n') + `\nexport default window.FromcodeAdmin;`
           )
       };

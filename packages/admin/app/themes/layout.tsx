@@ -34,7 +34,7 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
         <div className="w-full px-6 lg:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-1">
-              <h1 className={`text-4xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              <h1 className={`text-4xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 {isDetailPage ? 'Theme Detail' : activeTab.label}
               </h1>
               <p className={`text-base font-medium max-w-2xl ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -56,7 +56,7 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
                   <Link 
                     key={tab.href}
                     href={tab.href}
-                    className={`flex items-center gap-2 px-8 py-2.5 rounded-xl text-sm font-black transition-all duration-300 ${
+                    className={`flex items-center gap-2 px-8 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                       isActive 
                         ? (theme === 'dark' 
                             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
@@ -67,7 +67,7 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
                     }`}
                   >
                     {React.cloneElement(tab.icon as React.ReactElement, { size: 18, strokeWidth: 3 })}
-                    <span className="uppercase tracking-widest text-[11px]">{tab.label}</span>
+                    <span className="uppercase tracking-wide text-[11px]">{tab.label}</span>
                   </Link>
                 );
               })}
@@ -91,14 +91,14 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Visual Architecture & Themes
                 </span>
               </div>
               <p className="text-[9px] font-bold text-slate-400">Transform your platform interface with professional themes.</p>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                <span className="hover:text-indigo-500 transition-colors cursor-help">Theme Documentation</span>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
                <span className="hover:text-indigo-500 transition-colors cursor-help">Marketplace Health</span>

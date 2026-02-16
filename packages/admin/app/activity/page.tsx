@@ -85,10 +85,10 @@ export default function ActivityPage() {
 
         return (
           <div className="flex flex-col gap-1">
-            <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-black w-fit uppercase tracking-tighter ${levelStyle}`}>
+            <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-semibold w-fit tracking-tighter ${levelStyle}`}>
                {row.level}
             </span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+            <span className="text-[9px] font-semibold text-slate-400 tracking-wide pl-1">
               {String(row.id).includes('-') ? row.id.split('-')[0] : `LOG-${row.id}`}
             </span>
           </div>
@@ -102,14 +102,14 @@ export default function ActivityPage() {
         const actor = row.actor_id || row.context?.email || (row.message && row.message.includes('for ') ? row.message.split('for ')[1] : 'SYSTEM');
         return (
           <div className="flex items-center gap-3">
-            <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-black border-2 ${
+            <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-semibold border-2 ${
               theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-500'
             }`}>
               {actor[0].toUpperCase()}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-black text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
-              <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">
+              <span className="text-sm font-semibold text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
+              <span className="text-[10px] font-semibold text-slate-400 mt-1 tracking-tight">
                 {row.actor_id ? `ID: ${row.actor_id}` : (row.context?.userId ? `UID: ${row.context.userId}` : 'INTERNAL')}
               </span>
             </div>
@@ -123,7 +123,7 @@ export default function ActivityPage() {
       accessor: (row: any) => (
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-indigo-500/60 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-          <span className="font-bold text-[11px] text-slate-500 uppercase tracking-[0.1em]">{row.plugin_slug ? (row.plugin_slug.charAt(0).toUpperCase() + row.plugin_slug.slice(1)) : 'System'}</span>
+          <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.plugin_slug ? (row.plugin_slug.charAt(0).toUpperCase() + row.plugin_slug.slice(1)) : 'System'}</span>
         </div>
       )
     },
@@ -132,10 +132,10 @@ export default function ActivityPage() {
       id: 'timestamp',
       accessor: (row: any) => (
         <div className="flex flex-col">
-          <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">
+          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
              {new Date(row.timestamp || row.createdAt).toLocaleTimeString()}
           </span>
-          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5 italic">
+          <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
              {new Date(row.timestamp || row.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -163,7 +163,7 @@ export default function ActivityPage() {
 
         return (
           <div className="flex flex-col gap-1">
-            <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-black w-fit uppercase tracking-tighter ${style}`}>
+            <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-semibold w-fit tracking-tighter ${style}`}>
                {row.status}
             </span>
           </div>
@@ -175,10 +175,10 @@ export default function ActivityPage() {
       id: 'plugin',
       accessor: (row: any) => (
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-black">
+          <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-semibold">
              {row.plugin_slug ? row.plugin_slug[0].toUpperCase() : 'S'}
           </div>
-          <span className="font-bold text-[11px] text-slate-600 dark:text-slate-200 uppercase tracking-widest">{row.plugin_slug ? (row.plugin_slug.charAt(0).toUpperCase() + row.plugin_slug.slice(1)) : 'System'}</span>
+          <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.plugin_slug ? (row.plugin_slug.charAt(0).toUpperCase() + row.plugin_slug.slice(1)) : 'System'}</span>
         </div>
       )
     },
@@ -187,7 +187,7 @@ export default function ActivityPage() {
       id: 'action',
       accessor: (row: any) => (
         <div className="flex flex-col">
-           <span className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-tight">{row.action}</span>
+           <span className="text-xs font-semibold text-slate-700 dark:text-white tracking-tight">{row.action}</span>
            <span className="text-[10px] font-medium text-slate-400 mt-0.5">{row.resource}</span>
         </div>
       )
@@ -197,10 +197,10 @@ export default function ActivityPage() {
       id: 'timestamp',
       accessor: (row: any) => (
         <div className="flex flex-col">
-          <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">
+          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
              {new Date(row.createdAt).toLocaleTimeString()}
           </span>
-          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5 italic">
+          <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
              {new Date(row.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -227,7 +227,7 @@ export default function ActivityPage() {
                 }`}>
                   <FrameworkIcons.Activity size={22} strokeWidth={2.5} />
                 </div>
-                <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                <h1 className={`text-3xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                    {mode === 'system' ? 'System Activity' : 'Security Audit'}
                 </h1>
               </div>
@@ -235,7 +235,7 @@ export default function ActivityPage() {
               <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl w-fit">
                  <button 
                   onClick={() => { setMode('system'); setPage(1); }}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`px-6 py-2 rounded-xl text-[10px] font-semibold tracking-wide transition-all ${
                     mode === 'system' 
                       ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                       : 'text-slate-500 hover:text-slate-700'
@@ -245,7 +245,7 @@ export default function ActivityPage() {
                  </button>
                  <button 
                   onClick={() => { setMode('security'); setPage(1); }}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`px-6 py-2 rounded-xl text-[10px] font-semibold tracking-wide transition-all ${
                     mode === 'security' 
                       ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-sm' 
                       : 'text-slate-500 hover:text-slate-700'
@@ -273,7 +273,7 @@ export default function ActivityPage() {
                   type="submit"
                   variant="secondary"
                   size="sm" 
-                  className="px-6 py-2.5 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                  className="px-6 py-2.5 rounded-xl font-semibold tracking-wide text-[11px]"
                   icon={<FrameworkIcons.Search size={16} />}
                 >
                   Filter history
@@ -311,7 +311,7 @@ export default function ActivityPage() {
             }`}>
               <div className="p-8 border-b flex items-center justify-between">
                  <div className="flex items-center gap-3">
-                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black ${
+                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-semibold ${
                       selectedLog.level === 'ERROR' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
                       selectedLog.level === 'WARN' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
                       'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
@@ -319,10 +319,10 @@ export default function ActivityPage() {
                        {selectedLog.level[0]}
                     </div>
                     <div>
-                      <h3 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                      <h3 className={`text-xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                         Event Details
                       </h3>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1">
+                      <p className="text-[10px] font-semibold text-slate-500 tracking-wide leading-none mt-1">
                         Log Signature: {selectedLog.id}
                       </p>
                     </div>
@@ -337,12 +337,12 @@ export default function ActivityPage() {
                     <Card title="Context">
                        <div className="space-y-4">
                           <div className="flex flex-col">
-                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Resource</span>
-                             <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedLog.plugin_slug ? (selectedLog.plugin_slug.charAt(0).toUpperCase() + selectedLog.plugin_slug.slice(1)) : 'System'}</span>
+                             <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Resource</span>
+                             <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{selectedLog.plugin_slug ? (selectedLog.plugin_slug.charAt(0).toUpperCase() + selectedLog.plugin_slug.slice(1)) : 'System'}</span>
                           </div>
                           <div className="flex flex-col">
-                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Timestamp</span>
-                             <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                             <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Timestamp</span>
+                             <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                                {new Date(selectedLog.timestamp || selectedLog.createdAt).toLocaleString()}
                              </span>
                           </div>
@@ -351,11 +351,11 @@ export default function ActivityPage() {
                     <Card title="Authority">
                        <div className="space-y-4">
                           <div className="flex flex-col">
-                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Actor ID</span>
-                             <span className="text-sm font-bold text-indigo-500">{selectedLog.actor_id || 'System'}</span>
+                             <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Actor ID</span>
+                             <span className="text-sm font-semibold text-indigo-500">{selectedLog.actor_id || 'System'}</span>
                           </div>
                           <div className="flex flex-col">
-                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Type</span>
+                             <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Type</span>
                              <Badge variant={mode === 'security' ? (selectedLog.status === 'violation' ? 'rose' : 'blue') : 'blue'}>
                                 {mode === 'system' ? 'System Log' : `Audit: ${selectedLog.status}`}
                              </Badge>
@@ -373,7 +373,7 @@ export default function ActivityPage() {
                  ) : (
                     <div className="grid grid-cols-2 gap-4">
                         <Card title="Action Taken">
-                            <span className="text-sm font-black text-slate-900 dark:text-white uppercase">{selectedLog.action}</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-white">{selectedLog.action}</span>
                         </Card>
                         <Card title="Resource Pool">
                             <span className="text-sm font-mono text-slate-500">{selectedLog.resource}</span>
@@ -392,12 +392,12 @@ export default function ActivityPage() {
 
               <div className={`p-8 border-t ${theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
+                    <p className="text-[10px] font-semibold text-slate-400 tracking-wide italic">
                       This entry is part of an immutable audit trail.
                     </p>
                     <Button 
                       variant="ghost" 
-                      className="text-indigo-500 font-black text-[10px] uppercase tracking-widest" 
+                      className="text-indigo-500 font-semibold text-[10px] tracking-wide" 
                       icon={<FrameworkIcons.More size={14} />}
                       onClick={() => handleExportJSON(selectedLog)}
                     >
@@ -419,14 +419,14 @@ export default function ActivityPage() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-semibold tracking-wide text-slate-500 dark:text-slate-400">
                   System Activity Log
                 </span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400">Global ledger of administrative actions and system events.</p>
+              <p className="text-[9px] font-semibold text-slate-400">Global ledger of administrative actions and system events.</p>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <div className="flex items-center gap-4 text-[10px] font-semibold tracking-wide text-slate-400">
                <Link href="/users" className="hover:text-indigo-500 transition-colors">Users</Link>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
                <Link href="/users/roles" className="hover:text-indigo-500 transition-colors">Roles</Link>

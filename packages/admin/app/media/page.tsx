@@ -254,7 +254,7 @@ export default function MediaPage() {
               <div className="flex items-center gap-2 mb-2">
                 <button 
                   onClick={() => setCurrentFolderId(null)}
-                  className={`text-[10px] font-black uppercase tracking-widest transition-colors ${!currentFolderId ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
+                  className={`text-[10px] font-semibold tracking-wide transition-colors ${!currentFolderId ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
                 >
                   Root Library
                 </button>
@@ -263,7 +263,7 @@ export default function MediaPage() {
                     <span className="text-slate-300 dark:text-slate-700">/</span>
                     <button 
                       onClick={() => setCurrentFolderId(folder.id)}
-                      className={`text-[10px] font-black uppercase tracking-widest transition-colors ${index === folderPath.length - 1 ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
+                      className={`text-[10px] font-semibold tracking-wide transition-colors ${index === folderPath.length - 1 ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
                     >
                       {folder.name}
                     </button>
@@ -276,7 +276,7 @@ export default function MediaPage() {
                 }`}>
                   <FrameworkIcons.Media size={20} strokeWidth={2.5} />
                 </div>
-                <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                <h1 className={`text-3xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                   Media Assets
                 </h1>
               </div>
@@ -381,8 +381,8 @@ export default function MediaPage() {
                   <Folder size={viewMode === 'grid' ? 32 : 20} />
                 </div>
                 <div className={viewMode === 'grid' ? "mt-4" : ""}>
-                  <div className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{folder.name}</div>
-                  {viewMode === 'grid' && <div className="text-[10px] text-slate-500 uppercase font-black mt-1">Folder</div>}
+                  <div className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{folder.name}</div>
+                  {viewMode === 'grid' && <div className="text-[10px] text-slate-500 tracking-wide font-semibold mt-1">Folder</div>}
                 </div>
 
                 <div className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === 'list' ? 'static ml-auto opacity-100' : ''}`}>
@@ -465,11 +465,11 @@ export default function MediaPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <div className={`font-bold text-sm truncate ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`} title={item.originalName}>
+                    <div className={`font-semibold text-sm truncate ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`} title={item.originalName}>
                       {item.originalName}
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{formatSize(item.fileSize)}</span>
+                      <span className="text-[10px] text-slate-500 font-medium tracking-wide">{formatSize(item.fileSize)}</span>
                       <Badge variant="gray" className="text-[10px]">
                         {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
                       </Badge>
@@ -486,8 +486,8 @@ export default function MediaPage() {
                       )}
                    </div>
                    <div className="flex-1 min-w-0">
-                      <div className={`font-bold text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{item.originalName}</div>
-                      <div className="text-[10px] text-slate-500 uppercase font-black">{formatSize(item.fileSize)} • {item.mimeType}</div>
+                      <div className={`font-semibold text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{item.originalName}</div>
+                      <div className="text-[10px] text-slate-500 font-medium">{formatSize(item.fileSize)} • {item.mimeType}</div>
                    </div>
                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <a href={item.url} download className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500"><Download size={16} /></a>
@@ -528,11 +528,11 @@ export default function MediaPage() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-semibold tracking-widest text-slate-500 dark:text-slate-400">
                   Media Vault
                 </span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400">Secure storage for all your platform assets.</p>
+              <p className="text-[9px] font-medium text-slate-400">Secure storage for all your platform assets.</p>
             </div>
           </div>
         </div>

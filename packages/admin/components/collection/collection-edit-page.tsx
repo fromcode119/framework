@@ -26,6 +26,11 @@ import { useCollectionForm } from '@/components/collection/hooks/use-collection-
 import { useSlugGeneration } from '@/components/collection/hooks/use-slug-generation';
 import { useSlugValidation } from '@/components/collection/hooks/use-slug-validation';
 import { normalizeLocaleCode, resolveLocalizedText } from '@/lib/utils';
+import { RecordInfo } from '@/components/collection/record-info';
+import { EditHeader } from './edit/edit-header';
+import { RevisionModal } from './edit/revision-modal';
+import { EditFooter } from './edit/edit-footer';
+import { SidebarVersions } from './edit/sidebar-versions';
 
 function shouldShowField(field: any, data: any): boolean {
   if (!field.admin?.condition) return true;
@@ -255,19 +260,19 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
            <FrameworkIcons.Search size={64} className="text-indigo-500 relative z-10" strokeWidth={1} />
         </div>
         
-        <h2 className={`text-4xl font-black tracking-tighter uppercase mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+        <h2 className={`text-4xl font-bold tracking-tighter uppercase mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
           Collection Not Found
         </h2>
         
         <p className="text-slate-500 font-bold text-center max-w-sm leading-relaxed mb-10 px-6">
-          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-xs ml-1">{pluginSlug}</span> plugin marketplace.
+          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-wide text-[10px] ml-1">{pluginSlug}</span> plugin marketplace.
         </p>
 
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost"
             onClick={() => window.history.back()}
-            className="rounded-2xl px-8 font-black uppercase tracking-widest text-xs text-slate-400"
+            className="rounded-2xl px-8 font-bold uppercase tracking-wide text-[10px] text-slate-400"
           >
             Go Back
           </Button>
@@ -275,7 +280,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
             variant="primary"
             as={Link}
             href="/"
-            className="rounded-2xl px-10 py-5 font-black uppercase tracking-widest text-xs shadow-2xl shadow-indigo-500/30"
+            className="rounded-2xl px-10 py-5 font-bold uppercase tracking-wide text-[10px] shadow-2xl shadow-indigo-500/30"
             icon={<FrameworkIcons.Layout size={18} />}
           >
             Return to Dashboard
@@ -311,105 +316,39 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const showPreview = (collection?.admin as any)?.preview !== false && !isNew;
   const showPermalink = (collection?.admin as any)?.preview !== false && hasSlug;
   const isFullWidth = (collection?.admin as any)?.fullWidth === true;
+  const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
+  const statusOptions = Array.isArray(statusField?.options)
+    ? statusField.options
+        .map((option: any) => ({
+          label: String(option?.label || option?.value || '').trim(),
+          value: String(option?.value || '').trim()
+        }))
+        .filter((option: any) => option.value)
+    : [];
+  const currentStatusValue = String(formData?.status || '').trim();
 
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
-      <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
-        theme === 'dark' 
-          ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
-          : 'bg-white/80 border-slate-100 shadow-sm'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
-          <div className="flex items-center gap-2 mb-4">
-            <Link 
-              href={`/${pluginSlug}/${slug}`}
-              className={`flex items-center gap-1.5 text-[11px] font-bold transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}
-            >
-              <FrameworkIcons.Left size={14} />
-              {collection.name || slug}
-            </Link>
-            <span className="text-slate-300">/</span>
-            <span className={`text-[11px] font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>
-              {isNew ? 'New Entry' : (id.length > 8 ? `${id.substring(0, 8)}...` : id)}
-            </span>
-          </div>
-
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {isNew 
-                  ? `Create ${collection.name || collection.slug}` 
-                  : (resolvedTitleValue || `Untitled ${collection.name || 'Entry'}`)
-                }
-              </h1>
-              <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70 mt-1">
-                {isNew ? `Define a new record for ${collection.name || collection.slug}` : `Modify existing ${resolvedTitleValue || collection.name || 'entry'}`}
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {!isNew && (
-                <div className="hidden lg:block relative group">
-                   <Input 
-                      placeholder="Commit summary (optional)"
-                      value={changeSummary}
-                      onChange={(e) => setChangeSummary(e.target.value)}
-                      className="w-48 xl:w-64 text-[10px] font-bold h-9 bg-transparent border-slate-200 dark:border-slate-800 transition-all placeholder:opacity-50"
-                   />
-                </div>
-              )}
-              {formData?.scheduledPublishAt && (formData.status === 'draft' || !formData.status) && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold text-[10px] animate-pulse">
-                  <FrameworkIcons.Clock size={12} />
-                  {new Date(formData.scheduledPublishAt).toLocaleDateString()}
-                </div>
-              )}
-              {showPreview && (
-                <a 
-                  href={getPreviewUrl()}
-                  target="_blank"
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${
-                    theme === 'dark' 
-                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700' 
-                      : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100'
-                  }`}
-                >
-                  <FrameworkIcons.Eye size={12} />
-                  Preview
-                </a>
-              )}
-              
-              <Button 
-                variant="ghost"
-                onClick={() => window.history.back()}
-                className="rounded-xl px-4 font-bold text-[10px] text-slate-400"
-              >
-                Discard
-              </Button>
-              <Button 
-                className="px-6 font-bold text-[10px] shadow-lg shadow-indigo-600/20 h-9" 
-                onClick={(e) => {
-                   handleSubmit(e, changeSummary);
-                   setChangeSummary('');
-                }}
-                isLoading={saving}
-                icon={<FrameworkIcons.Save size={14} />}
-              >
-                {isNew ? 'Create' : 'Save'}
-              </Button>
-
-              {!isNew && (
-                <button 
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className={`p-2 rounded-lg border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === 'dark' ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
-                >
-                  <FrameworkIcons.Trash size={16} />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <EditHeader 
+        collection={collection}
+        pluginSlug={pluginSlug}
+        slug={slug}
+        id={id}
+        isNew={isNew}
+        theme={theme}
+        resolvedTitleValue={resolvedTitleValue}
+        changeSummary={changeSummary}
+        setChangeSummary={setChangeSummary}
+        formData={formData}
+        getPreviewUrl={getPreviewUrl}
+        showPreview={showPreview}
+        statusOptions={statusOptions}
+        currentStatusValue={currentStatusValue}
+        handleInputChange={handleInputChange}
+        handleSubmit={handleSubmit}
+        saving={saving}
+        setShowDeleteConfirm={setShowDeleteConfirm}
+      />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-12">
         <div className="max-w-7xl mx-auto">
@@ -419,7 +358,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                 {status.type === 'success' ? <FrameworkIcons.Check size={20} /> : <FrameworkIcons.Alert size={20} />}
               </div>
               <div className="flex-1">
-                <p className="font-bold text-sm">{status.type === 'success' ? 'Success' : 'Error'}</p>
+                <p className="font-semibold text-sm">{status.type === 'success' ? 'Success' : 'Error'}</p>
                 <p className="text-sm opacity-90">{status.message}</p>
               </div>
               <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -436,7 +375,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                 <button
                   key={tab.name}
                   onClick={() => setActiveTab(tab.name)}
-                  className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all ${
                     activeTab === tab.name 
                       ? (theme === 'dark' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-indigo-600 shadow-sm') 
                       : (theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
@@ -535,79 +474,25 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                 </Card>
 
                 {!isNew && (
-                  <Card title="Record Info">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-bold">Identifier</span>
-                        <span className="text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">{id}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-bold">Created</span>
-                        <span className="text-slate-500 font-medium font-sans">{new Date(formData.createdAt).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-bold">Last Update</span>
-                        <span className="text-slate-500 font-medium font-sans">{new Date(formData.updatedAt).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </Card>
+                  <RecordInfo 
+                    id={id}
+                    createdAt={formData.createdAt}
+                    updatedAt={formData.updatedAt}
+                  />
                 )}
 
                 {!isNew && (
-                  <Card title="Version History">
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {revisions.length === 0 && !revisionsLoading && (
-                          <p className="text-xs text-slate-400 font-bold italic py-2">No versions recorded yet.</p>
-                        )}
-                        {revisions.map((v, i) => (
-                          <div 
-                            key={i} 
-                            onClick={() => setSelectedRevision(v)}
-                            className={`flex items-start gap-3 group cursor-pointer p-2.5 -mx-2 rounded-xl transition-all border border-transparent ${v.id === activeVersionId ? 'bg-indigo-50/30 border-indigo-100/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
-                          >
-                            <div className={`mt-1.5 h-1.5 w-1.5 rounded-full ${v.id === activeVersionId ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-300'} shrink-0`} />
-                            <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-center gap-2">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                      <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
-                                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{v.user}</span>
-                                  </div>
-                                  {v.id !== activeVersionId && (
-                                    <button 
-                                        onClick={(e) => { 
-                                          e.stopPropagation(); 
-                                          setFormData({ ...formData, ...v.changes });
-                                          setActiveVersionId(v.id);
-                                        }}
-                                        className="text-xs font-bold text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
-                                    >
-                                        <FrameworkIcons.Refresh size={8} />
-                                        Restore
-                                    </button>
-                                  )}
-                                </div>
-                                <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{v.action}</p>
-                                <p className="text-[11px] text-slate-400 font-medium mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
-                            </div>
-                          </div>
-                        ))}
-                        
-                        {revisionsLoading && (
-                          <div className="flex items-center justify-center py-4">
-                            <FrameworkIcons.Loader size={16} className="animate-spin text-indigo-500" />
-                          </div>
-                        )}
-
-                        {hasMoreRevisions && !revisionsLoading && (
-                          <button 
-                            onClick={loadMoreRevisions}
-                            className="w-full py-3 text-[12px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
-                          >
-                            Load More History
-                          </button>
-                        )}
-                    </div>
-                  </Card>
+                  <SidebarVersions 
+                    revisions={revisions}
+                    revisionsLoading={revisionsLoading}
+                    activeVersionId={activeVersionId}
+                    setSelectedRevision={setSelectedRevision}
+                    setFormData={setFormData}
+                    setActiveVersionId={setActiveVersionId}
+                    loadMoreRevisions={loadMoreRevisions}
+                    hasMoreRevisions={hasMoreRevisions}
+                    formData={formData}
+                  />
                 )}
               </div>
             )}
@@ -617,163 +502,31 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         </div>
       </div>
 
-      {selectedRevision && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 animate-in fade-in duration-300">
-           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setSelectedRevision(null)} />
-           <Card className="relative w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
-              <div className="flex justify-between items-center mb-6">
-                 <div>
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-indigo-500">Version V{selectedRevision.version} Comparison</h2>
-                    <p className="text-xs text-slate-500 font-bold mt-1">{selectedRevision.date.toLocaleString()} by {selectedRevision.user}</p>
-                 </div>
-                 <div className="flex items-center gap-4">
-                    <button 
-                      onClick={() => setShowOnlyChanges(!showOnlyChanges)}
-                      className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${showOnlyChanges ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-slate-100 text-slate-500 border-slate-200'}`}
-                    >
-                      {showOnlyChanges ? 'Showing Changes' : 'Showing All Fields'}
-                    </button>
-                    <button onClick={() => setSelectedRevision(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                        <FrameworkIcons.Close size={20} />
-                    </button>
-                 </div>
-              </div>
+      <RevisionModal 
+        selectedRevision={selectedRevision}
+        setSelectedRevision={setSelectedRevision}
+        showOnlyChanges={showOnlyChanges}
+        setShowOnlyChanges={setShowOnlyChanges}
+        formData={formData}
+        setFormData={setFormData}
+        theme={theme}
+        currentRevIndex={currentRevIndex}
+        revisions={revisions}
+        restoringPermanently={restoringPermanently}
+        handleHardRestore={handleHardRestore}
+        setActiveVersionId={setActiveVersionId}
+        setStatus={setStatus}
+      />
 
-              <div className={`rounded-xl border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'} overflow-hidden`}>
-                 <div className="grid grid-cols-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50">
-                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Current Values</div>
-                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Version V{selectedRevision.version} Values</div>
-                 </div>
-                 <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
-                    {Object.entries(selectedRevision.changes)
-                      .filter(([key]) => {
-                         if (['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key)) return false;
-                         if (showOnlyChanges) {
-                            const curVal = formData[key];
-                            const revVal = selectedRevision.changes[key];
-                            return JSON.stringify(curVal) !== JSON.stringify(revVal);
-                         }
-                         return true;
-                      })
-                      .map(([key, val]) => {
-                         const curVal = formData[key];
-                         const hasChanged = JSON.stringify(curVal) !== JSON.stringify(val);
-                         
-                         return (
-                          <div key={key} className={`grid grid-cols-2 group border-b border-slate-100 dark:border-slate-800 last:border-0 ${hasChanged ? 'bg-indigo-500/5' : ''}`}>
-                             <div className="p-4 border-r border-slate-100 dark:border-slate-800">
-                                <span className="text-[10px] font-black text-slate-400 uppercase block mb-1">{key}</span>
-                                <div className="text-xs font-bold text-slate-500 line-clamp-3">
-                                   {typeof curVal === 'object' ? JSON.stringify(curVal) : (curVal === undefined ? <span className="italic opacity-50">Empty</span> : String(curVal))}
-                                </div>
-                             </div>
-                             <div className="p-4">
-                                <span className="text-[10px] font-black text-indigo-500 uppercase block mb-1">{key}</span>
-                                <div className={`text-xs font-bold line-clamp-3 ${hasChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
-                                   {typeof val === 'object' ? JSON.stringify(val) : (val === undefined ? <span className="italic opacity-50">Empty</span> : String(val))}
-                                </div>
-                             </div>
-                          </div>
-                         );
-                      })}
-                    {showOnlyChanges && Object.entries(selectedRevision.changes).filter(([key]) => {
-                         if (['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key)) return false;
-                         const curVal = formData[key];
-                         const revVal = selectedRevision.changes[key];
-                         return JSON.stringify(curVal) !== JSON.stringify(revVal);
-                    }).length === 0 && (
-                      <div className="p-12 text-center">
-                         <p className="text-sm text-slate-400 font-bold italic">No changes detected between current state and this version.</p>
-                      </div>
-                    )}
-                 </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-4 mt-8">
-                 <div className="flex items-center gap-2">
-                    <Button 
-                      variant="ghost" 
-                      className="text-[10px] font-black uppercase tracking-widest disabled:opacity-30" 
-                      disabled={currentRevIndex >= revisions.length - 1}
-                      onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
-                    >
-                       <FrameworkIcons.Left size={12} className="mr-2" />
-                       Older
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="text-[10px] font-black uppercase tracking-widest disabled:opacity-30" 
-                      disabled={currentRevIndex <= 0}
-                      onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
-                    >
-                       Newer
-                       <FrameworkIcons.Right size={12} className="ml-2" />
-                    </Button>
-                 </div>
-                 <div className="flex items-center gap-3">
-                    <Button 
-                       variant="ghost"
-                       className="px-6 text-[10px] font-black uppercase tracking-widest text-slate-500"
-                       onClick={() => {
-                          setFormData({ ...formData, ...selectedRevision.changes });
-                          setActiveVersionId(selectedRevision.id);
-                          setSelectedRevision(null);
-                          setStatus({ type: 'success', message: 'Revision applied to form. Click "Save Changes" to persist.' });
-                       }}
-                    >
-                       Preview in Form
-                    </Button>
-                    <Button 
-                       className="px-8 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/30"
-                       isLoading={restoringPermanently}
-                       onClick={() => handleHardRestore(selectedRevision.version)}
-                       icon={<FrameworkIcons.Refresh size={14} />}
-                    >
-                       Restore Permanently
-                    </Button>
-                 </div>
-              </div>
-           </Card>
-        </div>
-      )}
-
-      <div className={`fixed bottom-0 left-0 right-0 z-[100] border-t py-10 backdrop-blur-3xl transition-all duration-300 ${
-        theme === 'dark' 
-          ? 'bg-slate-950/80 border-slate-800/50 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]' 
-          : 'bg-white/80 border-slate-100 shadow-lg'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8 pl-20 lg:pl-64">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                Persistence Layer // {collection.slug}
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-6">
-            <Button 
-              variant="ghost" 
-              className="rounded-xl px-6 text-xs font-black uppercase tracking-widest text-slate-400"
-              onClick={() => router.back()}
-            >
-              Discard Changes
-            </Button>
-            <Button 
-              className="rounded-xl px-12 shadow-2xl shadow-indigo-600/30 text-xs font-black uppercase tracking-widest py-4.5"
-              onClick={(e) => {
-                 handleSubmit(e, changeSummary);
-                 setChangeSummary('');
-              }}
-              isLoading={saving}
-              icon={<FrameworkIcons.Save size={16} strokeWidth={3} />}
-            >
-              {isNew ? 'Create Entry' : 'Commit Changes'}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <EditFooter 
+        collection={collection}
+        theme={theme}
+        isNew={isNew}
+        handleSubmit={handleSubmit}
+        changeSummary={changeSummary}
+        setChangeSummary={setChangeSummary}
+        saving={saving}
+      />
 
       <ConfirmDialog 
         isOpen={showDeleteConfirm}

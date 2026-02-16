@@ -46,14 +46,14 @@ export default function PermissionsPage() {
       id: 'name',
       accessor: (p: any) => (
         <div className="flex flex-col gap-1">
-          <span className={`font-mono font-black text-[11px] px-2.5 py-1 rounded-lg border shadow-sm w-fit ${
+          <span className={`font-mono font-semibold text-[11px] px-2.5 py-1 rounded-lg border shadow-sm w-fit ${
             theme === 'dark' 
               ? 'bg-slate-950 border-slate-800 text-indigo-400' 
               : 'bg-indigo-50 border-indigo-100 text-indigo-800'
           }`}>
             {p.name}
           </span>
-          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">ID: {p.cid || 'SYS-AUTO'}</span>
+          <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-tight pl-1">ID: {p.cid || 'SYS-AUTO'}</span>
         </div>
       )
     },
@@ -61,7 +61,7 @@ export default function PermissionsPage() {
       header: 'Domain',
       id: 'group',
       accessor: (p: any) => (
-        <Badge variant={p.group === 'system' || p.group === 'core' ? 'amber' : 'blue'} className="font-black uppercase tracking-[0.1em] text-[10px] px-3 border-none flex items-center gap-2">
+        <Badge variant={p.group === 'system' || p.group === 'core' ? 'amber' : 'blue'} className="font-semibold uppercase tracking-tight text-[10px] px-3 border-none flex items-center gap-2">
           <div className={`h-1.5 w-1.5 rounded-full ${p.group === 'system' || p.group === 'core' ? 'bg-amber-500' : 'bg-blue-500'}`} />
           {(() => {
             const label = p.group || 'General';
@@ -78,7 +78,7 @@ export default function PermissionsPage() {
            <div className={`h-6 w-6 rounded border flex items-center justify-center ${theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
               <FrameworkIcons.Plugins size={12} className="text-slate-400" />
            </div>
-           <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">
+           <span className="text-[10px] font-semibold uppercase tracking-tight text-slate-500">
              {p.pluginSlug ? (p.pluginSlug.charAt(0).toUpperCase() + p.pluginSlug.slice(1)) : 'System'}
            </span>
         </div>
@@ -96,7 +96,7 @@ export default function PermissionsPage() {
               p.impact === 'Medium' ? 'w-[40%] bg-indigo-500' : 'w-[20%] bg-emerald-500'
             }`} />
           </div>
-          <span className={`text-[10px] font-black uppercase tracking-widest ${
+          <span className={`text-[10px] font-semibold uppercase tracking-tight ${
             p.impact === 'Critical' ? 'text-rose-500' :
             p.impact === 'High' ? 'text-amber-500' :
             p.impact === 'Medium' ? 'text-indigo-500' : 'text-emerald-500'
@@ -128,9 +128,9 @@ export default function PermissionsPage() {
                 <div className={`h-11 w-11 rounded-full flex items-center justify-center shadow-lg transform rotate-6 transition-transform hover:rotate-0 ${
                   theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-600 text-white'
                 }`}>
-                  <FrameworkIcons.Zap size={22} strokeWidth={2.5} />
+                  <FrameworkIcons.Zap size={22} strokeWidth={2} />
                 </div>
-                <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                   Permissions
                 </h1>
               </div>
@@ -143,7 +143,7 @@ export default function PermissionsPage() {
               <Link href="/users/permissions/new">
                 <Button 
                   variant="secondary"
-                  className="px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] border-slate-200 dark:border-slate-800"
+                  className="h-11 px-6 rounded-xl font-bold uppercase tracking-tight text-[10px] border-slate-200 dark:border-slate-800"
                   icon={<FrameworkIcons.Plus size={16} />}
                 >
                   Define Permission
@@ -151,7 +151,7 @@ export default function PermissionsPage() {
               </Link>
               <Button 
                 variant="secondary"
-                className="px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] border-slate-200 dark:border-slate-800"
+                className="h-11 px-6 rounded-xl font-bold uppercase tracking-tight text-[10px] border-slate-200 dark:border-slate-800"
                 icon={<FrameworkIcons.More size={16} />}
                 isLoading={isRefreshing}
                 onClick={async () => {
@@ -173,7 +173,7 @@ export default function PermissionsPage() {
 
       <div className="flex-1 w-full px-6 lg:px-12 py-12">
         <div className="space-y-8 pb-12">
-          <div className={`rounded-[2.5rem] border overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none ${
+          <div className={`rounded-3xl border overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none ${
             theme === 'dark' ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200/60'
           }`}>
             <DataTable
@@ -188,13 +188,13 @@ export default function PermissionsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <Card title="Security Architecture">
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                <p className="text-sm text-slate-500 leading-relaxed font-bold tracking-tight">
                   Permissions are the atomic units of security in Fromcode. They are declared by plugins via their <code className="text-indigo-500">manifest.json</code> and enforced by the middleware layer. Administrators can group these into roles for simplified user management.
                 </p>
               </Card>
               <Card title="Drift Detection">
-                <p className="text-xs text-slate-500 leading-relaxed font-medium italic">
-                  The registry is automatically updated when a plugin with new capabilities is installed. New permissions are marked as <span className="text-rose-500 font-black uppercase">unverified</span> until a system administrator reviews and approves the capability drift.
+                <p className="text-sm text-slate-500 leading-relaxed font-bold tracking-tight italic">
+                  The registry is automatically updated when a plugin with new capabilities is installed. New permissions are marked as <span className="text-rose-500 font-bold uppercase">unverified</span> until a system administrator reviews and approves the capability drift.
                 </p>
               </Card>
           </div>
@@ -206,18 +206,18 @@ export default function PermissionsPage() {
         theme === 'dark' ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
       }`}>
         <div className="w-full px-6 lg:px-12 py-10">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 border-t border-slate-100 dark:border-slate-800 pt-10">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
                   Permissions Registry
                 </span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400">Manage system capabilities and plugin permissions.</p>
+              <p className="text-[9px] font-bold tracking-tight text-slate-400">Manage system capabilities and plugin permissions.</p>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight text-slate-400">
                <Link href="/users" className="hover:text-indigo-500 transition-colors">Users</Link>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
                <Link href="/users/roles" className="hover:text-indigo-500 transition-colors">Roles</Link>

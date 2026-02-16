@@ -105,7 +105,7 @@ export default function MarketplacePage() {
              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
                 <FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" />
              </div>
-             <h3 className={`text-xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No plugins found</h3>
+             <h3 className={`text-lg font-bold mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No plugins found</h3>
              <p className="text-slate-500 font-medium">Try a different search term or check your marketplace connection.</p>
           </div>
         ) : (
@@ -140,7 +140,7 @@ export default function MarketplacePage() {
                           Featured
                         </Badge>
                       )}
-                      <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0">
+                      <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0 font-semibold">
                         {installed ? "Installed" : (plugin.category || "Available")}
                       </Badge>
                     </div>
@@ -148,7 +148,7 @@ export default function MarketplacePage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                       <h3 className={`text-2xl font-black tracking-tighter leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-2 min-h-[4rem] flex-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                       <h3 className={`text-xl font-bold tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-2 min-h-[4rem] flex-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                         {plugin.name}
                       </h3>
                       {plugin.isVerified && (
@@ -193,7 +193,7 @@ export default function MarketplacePage() {
                   {installed && hasUpdate && (
                     <div className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100 shadow-sm'}`}>
                        <div className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                       <span className={`text-[11px] font-black uppercase tracking-widest leading-none ${theme === 'dark' ? 'text-amber-400' : 'text-amber-700'}`}>New Update v{plugin.version}</span>
+                       <span className={`text-[10px] font-bold uppercase tracking-wide leading-none ${theme === 'dark' ? 'text-amber-400' : 'text-amber-700'}`}>New Update v{plugin.version}</span>
                     </div>
                   )}
 
@@ -201,7 +201,7 @@ export default function MarketplacePage() {
                     {installed && !hasUpdate ? (
                       <button 
                         onClick={(e) => { e.stopPropagation(); router.push(`/plugins/${plugin.slug}`); }}
-                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all ${theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
                       >
                         <FrameworkIcons.Check size={16} />
                         <span>Installed</span>
@@ -210,7 +210,7 @@ export default function MarketplacePage() {
                       <button 
                         onClick={(e) => handleInstall(e, plugin.slug)}
                         disabled={!!installing}
-                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-[0.97] bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all shadow-lg active:scale-[0.97] bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
                          <FrameworkIcons.Refresh size={16} className={installing === plugin.slug ? "animate-spin" : "animate-spin-slow"} />
                          <span>{installing === plugin.slug ? 'Updating...' : 'Update Plugin'}</span>
@@ -219,7 +219,7 @@ export default function MarketplacePage() {
                       <button 
                         onClick={(e) => handleInstall(e, plugin.slug)}
                         disabled={!!installing}
-                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-[0.97] bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all shadow-lg active:scale-[0.97] bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
                          {installing === plugin.slug ? (
                            <FrameworkIcons.Refresh size={16} className="animate-spin" />

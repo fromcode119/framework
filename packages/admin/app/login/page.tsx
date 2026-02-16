@@ -87,7 +87,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#020617]">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Verifying System...</span>
+          <span className="text-xs font-semibold text-slate-500 tracking-wide">Verifying System...</span>
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-600/30 mb-6 transform hover:scale-110 transition-transform">
             <FrameworkIcons.Zap size={32} className="text-white" fill="currentColor" />
           </div>
-          <h1 className="text-3xl font-black tracking-tight mb-2 text-slate-900 dark:text-white">
+          <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
             Welcome to {APP_NAME}
           </h1>
           <p className="text-slate-500 font-medium">Please enter your credentials to continue</p>
@@ -108,7 +108,7 @@ export default function LoginPage() {
 
         <div className="p-8 rounded-3xl border shadow-2xl bg-white border-slate-200 dark:bg-[#0f172a] dark:border-slate-800 dark:shadow-black/40">
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-bold animate-in fade-in zoom-in duration-300">
+            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold animate-in fade-in zoom-in duration-300">
               {error}
             </div>
           )}
@@ -127,8 +127,8 @@ export default function LoginPage() {
             
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-black uppercase tracking-widest text-slate-500">Password</label>
-                <button type="button" onClick={handleForgotPassword} className="text-xs font-bold text-indigo-500 hover:text-indigo-400">Forgot?</button>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Password</label>
+                <button type="button" onClick={handleForgotPassword} className="text-xs font-semibold text-indigo-500 hover:text-indigo-400">Forgot?</button>
               </div>
               <Input 
                 placeholder="••••••••"
@@ -146,12 +146,12 @@ export default function LoginPage() {
                 <div className="p-1 rounded bg-indigo-500/10 text-indigo-500">
                   <FrameworkIcons.Shield size={14} />
                 </div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Secure Session</span>
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Secure Session</span>
               </div>
               <button 
                 type="button" 
                 onClick={() => router.push('/setup')} 
-                className="text-[10px] font-bold text-indigo-500 hover:underline uppercase tracking-widest"
+                className="text-[10px] font-semibold text-indigo-500 hover:underline uppercase tracking-wider"
               >
                 Initialization Mode
               </button>
@@ -169,7 +169,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center mt-8 text-sm text-slate-500">
-          Not part of the organization? <button onClick={handleContactSupport} className="font-bold text-indigo-500 hover:text-indigo-400 underline decoration-indigo-500/30 underline-offset-4">Contact Support</button>
+          Not part of the organization? <button onClick={handleContactSupport} className="font-semibold text-indigo-500 hover:text-indigo-400 underline decoration-indigo-500/30 underline-offset-4">Contact Support</button>
         </p>
       </div>
     </div>

@@ -81,9 +81,9 @@ export default function RolesPage() {
                 <div className={`h-11 w-11 rounded-full flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 ${
                   theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-600 text-white'
                 }`}>
-                  <FrameworkIcons.Shield size={22} strokeWidth={2.5} />
+                  <FrameworkIcons.Shield size={22} strokeWidth={2} />
                 </div>
-                <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                   Roles
                 </h1>
               </div>
@@ -95,8 +95,8 @@ export default function RolesPage() {
             <div className="flex items-center gap-4">
               <Link href="/users/roles/new">
                 <Button 
-                  className="px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/10 text-white" 
-                  icon={<FrameworkIcons.Plus size={16} strokeWidth={2.5} />}
+                  className="px-6 h-11 rounded-xl font-bold uppercase tracking-tight text-[11px] shadow-lg shadow-indigo-600/10 text-white" 
+                  icon={<FrameworkIcons.Plus size={16} strokeWidth={2} />}
                 >
                   Create Role
                 </Button>
@@ -130,22 +130,22 @@ export default function RolesPage() {
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-3 mb-3">
-                              <h3 className={`font-black text-2xl tracking-tighter transition-colors group-hover:text-indigo-600 ${theme === 'dark' ? 'text-white group-hover:text-indigo-400' : 'text-slate-900'}`}>{role.name}</h3>
-                              <code className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full ${
+                              <h3 className={`font-bold text-2xl tracking-tight transition-colors group-hover:text-indigo-600 ${theme === 'dark' ? 'text-white group-hover:text-indigo-400' : 'text-slate-900'}`}>{role.name}</h3>
+                              <code className={`text-[10px] font-bold uppercase tracking-tight px-3 py-1 rounded-full ${
                                 theme === 'dark' ? 'bg-slate-800 text-slate-500' : 'bg-slate-50 border border-slate-200 text-slate-500'
                               }`}>
                                 {role.slug}
                               </code>
                             </div>
-                            <p className="text-base font-medium text-slate-500 leading-relaxed max-w-2xl mb-8">{role.description}</p>
+                            <p className="text-base font-bold text-slate-500 leading-relaxed max-w-2xl mb-8">{role.description}</p>
                             
                             <div className="flex flex-wrap items-center gap-x-12 gap-y-6">
                                <div className="flex flex-col gap-1">
-                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Members</span>
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Active Members</span>
                                  <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{role.users || 0} Users</span>
                                </div>
                                <div className="flex flex-col gap-1">
-                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scope</span>
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Scope</span>
                                  <div className="flex gap-2">
                                    <span className="text-[11px] font-bold text-indigo-500/80">
                                      {role.permissions?.length || 0} Permissions
@@ -153,7 +153,7 @@ export default function RolesPage() {
                                  </div>
                                </div>
                                <div className="flex flex-col gap-1">
-                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last Modified</span>
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Last Modified</span>
                                  <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
                                    {role.updatedAt ? new Date(role.updatedAt).toLocaleDateString() : 'Initial'}
                                  </span>
@@ -165,8 +165,8 @@ export default function RolesPage() {
                         <div className="flex flex-row lg:flex-col items-center lg:items-end gap-4 w-full lg:w-auto">
                           {role.type === 'system' ? (
                             <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
-                               <FrameworkIcons.Lock size={14} strokeWidth={3} />
-                               <span className="font-black uppercase tracking-widest text-[10px]">Immutable</span>
+                               <FrameworkIcons.Lock size={14} strokeWidth={2} />
+                               <span className="font-bold uppercase tracking-tight text-[10px]">Immutable</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-3">
@@ -196,15 +196,15 @@ export default function RolesPage() {
               <Card title="Security Architecture">
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest leading-none">Access Control</span>
+                    <span className="text-[10px] font-semibold text-indigo-500 uppercase tracking-tight leading-none">Access Control</span>
                     <p className="text-xs text-slate-500 leading-relaxed">
                       Roles define the maximum privilege boundary for all associated identities.
                     </p>
                   </div>
                   
                   <div className={`p-5 rounded-2.5xl border ${theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/10' : 'bg-indigo-50 border-indigo-100'}`}>
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2">Live Enforcement</h4>
-                    <p className="text-[11px] font-bold text-indigo-600/70 dark:text-indigo-400/70 leading-relaxed">
+                    <h4 className="text-[10px] font-semibold uppercase tracking-tight text-indigo-500 mb-2">Live Enforcement</h4>
+                    <p className="text-[11px] font-medium text-indigo-600/70 dark:text-indigo-400/70 leading-relaxed">
                       RBAC policies are synchronized across the cluster in real-time.
                     </p>
                   </div>
@@ -222,13 +222,13 @@ export default function RolesPage() {
                       <div className={`h-12 w-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-500 group-hover/feed:scale-110 group-hover/feed:rotate-3 ${
                         theme === 'dark' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white'
                       }`}>
-                        <FrameworkIcons.Search size={20} strokeWidth={3} />
+                        <FrameworkIcons.Search size={20} strokeWidth={2} />
                       </div>
                       <div>
-                        <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                        <h3 className={`text-[10px] font-semibold uppercase tracking-tight ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
                           System Audit Logs
                         </h3>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.1em] mt-1 opacity-70">Real-time Security Streams</p>
+                        <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-tight mt-1 opacity-70">Real-time Security Streams</p>
                       </div>
                     </div>
                     
@@ -236,7 +236,7 @@ export default function RolesPage() {
                       theme === 'dark' ? 'bg-slate-950 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700'
                     }`}>
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[8px] font-black uppercase tracking-widest">Encrypted</span>
+                      <span className="text-[8px] font-semibold uppercase tracking-tight">Encrypted</span>
                     </div>
                   </div>
                 </div>
@@ -266,14 +266,14 @@ export default function RolesPage() {
                         </div>
                         <div className="flex flex-col justify-center">
                           <div className="flex items-center gap-3">
-                            <span className={`text-sm font-black tracking-tight ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
+                            <span className={`text-sm font-semibold tracking-tight ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
                               {log.message}
                             </span>
-                            <span className="text-[9px] font-bold text-slate-400 gap-1 flex uppercase tracking-widest leading-none">
+                            <span className="text-[9px] font-semibold text-slate-400 gap-1 flex uppercase tracking-tight leading-none">
                               {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <span className="text-[10px] text-slate-500 font-black uppercase tracking-tight flex items-center gap-1.5 mt-0.5 opacity-70">
+                          <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight flex items-center gap-1.5 mt-0.5 opacity-70">
                              {(() => {
                                const slug = log.plugin_slug || 'System';
                                return slug.charAt(0).toUpperCase() + slug.slice(1);
@@ -283,18 +283,18 @@ export default function RolesPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-10 opacity-40 text-[10px] uppercase font-black tracking-widest">No activity logged</div>
+                    <div className="text-center py-10 opacity-40 text-[10px] uppercase font-semibold tracking-tight">No activity logged</div>
                   )}
                 </div>
                 
                 <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Environment Node 102.v2</span>
-                      <span className="text-[8px] font-bold text-slate-300 dark:text-slate-600 uppercase mt-0.5 tracking-[0.2em]">Secure Cluster: Active</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-tight text-slate-400">Environment Node 102.v2</span>
+                      <span className="text-[8px] font-medium text-slate-300 dark:text-slate-600 uppercase mt-0.5 tracking-tight">Secure Cluster: Active</span>
                     </div>
                     <Link href="/activity">
-                      <Button variant="ghost" className="h-9 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                      <Button variant="ghost" className="h-9 px-4 rounded-lg text-[9px] font-semibold uppercase tracking-tight hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
                         View Logs
                       </Button>
                     </Link>
@@ -315,14 +315,14 @@ export default function RolesPage() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 dark:text-slate-400">
                   Roles Management
                 </span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400">Manage and customize system access roles.</p>
+              <p className="text-[9px] font-semibold text-slate-400">Manage and customize system access roles.</p>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-tight text-slate-400">
                <Link href="/users" className="hover:text-indigo-500 transition-colors">Users</Link>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
                <Link href="/users/permissions" className="hover:text-indigo-500 transition-colors">Permissions</Link>

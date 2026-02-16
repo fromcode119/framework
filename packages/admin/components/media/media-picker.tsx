@@ -9,6 +9,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { RootFramework } from '@fromcode/react';
 import { TYPOGRAPHY } from '../../lib/typography';
+import { UI_TEXT } from '../../lib/ui';
 
 interface MediaItem {
   id: string;
@@ -93,7 +94,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
   return createPortal(
     <RootFramework>
       <div className="fixed inset-0 z-[2147483000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-[32px] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-lg shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
           
           {/* Header */}
           <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -118,7 +119,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                 placeholder="Search media..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${TYPOGRAPHY.LABEL}`}
+                className={`w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${TYPOGRAPHY.LABEL}`}
               />
             </div>
             <input 
@@ -134,7 +135,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
               className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
             >
               {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-              <span className="uppercase text-[10px] font-black tracking-widest">Upload New</span>
+              <span className="text-[11px] font-semibold">Upload New</span>
             </Button>
           </div>
 
@@ -165,7 +166,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                           onSelect(item);
                           onClose();
                         }}
-                        className={`group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-2 transition-all ${
+                        className={`group relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
                           isSelected 
                             ? 'border-indigo-500 ring-4 ring-indigo-500/10' 
                             : 'border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 bg-white dark:bg-slate-800'
@@ -180,7 +181,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center p-4">
                             <File size={32} className="text-slate-300 mb-2" />
-                            <span className="text-[8px] font-bold text-slate-400 uppercase text-center truncate w-full">{item.filename}</span>
+                            <span className="text-[8px] font-semibold text-slate-400 text-center truncate w-full">{item.filename}</span>
                           </div>
                         )}
                         
@@ -202,7 +203,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
             <div className="w-80 border-l border-slate-100 dark:border-slate-800 p-6 bg-white dark:bg-slate-900 flex flex-col">
               {selectedItem ? (
                 <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
-                  <div className="aspect-video rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+                  <div className="aspect-video rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
                     {selectedItem.mimeType.startsWith('image/') ? (
                       <img src={selectedItem.url} className="w-full h-full object-contain" />
                     ) : (
@@ -213,23 +214,23 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                   </div>
 
                   <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Filename</h4>
-                    <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate">{selectedItem.filename}</p>
+                    <h4 className={UI_TEXT.LABEL}>Filename</h4>
+                    <p className="text-[11px] font-semibold text-slate-900 dark:text-white truncate">{selectedItem.filename}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Format</h4>
-                      <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase">{selectedItem.mimeType.split('/')[1]}</p>
+                      <h4 className={UI_TEXT.LABEL}>Format</h4>
+                      <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{selectedItem.mimeType.split('/')[1]}</p>
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Size</h4>
-                      <p className="text-[11px] font-bold text-slate-900 dark:text-white">{(selectedItem.filesize / 1024).toFixed(1)} KB</p>
+                      <h4 className={UI_TEXT.LABEL}>Size</h4>
+                      <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{(selectedItem.filesize / 1024).toFixed(1)} KB</p>
                     </div>
                     {selectedItem.width && (
                       <div className="col-span-2">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Dimensions</h4>
-                        <p className="text-[11px] font-bold text-slate-900 dark:text-white">{selectedItem.width} × {selectedItem.height} px</p>
+                        <h4 className={UI_TEXT.LABEL}>Dimensions</h4>
+                        <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{selectedItem.width} × {selectedItem.height} px</p>
                       </div>
                     )}
                   </div>
@@ -242,14 +243,14 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                       }}
                       className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-[1.02] transition-transform"
                     >
-                      <span className="uppercase text-[10px] font-black tracking-widest">Insert Asset</span>
+                      <span className="text-[11px] font-semibold">Insert Asset</span>
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 px-4">
                   <ImageIcon size={40} className="mb-4 opacity-10" />
-                  <p className="text-[10px] font-bold uppercase tracking-wider">Select an item to view details</p>
+                  <p className={UI_TEXT.SUBTEXT}>Select an item to view details</p>
                 </div>
               )}
             </div>

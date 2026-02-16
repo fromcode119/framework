@@ -112,7 +112,7 @@ export default function InstalledThemesPage() {
           <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4">
             <FrameworkIcons.Palette size={32} className="text-slate-300 dark:text-slate-700" />
           </div>
-          <h3 className={`text-xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No themes installed</h3>
+          <h3 className={`text-xl font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No themes installed</h3>
           <p className="text-slate-500 font-medium italic">Your creative workspace is currently empty.</p>
         </div>
       ) : themes.map(t => {
@@ -142,7 +142,7 @@ export default function InstalledThemesPage() {
                   {hasUpdate && (
                     <Badge variant="warning" className="animate-pulse">Update</Badge>
                   )}
-                  <Badge variant={isActive ? 'blue' : 'gray'} className="font-black uppercase tracking-widest text-[9px]">
+                  <Badge variant={isActive ? 'blue' : 'gray'} className="font-semibold uppercase tracking-wider text-[9px]">
                     {isActive ? 'Active Core' : 'Installed'}
                   </Badge>
                 </div>
@@ -152,7 +152,7 @@ export default function InstalledThemesPage() {
                 <div className="flex items-center justify-between">
                   <Link 
                     href={`/themes/${t.slug}`}
-                    className={`group/title flex items-center gap-2 text-2xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'} hover:text-indigo-600 transition-colors`}
+                    className={`group/title flex items-center gap-2 text-2xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'} hover:text-indigo-600 transition-colors`}
                   >
                     {t.name}
                     <FrameworkIcons.Right size={18} className="opacity-0 -translate-x-2 group-hover/title:opacity-100 group-hover/title:translate-x-0 transition-all text-indigo-500" />
@@ -165,7 +165,7 @@ export default function InstalledThemesPage() {
                 {t.author && (
                   <div className="flex items-center gap-2">
                      <div className="h-1 w-4 bg-indigo-500 rounded-full" />
-                     <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Architect: {t.author}</p>
+                     <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider">Architect: {t.author}</p>
                   </div>
                 )}
               </div>
@@ -174,7 +174,7 @@ export default function InstalledThemesPage() {
                 {hasUpdate && (
                   <button 
                     onClick={() => handleUpdate(t.slug)}
-                    className="w-full mb-3 py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                    className="w-full mb-3 py-4 rounded-2xl font-semibold uppercase tracking-wider text-[11px] bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
                   >
                     <FrameworkIcons.Clock size={16} />
                     Upgrade to v{marketplaceMatch.version}
@@ -184,7 +184,7 @@ export default function InstalledThemesPage() {
                    <div className="flex gap-3">
                      <Link 
                        href={`/themes/${t.slug}`}
-                       className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-indigo-600 text-white text-center shadow-xl shadow-indigo-600/20 hover:scale-[1.02] transition-transform`}
+                       className={`flex-1 py-4 rounded-2xl font-semibold uppercase tracking-wider text-[11px] bg-indigo-600 text-white text-center shadow-xl shadow-indigo-600/20 hover:scale-[1.02] transition-transform`}
                      >
                        Manage Layout
                      </Link>
@@ -201,7 +201,7 @@ export default function InstalledThemesPage() {
                    <div className="flex gap-3">
                       <button 
                         onClick={() => handleActivate(t.slug)}
-                        className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-slate-900 dark:bg-white dark:text-slate-900 text-white transition-all transform hover:scale-[1.02] shadow-xl shadow-slate-900/20`}
+                        className={`flex-1 py-4 rounded-2xl font-semibold uppercase tracking-wider text-[11px] bg-slate-900 dark:bg-white dark:text-slate-900 text-white transition-all transform hover:scale-[1.02] shadow-xl shadow-slate-900/20`}
                       >
                         Activate System
                       </button>

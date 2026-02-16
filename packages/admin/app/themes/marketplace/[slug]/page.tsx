@@ -116,11 +116,11 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
           <FrameworkIcons.Left size={24} strokeWidth={2.5} />
         </Link>
         <div className="flex-1 min-w-0">
-          <Badge variant="blue" className="px-3 py-1 font-black uppercase tracking-widest text-[10px] rounded-lg mb-2">
+          <Badge variant="blue" className="px-3 py-1 font-semibold uppercase tracking-wide text-[10px] rounded-lg mb-2">
             Marketplace Premium
           </Badge>
           <div className="flex items-center gap-3">
-             <h1 className={`text-4xl font-black tracking-tighter truncate ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+             <h1 className={`text-4xl font-bold tracking-tight truncate ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                {theme.name}
              </h1>
              {allVersions.length > 1 && (
@@ -128,7 +128,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                   <Dropdown 
                     align="left"
                     trigger={
-                      <div className={`flex items-center gap-3 pl-4 pr-3 py-2 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] border-2 transition-all cursor-pointer group ${adminTheme === 'dark' ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/10'}`}>
+                      <div className={`flex items-center gap-3 pl-4 pr-3 py-2 rounded-2xl text-[11px] font-bold uppercase tracking-wide border-2 transition-all cursor-pointer group ${adminTheme === 'dark' ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/10'}`}>
                         <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? '(Latest)' : ''}</span>
                         <div className={`transition-colors ${adminTheme === 'dark' ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
                           <FrameworkIcons.Down size={14} strokeWidth={3} />
@@ -149,7 +149,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
              <button 
                 onClick={handleInstall}
                 disabled={installing || (installedTheme && !hasUpdate)}
-                className={`px-10 py-5 text-xs font-black uppercase tracking-[0.2em] rounded-[2rem] transition-all shadow-2xl active:scale-95 flex items-center gap-3 ${
+                className={`px-10 py-5 text-xs font-bold uppercase tracking-widest rounded-[2rem] transition-all shadow-2xl active:scale-95 flex items-center gap-3 ${
                   installedTheme && !hasUpdate
                     ? 'bg-emerald-50 text-emerald-600 shadow-none cursor-default opacity-80'
                     : hasUpdate
@@ -176,9 +176,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
             {screenshots.length > 0 ? (
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                            <FrameworkIcons.Image size={14} className="text-indigo-500" />
-                            Theme Preview
+                            <h3 className={`text-[11px] font-bold uppercase tracking-widest flex items-center gap-3 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                         </h3>
                     </div>
 
@@ -236,7 +234,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
             )}
 
             <div className="space-y-6">
-                <h3 className={`text-[11px] font-black uppercase tracking-widest ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                   About {theme.name}
                 </h3>
                 <p className={`text-2xl font-medium leading-relaxed ${adminTheme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -248,7 +246,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                 <div className="space-y-8">
                    <div className="flex items-center gap-4">
                       <div className={`h-8 w-1.5 rounded-full ${adminTheme === 'dark' ? 'bg-indigo-500/40' : 'bg-indigo-600'}`}></div>
-                      <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] ${adminTheme === 'dark' ? 'text-slate-400' : 'text-slate-900/40'}`}>Technical Changelog</h3>
+                      <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === 'dark' ? 'text-slate-400' : 'text-slate-900/40'}`}>Technical Changelog</h3>
                       <div className={`h-px flex-1 ${adminTheme === 'dark' ? 'bg-slate-800' : 'bg-slate-200/60'}`}></div>
                    </div>
                    
@@ -256,8 +254,8 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                       {theme.changelog.map((log, idx) => (
                         <div key={idx} className="space-y-4">
                            <div className="flex items-center gap-3">
-                              <Badge variant="blue" className="px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-wider">v{log.version}</Badge>
-                              <span className={`text-[10px] font-black uppercase tracking-widest ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Released {log.date}</span>
+                              <Badge variant="blue" className="px-2 py-0.5 text-[9px] font-semibold rounded-md uppercase tracking-wide">v{log.version}</Badge>
+                              <span className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Released {log.date}</span>
                            </div>
                            <div className={`rounded-[2rem] border-0 overflow-hidden ${adminTheme === 'dark' ? 'bg-slate-900/40 ring-1 ring-white/5' : 'bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] ring-1 ring-slate-100'}`}>
                               <ul className={`divide-y ${adminTheme === 'dark' ? 'divide-slate-800/50' : 'divide-slate-50'}`}>
@@ -271,7 +269,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                                           <FrameworkIcons.Check size={14} strokeWidth={3} />
                                        </div>
                                        <div className="flex-1 space-y-1">
-                                          <p className={`text-[13px] font-bold leading-relaxed ${adminTheme === 'dark' ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-900'}`}>
+                                          <p className={`text-[13px] font-semibold leading-relaxed ${adminTheme === 'dark' ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-900'}`}>
                                              {change}
                                           </p>
                                        </div>
@@ -289,7 +287,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
         <div className="space-y-8">
             {theme.dependencies && Object.keys(theme.dependencies).length > 0 && (
               <Card className={`border-0 p-8 ${adminTheme === 'dark' ? 'bg-indigo-500/5' : 'bg-indigo-50/50'}`}>
-                <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 ${adminTheme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                <h3 className={`text-[11px] font-bold uppercase tracking-widest mb-6 flex items-center gap-2 ${adminTheme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
                   <FrameworkIcons.Puzzle size={16} />
                   Dependency Guard
                 </h3>
@@ -297,7 +295,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                   {Object.entries(theme.dependencies).map(([slug, version]) => (
                     <div key={slug} className={`flex items-center justify-between p-4 rounded-2xl border ${adminTheme === 'dark' ? 'bg-slate-900/40 border-white/5' : 'bg-white border-slate-100'}`}>
                       <div className="flex flex-col">
-                        <span className={`text-xs font-black tracking-tight ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{slug}</span>
+                        <span className={`text-xs font-bold tracking-tight ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{slug}</span>
                         <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Requires {version}</span>
                       </div>
                       <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${adminTheme === 'dark' ? 'bg-slate-800' : 'bg-slate-50'}`}>
@@ -321,8 +319,8 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                       <FrameworkIcons.Clock className="text-amber-600" size={24} />
                     </div>
                     <div>
-                      <h4 className={`text-sm font-black uppercase tracking-wider leading-tight ${adminTheme === 'dark' ? 'text-amber-400' : 'text-amber-900'}`}>Upgrade Available</h4>
-                      <p className={`text-[11px] font-bold mt-1 leading-relaxed ${adminTheme === 'dark' ? 'text-amber-500/70' : 'text-amber-700'}`}>
+                      <h4 className={`text-sm font-bold uppercase tracking-wider leading-tight ${adminTheme === 'dark' ? 'text-amber-400' : 'text-amber-900'}`}>Upgrade Available</h4>
+                      <p className={`text-[11px] font-semibold mt-1 leading-relaxed ${adminTheme === 'dark' ? 'text-amber-500/70' : 'text-amber-700'}`}>
                         v{theme.version} brings new design improvements and features.
                       </p>
                     </div>
@@ -341,8 +339,8 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                     </div>
 
                     <div className="w-full pb-6 mb-6 border-b border-slate-100 dark:border-white/5">
-                        <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Current Release</div>
-                        <div className={`text-2xl font-black ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>v{theme.version}</div>
+                        <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Current Release</div>
+                        <div className={`text-2xl font-bold ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>v{theme.version}</div>
                     </div>
 
                     <div className="w-full space-y-6">
@@ -351,9 +349,9 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                                 <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                                     <FrameworkIcons.User size={14} />
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Creator</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Creator</span>
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${adminTheme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>{theme.author}</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest ${adminTheme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>{theme.author}</span>
                         </div>
 
                         <div className="flex justify-between items-center group cursor-default">
@@ -361,14 +359,14 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                                 <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                                     <FrameworkIcons.Layout size={14} />
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Category</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Category</span>
                             </div>
-                            <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase tracking-widest rounded-lg">UI Framework</span>
+                            <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-widest rounded-lg">UI Framework</span>
                         </div>
 
                         {theme.authorUrl && (
                              <a href={theme.authorUrl} target="_blank" className="flex justify-between items-center group pt-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Developer Portal</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Developer Portal</span>
                                 <FrameworkIcons.External size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                              </a>
                         )}
@@ -377,7 +375,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                     <button
                       disabled={installing || (installedTheme && !hasUpdate)}
                       onClick={handleInstall}
-                      className={`w-full mt-10 py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl transition-all duration-300 flex items-center justify-center gap-3 hover:-translate-y-1 active:translate-y-0 active:scale-95 ${
+                      className={`w-full mt-10 py-5 rounded-[2rem] font-bold text-[11px] uppercase tracking-widest shadow-xl transition-all duration-300 flex items-center justify-center gap-3 hover:-translate-y-1 active:translate-y-0 active:scale-95 ${
                         installedTheme && !hasUpdate
                           ? 'bg-emerald-50 text-emerald-600 cursor-default opacity-80 shadow-none'
                           : hasUpdate
@@ -413,11 +411,11 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                         <FrameworkIcons.Shield size={24} strokeWidth={2.5} />
                     </div>
                     <div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Verified</div>
-                        <div className={`text-xs font-black ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Official UI Audit</div>
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Verified</div>
+                        <div className={`text-xs font-bold ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Official UI Audit</div>
                     </div>
                 </div>
-                <p className={`text-[11px] leading-relaxed font-bold ${adminTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                <p className={`text-[11px] leading-relaxed font-semibold ${adminTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                     This theme has been manually audited for WCAG accessibility, performance benchmarks, and Fromcode core compatibility.
                 </p>
             </div>

@@ -90,7 +90,7 @@ export function MoveDialog({
                 setCurrentParentId(null);
                 fetchFolders(null);
               }}
-              className={`text-[10px] font-black uppercase tracking-widest ${currentParentId === null ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
+              className={`text-[10px] font-semibold tracking-wide ${currentParentId === null ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
             >
               Root
             </button>
@@ -102,7 +102,7 @@ export function MoveDialog({
                     setCurrentParentId(folder.id);
                     fetchFolders(folder.id);
                   }}
-                  className={`text-[10px] font-black uppercase tracking-widest ${currentParentId === folder.id ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
+                  className={`text-[10px] font-semibold tracking-wide ${currentParentId === folder.id ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
                 >
                   {folder.name}
                 </button>
@@ -150,7 +150,7 @@ export function MoveDialog({
               Cancel
             </Button>
             <Button
-              className="flex-1 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px]"
+              className="flex-1 px-6 py-2.5 rounded-xl font-semibold tracking-wide text-[11px]"
               onClick={() => onConfirm(currentParentId)}
               isLoading={isLoading}
               icon={<Check size={18} />}

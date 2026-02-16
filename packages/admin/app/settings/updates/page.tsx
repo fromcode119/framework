@@ -63,13 +63,13 @@ export default function UpdatesPage() {
     <div className="p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-4xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>System Updates</h1>
+          <h1 className={`text-4xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>System Updates</h1>
           <p className="text-slate-500 mt-2 font-medium text-lg">Manage framework core and system-level updates.</p>
         </div>
         <button 
           onClick={fetchStatus}
           disabled={loading}
-          className={`flex items-center gap-3 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
+          className={`flex items-center gap-3 px-6 py-3 rounded-2xl text-[11px] font-semibold uppercase tracking-wide transition-all ${
             theme === 'dark' ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >
@@ -88,8 +88,8 @@ export default function UpdatesPage() {
           </div>
           <div className="flex-1 space-y-6">
             <div className="flex flex-wrap items-center gap-4">
-              <h2 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Fromcode Core Engine</h2>
-              <Badge variant={status?.hasUpdate ? 'warning' : 'success'} className="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest">
+              <h2 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Fromcode Core Engine</h2>
+              <Badge variant={status?.hasUpdate ? 'warning' : 'success'} className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wide">
                 {status?.hasUpdate ? 'Update Available' : 'Framework Up to Date'}
               </Badge>
             </div>
@@ -101,18 +101,18 @@ export default function UpdatesPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className={`p-5 rounded-3xl border transition-all ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
-                <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Installed Version</div>
-                <div className={`font-mono font-black text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{status?.current}</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Installed Version</div>
+                <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{status?.current}</div>
               </div>
               <div className={`p-5 rounded-3xl border transition-all ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
-                <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Latest Version</div>
-                <div className={`font-mono font-black text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{status?.latest || status?.current}</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Latest Version</div>
+                <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{status?.latest || status?.current}</div>
               </div>
             </div>
 
             {status?.hasUpdate && (
               <div className={`mt-8 p-8 rounded-[2rem] border transition-all transform hover:scale-[1.01] ${theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
-                <div className="flex items-center gap-3 text-amber-600 font-black uppercase tracking-tight mb-3">
+                <div className="flex items-center gap-3 text-amber-600 font-semibold uppercase tracking-tight mb-3">
                   <div className="p-2 bg-amber-500/10 rounded-xl">
                     <FrameworkIcons.Warning size={20} />
                   </div>
@@ -125,7 +125,7 @@ export default function UpdatesPage() {
                 <button 
                   onClick={() => setShowConfirm(true)}
                   disabled={updating}
-                  className="w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-[12px] transition-all shadow-2xl shadow-indigo-600/30 active:scale-95 disabled:opacity-50"
+                  className="w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-semibold uppercase tracking-wide text-[12px] transition-all shadow-2xl shadow-indigo-600/30 active:scale-95 disabled:opacity-50"
                 >
                   {updating ? 'Applying Update...' : 'Install Core v' + status.latest}
                 </button>
@@ -136,7 +136,7 @@ export default function UpdatesPage() {
       </Card>
 
       {status?.lastUpdated && (
-        <div className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 opacity-40">
+        <div className="text-center text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 opacity-40">
           Last Registry Sync: {new Date(status.lastUpdated).toLocaleString()}
         </div>
       )}

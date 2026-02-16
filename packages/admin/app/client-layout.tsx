@@ -73,7 +73,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
              apiStatus === 'online' ? 'bg-green-500 animate-pulse' : 
              apiStatus === 'offline' ? 'bg-red-500' : 'bg-slate-400'
            }`} />
-           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+           <span className="text-[10px] font-semibold text-slate-500 tracking-wide">
              {apiStatus === 'online' ? 'System Online' : apiStatus === 'offline' ? 'System Offline' : 'Connecting...'}
            </span>
         </div>
@@ -81,7 +81,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
         {isMaintenance && (
           <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">
             <FrameworkIcons.Zap size={12} className="text-amber-500 animate-pulse" />
-            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Maintenance Mode Active</span>
+            <span className="text-[10px] font-semibold text-amber-600 tracking-wide">Maintenance Mode Active</span>
           </div>
         )}
       </div>
@@ -98,16 +98,16 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
           items={userMenuItems}
           header={
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">Connected Account</span>
+              <span className="text-[10px] font-semibold tracking-wide text-indigo-600 dark:text-indigo-400">Connected Account</span>
               <div className="flex items-center gap-3 mt-1">
-                 <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white text-xs font-black shadow-lg">
+                 <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-lg">
                     {user?.email?.charAt(0).toUpperCase() || 'A'}
                  </div>
                  <div className="flex flex-col overflow-hidden">
-                    <span className="text-[13px] font-black truncate tracking-tight text-slate-900 dark:text-white">
+                    <span className="text-[13px] font-bold truncate tracking-tight text-slate-900 dark:text-white">
                       {user?.email || 'Guest Account'}
                     </span>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                    <span className="text-[9px] text-slate-400 font-semibold tracking-wide">
                        {user?.roles?.[0] || 'Unassigned Role'}
                     </span>
                  </div>
@@ -120,7 +120,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
                 <span className="text-[11px] font-bold truncate w-full text-right text-slate-900 dark:text-slate-200">
                   {user?.email?.split('@')[0] || 'Unknown'}
                 </span>
-                <span className="text-[9px] text-slate-500 font-medium uppercase tracking-tighter">
+                <span className="text-[9px] text-slate-500 font-medium tracking-tight">
                   {user?.roles?.[0] || 'Guest'}
                 </span>
               </div>
@@ -212,7 +212,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             <FrameworkIcons.Zap size={40} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase">Access Restricted</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Access Restricted</h1>
             <p className="text-slate-500 text-sm font-medium leading-relaxed">
               Your account <span className="font-bold text-indigo-500">{user.email}</span> does not have the required <span className="underline decoration-indigo-500/30">admin</span> privileges to access this console.
             </p>
@@ -222,7 +222,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                purgeAuth();
                window.location.href = '/login';
             }}
-            className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl hover:scale-[1.02] transition-transform"
+            className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-semibold tracking-wide text-[11px] shadow-2xl hover:scale-[1.02] transition-transform"
           >
             Switch Account
           </button>

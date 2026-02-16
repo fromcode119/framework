@@ -14,23 +14,23 @@ export const TYPOGRAPHY = {
   '4XL': 'text-4xl',  // 36px
 
   // Common UI patterns
-  LABEL: 'text-xs font-black uppercase tracking-widest',
-  SUBTEXT: 'text-[11px] font-bold uppercase tracking-tight opacity-60', // Exception for secondary metadata, but will use text-xs if requested
-  DETAIL: 'text-xs font-bold leading-relaxed',
-  NAV: 'text-[11px] font-black uppercase tracking-widest',
+  LABEL: 'text-[11px] font-semibold text-slate-500/80 tracking-wide',
+  SUBTEXT: 'text-[11px] font-medium text-slate-400 leading-relaxed',
+  DETAIL: 'text-xs font-semibold leading-relaxed',
+  NAV: 'text-xs font-semibold',
 
   // Headings (admin UI)
   HEADING: {
-    SUBTLE: 'text-xl font-black uppercase tracking-tight',
+    SUBTLE: 'text-lg font-bold tracking-tight',
   },
 };
 
 // Re-defining to strictly meet the >=12px requirement for all primary labels
 export const UI_TEXT = {
-  LABEL: 'text-xs font-black uppercase tracking-widest',
-  CAPTION: 'text-xs font-bold uppercase tracking-tight',
-  BODY: 'text-sm font-bold leading-relaxed',
-  H1: 'text-2xl font-black uppercase tracking-tight',
-  H2: 'text-xl font-black uppercase tracking-tight',
-  H3: 'text-lg font-black uppercase tracking-tight',
+  LABEL: 'text-[11px] font-semibold text-slate-500/80 tracking-wide',
+  CAPTION: 'text-xs font-semibold',
+  BODY: 'text-sm font-semibold leading-relaxed',
+  H1: 'text-2xl font-bold tracking-tight',
+  H2: 'text-xl font-bold tracking-tight',
+  H3: 'text-lg font-bold tracking-tight',
 };

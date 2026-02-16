@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { Button } from './button';
 import { RootFramework } from '@fromcode/react';
 import { useTheme } from '../theme-context';
+import { getFieldClasses } from '@/lib/ui';
 
 interface DateTimePickerProps {
   value?: string;
@@ -15,6 +16,7 @@ interface DateTimePickerProps {
   showTime?: boolean;
   placeholder?: string;
   className?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export const DateTimePicker = ({ 
@@ -23,7 +25,8 @@ export const DateTimePicker = ({
   disabled, 
   showTime = true, 
   placeholder = "Select date...", 
-  className = "" 
+  className = "",
+  size = "md"
 }: DateTimePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -100,11 +103,7 @@ export const DateTimePicker = ({
     <div className={`relative w-full ${className}`} ref={containerRef}>
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full rounded-2xl py-3 px-4 text-sm font-bold outline-none border transition-all cursor-pointer flex items-center justify-between
-          ${theme === 'dark' 
-            ? 'bg-slate-950 border-slate-800 text-white focus:border-indigo-500' 
-            : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-400 dark:hover:border-slate-600'} ${isOpen ? 'border-indigo-500 ring-2 ring-indigo-500/10' : ''}`}
+        className={`${getFieldClasses(size, `cursor-pointer flex items-center justify-between ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div className="flex items-center gap-2">
            <FrameworkIcons.Calendar size={16} className="text-slate-400" />
@@ -134,7 +133,7 @@ export const DateTimePicker = ({
               left: coords.left,
               zIndex: 9999
             }}
-            className={`p-6 rounded-[2.5rem] border animate-in zoom-in-95 slide-in-from-top-2 duration-300 shadow-2xl
+            className={`p-5 rounded-lg border animate-in zoom-in-95 slide-in-from-top-2 duration-300 shadow-2xl
               ${theme === 'dark' 
                 ? 'bg-slate-950/95 border-white/10 backdrop-blur-3xl' 
                 : 'bg-white/95 border-slate-200 shadow-slate-200 backdrop-blur-3xl'}`}
@@ -148,15 +147,15 @@ export const DateTimePicker = ({
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
                 month: "space-y-4",
                 caption: "flex justify-between items-center px-2 py-1",
-                caption_label: "text-sm font-black uppercase tracking-widest text-indigo-500",
+                caption_label: "text-sm font-bold text-indigo-600",
                 nav: "flex items-center gap-1",
                 nav_button: `h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800`,
                 table: "border-collapse space-y-1",
                 head_row: "flex",
-                head_cell: "text-slate-400 rounded-md w-9 font-black text-[10px] uppercase tracking-widest py-2",
-                row: "flex w-full mt-2",
+                head_cell: "text-slate-400 rounded-md w-9 font-semibold text-[10px] py-1",
+                row: "flex w-full mt-1",
                 cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
-                day: `h-9 w-9 p-0 font-black uppercase text-[10px] tracking-tighter aria-selected:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all`,
+                day: `h-9 w-9 p-0 font-semibold text-[12px] aria-selected:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all`,
                 day_selected: "bg-indigo-600 !text-white hover:bg-indigo-600 shadow-lg shadow-indigo-600/30",
                 day_today: "border-2 border-indigo-500/20 text-indigo-500",
                 day_outside: "opacity-20",
@@ -172,41 +171,41 @@ export const DateTimePicker = ({
             {showTime && (
               <div className={`mt-6 pt-6 border-t flex flex-col gap-4 ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>
                 <div className="flex items-center gap-3">
-                   <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-sm">
+                   <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-sm">
                       <FrameworkIcons.Clock size={16} />
                    </div>
                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Time Precision</span>
-                      <span className="text-[9px] font-bold text-slate-400 italic">UTC Timestamp Synchronization</span>
+                      <span className="text-[11px] font-semibold text-slate-500">Time Precision</span>
+                      <span className="text-[10px] font-medium text-slate-400 italic">UTC Timestamp Synchronization</span>
                    </div>
                 </div>
 
                 <div className="flex items-center gap-3 justify-center">
-                  <div className="flex flex-col gap-1.5 w-16">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 text-center">Hour</span>
+                  <div className="flex flex-col gap-1 w-16">
+                    <span className="text-[10px] font-semibold text-slate-400 text-center">Hour</span>
                     <input 
                       type="number"
                       min="0"
                       max="23"
                       value={date?.getHours() || 0}
                       onChange={(e) => handleTimeChange('hours', e.target.value)}
-                      className={`w-full h-12 rounded-xl border text-center font-black transition-all outline-none ${
+                      className={`w-full h-10 rounded-lg border text-center font-semibold transition-all outline-none ${
                         theme === 'dark' 
                           ? 'bg-slate-900 border-slate-800 text-white focus:bg-slate-800 focus:border-indigo-500' 
                           : 'bg-slate-50 border-slate-100 text-slate-900 focus:bg-white focus:border-indigo-500 shadow-inner'
                       }`}
                     />
                   </div>
-                  <span className="text-xl font-black text-slate-300 pt-5">:</span>
-                  <div className="flex flex-col gap-1.5 w-16">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 text-center">Min</span>
+                  <span className="text-xl font-semibold text-slate-300 pt-5">:</span>
+                  <div className="flex flex-col gap-1 w-16">
+                    <span className="text-[10px] font-semibold text-slate-400 text-center">Min</span>
                     <input 
                       type="number"
                       min="0"
                       max="59"
                       value={date?.getMinutes() || 0}
                       onChange={(e) => handleTimeChange('minutes', e.target.value)}
-                      className={`w-full h-12 rounded-xl border text-center font-black transition-all outline-none ${
+                      className={`w-full h-10 rounded-lg border text-center font-semibold transition-all outline-none ${
                         theme === 'dark' 
                           ? 'bg-slate-900 border-slate-800 text-white focus:bg-slate-800 focus:border-indigo-500' 
                           : 'bg-slate-50 border-slate-100 text-slate-900 focus:bg-white focus:border-indigo-500 shadow-inner'
@@ -220,8 +219,8 @@ export const DateTimePicker = ({
             <div className={`mt-6 pt-6 border-t flex justify-end ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>
                <Button 
                 variant="primary" 
-                size="sm" 
-                className="w-full rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-indigo-600/20"
+                size="md" 
+                className="w-full rounded-lg font-semibold text-[11px] shadow-xl shadow-indigo-600/20"
                 onClick={() => setIsOpen(false)}
                >
                  Confirm Selection
