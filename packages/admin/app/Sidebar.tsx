@@ -29,7 +29,9 @@ const {
   Close = () => null,
   Zap = () => null,
   Activity = () => null,
-  Refresh = () => null
+  Refresh = () => null,
+  Palette = () => null,
+  Left = () => null
 } = (FrameworkIcons || {}) as any;
 
 interface NavItemProps {
@@ -61,6 +63,23 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
   const isChildActive = !!activeChildPath;
 
   const [expanded, setExpanded] = React.useState(!!(active || isChildActive));
+
+  // Load persistence state
+  React.useEffect(() => {
+    if (label) {
+      const saved = localStorage.getItem(`fc_nav_expanded_${label}`);
+      if (saved !== null) {
+        setExpanded(saved === 'true');
+      }
+    }
+  }, [label]);
+
+  // Save persistence state
+  React.useEffect(() => {
+    if (label) {
+      localStorage.setItem(`fc_nav_expanded_${label}`, expanded.toString());
+    }
+  }, [expanded, label]);
 
   // Auto-expand when a child becomes active
   React.useEffect(() => {
@@ -117,7 +136,7 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
         </Link>
 
         {isMini && (
-          <div className="absolute left-full ml-4 px-3 py-2 rounded-lg text-[10px] font-bold tracking-tight pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white uppercase transition-all">
+          <div className="absolute left-full ml-4 px-3 py-2 rounded-lg text-[10px] font-bold tracking-tight pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white transition-all">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
               {label}
@@ -176,7 +195,7 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
                    }`}>
                       <Icon name={subIcon} size={14} strokeWidth={2.5} />
                    </div>
-                   <span className={`font-bold text-[11px] whitespace-nowrap uppercase tracking-tight ${isSubActive ? 'text-indigo-600 dark:text-indigo-400' : 'opacity-70 group-hover/sub:opacity-100'}`}>
+                   <span className={`font-bold text-[11px] whitespace-nowrap tracking-tight ${isSubActive ? 'text-indigo-600 dark:text-indigo-400' : 'opacity-70 group-hover/sub:opacity-100'}`}>
                      {child.label}
                    </span>
                  </div>
@@ -200,6 +219,35 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   const { user } = useAuth();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
+
+  const [collapsedGroups, setCollapsedGroups] = React.useState<string[]>([]);
+  const [isInitialized, setIsInitialized] = React.useState(false);
+
+  // Load state from localStorage on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('fc_sidebar_collapsed_groups');
+    if (saved) {
+      try {
+        setCollapsedGroups(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse sidebar state', e);
+      }
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Save state to localStorage when it changes
+  React.useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('fc_sidebar_collapsed_groups', JSON.stringify(collapsedGroups));
+    }
+  }, [collapsedGroups, isInitialized]);
+
+  const toggleGroup = (group: string) => {
+    setCollapsedGroups(prev => 
+      prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]
+    );
+  };
 
   // Filter out items the user shouldn't see
   // For now, only 'admin' can see everything. 
@@ -225,8 +273,10 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
     let groupKey = rawGroup;
     if (['/', '/users', '/media'].includes(item.path)) {
       groupKey = 'core';
-    } else if (['/plugins', '/activity'].includes(item.path)) {
+    } else if (['/plugins', '/themes'].includes(item.path)) {
       groupKey = 'management';
+    } else if (item.path === '/activity') {
+      groupKey = 'system';
     }
 
     if (!acc[groupKey]) acc[groupKey] = [];
@@ -274,6 +324,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group];
           const displayGroup = group === 'core' ? 'Core' : (group.charAt(0).toUpperCase() + group.slice(1));
+          const isCollapsed = collapsedGroups.includes(group);
           
           // If a group has only one item and that item is a group wrapper (dropdown),
           // we should skip the redundant section header.
@@ -282,48 +333,74 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
           return (
             <React.Fragment key={group}>
               {!isMini && !isRedundantHeader && (
-                <p className={`px-3 text-[11px] font-bold text-slate-400/80 tracking-tight uppercase mb-2 ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}>
-                  {displayGroup}
-                </p>
-              )}
-              {group === 'core' ? (
-                <>
-                  <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
-                  
-                  {/* Users and Media */}
-                  <NavItem 
-                    icon={<Users size={18}/>} 
-                    label="Users" 
-                    href="/users" 
-                    active={pathname.startsWith('/users')} 
-                    onClick={onClose} 
-                    children={menuItems.find(m => m.path === '/users')?.children}
-                    isMini={isMini}
+                <button 
+                  onClick={() => toggleGroup(group)}
+                  className={`w-full flex items-center justify-between px-3 text-[11px] font-bold text-slate-400/80 tracking-tight mb-2 group/header ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}
+                >
+                  <span className="group-hover/header:text-slate-600 dark:group-hover/header:text-slate-300 transition-colors">
+                    {displayGroup}
+                  </span>
+                  <Down 
+                    size={12} 
+                    className={`transition-transform duration-200 group-hover/header:text-slate-600 ${isCollapsed ? '-rotate-90' : ''}`} 
                   />
-
-                  <NavItem icon={<Media size={18}/>} label="Media" href="/media" active={pathname.startsWith('/media')} onClick={onClose} isMini={isMini} />
-                  
-                  {/* Other Core items */}
-                  {items.filter(i => !['/', '/media', '/users'].includes(i.path)).map((item, idx) => (
+                </button>
+              )}
+              {(!isCollapsed || isMini) && (
+                group === 'core' ? (
+                  <>
+                    <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
+                    
+                    {/* Users and Media */}
                     <NavItem 
-                      key={`${item.pluginSlug}-${idx}`}
-                      icon={<Icon name={item.icon || 'Package'} size={18} />}
-                      label={item.label}
-                      href={item.path}
-                      active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
-                      onClick={onClose}
-                      children={item.children}
+                      icon={<Users size={18}/>} 
+                      label="Users" 
+                      href="/users" 
+                      active={pathname.startsWith('/users')} 
+                      onClick={onClose} 
+                      children={menuItems.find(m => m.path === '/users')?.children}
                       isMini={isMini}
                     />
-                  ))}
-                </>
-              ) : group === 'management' ? (
-                <>
-                  <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname.startsWith('/plugins')} onClick={onClose} isMini={isMini} />
-                  <NavItem icon={<Activity size={18}/>} label="Activity" href="/activity" active={pathname.startsWith('/activity')} onClick={onClose} isMini={isMini} />
-                  
-                  {/* Other Management items */}
-                  {items.filter(i => !['/plugins', '/activity'].includes(i.path)).map((item, idx) => (
+
+                    <NavItem icon={<Media size={18}/>} label="Media" href="/media" active={pathname.startsWith('/media')} onClick={onClose} isMini={isMini} />
+                    
+                    {/* Other Core items */}
+                    {items.filter(i => !['/', '/media', '/users'].includes(i.path)).map((item, idx) => (
+                      <NavItem 
+                        key={`${item.pluginSlug}-${idx}`}
+                        icon={<Icon name={item.icon || 'Package'} size={18} />}
+                        label={item.label}
+                        href={item.path}
+                        active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
+                        onClick={onClose}
+                        children={item.children}
+                        isMini={isMini}
+                      />
+                    ))}
+                  </>
+                ) : group === 'management' ? (
+                  <>
+                    <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname.startsWith('/plugins')} onClick={onClose} isMini={isMini} />
+                    <NavItem icon={<Palette size={18}/>} label="Themes" href="/themes" active={pathname.startsWith('/themes')} onClick={onClose} isMini={isMini} />
+                    
+                    {/* Other Management items */}
+                    {items.filter(i => !['/plugins', '/themes'].includes(i.path)).map((item, idx) => (
+                      <NavItem 
+                        key={`${item.pluginSlug}-${idx}`}
+                        icon={<Icon name={item.icon || 'Package'} size={18} />}
+                        label={item.label}
+                        href={item.path}
+                        active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
+                        onClick={onClose}
+                        children={item.children}
+                        isMini={isMini}
+                        isGroupHeader={item.isGroup}
+                        version={plugins.find(p => p.slug === item.pluginSlug)?.version}
+                      />
+                    ))}
+                  </>
+                ) : (
+                  items.map((item, idx) => (
                     <NavItem 
                       key={`${item.pluginSlug}-${idx}`}
                       icon={<Icon name={item.icon || 'Package'} size={18} />}
@@ -336,23 +413,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                       isGroupHeader={item.isGroup}
                       version={plugins.find(p => p.slug === item.pluginSlug)?.version}
                     />
-                  ))}
-                </>
-              ) : (
-                items.map((item, idx) => (
-                  <NavItem 
-                    key={`${item.pluginSlug}-${idx}`}
-                    icon={<Icon name={item.icon || 'Package'} size={18} />}
-                    label={item.label}
-                    href={item.path}
-                    active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
-                    onClick={onClose}
-                    children={item.children}
-                    isMini={isMini}
-                    isGroupHeader={item.isGroup}
-                    version={plugins.find(p => p.slug === item.pluginSlug)?.version}
-                  />
-                ))
+                  ))
+                )
               )}
             </React.Fragment>
           );
@@ -361,30 +423,65 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         {/* If Core group doesn't exist for some reason, ensure basic nav is there */}
         {!groupedMenu['core'] && (
           <>
-            {!isMini && <p className="px-3 text-[11px] font-bold text-slate-400/80 tracking-tight uppercase mb-2 mt-4">Core</p>}
-            <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
-            <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname === '/plugins'} onClick={onClose} isMini={isMini} />
+            {!isMini && (
+              <button 
+                onClick={() => toggleGroup('core-fallback')}
+                className="w-full flex items-center justify-between px-3 text-[11px] font-bold text-slate-400/80 tracking-tight mb-2 mt-4 group/header"
+              >
+                <span className="group-hover/header:text-slate-600 dark:group-hover/header:text-slate-300 transition-colors">
+                  Core
+                </span>
+                <Down 
+                  size={12} 
+                  className={`transition-transform duration-200 group-hover/header:text-slate-600 ${collapsedGroups.includes('core-fallback') ? '-rotate-90' : ''}`} 
+                />
+              </button>
+            )}
+            {(!collapsedGroups.includes('core-fallback') || isMini) && (
+              <>
+                <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname === '/plugins'} onClick={onClose} isMini={isMini} />
+              </>
+            )}
           </>
         )}
 
         <div className="mt-auto pt-6 space-y-1">
-          {!isMini && <p className="px-3 text-[11px] font-bold text-slate-400/80 tracking-tight uppercase mb-2">System</p>}
-          <NavItem icon={<Refresh size={18}/>} label="Updates" href="/settings/updates" active={pathname === '/settings/updates'} onClick={onClose} isMini={isMini} />
-          <NavItem 
-            icon={<Settings size={18}/>} 
-            label="Settings" 
-            href="/settings/general" 
-            active={pathname.startsWith('/settings')} 
-            onClick={onClose} 
-            isMini={isMini} 
-            children={[
-              { label: 'General', path: '/settings/general', icon: 'Settings' },
-              { label: 'Localization', path: '/settings/localization', icon: 'Globe' },
-              { label: 'Routing', path: '/settings/routing', icon: 'Link' },
-              { label: 'Security', path: '/settings/security', icon: 'Shield' },
-              { label: 'Infrastructure', path: '/settings/infrastructure', icon: 'Activity' }
-            ]}
-          />
+          {!isMini && (
+            <button 
+              onClick={() => toggleGroup('system')}
+              className={`w-full flex items-center justify-between px-3 text-[11px] font-bold text-slate-400/80 tracking-tight mb-2 group/header`}
+            >
+              <span className="group-hover/header:text-slate-600 dark:group-hover/header:text-slate-300 transition-colors">
+                System
+              </span>
+              <Down 
+                size={12} 
+                className={`transition-transform duration-200 group-hover/header:text-slate-600 ${collapsedGroups.includes('system') ? '-rotate-90' : ''}`} 
+              />
+            </button>
+          )}
+          {(!collapsedGroups.includes('system') || isMini) && (
+            <>
+              <NavItem icon={<Activity size={18}/>} label="Activity" href="/activity" active={pathname.startsWith('/activity')} onClick={onClose} isMini={isMini} />
+              <NavItem 
+                icon={<Settings size={18}/>} 
+                label="Settings" 
+                href="/settings/general" 
+                active={pathname.startsWith('/settings')} 
+                onClick={onClose} 
+                isMini={isMini} 
+                children={[
+                  { label: 'General', path: '/settings/general', icon: 'Settings' },
+                  { label: 'Localization', path: '/settings/localization', icon: 'Globe' },
+                  { label: 'Routing', path: '/settings/routing', icon: 'Link' },
+                  { label: 'Security', path: '/settings/security', icon: 'Shield' },
+                  { label: 'Infrastructure', path: '/settings/infrastructure', icon: 'Activity' },
+                  { label: 'Updates', path: '/settings/updates', icon: 'Refresh' },
+                ]}
+              />
+            </>
+          )}
         </div>
         
         <div className="mt-4">
@@ -401,7 +498,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
           <div className={`transition-transform duration-500 ${isMini ? 'rotate-180' : ''}`}>
              <FrameworkIcons.Left size={18} strokeWidth={2.5} />
           </div>
-          {!isMini && <span className="ml-3 text-[11px] font-bold tracking-tight text-slate-400 uppercase">Collapse View</span>}
+          {!isMini && <span className="ml-3 text-[11px] font-bold tracking-tight text-slate-400">Collapse View</span>}
         </button>
       </div>
     </aside>

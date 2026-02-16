@@ -123,8 +123,8 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
                   options={statusOptions}
                   searchable={false}
                   size="md"
-                  className="w-56"
-                  triggerClassName="h-10 px-4 text-[10px] font-semibold rounded-lg"
+                  className="w-full md:w-64 lg:w-72"
+                  triggerClassName="h-10 px-4 text-sm font-bold rounded-xl"
                 />
               </div>
             )}
