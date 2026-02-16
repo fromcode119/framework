@@ -140,6 +140,23 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { loadConfig } = usePlugins();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarInitialized, setIsSidebarInitialized] = useState(false);
+
+  // Persist mobile sidebar open state
+  useEffect(() => {
+    const saved = localStorage.getItem('fc_sidebar_open');
+    if (saved !== null) {
+      setSidebarOpen(saved === 'true');
+    }
+    setIsSidebarInitialized(true);
+  }, []);
+
+  useEffect(() => {
+    if (isSidebarInitialized) {
+      localStorage.setItem('fc_sidebar_open', isSidebarOpen.toString());
+    }
+  }, [isSidebarOpen, isSidebarInitialized]);
+
   const pathname = usePathname();
   
   // Robust auth page detection

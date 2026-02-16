@@ -59,6 +59,7 @@ export const FrameworkIconRegistry = registry;
 export const FrameworkIcons = {
   // Navigation & Shell
   Dashboard: Lucide.LayoutDashboard,
+  LayoutDashboard: Lucide.LayoutDashboard,
   Plugins: Lucide.Puzzle,
   Users: Lucide.Users,
   Settings: Lucide.Settings,
@@ -96,6 +97,9 @@ export const FrameworkIcons = {
   ArrowDown: Lucide.ArrowDown,
   Home: Lucide.Home,
   Layers: Lucide.Layers,
+  Wallet: Lucide.Wallet,
+  Gift: Lucide.Gift,
+  ArrowLeftRight: Lucide.ArrowLeftRight,
   ShoppingBag: Lucide.ShoppingBag,
   Package: Lucide.Package,
   Loader: Lucide.Loader2,

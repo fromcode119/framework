@@ -148,25 +148,33 @@ export const TagField = ({
         const docs = Array.isArray(result) ? result : (result.docs || []);
         
         if (docs.length > 0) {
-           // Mapping result to TagOption with expanded fallback keys
-           const mapped: TagOption[] = docs.map(item => {
-             if (typeof item === 'string') return { label: item, value: item };
-             if (typeof item === 'object' && item !== null) {
-                // Ensure we pick up the correct keys from the API
-                const labelBase = resolveLabelText(item) || String(item.value || '');
-                let val = item.value || item.slug || item.id || item.username || item.name || item.email;
-                const label = labelBase;
-                
-                // Final fallback: if we have a label but no value, use the label as the value
-                if (!val && label) val = label;
+          const mapped: TagOption[] = docs.map(item => {
+            if (typeof item === 'string') return { label: item, value: item };
+            if (typeof item === 'object' && item !== null) {
+              const sourceValue =
+                sourceField && item[sourceField] !== undefined && item[sourceField] !== null
+                  ? item[sourceField]
+                  : undefined;
 
-                return {
-                  label: String(label || 'Unknown'),
-                  value: String(val || '')
-                };
-             }
-             return { label: String(item), value: String(item) };
-           });
+              let rawValue =
+                sourceValue ??
+                item.value ??
+                item.slug ??
+                item.id ??
+                item.name ??
+                item.label;
+
+              if (typeof rawValue === 'object' && rawValue !== null) {
+                rawValue = resolveLabelText(rawValue);
+              }
+
+              const value = String(rawValue || '').trim();
+              const label = String(resolveLabelText(item) || value || 'Unknown').trim();
+
+              return { label, value: value || label };
+            }
+            return { label: String(item), value: String(item) };
+          });
 
           // Filter out if value is missing or already selected
           setSuggestions(
@@ -268,7 +276,6 @@ export const TagField = ({
       <div className={wrapperClasses}>
         {tags.map((tag: string, i: number) => {
           const label = labels[tag] || tag;
-          const isRelation = !!sourceCollection;
           
           return (
             <span 
@@ -277,7 +284,7 @@ export const TagField = ({
             >
               <div className="flex flex-col leading-tight">
                  <span className="text-[11px] font-semibold leading-none mb-0">{label}</span>
-                 {isRelation && label !== tag && <span className="text-[9px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
+                 {!sourceCollection && label !== tag && <span className="text-[9px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
               </div>
               <button 
                 type="button" 
@@ -353,7 +360,7 @@ export const TagField = ({
                     >
                     <div className="flex flex-col leading-tight">
                         <span className="font-semibold">{suggestion.label}</span>
-                        {suggestion.label !== suggestion.value && (
+                        {!sourceCollection && suggestion.label !== suggestion.value && (
                            <span className="text-[10px] opacity-50 font-medium tracking-wide">{suggestion.value}</span>
                         )}
                     </div>

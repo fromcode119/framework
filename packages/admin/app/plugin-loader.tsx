@@ -115,6 +115,11 @@ export default function PluginLoader() {
         const responseData = await api.get(ENDPOINTS.PLUGINS.STAGED);
         const plugins: AdminPluginMetadata[] = responseData.plugins || [];
         const remoteMenu: any[] = responseData.menu || [];
+        const sanitizedMenu = remoteMenu.filter((item: any) => {
+          const path = String(item?.path || '').trim().toLowerCase();
+          // Plugin settings are handled in /plugins/:slug?tab=settings and should not duplicate sidebar entries.
+          return !/^\/[^/]+\/settings\/?$/.test(path);
+        });
         const settings: Record<string, any> = responseData.settings || {};
 
         if (settings) {
@@ -214,7 +219,7 @@ export default function PluginLoader() {
         }
 
         // Register Global Menu Items
-        for (const menuItem of remoteMenu) {
+        for (const menuItem of sanitizedMenu) {
           registerMenuItem(menuItem);
         }
 
