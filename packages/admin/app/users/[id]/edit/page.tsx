@@ -91,10 +91,10 @@ export default function EditUserPage() {
               <FrameworkIcons.Left size={20} />
             </Link>
             <div>
-              <h1 className={`text-3xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 Edit Account
               </h1>
-              <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70">
+              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
                 Update profile information and security credentials.
               </p>
             </div>
@@ -103,13 +103,13 @@ export default function EditUserPage() {
           <div className="flex items-center gap-4">
              <Button 
                 variant="ghost"
-                className="px-6 py-2.5 rounded-xl font-semibold uppercase tracking-tight text-[10px]"
+                className="px-6 h-11 rounded-xl font-bold uppercase tracking-tight text-[11px]"
                 onClick={() => router.back()}
              >
                 Cancel
              </Button>
              <Button 
-                className="px-8 py-2.5 rounded-xl font-semibold uppercase tracking-tight text-[10px] text-white shadow-xl shadow-indigo-500/20"
+                className="px-8 h-11 rounded-xl font-bold uppercase tracking-tight text-[11px] text-white shadow-xl shadow-indigo-500/20"
                 icon={<FrameworkIcons.Check size={16} />}
                 isLoading={saving}
                 onClick={handleSubmit}
@@ -125,7 +125,7 @@ export default function EditUserPage() {
             <Card title="Profile Details">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                   <div className="space-y-2">
-                     <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 ml-1">E-Mail Address</label>
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">E-Mail Address</label>
                      <Input 
                         placeholder="user@example.com" 
                         value={formData.email} 
@@ -134,7 +134,7 @@ export default function EditUserPage() {
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 ml-1">Username</label>
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Username</label>
                      <Input 
                         placeholder="username" 
                         value={formData.username} 
@@ -142,7 +142,7 @@ export default function EditUserPage() {
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 ml-1">First Name</label>
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">First Name</label>
                      <Input 
                         placeholder="John" 
                         value={formData.firstName} 
@@ -150,7 +150,7 @@ export default function EditUserPage() {
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 ml-1">Last Name</label>
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Last Name</label>
                      <Input 
                         placeholder="Doe" 
                         value={formData.lastName} 
@@ -161,12 +161,12 @@ export default function EditUserPage() {
             </Card>
 
             <Card title="Security Credentials" icon={<FrameworkIcons.Shield size={18} className="text-amber-500" />}>
-               <p className="text-xs font-semibold text-slate-500 mb-6 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
+               <p className="text-xs font-bold text-slate-500 mb-6 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
                  Leave password fields blank if you do not wish to change the current password.
                </p>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
                   <div className="space-y-2">
-                     <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 ml-1">New Password</label>
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">New Password</label>
                      <Input 
                         type="password"
                         placeholder="••••••••" 
@@ -175,7 +175,7 @@ export default function EditUserPage() {
                      />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 ml-1">Confirm Password</label>
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Confirm Password</label>
                      <Input 
                         type="password"
                         placeholder="••••••••" 
@@ -188,7 +188,7 @@ export default function EditUserPage() {
             </Card>
 
             {errors.global && (
-               <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold flex items-center gap-3">
+               <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-bold flex items-center gap-3">
                   <FrameworkIcons.Warning size={18} />
                   {errors.global}
                </div>

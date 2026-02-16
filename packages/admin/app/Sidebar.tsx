@@ -103,7 +103,7 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
             </span>
             {!isMini && (
               <div className="flex flex-col">
-                <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-semibold' : 'font-semibold'}`}>
+                <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-bold' : 'font-bold'} tracking-tight`}>
                   {label}
                 </span>
                 {version && (
@@ -117,7 +117,7 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
         </Link>
 
         {isMini && (
-          <div className="absolute left-full ml-4 px-3 py-2 rounded-lg text-[10px] font-semibold tracking-wide pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white">
+          <div className="absolute left-full ml-4 px-3 py-2 rounded-lg text-[10px] font-bold tracking-tight pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white uppercase transition-all">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
               {label}
@@ -176,7 +176,7 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
                    }`}>
                       <Icon name={subIcon} size={14} strokeWidth={2.5} />
                    </div>
-                   <span className={`font-semibold text-xs whitespace-nowrap ${isSubActive ? 'text-indigo-600 dark:text-indigo-400' : 'opacity-70 group-hover/sub:opacity-100'}`}>
+                   <span className={`font-bold text-[11px] whitespace-nowrap uppercase tracking-tight ${isSubActive ? 'text-indigo-600 dark:text-indigo-400' : 'opacity-70 group-hover/sub:opacity-100'}`}>
                      {child.label}
                    </span>
                  </div>
@@ -282,7 +282,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
           return (
             <React.Fragment key={group}>
               {!isMini && !isRedundantHeader && (
-                <p className={`px-3 text-[11px] font-semibold text-slate-400/80 tracking-wide mb-2 ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}>
+                <p className={`px-3 text-[11px] font-bold text-slate-400/80 tracking-tight uppercase mb-2 ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}>
                   {displayGroup}
                 </p>
               )}
@@ -361,14 +361,14 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         {/* If Core group doesn't exist for some reason, ensure basic nav is there */}
         {!groupedMenu['core'] && (
           <>
-            {!isMini && <p className="px-3 text-[11px] font-semibold text-slate-400/80 tracking-wide mb-2 mt-4">Core</p>}
+            {!isMini && <p className="px-3 text-[11px] font-bold text-slate-400/80 tracking-tight uppercase mb-2 mt-4">Core</p>}
             <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
             <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname === '/plugins'} onClick={onClose} isMini={isMini} />
           </>
         )}
 
         <div className="mt-auto pt-6 space-y-1">
-          {!isMini && <p className="px-3 text-[11px] font-semibold text-slate-400/80 tracking-wide mb-2">System</p>}
+          {!isMini && <p className="px-3 text-[11px] font-bold text-slate-400/80 tracking-tight uppercase mb-2">System</p>}
           <NavItem icon={<Refresh size={18}/>} label="Updates" href="/settings/updates" active={pathname === '/settings/updates'} onClick={onClose} isMini={isMini} />
           <NavItem 
             icon={<Settings size={18}/>} 
@@ -396,12 +396,12 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
       <div className="p-4 border-t border-slate-100 dark:border-slate-800 hidden lg:block">
         <button
           onClick={onMiniToggle}
-          className="w-full flex items-center justify-center p-2 rounded-lg transition-all hover:bg-slate-50 text-slate-500 dark:hover:bg-slate-800 dark:text-slate-400"
+          className="w-full flex items-center justify-center p-2 rounded-lg transition-all hover:bg-slate-50 text-slate-500 dark:hover:bg-slate-800 dark:text-slate-400 font-bold"
         >
           <div className={`transition-transform duration-500 ${isMini ? 'rotate-180' : ''}`}>
              <FrameworkIcons.Left size={18} strokeWidth={2.5} />
           </div>
-          {!isMini && <span className="ml-3 text-[11px] font-semibold tracking-wide text-slate-400">Collapse View</span>}
+          {!isMini && <span className="ml-3 text-[11px] font-bold tracking-tight text-slate-400 uppercase">Collapse View</span>}
         </button>
       </div>
     </aside>

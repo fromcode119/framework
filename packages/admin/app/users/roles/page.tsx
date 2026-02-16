@@ -196,15 +196,15 @@ export default function RolesPage() {
               <Card title="Security Architecture">
                 <div className="space-y-6">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-semibold text-indigo-500 uppercase tracking-tight leading-none">Access Control</span>
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-tight leading-none">Access Control</span>
+                    <p className="text-xs text-slate-500 font-bold leading-relaxed">
                       Roles define the maximum privilege boundary for all associated identities.
                     </p>
                   </div>
                   
                   <div className={`p-5 rounded-2.5xl border ${theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/10' : 'bg-indigo-50 border-indigo-100'}`}>
-                    <h4 className="text-[10px] font-semibold uppercase tracking-tight text-indigo-500 mb-2">Live Enforcement</h4>
-                    <p className="text-[11px] font-medium text-indigo-600/70 dark:text-indigo-400/70 leading-relaxed">
+                    <h4 className="text-[10px] font-bold uppercase tracking-tight text-indigo-500 mb-2">Live Enforcement</h4>
+                    <p className="text-[11px] font-bold text-indigo-600/70 dark:text-indigo-400/70 leading-relaxed">
                       RBAC policies are synchronized across the cluster in real-time.
                     </p>
                   </div>
@@ -225,10 +225,10 @@ export default function RolesPage() {
                         <FrameworkIcons.Search size={20} strokeWidth={2} />
                       </div>
                       <div>
-                        <h3 className={`text-[10px] font-semibold uppercase tracking-tight ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                        <h3 className={`text-[10px] font-bold uppercase tracking-tight ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
                           System Audit Logs
                         </h3>
-                        <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-tight mt-1 opacity-70">Real-time Security Streams</p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight mt-1 opacity-70">Real-time Security Streams</p>
                       </div>
                     </div>
                     
@@ -236,7 +236,7 @@ export default function RolesPage() {
                       theme === 'dark' ? 'bg-slate-950 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700'
                     }`}>
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[8px] font-semibold uppercase tracking-tight">Encrypted</span>
+                      <span className="text-[8px] font-bold uppercase tracking-tight">Encrypted</span>
                     </div>
                   </div>
                 </div>
@@ -266,14 +266,14 @@ export default function RolesPage() {
                         </div>
                         <div className="flex flex-col justify-center">
                           <div className="flex items-center gap-3">
-                            <span className={`text-sm font-semibold tracking-tight ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
+                            <span className={`text-sm font-bold tracking-tight ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
                               {log.message}
                             </span>
-                            <span className="text-[9px] font-semibold text-slate-400 gap-1 flex uppercase tracking-tight leading-none">
+                            <span className="text-[9px] font-bold text-slate-400 gap-1 flex uppercase tracking-tight leading-none">
                               {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight flex items-center gap-1.5 mt-0.5 opacity-70">
+                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight flex items-center gap-1.5 mt-0.5 opacity-70">
                              {(() => {
                                const slug = log.plugin_slug || 'System';
                                return slug.charAt(0).toUpperCase() + slug.slice(1);
@@ -283,18 +283,18 @@ export default function RolesPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-10 opacity-40 text-[10px] uppercase font-semibold tracking-tight">No activity logged</div>
+                    <div className="text-center py-10 opacity-40 text-[10px] uppercase font-bold tracking-tight">No activity logged</div>
                   )}
                 </div>
                 
                 <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-semibold uppercase tracking-tight text-slate-400">Environment Node 102.v2</span>
-                      <span className="text-[8px] font-medium text-slate-300 dark:text-slate-600 uppercase mt-0.5 tracking-tight">Secure Cluster: Active</span>
+                      <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">Environment Node 102.v2</span>
+                      <span className="text-[8px] font-bold text-slate-300 dark:text-slate-600 uppercase mt-0.5 tracking-tight">Secure Cluster: Active</span>
                     </div>
                     <Link href="/activity">
-                      <Button variant="ghost" className="h-9 px-4 rounded-lg text-[9px] font-semibold uppercase tracking-tight hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                      <Button variant="ghost" className="h-9 px-4 rounded-lg text-[9px] font-bold uppercase tracking-tight hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
                         View Logs
                       </Button>
                     </Link>
@@ -315,14 +315,14 @@ export default function RolesPage() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-semibold uppercase tracking-tight text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
                   Roles Management
                 </span>
               </div>
-              <p className="text-[9px] font-semibold text-slate-400">Manage and customize system access roles.</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Manage and customize system access roles.</p>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-tight text-slate-400">
+            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight text-slate-400">
                <Link href="/users" className="hover:text-indigo-500 transition-colors">Users</Link>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
                <Link href="/users/permissions" className="hover:text-indigo-500 transition-colors">Permissions</Link>

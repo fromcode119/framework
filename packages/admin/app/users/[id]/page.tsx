@@ -68,16 +68,16 @@ export default function UserProfilePage() {
             <Link href="/users" className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
               <FrameworkIcons.Left size={20} />
             </Link>
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-xl font-semibold text-white shadow-xl shadow-indigo-500/20 ring-4 ring-indigo-500/10">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-indigo-500/20 ring-4 ring-indigo-500/10">
               {initials}
             </div>
             <div>
-              <h1 className={`text-2xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 {user.firstName ? `${user.firstName} ${user.lastName}` : user.email.split('@')[0]}
               </h1>
               <div className="flex items-center gap-4 mt-1">
-                <span className="text-[10px] font-semibold tracking-tight text-slate-500">{user.email}</span>
-                <Badge variant="blue" className="text-[8px] px-2 py-0 border-none">ID: {user.id}</Badge>
+                <span className="text-[10px] font-bold tracking-tight text-slate-500">{user.email}</span>
+                <Badge variant="blue" className="text-[8px] px-2 py-0 border-none font-bold">ID: {user.id}</Badge>
               </div>
             </div>
           </div>
@@ -86,7 +86,7 @@ export default function UserProfilePage() {
              <Link href={`/users/${id}/edit`}>
                 <Button 
                   variant="secondary"
-                  className="px-6 py-2.5 rounded-xl font-semibold tracking-tight text-[10px] border-slate-200 dark:border-slate-800"
+                  className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] border-slate-200 dark:border-slate-800"
                   icon={<FrameworkIcons.Settings size={16} />}
                 >
                   Edit Profile
@@ -94,7 +94,7 @@ export default function UserProfilePage() {
              </Link>
              <Link href={`/users/${id}/roles`}>
                 <Button 
-                  className="px-6 py-2.5 rounded-xl font-semibold tracking-tight text-[10px] text-white"
+                  className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] text-white"
                   icon={<FrameworkIcons.Shield size={16} />}
                 >
                   Configure RBAC
@@ -110,20 +110,20 @@ export default function UserProfilePage() {
             <Card title="Account Information">
               <div className="grid grid-cols-2 gap-8 py-4">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-semibold tracking-tight text-slate-400">First Name</span>
-                  <p className={`font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.firstName || 'Not Set'}</p>
+                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">First Name</span>
+                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.firstName || 'Not Set'}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-semibold tracking-tight text-slate-400">Last Name</span>
-                  <p className={`font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.lastName || 'Not Set'}</p>
+                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Last Name</span>
+                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.lastName || 'Not Set'}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-semibold tracking-tight text-slate-400">E-Mail Address</span>
-                  <p className={`font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.email}</p>
+                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">E-Mail Address</span>
+                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.email}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-semibold tracking-tight text-slate-400">Username</span>
-                  <p className={`font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.username || 'Not Set'}</p>
+                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Username</span>
+                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.username || 'Not Set'}</p>
                 </div>
               </div>
             </Card>
@@ -137,18 +137,18 @@ export default function UserProfilePage() {
                       }`}>
                          <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
                          <div>
-                            <span className={`text-[11px] font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{role}</span>
-                            <p className="text-[10px] font-medium text-slate-500 mt-0.5">Custom Security Definition</p>
+                            <span className={`text-[11px] font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{role}</span>
+                            <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-tight">Custom Security Definition</p>
                          </div>
                       </div>
                     ))
                  ) : (
-                    <p className="text-slate-500 font-medium text-sm italic py-4">No roles assigned to this account.</p>
+                    <p className="text-slate-500 font-bold text-sm italic py-4">No roles assigned to this account.</p>
                  )}
                </div>
                <div className="mt-8 pt-6 border-t border-slate-800/10 flex justify-end">
                   <Link href={`/users/${id}/roles`}>
-                    <Button variant="ghost" className="text-[10px] font-semibold tracking-tight text-indigo-500">
+                    <Button variant="ghost" className="text-[10px] font-bold tracking-tight text-indigo-500 uppercase">
                       Manage Assignments
                     </Button>
                   </Link>
@@ -160,20 +160,20 @@ export default function UserProfilePage() {
             <Card title="System Metadata">
               <div className="space-y-6">
                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold tracking-tight text-slate-500">Account Type</span>
+                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Type</span>
                     {user.roles && user.roles.includes('admin') ? (
-                       <Badge variant="purple" className="px-3">Administrator</Badge>
+                       <Badge variant="purple" className="px-3 font-bold">Administrator</Badge>
                     ) : (
-                       <Badge variant="amber" className="px-3">Standard</Badge>
+                       <Badge variant="amber" className="px-3 font-bold">Standard</Badge>
                     )}
                  </div>
                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold tracking-tight text-slate-500">Created</span>
-                    <span className="text-xs font-medium text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
+                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Created</span>
+                    <span className="text-xs font-bold text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
                  </div>
                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold tracking-tight text-slate-500">Last Modified</span>
-                    <span className="text-xs font-medium text-slate-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}</span>
+                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Last Modified</span>
+                    <span className="text-xs font-bold text-slate-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}</span>
                  </div>
               </div>
             </Card>
@@ -181,8 +181,8 @@ export default function UserProfilePage() {
             <div className={`p-8 rounded-[2rem] border overflow-hidden relative ${
               theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'
             }`}>
-               <h4 className="text-[11px] font-semibold tracking-tight text-indigo-500 mb-4">Security Notice</h4>
-               <p className="text-xs font-medium leading-relaxed text-slate-500">
+               <h4 className="text-[11px] font-bold tracking-tight text-indigo-500 mb-4 uppercase">Security Notice</h4>
+               <p className="text-xs font-bold leading-relaxed text-slate-500">
                  Modifying user roles or permissions takes effect immediately. Ensure you follow the principle of least privilege when assigning administrative roles.
                </p>
                <FrameworkIcons.Shield className="absolute -bottom-4 -right-4 text-indigo-500/10" size={100} />
