@@ -114,6 +114,7 @@ export const FrameworkIcons = {
   Terminal: Lucide.Terminal,
   Box: Lucide.Box,
   Download: Lucide.Download,
+  Up: Lucide.ArrowUp,
   Down: Lucide.ArrowDown,
   Eye: Lucide.Eye,
   Code: Lucide.Code,

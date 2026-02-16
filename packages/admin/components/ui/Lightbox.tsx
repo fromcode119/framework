@@ -96,11 +96,11 @@ export function Lightbox({ images, currentIndex, isOpen, onClose, onNavigate, ti
           />
           
           <div className="absolute -bottom-16 left-0 right-0 text-center space-y-1">
-             <p className="text-white text-[11px] font-black uppercase tracking-[0.4em] drop-shadow-xl opacity-80">
+             <p className="text-white text-[11px] font-semibold tracking-widest drop-shadow-xl opacity-80">
                 {title || 'Platform Preview'}
              </p>
              {images.length > 1 && (
-               <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">
+               <p className="text-white/30 text-[9px] font-medium tracking-widest">
                   {currentIndex + 1} / {images.length}
                </p>
              )}

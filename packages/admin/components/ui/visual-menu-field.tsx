@@ -100,7 +100,7 @@ export const VisualMenuField = ({ field, value = [], onChange, theme, collection
     if (f.type === 'relationship') {
        return (
         <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{f.label}</label>}
+          {f.label && <label className="text-[9px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
           <TagField 
             {...fieldProps}
             collectionSlug={collectionSlug}
@@ -117,7 +117,7 @@ export const VisualMenuField = ({ field, value = [], onChange, theme, collection
     if (f.type === 'select') {
       return (
         <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{f.label}</label>}
+          {f.label && <label className="text-[9px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
           <Select {...fieldProps} options={f.options || []} />
         </div>
       );
@@ -125,8 +125,8 @@ export const VisualMenuField = ({ field, value = [], onChange, theme, collection
 
     return (
       <div className="flex flex-col gap-0.5">
-        {f.label && <label className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{f.label}</label>}
-        <Input {...fieldProps} type="text" inputClassName="font-bold h-8 text-xs" />
+        {f.label && <label className="text-[9px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
+        <Input {...fieldProps} type="text" inputClassName="font-semibold h-8 text-xs" />
       </div>
     );
   };
@@ -139,7 +139,7 @@ export const VisualMenuField = ({ field, value = [], onChange, theme, collection
                 <FrameworkIcons.Layout size={14} />
             </div>
             <div>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Menu Structure</span>
+                <span className={`text-[10px] font-semibold tracking-wide ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Menu Structure</span>
             </div>
          </div>
       </div>
@@ -208,7 +208,7 @@ export const VisualMenuField = ({ field, value = [], onChange, theme, collection
         }`}
       >
         <FrameworkIcons.Plus size={14} />
-        <span className="text-[9px] font-bold uppercase tracking-widest">Add Menu Item</span>
+        <span className="text-[10px] font-semibold tracking-wide">Add Menu Item</span>
       </button>
     </div>
   );

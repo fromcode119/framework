@@ -24,7 +24,7 @@ export const CodeEditor = ({
   const { theme } = useTheme();
 
   return (
-    <div className={`rounded-2xl border overflow-hidden transition-all ${
+    <div className={`rounded-lg border overflow-hidden transition-all ${
       theme === 'dark' ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
     } ${className}`}>
       <Editor

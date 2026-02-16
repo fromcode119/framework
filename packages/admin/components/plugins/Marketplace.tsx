@@ -81,13 +81,13 @@ const Marketplace: React.FC = () => {
         <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
            <FrameworkIcons.Alert size={40} className="text-red-500" />
         </div>
-        <h3 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Connection Error</h3>
+        <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Connection Error</h3>
         <p className={`text-sm text-center max-w-sm mt-2 mb-6 ${theme === 'dark' ? 'text-red-200/60' : 'text-red-700/70'}`}>
           {error} Please check your internet connection or API server status.
         </p>
         <button 
           onClick={fetchData}
-          className="flex items-center gap-2 px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all"
+          className="flex items-center gap-2 px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all"
         >
           <FrameworkIcons.Refresh size={18} />
           Retry Connection
@@ -130,10 +130,10 @@ const Marketplace: React.FC = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Badge variant={installed ? "success" : "blue"} className="font-black tracking-widest px-4 py-1.5 text-[10px] uppercase rounded-xl mb-3 inline-flex shadow-sm bg-indigo-600 text-white border-0">
+                    <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-4 py-1.5 text-[10px] rounded-xl mb-3 inline-flex shadow-sm bg-indigo-600 text-white border-0">
                       {installed ? "Installed" : (plugin.category || "Available Plugin")}
                     </Badge>
-                    <h3 className={`text-3xl font-black tracking-tighter transition-colors duration-300 group-hover:text-indigo-500 truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    <h3 className={`text-3xl font-semibold tracking-tight transition-colors duration-300 group-hover:text-indigo-500 truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                       {plugin.name}
                     </h3>
                     
@@ -148,7 +148,7 @@ const Marketplace: React.FC = () => {
                             />
                           ))}
                         </div>
-                        <span className={`text-[10px] font-bold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <span className={`text-[10px] font-medium ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                           {plugin.rating.average} ({plugin.rating.count})
                         </span>
                       </div>
@@ -161,7 +161,7 @@ const Marketplace: React.FC = () => {
                     {plugin.description}
                   </p>
                   
-                  <div className={`flex items-center gap-6 text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <div className={`flex items-center gap-6 text-[10px] font-semibold tracking-wide ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border border-white/5">
                        <FrameworkIcons.Shield size={12} className="text-indigo-500" />
                        v{plugin.version}
@@ -179,8 +179,8 @@ const Marketplace: React.FC = () => {
                   <div className="flex items-center gap-4 p-5 bg-amber-500 text-white rounded-[2rem] shadow-xl shadow-amber-500/20 animate-pulse">
                      <FrameworkIcons.Refresh size={20} className="animate-spin-slow" />
                      <div className="flex flex-col">
-                        <span className="text-[11px] font-black uppercase tracking-widest leading-none">New Version Available</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">v{plugin.version} is ready</span>
+                        <span className="text-[11px] font-semibold tracking-wide leading-none">New Version Available</span>
+                        <span className="text-[10px] font-semibold tracking-wide opacity-80">v{plugin.version} is ready</span>
                      </div>
                   </div>
                 )}
@@ -189,7 +189,7 @@ const Marketplace: React.FC = () => {
                   {installed ? (
                     <button 
                       onClick={(e) => { e.stopPropagation(); router.push(`/plugins/${plugin.slug}`); }}
-                      className={`w-full flex-1 flex items-center justify-center gap-3 h-16 rounded-[1.5rem] text-[12px] font-black uppercase tracking-widest transition-all shadow-xl ${theme === 'dark' ? 'bg-indigo-600/10 text-indigo-400 hover:bg-indigo-600/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                      className={`w-full flex-1 flex items-center justify-center gap-3 h-16 rounded-[1.5rem] text-[12px] font-semibold tracking-wide transition-all shadow-xl ${theme === 'dark' ? 'bg-indigo-600/10 text-indigo-400 hover:bg-indigo-600/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
                     >
                       <FrameworkIcons.Plugins size={18} />
                       <span>Manage Plugin</span>
@@ -197,7 +197,7 @@ const Marketplace: React.FC = () => {
                   ) : (
                     <button 
                       onClick={(e) => handleInstallClick(e, plugin.slug)}
-                      className={`w-full flex-1 flex items-center justify-center gap-3 h-16 rounded-[1.5rem] text-[12px] font-black uppercase tracking-widest transition-all shadow-2xl active:scale-[0.97] ${theme === 'dark' ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-600/30' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20'}`}
+                      className={`w-full flex-1 flex items-center justify-center gap-3 h-16 rounded-[1.5rem] text-[12px] font-semibold tracking-wide transition-all shadow-2xl active:scale-[0.97] ${theme === 'dark' ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-600/30' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20'}`}
                      >
                        <FrameworkIcons.Download size={20} />
                        <span>Install Plugin</span>

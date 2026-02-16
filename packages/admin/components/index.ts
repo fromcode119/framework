@@ -2,6 +2,7 @@ export * from './media/media-picker';
 export * from './ui/button';
 export * from './ui/input';
 export * from './ui/select';
+export * from './ui/text-area';
 export * from './ui/tag-field';
 export * from './ui/loader';
 export * from './ui/switch';

@@ -13,7 +13,7 @@ export default function GlobalLoading() {
             </div>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <p className="text-slate-500 font-bold text-sm tracking-tight uppercase tracking-widest animate-pulse">
+            <p className="text-slate-500 font-semibold text-[11px] tracking-widest animate-pulse">
               Hydrating Interface
             </p>
             <div className="flex gap-1">

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
+import { UI_FIELD, UI_COMMON, getFieldClasses } from '@/lib/ui';
+import { resolveLabelText } from '@/lib/utils';
 
 interface TagFieldProps {
   value: string[] | string;
@@ -16,6 +18,7 @@ interface TagFieldProps {
   sourceField?: string;      // The field in the other collection to suggest from
   hasMany?: boolean;         // Default true, if false it acts as a single select
   allowCreate?: boolean;     // Whether to allow creating new entries in the source collection
+  size?: 'sm' | 'md' | 'lg';
   apiOverrides?: {
     search?: string;
     suggest?: string;
@@ -39,6 +42,7 @@ export const TagField = ({
   sourceField,
   hasMany = true,
   allowCreate = true,
+  size = 'md',
   apiOverrides
 }: TagFieldProps) => {
   const [inputValue, setInputValue] = useState('');
@@ -101,7 +105,7 @@ export const TagField = ({
              }
 
              if (doc) {
-               newLabels[t] = doc.name || doc.title || doc.username || doc.label || t;
+               newLabels[t] = resolveLabelText(doc) || t;
              } else {
                 newLabels[t] = t;
              }
@@ -149,7 +153,7 @@ export const TagField = ({
              if (typeof item === 'string') return { label: item, value: item };
              if (typeof item === 'object' && item !== null) {
                 // Ensure we pick up the correct keys from the API
-                const labelBase = item.label || item.name || item.title || item.username || item.email || String(item.value || '');
+                const labelBase = resolveLabelText(item) || String(item.value || '');
                 let val = item.value || item.slug || item.id || item.username || item.name || item.email;
                 const label = labelBase;
                 
@@ -249,6 +253,11 @@ export const TagField = ({
 
   const [isCreating, setIsCreating] = useState(false);
 
+  const inputTextSizeClass = size === 'sm' ? 'text-[12px]' : size === 'lg' ? 'text-sm' : 'text-[13px]';
+  const wrapperClasses = hasMany
+    ? getFieldClasses(size, 'flex flex-wrap gap-2', true)
+    : getFieldClasses(size, 'flex items-center gap-2', false);
+
   const handleAddClick = (tag: any) => {
       // Direct synchronous call to ensure state transitions happen immediately
       addTag(tag);
@@ -256,11 +265,7 @@ export const TagField = ({
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      <div className={`w-full min-h-[52px] rounded-2xl py-2.5 px-4 border flex flex-wrap gap-2.5 transition-all duration-300 ${
-        theme === 'dark' 
-          ? 'bg-slate-900/50 border-slate-800 focus-within:border-indigo-500/50 focus-within:bg-slate-900' 
-          : 'bg-white border-slate-200 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 shadow-sm'
-      }`}>
+      <div className={wrapperClasses}>
         {tags.map((tag: string, i: number) => {
           const label = labels[tag] || tag;
           const isRelation = !!sourceCollection;
@@ -268,11 +273,11 @@ export const TagField = ({
           return (
             <span 
               key={tag} 
-              className="group bg-indigo-600 text-white px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all"
+              className="group bg-indigo-600 text-white px-2 py-0.5 rounded-md flex items-center gap-1.5 shadow-md shadow-indigo-600/10 active:scale-95 transition-all"
             >
-              <div className="flex flex-col leading-none">
-                 <span className="text-[12px] font-black uppercase tracking-widest leading-none mb-0.5">{label}</span>
-                 {isRelation && label !== tag && <span className="text-[11px] font-black opacity-50 tracking-tighter uppercase leading-none">{tag}</span>}
+              <div className="flex flex-col leading-tight">
+                 <span className="text-[11px] font-semibold leading-none mb-0">{label}</span>
+                 {isRelation && label !== tag && <span className="text-[9px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
               </div>
               <button 
                 type="button" 
@@ -285,14 +290,14 @@ export const TagField = ({
                     onChange('');
                   }
                 }}
-                className="text-indigo-200 hover:text-white transition-colors p-0.5 ml-1"
+                className="text-indigo-200 hover:text-white transition-colors p-0"
               >
-                <FrameworkIcons.Close size={12} strokeWidth={3} />
+                <FrameworkIcons.Close size={10} strokeWidth={3} />
               </button>
             </span>
           );
         })}
-        <div className="flex-1 flex items-center gap-2 min-w-[150px]">
+        <div className="flex-1 flex items-center gap-2 min-w-[120px]">
             {(!hasMany && tags.length > 0) ? null : (
                 <input 
                 type="text"
@@ -313,7 +318,7 @@ export const TagField = ({
                         onChange(hasMany ? newTags : '');
                     }
                 } }
-                className={`w-full bg-transparent outline-none text-sm font-bold ${
+                className={`w-full bg-transparent outline-none ${inputTextSizeClass} font-semibold ${
                     theme === 'dark' ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'
                 }`}
                 />
@@ -323,13 +328,13 @@ export const TagField = ({
       </div>
 
       {showSuggestions && (inputValue.length > 0 || suggestions.length > 0) && (
-        <div className={`absolute z-[100] w-full mt-2 rounded-2xl border shadow-2xl p-1.5 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 overflow-hidden ${
-          theme === 'dark' ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
+        <div className={`absolute z-[100] w-full mt-2 rounded-lg border shadow-2xl p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 overflow-hidden ${
+          theme === 'dark' ? 'bg-[#0f172a] border-slate-800' : 'bg-white/90 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
         }`}>
           {suggestions.length > 0 && (
             <>
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
-                    <span className="text-[12px] font-black uppercase tracking-widest text-slate-400">Existing {sourceCollection || 'Tags'}</span>
+                    <span className="text-[11px] font-semibold text-slate-400">Existing {sourceCollection || 'Tags'}</span>
                     <FrameworkIcons.Search size={10} className="text-slate-400" />
                 </div>
                 {suggestions.map((suggestion) => (
@@ -340,16 +345,16 @@ export const TagField = ({
                       e.preventDefault();
                       handleAddClick(suggestion.value);
                     }}
-                    className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200 flex items-center justify-between group ${
+                    className={`w-full text-left px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center justify-between group ${
                         theme === 'dark' 
                         ? 'hover:bg-slate-800 text-slate-300 hover:text-white' 
                         : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
                     }`}
                     >
-                    <div className="flex flex-col">
-                        <span className="font-bold">{suggestion.label}</span>
+                    <div className="flex flex-col leading-tight">
+                        <span className="font-semibold">{suggestion.label}</span>
                         {suggestion.label !== suggestion.value && (
-                           <span className="text-[11px] opacity-50 font-black uppercase tracking-widest">{suggestion.value}</span>
+                           <span className="text-[10px] opacity-50 font-medium tracking-wide">{suggestion.value}</span>
                         )}
                     </div>
                     <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
@@ -365,7 +370,7 @@ export const TagField = ({
                   e.preventDefault();
                   handleAddClick(inputValue);
                 }}
-                className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200 flex items-center gap-3 group mt-1 ${
+                className={`w-full text-left px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center gap-3 group mt-1 ${
                     theme === 'dark' 
                     ? 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400' 
                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'
@@ -375,10 +380,10 @@ export const TagField = ({
                     <FrameworkIcons.Plus size={16} strokeWidth={3} />
                 </div>
                 <div className="flex-1">
-                    <span className="font-black uppercase text-[12px] tracking-widest block">
+                    <span className="font-semibold text-[10px] block leading-none">
                       {allowCreate ? `Create New ${sourceCollection?.slice(0, -1) || 'Tag'}` : `Use Custom ${fieldName || 'Value'}`}
                     </span>
-                    <span className="font-bold text-sm block mt-0.5">"{inputValue}"</span>
+                    <span className="font-semibold text-[13px] block mt-1">"{inputValue}"</span>
                 </div>
               </button>
           )}

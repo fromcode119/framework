@@ -26,6 +26,7 @@ export interface Field {
     description?: string;
     position?: 'sidebar' | 'main';
     component?: string;
+    handlesLocalization?: boolean;
     width?: 'full' | 'half';
     condition?: {
       field: string;

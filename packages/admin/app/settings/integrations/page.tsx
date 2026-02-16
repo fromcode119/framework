@@ -185,10 +185,10 @@ export default function IntegrationsSettingsPage() {
           theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
         }`}>
           <div>
-            <h1 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+            <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
               Integrations
             </h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
+            <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
               System Service Providers
             </p>
           </div>
@@ -217,7 +217,7 @@ export default function IntegrationsSettingsPage() {
                     }`}>
                       <FrameworkIcons.Settings className={theme === 'dark' ? 'text-slate-400 group-hover:text-indigo-400' : 'text-slate-500 group-hover:text-indigo-500'} size={24} />
                     </div>
-                    <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                    <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-tighter ${
                       doc.active?.source === 'env' 
                         ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' 
                         : 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20'
@@ -226,11 +226,11 @@ export default function IntegrationsSettingsPage() {
                     </div>
                   </div>
                   
-                  <h3 className={`text-lg font-bold tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{doc.label}</h3>
+                  <h3 className={`text-lg font-semibold tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{doc.label}</h3>
                   <p className="text-sm text-slate-500 mb-6 line-clamp-2 min-h-[40px]">{doc.description || 'Manage system-level service providers for this integration type.'}</p>
                   
                   <div className={`mt-auto pt-5 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
-                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <div className="flex items-center justify-between text-[11px] font-semibold tracking-wide text-slate-400">
                       <span>Active Provider</span>
                       <span className={theme === 'dark' ? 'text-slate-200' : 'text-slate-600'}>{doc.active?.provider || 'default'}</span>
                     </div>
@@ -257,10 +257,10 @@ export default function IntegrationsSettingsPage() {
             <FrameworkIcons.ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+            <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
               {selectedType?.label}
             </h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
+            <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
               Configure Service Provider
             </p>
           </div>
@@ -287,7 +287,7 @@ export default function IntegrationsSettingsPage() {
       <div className="p-8 lg:p-12 max-w-4xl space-y-8 pb-32">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-1 space-y-2">
-            <h3 className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Provider Selection</h3>
+            <h3 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Provider Selection</h3>
             <p className="text-sm text-slate-500 leading-relaxed">Choose which driver or service to use for this integration.</p>
           </div>
           <div className="md:col-span-2">
@@ -313,7 +313,7 @@ export default function IntegrationsSettingsPage() {
 
         <div className="border-t border-slate-500/10 pt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-1 space-y-2">
-            <h3 className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Service Configuration</h3>
+            <h3 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Service Configuration</h3>
             <p className="text-sm text-slate-500 leading-relaxed">Enter the required credentials and settings for the selected provider.</p>
           </div>
           <div className="md:col-span-2">
@@ -322,7 +322,7 @@ export default function IntegrationsSettingsPage() {
                 {!selectedProvider?.fields?.length ? (
                   <div className="text-center py-6 opacity-40">
                     <FrameworkIcons.Settings className="mx-auto mb-2" size={32} />
-                    <p className="text-sm font-bold">No configuration needed</p>
+                    <p className="text-sm font-medium">No configuration needed</p>
                   </div>
                 ) : (
                   selectedProvider.fields.map((field) => {
@@ -360,7 +360,7 @@ export default function IntegrationsSettingsPage() {
                     if (field.type === 'textarea') {
                       return (
                         <div key={field.name} className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-1">{field.label}</label>
+                          <label className="text-[10px] font-semibold tracking-wide text-slate-500 px-1">{field.label}</label>
                           <textarea
                             value={String(value || '')}
                             onChange={(event) =>

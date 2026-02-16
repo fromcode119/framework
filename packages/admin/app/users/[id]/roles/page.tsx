@@ -70,7 +70,7 @@ export default function UserRolesPage() {
   };
 
   if (loading) return <Loader label="Analyzing User Privileges" className="py-20" />;
-  if (!user) return <div className="p-8 text-center font-bold text-red-500">User not found</div>;
+  if (!user) return <div className="p-8 text-center font-semibold text-red-500">User not found</div>;
 
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -86,22 +86,22 @@ export default function UserRolesPage() {
                  <button className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg ${
                    theme === 'dark' ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-slate-200/50 hover:shadow-indigo-500/10'
                  }`}>
-                   <FrameworkIcons.Left size={20} strokeWidth={2.5} />
+                   <FrameworkIcons.Left size={20} strokeWidth={2} />
                  </button>
                </Link>
                <div>
-                 <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                 <h1 className={`text-3xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                    Manage User Roles
                  </h1>
-                 <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1 opacity-70">Enforcing access for {user.email}</p>
+                 <p className="text-slate-500 text-xs font-semibold uppercase tracking-tight mt-1 opacity-70">Enforcing access for {user.email}</p>
                </div>
             </div>
             
             <Button 
-              className="px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/10 text-white" 
+              className="px-6 py-2.5 rounded-xl font-semibold uppercase tracking-tight text-[10px] shadow-lg shadow-indigo-600/10 text-white" 
               isLoading={saving}
               onClick={handleSave}
-              icon={<FrameworkIcons.Save size={16} strokeWidth={2.5} />}
+              icon={<FrameworkIcons.Save size={16} strokeWidth={2} />}
             >
               Save
             </Button>
@@ -130,11 +130,11 @@ export default function UserRolesPage() {
                         <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${
                           isSelected 
                             ? (theme === 'dark' ? 'bg-indigo-500 text-white' : 'bg-indigo-600 text-white')
-                            : (theme === 'dark' ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400')
+                            : (theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400')
                         }`}>
                           <FrameworkIcons.Shield size={16} />
                         </div>
-                        <span className={`text-lg font-black tracking-tight ${
+                        <span className={`text-lg font-semibold tracking-tight ${
                           isSelected 
                            ? (theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600')
                            : (theme === 'dark' ? 'text-slate-200' : 'text-slate-900')
@@ -159,12 +159,12 @@ export default function UserRolesPage() {
                   {isSelected && (
                     <div className="mt-4 pl-11 flex flex-wrap gap-2">
                       {(role.permissions || []).slice(0, 5).map((p: string) => (
-                        <Badge key={p} variant="blue" className="text-[9px] uppercase tracking-widest px-2 py-0.5 opacity-70">
+                        <Badge key={p} variant="blue" className="text-[9px] uppercase tracking-tight px-2 py-0.5 opacity-70">
                           {p}
                         </Badge>
                       ))}
                       {(role.permissions || []).length > 5 && (
-                        <span className="text-[9px] font-bold text-slate-400">
+                        <span className="text-[9px] font-semibold text-slate-400">
                           +{(role.permissions || []).length - 5} more
                         </span>
                       )}

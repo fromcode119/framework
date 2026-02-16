@@ -235,7 +235,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3">
-             <h1 className={`text-3xl font-black tracking-tighter truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+             <h1 className={`text-3xl font-semibold tracking-tighter truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                {plugin.name}
              </h1>
              <Badge variant={plugin.state === 'active' ? 'success' : 'gray'}>
@@ -243,16 +243,16 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
              </Badge>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className={`text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.slug}</span>
+            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.slug}</span>
             <span className="text-slate-500 opacity-30">•</span>
-            <span className={`text-[11px] font-black uppercase tracking-widest ${marketplaceItem?.version && marketplaceItem.version !== plugin.version ? 'text-amber-500' : 'text-slate-400'}`}>
+            <span className={`text-[11px] font-semibold uppercase tracking-wider ${marketplaceItem?.version && marketplaceItem.version !== plugin.version ? 'text-amber-500' : 'text-slate-400'}`}>
               Version {plugin.version}
             </span>
             {marketplaceItem?.version && marketplaceItem.version !== plugin.version && (
               <button 
                 onClick={handleUpdate}
                 disabled={isUpdating}
-                className="ml-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/20"
+                className="ml-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/20"
               >
                 {isUpdating ? <FrameworkIcons.Loader size={10} className="animate-spin" /> : <FrameworkIcons.Zap size={10} />}
                 {isUpdating ? 'Updating...' : 'Update Available'}
@@ -286,7 +286,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             <button 
               key={tab.id}
               onClick={() => handleTabChange(tab.id as any)}
-              className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all rounded-xl ${activeTab === tab.id 
+              className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-all rounded-xl ${activeTab === tab.id 
                 ? (theme === 'dark' 
                     ? 'bg-slate-800 text-indigo-400 shadow-xl shadow-indigo-500/10' 
                     : 'bg-white text-indigo-600 shadow-lg shadow-indigo-500/5 ring-1 ring-slate-200/50')
@@ -310,7 +310,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                    <FrameworkIcons.Plugins size={48} strokeWidth={1} />
                 </div>
                 <div className="flex-1 space-y-4">
-                  <Badge variant="blue" className="px-3 py-1 font-black uppercase tracking-widest text-[10px] rounded-lg">
+                  <Badge variant="blue" className="px-3 py-1 font-semibold uppercase tracking-wider text-[10px] rounded-lg">
                     {plugin.category || 'Core Plugin'}
                   </Badge>
                   <p className={`text-xl leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -321,7 +321,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
               {marketplaceItem?.version && marketplaceItem.version !== plugin.version && marketplaceItem.changelog && (
                 <div className={`mt-10 p-6 rounded-3xl border-2 border-dashed ${theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-100'}`}>
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-indigo-500 mb-4 flex items-center gap-2">
+                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-indigo-500 mb-4 flex items-center gap-2">
                     <FrameworkIcons.Zap size={14} /> New in v{marketplaceItem.version}
                   </h4>
                   <ul className="space-y-3">
@@ -337,10 +337,10 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
               <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} flex items-center justify-between`}>
                 <div className="space-y-1">
-                  <div className={`text-[11px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Runtime Status</div>
+                  <div className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Runtime Status</div>
                   <div className="flex items-center gap-3">
                     <div className={`h-3 w-3 rounded-full ${plugin.state === 'active' ? 'bg-green-500' : 'bg-slate-500'} shadow-[0_0_12px_rgba(34,197,94,0.3)]`} />
-                    <span className={`text-sm font-black uppercase tracking-tighter ${plugin.state === 'active' ? 'text-green-500' : 'text-slate-500'}`}>
+                    <span className={`text-sm font-semibold uppercase tracking-tighter ${plugin.state === 'active' ? 'text-green-500' : 'text-slate-500'}`}>
                       {plugin.state}
                     </span>
                   </div>
@@ -350,7 +350,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                     ? 'bg-slate-800/50 border-white/5' 
                     : 'bg-slate-100/80 border-slate-200/60 shadow-inner'
                 }`}>
-                  <span className={`text-[11px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <span className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
                     {plugin.state === 'active' ? 'Active' : 'Disabled'}
                   </span>
                   <Switch checked={plugin.state === 'active'} onChange={handleToggle} className="scale-110" />
@@ -367,7 +367,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
           {activeTab === 'permissions' && (
             <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-               <h3 className={`text-[11px] font-black uppercase tracking-widest mb-10 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+               <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-10 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                  Security & Capabilities
                </h3>
                <div className="space-y-6">
@@ -388,7 +388,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                                cap.includes('hook') ? <FrameworkIcons.Zap size={20} /> : <FrameworkIcons.Shield size={20} />}
                            </div>
                            <div className="flex-1">
-                              <div className={`text-sm font-black tracking-tight ${
+                              <div className={`text-sm font-semibold tracking-tight ${
                                 isUnapproved ? 'text-amber-700 dark:text-amber-400' : 'text-slate-950 dark:text-white'
                               }`}>
                                  {cap.split(':').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
@@ -409,7 +409,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                     <div className="py-20 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[2rem]">
                       <FrameworkIcons.Shield className="text-slate-100 dark:text-slate-900 mb-6" size={64} />
                       <p className="text-slate-500 font-bold">Standard Isolation</p>
-                      <p className="text-[11px] text-slate-400 mt-1 uppercase tracking-widest">Minimal system permissions</p>
+                      <p className="text-[11px] text-slate-400 mt-1 uppercase tracking-wider">Minimal system permissions</p>
                     </div>
                   )}
                </div>
@@ -480,12 +480,12 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           {activeTab === 'overview' && (
             <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
                <div className="flex items-center justify-between mb-8">
-                  <h3 className={`text-[11px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                     Active Activity Logs
                   </h3>
                   <button 
                     onClick={fetchLogs}
-                    className={`h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border ${
+                    className={`h-10 px-4 rounded-xl text-[10px] font-semibold uppercase tracking-wider transition-all flex items-center gap-2 border ${
                       theme === 'dark' 
                         ? 'bg-slate-800 border-slate-700 text-indigo-400 hover:bg-slate-700' 
                         : 'bg-white border-slate-200 text-indigo-500 hover:text-indigo-600 shadow-sm hover:shadow-md'
@@ -502,7 +502,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                } overflow-hidden`}>
                   <div className="max-h-[300px] overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar">
                     {loadingLogs ? (
-                      <div className="p-10 text-center text-slate-500 font-black uppercase tracking-widest">Analyzing stream...</div>
+                      <div className="p-10 text-center text-slate-500 font-semibold uppercase tracking-wider">Analyzing stream...</div>
                     ) : logs.length > 0 ? (
                       <table className="w-full border-collapse">
                         <tbody>
@@ -514,7 +514,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                             }`}>
                                <td className="py-3 px-4 text-slate-400 whitespace-nowrap align-top font-bold">{new Date(log.timestamp).toLocaleTimeString()}</td>
                                <td className="py-3 px-2">
-                                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest ${
+                                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-semibold tracking-wider ${
                                     log.level === 'ERROR' ? 'bg-red-500 text-white' :
                                     log.level === 'WARN' ? 'bg-amber-500 text-white' :
                                     'bg-indigo-500 text-white'
@@ -539,12 +539,12 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
         {/* Right Column: Metadata & Details */}
         <div className="space-y-8">
           <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-            <h3 className={`text-[11px] font-black tracking-widest mb-8 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+            <h3 className={`text-[11px] font-semibold tracking-wider mb-8 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
               Manifest Details
             </h3>
             <div className="space-y-8">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-black tracking-widest text-slate-500">Security Layers</span>
+                <span className="text-xs font-semibold tracking-wider text-slate-500">Security Layers</span>
                 <div className="flex -space-x-1.5">
                    {plugin.capabilities && plugin.capabilities.length > 0 ? (
                      plugin.capabilities.slice(0, 4).map(c => (
@@ -554,21 +554,21 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                        </div>
                      ))
                    ) : (
-                     <span className="text-[10px] font-black text-slate-400">ISOLATED</span>
+                     <span className="text-[10px] font-semibold text-slate-400">ISOLATED</span>
                    )}
                 </div>
               </div>
 
               <div className="flex justify-between items-center">
-                 <span className="text-xs font-black tracking-widest text-slate-500">Author</span>
-                 <span className={`text-sm font-black ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                 <span className="text-xs font-semibold tracking-wider text-slate-500">Author</span>
+                 <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
                     {typeof plugin.author === 'object' ? (plugin.author as any).name : (plugin.author || 'Official Core')}
                  </span>
               </div>
             </div>
             
             <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
-              <button className={`w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl border font-black uppercase tracking-widest text-[11px] transition-all ${
+              <button className={`w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl border font-semibold uppercase tracking-wider text-[11px] transition-all ${
                 theme === 'dark' 
                   ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' 
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'
@@ -580,7 +580,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           </Card>
 
           <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-red-500/10' : 'bg-red-50'} ring-1 ring-red-500/20`}>
-            <h3 className="text-[11px] font-black text-red-600 uppercase tracking-widest mb-4">
+            <h3 className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-4">
               System Removal
             </h3>
             <p className="text-xs font-medium text-red-500/80 leading-relaxed mb-8">
@@ -588,7 +588,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             </p>
             <button 
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-red-600/20 active:scale-95"
+              className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all shadow-xl shadow-red-600/20 active:scale-95"
             >
               Uninstall Plugin
             </button>

@@ -48,10 +48,10 @@ export default function InfrastructureSettingsPage() {
   return (
     <div className="p-8 lg:p-12 animate-in fade-in duration-500 max-w-5xl">
        <div className="mb-10">
-        <h1 className={`text-3xl font-black tracking-tighter mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+        <h1 className={`text-3xl font-bold tracking-tighter mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
           Infrastructure & Health
         </h1>
-        <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
+        <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70">
           Monitor system clusters and perform administrative maintenance.
         </p>
       </div>
@@ -60,22 +60,22 @@ export default function InfrastructureSettingsPage() {
         <Card title="Pulse Monitor">
            <div className="space-y-6 py-4">
               <div className="flex items-center justify-between">
-                <span className={`text-xs font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Database</span>
-                <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/10">
+                <span className={`text-xs font-semibold tracking-wide ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Database</span>
+                <span className="flex items-center gap-2 text-[10px] font-semibold tracking-wide text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/10">
                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
                   Healthy
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className={`text-xs font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>API Clusters</span>
-                <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/10">
+                <span className={`text-xs font-semibold tracking-wide ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>API Clusters</span>
+                <span className="flex items-center gap-2 text-[10px] font-semibold tracking-wide text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/10">
                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
                   Online
                 </span>
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex flex-col gap-1">
-                  <span className={`text-xs font-black uppercase tracking-widest text-indigo-500`}>Maintenance Mode</span>
+                  <span className={`text-xs font-semibold tracking-wide text-indigo-500`}>Maintenance Mode</span>
                   <p className="text-[10px] text-slate-400 font-medium">Restricts frontend access.</p>
                 </div>
                 <Switch checked={maintenance} onChange={toggleMaintenance} />

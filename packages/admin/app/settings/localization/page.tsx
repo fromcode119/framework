@@ -34,7 +34,7 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
         {Icon ? <Icon size={20} /> : <div className="w-5 h-5" />}
       </div>
       <div>
-        <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{title}</h3>
+        <h3 className={`font-semibold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{title}</h3>
         <p className="text-sm text-slate-500 mt-1 max-w-sm leading-relaxed">{description}</p>
       </div>
     </div>
@@ -288,10 +288,10 @@ export default function LocalizationSettingsPage() {
         theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
       }`}>
         <div>
-          <h1 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+          <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
             Localization
           </h1>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
+          <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
             Locale Registry & Language Defaults
           </p>
         </div>
@@ -342,14 +342,14 @@ export default function LocalizationSettingsPage() {
                         checked={locale.enabled}
                         onChange={(value) => updateLocale(locale.id, { enabled: value })}
                       />
-                      <span className="text-sm font-bold text-slate-500 uppercase tracking-wide">Enabled</span>
+                      <span className="text-sm font-medium text-slate-500 tracking-wide">Enabled</span>
                     </div>
                     <div className="md:col-span-2 flex justify-end">
                       <button
                         type="button"
                         onClick={() => removeLocale(locale.id)}
                         disabled={locales.length <= 1}
-                        className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${
+                        className={`px-3 py-2 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${
                           locales.length <= 1
                             ? 'opacity-40 cursor-not-allowed bg-slate-200 text-slate-500'
                             : theme === 'dark'

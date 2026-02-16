@@ -123,7 +123,7 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
                           {item.icon}
                         </div>
                       )}
-                      <span className="truncate text-left flex-1 font-black uppercase text-[10px] tracking-[0.15em]">{item.label}</span>
+                      <span className="truncate text-left flex-1 font-semibold tracking-wide text-[11px]">{item.label}</span>
                       
                       {!isDanger && (
                         <div className="h-1.5 w-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.4)] dark:bg-indigo-500 dark:shadow-[0_0_8px_rgba(99,102,241,0.6)]" />

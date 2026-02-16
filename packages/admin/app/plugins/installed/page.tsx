@@ -141,7 +141,7 @@ export default function InstalledPluginsPage() {
         <button 
           onClick={handleUploadClick}
           disabled={isUploading}
-          className={`flex items-center justify-center gap-3 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase tracking-widest text-[11px] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] disabled:opacity-50`}
+          className={`flex items-center justify-center gap-3 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold uppercase tracking-wider text-[11px] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] disabled:opacity-50`}
         >
           {isUploading ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}
           <span>Upload (.zip)</span>
@@ -154,7 +154,7 @@ export default function InstalledPluginsPage() {
              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
                 <FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" />
              </div>
-             <h3 className={`text-xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No plugins found</h3>
+             <h3 className={`text-xl font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No plugins found</h3>
              <p className="text-slate-500 font-medium">Try a different search term or upload a new plugin.</p>
           </div>
         ) : (
@@ -201,14 +201,14 @@ export default function InstalledPluginsPage() {
                                className="flex items-center gap-2 px-2 py-0.5 bg-amber-500 text-white rounded-lg animate-pulse no-underline shadow-md shadow-amber-500/20"
                              >
                                 <FrameworkIcons.Refresh size={8} className="animate-spin-slow" />
-                                <span className="text-[8px] font-black uppercase tracking-widest leading-none">Update</span>
+                                <span className="text-[8px] font-semibold uppercase tracking-wider leading-none">Update</span>
                              </Link>
                            )}
                        </div>
                        
                        <div className="space-y-1">
                           <Link href={`/plugins/${plugin.slug}`}>
-                             <h3 className={`text-2xl font-black tracking-tighter transition-colors duration-300 group-hover:text-indigo-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                             <h3 className={`text-2xl font-semibold tracking-tighter transition-colors duration-300 group-hover:text-indigo-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                                 {plugin.name}
                              </h3>
                           </Link>
@@ -217,7 +217,7 @@ export default function InstalledPluginsPage() {
                           </p>
                        </div>
 
-                       <div className={`flex items-center justify-center md:justify-start gap-4 text-[9px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500/80'}`}>
+                       <div className={`flex items-center justify-center md:justify-start gap-4 text-[9px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500/80'}`}>
                         <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border shadow-sm transition-colors ${
                           theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-100 text-slate-600'
                         }`}>
@@ -242,7 +242,7 @@ export default function InstalledPluginsPage() {
                           : 'bg-slate-100/50 border-slate-200/60 shadow-inner'
                       }`}>
                           <div className="flex flex-col">
-                            <span className={`text-[8px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            <span className={`text-[8px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                               Activation
                             </span>
                           </div>
@@ -256,7 +256,7 @@ export default function InstalledPluginsPage() {
                       <div className="grid grid-cols-4 gap-2">
                         <Link 
                           href={`/plugins/${plugin.slug}`} 
-                          className={`col-span-4 sm:col-span-2 flex items-center justify-center gap-2 h-9 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-[0.97] ${
+                          className={`col-span-4 sm:col-span-2 flex items-center justify-center gap-2 h-9 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all shadow-md active:scale-[0.97] ${
                             theme === 'dark' ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
                           }`}
                         >

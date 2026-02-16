@@ -112,8 +112,8 @@ export default function UsersPage() {
             {getInitials(user)}
           </div>
           <div>
-            <div className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{getDisplayName(user)}</div>
-            <div className="text-xs text-slate-500 flex items-center gap-1">
+            <div className={`font-bold tracking-tight ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{getDisplayName(user)}</div>
+            <div className="text-[11px] font-bold tracking-tight text-slate-500 flex items-center gap-1 opacity-70">
               <FrameworkIcons.Mail size={12} /> {user.email}
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function UsersPage() {
       accessor: (user: User) => (
         <div className="flex flex-wrap gap-1">
           {getRoles(user).map(role => (
-            <Badge key={role} variant={role === 'admin' ? 'purple' : 'blue'}>
+            <Badge key={role} variant={role === 'admin' ? 'purple' : 'blue'} className="font-bold tracking-tight">
               {role}
             </Badge>
           ))}
@@ -138,8 +138,8 @@ export default function UsersPage() {
       id: 'status',
       accessor: (user: User) => (
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span className="font-bold text-emerald-500 text-[11px] uppercase tracking-widest">Active</span>
+          <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+          <span className="font-bold text-emerald-500 text-[11px] tracking-tight">Active</span>
         </div>
       )
     },
@@ -147,7 +147,7 @@ export default function UsersPage() {
       header: 'Joined',
       id: 'createdAt',
       accessor: (user: User) => (
-        <div className="flex items-center gap-2 font-medium text-slate-500">
+        <div className="flex items-center gap-2 font-bold text-[11px] tracking-tight text-slate-500">
           <FrameworkIcons.Calendar size={14} className="opacity-50" />
           {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Initial'}
         </div>
@@ -165,12 +165,12 @@ export default function UsersPage() {
         <div className="w-full px-6 lg:px-12 py-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 ${
+              <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 ${
                 theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-600 text-white'
               }`}>
-                <FrameworkIcons.Users size={20} strokeWidth={2.5} />
+                <FrameworkIcons.Users size={20} strokeWidth={2} />
               </div>
-              <h1 className={`text-3xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 Users
               </h1>
             </div>
@@ -184,15 +184,15 @@ export default function UsersPage() {
             <Link href="/users/new">
               <Button 
                 variant="secondary"
-                className="px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] border-slate-200 dark:border-slate-800" 
+                className="h-11 px-6 rounded-xl font-bold tracking-tight text-xs border-slate-200 dark:border-slate-800" 
                 icon={<FrameworkIcons.Plus size={16} />}
               >
                 Create User
               </Button>
             </Link>
             <Button 
-              className="px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/10 text-white" 
-              icon={<FrameworkIcons.More size={16} strokeWidth={3} />}
+              className="h-11 px-6 rounded-xl font-bold tracking-tight text-xs shadow-lg shadow-indigo-600/10 text-white" 
+              icon={<FrameworkIcons.More size={16} strokeWidth={2} />}
             >
               Invite User
             </Button>
@@ -223,14 +223,14 @@ export default function UsersPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1 group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-              <FrameworkIcons.Search size={16} />
+              <FrameworkIcons.Search size={18} />
             </div>
             <input 
               type="text" 
               placeholder="Search user base by name or email..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full rounded-2xl py-3.5 pl-11 pr-4 outline-none border transition-all text-sm font-bold ${
+              className={`w-full h-11 rounded-xl pl-12 pr-4 outline-none border transition-all text-sm font-bold tracking-tight ${
                 theme === 'dark' 
                   ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900 shadow-2xl shadow-black/40' 
                   : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-xl shadow-slate-200/50'
@@ -254,14 +254,14 @@ export default function UsersPage() {
               <div className="flex items-center justify-end gap-2">
                 <Slot name="admin.users.list.table.actions" props={{ user }} />
                 <Link href={`/users/${user.id}/roles`}>
-                  <Button size="sm" variant="ghost" className="text-indigo-500 font-bold text-[10px] uppercase tracking-widest px-4 hover:bg-indigo-500/5">
+                  <Button size="sm" variant="ghost" className="text-indigo-500 font-bold text-xs tracking-tight px-4 h-11 hover:bg-indigo-500/5 rounded-xl uppercase">
                     Roles
                   </Button>
                 </Link>
                 
                 <Dropdown
                   trigger={
-                    <button className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}>
+                    <button className={`h-11 w-11 flex items-center justify-center rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}>
                       <FrameworkIcons.More size={18} />
                     </button>
                   }
@@ -316,14 +316,14 @@ export default function UsersPage() {
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
               <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+              <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400">
                 User Management Infrastructure
               </span>
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight opacity-70">Manage user accounts and security roles.</p>
+            <p className="text-[10px] font-bold text-slate-400 tracking-tight opacity-70">Manage user accounts and security roles.</p>
           </div>
           
-          <div className="flex items-center gap-10 text-[11px] font-black uppercase tracking-widest text-slate-400">
+          <div className="flex items-center gap-10 text-[11px] font-bold tracking-tight text-slate-400 uppercase">
                <Link href="/users/roles" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Roles</Link>
                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                <Link href="/users/permissions" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Permissions</Link>

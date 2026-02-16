@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, use } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useMemo, useState, use, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Slot, usePlugins } from '@fromcode/react';
 import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
@@ -12,6 +12,14 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { resolveCollection, generatePreviewUrl } from '@/lib/collection-utils';
+import { FieldRenderer } from '@/components/collection/field-renderer';
+import { CollectionNotFound } from '@/components/collection/collection-not-found';
+import { CollectionQuickEditCard } from '@/components/collection/collection-quick-edit-card';
+
+import { CollectionListHeader } from './list/list-header';
+import { FilterBar } from './list/filter-bar';
+import { BulkActions } from './list/bulk-actions';
+import { ListFooter } from './list/list-footer';
 
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -44,8 +52,215 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState('-createdAt');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
+  const [visibleColumnIds, setVisibleColumnIds] = useState<string[]>([]);
+  const [showColumnsMenu, setShowColumnsMenu] = useState(false);
+  const [quickEditExpandedId, setQuickEditExpandedId] = useState<string | null>(null);
+  const [quickEditLoadingId, setQuickEditLoadingId] = useState<string | null>(null);
+  const [quickEditSavingId, setQuickEditSavingId] = useState<string | null>(null);
+  const [quickEditData, setQuickEditData] = useState<Record<string, any>>({});
+  const [quickEditInitialData, setQuickEditInitialData] = useState<Record<string, any>>({});
+  const [quickEditStatus, setQuickEditStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const columnsMenuRef = useRef<HTMLDivElement>(null);
 
   const resolvedSlug = collection?.slug || slug;
+  const pageSize = 10;
+
+  const statusField = useMemo(() => {
+    if (!collection) return null;
+    return collection.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') || null;
+  }, [collection]);
+
+  const statusOptions = useMemo(() => {
+    const options = Array.isArray((statusField as any)?.options) ? (statusField as any).options : [];
+    return options
+      .map((option: any) => ({
+        label: String(option?.label || option?.value || '').trim(),
+        value: String(option?.value || '').trim()
+      }))
+      .filter((option: any) => option.value);
+  }, [statusField]);
+
+  const prettifyColumnName = (value: string) =>
+    value
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/^./, (str) => str.toUpperCase());
+
+  const formatCellValue = (raw: any): React.ReactNode => {
+    if (raw === null || raw === undefined || raw === '') return '-';
+    if (typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean') return String(raw);
+    if (Array.isArray(raw)) {
+      if (!raw.length) return '-';
+      const sample = raw.slice(0, 3).map((item) => {
+        if (typeof item === 'string' || typeof item === 'number') return String(item);
+        if (item && typeof item === 'object') {
+          return String(item.title || item.name || item.label || item.slug || item.id || '[item]');
+        }
+        return String(item);
+      });
+      return sample.join(', ') + (raw.length > 3 ? '…' : '');
+    }
+    if (typeof raw === 'object') {
+      return String(raw.title || raw.name || raw.label || raw.slug || raw.id || '[Object]');
+    }
+    return String(raw);
+  };
+
+  const allColumns = useMemo(() => {
+    if (!collection) return [];
+    const hiddenFieldNames = new Set(
+      collection.fields
+        .filter((field: any) => field?.hidden || field?.admin?.hidden)
+        .map((field: any) => field.name)
+    );
+
+    const defaultCols = Array.isArray(collection.admin?.defaultColumns) ? collection.admin.defaultColumns : [];
+    const fieldCols = collection.fields
+      .filter((field: any) => field?.name && !hiddenFieldNames.has(field.name))
+      .map((field: any) => field.name);
+    const columnNames = Array.from(new Set(['id', ...defaultCols, ...fieldCols, 'createdAt']));
+
+    return columnNames.map((columnName) => {
+      const field = collection.fields.find((item: any) => item.name === columnName);
+      const header = field?.label || prettifyColumnName(columnName);
+
+      return {
+        id: columnName,
+        header,
+        sortable: true,
+        accessor: (row: any) => {
+          const raw = row[columnName];
+          if (columnName === 'status') {
+            const value = String(raw || '').trim();
+            if (!value) return '-';
+            const lower = value.toLowerCase();
+            const variant =
+              lower === 'published' || lower === 'read'
+                ? 'success'
+                : lower === 'draft' || lower === 'unread' || lower === 'new'
+                  ? 'warning'
+                  : lower === 'archived'
+                    ? 'rose'
+                    : 'default';
+            return <Badge variant={variant as any}>{value}</Badge>;
+          }
+
+          if (columnName === 'createdAt' || columnName === 'updatedAt' || field?.type === 'date' || field?.type === 'datetime') {
+            const date = raw ? new Date(raw) : null;
+            if (!date || Number.isNaN(date.getTime())) return '-';
+            return date.toLocaleString();
+          }
+
+          return formatCellValue(raw);
+        }
+      };
+    });
+  }, [collection]);
+
+  const columnsStorageKey = useMemo(() => `fc_columns_${pluginSlug}_${resolvedSlug}`, [pluginSlug, resolvedSlug]);
+
+  const selectFilterFields = useMemo(() => {
+    if (!collection) return [];
+    return collection.fields.filter((field: any) => {
+      if (!field?.name) return false;
+      if (field.hidden || field.admin?.hidden) return false;
+      if (field.name === 'status') return false;
+      return field.type === 'select' && Array.isArray(field.options) && field.options.length > 0;
+    });
+  }, [collection]);
+
+  const quickEditFields = useMemo(() => {
+    if (!collection) return [];
+    return collection.fields.filter((field: any) => {
+      if (!field?.name) return false;
+      if (field.hidden || field.admin?.hidden) return false;
+      if (field.admin?.readOnly) return false;
+      if (['id', 'createdAt', 'updatedAt', 'created_at', 'updated_at'].includes(field.name)) return false;
+      if (field.type === 'ui') return false;
+      if (['json', 'array', 'richText', 'code', 'upload'].includes(field.type)) return false;
+      if (field.type === 'textarea') return false;
+      return true;
+    });
+  }, [collection]);
+
+  useEffect(() => {
+    if (!allColumns.length) return;
+    const availableIds = new Set(allColumns.map((column) => column.id));
+    const defaults = (collection?.admin?.defaultColumns || [])
+      .filter((id: string) => availableIds.has(id))
+      .concat(availableIds.has('createdAt') ? ['createdAt'] : []);
+    const uniqueDefaults = Array.from(new Set(defaults));
+
+    let next = uniqueDefaults;
+    try {
+      const raw = localStorage.getItem(columnsStorageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const valid = parsed.filter((id: string) => availableIds.has(id));
+          if (valid.length) next = valid;
+        }
+      }
+    } catch {
+      // no-op
+    }
+
+    if (uniqueDefaults.includes('id') && availableIds.has('id') && !next.includes('id')) {
+      next = ['id', ...next];
+    }
+
+    if (!next.length) next = allColumns.slice(0, 4).map((column) => column.id);
+    setVisibleColumnIds(next);
+  }, [allColumns, collection?.admin?.defaultColumns, columnsStorageKey]);
+
+  useEffect(() => {
+    if (!showColumnsMenu) return;
+    const onClickOutside = (event: MouseEvent) => {
+      if (!columnsMenuRef.current) return;
+      if (!columnsMenuRef.current.contains(event.target as Node)) {
+        setShowColumnsMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [showColumnsMenu]);
+
+  useEffect(() => {
+    if (!selectFilterFields.length) {
+      setFieldFilters({});
+      return;
+    }
+    const next: Record<string, string> = {};
+    selectFilterFields.forEach((field: any) => {
+      next[field.name] = 'all';
+    });
+    setFieldFilters(next);
+  }, [resolvedSlug, selectFilterFields]);
+
+  const columns = useMemo(() => {
+    if (!allColumns.length) return [];
+    const selected = new Set(visibleColumnIds);
+    const filtered = allColumns.filter((column) => selected.has(column.id));
+    return filtered.length ? filtered : allColumns.slice(0, 1);
+  }, [allColumns, visibleColumnIds]);
+
+  const toggleColumn = (columnId: string) => {
+    setVisibleColumnIds((prev) => {
+      let next: string[];
+      if (prev.includes(columnId)) {
+        next = prev.filter((id) => id !== columnId);
+        if (!next.length) return prev;
+      } else {
+        next = [...prev, columnId];
+      }
+      localStorage.setItem(columnsStorageKey, JSON.stringify(next));
+      return next;
+    });
+  };
 
   // Load plugin settings if the collection belongs to a plugin
   useEffect(() => {
@@ -64,31 +279,38 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     return () => clearTimeout(timer);
   }, [search]);
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        const queryParams = new URLSearchParams();
-        queryParams.append('page', page.toString());
-        queryParams.append('limit', '10');
-        if (debouncedSearch) queryParams.append('search', debouncedSearch);
-        if (sort) queryParams.append('sort', sort);
+  const fetchData = useCallback(async (targetPage = page) => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', String(targetPage));
+      queryParams.append('limit', String(pageSize));
+      if (debouncedSearch) queryParams.append('search', debouncedSearch);
+      if (sort) queryParams.append('sort', sort);
+      if (statusFilter !== 'all') queryParams.append('status', statusFilter);
+      Object.entries(fieldFilters).forEach(([key, value]) => {
+        if (value && value !== 'all') queryParams.append(key, value);
+      });
 
-        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
-        
-        if (result.docs) {
-          setData(result.docs);
-          setTotal(result.totalDocs);
-        }
-      } catch (err) {
-        console.error("Failed to fetch collection data:", err);
-      } finally {
-        setLoading(false);
+      const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
+
+      if (result.docs) {
+        setData(result.docs);
+        setTotal(result.totalDocs);
+      } else {
+        setData([]);
+        setTotal(0);
       }
+    } catch (err) {
+      console.error("Failed to fetch collection data:", err);
+    } finally {
+      setLoading(false);
     }
+  }, [debouncedSearch, fieldFilters, page, pageSize, resolvedSlug, sort, statusFilter]);
 
-    fetchData();
-  }, [resolvedSlug, debouncedSearch, page, sort]);
+  useEffect(() => {
+    fetchData(page);
+  }, [fetchData, page]);
 
   const handleExport = async (format: 'json' | 'csv', ids?: string[]) => {
     try {
@@ -130,17 +352,8 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
       try {
         await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-delete`, { ids: selectedIds });
         setSelectedIds([]);
-        // Refresh
         setPage(1);
-        const queryParams = new URLSearchParams();
-        queryParams.append('page', '1');
-        queryParams.append('limit', '10');
-        if (debouncedSearch) queryParams.append('search', debouncedSearch);
-        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
-        if (result.docs) {
-          setData(result.docs);
-          setTotal(result.totalDocs);
-        }
+        await fetchData(1);
       } catch (error) {
         alert('Error performing bulk delete');
       } finally {
@@ -158,16 +371,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
         data: { status: newStatus } 
       });
       setSelectedIds([]);
-      // Refresh
-      const queryParams = new URLSearchParams();
-      queryParams.append('page', page.toString());
-      queryParams.append('limit', '10');
-      if (debouncedSearch) queryParams.append('search', debouncedSearch);
-      const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
-      if (result.docs) {
-        setData(result.docs);
-        setTotal(result.totalDocs);
-      }
+      await fetchData(page);
     } catch (error) {
       alert('Error updating status');
     } finally {
@@ -176,202 +380,115 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   };
 
   if (!collection) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in-95 duration-700">
-        <div className={`p-8 rounded-[40px] mb-8 relative group ${theme === 'dark' ? 'bg-slate-900 shadow-2xl shadow-black/50' : 'bg-white shadow-2xl shadow-slate-200'}`}>
-           <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
-           <FrameworkIcons.Search size={64} className="text-indigo-500 relative z-10" strokeWidth={1} />
-        </div>
-        
-        <h2 className={`text-4xl font-black tracking-tighter uppercase mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-          Collection Not Found
-        </h2>
-        
-        <p className="text-slate-500 font-bold text-center max-w-sm leading-relaxed mb-10 px-6">
-          The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 uppercase tracking-widest text-xs ml-1">{pluginSlug}</span> plugin manifest.
-        </p>
-
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost"
-            onClick={() => window.history.back()}
-            className="rounded-2xl px-8 font-black uppercase tracking-widest text-xs text-slate-400"
-          >
-            Go Back
-          </Button>
-          <Button 
-            variant="primary" 
-            as={Link}
-            href="/"
-            className="rounded-2xl px-10 py-5 font-black uppercase tracking-widest text-xs shadow-2xl shadow-indigo-500/30"
-            icon={<FrameworkIcons.Layout size={18} />}
-          >
-            Return to Dashboard
-          </Button>
-        </div>
-      </div>
-    );
+    return <CollectionNotFound theme={theme as any} slug={slug} pluginSlug={pluginSlug} />;
   }
-
-  const columns = [
-    ...(collection.admin?.defaultColumns || collection.fields.filter(f => !f.hidden).slice(0, 3).map(f => f.name)).map(col => ({
-      header: col.charAt(0).toUpperCase() + col.slice(1),
-      id: col,
-      accessor: (row: any) => String(row[col] || '-'),
-      sortable: true
-    })),
-    {
-      header: 'Created At',
-      id: 'createdAt',
-      accessor: (row: any) => new Date(row.createdAt).toLocaleDateString(),
-      sortable: true
-    }
-  ];
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm('Are you sure you want to delete this record?')) {
       try {
         await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
-        // Refresh data
         setPage(1);
-        const queryParams = new URLSearchParams();
-        queryParams.append('page', '1');
-        queryParams.append('limit', '10');
-        if (debouncedSearch) queryParams.append('search', debouncedSearch);
-        
-        const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
-        if (result.docs) {
-          setData(result.docs);
-          setTotal(result.totalDocs);
-        }
+        await fetchData(1);
       } catch (error) {
         alert('Error deleting record');
       }
     }
   };
 
+  const handleQuickEditOpen = async (row: any, event: React.MouseEvent) => {
+    event.stopPropagation();
+    const rowId = String(row.id);
+
+    if (quickEditExpandedId === rowId) {
+      setQuickEditExpandedId(null);
+      setQuickEditStatus(null);
+      return;
+    }
+
+    setQuickEditStatus(null);
+    setQuickEditExpandedId(rowId);
+    setQuickEditLoadingId(rowId);
+    try {
+      const record = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${row.id}?locale_mode=raw`);
+      setQuickEditData(record || {});
+      setQuickEditInitialData(record || {});
+    } catch (error: any) {
+      setQuickEditStatus({ type: 'error', message: error?.message || 'Failed to load record for quick edit.' });
+      setQuickEditData(row || {});
+      setQuickEditInitialData(row || {});
+    } finally {
+      setQuickEditLoadingId(null);
+    }
+  };
+
+  const handleQuickEditSave = async () => {
+    if (!quickEditExpandedId) return;
+    setQuickEditSavingId(quickEditExpandedId);
+    setQuickEditStatus(null);
+    try {
+      const changedEntries = Object.entries(quickEditData).filter(([key, value]) => {
+        return JSON.stringify(value) !== JSON.stringify((quickEditInitialData as any)?.[key]);
+      });
+      const payload = Object.fromEntries(changedEntries);
+
+      if (!Object.keys(payload).length) {
+        setQuickEditStatus({ type: 'success', message: 'No changes to save.' });
+        return;
+      }
+
+      await api.put(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${quickEditExpandedId}`, payload);
+      setQuickEditStatus({ type: 'success', message: 'Record updated successfully.' });
+      setQuickEditInitialData({ ...quickEditData });
+      await fetchData(page);
+    } catch (error: any) {
+      setQuickEditStatus({ type: 'error', message: error?.message || 'Failed to save quick edits.' });
+    } finally {
+      setQuickEditSavingId(null);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
-      <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
-        theme === 'dark' 
-          ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
-          : 'bg-white/80 border-slate-100 shadow-sm'
-      }`}>
-        <div className="w-full px-6 lg:px-12 py-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`p-2 rounded-xl shadow-inner ${theme === 'dark' ? 'bg-slate-900 border border-slate-800' : 'bg-indigo-50 border border-indigo-100'} text-indigo-500`}>
-                <FrameworkIcons.Layout size={20} />
-              </div>
-              <h1 className={`text-3xl font-black tracking-tighter uppercase ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {collection.slug === 'users' ? 'User Management' : (collection.name || slug.charAt(0).toUpperCase() + slug.slice(1))}
-              </h1>
-            </div>
-            <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-              {collection.slug === 'users' 
-                ? 'Manage system users, roles and security permissions.' 
-                : `Manage and organize ${(collection.name || slug).toLowerCase()} records.`}
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <Slot name={`admin.collection.${slug}.header.actions`} props={{ collection }} />
-            <Slot name="admin.collection.list.header.actions" props={{ collection }} />
-            {collection.slug === 'users' && (
-              <Button 
-                variant="secondary"
-                size="sm"
-                className="h-11 rounded-xl font-bold uppercase tracking-widest text-xs"
-                icon={<FrameworkIcons.More size={18} />}
-              >
-                Invite
-              </Button>
-            )}
-            <Button 
-              variant="primary" 
-              size="sm"
-              as={Link}
-              href={`/${pluginSlug}/${slug}/new`}
-              className="px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-indigo-600/30"
-              icon={<FrameworkIcons.Plus size={18} />}
-            >
-              {collection.slug === 'users' ? 'Create User' : 'New Entry'}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <CollectionListHeader 
+        collection={collection}
+        pluginSlug={pluginSlug}
+        slug={slug}
+        theme={theme}
+      />
 
       <div className="flex-1 w-full px-6 lg:px-12 py-12 space-y-8">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className={`flex-1 relative group`}>
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-              <FrameworkIcons.Search size={18} />
-            </div>
-            <input 
-              type="text"
-              placeholder={`Search ${slug}...`}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border transition-all text-sm font-bold outline-none ${
-                theme === 'dark' 
-                  ? 'bg-slate-900/50 border-slate-800 focus:border-indigo-500/50 focus:bg-slate-900 text-white shadow-2xl shadow-black/40' 
-                  : 'bg-white border-slate-200 focus:border-indigo-500 shadow-xl shadow-slate-200/50 text-slate-900'
-              }`}
-            />
-          </div>
+          <FilterBar 
+            slug={slug}
+            theme={theme}
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            statusOptions={statusOptions}
+            setPage={setPage}
+            showColumnsMenu={showColumnsMenu}
+            setShowColumnsMenu={setShowColumnsMenu}
+            columnsMenuRef={columnsMenuRef}
+            allColumns={allColumns}
+            visibleColumnIds={visibleColumnIds}
+            toggleColumn={toggleColumn}
+            selectFilterFields={selectFilterFields}
+            fieldFilters={fieldFilters}
+            setFieldFilters={setFieldFilters}
+            prettifyColumnName={prettifyColumnName}
+          />
 
-          {selectedIds.length > 0 && (
-            <div className={`flex items-center flex-wrap gap-2 p-2 rounded-2xl animate-in slide-in-from-top-2 duration-300 ${
-              theme === 'dark' ? 'bg-slate-900 border border-slate-800' : 'bg-slate-100 border border-slate-200'
-            }`}>
-              <div className="px-4 text-xs font-black uppercase tracking-widest text-indigo-500 border-r border-slate-200 dark:border-slate-800 mr-2">
-                {selectedIds.length} Selected
-              </div>
-              
-              <div className="flex items-center gap-1 group/bulk">
-                {['published', 'draft', 'archived'].map(s => (
-                  <button
-                    key={s}
-                    onClick={() => handleBulkStatusChange(s)}
-                    className={`h-10 px-4 text-[11px] font-black uppercase tracking-tighter rounded-xl transition-all ${
-                      theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-500 hover:text-indigo-600'
-                    }`}
-                  >
-                    Set {s}
-                  </button>
-                ))}
-              </div>
-
-              <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
-
-              <Button 
-                variant="secondary" 
-                size="sm" 
-                className="rounded-xl h-10 px-4 text-[12px] font-black uppercase tracking-widest"
-                icon={<FrameworkIcons.Download size={14} />}
-                onClick={() => handleExport('json', selectedIds)}
-              >
-                Export
-              </Button>
-              <Button 
-                variant="secondary" 
-                size="sm" 
-                className="rounded-xl h-10 px-4 text-[12px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600"
-                icon={<FrameworkIcons.Trash size={14} />}
-                onClick={handleBulkDelete}
-              >
-                Delete
-              </Button>
-              <button 
-                onClick={() => setSelectedIds([])}
-                className="p-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                title="Clear selection"
-              >
-                <FrameworkIcons.Close size={16} />
-              </button>
-            </div>
-          )}
+          <BulkActions 
+            theme={theme}
+            selectedIds={selectedIds}
+            statusOptions={statusOptions}
+            handleBulkStatusChange={handleBulkStatusChange}
+            handleExport={handleExport}
+            handleBulkDelete={handleBulkDelete}
+            setSelectedIds={setSelectedIds}
+          />
         </div>
 
         <div className={`rounded-3xl border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 ${
@@ -391,6 +508,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             selectable
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            expandedRowId={quickEditExpandedId}
             actions={(row) => {
               const getRowPreviewUrl = () => {
                 if (!collection) return '#';
@@ -423,6 +541,24 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
                   >
                     <FrameworkIcons.Edit size={16} />
                   </Link>
+                  <button
+                    onClick={(e) => handleQuickEditOpen(row, e)}
+                    className={`p-2.5 rounded-xl transition-all ${
+                      quickEditExpandedId === String(row.id)
+                        ? theme === 'dark'
+                          ? 'bg-indigo-500/15 text-indigo-300'
+                          : 'bg-indigo-50 text-indigo-600'
+                        : theme === 'dark'
+                          ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400'
+                          : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'
+                    }`}
+                    title={quickEditExpandedId === String(row.id) ? 'Close quick edit' : 'Quick edit inline'}
+                  >
+                    <FrameworkIcons.Down
+                      size={16}
+                      className={`${quickEditExpandedId === String(row.id) ? 'rotate-180' : ''} transition-transform`}
+                    />
+                  </button>
                   <button 
                     onClick={(e) => handleDelete(row.id, e)}
                     className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-rose-500/10 text-slate-500 hover:text-rose-400' : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'}`}
@@ -432,56 +568,42 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
                 </div>
               );
             }}
+            renderExpandedRow={(row) => {
+              const rowId = String(row.id);
+              if (quickEditExpandedId !== rowId) return null;
+              const isLoadingRow = quickEditLoadingId === rowId;
+              const isSavingRow = quickEditSavingId === rowId;
+
+              return (
+                <CollectionQuickEditCard
+                  row={row}
+                  collection={collection}
+                  resolvedSlug={resolvedSlug}
+                  quickEditFields={quickEditFields}
+                  quickEditData={quickEditData}
+                  setQuickEditData={setQuickEditData}
+                  quickEditStatus={quickEditStatus}
+                  isLoadingRow={isLoadingRow}
+                  isSavingRow={isSavingRow}
+                  onSave={handleQuickEditSave}
+                  onClose={() => setQuickEditExpandedId(null)}
+                  theme={theme}
+                  pluginSettings={pluginSettings}
+                />
+              );
+            }}
           />
         </div>
       </div>
 
-      {/* Premium Footer */}
-      <div className={`mt-auto border-t py-12 backdrop-blur-3xl transition-all duration-300 ${
-        theme === 'dark' 
-          ? 'bg-slate-950/40 border-slate-800' 
-          : 'bg-slate-50/50 border-slate-100'
-      }`}>
-        <div className="w-full px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2.5">
-                <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
-                <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                  Data Management Node // {slug.toUpperCase()}
-                </span>
-              </div>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-tight opacity-70 text-center md:text-left">
-                Connected to {total} records in the system cluster.
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-10 text-xs font-black uppercase tracking-widest text-slate-400">
-              <button 
-                onClick={() => handleExport('json')}
-                className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
-              >
-                Export JSON
-              </button>
-              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <label 
-                className="cursor-pointer hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
-              >
-                Bulk Import
-                <input type="file" className="hidden" accept=".json" onChange={handleImport} />
-              </label>
-              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <a 
-                href={`${api.getBaseUrl()}${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}`} 
-                target="_blank" 
-                className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
-              >
-                API Endpoint
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ListFooter 
+        theme={theme}
+        slug={slug}
+        total={total}
+        resolvedSlug={resolvedSlug}
+        handleExport={handleExport}
+        handleImport={handleImport}
+      />
     </div>
   );
 }

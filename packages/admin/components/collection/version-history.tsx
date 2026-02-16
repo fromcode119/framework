@@ -82,7 +82,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
       <Card title="Version History">
         <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
           {revisions.length === 0 && !loading && (
-            <p className="text-xs text-slate-400 font-bold italic py-2">No versions recorded yet.</p>
+            <p className="text-xs text-slate-400 font-medium italic py-2">No versions recorded yet.</p>
           )}
           {revisions.map((v, i) => (
             <div 
@@ -94,8 +94,8 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className={`text-[12px] font-black px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
-                        <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white truncate">{v.user}</span>
+                        <span className={`text-[12px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>v{v.version}</span>
+                        <span className="text-xs font-semibold tracking-wide text-slate-900 dark:text-white truncate">{v.user}</span>
                       </div>
                       {v.id !== activeVersionId && (
                         <button 
@@ -103,15 +103,15 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
                             e.stopPropagation(); 
                             onRestore(v.changes, v.id);
                           }}
-                          className="text-xs font-black uppercase text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
+                          className="text-[10px] font-semibold uppercase tracking-wider text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
                         >
                           <FrameworkIcons.Refresh size={8} />
                           Restore
                         </button>
                       )}
                   </div>
-                  <p className="text-xs text-slate-500 font-bold truncate mt-0.5">{v.action}</p>
-                  <p className="text-[12px] text-slate-400 font-black uppercase tracking-widest mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
+                  <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{v.action}</p>
+                  <p className="text-[10px] text-slate-400 font-medium tracking-wide mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
                 </div>
             </div>
           ))}
@@ -125,7 +125,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
           {hasMore && !loading && (
             <button 
               onClick={loadMore}
-              className="w-full py-3 text-[12px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
+              className="w-full py-3 text-[10px] font-semibold uppercase tracking-widest text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
             >
               Load More History
             </button>
@@ -139,8 +139,8 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
            <Card className="relative w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
               <div className="flex justify-between items-center mb-6">
                  <div>
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-indigo-500">Revision Details</h2>
-                    <p className="text-xs text-slate-500 font-bold mt-1">{selectedRevision.date.toLocaleString()} by {selectedRevision.user}</p>
+                    <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Revision Details</h2>
+                    <p className="text-xs text-slate-500 font-medium mt-1">{selectedRevision.date.toLocaleString()} by {selectedRevision.user}</p>
                  </div>
                  <button onClick={() => setSelectedRevision(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <FrameworkIcons.Close size={20} />
@@ -148,14 +148,14 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
               </div>
 
               <div className={`rounded-xl p-4 mb-6 max-h-[40vh] overflow-y-auto ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'}`}>
-                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Snapshot Changes</h3>
+                 <h3 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">Snapshot Changes</h3>
                  <div className="space-y-3">
                     {Object.entries(selectedRevision.changes)
                       .filter(([key]) => !['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key))
                       .map(([key, val]) => (
                        <div key={key} className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-2 last:border-0">
-                          <span className="text-[12px] font-black text-indigo-500 uppercase">{key}</span>
-                          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">
+                          <span className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider">{key}</span>
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">
                             {typeof val === 'object' ? JSON.stringify(val) : String(val)}
                           </span>
                        </div>
@@ -167,7 +167,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
                  <div className="flex items-center gap-2">
                     <Button 
                       variant="ghost" 
-                      className="text-xs font-black uppercase tracking-widest disabled:opacity-30" 
+                      className="text-[10px] font-semibold uppercase tracking-widest disabled:opacity-30" 
                       disabled={currentRevIndex >= revisions.length - 1}
                       onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
                     >
@@ -176,7 +176,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="text-xs font-black uppercase tracking-widest disabled:opacity-30" 
+                      className="text-[10px] font-semibold uppercase tracking-widest disabled:opacity-30" 
                       disabled={currentRevIndex <= 0}
                       onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
                     >
@@ -185,7 +185,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
                     </Button>
                  </div>
                  <Button 
-                    className="px-8 text-xs font-black uppercase tracking-widest"
+                    className="px-8 text-[10px] font-semibold uppercase tracking-widest"
                     onClick={() => {
                        onRestore(selectedRevision.changes, selectedRevision.id);
                        setSelectedRevision(null);

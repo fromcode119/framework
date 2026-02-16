@@ -20,7 +20,7 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
         {Icon ? <Icon size={20} /> : <div className="w-5 h-5" />}
       </div>
       <div>
-        <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{title}</h3>
+        <h3 className={`font-semibold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{title}</h3>
         <p className="text-sm text-slate-500 mt-1 max-w-sm leading-relaxed">{description}</p>
       </div>
     </div>
@@ -100,10 +100,10 @@ export default function SecuritySettingsPage() {
       }`}>
         <div className="flex items-center gap-6">
           <div>
-            <h1 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+            <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
               Security & Defense
             </h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
+            <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
               Runtime isolation and protection
             </p>
           </div>
@@ -111,13 +111,13 @@ export default function SecuritySettingsPage() {
           <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-white/5">
               <button 
                 onClick={() => setActiveTab('dashboard')}
-                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === 'dashboard' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === 'dashboard' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
               >
                 Dashboard
               </button>
               <button 
                 onClick={() => setActiveTab('settings')}
-                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === 'settings' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === 'settings' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
               >
                 Settings
               </button>
@@ -142,31 +142,31 @@ export default function SecuritySettingsPage() {
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="p-6 relative overflow-hidden">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sandbox Contexts</span>
+                        <span className="text-[10px] font-semibold tracking-wide text-slate-500">Sandbox Contexts</span>
                         <FrameworkIcons.Box size={16} className="text-indigo-500" />
                     </div>
-                    <div className="text-3xl font-black">{stats.sandbox?.activeContexts || 0}</div>
-                    <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase">V8 Isolated Instances</div>
+                    <div className="text-3xl font-bold">{stats.sandbox?.activeContexts || 0}</div>
+                    <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">V8 Isolated Instances</div>
                 </Card>
                 <Card className="p-6 relative overflow-hidden">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Memory Usage</span>
+                        <span className="text-[10px] font-semibold tracking-wide text-slate-500">Memory Usage</span>
                         <FrameworkIcons.Zap size={16} className="text-amber-500" />
                     </div>
-                    <div className="text-3xl font-black">
+                    <div className="text-3xl font-bold">
                         {stats.sandbox?.heap ? Math.round(stats.sandbox.heap.used_heap_size / (1024 * 1024)) : 0} MB
                     </div>
-                    <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Aggregate Sandbox Heap</div>
+                    <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Aggregate Sandbox Heap</div>
                 </Card>
                 <Card className="p-6 relative overflow-hidden">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Threat Alerts</span>
+                        <span className="text-[10px] font-semibold tracking-wide text-slate-500">Threat Alerts</span>
                         <FrameworkIcons.ShieldAlert size={16} className={stats.monitor?.violations24h > 0 ? 'text-red-500' : 'text-green-500'} />
                     </div>
-                    <div className={`text-3xl font-black ${stats.monitor?.violations24h > 0 ? 'text-red-500' : ''}`}>
+                    <div className={`text-3xl font-bold ${stats.monitor?.violations24h > 0 ? 'text-red-500' : ''}`}>
                         {stats.monitor?.violations24h || 0}
                     </div>
-                    <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Policy Violations (24h)</div>
+                    <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Policy Violations (24h)</div>
                 </Card>
              </div>
 
@@ -176,14 +176,14 @@ export default function SecuritySettingsPage() {
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
                             <div className="flex items-center gap-3">
                                 <FrameworkIcons.Fingerprint size={18} className="text-indigo-500" />
-                                <span className="text-xs font-black uppercase tracking-tight">Integrity Checking</span>
+                                <span className="text-xs font-semibold tracking-wide">Integrity Checking</span>
                             </div>
                             <Badge variant="success">Active</Badge>
                         </div>
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
                             <div className="flex items-center gap-3">
                                 <FrameworkIcons.Key size={18} className="text-indigo-500" />
-                                <span className="text-xs font-black uppercase tracking-tight">Signature Enforcement</span>
+                                <span className="text-xs font-semibold tracking-wide">Signature Enforcement</span>
                             </div>
                             <Badge variant={stats.signatureEnforced ? 'success' : 'gray'}>
                                 {stats.signatureEnforced ? 'Enforced' : 'Optional'}
@@ -192,14 +192,14 @@ export default function SecuritySettingsPage() {
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
                             <div className="flex items-center gap-3">
                                 <FrameworkIcons.Eye size={18} className="text-indigo-500" />
-                                <span className="text-xs font-black uppercase tracking-tight">Anomaly Detection</span>
+                                <span className="text-xs font-semibold tracking-wide">Anomaly Detection</span>
                             </div>
                             <Badge variant="success">Active</Badge>
                         </div>
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
                             <div className="flex items-center gap-3">
                                 <FrameworkIcons.Shield size={18} className="text-green-500" />
-                                <span className="text-xs font-black uppercase tracking-tight">Hardening Level</span>
+                                <span className="text-xs font-semibold tracking-wide">Hardening Level</span>
                             </div>
                             <Badge variant="success">Production</Badge>
                         </div>
@@ -212,8 +212,8 @@ export default function SecuritySettingsPage() {
                            stats.monitor.suspiciousPlugins.map((p: any) => (
                                <div key={p.slug} className="flex items-center justify-between p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
                                    <div className="flex flex-col">
-                                       <span className="text-[11px] font-black uppercase tracking-widest">{p.slug}</span>
-                                       <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">{p.count} denials recorded</span>
+                                       <span className="text-[11px] font-semibold tracking-wide">{p.slug}</span>
+                                       <span className="text-[10px] text-slate-500 font-medium tracking-wide mt-1">{p.count} denials recorded</span>
                                    </div>
                                     <div className="h-2 w-2 rounded-full bg-red-500" />
                                </div>
@@ -221,7 +221,7 @@ export default function SecuritySettingsPage() {
                         ) : (
                             <div className="p-10 flex flex-col items-center justify-center opacity-40">
                                 <FrameworkIcons.Check size={32} className="text-green-500 mb-3" />
-                                <p className="text-[10px] font-black uppercase tracking-widest">No suspicious patterns detected</p>
+                                <p className="text-[10px] font-semibold tracking-wide">No suspicious patterns detected</p>
                             </div>
                         )}
                     </div>

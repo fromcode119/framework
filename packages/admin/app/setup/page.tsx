@@ -84,7 +84,7 @@ export default function SetupPage() {
             <div className="h-16 w-16 border-[5px] border-indigo-600/10 rounded-3xl"></div>
             <div className="absolute inset-0 h-16 w-16 border-[5px] border-indigo-600 border-t-transparent rounded-3xl animate-spin"></div>
           </div>
-          <span className="text-[11px] font-black text-indigo-500 uppercase tracking-[0.2em] animate-pulse">Initializing Ecosystem...</span>
+          <span className="text-[11px] font-semibold text-indigo-500 tracking-wide animate-pulse">Initializing Ecosystem...</span>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ export default function SetupPage() {
           <div className="inline-flex items-center justify-center w-24 h-24 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(79,70,229,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 transform hover:scale-105 transition-all duration-500 border-[6px] border-white dark:border-slate-800 outline outline-1 outline-indigo-50/50 dark:outline-slate-800">
             <FrameworkIcons.Orbit size={ICON_SIZE} className="text-indigo-600 dark:text-indigo-500 animate-[spin_10s_linear_infinite]" />
           </div>
-          <h1 className="text-5xl font-black tracking-tighter mb-4 text-slate-950 dark:text-white">
+          <h1 className="text-4xl font-semibold tracking-tight mb-4 text-slate-950 dark:text-white">
             System Setup
           </h1>
           <p className="text-slate-500 font-medium text-lg leading-relaxed max-w-[340px] mx-auto">Create the root administrator account to unlock your digital core.</p>
@@ -105,7 +105,7 @@ export default function SetupPage() {
 
         <div className="p-10 sm:p-12 rounded-[3.5rem] border shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] dark:shadow-black/60 animate-in fade-in slide-in-from-bottom-8 duration-1000 bg-white dark:bg-slate-900/50 border-slate-100 dark:border-slate-800">
           {error && (
-            <div className="mb-8 p-5 rounded-3xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 text-rose-600 text-[13px] font-black animate-in zoom-in duration-300 flex items-center gap-4">
+            <div className="mb-8 p-5 rounded-3xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 text-rose-600 text-[13px] font-semibold animate-in zoom-in duration-300 flex items-center gap-4">
               <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center">
                 <FrameworkIcons.Zap size={18} className="fill-current" />
               </div>
@@ -159,7 +159,7 @@ export default function SetupPage() {
                   <FrameworkIcons.Shield size={20} />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black mb-1 uppercase tracking-tight text-indigo-900 dark:text-indigo-300">Omnipotent Privilege</h4>
+                  <h4 className="text-sm font-semibold mb-1 tracking-wide text-indigo-900 dark:text-indigo-300">Omnipotent Privilege</h4>
                   <p className="text-[11px] text-slate-500 font-medium leading-relaxed italic">
                     This account holds master keys to all infrastructure, deployments, and sensitive user telemetry.
                   </p>
@@ -169,7 +169,7 @@ export default function SetupPage() {
 
             <Button 
               type="submit" 
-              className="w-full py-7 text-xl font-black transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-indigo-600/30 rounded-3xl"
+              className="w-full py-7 text-xl font-semibold transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-indigo-600/30 rounded-3xl"
               isLoading={isLoading}
             >
               Initialize Framework
@@ -180,7 +180,7 @@ export default function SetupPage() {
 
         <div className="text-center mt-12 flex items-center justify-center gap-6 opacity-40 text-slate-500">
            <div className="h-[2px] w-12 bg-slate-200 dark:bg-slate-800 rounded-full" />
-           <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+           <span className="text-[10px] font-semibold tracking-wide">
              v{APP_VERSION} {APP_NAME} {APP_CHANNEL}
            </span>
            <div className="h-[2px] w-12 bg-slate-200 dark:bg-slate-800 rounded-full" />

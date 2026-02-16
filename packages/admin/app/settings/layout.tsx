@@ -27,7 +27,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       }`}>
         <div className="p-8 space-y-8">
           <div>
-            <h2 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${
+            <h2 className={`text-[10px] font-semibold tracking-widest mb-6 ${
               theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
             }`}>
               Configuration Menu
@@ -52,7 +52,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                     <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                       <Icon size={18} />
                     </div>
-                    <span className="text-[13px] font-bold tracking-tight">{item.label}</span>
+                    <span className="text-[13px] font-semibold tracking-tight">{item.label}</span>
                   </Link>
                 );
               })}
@@ -62,7 +62,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           <div className={`pt-8 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
              <div className="flex items-center gap-3 px-4">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                <span className={`text-[10px] font-black uppercase tracking-widest ${
+                <span className={`text-[10px] font-semibold tracking-wide ${
                   theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
                 }`}>
                   System Online

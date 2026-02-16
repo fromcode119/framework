@@ -367,10 +367,10 @@ export default function RoutingPage() {
         theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
       }`}>
         <div>
-          <h1 className={`text-xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+          <h1 className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
             Routing
           </h1>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-60">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide opacity-60">
             Homepage Target & Permalink Configuration
           </p>
         </div>
@@ -388,7 +388,7 @@ export default function RoutingPage() {
         <Card title="Homepage Target">
           <div className="space-y-5 py-2">
             <div>
-              <label className={`block text-[11px] font-black uppercase tracking-widest mb-3 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+              <label className={`block text-[11px] font-semibold uppercase tracking-wide mb-3 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                 Root Route (`/`)
               </label>
               <Select
@@ -406,7 +406,7 @@ export default function RoutingPage() {
               <div className={`mt-3 rounded-xl border px-3 py-2 text-[11px] ${
                 theme === 'dark' ? 'border-slate-800 bg-slate-900/50 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'
               }`}>
-                <span className="font-black uppercase tracking-wider text-[10px] opacity-70">Resolved Homepage Source</span>
+                <span className="font-semibold uppercase tracking-wide text-[10px] opacity-70">Resolved Homepage Source</span>
                 <div className="mt-1 font-semibold">{resolvedSourceLabel}</div>
               </div>
             </div>
@@ -416,7 +416,7 @@ export default function RoutingPage() {
         <Card title="Permalink Structure">
           <div className="space-y-8 py-4">
             <div>
-              <label className={`block text-[11px] font-black uppercase tracking-widest mb-3 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+              <label className={`block text-[11px] font-semibold uppercase tracking-wide mb-3 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                 Common Structures
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -433,7 +433,7 @@ export default function RoutingPage() {
                     }`}
                   >
                     <div className="flex flex-col gap-1">
-                      <span className={`text-xs font-black uppercase tracking-widest ${
+                      <span className={`text-xs font-semibold uppercase tracking-wide ${
                         structure === preset.value ? 'text-indigo-400' : 'text-slate-500'
                       }`}>
                         {preset.label}
@@ -451,7 +451,7 @@ export default function RoutingPage() {
             <div className={`p-6 rounded-2xl border-2 border-dashed ${
               theme === 'dark' ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/50'
             }`}>
-              <label className={`block text-[11px] font-black uppercase tracking-widest mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+              <label className={`block text-[11px] font-semibold uppercase tracking-wide mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                 Custom Structure
               </label>
               <div className="flex gap-3">
@@ -491,7 +491,7 @@ export default function RoutingPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <code className="text-indigo-500 font-black text-sm px-2 py-1 bg-indigo-500/10 rounded-lg">
+                  <code className="text-indigo-500 font-semibold text-sm px-2 py-1 bg-indigo-500/10 rounded-lg">
                     {tag.label}
                   </code>
                   <FrameworkIcons.Plus size={14} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />

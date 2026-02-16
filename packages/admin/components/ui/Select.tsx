@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { RootFramework } from '@fromcode/react';
 import { FrameworkIcons } from '@/lib/icons';
+import { getFieldClasses, UI_TEXT } from '@/lib/ui';
 
 interface Option {
   label: string;
@@ -19,8 +20,10 @@ interface SelectProps {
   disabled?: boolean;
   theme?: string;
   className?: string;
+  triggerClassName?: string;
   label?: string;
   searchable?: boolean;
+  size?: 'sm' | 'md' | 'lg';
   onSearchChange?: (value: string) => void;
 }
 
@@ -32,8 +35,10 @@ export const Select = ({
   disabled = false, 
   theme = 'light',
   className = '',
+  triggerClassName = '',
   label,
   searchable = true,
+  size = 'md',
   onSearchChange
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -122,18 +127,14 @@ export const Select = ({
   }, [isOpen, onSearchChange]);
 
   return (
-    <div className={`flex flex-col gap-2 w-full ${className}`}>
-      {label && <label className="text-xs font-bold text-slate-500">{label}</label>}
+    <div className={`flex flex-col gap-1 w-full ${className}`}>
+      {label && <label className={UI_TEXT.LABEL}>{label}</label>}
       <div className="relative w-full" ref={triggerRef}>
         <button
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`w-full rounded-xl py-1.5 pl-4 pr-4 outline-none border transition-all text-sm font-bold flex items-center justify-between text-left group overflow-hidden relative shadow-sm ${
-            theme === 'dark' 
-              ? 'bg-slate-900/60 border-slate-800 text-white hover:border-indigo-500/50' 
-              : 'bg-white border-slate-200 text-slate-900 hover:border-indigo-500'
-          } ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`${getFieldClasses(size, `flex items-center justify-between text-left group overflow-hidden relative ${triggerClassName}`)} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <span className={`truncate relative z-10 ${!selectedOption ? 'text-slate-400 font-medium' : ''}`}>
              <div className="flex flex-col leading-none">
@@ -163,17 +164,17 @@ export const Select = ({
                 width: coords.width,
                 zIndex: 9999
               }}
-              className={`max-h-[300px] flex flex-col rounded-[1.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-top-2 duration-300 overflow-hidden ${
+              className={`max-h-[300px] flex flex-col rounded-lg border shadow-2xl animate-in zoom-in-95 slide-in-from-top-2 duration-300 overflow-hidden ${
                 theme === 'dark' 
                   ? 'bg-slate-950/95 border-slate-800/80 backdrop-blur-3xl' 
                   : 'bg-white/95 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
               }`}
             >
               {searchable && (
-                <div className="p-2.5 border-b border-slate-100 dark:border-slate-800">
+                <div className="p-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="relative group">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-                      <FrameworkIcons.Search size={14} />
+                      <FrameworkIcons.Search size={12} />
                     </div>
                     <input
                       ref={searchInputRef}
@@ -185,20 +186,16 @@ export const Select = ({
                         setSearchValue(nextValue);
                         onSearchChange?.(nextValue);
                       }}
-                      className={`w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border outline-none transition-all ${
-                        theme === 'dark'
-                          ? 'bg-slate-900/50 border-slate-800 focus:border-indigo-500/50 text-white'
-                          : 'bg-slate-50 border-slate-100 focus:border-indigo-500'
-                      }`}
+                      className={getFieldClasses('sm', 'pl-8')}
                     />
                   </div>
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto p-1.5 scrollbar-hide">
+              <div className="flex-1 overflow-y-auto p-1 scrollbar-hide">
                 {filteredOptions.length === 0 ? (
                   <div className="px-4 py-8 text-center">
-                    <p className="text-xs font-bold text-slate-500 opacity-50">No results found</p>
+                    <p className="text-[11px] font-semibold text-slate-500 tracking-wide opacity-50">No results found</p>
                   </div>
                 ) : (
                   groupedFilteredOptions.map((group) => {
@@ -215,9 +212,9 @@ export const Select = ({
                     const showSectionHeaders = sections.length > 1 || (sections.length === 1 && sections[0].name !== '');
 
                     return (
-                    <div key={group.name} className="mb-1">
+                    <div key={group.name} className="mb-0.5 last:mb-0">
                       {showGroupHeaders && (
-                        <div className={`px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest ${
+                        <div className={`px-3.5 pt-2 pb-1 text-[10px] font-semibold tracking-wide ${
                           theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
                         }`}>
                           {group.name}
@@ -226,7 +223,7 @@ export const Select = ({
                       {sections.map((section) => (
                         <div key={`${group.name}:${section.name || 'default'}`}>
                           {showSectionHeaders && section.name ? (
-                            <div className={`px-4 pt-1 pb-1 text-[10px] font-bold tracking-wide ${
+                            <div className={`px-4 pt-1 pb-1 text-[10px] font-semibold tracking-wide ${
                               theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
                             }`}>
                               {section.name}
@@ -241,19 +238,19 @@ export const Select = ({
                             onChange(finalVal);
                             setIsOpen(false);
                           }}
-                          className={`w-full text-left ${section.name ? 'pl-8 pr-4' : 'px-4'} py-3 text-sm rounded-xl transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
+                          className={`w-full text-left ${section.name ? 'pl-8 pr-3' : 'px-3.5'} py-2.5 text-[13px] rounded-lg transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
                             (selectedOption && selectedOption === opt)
                               ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                               : theme === 'dark'
-                                ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                                ? 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
                                 : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
                           }`}
                         >
-                          <span className={`relative z-10 font-bold truncate`}>
+                          <span className={`relative z-10 font-semibold truncate`}>
                             {opt.label}
                           </span>
                           {(selectedOption && selectedOption === opt) ? (
-                            <FrameworkIcons.Check size={14} className="relative z-10 flex-shrink-0" />
+                            <FrameworkIcons.Check size={12} className="relative z-10 flex-shrink-0" />
                           ) : (
                             <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100 flex-shrink-0" />
                           )}
