@@ -108,10 +108,10 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
               <FrameworkIcons.Left size={20} strokeWidth={2} />
             </Button>
             <div>
-              <h1 className={`text-2xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 Edit Role: {formData.name}
               </h1>
-              <p className="text-slate-500 font-semibold text-sm tracking-tight opacity-70">
+              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
                 Modify existing permission sets and metadata.
               </p>
             </div>
@@ -141,9 +141,9 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 pl-1">Description</label>
+                  <label className="text-[10px] font-bold uppercase tracking-tight text-slate-400 pl-1">Description</label>
                   <textarea 
-                    className={`w-full h-32 rounded-3xl p-6 border outline-none transition-all text-sm font-medium ${
+                    className={`w-full h-32 rounded-3xl p-6 border outline-none transition-all text-sm font-bold ${
                       theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
                     }`}
                     placeholder="Optional description of what this role allows..."
@@ -157,8 +157,8 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
             <Card title="Permissions">
               <div className="space-y-2">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Available Options</span>
-                  <span className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wide">{formData.permissions.length} Selected</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Available Options</span>
+                  <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-tight">{formData.permissions.length} Selected</span>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -173,10 +173,10 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
                       }`}
                     >
                       <div className="flex flex-col gap-0.5">
-                        <span className={`text-xs font-semibold tracking-tight ${formData.permissions.includes(perm.name) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
+                        <span className={`text-xs font-bold tracking-tight ${formData.permissions.includes(perm.name) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
                           {perm.name}
                         </span>
-                        <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide opacity-60">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight opacity-60">
                           {perm.group || 'General'}
                         </span>
                       </div>
@@ -199,12 +199,12 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
               <div className="space-y-6">
                 <div className="bg-indigo-500/5 rounded-2.5xl p-6 border border-indigo-500/10 space-y-4">
                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide">Role Type</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Role Type</span>
                       <Badge variant="amber">{formData.type}</Badge>
                    </div>
                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide">Selected Scope</span>
-                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Selected Scope</span>
+                      <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                         {formData.permissions.length === 0 ? 'No permissions' : `${formData.permissions.length} actions selected`}
                       </span>
                    </div>
@@ -212,14 +212,14 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
 
                 <Button 
                   type="submit"
-                  className="w-full py-3 text-[10px] font-semibold uppercase tracking-wide rounded-xl shadow-lg shadow-indigo-600/10 text-white"
+                  className="w-full h-11 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-lg shadow-indigo-600/10 text-white"
                   isLoading={loading}
                 >
                   Save
                 </Button>
                 <Button 
                   variant="ghost" 
-                  className="w-full h-12 font-semibold text-slate-400"
+                  className="w-full h-11 font-bold text-slate-400"
                   onClick={() => router.push('/users/roles')}
                 >
                   Cancel
@@ -228,7 +228,7 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
             </Card>
 
             <Card title="Security Note">
-               <p className="text-xs text-slate-500 leading-relaxed italic">
+               <p className="text-xs text-slate-500 font-bold leading-relaxed italic">
                  Changes to role permissions are applied immediately. Users currently logged in with this role may need to refresh their session to see changes.
                </p>
             </Card>

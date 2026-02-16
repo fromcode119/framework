@@ -108,21 +108,21 @@ export default function AdminPage() {
                 <div className="h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400">
                   <FrameworkIcons.Layout size={20} strokeWidth={2.5} />
                 </div>
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                   Hello, {user?.email?.split('@')[0] || 'Administrator'}
                 </h1>
               </div>
-              <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70">
+              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
                 System status is <span className="text-emerald-500">Optimized</span> • {user?.email}
               </p>
             </div>
             
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex flex-col items-end pr-4 border-r border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] font-semibold tracking-wide text-slate-400">Current Session</span>
-                <span className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">Authenticated via UI</span>
+                <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Current Session</span>
+                <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">Authenticated via UI</span>
               </div>
-              <div className="px-5 py-3 rounded-2xl border flex items-center gap-3 text-[11px] font-semibold tracking-wide shadow-sm transition-all hover:scale-[1.02] bg-white border-slate-100 text-slate-500 hover:text-indigo-600 hover:shadow-indigo-500/5 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
+              <div className="px-5 h-11 rounded-2xl border flex items-center gap-3 text-[11px] font-bold tracking-tight shadow-sm transition-all hover:scale-[1.02] bg-white border-slate-100 text-slate-500 hover:text-indigo-600 hover:shadow-indigo-500/5 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                 <FrameworkIcons.Clock size={16} className="text-indigo-500" />
                 {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               </div>
@@ -141,10 +141,10 @@ export default function AdminPage() {
                   <FrameworkIcons.Refresh size={24} className="animate-spin-slow" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <h4 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                     Framework Update Available
                   </h4>
-                  <p className="text-sm font-medium text-slate-500">
+                  <p className="text-sm font-bold text-slate-500 tracking-tight">
                     A new version of Fromcode Core <span className="font-bold text-amber-600">v{updateAvailable.latest}</span> is available.
                   </p>
                 </div>
@@ -153,7 +153,7 @@ export default function AdminPage() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-[10px] font-semibold tracking-wide px-6"
+                  className="text-[11px] font-bold tracking-tight px-6 uppercase"
                   onClick={() => setUpdateAvailable(null)}
                 >
                   Dismiss
@@ -161,7 +161,7 @@ export default function AdminPage() {
                 <Button 
                   variant="primary" 
                   size="sm" 
-                  className="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-semibold tracking-wide px-8 py-3 rounded-xl shadow-lg shadow-amber-600/30"
+                  className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold tracking-tight px-8 h-11 rounded-xl shadow-lg shadow-amber-600/30 uppercase"
                   onClick={() => window.location.href = '/settings/updates'}
                 >
                   View Update Details
@@ -198,7 +198,7 @@ export default function AdminPage() {
             
             <div className="flex items-center gap-4">
               <div className="h-8 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
-              <h3 className="text-[11px] font-semibold tracking-widest text-slate-900/40 dark:text-slate-400">Content Collections</h3>
+              <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Content Collections</h3>
               <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
             </div>
 
@@ -226,8 +226,8 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                           <p className="text-xs font-semibold tracking-wide text-slate-400">{s.name || colShortSlug}</p>
-                           <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold tracking-wide ${
+                           <p className="text-xs font-bold tracking-tight text-slate-400 uppercase">{s.name || colShortSlug}</p>
+                           <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold tracking-tight uppercase ${
                              s.system 
                                ? 'bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400' 
                                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
@@ -235,7 +235,7 @@ export default function AdminPage() {
                              {s.system ? 'Core' : displayPluginSlug}
                            </span>
                         </div>
-                        <h4 className="text-2xl font-semibold tracking-tight mt-0.5 text-slate-900 dark:text-white">{s.count}</h4>
+                        <h4 className="text-2xl font-bold tracking-tight mt-0.5 text-slate-900 dark:text-white">{s.count}</h4>
                       </div>
                     </div>
                     <div className="p-2 rounded-full h-10 w-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
@@ -248,7 +248,7 @@ export default function AdminPage() {
 
             <div className="flex items-center gap-4">
               <div className="h-8 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
-              <h3 className="text-[11px] font-semibold tracking-widest text-slate-900/40 dark:text-slate-400">Recent Activity</h3>
+              <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Recent Activity</h3>
               <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
             </div>
 
@@ -256,14 +256,14 @@ export default function AdminPage() {
             <Card noPadding className="overflow-hidden border-0 bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] ring-1 ring-slate-100 dark:bg-transparent dark:shadow-none dark:ring-0">
               <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 dark:border-slate-800">
                  <div>
-                  <h3 className="font-semibold text-lg tracking-tight text-slate-900 dark:text-white">System Events</h3>
-                  <p className="text-[11px] text-slate-500 mt-1 font-medium tracking-wide opacity-60">Real-time lifecycle telemetry</p>
+                  <h3 className="font-bold text-lg tracking-tight text-slate-900 dark:text-white uppercase">System Events</h3>
+                  <p className="text-[11px] text-slate-500 mt-1 font-bold tracking-tight opacity-60 uppercase">Real-time lifecycle telemetry</p>
                  </div>
                  <Button 
                    variant="ghost" 
                    size="sm" 
                    onClick={() => window.location.href = '/plugins'} 
-                   className="text-[10px] font-semibold tracking-wide px-4 group text-indigo-600 bg-indigo-50/50 hover:bg-indigo-600 hover:text-white rounded-xl transition-all dark:text-indigo-400 dark:bg-transparent dark:hover:bg-slate-800"
+                   className="text-[11px] font-bold tracking-tight px-4 group text-indigo-600 bg-indigo-50/50 hover:bg-indigo-600 hover:text-white rounded-xl transition-all dark:text-indigo-400 dark:bg-transparent dark:hover:bg-slate-800 uppercase"
                  >
                     View All <FrameworkIcons.ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
                  </Button>
@@ -284,16 +284,16 @@ export default function AdminPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-4">
-                          <p className="text-[13px] font-semibold truncate leading-relaxed text-slate-700 group-hover:text-slate-900 dark:text-slate-200 dark:group-hover:text-white">
+                          <p className="text-[13px] font-bold truncate leading-relaxed text-slate-700 group-hover:text-slate-900 dark:text-slate-200 dark:group-hover:text-white tracking-tight">
                             {item.title}
                           </p>
-                          <span className="text-[9px] font-semibold tracking-wide whitespace-nowrap px-2 py-1 rounded-md bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                          <span className="text-[9px] font-bold tracking-tight whitespace-nowrap px-2 py-1 rounded-md bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 uppercase">
                             {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-1.5">
-                          <span className="text-[9px] font-semibold tracking-wide opacity-40 text-slate-900 dark:text-slate-400">Source:</span>
-                          <span className="text-[10px] font-semibold tracking-wide transition-colors text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-white">
+                          <span className="text-[9px] font-bold tracking-tight opacity-40 text-slate-900 dark:text-slate-400 uppercase">Source:</span>
+                          <span className="text-[10px] font-bold tracking-tight transition-colors text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-white uppercase">
                             {item.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : 'System'}
                           </span>
                         </div>
@@ -353,14 +353,14 @@ export default function AdminPage() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-semibold tracking-widest text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400 uppercase">
                   {APP_NAME} Infrastructure // v{APP_VERSION} {APP_CHANNEL}
                 </span>
               </div>
-              <p className="text-[9px] font-medium text-slate-400 italic">Connected to distributed cluster node. All systems operational.</p>
+              <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-tight">Connected to distributed cluster node. All systems operational.</p>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-semibold tracking-wide text-slate-400">
+            <div className="flex items-center gap-4 text-[10px] font-bold tracking-tight text-slate-400 uppercase">
               <span className="hover:text-indigo-500 cursor-pointer transition-colors">Documentation</span>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
               <span className="hover:text-indigo-500 cursor-pointer transition-colors">Framework Roadmap</span>
