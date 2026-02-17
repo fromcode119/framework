@@ -32,7 +32,7 @@ export default function InstalledPluginsPage() {
   async function fetchPlugins() {
     try {
       const [data, reg] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.LIST),
+        api.get(`${ENDPOINTS.PLUGINS.LIST}?refresh=1`),
         api.get(ENDPOINTS.PLUGINS.MARKETPLACE)
       ]);
       setPlugins(Array.isArray(data) ? data : []);

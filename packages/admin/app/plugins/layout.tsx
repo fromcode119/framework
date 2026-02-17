@@ -16,7 +16,10 @@ export default function PluginsLayout({ children }: { children: React.ReactNode 
   ];
 
   const isMarketplace = pathname.startsWith('/plugins/marketplace');
-  const isInstalled = pathname.startsWith('/plugins/installed') || (pathname.startsWith('/plugins/') && !isMarketplace);
+  const isInstalled =
+    pathname === '/plugins' ||
+    pathname.startsWith('/plugins/installed') ||
+    (pathname.startsWith('/plugins/') && !isMarketplace);
   const activeTab = isMarketplace ? tabs[1] : tabs[0];
 
   return (

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PluginManager, ThemeManager, SystemUpdateService } from '@fromcode/core';
+import { PluginManager, ThemeManager, SystemUpdateService, parseBoolean } from '@fromcode/core';
 import { RESTController } from './rest-controller';
 import { ShortcodeService } from '../services/shortcode-service';
 import { SystemService } from '../services/system-service';
@@ -339,7 +339,7 @@ export class SystemController {
       if (!slug) return res.status(400).json({ error: 'Slug is required' });
 
       const isAdmin = (req as any).user?.roles?.includes('admin');
-      const isPreview = req.query.preview === '1' || req.query.draft === '1';
+      const isPreview = parseBoolean(req.query.preview) || parseBoolean(req.query.draft);
       
       const result = await this.resolution.resolveSlug(slug, {
         user: (req as any).user,
