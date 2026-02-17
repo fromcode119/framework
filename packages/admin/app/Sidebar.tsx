@@ -110,19 +110,20 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
           onClick={handleClick}
           className={`flex items-center transition-all duration-300 ${
             isHighlighted 
-              ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' 
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
               : isChildActive
-                ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-sm shadow-indigo-200/50 dark:bg-indigo-500/10 dark:text-indigo-400 dark:shadow-none'
-                : 'text-slate-500 hover:bg-indigo-50/50 hover:text-indigo-600 hover:shadow-indigo-500/5 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'
-          } ${isMini ? 'justify-center w-12 h-12 rounded-full' : 'flex-1 justify-between px-3.5 py-2 rounded-lg'}`}
+                ? 'bg-indigo-50 text-indigo-600 font-semibold dark:bg-indigo-500/10 dark:text-indigo-400'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'
+          } ${isMini ? 'flex-col justify-center w-14 h-14 rounded-xl gap-1' : 'flex-1 justify-between px-3.5 py-2 rounded-lg'}`}
         >
           <div className={`flex items-center justify-center ${isMini ? 'w-full' : 'gap-3'}`}>
             <span className={`${isHighlighted ? 'text-white' : isChildActive ? 'text-indigo-500' : 'text-slate-500 group-hover:text-indigo-500 transition-colors'} flex items-center justify-center`}>
               {icon}
             </span>
+            
             {!isMini && (
               <div className="flex flex-col">
-                <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-bold' : 'font-bold'} tracking-tight`}>
+                <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-bold' : 'font-bold'} tracking-tight whitespace-nowrap`}>
                   {label}
                 </span>
                 {version && (
@@ -133,16 +134,13 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
               </div>
             )}
           </div>
-        </Link>
 
-        {isMini && (
-          <div className="absolute left-full ml-4 px-3 py-2 rounded-lg text-[10px] font-bold tracking-tight pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white transition-all">
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-              {label}
-            </div>
-          </div>
-        )}
+          {isMini && (
+            <span className={`text-[8px] font-bold tracking-tight text-center leading-none px-1 ${isHighlighted ? 'text-white' : isChildActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'}`}>
+              {label.length > 9 ? label.substring(0, 8) + '..' : label}
+            </span>
+          )}
+        </Link>
 
         {hasChildren && !isMini && (
           <button 
@@ -297,16 +295,21 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   }).filter(g => g !== 'settings' && g !== 'system'); // We handle Settings and System at the bottom manually
 
   return (
-    <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-20' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:relative lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none`}>
-      <div className={`p-6 flex items-center ${isMini ? 'justify-center' : 'justify-between'}`}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+    <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-[72px]' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none overflow-hidden group/sidebar`}>
+      <div className={`p-5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
+        <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
+          <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 flex-shrink-0">
             <Zap size={18} className="text-white" fill="currentColor" />
           </div>
           {!isMini && (
-            <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
-              {APP_NAME}
-            </span>
+            <div className={`flex flex-col`}>
+              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
+                {APP_NAME}
+              </span>
+              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
+                Quantum UI
+              </span>
+            </div>
           )}
         </div>
         <button 
@@ -317,7 +320,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         </button>
       </div>
       
-      <nav className={`flex-1 ${isMini ? 'px-2 overflow-visible' : 'px-4 overflow-y-auto'} space-y-1 pb-8 scrollbar-hide`}>
+      <nav className={`flex-1 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto no-scrollbar space-y-1 pb-32`}>
         <div className="pt-2">
            {!isMini && <Slot name="admin.layout.sidebar.top" />}
         </div>
@@ -345,6 +348,11 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     className={`transition-transform duration-200 group-hover/header:text-slate-600 ${isCollapsed ? '-rotate-90' : ''}`} 
                   />
                 </button>
+              )}
+              {isMini && groupIdx > 0 && (
+                <div className="flex justify-center py-4">
+                  <div className="w-8 h-px bg-slate-100 dark:bg-slate-800/60" />
+                </div>
               )}
               {(!isCollapsed || isMini) && (
                 group === 'core' ? (
@@ -490,15 +498,15 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
       </nav>
 
       {/* Mini Toggle Button */}
-      <div className="p-4 border-t border-slate-100 dark:border-slate-800 hidden lg:block">
+      <div className={`absolute bottom-0 left-0 right-0 border-t border-slate-100 dark:border-slate-800 hidden lg:block bg-white dark:bg-[#020617] z-50 ${isMini ? 'p-2.5' : 'p-4'}`}>
         <button
           onClick={onMiniToggle}
-          className="w-full flex items-center justify-center p-2 rounded-lg transition-all hover:bg-slate-50 text-slate-500 dark:hover:bg-slate-800 dark:text-slate-400 font-bold"
+          className={`flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-800 dark:text-slate-400 font-bold ${isMini ? 'w-10 h-10 shadow-sm shadow-indigo-500/5' : 'w-full p-2.5 hover:shadow-lg hover:shadow-slate-200/40 dark:hover:shadow-none bg-slate-50/50 dark:bg-slate-900/40'}`}
         >
           <div className={`transition-transform duration-500 ${isMini ? 'rotate-180' : ''}`}>
-             <FrameworkIcons.Left size={18} strokeWidth={2.5} />
+             <Left size={18} strokeWidth={2.5} />
           </div>
-          {!isMini && <span className="ml-3 text-[11px] font-bold tracking-tight text-slate-400">Collapse View</span>}
+          {!isMini && <span className="ml-3 text-[11px] font-bold tracking-tight text-slate-500 transition-colors uppercase">Collapse Sidebar</span>}
         </button>
       </div>
     </aside>

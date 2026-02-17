@@ -48,6 +48,7 @@ interface PluginContextValue {
   translations: Record<string, any>;
   locale: string;
   refreshVersion: number;
+  isReady: boolean;
   triggerRefresh: () => void;
   setLocale: (locale: string) => void;
   t: (key: string, params?: Record<string, any>, defaultValue?: string) => string;
@@ -125,6 +126,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   const [translations, setTranslations] = useState<Record<string, any>>({});
   const [locale, setLocale] = useState<string>('en');
   const [refreshVersion, setRefreshVersion] = useState(0);
+  const [isReady, setIsReady] = useState(false);
   const [pluginAPIs] = useState<Record<string, any>>({});
   const [events] = useState(() => new Map<string, Set<(data: any) => void>>());
   const [serverRuntimeModules, setServerRuntimeModules] = useState<Record<string, any>>({});
@@ -371,8 +373,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           }
         }
       }
+      setIsReady(true);
     } catch (err) {
       console.warn("[Fromcode] Failed to load config:", err);
+      setIsReady(true);
     }
   }, [apiUrl, getBaseURL]);
 
@@ -478,7 +482,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   // Use a ref for state and logic that the bridge needs but should not trigger effect re-runs
   const stabilityRef = React.useRef({
     slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
-    fieldComponents, plugins, settings, translations, locale, refreshVersion, 
+    fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
     triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
     loadConfig, serverRuntimeModules, runtimeModules, apiUrl
   });
@@ -486,11 +490,11 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   React.useEffect(() => {
     stabilityRef.current = {
       slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
-      fieldComponents, plugins, settings, translations, locale, refreshVersion, 
+      fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
       triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
       loadConfig, serverRuntimeModules, runtimeModules, apiUrl
     };
-  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, serverRuntimeModules, runtimeModules, apiUrl]);
+  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, serverRuntimeModules, runtimeModules, apiUrl]);
 
   // NEW: Stable bridge wrappers to prevent re-injection loops for functions with volatile dependencies
   const stableT = useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
@@ -798,7 +802,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         useTranslation,
         usePluginAPI,
         usePluginState,
-        isReady: true,
+        isReady,
         // Non-hook versions for direct access from CJS/ESM bridge
         getState: () => stabilityRef.current,
         PluginsProvider
@@ -907,6 +911,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     translations,
     locale,
     refreshVersion,
+    isReady,
     triggerRefresh,
     setLocale,
     t,

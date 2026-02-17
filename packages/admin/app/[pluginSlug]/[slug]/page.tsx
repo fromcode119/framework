@@ -5,14 +5,20 @@ import { Slot, usePlugins } from '@fromcode/react';
 import CollectionListPage from '@/components/collection/collection-list-page';
 import { resolveCollection } from '@/lib/collection-utils';
 import { CollectionNotFound } from '@/components/collection/collection-not-found';
+import { PluginNotFound } from '@/components/plugins/plugin-not-found';
+import { Loader } from '@/components/ui/loader';
 import { useTheme } from '@/components/theme-context';
 import { useRouter } from 'next/navigation';
 
 export default function CollectionListRoute({ params }: { params: Promise<{ pluginSlug: string; slug: string }> }) {
   const { pluginSlug, slug } = use(params);
-  const { collections, slots } = usePlugins();
+  const { collections, slots, plugins, isReady } = usePlugins();
   const { theme } = useTheme();
   const router = useRouter();
+
+  // Check if plugin is active
+  const isActive = plugins.some((p: any) => p.slug === pluginSlug);
+
   const collection = resolveCollection(collections as any, pluginSlug, slug);
   const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}`;
   const hasPageSlot = !!(slots?.[pageSlot] && slots[pageSlot].length > 0);
@@ -22,6 +28,18 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
     if (!shouldRedirectToPluginSettings) return;
     router.replace(`/plugins/${pluginSlug}?tab=settings`);
   }, [pluginSlug, router, shouldRedirectToPluginSettings]);
+
+  if (!isReady) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Loader label="Synchronizing Module Context..." />
+      </div>
+    );
+  }
+
+  if (!isActive) {
+    return <PluginNotFound pluginSlug={pluginSlug} />;
+  }
 
   if (hasPageSlot) {
     return (
