@@ -203,6 +203,20 @@ export function extractTextFromContent(content: any): string {
 }
 
 /**
+ * Parses a value into a boolean. 
+ * Supports strings like "true", "yes", "1", "on" as true.
+ */
+export function parseBoolean(value: any): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value !== 0;
+    if (typeof value === 'string') {
+        const lower = value.toLowerCase().trim();
+        return ['true', 'yes', '1', 'on'].includes(lower);
+    }
+    return false;
+}
+
+/**
  * Normalizes a string by trimming it and ensuring it is a string
  */
 export function normalizeString(value: any): string {

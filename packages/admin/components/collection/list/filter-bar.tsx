@@ -104,14 +104,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
         {showColumnsMenu && (
           <div
-            className={`absolute right-0 mt-2 w-72 max-w-[92vw] rounded-2xl border shadow-2xl p-2 z-30 ${
+            className={`absolute right-0 mt-3 w-72 max-w-[92vw] rounded-2xl border shadow-2xl p-2 z-30 animate-in fade-in zoom-in duration-200 ${
               theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
             }`}
           >
-            <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wide text-slate-400">
+            <div className="px-2.5 py-2 mb-1 text-[10px] font-black uppercase tracking-widest text-slate-500/80">
               Visible Columns
             </div>
-            <div className="max-h-64 overflow-auto pr-1">
+            <div className="max-h-80 overflow-auto pr-1 space-y-0.5 custom-scrollbar">
               {allColumns.map((column) => {
                 const checked = visibleColumnIds.includes(column.id);
                 return (
@@ -119,33 +119,34 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                     key={column.id}
                     type="button"
                     onClick={() => toggleColumn(column.id)}
-                    className={`w-full px-2.5 py-2 rounded-lg text-left text-xs font-semibold transition-all flex items-center justify-between ${
+                    className={`group w-full px-2.5 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
                       checked
                         ? theme === 'dark'
-                          ? 'bg-indigo-500/15 text-indigo-200 border border-indigo-500/30'
-                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                          ? 'bg-indigo-500/10 text-indigo-300'
+                          : 'bg-indigo-50/60 text-indigo-700'
                         : theme === 'dark'
-                          ? 'text-slate-300 hover:bg-slate-800'
-                          : 'text-slate-700 hover:bg-slate-50'
+                          ? 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                     }`}
                   >
-                    <span className="truncate">{column.header}</span>
-                    <span className={`h-4 w-4 rounded border inline-flex items-center justify-center ${
+                    <div className={`h-5 w-5 rounded-md border-2 transition-all flex items-center justify-center shrink-0 ${
                       checked
                         ? theme === 'dark'
-                          ? 'border-indigo-300/40'
-                          : 'border-indigo-300'
+                          ? 'bg-indigo-500 border-indigo-500 shadow-lg shadow-indigo-500/20'
+                          : 'bg-indigo-600 border-indigo-600 shadow-sm shadow-indigo-600/20'
                         : theme === 'dark'
-                          ? 'border-slate-600'
-                          : 'border-slate-300'
+                          ? 'border-slate-800 bg-slate-900'
+                          : 'border-slate-200 bg-slate-50'
                     }`}>
                       {checked && (
                         <FrameworkIcons.Check
-                          size={10}
-                          className={theme === 'dark' ? 'text-indigo-200' : 'text-indigo-600'}
+                          size={11}
+                          className="text-white scale-110"
+                          strokeWidth={3}
                         />
                       )}
-                    </span>
+                    </div>
+                    <span className="truncate flex-1">{column.header}</span>
                   </button>
                 );
               })}

@@ -190,9 +190,27 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   useEffect(() => {
     if (!allColumns.length) return;
     const availableIds = new Set(allColumns.map((column) => column.id));
-    const defaults = (collection?.admin?.defaultColumns || [])
-      .filter((id: string) => availableIds.has(id))
-      .concat(availableIds.has('createdAt') ? ['createdAt'] : []);
+    
+    // Calculate smart defaults if not provided in admin config
+    let defaults = collection?.admin?.defaultColumns;
+    if (!Array.isArray(defaults) || !defaults.length) {
+      // Find semantic "name" fields
+      const semanticDefaults = ['id', 'title', 'name', 'label', 'slug', 'status', 'createdAt']
+        .filter(id => availableIds.has(id));
+      
+      // If none of those found, take first 4
+      defaults = semanticDefaults.length ? semanticDefaults : allColumns.slice(0, 4).map(c => c.id);
+    } else {
+      // Use user defined but ensured id is there
+      defaults = defaults.filter((id: string) => availableIds.has(id));
+      if (availableIds.has('id') && !defaults.includes('id')) {
+        defaults = ['id', ...defaults];
+      }
+      if (availableIds.has('createdAt') && !defaults.includes('createdAt')) {
+        defaults = [...defaults, 'createdAt'];
+      }
+    }
+
     const uniqueDefaults = Array.from(new Set(defaults));
 
     let next = uniqueDefaults;

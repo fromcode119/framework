@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { Collection, Logger, RecordVersions, HookManager } from '@fromcode/core';
+import { Collection, Logger, RecordVersions, HookManager, parseBoolean } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
 import { 
   IDatabaseManager, 
@@ -66,7 +66,7 @@ export class RESTController {
       const rawLocalized = String(locale_mode || '').toLowerCase() === 'raw';
       
       const isAdmin = req.user && req.user.roles && req.user.roles.includes('admin');
-      const isPreview = String(req.query?.preview) === '1' || String(req.query?.draft) === '1';
+      const isPreview = parseBoolean(req.query?.preview) || parseBoolean(req.query?.draft);
 
       // Status visibility logic
       if (!filters.status && !isAdmin && !isPreview) {
@@ -137,7 +137,7 @@ export class RESTController {
       const statusField = collection.fields.find(f => f.name === 'status');
       if (statusField && result.status !== 'published') {
         const isAdmin = req.user && req.user.roles && req.user.roles.includes('admin');
-        const isPreview = String(req.query?.preview) === '1' || String(req.query?.draft) === '1';
+        const isPreview = parseBoolean(req.query?.preview) || parseBoolean(req.query?.draft);
         if (!isAdmin && !isPreview) {
           if (!res) return null;
           return res.status(404).json({ error: 'Not found (draft)' });

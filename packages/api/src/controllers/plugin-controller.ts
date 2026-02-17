@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { PluginManager, Logger } from '@fromcode/core';
+import { PluginManager, Logger, parseBoolean } from '@fromcode/core';
 
 export class PluginController {
   private logger = new Logger({ namespace: 'plugin-controller' });
@@ -9,6 +9,16 @@ export class PluginController {
   constructor(private manager: PluginManager) {}
 
   async list(req: Request, res: Response) {
+    const shouldRefresh = parseBoolean(req.query.refresh);
+
+    if (shouldRefresh) {
+      try {
+        await this.manager.discoverPlugins();
+      } catch (err: any) {
+        this.logger.error(`Plugin discovery refresh failed: ${err.message}`);
+      }
+    }
+
     res.json(this.manager.getSortedPlugins().map(p => ({
       ...p.manifest,
       state: p.state,
