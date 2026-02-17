@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
 import { usePlugins } from '@fromcode/react';
 import { api } from '@/lib/api';
 import { ENDPOINTS, API_BASE_URL } from '@/lib/constants';
@@ -39,7 +38,7 @@ interface AdminPluginMetadata {
 
 export default function PluginLoader() {
   const pluginsContext = usePlugins();
-  const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion, triggerRefresh } = pluginsContext;
+  const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion, triggerRefresh, isReady } = pluginsContext;
   const { user, isLoading: isAuthLoading } = useAuth();
   const [loaded, setLoaded] = useState(false);
   const bootVersionRef = useRef<number>(Date.now());
@@ -84,7 +83,7 @@ export default function PluginLoader() {
       refreshVersion
     });
 
-    if (typeof window === 'undefined' || isAuthLoading || !user) return;
+    if (typeof window === 'undefined' || isAuthLoading || !user || !isReady) return;
 
     async function loadPlugins() {
       // Small delay to ensure GlobalInitializer has run
@@ -93,21 +92,21 @@ export default function PluginLoader() {
       while (
         (!(window as any).FrameworkIcons || 
          !(window as any).React || 
-         !(window as any).Lucide ||
-         !(window as any).Fromcode?.isReady) && 
+         !(window as any).Lucide) && 
         retryCount < 100
       ) {
         await new Promise(resolve => setTimeout(resolve, 50));
         retryCount++;
       }
 
-      if (!(window as any).FrameworkIcons || !(window as any).React || !(window as any).Fromcode?.isReady) {
+      if (!(window as any).FrameworkIcons || !(window as any).React || !(window as any).Lucide) {
         console.error("[Admin] Required globals not found on window. Plugin loading aborted.", {
           icons: !!(window as any).FrameworkIcons,
           react: !!(window as any).React,
           lucide: !!(window as any).Lucide,
-          bridge: !!(window as any).Fromcode?.isReady
         });
+        // Do not stop forever on startup races; request another refresh cycle.
+        setTimeout(() => triggerRefresh(), 250);
         return;
       }
 
@@ -230,7 +229,7 @@ export default function PluginLoader() {
     }
 
     loadPlugins();
-  }, [user, isAuthLoading, registerSlotComponent, registerMenuItem, registerCollection, registerPlugins, registerSettings, refreshVersion, triggerRefresh]);
+  }, [user, isAuthLoading, isReady, registerSlotComponent, registerMenuItem, registerCollection, registerPlugins, registerSettings, refreshVersion, triggerRefresh]);
 
   return null;
 }
