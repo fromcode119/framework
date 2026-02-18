@@ -36,6 +36,46 @@ export function resolveLabelText(value: any): string {
 }
 
 /**
- * Shared utility functions for the Admin UI
+ * Slugify text to URL-safe format
  */
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-');
+}
 
+/**
+ * Format date to localized string
+ */
+export function formatDate(value: any): string {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleString();
+}
+
+/**
+ * Capitalize first letter
+ */
+export function capitalize(text: string): string {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * Normalize and sanitize string input
+ */
+export function normalizeString(value: any): string {
+  return String(value || '').trim();
+}
+
+/**
+ * Normalize string and convert to lowercase
+ */
+export function normalizeStringLower(value: any): string {
+  return String(value || '').trim().toLowerCase();
+}

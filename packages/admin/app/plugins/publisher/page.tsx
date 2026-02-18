@@ -7,6 +7,7 @@ import { useTheme } from '@/components/theme-context';
 import { useNotify } from '@/components/notification-context';
 import { useAuth } from '@/components/auth-context';
 import { api } from '@/lib/api';
+import { slugify } from '@/lib/utils';
 
 const PublisherPortal = () => {
     const { theme } = useTheme();
@@ -119,7 +120,7 @@ const PublisherPortal = () => {
                                 type="text" 
                                 required
                                 value={formData.slug}
-                                onChange={e => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                                onChange={e => setFormData({ ...formData, slug: slugify(e.target.value) })}
                                 className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
                                 placeholder="my-awesome-plugin"
                             />

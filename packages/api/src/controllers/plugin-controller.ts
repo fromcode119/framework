@@ -47,12 +47,31 @@ export class PluginController {
 
   async toggle(req: Request, res: Response) {
     const { slug } = req.params;
-    const { enabled } = req.body;
+    const { enabled, force, recursive } = req.body;
     try {
-      if (enabled) await this.manager.enable(slug);
-      else await this.manager.disable(slug);
+      if (enabled) {
+        await this.manager.enable(slug, { 
+          force: parseBoolean(force), 
+          recursive: parseBoolean(recursive) 
+        });
+      } else {
+        await this.manager.disable(slug);
+      }
       res.json({ success: true, state: enabled ? 'active' : 'inactive' });
     } catch (err: any) {
+      if (err.message.startsWith('DEPENDENCY_ISSUES:')) {
+        try {
+          const json = err.message.replace('DEPENDENCY_ISSUES: ', '');
+          const issues = JSON.parse(json);
+          return res.status(409).json({ 
+            code: 'DEPENDENCY_REQUIRED',
+            message: 'One or more required plugins are missing or inactive.',
+            issues,
+            plugin: slug
+          });
+        } catch (e) {}
+      }
+
       const status = err.message.toLowerCase().includes('not found') || 
                      err.message.toLowerCase().includes('missing dependency') ||
                      err.message.toLowerCase().includes('incompatible') ? 400 : 500;

@@ -35,6 +35,7 @@ export type FieldType =
   | 'richText' 
   | 'upload'
   | 'json'
+  | 'password'
   | 'array'
   | 'group'
   | 'color'

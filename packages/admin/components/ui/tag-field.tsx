@@ -5,7 +5,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { UI_FIELD, UI_COMMON, getFieldClasses } from '@/lib/ui';
-import { resolveLabelText } from '@/lib/utils';
+import { resolveLabelText, slugify } from '@/lib/utils';
 
 interface TagFieldProps {
   value: string[] | string;
@@ -244,7 +244,6 @@ export const TagField = ({
           const hasExisting = apiOverrides?.search ? !!existing : (existing.docs && existing.docs.length > 0);
           
           if (!hasExisting) {
-            const slugify = (text: string) => text.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
             const payload: Record<string, any> = {
               name: strValue,
               slug: slugify(strValue)

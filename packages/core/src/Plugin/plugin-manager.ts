@@ -231,7 +231,7 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   // Delegate Lifecycle
-  async enable(slug: string) { return this.lifecycle.enable(slug); }
+  async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}) { return this.lifecycle.enable(slug, options); }
   async disable(slug: string) { return this.lifecycle.disable(slug); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }
   async register(plugin: FromcodePlugin, path?: string) { return this.lifecycle.register(plugin, path); }

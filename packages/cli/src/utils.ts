@@ -26,14 +26,14 @@ export function getProjectRoot(): string {
 
 export function getPluginsDir(): string {
   const root = getProjectRoot();
-  const dir = path.resolve(root, 'plugins');
+  const dir = process.env.PLUGINS_DIR || path.resolve(root, 'plugins');
   if (!fs.existsSync(dir)) fs.ensureDirSync(dir);
   return dir;
 }
 
 export function getThemesDir(): string {
   const root = getProjectRoot();
-  const dir = path.resolve(root, 'themes');
+  const dir = process.env.THEMES_DIR || path.resolve(root, 'themes');
   if (!fs.existsSync(dir)) fs.ensureDirSync(dir);
   return dir;
 }

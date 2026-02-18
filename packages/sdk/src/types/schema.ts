@@ -95,6 +95,7 @@ export interface Collection {
     group?: string;
     icon?: string;
     hidden?: boolean | ((args: { user: any }) => boolean);
+    priority?: number;
     tabs?: {
       name: string;
       label: string;

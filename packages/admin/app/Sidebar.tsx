@@ -259,6 +259,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
     if (isAdminRoute && !user?.roles?.includes('admin')) {
       return false;
     }
+
     return true;
   });
 

@@ -17,3 +17,4 @@ export * from './ui/visual-menu-field';
 export * from './icon';
 export * from './theme-context';
 export * from './notification-context';
+export * from './plugin-dashboard';
