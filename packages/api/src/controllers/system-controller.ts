@@ -100,7 +100,10 @@ export class SystemController {
           shortSlug: c.shortSlug || c.slug,
           count: await (this.manager as any).db.count(c.tableName || c.slug),
           system: !!c.system,
-          hidden: !!c.admin?.hidden
+          hidden: !!c.admin?.hidden,
+          icon: c.admin?.icon,
+          priority: c.admin?.priority || c.priority || 100,
+          pluginSlug: c.pluginSlug || 'system'
         };
       } catch {
         return { slug: c.slug, count: 0, error: true };

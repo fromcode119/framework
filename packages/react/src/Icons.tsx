@@ -24,11 +24,16 @@ class IconRegistry {
    * Get an icon component by name, searching across all registered providers
    */
   getIcon(name: string): React.ComponentType<any> | null {
+    if (!name) return null;
     if (this.cache.has(name)) return this.cache.get(name)!;
 
+    // Normalize name to PascalCase for searching providers like Lucide
+    const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
+
     // 1. Search in explicit FrameworkIcons (Host apps)
-    if ((window as any).FrameworkIcons && (window as any).FrameworkIcons[name]) {
-      return (window as any).FrameworkIcons[name];
+    const frameworkIcons = (window as any).FrameworkIcons;
+    if (frameworkIcons && (frameworkIcons[name] || frameworkIcons[pascalName])) {
+      return frameworkIcons[name] || frameworkIcons[pascalName];
     }
 
     // 2. Search in registered providers
@@ -37,11 +42,18 @@ class IconRegistry {
         this.cache.set(name, provider[name]);
         return provider[name];
       }
+      if (provider[pascalName]) {
+        this.cache.set(name, provider[pascalName]);
+        return provider[pascalName];
+      }
     }
 
     // 3. Fallback to global window objects (legacy/bridge support)
-    if ((window as any).Lucide && (window as any).Lucide[name]) return (window as any).Lucide[name];
-    if ((window as any).FontAwesome && (window as any).FontAwesome[name]) return (window as any).FontAwesome[name];
+    const lucide = (window as any).Lucide;
+    if (lucide && (lucide[name] || lucide[pascalName])) return lucide[name] || lucide[pascalName];
+    
+    const fa = (window as any).FontAwesome;
+    if (fa && (fa[name] || fa[pascalName])) return fa[name] || fa[pascalName];
 
     return null;
   }
@@ -108,6 +120,7 @@ export const FrameworkIcons = {
   ShieldAlert: Lucide.ShieldAlert,
   Database: Lucide.Database,
   Globe: Lucide.Globe,
+  Orbit: Lucide.Orbit,
   Palette: Lucide.Palette,
   Mail: Lucide.Mail,
   Link: Lucide.Link,
@@ -134,11 +147,7 @@ export const FrameworkIcons = {
   Calendar: Lucide.Calendar,
   Zap: Lucide.Zap,
   Text: Lucide.Type,
-  Star: Lucide.Star,
-  Webhook: Lucide.Webhook,
-  Orbit: Lucide.Orbit,
   Image: Lucide.Image,
-  Info: Lucide.Info,
   Fingerprint: Lucide.Fingerprint,
   Key: Lucide.Key,
 };
@@ -202,5 +211,6 @@ export const getIcon = (name: string) => {
 export * from 'lucide-react';
 
 if (typeof window !== 'undefined') {
+  // Expose Lucide namespace for icon registry system
   (window as any).Lucide = Lucide;
 }

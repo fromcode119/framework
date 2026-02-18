@@ -309,6 +309,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const runtimeModules = React.useMemo(() => ({
+    '@fromcode/admin': SharedComponents,
     '@fromcode/admin/components': SharedComponents
   }), []);
 

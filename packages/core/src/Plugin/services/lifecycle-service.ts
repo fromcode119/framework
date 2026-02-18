@@ -125,10 +125,34 @@ export class LifecycleService {
     }
   }
 
-  async enable(slug: string): Promise<void> {
+  async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
     if (plugin.state === 'active') return;
+
+    // Dependency Validation
+    if (!options.force) {
+      const issues = this.discovery.checkDependencies(plugin.manifest, this.manager.plugins, { checkActive: true });
+      
+      if (issues.length > 0) {
+        if (options.recursive) {
+          for (const issue of issues) {
+            if (issue.type === 'inactive') {
+              this.logger.info(`Recursively enabling dependency "${issue.slug}" for "${slug}"...`);
+              await this.enable(issue.slug, options);
+            } else if (issue.type === 'missing') {
+              // Check if we can download it? For now, just throw.
+              throw new Error(`Dependency "${issue.slug}" is missing and required by "${slug}".`);
+            } else if (issue.type === 'incompatible') {
+              throw new Error(`Incompatible dependency: "${slug}" requires "${issue.slug}" version "${issue.expected}", but found "${issue.actual}".`);
+            }
+          }
+        } else {
+          // We throw a structured error message that the controller can catch
+          throw new Error(`DEPENDENCY_ISSUES: ${JSON.stringify(issues)}`);
+        }
+      }
+    }
 
     const ctx = (this.manager as any).createContext(plugin);
     
@@ -179,6 +203,21 @@ export class LifecycleService {
   async disable(slug: string): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin || plugin.state !== 'active') return;
+
+    // Check if any active plugins depend on this one
+    const activeDependents = Array.from(this.manager.plugins.values()).filter(p => 
+      p.state === 'active' && 
+      p.manifest.dependencies && 
+      p.manifest.dependencies[slug]
+    );
+    
+    if (activeDependents.length > 0) {
+      const dependentNames = activeDependents.map(p => p.manifest.slug).join(', ');
+      throw new Error(
+        `Cannot disable plugin "${slug}" because it is required by active plugins: ${dependentNames}. ` +
+        `Please disable those plugins first.`
+      );
+    }
 
     const ctx = (this.manager as any).createContext(plugin);
     try {

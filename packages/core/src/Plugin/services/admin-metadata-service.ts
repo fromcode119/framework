@@ -1,5 +1,10 @@
 import { LoadedPlugin, Collection } from '../../types';
 import { Logger } from '../../logging/logger';
+import {
+  buildCollectionRouteKeySet,
+  isCollectionMenuPath,
+  expectedPageSlotFromPath
+} from './admin-route-utils';
 
 export class AdminMetadataService {
   private logger = new Logger({ namespace: 'admin-metadata-service' });
@@ -58,15 +63,27 @@ export class AdminMetadataService {
     // Plugin Items
     pluginMetadata.forEach(p => {
       const slug = p.slug.toLowerCase();
+      const pluginCollections = Array.from(registeredCollections.values())
+        .filter(c => String(c.pluginSlug).toLowerCase() === slug)
+        .map(c => c.collection);
+      const collectionRouteKeys = buildCollectionRouteKeySet([
+        ...(p.admin?.collections || []),
+        ...pluginCollections
+      ]);
+      const declaredSlots = new Set<string>(
+        ((p.admin?.slots || []) as Array<{ slot?: string }>)
+          .map((slotDef) => String(slotDef?.slot || '').trim())
+          .filter(Boolean)
+      );
+      const contentSlot = `admin.plugin.${slug}.content`;
+
       if (p.admin?.menu) {
         p.admin.menu.forEach(item => {
           let effectivePath = item.path;
 
           if (effectivePath && !effectivePath.startsWith('/admin/') && !effectivePath.startsWith(`/${slug}/`)) {
             const pathSlug = effectivePath.replace(/^\//, '');
-            const registeredForPlugin = Array.from(registeredCollections.values())
-              .filter(c => String(c.pluginSlug).toLowerCase() === slug)
-              .map(c => c.collection);
+            const registeredForPlugin = pluginCollections;
 
             const hasMatchingCollection = 
               p.admin.collections?.some(col => col.shortSlug === pathSlug || col.slug === pathSlug || (col as any).unprefixedSlug === pathSlug) ||
@@ -74,6 +91,19 @@ export class AdminMetadataService {
             
             if (hasMatchingCollection) {
                 effectivePath = `/${slug}/${pathSlug}`;
+            }
+          }
+
+          // Validate plugin page routes early so broken paths never reach runtime.
+          if (effectivePath && effectivePath.startsWith(`/${slug}`) && !isCollectionMenuPath(effectivePath, slug, collectionRouteKeys)) {
+            const expectedSlot = expectedPageSlotFromPath(effectivePath, slug);
+            const hasExpectedSlot = expectedSlot ? declaredSlots.has(expectedSlot) : false;
+            const hasContentFallback = declaredSlots.has(contentSlot);
+            if (!hasExpectedSlot && !hasContentFallback) {
+              this.logger.warn(
+                `[admin-metadata] Skipping menu item "${item.label}" for plugin "${slug}" at "${effectivePath}" because no UI slot is declared. Expected "${expectedSlot}", or fallback "${contentSlot}".`
+              );
+              return;
             }
           }
 
@@ -86,9 +116,7 @@ export class AdminMetadataService {
         });
       }
 
-      const collections = Array.from(registeredCollections.values())
-        .filter(c => String(c.pluginSlug).toLowerCase() === slug)
-        .map(c => c.collection);
+      const collections = pluginCollections;
 
       if (collections.length > 0) {
         collections.forEach(col => {
@@ -128,7 +156,7 @@ export class AdminMetadataService {
                 path,
                 icon: col.admin?.icon || p.admin.icon || 'FileText',
                 group: col.admin?.group || p.admin.group || p.name,
-                priority: col.priority || 100,
+                priority: col.admin?.priority || col.priority || 100,
                 pluginSlug: slug
               });
             }

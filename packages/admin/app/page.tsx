@@ -6,6 +6,7 @@ import { useAuth } from '@/components/auth-context';
 import { StatCard } from '@/components/ui/stat-card';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Icon as DynamicIcon } from '../components/icon';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
@@ -20,6 +21,7 @@ export default function AdminPage() {
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
   const [updateAvailable, setUpdateAvailable] = useState<any>(null);
+  const [showAllCollections, setShowAllCollections] = useState(false);
   
   const hasMainContent = slots['admin.dashboard.main'] && slots['admin.dashboard.main'].length > 0;
   
@@ -196,17 +198,50 @@ export default function AdminPage() {
           <div className="lg:col-span-2 space-y-8">
             <Slot name="admin.dashboard.top" />
             
-            <div className="flex items-center gap-4">
-              <div className="h-8 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
-              <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Content Collections</h3>
-              <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="h-8 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
+                <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Content Collections</h3>
+                <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowAllCollections(!showAllCollections)}
+                className="text-[10px] whitespace-nowrap font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase"
+              >
+                {showAllCollections ? 'Show Less' : 'View All'}
+              </Button>
             </div>
 
             {/* Main Resources Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stats.filter(s => (!s.system || s.slug === 'users' || s.slug === 'media') && !s.hidden).map(s => {
+              {stats.filter(s => {
+                if (s.hidden) return false;
+                
+                // For core (system===true): users and media are always core
+                const isCore = s.system || s.slug === 'users' || s.slug === 'media';
+                if (isCore) return true;
+                
+                // If show all is toggled, show everything not hidden
+                if (showAllCollections) return true;
+
+                // Default view filter logic:
+                // 1. Hide internal-looking slugs (starting with _ or fcp_)
+                // 2. Hide low count entities that aren't core
+                if (s.slug.startsWith('_') || s.slug.startsWith('fcp_')) return false;
+                
+                // Always show high-value business entities even if 0
+                const businessEntities = ['products', 'orders', 'pages', 'posts', 'forms', 'customers'];
+                if (businessEntities.includes(s.slug)) return true;
+
+                // Hide everything else if it has 0 count
+                if (s.count === 0) return false;
+
+                return true;
+              }).map(s => {
                 const colShortSlug = s.shortSlug || s.slug;
-                const colPluginSlug = s.pluginSlug || 'System';
+                const colPluginSlug = s.pluginSlug || 'system';
                 
                 // Content Routing: Platform core entities use root-level paths
                 // whilst plugins use /plugin/slug paths.
@@ -216,23 +251,24 @@ export default function AdminPage() {
                 if (colPluginSlug.toLowerCase() === 'system') {
                     if (colShortSlug === 'users') adminPath = '/users';
                     if (colShortSlug === 'media') adminPath = '/media';
+                    if (colShortSlug === 'activity') adminPath = '/activity';
                 }
                 
                 return (
-                  <div key={s.slug} className="p-6 rounded-3xl border flex items-center justify-between transition-all hover:shadow-xl hover:shadow-indigo-500/5 group cursor-pointer bg-white border-slate-100 shadow-lg shadow-slate-200/50 dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none" onClick={() => window.location.href = adminPath}>
+                  <div key={s.slug} className="p-6 rounded-3xl border flex items-center justify-between transition-all hover:shadow-xl hover:shadow-indigo-500/5 group cursor-pointer bg-white border-slate-100 shadow-lg shadow-slate-200/50 dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none animate-in fade-in duration-300" onClick={() => window.location.href = adminPath}>
                     <div className="flex items-center gap-4">
                       <div className="p-3.5 rounded-2xl transition-all duration-300 bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:group-hover:bg-indigo-500/20">
-                        <FrameworkIcons.Database size={20} />
+                        <DynamicIcon name={s.icon || 'Database'} size={20} />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
                            <p className="text-xs font-bold tracking-tight text-slate-400 uppercase">{s.name || colShortSlug}</p>
                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold tracking-tight uppercase ${
-                             s.system 
+                               (s.system || colPluginSlug.toLowerCase() === 'system')
                                ? 'bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400' 
                                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                            }`}>
-                             {s.system ? 'Core' : displayPluginSlug}
+                             {(s.system || colPluginSlug.toLowerCase() === 'system') ? 'Core' : displayPluginSlug}
                            </span>
                         </div>
                         <h4 className="text-2xl font-bold tracking-tight mt-0.5 text-slate-900 dark:text-white">{s.count}</h4>

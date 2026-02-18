@@ -114,12 +114,30 @@ export default function PluginLoader() {
         const responseData = await api.get(ENDPOINTS.PLUGINS.STAGED);
         const plugins: AdminPluginMetadata[] = responseData.plugins || [];
         const remoteMenu: any[] = responseData.menu || [];
+        const settings: Record<string, any> = responseData.settings || {};
+
         const sanitizedMenu = remoteMenu.filter((item: any) => {
           const path = String(item?.path || '').trim().toLowerCase();
           // Plugin settings are handled in /plugins/:slug?tab=settings and should not duplicate sidebar entries.
-          return !/^\/[^/]+\/settings\/?$/.test(path);
+          if (/^\/[^/]+\/settings\/?$/.test(path)) return false;
+
+          // Generic condition check based on plugin settings
+          if (item?.condition?.setting) {
+            const pluginSlug = item.pluginSlug || 'system';
+            const pluginSettings = settings[pluginSlug] || {};
+            const expectedValue = item.condition.value ?? true;
+            
+            const actualValue = pluginSettings[item.condition.setting];
+            
+            // If setting exists and doesn't match expected value, hide item.
+            // If setting is undefined, we default to showing it (assuming opt-out behavior).
+            if (actualValue !== undefined && actualValue !== expectedValue) {
+               return false;
+            }
+          }
+
+          return true;
         });
-        const settings: Record<string, any> = responseData.settings || {};
 
         if (settings) {
           registerSettings(settings);

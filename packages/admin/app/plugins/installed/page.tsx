@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { DependencyDialog, DependencyIssue } from '@/components/ui/dependency-dialog';
 import { useNotify } from '@/components/notification-context';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
@@ -23,8 +24,12 @@ export default function InstalledPluginsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDependencyConfirm, setShowDependencyConfirm] = useState(false);
+  const [dependencyIssues, setDependencyIssues] = useState<DependencyIssue[]>([]);
+  const [targetPlugin, setTargetPlugin] = useState<string | null>(null);
   const [pluginToDelete, setPluginToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -79,14 +84,34 @@ export default function InstalledPluginsPage() {
     fetchPlugins();
   }, [refreshVersion]);
 
-  const handleToggle = async (slug: string, currentEnabled: boolean) => {
+  const handleToggle = async (slug: string, currentEnabled: boolean, options: { force?: boolean, recursive?: boolean } = {}) => {
     try {
-      await api.post(ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled: !currentEnabled });
+      if (!currentEnabled) setIsActivating(true);
+      
+      await api.post(ENDPOINTS.PLUGINS.TOGGLE(slug), { 
+        enabled: !currentEnabled,
+        ...options 
+      });
+      
       notify('success', 'Plugin Updated', `${slug} is now ${!currentEnabled ? 'active' : 'inactive'}.`);
       setPlugins(prev => prev.map(p => p.slug === slug ? { ...p, state: !currentEnabled ? 'active' : 'inactive' } : p));
+      
+      if (options.recursive || options.force) {
+        setShowDependencyConfirm(false);
+        fetchPlugins();
+      }
+      
       triggerRefresh();
     } catch (err: any) {
-      notify('error', 'Update Failed', err.message);
+      if (err.status === 409 && err.data?.issues) {
+        setDependencyIssues(err.data.issues);
+        setTargetPlugin(slug);
+        setShowDependencyConfirm(true);
+      } else {
+        notify('error', 'Update Failed', err.message);
+      }
+    } finally {
+      setIsActivating(false);
     }
   };
 
@@ -325,6 +350,37 @@ export default function InstalledPluginsPage() {
             : ""
         }`}
         confirmLabel="Destroy Now"
+      />
+
+      <DependencyDialog
+        isOpen={showDependencyConfirm}
+        onClose={() => {
+          setShowDependencyConfirm(false);
+          setTargetPlugin(null);
+        }}
+        onConfirm={async (recursive, force) => {
+          if (!targetPlugin) return;
+          
+          if (recursive) {
+            const missing = dependencyIssues.filter(i => i.type === 'missing');
+            if (missing.length > 0) {
+              for (const issue of missing) {
+                notify('info', 'Dependency Install', `Downloading ${issue.slug} from marketplace...`);
+                try {
+                  await api.post(ENDPOINTS.PLUGINS.INSTALL(issue.slug), {});
+                } catch (e: any) {
+                  notify('error', 'Auto-Install Failed', `Could not install ${issue.slug}: ${e.message}`);
+                  return;
+                }
+              }
+            }
+          }
+
+          handleToggle(targetPlugin, false, { recursive, force });
+        }}
+        issues={dependencyIssues}
+        pluginSlug={targetPlugin || ''}
+        isLoading={isActivating}
       />
     </div>
   );

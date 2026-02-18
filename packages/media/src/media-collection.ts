@@ -6,7 +6,7 @@ export const MediaCollection: Collection = {
   admin: {
     useAsTitle: 'filename',
     group: 'Content',
-    icon: 'image',
+    icon: 'Media',
   },
   fields: [
     {

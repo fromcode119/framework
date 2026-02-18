@@ -22,6 +22,13 @@ const manifestSchema = z.object({
   dependencies: z.record(z.string()).optional(),
 }).passthrough();
 
+export interface DependencyIssue {
+  slug: string;
+  expected: string;
+  actual?: string;
+  type: 'missing' | 'incompatible' | 'inactive';
+}
+
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
 
@@ -226,18 +233,38 @@ export class DiscoveryService {
     return result;
   }
 
-  public validateDependencies(manifest: PluginManifest, plugins: Map<string, LoadedPlugin>): void {
-    if (!manifest.dependencies) return;
+  public checkDependencies(manifest: PluginManifest, plugins: Map<string, LoadedPlugin>, options: { checkActive?: boolean } = {}): DependencyIssue[] {
+    const issues: DependencyIssue[] = [];
+    if (!manifest.dependencies) return issues;
 
     for (const [depSlug, versionRange] of Object.entries(manifest.dependencies)) {
       const dependency = plugins.get(depSlug);
       
       if (!dependency) {
-        throw new Error(`Missing dependency: Plugin "${manifest.slug}" requires "${depSlug}" (${versionRange})`);
+        issues.push({ slug: depSlug, expected: versionRange, type: 'missing' });
+        continue;
       }
 
       if (!semver.satisfies(dependency.manifest.version, versionRange)) {
-        throw new Error(`Incompatible dependency: Plugin "${manifest.slug}" requires "${depSlug}" version "${versionRange}", but version "${dependency.manifest.version}" is installed.`);
+        issues.push({ slug: depSlug, expected: versionRange, actual: dependency.manifest.version, type: 'incompatible' });
+        continue;
+      }
+
+      if (options.checkActive && dependency.state !== 'active') {
+        issues.push({ slug: depSlug, expected: versionRange, type: 'inactive' });
+      }
+    }
+    return issues;
+  }
+
+  public validateDependencies(manifest: PluginManifest, plugins: Map<string, LoadedPlugin>): void {
+    const issues = this.checkDependencies(manifest, plugins);
+    if (issues.length > 0) {
+      const issue = issues[0];
+      if (issue.type === 'missing') {
+        throw new Error(`Missing dependency: Plugin "${manifest.slug}" requires "${issue.slug}" (${issue.expected})`);
+      } else if (issue.type === 'incompatible') {
+        throw new Error(`Incompatible dependency: Plugin "${manifest.slug}" requires "${issue.slug}" version "${issue.expected}", but version "${issue.actual}" is installed.`);
       }
     }
   }

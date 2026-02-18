@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { slugify } from '@/lib/utils';
 
 interface UseSlugGenerationOptions {
   sourceValue: string;
@@ -15,22 +16,12 @@ export function useSlugGeneration({
 }: UseSlugGenerationOptions) {
   const [internalManuallyEdited, setInternalManuallyEdited] = useState(manuallyEdited);
 
-  const slugify = useCallback((text: string) => {
-    return text
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')     // Replace spaces with -
-      .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-      .replace(/\-\-+/g, '-');  // Replace multiple - with single -
-  }, []);
-
   useEffect(() => {
     if (isNew && !internalManuallyEdited && sourceValue) {
       const newSlug = slugify(sourceValue);
       onSlugGenerate(newSlug);
     }
-  }, [sourceValue, isNew, internalManuallyEdited, slugify, onSlugGenerate]);
+  }, [sourceValue, isNew, internalManuallyEdited, onSlugGenerate]);
 
   return {
     manuallyEdited: internalManuallyEdited,
