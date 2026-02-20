@@ -67,7 +67,7 @@ const Marketplace: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <FrameworkIcons.Loader className="h-10 w-10 animate-spin text-indigo-600" />
         <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
           Connecting to Global Marketplace...
         </p>
@@ -177,7 +177,7 @@ const Marketplace: React.FC = () => {
               <div className="px-10 pb-10 space-y-6">
                 {installed && hasUpdate && (
                   <div className="flex items-center gap-4 p-5 bg-amber-500 text-white rounded-[2rem] shadow-xl shadow-amber-500/20 animate-pulse">
-                     <FrameworkIcons.Refresh size={20} className="animate-spin-slow" />
+                     <FrameworkIcons.Loader size={20} className="animate-spin" />
                      <div className="flex flex-col">
                         <span className="text-[11px] font-semibold tracking-wide leading-none">New Version Available</span>
                         <span className="text-[10px] font-semibold tracking-wide opacity-80">v{plugin.version} is ready</span>

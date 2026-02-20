@@ -251,7 +251,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <FrameworkIcons.Loader className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }

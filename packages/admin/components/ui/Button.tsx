@@ -33,9 +33,9 @@ export const Button = ({
   };
 
   const sizes = {
-    sm: 'h-8 px-3 text-[11px]',
-    md: 'h-10 px-4 text-xs',
-    lg: 'h-11 px-6 text-sm',
+    sm: 'h-8 px-3 text-[10px]',
+    md: 'h-10 px-4 text-[12px]',
+    lg: 'h-11 px-6 text-[13px]',
     icon: 'h-10 w-10 p-0',
   };
 

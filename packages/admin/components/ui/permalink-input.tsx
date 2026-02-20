@@ -26,7 +26,7 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
 
   const frontendUrl = settings?.frontend_url || 
                       settings?.site_url || 
-                      'http://localhost:3002';
+                      'http://frontend.framework.local';
   const baseUrl = frontendUrl.endsWith('/') ? frontendUrl.slice(0, -1) : frontendUrl;
   const structure = settings?.permalink_structure || '/:slug';
 

@@ -38,6 +38,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   const [logs, setLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [sandboxSettings, setSandboxSettings] = useState({
+    enabled: true,
     memoryLimit: 128,
     timeout: 1000,
     allowNative: false
@@ -64,11 +65,26 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
         setConfigValues({ ...defaults, ...(found.config || {}) });
 
         // Initialize sandbox settings
-        if (found.sandbox && typeof found.sandbox === 'object') {
+        if (found.sandbox === false) {
           setSandboxSettings({
+            enabled: false,
+            memoryLimit: 128,
+            timeout: 1000,
+            allowNative: false
+          });
+        } else if (found.sandbox && typeof found.sandbox === 'object') {
+          setSandboxSettings({
+            enabled: true,
             memoryLimit: found.sandbox.memoryLimit || 128,
             timeout: found.sandbox.timeout || 1000,
             allowNative: found.sandbox.allowNative || false
+          });
+        } else {
+          setSandboxSettings({
+            enabled: true,
+            memoryLimit: 128,
+            timeout: 1000,
+            allowNative: false
           });
         }
       } else {
@@ -179,8 +195,22 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     if (!plugin) return;
     setIsSaving(true);
     try {
-      await api.post(`${ENDPOINTS.PLUGINS.BASE}/${plugin.slug}/sandbox`, sandboxSettings);
-      notify('success', 'Resources Updated', `Sandbox limits for ${plugin.name} updated.`);
+      const payload = sandboxSettings.enabled
+        ? {
+            memoryLimit: sandboxSettings.memoryLimit,
+            timeout: sandboxSettings.timeout,
+            allowNative: sandboxSettings.allowNative
+          }
+        : { enabled: false };
+      await api.post(`${ENDPOINTS.PLUGINS.BASE}/${plugin.slug}/sandbox`, payload);
+      setPlugin({ ...plugin, sandbox: sandboxSettings.enabled ? payload : false });
+      notify(
+        'success',
+        'Resources Updated',
+        sandboxSettings.enabled
+          ? `Sandbox limits for ${plugin.name} updated.`
+          : `Sandbox disabled for ${plugin.name}.`
+      );
       triggerRefresh();
     } catch (err: any) {
       console.error("Save sandbox error:", err);
@@ -420,6 +450,22 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <Card title="Sandbox Isolation Policy" className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
                    <div className="space-y-10 py-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex gap-4">
+                          <div className={`p-2.5 rounded-xl h-fit ${theme === 'dark' ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                            <FrameworkIcons.Shield size={20} />
+                          </div>
+                          <div>
+                            <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>Sandbox Isolation</h3>
+                            <p className="text-sm text-slate-500 mt-1 max-w-sm">Enabled by default. Disable only for fully trusted plugins.</p>
+                          </div>
+                        </div>
+                        <Switch 
+                          checked={sandboxSettings.enabled}
+                          onChange={(val) => setSandboxSettings(prev => ({ ...prev, enabled: val }))}
+                        />
+                      </div>
+
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex gap-4">
                           <div className={`p-2.5 rounded-xl h-fit ${theme === 'dark' ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
@@ -433,7 +479,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                         <input 
                           type="number"
                           value={sandboxSettings.memoryLimit}
-                          onChange={(e) => setSandboxSettings(prev => ({ ...prev, memoryLimit: parseInt(e.target.value) }))}
+                          disabled={!sandboxSettings.enabled}
+                          onChange={(e) => setSandboxSettings(prev => ({ ...prev, memoryLimit: Number.isFinite(parseInt(e.target.value, 10)) ? parseInt(e.target.value, 10) : 128 }))}
                           className={`w-full md:w-32 px-4 py-2 rounded-xl text-center font-bold ${theme === 'dark' ? 'bg-slate-800 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
                         />
                       </div>
@@ -451,7 +498,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                         <input 
                           type="number"
                           value={sandboxSettings.timeout}
-                          onChange={(e) => setSandboxSettings(prev => ({ ...prev, timeout: parseInt(e.target.value) }))}
+                          disabled={!sandboxSettings.enabled}
+                          onChange={(e) => setSandboxSettings(prev => ({ ...prev, timeout: Number.isFinite(parseInt(e.target.value, 10)) ? parseInt(e.target.value, 10) : 1000 }))}
                           className={`w-full md:w-32 px-4 py-2 rounded-xl text-center font-bold ${theme === 'dark' ? 'bg-slate-800 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
                         />
                       </div>
@@ -462,11 +510,12 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                             <FrameworkIcons.ShieldAlert size={20} />
                           </div>
                           <div>
-                            <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>Bypass Sandbox</h3>
-                            <p className="text-sm text-slate-500 mt-1 max-w-sm italic">UNSAFE: Run in main process with full system access. Only for trusted core modules.</p>
+                            <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>Allow Native APIs</h3>
+                            <p className="text-sm text-slate-500 mt-1 max-w-sm italic">Advanced mode. Keep disabled unless this plugin explicitly requires native host capabilities.</p>
                           </div>
                         </div>
                         <Switch 
+                          disabled={!sandboxSettings.enabled}
                           checked={sandboxSettings.allowNative}
                           onChange={(val) => setSandboxSettings(prev => ({ ...prev, allowNative: val }))}
                         />
@@ -491,7 +540,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                         : 'bg-white border-slate-200 text-indigo-500 hover:text-indigo-600 shadow-sm hover:shadow-md'
                     }`}
                   >
-                    Refresh <FrameworkIcons.Refresh size={12} className={loadingLogs ? 'animate-spin' : ''} />
+                    Refresh {loadingLogs ? <FrameworkIcons.Loader size={12} className="animate-spin" /> : <FrameworkIcons.Refresh size={12} />}
                   </button>
                </div>
                

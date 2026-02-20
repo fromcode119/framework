@@ -80,11 +80,10 @@ export default function SetupPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-6">
-          <div className="relative">
-            <div className="h-16 w-16 border-[5px] border-indigo-600/10 rounded-3xl"></div>
-            <div className="absolute inset-0 h-16 w-16 border-[5px] border-indigo-600 border-t-transparent rounded-3xl animate-spin"></div>
+          <div className="animate-spin text-indigo-600">
+            <FrameworkIcons.Loader size={48} />
           </div>
-          <span className="text-[11px] font-semibold text-indigo-500 tracking-wide animate-pulse">Initializing Ecosystem...</span>
+          <span className="text-[11px] font-semibold text-indigo-500 tracking-wide">Initializing...</span>
         </div>
       </div>
     );

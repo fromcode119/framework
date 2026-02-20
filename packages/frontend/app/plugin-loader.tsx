@@ -1,40 +1,69 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { usePlugins } from '@fromcode/react';
+import { resolveFrontendApiBaseUrl } from '../lib/api-base-url';
 
 export default function PluginLoader() {
-  const { refreshVersion } = usePlugins();
-  const [plugins, setPlugins] = useState<any[]>([]);
-  const [theme, setTheme] = useState<any>(null);
-  const [apiUrl, setApiUrl] = useState<string>('http://api.framework.local');
+  const { plugins, activeTheme, api } = usePlugins();
+  const apiUrl =
+    (typeof api?.getBaseUrl === 'function' && api.getBaseUrl()) ||
+    resolveFrontendApiBaseUrl();
+  const theme = activeTheme;
+  const pluginList = Array.isArray(plugins) ? plugins : [];
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const bridgeUrl = (window as any).FROMCODE_API_URL;
-        const currentApiUrl = bridgeUrl || 'http://api.framework.local';
-        setApiUrl(currentApiUrl);
+    if (typeof document === 'undefined') return;
 
-        const apiVersion = 'v1';
-        const response = await fetch(`${currentApiUrl}/api/${apiVersion}/system/frontend`);
-        const data = await response.json();
-        setPlugins(data.plugins || []);
-        setTheme(data.activeTheme || null);
-      } catch (err) {
-        console.error('[Frontend: Loader] Failed to fetch frontend config:', err);
+    for (const plugin of pluginList) {
+      const injections = Array.isArray(plugin?.ui?.headInjections) ? plugin.ui.headInjections : [];
+      for (const injection of injections) {
+        const tag = String(injection?.tag || '').trim().toLowerCase();
+        if (!tag) continue;
+
+        const props = (injection?.props && typeof injection.props === 'object') ? injection.props : {};
+        const uniqueKey =
+          props.id ||
+          props.src ||
+          props.href ||
+          props.name;
+
+        if (uniqueKey) {
+          const selector = `${tag}[id="${uniqueKey}"], ${tag}[src="${uniqueKey}"], ${tag}[href="${uniqueKey}"], ${tag}[name="${uniqueKey}"]`;
+          if (document.head.querySelector(selector)) continue;
+        }
+
+        const element = document.createElement(tag);
+        Object.entries(props).forEach(([key, rawValue]) => {
+          let value = String(rawValue);
+          if ((key === 'src' || key === 'href') && value.startsWith('/plugins/')) {
+            value = `${apiUrl}${value}`;
+          }
+          element.setAttribute(key, value);
+        });
+        document.head.appendChild(element);
       }
-    };
-
-    fetchConfig();
-  }, [refreshVersion]);
+    }
+  }, [pluginList, apiUrl]);
 
   return (
     <>
-      {plugins.map((plugin) => {
+      {pluginList.map((plugin: any) => {
         if (!plugin.ui?.entry) return null;
         const scriptUrl = `${apiUrl}/plugins/${plugin.slug}/ui/${plugin.ui.entry}`;
         return <script key={plugin.slug} src={scriptUrl} type="module" async />;
+      })}
+      {pluginList.flatMap((plugin: any) => {
+        const css = plugin?.ui?.css;
+        if (!css) return [];
+        const cssList = Array.isArray(css) ? css : [css];
+        return cssList.map((style: string) => (
+          <link
+            key={`plugin-css-${plugin.slug}-${style}`}
+            rel="stylesheet"
+            href={`${apiUrl}/plugins/${plugin.slug}/ui/${style}`}
+          />
+        ));
       })}
       {theme && theme.ui?.entry && (
         <script key={`theme-js-${theme.slug}`} src={`${apiUrl}/themes/${theme.slug}/ui/${theme.ui.entry}`} type="module" async />

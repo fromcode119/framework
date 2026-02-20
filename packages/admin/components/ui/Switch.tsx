@@ -15,7 +15,7 @@ export const Switch = ({ checked, onChange, label, description, disabled }: Swit
     <div className="flex items-center justify-between gap-4">
       {(label || description) && (
         <div className="flex flex-col">
-          {label && <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{label}</span>}
+          {label && <span className="text-[12px] font-semibold text-slate-900 dark:text-slate-100">{label}</span>}
           {description && <span className="text-xs text-slate-500">{description}</span>}
         </div>
       )}

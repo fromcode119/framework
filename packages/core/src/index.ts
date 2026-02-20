@@ -14,6 +14,7 @@ export { LogLevel, Logger } from './logging/logger';
 export type { LoggerOptions } from './logging/logger';
 export { I18nManager } from './i18n/i18n-manager';
 export * from './utils';
+export { API_RESOURCE_PATHS } from './constants/api-paths';
 export { env, validateEnv } from './config/env';
 export { WebSocketManager } from './realtime/web-socket-manager';
 

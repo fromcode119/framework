@@ -95,6 +95,7 @@ export const FrameworkIcons = {
   X: Lucide.X,
   Refresh: Lucide.RefreshCw,
   More: Lucide.MoreHorizontal,
+  MoreVertical: Lucide.MoreVertical,
   ChevronDown: Lucide.ChevronDown,
   ChevronRight: Lucide.ChevronRight,
   ChevronLeft: Lucide.ChevronLeft,

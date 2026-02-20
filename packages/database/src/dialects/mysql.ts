@@ -3,8 +3,8 @@ import mysql from 'mysql2/promise';
 import { sql, eq, and, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { mysqlTable, text } from 'drizzle-orm/mysql-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
-import { BaseDialect } from './BaseDialect';
-import { toSnakeCase } from '../naming';
+import { BaseDialect } from './base-dialect';
+import { toSnakeCase } from '../naming-strategy';
 
 export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: mysql.Pool;

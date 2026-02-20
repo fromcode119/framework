@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSystemStatus } from '../lib/use-system-status';
 import MaintenanceScreen from '../components/maintenance-screen';
 import ThemeInitializer from '../components/theme-initializer';
+import { resolveFrontendApiBaseUrl } from '../lib/api-base-url';
 
 function SystemGate({ children }: { children: ReactNode }) {
   const status = useSystemStatus();
@@ -66,7 +67,7 @@ function RouterBridge() {
 }
 
 export default function RootProvider({ children }: { children: ReactNode }) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://api.framework.local';
+  const apiUrl = resolveFrontendApiBaseUrl();
 
   return (
     <PluginsProvider apiUrl={apiUrl}>

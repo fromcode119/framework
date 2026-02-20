@@ -23,7 +23,14 @@ import { systemSessions, eq, and, gt } from '@fromcode/database';
 import * as path from 'path';
 import * as fs from 'fs';
 import { RESTController } from './controllers/rest-controller';
-import { API_ROUTES } from './constants';
+import {
+  API_PREFIXES,
+  API_ROUTES,
+  LEGACY_API_ROUTES,
+  PUBLIC_ROUTE_PREFIXES,
+  STORAGE_CONFIG,
+  resolveStoragePublicUrl
+} from './constants';
 import { setupAuthRoutes } from './routes/auth';
 import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
 import { setupPluginSettingsRoutes } from './routes/plugin-settings';
@@ -40,6 +47,7 @@ import { csrfMiddleware, xssMiddleware } from './middlewares/security';
 import { SchedulerService } from '@fromcode/scheduler';
 import { GraphQLService } from './services/graph-ql-service';
 import { createHandler } from 'graphql-http/lib/use/express';
+import { createHash } from 'crypto';
 
 export class APIServer {
   public app = express();
@@ -84,6 +92,18 @@ export class APIServer {
       return ip === '127.0.0.1' || ip === '::1';
     });
 
+    // Serve static uploads BEFORE any auth/security middleware
+    // This ensures public files are accessible without CSRF tokens or authentication
+    const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
+    const systemUploadDir = process.env[STORAGE_CONFIG.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, STORAGE_CONFIG.DEFAULT_UPLOADS_SUBDIR);
+    const publicUrl = resolveStoragePublicUrl(process.env[STORAGE_CONFIG.PUBLIC_URL_ENV]);
+    
+    this.logger.info(`Serving static uploads from: ${systemUploadDir} at ${publicUrl}`);
+    this.app.use(STORAGE_CONFIG.DEFAULT_PUBLIC_URL, express.static(systemUploadDir));
+    if (publicUrl !== STORAGE_CONFIG.DEFAULT_PUBLIC_URL) {
+      this.app.use(publicUrl, express.static(systemUploadDir));
+    }
+
     this.app.use(express.json());
     this.app.use(xssMiddleware);
     this.app.use(cookieParser());
@@ -107,24 +127,16 @@ export class APIServer {
       }
     } as any);
 
-    this.app.use('/api/', limiter);
+    this.app.use(`${API_PREFIXES.BASE}/`, limiter);
     this.mediaManager = (this.manager as any).storage;
-    
-    // Resolve absolute upload directory based on framework root to ensure consistency
-    const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
-    const systemUploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(frameworkRoot, 'public/uploads');
-    const publicUrl = process.env.STORAGE_PUBLIC_URL || '/uploads';
     
     if (!this.mediaManager) {
       this.logger.warn('Storage integration not initialized. Falling back to default LocalMediaManager.');
       const { StorageFactory } = require('@fromcode/media');
+      const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
+      const systemUploadDir = process.env[STORAGE_CONFIG.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, STORAGE_CONFIG.DEFAULT_UPLOADS_SUBDIR);
+      const publicUrl = resolveStoragePublicUrl(process.env[STORAGE_CONFIG.PUBLIC_URL_ENV]);
       this.mediaManager = new MediaManager(StorageFactory.create('local', { uploadDir: systemUploadDir, publicUrlBase: publicUrl }));
-    }
-
-    // Serve uploads from both the base path and any configured public URL
-    this.app.use('/uploads', express.static(systemUploadDir));
-    if (publicUrl !== '/uploads') {
-      this.app.use(publicUrl, express.static(systemUploadDir));
     }
 
     this.setupAuthIntegration();
@@ -144,7 +156,7 @@ export class APIServer {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client, X-CSRF-Token, X-Reset-Context');
       }
       
       res.status(err.status || 500).json({
@@ -213,12 +225,28 @@ export class APIServer {
       const defaults = [
         { key: 'platform_name', value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
         { key: 'frontend_url', value: 'http://frontend.framework.local', description: 'The primary URL for your frontend application.', group: 'General' },
+        { key: 'timezone', value: 'UTC', description: 'Default system timezone for scheduling and display.', group: 'General' },
         { key: 'routing_home_target', value: 'auto', description: 'Homepage route target. Examples: auto, layout:<name>, collection:<slug>:<id>', group: 'Routing' },
         { key: 'permalink_structure', value: '/:slug', description: 'The default URL structure for your content (e.g. /:year/:month/:slug)', group: 'General' },
         { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'Settings' },
         { key: 'rate_limit_max', value: '100', description: 'Maximum requests per window per IP', group: 'security' },
         { key: 'rate_limit_window', value: '900000', description: 'Rate limit window in milliseconds (15min = 900000)', group: 'security' },
         { key: 'auth_session_duration_minutes', value: '10080', description: 'Login session duration in minutes for access token/cookie/session expiry.', group: 'security' },
+        { key: 'auth_password_min_length', value: '8', description: 'Minimum required password length.', group: 'security' },
+        { key: 'auth_password_require_uppercase', value: 'true', description: 'Require uppercase letters in passwords.', group: 'security' },
+        { key: 'auth_password_require_lowercase', value: 'true', description: 'Require lowercase letters in passwords.', group: 'security' },
+        { key: 'auth_password_require_number', value: 'true', description: 'Require digits in passwords.', group: 'security' },
+        { key: 'auth_password_require_symbol', value: 'false', description: 'Require symbols in passwords.', group: 'security' },
+        { key: 'auth_password_history', value: '5', description: 'Prevent reuse of the last N passwords.', group: 'security' },
+        { key: 'auth_password_breach_check', value: 'false', description: 'Enable optional breach-check hook for passwords.', group: 'security' },
+        { key: 'auth_password_reset_token_minutes', value: '30', description: 'Password reset token lifetime in minutes.', group: 'security' },
+        { key: 'auth_email_change_token_minutes', value: '60', description: 'Email change token lifetime in minutes.', group: 'security' },
+        { key: 'auth_lockout_threshold', value: '5', description: 'Failed login attempts before temporary lockout.', group: 'security' },
+        { key: 'auth_lockout_window_minutes', value: '15', description: 'Window in minutes for counting failed logins.', group: 'security' },
+        { key: 'auth_lockout_duration_minutes', value: '30', description: 'Lockout duration in minutes after threshold is reached.', group: 'security' },
+        { key: 'auth_captcha_enabled', value: 'false', description: 'Require captcha after repeated login failures.', group: 'security' },
+        { key: 'auth_captcha_threshold', value: '3', description: 'Failed attempts before captcha is required.', group: 'security' },
+        { key: 'auth_security_notifications', value: 'true', description: 'Send user-facing security notification emails for auth events.', group: 'security' },
         { key: 'two_factor_enabled', value: 'false', description: 'Enable two-factor authentication for admin accounts.', group: 'security' },
         { key: 'localization_locales', value: '[{"code":"en","name":"English","enabled":true}]', description: 'JSON array of available locales with code, name and enabled state.', group: 'Localization' },
         { key: 'enabled_locales', value: 'en', description: 'Comma-separated list of enabled locale codes for compatibility layers.', group: 'Localization' },
@@ -226,6 +254,8 @@ export class APIServer {
         { key: 'admin_default_locale', value: 'en', description: 'Default language for the admin interface.', group: 'Localization' },
         { key: 'frontend_default_locale', value: 'en', description: 'Default language for public frontend rendering.', group: 'Localization' },
         { key: 'locale_url_strategy', value: 'query', description: 'Locale URL strategy for frontend routes: query, path, or none.', group: 'Localization' },
+        { key: 'frontend_auth_enabled', value: 'true', description: 'Enable customer-facing authentication flows on the frontend (register, verify, forgot/reset password).', group: 'security' },
+        { key: 'frontend_registration_enabled', value: 'true', description: 'Allow new customer self-registration on the frontend.', group: 'security' },
         { key: 'email_notifications', value: 'true', description: 'Receive system alerts and audit snapshots via email.', group: 'Engagement' }
       ];
 
@@ -313,6 +343,7 @@ export class APIServer {
         'Origin', 
         'X-Framework-Client',
         'X-CSRF-Token',
+        'X-Reset-Context',
         'X-App-Locale',
         'Cache-Control',
         'Pragma'
@@ -327,9 +358,15 @@ export class APIServer {
   }
 
   private setupAuthIntegration() {
+    // Initialize Permission Checker
+    const db = (this.manager as any).db;
+    const { UserPermissionChecker } = require('@fromcode/auth');
+    const permissionChecker = new UserPermissionChecker(db);
+    this.auth.setPermissionChecker(permissionChecker);
+    this.logger.info('Permission checker initialized and configured');
+
     this.auth.setSessionValidator(async (jti) => {
       try {
-        const db = (this.manager as any).db;
         const drizzle = db.drizzle;
         
         // Use the imported systemSessions schema for type-safety and correct mapping
@@ -367,13 +404,64 @@ export class APIServer {
       }
     });
 
-    // API Key Validator Placeholder
+    // API key validator: supports master key and user-generated personal API tokens.
     this.auth.setApiKeyValidator(async (key) => {
-        // In a real app, you'd check a table of API keys
-        if (key === process.env.MASTER_API_KEY) {
-            return { id: '0', email: 'system@fromcode.com', roles: ['admin'] };
+      if (!key) return null;
+      const rawKey = String(key || '').trim();
+      if (!rawKey) return null;
+
+      if (rawKey === process.env.MASTER_API_KEY) {
+        return { id: '0', email: 'system@fromcode.com', roles: ['admin'] };
+      }
+
+      try {
+        const keyHash = createHash('sha256').update(rawKey).digest('hex');
+        const lookupRow = await db.findOne('_system_meta', { key: `auth:api_token:${keyHash}` });
+        if (!lookupRow?.value) return null;
+
+        let payload: any = null;
+        try {
+          payload = JSON.parse(String(lookupRow.value));
+        } catch {
+          return null;
         }
+
+        const userId = Number(payload?.userId || 0);
+        const tokenId = String(payload?.tokenId || '').trim();
+        if (!userId || !tokenId) return null;
+
+        const expiresAt = payload?.expiresAt ? new Date(String(payload.expiresAt)) : null;
+        if (expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() < Date.now()) {
+          return null;
+        }
+
+        const user = await db.findOne('users', { id: userId });
+        if (!user) return null;
+
+        const roles = Array.isArray(user.roles)
+          ? user.roles
+          : (typeof user.roles === 'string'
+              ? (() => {
+                  try {
+                    const parsed = JSON.parse(user.roles);
+                    return Array.isArray(parsed) ? parsed : [];
+                  } catch {
+                    return [];
+                  }
+                })()
+              : []);
+
+        return {
+          id: String(user.id),
+          email: String(user.email || ''),
+          roles: roles.map((role: any) => String(role)),
+          isApiKey: true,
+          jti: `api:${tokenId}`
+        };
+      } catch (error) {
+        this.logger.error(`API key validation failed: ${error}`);
         return null;
+      }
     });
   }
 
@@ -451,13 +539,15 @@ export class APIServer {
       // Public routes that are ALWAYS allowed (even in maintenance)
       // These are essential for the system to function or for admins to login.
       const isPublicSystemRoute = 
-        req.path === '/api/health' || 
-        req.path.endsWith('openapi.json') ||
-        req.path.startsWith('/api/auth') || 
-        req.path.startsWith('/api/v1/auth') ||
-        req.path.endsWith('/system/i18n') ||
-        req.path.endsWith('/system/events') ||
-        req.path.startsWith('/plugins/');
+        req.path === LEGACY_API_ROUTES.SYSTEM.HEALTH ||
+        req.path === API_ROUTES.SYSTEM.HEALTH ||
+        req.path === LEGACY_API_ROUTES.SYSTEM.OPENAPI ||
+        req.path === API_ROUTES.SYSTEM.OPENAPI ||
+        req.path.startsWith(`${API_PREFIXES.BASE}/auth`) ||
+        req.path.startsWith(`${API_PREFIXES.VERSIONED}/auth`) ||
+        req.path === API_ROUTES.SYSTEM.I18N ||
+        req.path === API_ROUTES.SYSTEM.EVENTS ||
+        req.path.startsWith(PUBLIC_ROUTE_PREFIXES.PLUGIN_ASSETS);
 
       if (isAdmin) {
         this.logger.debug(`Maintenance: ADMIN BYPASS for ${req.path} (${req.user?.email})`);
@@ -476,7 +566,7 @@ export class APIServer {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client, X-CSRF-Token, X-Reset-Context');
       }
 
       res.status(503).json({
@@ -516,15 +606,20 @@ export class APIServer {
       }
     } catch (e) {}
 
-    this.app.get('/api/health', async (req: any, res) => res.json({ 
+    this.app.get(LEGACY_API_ROUTES.SYSTEM.HEALTH, async (req: any, res) => res.json({ 
+      status: 'ok', 
+      version: coreVersion,
+      maintenance: await this.getMaintenanceStatus(),
+      bypass: !!(req.user && req.user.roles && req.user.roles.includes('admin'))
+    }));
+    this.app.get(API_ROUTES.SYSTEM.HEALTH, async (req: any, res) => res.json({ 
       status: 'ok', 
       version: coreVersion,
       maintenance: await this.getMaintenanceStatus(),
       bypass: !!(req.user && req.user.roles && req.user.roles.includes('admin'))
     }));
 
-    const apiVersion = process.env.API_VERSION_PREFIX || 'v1';
-    const vPrefix = `/api/${apiVersion}`;
+    const vPrefix = API_PREFIXES.VERSIONED;
     
     // GraphQL Endpoint
     this.app.all(`${vPrefix}/graphql`, (req, res, next) => {
@@ -536,8 +631,8 @@ export class APIServer {
 
     // Mount OpenAPI at both the generic and versioned path
     const openApiHandler = (req: any, res: any) => res.json(generateOpenAPI(this.manager.getCollections()));
-    this.app.get('/api/openapi.json', openApiHandler);
-    this.app.get(`${vPrefix}/openapi.json`, openApiHandler);
+    this.app.get(LEGACY_API_ROUTES.SYSTEM.OPENAPI, openApiHandler);
+    this.app.get(API_ROUTES.SYSTEM.OPENAPI, openApiHandler);
     
     const vApi = express.Router();
 
@@ -554,24 +649,26 @@ export class APIServer {
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
     
-    // Add collections to versioned API - Mount this BEFORE pluginRouter to ensure 
-    // /api/v1/collections/:slug takes precedence over /api/v1/:plugin/:slug
-    vApi.use(setupCollectionRoutes(this.manager, this.restController));
-
-    // Mount plugin routes directly under the API root to allow for shorter URLs: /api/v1/cms/pages
+    // Mount plugin routes FIRST so custom routes take precedence over collection proxies
+    // This allows plugins to define custom endpoints like /api/v1/finance/stats
+    // without being intercepted by the collection route handler
     vApi.use(this.pluginRouter);
+    
+    // Then mount collection routes as fallback for CRUD operations
+    vApi.use(setupCollectionRoutes(this.manager, this.restController));
     
     // Mount versioned API
     this.app.use(vPrefix, vApi);
 
     // Mount unversioned API (default)
-    this.app.use('/api', vApi);
+    this.app.use(API_PREFIXES.BASE, vApi);
     
     // Mount assets at root
     this.app.use('/plugins', setupPluginAssetRoutes(this.manager));
     this.app.use('/themes', setupThemeAssetRoutes(this.themeManager));
 
     this.app.use(API_ROUTES.COLLECTIONS.BASE, setupBaseCollectionRoutes(this.manager, this.restController));
+    this.app.use(LEGACY_API_ROUTES.COLLECTIONS.BASE, setupBaseCollectionRoutes(this.manager, this.restController));
   }
 
   private registerCoreCollection(slug: string, collection: any) {

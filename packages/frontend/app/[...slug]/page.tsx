@@ -1,6 +1,13 @@
 import { notFound } from 'next/navigation';
 import DynamicContentClient from '../dynamic-content-client';
-import { serverFetchJson, serverFetchResponse } from '../../lib/server-api';
+import {
+  buildCollectionLookupPath,
+  buildSettingsCollectionPath,
+  buildSystemResolvePath,
+  extractFirstDoc,
+  serverFetchJson,
+  serverFetchResponse
+} from '../../lib/server-api';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 
@@ -38,19 +45,13 @@ function shouldBypassDynamicRouting(segments: string[]) {
   return STATIC_FILE_EXT_RE.test(last);
 }
 
-function firstDoc(result: any): any {
-  if (Array.isArray(result)) return result[0] || null;
-  if (Array.isArray(result?.docs)) return result.docs[0] || null;
-  return result?.doc || result || null;
-}
-
 async function readSettingValue(key: string): Promise<string> {
   const map = await readSettingsMap();
   return String(map.get(key) || '').trim();
 }
 
 const readSettingsMap = cache(async () => {
-  const result = await serverFetchJson('/collections/settings?limit=500');
+  const result = await serverFetchJson(buildSettingsCollectionPath(500));
   const docs = Array.isArray(result?.docs)
     ? result.docs
     : Array.isArray(result)
@@ -115,6 +116,12 @@ function readSearchValue(searchParams: SearchParams | undefined, key: string): s
   return String(value || '').trim();
 }
 
+function isPreviewMode(searchParams: SearchParams | undefined): boolean {
+  const preview = searchParams?.preview;
+  const previewEnabled = preview === '1' || (Array.isArray(preview) && preview.includes('1'));
+  return previewEnabled;
+}
+
 async function resolveLocale(
   searchParams: SearchParams | undefined,
   pathLocale: string | undefined,
@@ -146,16 +153,11 @@ async function resolveDoc(
   if (locale) query.set('locale', locale);
   if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
 
-  const preview = searchParams?.preview;
-  const draft = searchParams?.draft;
-  if (preview === '1' || (Array.isArray(preview) && preview.includes('1'))) {
+  if (isPreviewMode(searchParams)) {
     query.set('preview', '1');
   }
-  if (draft === '1' || (Array.isArray(draft) && draft.includes('1'))) {
-    query.set('draft', '1');
-  }
 
-  const response = await serverFetchResponse(`/system/resolve?${query.toString()}`);
+  const response = await serverFetchResponse(buildSystemResolvePath(query));
   if (!response) return null;
 
   if (!response.ok) {
@@ -190,16 +192,11 @@ async function resolveBySlug(slug: string, locale: string, fallbackLocale: strin
   if (locale) query.set('locale', locale);
   if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
 
-  const preview = searchParams?.preview;
-  const draft = searchParams?.draft;
-  if (preview === '1' || (Array.isArray(preview) && preview.includes('1'))) {
+  if (isPreviewMode(searchParams)) {
     query.set('preview', '1');
   }
-  if (draft === '1' || (Array.isArray(draft) && draft.includes('1'))) {
-    query.set('draft', '1');
-  }
 
-  const result = await serverFetchJson(`/system/resolve?${query.toString()}`);
+  const result = await serverFetchJson(buildSystemResolvePath(query));
   return result?.doc || null;
 }
 
@@ -216,8 +213,8 @@ async function resolveHomeTarget(locale: string, fallbackLocale: string, searchP
     const collectionSlug = parts[1];
     const recordId = parts.slice(2).join(':');
     if (collectionSlug && recordId) {
-      const result = await serverFetchJson(`/collections/${encodeURIComponent(collectionSlug)}?id=${encodeURIComponent(recordId)}&limit=1`);
-      const doc = firstDoc(result);
+      const result = await serverFetchJson(buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 }));
+      const doc = extractFirstDoc(result);
       if (doc) return { content: doc, forcedLayout: null };
     }
   }

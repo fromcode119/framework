@@ -15,7 +15,7 @@ export const Card = ({ children, className = "", noPadding = false, title, ...pr
       {...props}
       className={`rounded-xl border bg-white border-slate-200/60 shadow-sm dark:bg-slate-900/50 dark:border-slate-800 dark:shadow-none ${noPadding ? '' : 'p-6'} ${className}`}
     >
-      {title && <h3 className="font-semibold tracking-tight text-sm mb-4 text-slate-800 dark:text-slate-100">{title}</h3>}
+      {title && <h3 className="font-semibold tracking-tight text-[13px] mb-4 text-slate-800 dark:text-slate-100">{title}</h3>}
       {children}
     </div>
   );

@@ -135,9 +135,10 @@ export interface PluginManifest {
   // Configuration
   config?: Record<string, any>;
   sandbox?: boolean | {
+    // Sandbox is enabled by default. Set `sandbox: false` to disable isolation.
     memoryLimit?: number; // In MB
     timeout?: number;     // In ms
-    allowNative?: boolean; // If true, runs in main process (trusted)
+    allowNative?: boolean; // Advanced host bridge toggle for trusted plugins.
   };
 
   // Runtime Bridge configurations

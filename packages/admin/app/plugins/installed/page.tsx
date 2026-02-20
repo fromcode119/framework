@@ -225,7 +225,7 @@ export default function InstalledPluginsPage() {
                                href={`/plugins/marketplace/${plugin.slug}`}
                                className="flex items-center gap-2 px-2 py-0.5 bg-amber-500 text-white rounded-lg animate-pulse no-underline shadow-md shadow-amber-500/20"
                              >
-                                <FrameworkIcons.Refresh size={8} className="animate-spin-slow" />
+                                <FrameworkIcons.Loader size={8} className="animate-spin" />
                                 <span className="text-[8px] font-semibold uppercase tracking-wider leading-none">Update</span>
                              </Link>
                            )}

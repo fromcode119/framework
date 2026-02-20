@@ -2,12 +2,18 @@
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { DayPicker } from 'react-day-picker';
-import { format, parseISO, isValid } from 'date-fns';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from './button';
 import { RootFramework } from '@fromcode/react';
 import { useTheme } from '../theme-context';
 import { getFieldClasses } from '@/lib/ui';
+import {
+  formatSystemDate,
+  getZonedDateParts,
+  parseDateValue,
+  resolveSystemTimezone,
+  zonedPartsToUtcDate
+} from '@/lib/timezone';
 
 interface DateTimePickerProps {
   value?: string;
@@ -33,8 +39,12 @@ export const DateTimePicker = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
-
-  const date = value && isValid(parseISO(value)) ? parseISO(value) : undefined;
+  const timezone = resolveSystemTimezone();
+  const utcDate = parseDateValue(value);
+  const zonedParts = getZonedDateParts(utcDate, timezone);
+  const pickerDate = zonedParts
+    ? new Date(zonedParts.year, zonedParts.month - 1, zonedParts.day)
+    : undefined;
   
   const updatePosition = () => {
     if (containerRef.current) {
@@ -77,26 +87,38 @@ export const DateTimePicker = ({
         onChange(null);
         return;
     }
-    
-    // Preserve time if it exists in current value
-    const finalDate = new Date(selectedDate);
-    if (date && showTime) {
-        finalDate.setHours(date.getHours());
-        finalDate.setMinutes(date.getMinutes());
-    }
-    
-    onChange(finalDate.toISOString());
+
+    const baseTime = zonedParts || getZonedDateParts(new Date(), timezone);
+    const finalUtcDate = zonedPartsToUtcDate({
+      year: selectedDate.getFullYear(),
+      month: selectedDate.getMonth() + 1,
+      day: selectedDate.getDate(),
+      hour: showTime ? (baseTime?.hour || 0) : 0,
+      minute: showTime ? (baseTime?.minute || 0) : 0,
+      second: 0
+    }, timezone);
+
+    onChange(finalUtcDate.toISOString());
     if (!showTime) setIsOpen(false);
   };
 
   const handleTimeChange = (type: 'hours' | 'minutes', val: string) => {
-    const newDate = date ? new Date(date) : new Date();
-    const num = parseInt(val) || 0;
-    
-    if (type === 'hours') newDate.setHours(Math.min(23, Math.max(0, num)));
-    else newDate.setMinutes(Math.min(59, Math.max(0, num)));
-    
-    onChange(newDate.toISOString());
+    const base = zonedParts || getZonedDateParts(new Date(), timezone);
+    if (!base) return;
+
+    const parsed = Number.parseInt(val, 10);
+    const num = Number.isNaN(parsed) ? 0 : parsed;
+    const clamped = type === 'hours'
+      ? Math.min(23, Math.max(0, num))
+      : Math.min(59, Math.max(0, num));
+
+    const next = {
+      ...base,
+      hour: type === 'hours' ? clamped : base.hour,
+      minute: type === 'minutes' ? clamped : base.minute,
+      second: 0
+    };
+    onChange(zonedPartsToUtcDate(next, timezone).toISOString());
   };
 
   return (
@@ -108,8 +130,15 @@ export const DateTimePicker = ({
         <div className="flex items-center gap-2">
            <FrameworkIcons.Calendar size={16} className="text-slate-400" />
            <span className={!value ? 'text-slate-400 font-normal' : ''}>
-             {value && date && isValid(date) 
-               ? format(date, showTime ? "PPP p" : "PPP") 
+             {value && utcDate
+               ? formatSystemDate(
+                   utcDate,
+                   showTime
+                     ? { dateStyle: 'medium', timeStyle: 'short' }
+                     : { dateStyle: 'medium' },
+                   placeholder,
+                   timezone
+                 )
                : placeholder}
            </span>
         </div>
@@ -140,7 +169,7 @@ export const DateTimePicker = ({
           >
             <DayPicker
               mode="single"
-              selected={date}
+              selected={pickerDate}
               onSelect={handleSelect}
               className={`${theme === 'dark' ? 'rdp-dark' : ''}`}
               classNames={{
@@ -176,7 +205,7 @@ export const DateTimePicker = ({
                    </div>
                    <div className="flex flex-col">
                       <span className="text-[11px] font-semibold text-slate-500">Time Precision</span>
-                      <span className="text-[10px] font-medium text-slate-400 italic">UTC Timestamp Synchronization</span>
+                      <span className="text-[10px] font-medium text-slate-400 italic">Timezone: {timezone}</span>
                    </div>
                 </div>
 
@@ -187,7 +216,7 @@ export const DateTimePicker = ({
                       type="number"
                       min="0"
                       max="23"
-                      value={date?.getHours() || 0}
+                      value={zonedParts?.hour || 0}
                       onChange={(e) => handleTimeChange('hours', e.target.value)}
                       className={`w-full h-10 rounded-lg border text-center font-semibold transition-all outline-none ${
                         theme === 'dark' 
@@ -203,7 +232,7 @@ export const DateTimePicker = ({
                       type="number"
                       min="0"
                       max="59"
-                      value={date?.getMinutes() || 0}
+                      value={zonedParts?.minute || 0}
                       onChange={(e) => handleTimeChange('minutes', e.target.value)}
                       className={`w-full h-10 rounded-lg border text-center font-semibold transition-all outline-none ${
                         theme === 'dark' 

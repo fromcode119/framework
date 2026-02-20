@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Slot } from '@fromcode/react';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/ui/page-heading';
 
 interface CollectionListHeaderProps {
   collection: any;
@@ -27,19 +28,32 @@ export const CollectionListHeader: React.FC<CollectionListHeaderProps> = ({
     }`}>
       <div className="w-full px-6 lg:px-12 py-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2 rounded-xl shadow-inner ${theme === 'dark' ? 'bg-slate-900 border border-slate-800' : 'bg-indigo-50 border border-indigo-100'} text-indigo-500`}>
-              <FrameworkIcons.Layout size={20} />
-            </div>
-            <h1 className={`text-3xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              {collection.slug === 'users' ? 'User Management' : (collection.name || slug.charAt(0).toUpperCase() + slug.slice(1))}
-            </h1>
-          </div>
-          <p className="text-slate-500 font-semibold text-sm tracking-tight opacity-70">
-            {collection.slug === 'users' 
-              ? 'Manage system users, roles and security permissions.' 
-              : `Manage and organize ${(collection.name || slug).toLowerCase()} records.`}
-          </p>
+          <Slot
+            name={`admin.collection.${pluginSlug}.${slug}.header`}
+            props={{ collection, pluginSlug, slug, theme }}
+            fallback={
+              <Slot
+                name={`admin.collection.${slug}.header`}
+                props={{ collection, pluginSlug, slug, theme }}
+                fallback={
+                  <PageHeading
+                    icon={(
+                      <div className={`p-2 rounded-xl shadow-inner ${theme === 'dark' ? 'bg-slate-900 border border-slate-800' : 'bg-indigo-50 border border-indigo-100'} text-indigo-500`}>
+                        <FrameworkIcons.Layout size={20} />
+                      </div>
+                    )}
+                    title={collection.slug === 'users' ? 'User Management' : (collection.name || slug.charAt(0).toUpperCase() + slug.slice(1))}
+                    subtitle={
+                      collection.slug === 'users'
+                        ? 'Manage system users, roles and security permissions.'
+                        : `Manage and organize ${(collection.name || slug).toLowerCase()} records.`
+                    }
+                    subtitleClassName="text-slate-500 font-bold text-xs tracking-tight opacity-80 mt-2"
+                  />
+                }
+              />
+            }
+          />
         </div>
         
         <div className="flex items-center gap-3">

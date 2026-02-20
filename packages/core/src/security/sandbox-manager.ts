@@ -1,11 +1,12 @@
-import ivm from 'isolated-vm';
+// TypeScript namespace import correctly handles isolated-vm's CommonJS export pattern
+import ivm = require('isolated-vm');
 import { PluginManifest, PluginContext } from '@fromcode/sdk';
 import { Logger } from '../logging/logger';
 
 export class SandboxManager {
   private logger = new Logger({ namespace: 'sandbox-manager' });
-  private isolate: ivm.Isolate;
-  private contexts: Map<string, ivm.Context> = new Map();
+  private isolate: any; // ivm.Isolate
+  private contexts: Map<string, any> = new Map(); // ivm.Context
   private limits: Map<string, { timeout?: number; memory?: number }> = new Map();
 
   constructor(private memoryLimit: number = 128) {
@@ -15,7 +16,7 @@ export class SandboxManager {
   /**
    * Initializes a persistent context for a plugin.
    */
-  public async initPluginContext(slug: string, ctx: PluginContext, manifest?: PluginManifest): Promise<ivm.Context> {
+  public async initPluginContext(slug: string, ctx: PluginContext, manifest?: PluginManifest): Promise<any> { // ivm.Context
     if (this.contexts.has(slug)) {
       this.contexts.get(slug)?.release();
     }
@@ -94,7 +95,7 @@ export class SandboxManager {
   /**
    * Creates a secure bridge for the PluginContext into the isolate.
    */
-  public async applyPluginContext(ivmContext: ivm.Context, ctx: PluginContext) {
+  public async applyPluginContext(ivmContext: any /* ivm.Context */, ctx: PluginContext) {
     const jail = ivmContext.global;
 
     // 1. Basic Plugin Info
@@ -113,12 +114,13 @@ export class SandboxManager {
     }));
 
     await ivmContext.evalClosure(`
-      global.logger = {
+      if (!globalThis.global) globalThis.global = globalThis;
+      globalThis.logger = {
         info: (msg) => _log_bridge.apply(undefined, ['info', msg]),
         warn: (msg) => _log_bridge.apply(undefined, ['warn', msg]),
         error: (msg) => _log_bridge.apply(undefined, ['error', msg]),
       };
-      global.console = {
+      globalThis.console = {
         log: (...args) => _log_bridge.apply(undefined, ['info', args.join(' ')]),
         info: (...args) => _log_bridge.apply(undefined, ['info', args.join(' ')]),
         warn: (...args) => _log_bridge.apply(undefined, ['warn', args.join(' ')]),
@@ -145,7 +147,7 @@ export class SandboxManager {
       }));
       
       await ivmContext.evalClosure(`
-        global.db = {
+        globalThis.db = {
           find: (collection, query) => _db_find.apply(undefined, [collection, query], { arguments: { copy: true }, result: { promise: true, copy: true } }),
           findOne: (collection, query) => _db_findOne.apply(undefined, [collection, query], { arguments: { copy: true }, result: { promise: true, copy: true } }),
           insert: (collection, data) => _db_insert.apply(undefined, [collection, data], { arguments: { copy: true }, result: { promise: true, copy: true } }),
@@ -170,7 +172,7 @@ export class SandboxManager {
     }));
 
     await ivmContext.evalClosure(`
-      global.cache = {
+      globalThis.cache = {
         get: (key) => _cache_get.apply(undefined, [key], { result: { promise: true, copy: true } }),
         set: (key, val, ttl) => _cache_set.apply(undefined, [key, val, ttl], { arguments: { copy: true }, result: { promise: true } }),
         del: (key) => _cache_del.apply(undefined, [key], { result: { promise: true } })
@@ -183,7 +185,7 @@ export class SandboxManager {
     
     // Hooks/Events are tricky: we need to allow the sandbox to register a listener
     // and then call back INTO the sandbox when the event fires.
-    await jail.set('_plugins_on', new ivm.Reference((event: string, callback: ivm.Reference) => {
+    await jail.set('_plugins_on', new ivm.Reference((event: string, callback: any /* ivm.Reference */) => {
       ctx.plugins.on(event, async (payload: any) => {
         try {
           await callback.apply(undefined, [new ivm.ExternalCopy(payload).copyInto()], { arguments: { copy: true } });
@@ -194,7 +196,7 @@ export class SandboxManager {
     }));
 
     await ivmContext.evalClosure(`
-      global.plugins = {
+      globalThis.plugins = {
         isEnabled: (slug) => _plugins_isEnabled.apply(undefined, [slug]),
         emit: (event, data) => _plugins_emit.apply(undefined, [event, data], { arguments: { copy: true } }),
         on: (event, callback) => _plugins_on.apply(undefined, [event, callback], { arguments: { reference: true } })
@@ -202,7 +204,7 @@ export class SandboxManager {
     `, [], { arguments: { reference: true } });
 
     // 6. API Bridge
-    await jail.set('_api_register', new ivm.Reference((method: string, path: string, callback: ivm.Reference) => {
+    await jail.set('_api_register', new ivm.Reference((method: string, path: string, callback: any /* ivm.Reference */) => {
       (ctx.api as any)[method](path, async (req: any, res: any) => {
         try {
           // req/res are too complex to bridge directly, so we pass a simplified req
@@ -233,7 +235,7 @@ export class SandboxManager {
     }));
 
     await ivmContext.evalClosure(`
-      global.api = {
+      globalThis.api = {
         get: (path, cb) => _api_register.apply(undefined, ['get', path, cb], { arguments: { reference: true } }),
         post: (path, cb) => _api_register.apply(undefined, ['post', path, cb], { arguments: { reference: true } }),
         put: (path, cb) => _api_register.apply(undefined, ['put', path, cb], { arguments: { reference: true } }),
@@ -256,7 +258,7 @@ export class SandboxManager {
       }));
 
       await ivmContext.evalClosure(`
-        global.fetch = async (url, init) => {
+        globalThis.fetch = async (url, init) => {
           const res = await _fetch_bridge.apply(undefined, [url, init], { 
             arguments: { copy: true }, 
             result: { promise: true, copy: true } 

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
+import { buildApiVersionPrefix, normalizeApiVersion } from './api-version';
 import { Slot } from './slot';
 import { Override } from './override';
 import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './icons';
@@ -77,6 +78,7 @@ interface PluginContextValue {
 }
 
 const PluginContext = createContext<PluginContextValue | null>(null);
+const inFlightGetRequests = new Map<string, Promise<any>>();
 
 // --- Standalone Bridge Exports ---
 // These allow plugins to import { registerX } from '@fromcode/react' 
@@ -158,15 +160,15 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     }
   }, []);
 
-  const apiFetch = useCallback(async (path: string, options: (RequestInit & { silent?: boolean }) = {}) => {
-    const { silent, ...fetchOptions } = options as any;
+  const apiFetch = useCallback(async (path: string, options: (RequestInit & { silent?: boolean; noDedupe?: boolean }) = {}) => {
+    const { silent, noDedupe, ...fetchOptions } = options as any;
     const base = getBaseURL();
-    const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
+    const version = normalizeApiVersion();
     
     let url = path;
     if (!path.startsWith('http')) {
-      const vPrefix = `/api/${version}`;
-      // Prevent double prefixing if path already starts with /api/v1
+      const vPrefix = buildApiVersionPrefix(version);
+      // Prevent double prefixing if path already starts with API version prefix
       const relativePath = path.startsWith(vPrefix) ? path.slice(vPrefix.length) : path;
       url = `${base}${vPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
     }
@@ -177,32 +179,50 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(method);
     const existingHeaders = (fetchOptions.headers || {}) as Record<string, string>;
 
-    if (!silent) {
-      console.debug(`[Fromcode API] Fetching: ${url}`, { credentials: fetchOptions.credentials || 'include', hasToken: !!token });
+    const execute = async () => {
+      const res = await fetch(url, {
+        ...fetchOptions,
+        credentials: fetchOptions.credentials || 'include',
+        headers: {
+          ...existingHeaders,
+          ...(isUnsafeMethod && !existingHeaders['X-Framework-Client'] ? { 'X-Framework-Client': 'frontend-ui' } : {}),
+          ...(isUnsafeMethod && !existingHeaders['X-Requested-With'] ? { 'X-Requested-With': 'XMLHttpRequest' } : {}),
+          ...(isUnsafeMethod && csrfToken && !existingHeaders['X-CSRF-Token'] ? { 'X-CSRF-Token': csrfToken } : {}),
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) {
+          if (res.status === 404 && url.includes('/system/resolve')) {
+            return null;
+          }
+          const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+          if (!silent) {
+            console.error(`[Fromcode API] Error ${res.status} from ${url}:`, err);
+          }
+          throw new Error(err.error || `Failed to fetch from ${url}`);
+      }
+      return res.json();
+    };
+
+    const canDedupe =
+      method === 'GET' &&
+      !noDedupe &&
+      !fetchOptions.body &&
+      !String(fetchOptions.cache || '').toLowerCase().includes('no-store');
+
+    if (!canDedupe) {
+      return execute();
     }
 
-    const res = await fetch(url, {
-      ...fetchOptions,
-      credentials: fetchOptions.credentials || 'include',
-      headers: {
-        ...existingHeaders,
-        ...(existingHeaders['X-Framework-Client'] ? {} : { 'X-Framework-Client': 'frontend-ui' }),
-        ...(existingHeaders['X-Requested-With'] ? {} : { 'X-Requested-With': 'XMLHttpRequest' }),
-        ...(isUnsafeMethod && csrfToken && !existingHeaders['X-CSRF-Token'] ? { 'X-CSRF-Token': csrfToken } : {}),
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      }
+    const dedupeKey = `${url}|${fetchOptions.credentials || 'include'}|${token ? 'auth' : 'anon'}`;
+    const inFlight = inFlightGetRequests.get(dedupeKey);
+    if (inFlight) return inFlight;
+
+    const promise = execute().finally(() => {
+      inFlightGetRequests.delete(dedupeKey);
     });
-    if (!res.ok) {
-        if (res.status === 404 && url.includes('/system/resolve')) {
-          return null;
-        }
-        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-        if (!silent) {
-          console.error(`[Fromcode API] Error ${res.status} from ${url}:`, err);
-        }
-        throw new Error(err.error || `Failed to fetch from ${url}`);
-    }
-    return res.json();
+    inFlightGetRequests.set(dedupeKey, promise);
+    return promise;
   }, [getBaseURL, getCookieValue]);
 
   const api = useMemo(() => ({
@@ -261,8 +281,9 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           const currentUrl = new URL(window.location.href);
           const params = currentUrl.searchParams;
           
-          if (params.get('preview') === '1') query += '&preview=1';
-          if (params.get('draft') === '1') query += '&draft=1';
+          if (params.get('preview') === '1') {
+            query += '&preview=1';
+          }
           
           // Also check if we are in an iframe (preview mode often uses iframes)
           if (window.self !== window.top) {
@@ -279,29 +300,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   const loadConfig = useCallback(async (path: string = '/system/frontend') => {
     try {
       const base = getBaseURL();
-      const version = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
-      
-      // Handle paths that might already be versioned (/api/v1/...)
-      let endpoint = path;
-      if (!path.startsWith('http')) {
-        const relativePath = path.startsWith(`/api/${version}`) 
-          ? path.replace(`/api/${version}`, '') 
-          : path;
-        endpoint = `${base}/api/${version}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
-      }
-      
-      console.debug(`[Fromcode] Loading config from: ${endpoint}`);
-
-      const token = typeof document !== 'undefined' 
-        ? document.cookie.split('; ').find(row => row.startsWith('fc_token='))?.split('=')[1]
-        : null;
-
-      const res = await fetch(endpoint, {
-        credentials: 'include',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      if (!res.ok) throw new Error(`Status ${res.status}`);
-      const data = await res.json();
+      const data = await apiFetch(path, { method: 'GET', silent: true });
       
       // Store server runtime modules for the consolidated import map logic in useEffect
       if (data.runtimeModules) {
@@ -378,7 +377,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       console.warn("[Fromcode] Failed to load config:", err);
       setIsReady(true);
     }
-  }, [apiUrl, getBaseURL]);
+  }, [getBaseURL, apiFetch]);
 
   const registerAPI = useCallback((slug: string, api: any) => {
     pluginAPIs[slug] = api;
@@ -418,25 +417,8 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   // Helper to load translations
   const loadTranslations = useCallback(async (newLocale: string) => {
     try {
-      const currentApiUrl = (stabilityRef.current as any).apiUrl;
-      const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-      let effectiveApiUrl = currentApiUrl || bridgeUrl || 'http://api.framework.local';
-      
-      // Ensure effectiveApiUrl is absolute or properly handled
-      if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
-        effectiveApiUrl = `http://${effectiveApiUrl}`;
-      }
-      
-      // Clean up trailing slash
-      const base = effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
-      const apiVersion = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_VERSION) || 'v1';
-      const endpoint = `${base}/api/${apiVersion}/system/i18n?locale=${newLocale}`;
-      
-      const res = await fetch(endpoint, {
-        credentials: 'include'
-      });
-      if (!res.ok) throw new Error(`Status ${res.status}`);
-      const data = await res.json();
+      const encodedLocale = encodeURIComponent(String(newLocale || '').trim() || 'en');
+      const data = await (stabilityRef.current.api as any).get(`/system/i18n?locale=${encodedLocale}`, { silent: true });
       setTranslations(data);
     } catch (err) {
       console.warn("[I18n] Failed to load translations from:", err);
@@ -831,6 +813,34 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           "@fromcode/admin/components": "data:application/javascript," + encodeURIComponent(
             ['MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext']
               .map(key => `export const ${key} = window.FromcodeAdmin ? window.FromcodeAdmin.${key} : undefined;`).join('\n') + `\nexport default window.FromcodeAdmin;`
+          ),
+          "@fromcode/admin": "data:application/javascript," + encodeURIComponent(
+            [
+              'PluginPageHeader',
+              'PluginOverviewCard',
+              'PluginStatsList',
+              'PluginChartCard',
+              'PluginEmptyState',
+              'MediaPicker',
+              'Button',
+              'Input',
+              'TextArea',
+              'Select',
+              'TagField',
+              'Loader',
+              'Switch',
+              'Card',
+              'Badge',
+              'ConfirmDialog',
+              'PromptDialog',
+              'DateTimePicker',
+              'ColorPicker',
+              'CodeEditor',
+              'VisualMenuField',
+              'Icon',
+              'ThemeContext',
+              'NotificationContext'
+            ].map(key => `export const ${key} = window.FromcodeAdmin ? window.FromcodeAdmin.${key} : undefined;`).join('\n') + `\nexport default window.FromcodeAdmin;`
           )
       };
 

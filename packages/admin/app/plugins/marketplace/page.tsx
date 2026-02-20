@@ -181,7 +181,7 @@ export default function MarketplacePage() {
                        <>
                          <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                          <div className="flex items-center gap-1.5 text-rose-500">
-                           <FrameworkIcons.Refresh size={10} className="animate-spin-slow" />
+                           <FrameworkIcons.Loader size={10} className="animate-spin" />
                            Trending
                          </div>
                        </>
@@ -212,7 +212,7 @@ export default function MarketplacePage() {
                         disabled={!!installing}
                         className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all shadow-lg active:scale-[0.97] bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
-                         <FrameworkIcons.Refresh size={16} className={installing === plugin.slug ? "animate-spin" : "animate-spin-slow"} />
+                         <FrameworkIcons.Loader size={16} className="animate-spin" />
                          <span>{installing === plugin.slug ? 'Updating...' : 'Update Plugin'}</span>
                        </button>
                     ) : (
@@ -222,7 +222,7 @@ export default function MarketplacePage() {
                         className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all shadow-lg active:scale-[0.97] bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
                          {installing === plugin.slug ? (
-                           <FrameworkIcons.Refresh size={16} className="animate-spin" />
+                           <FrameworkIcons.Loader size={16} className="animate-spin" />
                          ) : (
                            <FrameworkIcons.Download size={16} />
                          )}

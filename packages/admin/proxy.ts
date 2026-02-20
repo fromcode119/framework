@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { ROUTES } from '@/lib/constants';
 
 export function proxy(request: NextRequest) {
   const token = request.cookies.get('fc_token')?.value;
-  const isLoginPage = request.nextUrl.pathname === '/login';
-  const isSetupPage = request.nextUrl.pathname === '/setup';
+  const pathname = request.nextUrl.pathname;
+  const publicAuthRoutes = new Set<string>(ROUTES.AUTH.PUBLIC as readonly string[]);
+  const isLoginPage = pathname === ROUTES.AUTH.LOGIN;
+  const isSetupPage = pathname === ROUTES.AUTH.SETUP;
+  const isPublicAuthPage = publicAuthRoutes.has(pathname);
 
   // Allow setup page always to prevent loops during fresh installs
   if (isSetupPage) {
@@ -12,14 +16,14 @@ export function proxy(request: NextRequest) {
   }
 
   // If no token and not on auth pages, redirect to login
-  if (!token && !isLoginPage) {
-    const loginUrl = new URL('/login', request.url);
+  if (!token && !isPublicAuthPage) {
+    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // If token and on login page, redirect to dashboard
   if (token && isLoginPage) {
-    const dashboardUrl = new URL('/', request.url);
+    const dashboardUrl = new URL(ROUTES.ROOT, request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 

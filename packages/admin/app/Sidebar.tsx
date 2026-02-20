@@ -9,6 +9,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/env';
+import { ROUTES } from '@/lib/constants';
 import { 
   normalizeNavPath, 
   isPathMatch, 
@@ -476,17 +477,18 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
               <NavItem 
                 icon={<Settings size={18}/>} 
                 label="Settings" 
-                href="/settings/general" 
+                href={ROUTES.SETTINGS.GENERAL}
                 active={pathname.startsWith('/settings')} 
                 onClick={onClose} 
                 isMini={isMini} 
                 children={[
-                  { label: 'General', path: '/settings/general', icon: 'Settings' },
-                  { label: 'Localization', path: '/settings/localization', icon: 'Globe' },
-                  { label: 'Routing', path: '/settings/routing', icon: 'Link' },
-                  { label: 'Security', path: '/settings/security', icon: 'Shield' },
-                  { label: 'Infrastructure', path: '/settings/infrastructure', icon: 'Activity' },
-                  { label: 'Updates', path: '/settings/updates', icon: 'Refresh' },
+                  { label: 'General', path: ROUTES.SETTINGS.GENERAL, icon: 'Settings' },
+                  { label: 'Integrations', path: ROUTES.SETTINGS.INTEGRATIONS, icon: 'Orbit' },
+                  { label: 'Localization', path: ROUTES.SETTINGS.LOCALIZATION, icon: 'Globe' },
+                  { label: 'Routing', path: ROUTES.SETTINGS.ROUTING, icon: 'Link' },
+                  { label: 'Security', path: ROUTES.SETTINGS.SECURITY, icon: 'Shield' },
+                  { label: 'Infrastructure', path: ROUTES.SETTINGS.INFRASTRUCTURE, icon: 'Activity' },
+                  { label: 'Updates', path: ROUTES.SETTINGS.UPDATES, icon: 'Refresh' },
                 ]}
               />
             </>

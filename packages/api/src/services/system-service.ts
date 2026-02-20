@@ -15,6 +15,7 @@ export class SystemService {
 
     const activityFilter = or(
       isNull(systemLogs.pluginSlug),
+      eq(systemLogs.pluginSlug, 'system'),
       eq(systemPlugins.state, 'active')
     );
     const finalWhere = whereClause ? and(whereClause, activityFilter) : activityFilter;
@@ -67,6 +68,7 @@ export class SystemService {
     const baseWhere = conditions.length > 0 ? and(...conditions) : undefined;
     const auditFilter = or(
       isNull(systemAuditLogs.pluginSlug),
+      eq(systemAuditLogs.pluginSlug, 'system'),
       eq(systemPlugins.state, 'active')
     );
     const finalWhere = baseWhere ? and(baseWhere, auditFilter) : auditFilter;

@@ -261,7 +261,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           theme={theme}
           collectionSlug={collectionSlug}
         />
-      ) : field.admin?.component ? (() => {
+      ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'CodeEditor' ? (() => {
         const componentName = field.admin.component;
         const CustomComponent = fieldComponents[componentName];
         
@@ -364,7 +364,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           showTime={field.type === 'datetime'}
           disabled={isFieldReadOnly}
         />
-      ) : field.type === 'color' ? (
+      ) : (field.type === 'color' || field.admin?.component === 'ColorPicker') ? (
         <ColorPicker 
           value={currentValue}
           onChange={updateValue}

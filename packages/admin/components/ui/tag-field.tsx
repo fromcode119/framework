@@ -48,6 +48,7 @@ export const TagField = ({
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<TagOption[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [sourceUnavailableMessage, setSourceUnavailableMessage] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const [labels, setLabels] = useState<Record<string, string>>({});
 
@@ -72,6 +73,7 @@ export const TagField = ({
   useEffect(() => {
     const fetchLabels = async () => {
       if (!sourceCollection || tags.length === 0) return;
+      if (sourceUnavailableMessage) return;
       
       const missing = tags.filter(t => !labels[t]);
       if (missing.length === 0) return;
@@ -109,18 +111,27 @@ export const TagField = ({
              } else {
                 newLabels[t] = t;
              }
-           } catch (e) {}
+           } catch (e: any) {
+             const message = String(e?.message || '');
+             if (e?.status === 403 && message.includes('is unavailable because plugin')) {
+               setSourceUnavailableMessage(message);
+             }
+           }
         }));
         setLabels(newLabels);
       } catch (err) {}
     };
     fetchLabels();
-  }, [tags, sourceCollection]);
+  }, [tags, sourceCollection, sourceUnavailableMessage]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
       // If it's a relationship field (sourceCollection exists), we allow empty input to show initial suggestions
       if (inputValue.length < 1 && !sourceCollection) {
+        setSuggestions([]);
+        return;
+      }
+      if (sourceCollection && sourceUnavailableMessage) {
         setSuggestions([]);
         return;
       }
@@ -143,6 +154,7 @@ export const TagField = ({
             : `${ENDPOINTS.COLLECTIONS.BASE}/${targetCollection}/suggestions/${targetField}?q=${q}&limit=10`;
 
         const result = await api.get(url);
+        setSourceUnavailableMessage('');
         
         // Handle both array responses and paginated responses
         const docs = Array.isArray(result) ? result : (result.docs || []);
@@ -187,6 +199,13 @@ export const TagField = ({
           setLabels(newLabels);
         }
       } catch (err) {
+        const message = String((err as any)?.message || '');
+        const status = (err as any)?.status;
+        if (status === 403 && message.includes('is unavailable because plugin')) {
+          setSourceUnavailableMessage(message);
+          setSuggestions([]);
+          return;
+        }
         console.error("Failed to fetch suggestions", err);
       }
     };
@@ -333,10 +352,20 @@ export const TagField = ({
         </div>
       </div>
 
-      {showSuggestions && (inputValue.length > 0 || suggestions.length > 0) && (
+      {showSuggestions && (inputValue.length > 0 || suggestions.length > 0 || !!sourceUnavailableMessage) && (
         <div className={`absolute z-[100] w-full mt-2 rounded-lg border shadow-2xl p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 overflow-hidden ${
           theme === 'dark' ? 'bg-[#0f172a] border-slate-800' : 'bg-white/90 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
         }`}>
+          {sourceUnavailableMessage && (
+            <div className={`px-3.5 py-3 rounded-lg text-[11px] font-semibold ${
+              theme === 'dark'
+                ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+                : 'bg-amber-50 text-amber-700 border border-amber-200'
+            }`}>
+              Shipping methods are unavailable because Logistics plugin is inactive.
+            </div>
+          )}
+
           {suggestions.length > 0 && (
             <>
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
@@ -369,7 +398,7 @@ export const TagField = ({
             </>
           )}
 
-          {inputValue.length > 0 && !suggestions.some(s => s.value === inputValue || s.label === inputValue) && (
+          {inputValue.length > 0 && !sourceUnavailableMessage && !suggestions.some(s => s.value === inputValue || s.label === inputValue) && (
               <button
                 type="button"
                 onMouseDown={(e) => {

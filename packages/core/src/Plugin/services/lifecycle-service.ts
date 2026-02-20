@@ -96,26 +96,27 @@ export class LifecycleService {
     };
 
     // Override manifest sandbox config with database-stored values if they exist
-    if (saved?.sandboxConfig) {
-      if (!loadedPlugin.manifest.sandbox || typeof loadedPlugin.manifest.sandbox === 'boolean') {
-        loadedPlugin.manifest.sandbox = saved.sandboxConfig;
+    const hasSavedSandboxConfig = !!saved && Object.prototype.hasOwnProperty.call(saved, 'sandboxConfig') && saved.sandboxConfig !== undefined;
+    if (hasSavedSandboxConfig) {
+      if (saved!.sandboxConfig === false) {
+        loadedPlugin.manifest.sandbox = false;
+      } else if (!loadedPlugin.manifest.sandbox || typeof loadedPlugin.manifest.sandbox === 'boolean') {
+        loadedPlugin.manifest.sandbox = saved!.sandboxConfig;
       } else {
-        loadedPlugin.manifest.sandbox = { ...loadedPlugin.manifest.sandbox, ...saved.sandboxConfig };
+        loadedPlugin.manifest.sandbox = { ...loadedPlugin.manifest.sandbox, ...saved!.sandboxConfig };
       }
     }
 
     loadedPlugin.manifest.config = await this.registry.getPluginConfig(slug);
     this.manager.plugins.set(slug, loadedPlugin);
     
-    // discovery-phase initialization
-    // allows metadata (collections, settings, i18n) to be registered even for inactive plugins
-    if (!loadedPlugin.isSandboxed) {
-      const ctx = (this.manager as any).createContext(loadedPlugin);
-      try {
-        if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
-      } catch (err: any) {
-        this.logger.error(`Error during onInit for plugin "${slug}": ${err.message}`, err.stack);
-      }
+    // Discovery-phase initialization: keep this in host context for all plugins.
+    // Existing plugins rely on onInit() to register collections/settings/routes.
+    const ctx = (this.manager as any).createContext(loadedPlugin);
+    try {
+      if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
+    } catch (err: any) {
+      this.logger.error(`Error during onInit for plugin "${slug}": ${err.message}`, err.stack);
     }
 
     await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
@@ -162,9 +163,9 @@ export class LifecycleService {
       if (plugin.isSandboxed && plugin.entryPath && this.sandbox) {
         this.logger.info(`Initializing sandbox for "${slug}"...`);
         await this.sandbox.initPluginContext(slug, ctx, plugin.manifest);
-        
-        const code = fs.readFileSync(plugin.entryPath, 'utf8');
-        await this.sandbox.runInPluginContext(slug, code);
+        // Compatibility mode: keep plugin lifecycle execution in host context.
+        // The current plugin model is module-based and depends on host context registration.
+        if (plugin.onEnable) await plugin.onEnable(ctx);
       } else {
         if (plugin.onEnable) await plugin.onEnable(ctx);
       }

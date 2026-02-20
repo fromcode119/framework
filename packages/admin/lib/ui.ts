@@ -29,15 +29,15 @@ export const UI_FIELD = {
   // Sizes
   sizes: {
     sm: {
-      layout: 'py-1.5 px-3 h-9 text-[12px] leading-none',
+      layout: 'py-1.5 px-3 h-9 text-[11px] leading-none',
       container: 'min-h-[36px] py-1.5 px-3 leading-none'
     },
     md: {
-      layout: 'py-2 px-3.5 h-10 text-[13px] leading-none',
+      layout: 'py-2 px-3.5 h-10 text-[12px] leading-none',
       container: 'min-h-[40px] py-2 px-3.5 leading-none'
     },
     lg: {
-      layout: 'py-2.5 px-4 h-11 text-sm leading-none',
+      layout: 'py-2.5 px-4 h-11 text-[13px] leading-none',
       container: 'min-h-[44px] py-2.5 px-4 leading-none'
     }
   }
@@ -65,7 +65,9 @@ export function getFieldClasses(size: keyof typeof UI_FIELD.sizes = 'md', extra:
   const hasPaddingX = extra.includes('px-');
   const hasPaddingLeft = extra.includes('pl-');
   const hasPaddingRight = extra.includes('pr-');
-  const hasTextSize = extra.includes('text-');
+  const hasTextSize = extra
+    .split(/\s+/)
+    .some((token) => /^text-(xs|sm|base|lg|xl|\d+xl|\[[^\]]+\])$/.test(token));
   const hasRounded = extra.includes('rounded-');
 
   const finalSizeClasses = sizeClasses.split(' ').filter(cls => {

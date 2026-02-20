@@ -238,7 +238,7 @@ export const Select = ({
                             onChange(finalVal);
                             setIsOpen(false);
                           }}
-                          className={`w-full text-left ${section.name ? 'pl-8 pr-3' : 'px-3.5'} py-2.5 text-[13px] rounded-lg transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
+                          className={`w-full text-left ${section.name ? 'pl-8 pr-3' : 'px-3.5'} py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
                             (selectedOption && selectedOption === opt)
                               ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                               : theme === 'dark'

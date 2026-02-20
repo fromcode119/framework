@@ -6,9 +6,10 @@ import { useAuth } from '@/components/auth-context';
 import { StatCard } from '@/components/ui/stat-card';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/ui/page-heading';
 import { Icon as DynamicIcon } from '../components/icon';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
 
@@ -105,19 +106,21 @@ export default function AdminPage() {
       <div className="sticky top-0 z-30 border-b backdrop-blur-3xl transition-all duration-300 bg-white/80 border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:bg-slate-950/80 dark:border-slate-800/50 dark:shadow-2xl dark:shadow-black/20">
         <div className="w-full px-6 lg:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
+            <PageHeading
+              icon={
                 <div className="h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400">
                   <FrameworkIcons.Layout size={20} strokeWidth={2.5} />
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Hello, {user?.email?.split('@')[0] || 'Administrator'}
-                </h1>
-              </div>
-              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-                System status is <span className="text-emerald-500">Optimized</span> • {user?.email}
-              </p>
-            </div>
+              }
+              title={`Hello, ${user?.email?.split('@')[0] || 'Administrator'}`}
+              subtitle={
+                <>
+                  System status is <span className="text-emerald-500">Optimized</span> • {user?.email}
+                </>
+              }
+              titleClassName="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic"
+              subtitleClassName="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-2"
+            />
             
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex flex-col items-end pr-4 border-r border-slate-100 dark:border-slate-800">
@@ -140,7 +143,7 @@ export default function AdminPage() {
             <div className="px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 rounded-[1.9rem] bg-white/80 dark:bg-slate-900/40">
               <div className="flex items-center gap-5">
                 <div className="h-12 w-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <FrameworkIcons.Refresh size={24} className="animate-spin-slow" />
+                  <FrameworkIcons.Loader size={24} className="animate-spin" />
                 </div>
                 <div>
                   <h4 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
@@ -164,7 +167,7 @@ export default function AdminPage() {
                   variant="primary" 
                   size="sm" 
                   className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold tracking-tight px-8 h-11 rounded-xl shadow-lg shadow-amber-600/30 uppercase"
-                  onClick={() => window.location.href = '/settings/updates'}
+                  onClick={() => window.location.href = ROUTES.SETTINGS.UPDATES}
                 >
                   View Update Details
                 </Button>

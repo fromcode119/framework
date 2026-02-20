@@ -6,7 +6,7 @@ import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 
@@ -17,7 +17,8 @@ interface User {
   firstName?: string;
   lastName?: string;
   createdAt?: string;
-  status?: string;
+  accountStatus?: string;
+  forcePasswordReset?: boolean;
 }
 
 import { DataTable } from '@/components/ui/data-table';
@@ -46,9 +47,10 @@ export default function UsersPage() {
       setUsers(userData);
       
       // Stats based on real RBAC data
+      const activeUsers = userData.filter((user: any) => String(user.accountStatus || 'active').toLowerCase() !== 'suspended').length;
       setStats({
         total: userData.length,
-        active: userData.length, 
+        active: activeUsers,
         roles: new Set(userData.flatMap((u: any) => u.roles || [])).size || 1
       });
     } catch (err) {
@@ -138,8 +140,20 @@ export default function UsersPage() {
       id: 'status',
       accessor: (user: User) => (
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-          <span className="font-bold text-emerald-500 text-[11px] tracking-tight">Active</span>
+          {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? (
+            <>
+              <div className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]" />
+              <span className="font-bold text-rose-500 text-[11px] tracking-tight">Suspended</span>
+            </>
+          ) : (
+            <>
+              <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+              <span className="font-bold text-emerald-500 text-[11px] tracking-tight">Active</span>
+            </>
+          )}
+          {user.forcePasswordReset ? (
+            <span className="font-bold text-amber-500 text-[10px] tracking-tight uppercase">Reset Required</span>
+          ) : null}
         </div>
       )
     },
@@ -181,7 +195,7 @@ export default function UsersPage() {
           
           <div className="flex items-center gap-4">
             <Slot name="admin.users.list.header.actions" />
-            <Link href="/users/new">
+            <Link href={ROUTES.USERS.NEW}>
               <Button 
                 variant="secondary"
                 className="h-11 px-6 rounded-xl font-bold tracking-tight text-xs border-slate-200 dark:border-slate-800" 
@@ -230,7 +244,7 @@ export default function UsersPage() {
               placeholder="Search user base by name or email..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full h-11 rounded-xl pl-12 pr-4 outline-none border transition-all text-sm font-bold tracking-tight ${
+              className={`w-full h-11 rounded-xl pl-12 pr-4 outline-none border transition-all text-[13px] font-bold tracking-tight ${
                 theme === 'dark' 
                   ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900 shadow-2xl shadow-black/40' 
                   : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-xl shadow-slate-200/50'
@@ -253,33 +267,37 @@ export default function UsersPage() {
             actions={(user) => (
               <div className="flex items-center justify-end gap-2">
                 <Slot name="admin.users.list.table.actions" props={{ user }} />
-                <Link href={`/users/${user.id}/roles`}>
-                  <Button size="sm" variant="ghost" className="text-indigo-500 font-bold text-xs tracking-tight px-4 h-11 hover:bg-indigo-500/5 rounded-xl uppercase">
-                    Roles
-                  </Button>
-                </Link>
-                
                 <Dropdown
                   trigger={
-                    <button className={`h-11 w-11 flex items-center justify-center rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}>
-                      <FrameworkIcons.More size={18} />
+                    <button className={`h-9 w-9 flex items-center justify-center rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}>
+                      <FrameworkIcons.MoreVertical size={16} strokeWidth={2.5} />
                     </button>
                   }
                   items={[
                     { 
                       label: 'View Profile', 
                       icon: <FrameworkIcons.Users size={16} />,
-                      onClick: () => router.push(`/users/${user.id}`)
+                      onClick: () => router.push(ROUTES.USERS.DETAIL(user.id))
                     },
                     { 
                       label: 'Edit Account', 
                       icon: <FrameworkIcons.Settings size={16} />,
-                      onClick: () => router.push(`/users/${user.id}/edit`)
+                      onClick: () => router.push(ROUTES.USERS.EDIT(user.id))
+                    },
+                    { 
+                      label: 'Manage Roles', 
+                      icon: <FrameworkIcons.Shield size={16} />,
+                      onClick: () => router.push(ROUTES.USERS.ROLES(user.id))
+                    },
+                    { 
+                      label: 'Security & 2FA', 
+                      icon: <FrameworkIcons.ShieldCheck size={16} />,
+                      onClick: () => router.push(ROUTES.USERS.SECURITY(user.id))
                     },
                     { 
                       label: 'Login History', 
                       icon: <FrameworkIcons.Activity size={16} />,
-                      onClick: () => router.push(`/activity?user=${user.email}`)
+                      onClick: () => router.push(ROUTES.USERS.AUTH_ACTIVITY(user.id))
                     },
                     { 
                       label: 'Remove User', 
@@ -324,11 +342,11 @@ export default function UsersPage() {
           </div>
           
           <div className="flex items-center gap-10 text-[11px] font-bold tracking-tight text-slate-400 uppercase">
-               <Link href="/users/roles" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Roles</Link>
+               <Link href={ROUTES.USERS.ROLE_LIST} className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Roles</Link>
                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-               <Link href="/users/permissions" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Permissions</Link>
+               <Link href={ROUTES.USERS.PERMISSIONS} className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Permissions</Link>
                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-               <Link href="/activity" className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Activity Log</Link>
+               <Link href={ROUTES.ACTIVITY} className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Activity Log</Link>
           </div>
         </div>
       </div>

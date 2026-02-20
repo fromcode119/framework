@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
 import { DataTable } from '@/components/ui/data-table';
+import { PageHeading } from '@/components/ui/page-heading';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { RootFramework } from '@fromcode/react';
@@ -108,7 +109,7 @@ export default function ActivityPage() {
               {actor[0].toUpperCase()}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
+              <span className="text-[13px] font-semibold text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
               <span className="text-[10px] font-semibold text-slate-400 mt-1 tracking-tight">
                 {row.actor_id ? `ID: ${row.actor_id}` : (row.context?.userId ? `UID: ${row.context.userId}` : 'INTERNAL')}
               </span>
@@ -212,26 +213,29 @@ export default function ActivityPage() {
 
   return (
     <div className="w-full pb-24 animate-in fade-in duration-500">
-      {/* Premium Activity Header */}
+      {/* Activity Header */}
       <div className={`sticky top-0 z-30 border-b backdrop-blur-3xl transition-all duration-300 ${
         theme === 'dark' 
           ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
           : 'bg-white/80 border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_10px_40px_-10px_rgba(0,0,0,0.04)]'
       }`}>
-        <div className="w-full px-6 lg:px-12 py-10">
+        <div className="w-full px-6 lg:px-12 py-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className={`h-11 w-11 rounded-full flex items-center justify-center shadow-lg transform rotate-3 transition-transform hover:rotate-0 ${
-                  theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-600 text-white'
-                }`}>
-                  <FrameworkIcons.Activity size={22} strokeWidth={2.5} />
-                </div>
-                <h1 className={`text-3xl font-semibold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                   {mode === 'system' ? 'System Activity' : 'Security Audit'}
-                </h1>
-              </div>
-              
+              <PageHeading
+                icon={
+                  <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 transition-transform hover:rotate-0 ${
+                    theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-600 text-white'
+                  }`}>
+                    <FrameworkIcons.Activity size={20} strokeWidth={2.5} />
+                  </div>
+                }
+                title={mode === 'system' ? 'System Activity' : 'Security Audit'}
+                subtitle="Global ledger of administrative actions and security events."
+                titleClassName="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic"
+                subtitleClassName="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight opacity-80 mt-2"
+              />
+
               <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl w-fit">
                  <button 
                   onClick={() => { setMode('system'); setPage(1); }}
@@ -263,7 +267,7 @@ export default function ActivityPage() {
                   placeholder={`Search ${mode} logs...`} 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`px-4 py-2.5 rounded-xl border text-sm font-medium outline-none transition-all w-64 ${
+                  className={`px-4 py-2.5 rounded-xl border text-[13px] font-medium outline-none transition-all w-64 ${
                     theme === 'dark' 
                       ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' 
                       : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm'
@@ -338,11 +342,11 @@ export default function ActivityPage() {
                        <div className="space-y-4">
                           <div className="flex flex-col">
                              <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Resource</span>
-                             <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{selectedLog.plugin_slug ? (selectedLog.plugin_slug.charAt(0).toUpperCase() + selectedLog.plugin_slug.slice(1)) : 'System'}</span>
+                             <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.plugin_slug ? (selectedLog.plugin_slug.charAt(0).toUpperCase() + selectedLog.plugin_slug.slice(1)) : 'System'}</span>
                           </div>
                           <div className="flex flex-col">
                              <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Timestamp</span>
-                             <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                             <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">
                                {new Date(selectedLog.timestamp || selectedLog.createdAt).toLocaleString()}
                              </span>
                           </div>
@@ -352,7 +356,7 @@ export default function ActivityPage() {
                        <div className="space-y-4">
                           <div className="flex flex-col">
                              <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Actor ID</span>
-                             <span className="text-sm font-semibold text-indigo-500">{selectedLog.actor_id || 'System'}</span>
+                             <span className="text-[13px] font-semibold text-indigo-500">{selectedLog.actor_id || 'System'}</span>
                           </div>
                           <div className="flex flex-col">
                              <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Type</span>
@@ -366,17 +370,17 @@ export default function ActivityPage() {
 
                  {mode === 'system' ? (
                     <Card title="Activity Message">
-                        <p className="text-sm font-medium text-slate-500 leading-relaxed italic">
+                        <p className="text-[13px] font-medium text-slate-500 leading-relaxed italic">
                         "{selectedLog.message}"
                         </p>
                     </Card>
                  ) : (
                     <div className="grid grid-cols-2 gap-4">
                         <Card title="Action Taken">
-                            <span className="text-sm font-bold text-slate-900 dark:text-white">{selectedLog.action}</span>
+                            <span className="text-[13px] font-bold text-slate-900 dark:text-white">{selectedLog.action}</span>
                         </Card>
                         <Card title="Resource Pool">
-                            <span className="text-sm font-mono text-slate-500">{selectedLog.resource}</span>
+                            <span className="text-[13px] font-mono text-slate-500">{selectedLog.resource}</span>
                         </Card>
                     </div>
                  )}

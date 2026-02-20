@@ -57,9 +57,9 @@ export const api = {
     return normalizedPath.startsWith('http') ? normalizedPath : `${API_BASE_URL}${normalizedPath}`;
   },
   get: (path: string, options?: RequestInit) => request(path, { ...options, method: 'GET' }),
-  post: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'POST', body: body ? JSON.stringify(body) : undefined }),
-  put: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
-  patch: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
+  post: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) }),
+  put: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PUT', body: body === undefined ? undefined : JSON.stringify(body) }),
+  patch: (path: string, body?: any, options?: RequestInit) => request(path, { ...options, method: 'PATCH', body: body === undefined ? undefined : JSON.stringify(body) }),
   delete: (path: string, options?: RequestInit) => request(path, { ...options, method: 'DELETE' }),
   upload: async (path: string, formData: FormData, options?: RequestInit) => {
     const normalizedPath = normalizeRequestPath(path);

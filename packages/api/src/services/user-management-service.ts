@@ -25,7 +25,16 @@ export class UserManagementService {
         .from(systemUsersToRoles)
         .where(eq(systemUsersToRoles.userId, user.id));
       const { password, ...safeUser } = user;
-      return { ...safeUser, roles: userRoles.map((r: any) => r.roleSlug) };
+      const [accountStatus, forcePasswordReset] = await Promise.all([
+        this.readAccountStatus(user.id),
+        this.readForcePasswordReset(user.id)
+      ]);
+      return {
+        ...safeUser,
+        roles: userRoles.map((r: any) => r.roleSlug),
+        accountStatus,
+        forcePasswordReset
+      };
     }));
   }
 
@@ -38,7 +47,16 @@ export class UserManagementService {
       .from(systemUsersToRoles)
       .where(eq(systemUsersToRoles.userId, user.id));
     const { password, ...safeUser } = user;
-    return { ...safeUser, roles: userRoles.map((r: any) => r.roleSlug) };
+    const [accountStatus, forcePasswordReset] = await Promise.all([
+      this.readAccountStatus(user.id),
+      this.readForcePasswordReset(user.id)
+    ]);
+    return {
+      ...safeUser,
+      roles: userRoles.map((r: any) => r.roleSlug),
+      accountStatus,
+      forcePasswordReset
+    };
   }
 
   async saveUser(id: number | null, data: any) {
@@ -64,6 +82,18 @@ export class UserManagementService {
           lastName: data.lastName
       });
       userId = newUser.id;
+    }
+
+    if (typeof data.accountStatus === 'string') {
+      const status = String(data.accountStatus).trim().toLowerCase() === 'suspended' ? 'suspended' : 'active';
+      await this.upsertMeta(`user:${userId}:account_status`, status);
+    } else if (!id) {
+      await this.upsertMeta(`user:${userId}:account_status`, 'active');
+    }
+    if (typeof data.forcePasswordReset === 'boolean') {
+      await this.upsertMeta(`user:${userId}:force_password_reset`, data.forcePasswordReset ? 'true' : 'false');
+    } else if (!id) {
+      await this.upsertMeta(`user:${userId}:force_password_reset`, 'false');
     }
 
     if (Array.isArray(data.roles)) {
@@ -199,5 +229,25 @@ export class UserManagementService {
       }
     }
     return this.db.find(systemPermissions);
+  }
+
+  private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {
+    const row = await this.db.findOne('_system_meta', { key: `user:${userId}:account_status` });
+    const value = String(row?.value || '').trim().toLowerCase();
+    return value === 'suspended' ? 'suspended' : 'active';
+  }
+
+  private async readForcePasswordReset(userId: number): Promise<boolean> {
+    const row = await this.db.findOne('_system_meta', { key: `user:${userId}:force_password_reset` });
+    return String(row?.value || '').trim().toLowerCase() === 'true';
+  }
+
+  private async upsertMeta(key: string, value: string) {
+    const existing = await this.db.findOne('_system_meta', { key });
+    if (existing) {
+      await this.db.update('_system_meta', { key }, { value });
+      return;
+    }
+    await this.db.insert('_system_meta', { key, value });
   }
 }

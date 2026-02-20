@@ -316,6 +316,9 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const showPreview = (collection?.admin as any)?.preview !== false && !isNew;
   const showPermalink = (collection?.admin as any)?.preview !== false && hasSlug;
   const isFullWidth = (collection?.admin as any)?.fullWidth === true;
+  const hasSidebarFields = collection?.fields.some(f => f.admin?.position === 'sidebar' && !f.admin?.hidden) || false;
+  const renderSidebar = !isFullWidth;
+  const hasBuiltInSidebarContent = showPermalink || hasSidebarFields || !isNew;
   const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
   const statusOptions = Array.isArray(statusField?.options)
     ? statusField.options
@@ -387,8 +390,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-32">
-            <div className={`${isFullWidth ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-6`}>
+          <div className={`grid grid-cols-1 ${renderSidebar ? 'lg:grid-cols-3' : ''} gap-8 pb-32`}>
+            <div className={`${renderSidebar ? 'lg:col-span-2' : 'lg:col-span-1'} space-y-6`}>
               <Card>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                   {collection.fields
@@ -423,7 +426,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
               </Card>
             </div>
 
-            {!isFullWidth && (
+            {renderSidebar && (
               <div className="space-y-6">
                 <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
                 <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
@@ -445,7 +448,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                   </Card>
                 )}
 
-                {collection.fields.some(f => f.admin?.position === 'sidebar' && !f.admin?.hidden) && (
+                {hasSidebarFields && (
                   <Card title="Settings">
                     <div className="space-y-6">
                       {collection.fields
@@ -467,12 +470,6 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                   </Card>
                 )}
 
-                <Card title="Management">
-                  <p className="text-[11px] text-slate-400 font-medium leading-relaxed italic">
-                    All changes are saved with a full history, allowing you to roll back to any previous version at any time.
-                  </p>
-                </Card>
-
                 {!isNew && (
                   <RecordInfo 
                     id={id}
@@ -493,6 +490,14 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                     hasMoreRevisions={hasMoreRevisions}
                     formData={formData}
                   />
+                )}
+
+                {!hasBuiltInSidebarContent && (
+                  <Card title="Settings">
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      No sidebar fields are configured for this collection yet.
+                    </p>
+                  </Card>
                 )}
               </div>
             )}
