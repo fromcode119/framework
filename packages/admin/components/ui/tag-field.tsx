@@ -11,6 +11,7 @@ interface TagFieldProps {
   value: string[] | string;
   onChange: (value: string[] | string) => void;
   placeholder?: string;
+  suggestionsLabel?: string;
   theme?: string;
   collectionSlug?: string;
   fieldName?: string;
@@ -31,10 +32,26 @@ interface TagOption {
   value: string;
 }
 
+function toTitleCase(input: string): string {
+  return input
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function inferFieldLabel(fieldName?: string): string {
+  const normalized = String(fieldName || '').trim();
+  if (!normalized) return 'Value';
+  return toTitleCase(normalized);
+}
+
 export const TagField = ({ 
   value, 
   onChange, 
-  placeholder = "Add tag and press Enter...", 
+  placeholder,
+  suggestionsLabel,
   theme = 'light',
   collectionSlug,
   fieldName,
@@ -51,6 +68,12 @@ export const TagField = ({
   const [sourceUnavailableMessage, setSourceUnavailableMessage] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const [labels, setLabels] = useState<Record<string, string>>({});
+  const inferredFieldLabel = inferFieldLabel(fieldName);
+  const effectivePlaceholder = placeholder || (sourceCollection ? `Search ${inferredFieldLabel}...` : `Add ${inferredFieldLabel} and press Enter...`);
+  const effectiveSuggestionsLabel =
+    suggestionsLabel ||
+    `Existing ${inferredFieldLabel}`;
+  const createEntityLabel = inferredFieldLabel;
 
   const tags = React.useMemo(() => {
     if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined);
@@ -332,7 +355,7 @@ export const TagField = ({
                     setShowSuggestions(true);
                 }}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder={tags.length === 0 ? placeholder : ''}
+                placeholder={tags.length === 0 ? effectivePlaceholder : ''}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -369,7 +392,7 @@ export const TagField = ({
           {suggestions.length > 0 && (
             <>
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-slate-400">Existing {sourceCollection || 'Tags'}</span>
+                    <span className="text-[11px] font-semibold text-slate-400">{effectiveSuggestionsLabel}</span>
                     <FrameworkIcons.Search size={10} className="text-slate-400" />
                 </div>
                 {suggestions.map((suggestion) => (
@@ -416,7 +439,7 @@ export const TagField = ({
                 </div>
                 <div className="flex-1">
                     <span className="font-semibold text-[10px] block leading-none">
-                      {allowCreate ? `Create New ${sourceCollection?.slice(0, -1) || 'Tag'}` : `Use Custom ${fieldName || 'Value'}`}
+                      {allowCreate ? `Create ${createEntityLabel}` : `Use Custom ${createEntityLabel}`}
                     </span>
                     <span className="font-semibold text-[13px] block mt-1">"{inputValue}"</span>
                 </div>

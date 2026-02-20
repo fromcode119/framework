@@ -65,7 +65,8 @@ export const TagFieldLocal: React.FC<TagFieldLocalProps> = ({ field, value, onCh
       sourceField={targetField}
       hasMany={field.hasMany !== undefined ? field.hasMany : (field.admin?.component === 'TagField' || field.admin?.component === 'Tags')}
       allowCreate={sourceCollectionSlug !== 'users' && sourceCollectionSlug !== 'media'}
-      placeholder={sourceCollectionSlug ? 'Search and select…' : undefined}
+      placeholder={field.admin?.placeholder || undefined}
+      suggestionsLabel={field.admin?.suggestionsLabel || undefined}
     />
   );
 };
