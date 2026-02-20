@@ -385,7 +385,7 @@ export const TagField = ({
                 ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
                 : 'bg-amber-50 text-amber-700 border border-amber-200'
             }`}>
-              Shipping methods are unavailable because Logistics plugin is inactive.
+              {sourceUnavailableMessage}
             </div>
           )}
 
