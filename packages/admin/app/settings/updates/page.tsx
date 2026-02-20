@@ -82,7 +82,7 @@ export default function UpdatesPage() {
               : 'bg-white text-slate-600 hover:bg-slate-50 shadow-slate-200/50 border border-slate-100'
           }`}
         >
-          <FrameworkIcons.Refresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <FrameworkIcons.Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           {loading ? 'Verifying Registry...' : 'Check For Updates'}
         </button>
       </div>

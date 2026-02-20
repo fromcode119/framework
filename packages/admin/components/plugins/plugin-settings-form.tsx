@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePlugins } from '@fromcode/react';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
 import { FieldRenderer } from '@/components/collection/field-renderer';
@@ -15,6 +16,7 @@ interface PluginSettingsFormProps {
 export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
   pluginSlug,
 }) => {
+  const { triggerRefresh } = usePlugins();
   const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -73,6 +75,7 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
       await api.put(ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settings);
       setIsDirty(false);
       setStatus({ type: 'success', message: 'Settings saved successfully!' });
+      triggerRefresh();
     } catch (err: any) {
       console.error('Save error:', err);
       if (err.data?.errors) {
@@ -96,6 +99,7 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
       setSettings(res.settings || {});
       setIsDirty(false);
       setStatus({ type: 'success', message: 'Settings reset to defaults.' });
+      triggerRefresh();
     } catch (err: any) {
       setStatus({ type: 'error', message: 'Failed to reset: ' + err.message });
     }
@@ -119,6 +123,7 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
         await api.post(ENDPOINTS.PLUGINS.SETTINGS_IMPORT(pluginSlug), importedSettings);
         await loadSettings();
         setIsDirty(false);
+        triggerRefresh();
         alert('Settings imported successfully!');
       } catch (error: any) {
         alert('Import failed: ' + error.message);

@@ -3,8 +3,8 @@ import Database from 'better-sqlite3';
 import { sql, eq, and, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
-import { BaseDialect } from './BaseDialect';
-import { toSnakeCase } from '../naming';
+import { BaseDialect } from './base-dialect';
+import { toSnakeCase } from '../naming-strategy';
 
 export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManager {
   private sqlite: Database.Database;

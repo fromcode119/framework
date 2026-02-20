@@ -80,19 +80,19 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
               top: coords.top,
               left: align === 'right' ? 'auto' : coords.left,
               right: align === 'right' ? window.innerWidth - (coords.left + coords.width) : 'auto',
-              minWidth: '20rem'
+              minWidth: '14rem'
             }}
-            className="w-80 max-w-[calc(100vw-2rem)] origin-top-right rounded-[2rem] border z-[9999] animate-in zoom-in-95 slide-in-from-top-2 duration-500 overflow-hidden 
+            className="w-56 max-w-[calc(100vw-2rem)] origin-top-right rounded-2xl border z-[9999] animate-in zoom-in-95 slide-in-from-top-2 duration-500 overflow-hidden 
               bg-white/95 backdrop-blur-2xl border-slate-200/60 shadow-slate-200/50 ring-1 ring-black/[0.02] 
               dark:bg-slate-900/95 dark:border-white/10 dark:ring-1 dark:ring-white/10 dark:shadow-black dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)]"
           >
             {header && (
-              <div className="px-7 py-6 border-b mb-1 relative overflow-hidden border-slate-100 bg-slate-50/50 dark:border-white/5 dark:bg-white/[0.02]">
+              <div className="px-5 py-4 border-b mb-1 relative overflow-hidden border-slate-100 bg-slate-50/50 dark:border-white/5 dark:bg-white/[0.02]">
                 <div className="relative z-10">{header}</div>
-                <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl" />
+                <div className="absolute -right-4 -top-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-3xl" />
               </div>
             )}
-            <div className="p-3 space-y-1">
+            <div className="p-2 space-y-0.5">
               {items.map((item, idx) => {
                 const isLast = idx === items.length - 1;
                 const isDanger = item.variant === 'danger';
@@ -100,7 +100,7 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
                 return (
                   <React.Fragment key={item.label}>
                     {isLast && idx !== 0 && (
-                      <div className="my-2 h-[1px] mx-4 bg-slate-100 dark:bg-white/5" />
+                      <div className="my-1.5 h-[1px] mx-3 bg-slate-100 dark:bg-white/5" />
                     )}
                     <button
                       title={item.label}
@@ -108,14 +108,14 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
                         item.onClick();
                         setIsOpen(false);
                       }}
-                      className={`group flex items-center w-full gap-4 px-4 py-3 text-[13px] font-bold rounded-[1.25rem] transition-all duration-300 overflow-hidden relative ${
+                      className={`group flex items-center w-full gap-3 px-3 py-2 text-[12px] font-bold rounded-xl transition-all duration-300 overflow-hidden relative ${
                         isDanger 
                           ? 'text-rose-500 hover:bg-rose-500/10' 
                           : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
                       }`}
                     >
                       {item.icon && (
-                        <div className={`flex-shrink-0 transition-all duration-300 group-hover:scale-110 h-9 w-9 rounded-xl flex items-center justify-center ${
+                        <div className={`flex-shrink-0 transition-all duration-300 group-hover:scale-110 h-7 w-7 rounded-lg flex items-center justify-center ${
                           isDanger 
                             ? 'bg-rose-500/10 text-rose-500' 
                             : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400'
@@ -123,7 +123,7 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
                           {item.icon}
                         </div>
                       )}
-                      <span className="truncate text-left flex-1 font-semibold tracking-wide text-[11px]">{item.label}</span>
+                      <span className="truncate text-left flex-1 font-semibold tracking-wide text-[12px]">{item.label}</span>
                       
                       {!isDanger && (
                         <div className="h-1.5 w-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.4)] dark:bg-indigo-500 dark:shadow-[0_0_8px_rgba(99,102,241,0.6)]" />

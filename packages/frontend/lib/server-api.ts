@@ -1,9 +1,34 @@
-const API_VERSION =
-  process.env.NEXT_PUBLIC_API_VERSION ||
-  process.env.API_VERSION_PREFIX ||
-  'v1';
+import { API_RESOURCE_PATHS, buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/core/utils';
+
+export const SERVER_API_VERSION = normalizeApiVersion();
+export const SERVER_API_VERSION_PREFIX = buildApiVersionPrefix();
 const SERVER_FETCH_TIMEOUT_MS = Number(process.env.SERVER_FETCH_TIMEOUT_MS || 12000);
 const DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';
+
+export function buildSystemResolvePath(query: URLSearchParams | string) {
+  const queryString = typeof query === 'string' ? query : query.toString();
+  return `${API_RESOURCE_PATHS.SYSTEM.RESOLVE}?${queryString}`;
+}
+
+export function buildSettingsCollectionPath(limit = 500) {
+  const query = new URLSearchParams();
+  query.set('limit', String(limit));
+  return `${API_RESOURCE_PATHS.COLLECTIONS.SETTINGS}?${query.toString()}`;
+}
+
+export function buildCollectionLookupPath(collectionSlug: string, options: { id?: string; limit?: number } = {}) {
+  const slug = encodeURIComponent(String(collectionSlug || '').trim());
+  const query = new URLSearchParams();
+  if (options.id) query.set('id', String(options.id));
+  query.set('limit', String(options.limit ?? 1));
+  return `${API_RESOURCE_PATHS.COLLECTIONS.BASE}/${slug}?${query.toString()}`;
+}
+
+export function extractFirstDoc(result: any): any {
+  if (Array.isArray(result)) return result[0] || null;
+  if (Array.isArray(result?.docs)) return result.docs[0] || null;
+  return result?.doc || result || null;
+}
 
 function isAbortError(error: unknown) {
   if (!error || typeof error !== 'object') return false;
@@ -24,8 +49,22 @@ function trimTrailingSlash(value: string) {
 
 function isLikelyFrontendBase(value: string) {
   try {
-    const host = new URL(value).hostname.toLowerCase();
-    return host.includes('frontend.');
+    const candidate = new URL(value).origin.toLowerCase();
+    const configuredFrontendOrigins = [
+      process.env.FRONTEND_URL,
+      process.env.NEXT_PUBLIC_FRONTEND_URL
+    ]
+      .map((origin) => String(origin || '').trim())
+      .filter(Boolean)
+      .map((origin) => {
+        try {
+          return new URL(origin).origin.toLowerCase();
+        } catch {
+          return '';
+        }
+      })
+      .filter(Boolean);
+    return configuredFrontendOrigins.includes(candidate);
   } catch {
     return false;
   }
@@ -57,7 +96,7 @@ export function getServerApiPrefixes() {
       .map(trimTrailingSlash)
   );
 
-  return bases.map((base) => `${base}/api/${API_VERSION}`);
+  return bases.map((base) => `${base}${SERVER_API_VERSION_PREFIX}`);
 }
 
 export async function serverFetchJson(path: string) {

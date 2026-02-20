@@ -21,6 +21,7 @@ import { SuggestionService } from '../services/suggestion-service';
 import { LocalizationService } from '../services/localization-service';
 import { DataProcessorService } from '../services/data-processor-service';
 import { QueryHelper } from '../services/query-helper';
+import { RESERVED_PERMALINK_CONFIG } from '../constants';
 
 export class RESTController {
   private logger = new Logger({ namespace: 'REST' });
@@ -172,6 +173,8 @@ export class RESTController {
         if (errors.length > 0) return res.status(400).json({ errors });
       }
 
+      this.assertPermalinkNotReserved(collection, data);
+
       const insertData = await this.processor.processIncomingData(collection, data, table, {
         localeContext
       });
@@ -237,6 +240,8 @@ export class RESTController {
         const errors = collection.fields.filter(f => data[f.name] !== undefined && f.required && !data[f.name]).map(f => `Field "${f.name}" cannot be empty`);
         if (errors.length > 0) return res.status(400).json({ errors });
       }
+
+      this.assertPermalinkNotReserved(collection, data);
 
       const updateData = await this.processor.processIncomingData(collection, data, table, {
         existingRecord: existing,
@@ -311,6 +316,8 @@ export class RESTController {
           data = await this.hooks.call(`collection:${collection.slug}:beforeCreate`, data);
           data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
         }
+
+        this.assertPermalinkNotReserved(collection, data);
         
         const individualSummary = data._change_summary || globalSummary;
         if (data._change_summary) delete data._change_summary;
@@ -363,6 +370,8 @@ export class RESTController {
         updateData = await this.hooks.call(`collection:${collection.slug}:beforeUpdate`, updateData);
         updateData = await this.hooks.call(`collection:${collection.slug}:beforeSave`, updateData);
       }
+
+      this.assertPermalinkNotReserved(collection, updateData);
 
       // Update one by one to ensure hooks and versioning trigger correctly per item
       const results: any[] = [];
@@ -497,6 +506,7 @@ export class RESTController {
         const pk = collection.primaryKey || 'id';
         const itemData = { ...item };
         delete itemData[pk]; 
+        this.assertPermalinkNotReserved(collection, itemData);
         
         try {
           const insertData = await this.processor.processIncomingData(collection, itemData, table, {
@@ -516,6 +526,57 @@ export class RESTController {
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
+    }
+  }
+
+  private assertPermalinkNotReserved(collection: Collection, data: Record<string, any>) {
+    if (!collection || !data || typeof data !== 'object') return;
+
+    const permalinkFields = ['slug', 'customPermalink', 'path', 'permalink'];
+    const existingFields = new Set((collection.fields || []).map((field) => String(field?.name || '')));
+    const targetFields = permalinkFields.filter((name) => existingFields.has(name) && data[name] !== undefined && data[name] !== null);
+    if (!targetFields.length) return;
+
+    const reservedRootSegments = new Set(RESERVED_PERMALINK_CONFIG.ROOT_SEGMENTS.map((segment) => String(segment).toLowerCase()));
+    const reservedExactPaths = new Set(RESERVED_PERMALINK_CONFIG.EXACT_PATHS.map((path) => String(path).toLowerCase()));
+
+    const extractCandidates = (value: any): string[] => {
+      if (typeof value === 'string' || typeof value === 'number') return [String(value)];
+      if (Array.isArray(value)) return value.flatMap((item) => extractCandidates(item));
+      if (value && typeof value === 'object') {
+        return Object.values(value).flatMap((item) => extractCandidates(item));
+      }
+      return [];
+    };
+
+    const normalizePath = (raw: string): string => {
+      let value = String(raw || '').trim();
+      if (!value) return '';
+      if (/^https?:\/\//i.test(value)) {
+        try {
+          value = new URL(value).pathname || '';
+        } catch {
+          // Ignore malformed absolute URL and continue with raw value.
+        }
+      }
+      value = value.split('?')[0].split('#')[0].trim();
+      if (!value) return '';
+      value = value.startsWith('/') ? value : `/${value}`;
+      value = value.replace(/\/{2,}/g, '/');
+      if (value.length > 1) value = value.replace(/\/+$/, '');
+      return value.toLowerCase();
+    };
+
+    for (const fieldName of targetFields) {
+      const values = extractCandidates(data[fieldName]);
+      for (const rawValue of values) {
+        const pathValue = normalizePath(rawValue);
+        if (!pathValue || pathValue === '/') continue;
+        const firstSegment = pathValue.replace(/^\/+/, '').split('/')[0]?.toLowerCase() || '';
+        if (reservedRootSegments.has(firstSegment) || reservedExactPaths.has(pathValue)) {
+          throw new Error(`Permalink "${pathValue}" is reserved and cannot be used.`);
+        }
+      }
     }
   }
 

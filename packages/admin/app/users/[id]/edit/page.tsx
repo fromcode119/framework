@@ -5,6 +5,7 @@ import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
@@ -23,6 +24,8 @@ export default function EditUserPage() {
     username: '',
     firstName: '',
     lastName: '',
+    accountStatus: 'active',
+    forcePasswordReset: false,
     password: '',
     confirmPassword: ''
   });
@@ -37,6 +40,8 @@ export default function EditUserPage() {
           username: data.username || '',
           firstName: data.firstName || '',
           lastName: data.lastName || '',
+          accountStatus: String(data.accountStatus || 'active'),
+          forcePasswordReset: Boolean(data.forcePasswordReset),
           password: '',
           confirmPassword: ''
         });
@@ -183,6 +188,43 @@ export default function EditUserPage() {
                         onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                         error={errors.confirmPassword}
                      />
+                  </div>
+               </div>
+            </Card>
+
+            <Card title="Account Access Controls" icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Account Status</label>
+                     <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant={formData.accountStatus === 'active' ? 'primary' : 'outline'}
+                          size="sm"
+                          className="rounded-lg"
+                          onClick={() => setFormData({ ...formData, accountStatus: 'active' })}
+                        >
+                          Active
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={formData.accountStatus === 'suspended' ? 'primary' : 'outline'}
+                          size="sm"
+                          className="rounded-lg"
+                          onClick={() => setFormData({ ...formData, accountStatus: 'suspended' })}
+                        >
+                          Suspended
+                        </Button>
+                     </div>
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Force Password Reset</label>
+                     <div className="pt-2">
+                       <Switch
+                         checked={formData.forcePasswordReset}
+                         onChange={(checked) => setFormData({ ...formData, forcePasswordReset: checked })}
+                       />
+                     </div>
                   </div>
                </div>
             </Card>

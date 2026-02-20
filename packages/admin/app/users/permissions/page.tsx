@@ -5,6 +5,7 @@ import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/ui/page-heading';
 import { FrameworkIcons } from '@/lib/icons';
 import { DataTable } from '@/components/ui/data-table';
 import { api } from '@/lib/api';
@@ -123,21 +124,18 @@ export default function PermissionsPage() {
       }`}>
         <div className="w-full px-6 lg:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
+            <PageHeading
+              icon={
                 <div className={`h-11 w-11 rounded-full flex items-center justify-center shadow-lg transform rotate-6 transition-transform hover:rotate-0 ${
                   theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-600 text-white'
                 }`}>
                   <FrameworkIcons.Zap size={22} strokeWidth={2} />
                 </div>
-                <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  Permissions
-                </h1>
-              </div>
-              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-                Manage and audit granular access permissions across the system.
-              </p>
-            </div>
+              }
+              title="Permissions"
+              subtitle="Manage and audit granular access permissions across the system."
+              subtitleClassName="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-2"
+            />
             
             <div className="flex items-center gap-4">
               <Link href="/users/permissions/new">

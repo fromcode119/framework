@@ -36,12 +36,16 @@ export default function GeneralSettingsPage() {
   const { addNotification } = useNotification();
   const { registerSettings } = usePlugins();
   const [isSaving, setIsSaving] = useState(false);
+  const [isSendingTelemetryTest, setIsSendingTelemetryTest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [existingSettingKeys, setExistingSettingKeys] = useState<Set<string>>(new Set());
   const [settings, setSettings] = useState<Record<string, any>>({
     platform_name: '',
     email_notifications: true,
     frontend_url: '',
-    timezone: 'UTC'
+    timezone: 'UTC',
+    frontend_auth_enabled: true,
+    frontend_registration_enabled: true
   });
 
   useEffect(() => {
@@ -52,9 +56,12 @@ export default function GeneralSettingsPage() {
         const newSettings = { ...settings };
         docs.forEach((s: any) => {
           if (settings.hasOwnProperty(s.key)) {
-            newSettings[s.key] = s.key === 'email_notifications' ? s.value === 'true' : s.value;
+            newSettings[s.key] = ['email_notifications', 'frontend_auth_enabled', 'frontend_registration_enabled'].includes(s.key)
+              ? s.value === 'true'
+              : s.value;
           }
         });
+        setExistingSettingKeys(new Set(docs.map((s: any) => String(s?.key || '').trim()).filter(Boolean)));
         setSettings(newSettings);
       } finally {
         setIsLoading(false);
@@ -66,11 +73,29 @@ export default function GeneralSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await Promise.all(Object.entries(settings).map(([key, value]) => {
-        return api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/${key}`, {
-          value: typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value)
+      const entries = Object.entries(settings).map(([key, value]) => {
+        const serialized = typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value ?? '').trim();
+        return { key, serialized };
+      });
+
+      const upserts = entries
+        .filter(({ serialized }) => serialized !== '')
+        .map(({ key, serialized }) => {
+          const payload = { value: serialized };
+          if (existingSettingKeys.has(key)) {
+            return api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/${encodeURIComponent(key)}`, payload);
+          }
+          return api.post(`${ENDPOINTS.COLLECTIONS.BASE}/settings`, { key, ...payload });
         });
-      }));
+
+      await Promise.all(upserts);
+      setExistingSettingKeys((prev) => {
+        const next = new Set(prev);
+        for (const { key, serialized } of entries) {
+          if (serialized !== '') next.add(key);
+        }
+        return next;
+      });
 
       // Update global context
       registerSettings(settings);
@@ -88,6 +113,29 @@ export default function GeneralSettingsPage() {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSendTelemetryTest = async () => {
+    setIsSendingTelemetryTest(true);
+    try {
+      const result = await api.post(ENDPOINTS.SYSTEM.EMAIL_TELEMETRY_TEST, {});
+      const recipientsCount = Number(result?.recipientsCount || 0);
+      addNotification({
+        title: 'Telemetry Test Sent',
+        message: recipientsCount > 0
+          ? `Test email dispatched to ${recipientsCount} recipient${recipientsCount === 1 ? '' : 's'}.`
+          : 'Test email dispatched.',
+        type: 'success'
+      });
+    } catch (err: any) {
+      addNotification({
+        title: 'Test Failed',
+        message: err?.message || 'Failed to send telemetry test email.',
+        type: 'error'
+      });
+    } finally {
+      setIsSendingTelemetryTest(false);
     }
   };
 
@@ -196,9 +244,52 @@ export default function GeneralSettingsPage() {
             title="Email Telemetry" 
             description="Receive critical system alerts and weekly summaries via email."
           >
-            <Switch 
-              checked={settings.email_notifications} 
-              onChange={(val) => setSettings(prev => ({ ...prev, email_notifications: val }))} 
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={settings.email_notifications}
+                onChange={(val) => setSettings(prev => ({ ...prev, email_notifications: val }))}
+              />
+              <Button
+                onClick={handleSendTelemetryTest}
+                isLoading={isSendingTelemetryTest}
+                icon={<FrameworkIcons.Mail size={13} />}
+                className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+              >
+                Send Test
+              </Button>
+            </div>
+          </SettingRow>
+        </Card>
+
+        <Card title="Frontend Auth">
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Lock}
+            title="Frontend Authentication"
+            description="Enable public customer authentication routes such as register, verify email, forgot password and reset password."
+          >
+            <Switch
+              checked={settings.frontend_auth_enabled}
+              onChange={(val) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  frontend_auth_enabled: val,
+                  frontend_registration_enabled: val ? prev.frontend_registration_enabled : false
+                }))
+              }
+            />
+          </SettingRow>
+
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Users}
+            title="Frontend Registration"
+            description="Allow new customer self-registration at /register."
+          >
+            <Switch
+              checked={settings.frontend_registration_enabled}
+              onChange={(val) => setSettings((prev) => ({ ...prev, frontend_registration_enabled: val }))}
+              disabled={!settings.frontend_auth_enabled}
             />
           </SettingRow>
         </Card>

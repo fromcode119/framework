@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql, and, or, ilike, isNotNull } from '@fromcode/database';
+import { IDatabaseManager, and, or, ilike, isNotNull } from '@fromcode/database';
 import { Collection, Logger } from '@fromcode/core';
 
 export class SuggestionService {
@@ -24,16 +24,55 @@ export class SuggestionService {
       });
 
       if (config && (config.type === 'json' || config.admin?.component === 'TagField' || config.admin?.component === 'Tags')) {
-        let query: any = sql`SELECT DISTINCT jsonb_array_elements_text(${actualTable[field]}) as value FROM ${actualTable} WHERE ${actualTable[field]} IS NOT NULL AND jsonb_typeof(${actualTable[field]}) = 'array'`;
-        
-        if (q) {
-          query = sql`${query} AND jsonb_array_elements_text(${actualTable[field]}) ILIKE ${`%${q}%`}`;
+        const sourceRows = await this.db.drizzle
+          .select({ value: actualTable[field] })
+          .from(actualTable)
+          .where(isNotNull(actualTable[field]))
+          .limit(300);
+
+        const search = String(q || '').trim().toLowerCase();
+        const seen = new Set<string>();
+        const out: Array<{ label: string; value: string }> = [];
+
+        const pushCandidate = (candidate: unknown) => {
+          const value = String(candidate ?? '').trim();
+          if (!value) return;
+          if (search && !value.toLowerCase().includes(search)) return;
+          if (seen.has(value)) return;
+          seen.add(value);
+          out.push({ label: value, value });
+        };
+
+        for (const row of sourceRows) {
+          const raw = (row as any)?.value;
+          if (raw === null || raw === undefined) continue;
+
+          if (Array.isArray(raw)) {
+            for (const entry of raw) pushCandidate(entry);
+          } else if (typeof raw === 'string') {
+            const normalized = raw.trim();
+            if (!normalized) continue;
+
+            if (normalized.startsWith('[') && normalized.endsWith(']')) {
+              try {
+                const parsed = JSON.parse(normalized);
+                if (Array.isArray(parsed)) {
+                  for (const entry of parsed) pushCandidate(entry);
+                }
+              } catch {
+                pushCandidate(normalized);
+              }
+            } else {
+              pushCandidate(normalized);
+            }
+          } else {
+            pushCandidate(raw);
+          }
+
+          if (out.length >= 50) break;
         }
-        
-        query = sql`${query} LIMIT 50`;
-        const result = await this.db.drizzle.execute(query);
-        
-        return result.rows.map((r: any) => ({ label: r.value, value: r.value }));
+
+        return out.slice(0, 50);
       } else if (actualTable[field]) {
         const isUserSearch = collection.slug === 'users' && (field === 'username' || field === 'email');
         const conditions: any[] = [];

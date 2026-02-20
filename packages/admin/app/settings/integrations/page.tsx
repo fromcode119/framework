@@ -1,409 +1,807 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/components/theme-context';
+import { useNotification } from '@/components/notification-context';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TextArea } from '@/components/ui/text-area';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Loader } from '@/components/ui/loader';
 import { FrameworkIcons } from '@/lib/icons';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { useNotification } from '@/components/notification-context';
 
-type IntegrationField = {
+type IntegrationFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';
+
+interface IntegrationConfigField {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';
+  type: IntegrationFieldType;
   description?: string;
+  required?: boolean;
   placeholder?: string;
   options?: Array<{ label: string; value: string }>;
-};
+}
 
-type IntegrationProvider = {
+interface IntegrationProvider {
   key: string;
   label: string;
   description?: string;
-  fields?: IntegrationField[];
-};
+  fields?: IntegrationConfigField[];
+}
 
-type IntegrationDoc = {
+interface StoredProvider {
+  id: string;
+  name?: string;
+  providerKey: string;
+  config: Record<string, any>;
+  enabled?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface IntegrationRecord {
   key: string;
   label: string;
   description?: string;
   defaultProvider: string;
   providers: IntegrationProvider[];
-  active?: {
-    provider: string;
-    source: 'stored' | 'env' | 'default';
-    config?: Record<string, any>;
-  } | null;
-  stored?: {
-    providerKey: string;
-    config: Record<string, any>;
-  } | null;
+  active?: { provider: string; source: string; config: Record<string, any> } | null;
+  stored?: { providerKey: string; config: Record<string, any> } | null;
+  storedProviders?: StoredProvider[] | null;
+}
+
+interface ProviderEditorState {
+  isNew: boolean;
+  providerId: string;
+  providerKey: string;
+  providerName: string;
+  enabled: boolean;
+  config: Record<string, any>;
+}
+
+const normalizeKey = (value: string): string => value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+
+const isBlank = (value: unknown): boolean => {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'string') return value.trim() === '';
+  return false;
 };
-
-function buildConfigSeed(provider: IntegrationProvider | undefined, source: Record<string, any>) {
-  const next: Record<string, any> = {};
-  const fields = provider?.fields || [];
-
-  for (const field of fields) {
-    const incoming = source?.[field.name];
-    if (incoming !== undefined && incoming !== null) {
-      next[field.name] = incoming;
-      continue;
-    }
-
-    if (field.type === 'boolean') {
-      next[field.name] = false;
-      continue;
-    }
-
-    if (field.type === 'number') {
-      next[field.name] = '';
-      continue;
-    }
-
-    next[field.name] = '';
-  }
-
-  return next;
-}
-
-function toBoolean(value: any) {
-  if (typeof value === 'boolean') return value;
-  const normalized = String(value || '').trim().toLowerCase();
-  return ['1', 'true', 'yes', 'on'].includes(normalized);
-}
 
 export default function IntegrationsSettingsPage() {
   const { theme } = useTheme();
   const { addNotification } = useNotification();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [docs, setDocs] = useState<IntegrationDoc[]>([]);
-  const [selectedTypeKey, setSelectedTypeKey] = useState('');
-  const [selectedProviderKey, setSelectedProviderKey] = useState('');
-  const [draftConfig, setDraftConfig] = useState<Record<string, any>>({});
-  const [view, setView] = useState<'grid' | 'edit'>('grid');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryType = normalizeKey(String(searchParams.get('type') || ''));
 
-  const selectedType = useMemo(
-    () => docs.find((doc) => doc.key === selectedTypeKey) || null,
-    [docs, selectedTypeKey]
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [changingProviderId, setChangingProviderId] = useState<string | null>(null);
+  const [removeCandidateId, setRemoveCandidateId] = useState<string | null>(null);
+
+  const [integrations, setIntegrations] = useState<IntegrationRecord[]>([]);
+  const [activeType, setActiveType] = useState('');
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+  const [editor, setEditor] = useState<ProviderEditorState | null>(null);
+
+  const integrationOptions = useMemo(
+    () =>
+      integrations.map((integration) => ({
+        label: integration.label,
+        value: integration.key
+      })),
+    [integrations]
   );
 
-  const selectedProvider = useMemo(
-    () => selectedType?.providers?.find((provider) => provider.key === selectedProviderKey),
-    [selectedType, selectedProviderKey]
+  const activeIntegration = useMemo(
+    () => integrations.find((integration) => integration.key === activeType) || null,
+    [integrations, activeType]
   );
 
-  useEffect(() => {
-    const fetchIntegrations = async () => {
-      try {
-        const response = await api.get(ENDPOINTS.SYSTEM.INTEGRATIONS);
-        const nextDocs = Array.isArray(response?.docs) ? response.docs : [];
-        setDocs(nextDocs);
-      } catch (error: any) {
-        addNotification({
-          title: 'Failed to Load Integrations',
-          message: error?.message || 'Could not fetch provider configuration.',
-          type: 'error'
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const activeProviders = useMemo(
+    () => activeIntegration?.storedProviders || [],
+    [activeIntegration]
+  );
 
-    fetchIntegrations();
-  }, [addNotification]);
+  const runtimeProviderId = useMemo(() => {
+    if (!activeIntegration) return '';
+    const runtimeKey = String(activeIntegration.active?.provider || activeIntegration.stored?.providerKey || '').trim();
+    if (!runtimeKey) return '';
+    const match = (activeIntegration.storedProviders || []).find(
+      (provider) => provider.enabled !== false && provider.providerKey === runtimeKey
+    );
+    return match?.id || '';
+  }, [activeIntegration]);
 
-  const handleEdit = (type: IntegrationDoc) => {
-    setSelectedTypeKey(type.key);
-    
-    const activeProvider = String(type?.active?.provider || type.defaultProvider || '');
-    const provider = type.providers.find((entry) => entry.key === activeProvider) || type.providers[0];
-    const sourceConfig = type?.active?.config || type?.stored?.config || {};
+  const currentProviderDefinition = useMemo(() => {
+    if (!activeIntegration || !editor?.providerKey) return null;
+    return activeIntegration.providers.find((provider) => provider.key === editor.providerKey) || null;
+  }, [activeIntegration, editor?.providerKey]);
 
-    setSelectedProviderKey(provider?.key || '');
-    setDraftConfig(buildConfigSeed(provider, sourceConfig));
-    setView('edit');
+  const applyIntegrationUpdate = (updated: IntegrationRecord): IntegrationRecord => {
+    setIntegrations((previous) => {
+      const exists = previous.some((integration) => integration.key === updated.key);
+      if (!exists) return previous;
+      return previous.map((integration) => (integration.key === updated.key ? updated : integration));
+    });
+    return updated;
   };
 
-  const handleSelectProvider = (providerKey: string) => {
-    setSelectedProviderKey(providerKey);
-    const provider = selectedType?.providers?.find((entry) => entry.key === providerKey);
-    const sourceConfig = selectedType?.active?.config || selectedType?.stored?.config || {};
-    setDraftConfig(buildConfigSeed(provider, sourceConfig));
+  const activateType = (typeKey: string) => {
+    const normalized = normalizeKey(typeKey);
+    if (!normalized || normalized === activeType) return;
+    setSelectedProviderId('');
+    setEditor(null);
+    setRemoveCandidateId(null);
+    router.replace(ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(normalized));
   };
 
-  const handleSave = async () => {
-    if (!selectedType || !selectedProviderKey) return;
-    setIsSaving(true);
+  const loadIntegrations = async () => {
+    setLoading(true);
     try {
-      const response = await api.put(ENDPOINTS.SYSTEM.INTEGRATION(selectedType.key), {
-        provider: selectedProviderKey,
-        config: draftConfig
-      });
-
-      const updated = response?.integration as IntegrationDoc | undefined;
-      if (updated) {
-        setDocs((prev) => prev.map((doc) => (doc.key === updated.key ? updated : doc)));
+      const response = await api.get(ENDPOINTS.SYSTEM.INTEGRATIONS);
+      const docs = Array.isArray(response?.docs) ? response.docs : [];
+      const sorted = docs
+        .filter((doc: any) => doc && typeof doc.key === 'string')
+        .sort((a: IntegrationRecord, b: IntegrationRecord) => a.label.localeCompare(b.label));
+      setIntegrations(sorted);
+      if (!sorted.length) {
+        setActiveType('');
+        setSelectedProviderId('');
+        setEditor(null);
+        return;
       }
 
-      addNotification({
-        title: 'Integration Updated',
-        message: `${selectedType.label} now uses provider "${selectedProvider?.label || selectedProviderKey}".`,
-        type: 'success'
-      });
-      setView('grid');
+      const preferredType = queryType && sorted.some((integration: IntegrationRecord) => integration.key === queryType)
+        ? queryType
+        : sorted[0].key;
+      setActiveType(preferredType);
     } catch (error: any) {
       addNotification({
-        title: 'Save Failed',
-        message: error?.message || 'Could not save integration config.',
-        type: 'error'
+        type: 'error',
+        title: 'Failed to load integrations',
+        message: error?.message || 'Unable to read integration configuration.'
       });
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
+  useEffect(() => {
+    void loadIntegrations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!integrations.length) return;
+
+    const hasActiveType = integrations.some((integration) => integration.key === activeType);
+    const hasQueryType = !!queryType && integrations.some((integration) => integration.key === queryType);
+    const nextType = hasQueryType ? queryType : hasActiveType ? activeType : integrations[0].key;
+
+    if (nextType !== activeType) {
+      setActiveType(nextType);
+      setSelectedProviderId('');
+      setEditor(null);
+      return;
+    }
+
+    if (!hasQueryType && nextType) {
+      router.replace(ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(nextType));
+    }
+  }, [integrations, queryType, activeType, router]);
+
+  useEffect(() => {
+    if (!activeIntegration) {
+      setEditor(null);
+      return;
+    }
+
+    if (editor?.isNew) return;
+
+    const providers = activeIntegration.storedProviders || [];
+    if (!providers.length) {
+      setSelectedProviderId('');
+      setEditor(null);
+      return;
+    }
+
+    const selected =
+      providers.find((provider) => provider.id === selectedProviderId) ||
+      providers[0];
+
+    if (!selectedProviderId || selectedProviderId !== selected.id) {
+      setSelectedProviderId(selected.id);
+      return;
+    }
+
+    setEditor({
+      isNew: false,
+      providerId: selected.id,
+      providerKey: selected.providerKey,
+      providerName: selected.name || '',
+      enabled: selected.enabled !== false,
+      config: { ...(selected.config || {}) }
+    });
+  }, [activeIntegration, selectedProviderId, editor?.isNew]);
+
+  const startAddProvider = () => {
+    if (!activeIntegration?.providers?.length) return;
+    const defaultProvider = activeIntegration.providers[0];
+    setRemoveCandidateId(null);
+    setSelectedProviderId('');
+    setEditor({
+      isNew: true,
+      providerId: '',
+      providerKey: defaultProvider.key,
+      providerName: '',
+      enabled: true,
+      config: {}
+    });
+  };
+
+  const resetEditor = () => {
+    if (!editor || !activeIntegration) return;
+    if (editor.isNew) {
+      startAddProvider();
+      return;
+    }
+
+    const selected = (activeIntegration.storedProviders || []).find((provider) => provider.id === editor.providerId);
+    if (!selected) return;
+    setEditor({
+      isNew: false,
+      providerId: selected.id,
+      providerKey: selected.providerKey,
+      providerName: selected.name || '',
+      enabled: selected.enabled !== false,
+      config: { ...(selected.config || {}) }
+    });
+  };
+
+  const cancelNewProvider = () => {
+    setEditor(null);
+    const firstProvider = activeProviders[0];
+    if (firstProvider) {
+      setSelectedProviderId(firstProvider.id);
+    }
+  };
+
+  const handleSaveProvider = async () => {
+    if (!activeIntegration || !editor) return;
+    const providerDefinition = activeIntegration.providers.find((provider) => provider.key === editor.providerKey);
+    if (!providerDefinition) {
+      addNotification({
+        type: 'error',
+        title: 'Invalid provider',
+        message: 'Selected provider is not available for this integration type.'
+      });
+      return;
+    }
+
+    const validationErrors: string[] = [];
+    for (const field of providerDefinition.fields || []) {
+      const value = editor.config?.[field.name];
+      if (field.required && isBlank(value)) {
+        validationErrors.push(`${field.label} is required.`);
+      }
+      if (field.type === 'number' && !isBlank(value) && Number.isNaN(Number(value))) {
+        validationErrors.push(`${field.label} must be a valid number.`);
+      }
+    }
+
+    if (validationErrors.length) {
+      addNotification({
+        type: 'error',
+        title: 'Configuration invalid',
+        message: validationErrors[0]
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload: Record<string, any> = {
+        provider: editor.providerKey,
+        config: editor.config || {},
+        enabled: editor.enabled
+      };
+      if (!editor.isNew && editor.providerId) payload.providerId = editor.providerId;
+      if (editor.providerName.trim()) payload.providerName = editor.providerName.trim();
+
+      const response = await api.put(ENDPOINTS.SYSTEM.INTEGRATION(activeIntegration.key), payload);
+      const updatedIntegration = response?.integration as IntegrationRecord;
+      if (!updatedIntegration?.key) {
+        throw new Error('Integration update returned an invalid response.');
+      }
+      applyIntegrationUpdate(updatedIntegration);
+
+      const updatedProviders = updatedIntegration.storedProviders || [];
+      let nextProviderId = '';
+
+      if (!editor.isNew && editor.providerId) {
+        nextProviderId = editor.providerId;
+      } else if (editor.isNew) {
+        const reverseCandidates = [...updatedProviders].reverse();
+        const byName = editor.providerName.trim()
+          ? reverseCandidates.find(
+              (provider) =>
+                provider.providerKey === editor.providerKey &&
+                String(provider.name || '').trim() === editor.providerName.trim()
+            )
+          : undefined;
+        nextProviderId =
+          byName?.id ||
+          reverseCandidates.find((provider) => provider.providerKey === editor.providerKey)?.id ||
+          updatedProviders[updatedProviders.length - 1]?.id ||
+          '';
+      }
+
+      if (!nextProviderId && updatedProviders.length) {
+        nextProviderId = updatedProviders[0].id;
+      }
+
+      setSelectedProviderId(nextProviderId);
+      setEditor(null);
+      setRemoveCandidateId(null);
+      addNotification({
+        type: 'success',
+        title: editor.isNew ? 'Provider added' : 'Provider updated',
+        message: `${providerDefinition.label} configuration saved.`
+      });
+    } catch (error: any) {
+      addNotification({
+        type: 'error',
+        title: 'Save failed',
+        message: error?.message || 'Unable to save provider configuration.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleProvider = async (provider: StoredProvider) => {
+    if (!activeIntegration) return;
+    setChangingProviderId(provider.id);
+    try {
+      const response = await api.patch(
+        ENDPOINTS.SYSTEM.INTEGRATION_PROVIDER(activeIntegration.key, provider.id),
+        { enabled: provider.enabled === false }
+      );
+      const updatedIntegration = response?.integration as IntegrationRecord;
+      if (!updatedIntegration?.key) {
+        throw new Error('Integration update returned an invalid response.');
+      }
+      applyIntegrationUpdate(updatedIntegration);
+      addNotification({
+        type: 'success',
+        title: 'Provider status updated',
+        message: `${provider.name || provider.providerKey} is now ${provider.enabled === false ? 'enabled' : 'disabled'}.`
+      });
+    } catch (error: any) {
+      addNotification({
+        type: 'error',
+        title: 'Status update failed',
+        message: error?.message || 'Unable to change provider status.'
+      });
+    } finally {
+      setChangingProviderId(null);
+    }
+  };
+
+  const handleRemoveProvider = async (provider: StoredProvider) => {
+    if (!activeIntegration) return;
+    setChangingProviderId(provider.id);
+    try {
+      const response = await api.delete(ENDPOINTS.SYSTEM.INTEGRATION_PROVIDER(activeIntegration.key, provider.id));
+      const updatedIntegration = response?.integration as IntegrationRecord;
+      if (!updatedIntegration?.key) {
+        throw new Error('Integration update returned an invalid response.');
+      }
+      applyIntegrationUpdate(updatedIntegration);
+
+      const updatedProviders = updatedIntegration.storedProviders || [];
+      const nextSelected = updatedProviders[0]?.id || '';
+      setSelectedProviderId(nextSelected);
+      setEditor(null);
+      setRemoveCandidateId(null);
+      addNotification({
+        type: 'success',
+        title: 'Provider removed',
+        message: `${provider.name || provider.providerKey} has been removed.`
+      });
+    } catch (error: any) {
+      addNotification({
+        type: 'error',
+        title: 'Remove failed',
+        message: error?.message || 'Unable to remove provider.'
+      });
+    } finally {
+      setChangingProviderId(null);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="p-12">
-        <Loader label="Resolving Integration Graph..." />
+        <Loader label="Loading integration providers..." />
       </div>
     );
   }
 
-  if (view === 'grid') {
+  if (!integrations.length) {
     return (
-      <div className="flex flex-col h-full animate-in fade-in duration-500">
-        <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
-          theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-        }`}>
-          <div>
-            <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              Integrations
-            </h1>
-            <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
-              System Service Providers
-            </p>
+      <div className="p-8 lg:p-12">
+        <Card className="p-10 text-center">
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-indigo-50 text-indigo-600 mb-4">
+            <FrameworkIcons.Orbit size={22} />
           </div>
-        </div>
-
-        <div className="p-8 lg:p-12">
-          {!docs.length ? (
-            <Card title="Integrations">
-              <p className="text-sm text-slate-500">No integration types are registered in the runtime.</p>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl">
-              {docs.map((doc) => (
-                <div 
-                  key={doc.key}
-                  onClick={() => handleEdit(doc)}
-                  className={`group cursor-pointer p-6 rounded-3xl border transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 ${
-                    theme === 'dark' 
-                      ? 'bg-slate-900/50 border-slate-800 hover:bg-slate-800/80 hover:border-indigo-500/50' 
-                      : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-indigo-500/30'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className={`p-3 rounded-2xl ${
-                      theme === 'dark' ? 'bg-slate-800 group-hover:bg-indigo-500/10' : 'bg-slate-100 group-hover:bg-indigo-50'
-                    }`}>
-                      <FrameworkIcons.Settings className={theme === 'dark' ? 'text-slate-400 group-hover:text-indigo-400' : 'text-slate-500 group-hover:text-indigo-500'} size={24} />
-                    </div>
-                    <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-tighter ${
-                      doc.active?.source === 'env' 
-                        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' 
-                        : 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20'
-                    }`}>
-                      {doc.active?.source === 'env' ? 'Environment' : 'Managed'}
-                    </div>
-                  </div>
-                  
-                  <h3 className={`text-lg font-semibold tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{doc.label}</h3>
-                  <p className="text-sm text-slate-500 mb-6 line-clamp-2 min-h-[40px]">{doc.description || 'Manage system-level service providers for this integration type.'}</p>
-                  
-                  <div className={`mt-auto pt-5 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
-                    <div className="flex items-center justify-between text-[11px] font-semibold tracking-wide text-slate-400">
-                      <span>Active Provider</span>
-                      <span className={theme === 'dark' ? 'text-slate-200' : 'text-slate-600'}>{doc.active?.provider || 'default'}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">No integration types registered</h2>
+          <p className="mt-2 text-sm text-slate-500">
+            Register at least one integration type in the API runtime to configure providers.
+          </p>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full animate-in slide-in-from-right-4 duration-500">
-      <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
-        theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-      }`}>
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setView('grid')}
-            className={`p-2 rounded-xl transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
-          >
-            <FrameworkIcons.ArrowLeft size={18} />
-          </button>
+    <div className="flex flex-col h-full animate-in fade-in duration-300">
+      <div
+        className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 ${
+          theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
+        }`}
+      >
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div>
-            <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              {selectedType?.label}
+            <h1 className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              Integrations
             </h1>
-            <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
-              Configure Service Provider
+            <p className="text-[11px] font-semibold text-slate-500 tracking-tight">
+              Add providers, configure each instance, and enable or disable them individually.
             </p>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            onClick={() => setView('grid')}
-            className="rounded-xl"
-          >
-            Cancel
-          </Button>
-          <Button
-            icon={<FrameworkIcons.Save size={14} strokeWidth={3} />}
-            onClick={handleSave}
-            isLoading={isSaving}
-            className="px-6 rounded-xl shadow-lg shadow-indigo-600/10"
-          >
-            Save Changes
-          </Button>
+          <div className="w-full lg:w-[360px]">
+            <Select
+              value={activeType}
+              onChange={activateType}
+              options={integrationOptions}
+              placeholder="Select integration..."
+              searchable={false}
+              size="md"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="p-8 lg:p-12 max-w-4xl space-y-8 pb-32">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-1 space-y-2">
-            <h3 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Provider Selection</h3>
-            <p className="text-sm text-slate-500 leading-relaxed">Choose which driver or service to use for this integration.</p>
+      <div className="p-8 lg:p-12 space-y-6">
+        <Card className="p-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                {activeIntegration?.label || 'Integration'}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {activeIntegration?.description || 'Configure provider instances for this integration.'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={activeIntegration?.active?.source === 'stored' ? 'green' : 'amber'}>
+                Runtime Source: {String(activeIntegration?.active?.source || 'default').toUpperCase()}
+              </Badge>
+              <Badge variant="blue">
+                Runtime Provider: {String(activeIntegration?.active?.provider || activeIntegration?.defaultProvider || '-').toUpperCase()}
+              </Badge>
+            </div>
           </div>
-          <div className="md:col-span-2">
-            <Card>
-              <div className="space-y-6">
-                <Select
-                  value={selectedProviderKey}
-                  onChange={handleSelectProvider}
-                  options={(selectedType?.providers || []).map(p => ({ value: p.key, label: p.label }))}
-                  theme={theme}
-                  label="Available Providers"
-                  searchable={false}
-                />
-                {selectedProvider?.description ? (
-                  <p className="text-sm text-slate-500 bg-slate-500/5 p-4 rounded-2xl border border-slate-500/10 italic">
-                    "{selectedProvider.description}"
-                  </p>
-                ) : null}
-              </div>
-            </Card>
-          </div>
-        </div>
+        </Card>
 
-        <div className="border-t border-slate-500/10 pt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-1 space-y-2">
-            <h3 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Service Configuration</h3>
-            <p className="text-sm text-slate-500 leading-relaxed">Enter the required credentials and settings for the selected provider.</p>
-          </div>
-          <div className="md:col-span-2">
-            <Card>
-              <div className="space-y-6">
-                {!selectedProvider?.fields?.length ? (
-                  <div className="text-center py-6 opacity-40">
-                    <FrameworkIcons.Settings className="mx-auto mb-2" size={32} />
-                    <p className="text-sm font-medium">No configuration needed</p>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <Card className="xl:col-span-4" noPadding>
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Provider Instances</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Multiple providers are supported, including duplicate provider types.
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<FrameworkIcons.Plus size={14} />}
+                onClick={startAddProvider}
+              >
+                Add
+              </Button>
+            </div>
+
+            <div className="p-4 space-y-3">
+              {activeProviders.length === 0 && (
+                <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-8 text-center">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No providers configured.</p>
+                  <p className="text-xs text-slate-500 mt-1">Add your first provider instance to continue.</p>
+                </div>
+              )}
+
+              {activeProviders.map((provider) => {
+                const providerMeta = activeIntegration?.providers.find((item) => item.key === provider.providerKey);
+                const selected = selectedProviderId === provider.id && !editor?.isNew;
+                const enabled = provider.enabled !== false;
+                const pendingRemove = removeCandidateId === provider.id;
+                const isChanging = changingProviderId === provider.id;
+
+                return (
+                  <div
+                    key={provider.id}
+                    className={`rounded-xl border transition-all ${
+                      selected
+                        ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10'
+                        : 'border-slate-200 dark:border-slate-800'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRemoveCandidateId(null);
+                        setEditor(null);
+                        setSelectedProviderId(provider.id);
+                      }}
+                      className="w-full text-left px-4 py-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 truncate">
+                            {provider.name || providerMeta?.label || provider.providerKey.toUpperCase()}
+                          </p>
+                          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate mt-1">
+                            {provider.providerKey}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {runtimeProviderId === provider.id && <Badge variant="info">Runtime</Badge>}
+                          <Badge variant={enabled ? 'green' : 'gray'}>{enabled ? 'Enabled' : 'Disabled'}</Badge>
+                        </div>
+                      </div>
+                    </button>
+
+                    <div className="px-4 pb-3 flex items-center justify-between gap-3">
+                      <Switch
+                        checked={enabled}
+                        onChange={() => {
+                          if (!isChanging) void handleToggleProvider(provider);
+                        }}
+                        disabled={isChanging}
+                      />
+                      {!pendingRemove ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<FrameworkIcons.Trash size={14} />}
+                          onClick={() => setRemoveCandidateId(provider.id)}
+                          className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                        >
+                          Remove
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => void handleRemoveProvider(provider)}
+                            isLoading={isChanging}
+                          >
+                            Confirm
+                          </Button>
+                          <Button variant="secondary" size="sm" onClick={() => setRemoveCandidateId(null)}>
+                            Cancel
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          <Card className="xl:col-span-8" noPadding>
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">
+                {editor?.isNew ? 'Add Provider' : 'Provider Configuration'}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Configure credentials and behavior for this provider instance.
+              </p>
+            </div>
+
+            {!editor ? (
+              <div className="p-8 text-center">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Select a provider instance.</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Or add a new provider to create an additional configuration.
+                </p>
+              </div>
+            ) : (
+              <div className="p-5 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Select
+                    value={editor.providerKey}
+                    onChange={(providerKey) =>
+                      setEditor((previous) =>
+                        previous
+                          ? {
+                              ...previous,
+                              providerKey,
+                              config: {}
+                            }
+                          : previous
+                      )
+                    }
+                    options={(activeIntegration?.providers || []).map((provider) => ({
+                      label: provider.label,
+                      value: provider.key
+                    }))}
+                    label="Provider Type"
+                    searchable={false}
+                    size="md"
+                  />
+                  <Input
+                    value={editor.providerName}
+                    onChange={(event) =>
+                      setEditor((previous) =>
+                        previous
+                          ? {
+                              ...previous,
+                              providerName: event.target.value
+                            }
+                          : previous
+                      )
+                    }
+                    label="Display Name (Optional)"
+                    placeholder="e.g. SMTP - Marketing"
+                    size="md"
+                  />
+                </div>
+
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3">
+                  <Switch
+                    checked={editor.enabled}
+                    onChange={(value) =>
+                      setEditor((previous) =>
+                        previous
+                          ? {
+                              ...previous,
+                              enabled: value
+                            }
+                          : previous
+                      )
+                    }
+                    label="Enabled"
+                    description="Enabled providers are available at runtime."
+                  />
+                </div>
+
+                {(currentProviderDefinition?.fields || []).length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(currentProviderDefinition?.fields || []).map((field) => {
+                      const value = editor.config?.[field.name];
+                      const setFieldValue = (nextValue: any) =>
+                        setEditor((previous) =>
+                          previous
+                            ? {
+                                ...previous,
+                                config: {
+                                  ...previous.config,
+                                  [field.name]: nextValue
+                                }
+                              }
+                            : previous
+                        );
+
+                      if (field.type === 'boolean') {
+                        return (
+                          <div key={field.name} className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 md:col-span-2">
+                            <Switch
+                              checked={!!value}
+                              onChange={setFieldValue}
+                              label={field.label}
+                              description={field.description}
+                            />
+                          </div>
+                        );
+                      }
+
+                      if (field.type === 'textarea') {
+                        return (
+                          <TextArea
+                            key={field.name}
+                            label={`${field.label}${field.required ? ' *' : ''}`}
+                            placeholder={field.placeholder}
+                            value={String(value ?? '')}
+                            onChange={(event) => setFieldValue(event.target.value)}
+                            className="md:col-span-2"
+                            size="md"
+                          />
+                        );
+                      }
+
+                      if (field.type === 'select') {
+                        const options = (field.options || []).map((option) => ({
+                          label: option.label,
+                          value: option.value
+                        }));
+                        return (
+                          <div key={field.name}>
+                            <Select
+                              value={String(value ?? '')}
+                              onChange={setFieldValue}
+                              options={options}
+                              label={`${field.label}${field.required ? ' *' : ''}`}
+                              searchable={false}
+                              size="md"
+                            />
+                            {field.description && (
+                              <p className="mt-1 text-[11px] text-slate-500">{field.description}</p>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={field.name}>
+                          <Input
+                            label={`${field.label}${field.required ? ' *' : ''}`}
+                            placeholder={field.placeholder}
+                            value={String(value ?? '')}
+                            onChange={(event) => setFieldValue(event.target.value)}
+                            type={field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'}
+                            step={field.type === 'number' ? 'any' : undefined}
+                            size="md"
+                          />
+                          {field.description && (
+                            <p className="mt-1 text-[11px] text-slate-500">{field.description}</p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  selectedProvider.fields.map((field) => {
-                    const value = draftConfig[field.name];
-
-                    if (field.type === 'boolean') {
-                      return (
-                        <div key={field.name} className="p-4 rounded-2xl border border-slate-500/10 bg-slate-500/5">
-                          <Switch
-                            checked={toBoolean(value)}
-                            onChange={(checked) => setDraftConfig((prev) => ({ ...prev, [field.name]: checked }))}
-                            label={field.label}
-                            description={field.description}
-                          />
-                        </div>
-                      );
-                    }
-
-                    if (field.type === 'select') {
-                      return (
-                        <div key={field.name} className="space-y-2">
-                          <Select
-                            value={String(value || '')}
-                            onChange={(next) => setDraftConfig((prev) => ({ ...prev, [field.name]: next }))}
-                            options={(field.options || []).map(o => ({ value: o.value, label: o.label }))}
-                            theme={theme}
-                            label={field.label}
-                            searchable={false}
-                          />
-                          {field.description ? <p className="text-xs text-slate-500 px-1">{field.description}</p> : null}
-                        </div>
-                      );
-                    }
-
-                    if (field.type === 'textarea') {
-                      return (
-                        <div key={field.name} className="space-y-2">
-                          <label className="text-[10px] font-semibold tracking-wide text-slate-500 px-1">{field.label}</label>
-                          <textarea
-                            value={String(value || '')}
-                            onChange={(event) =>
-                              setDraftConfig((prev) => ({ ...prev, [field.name]: event.target.value }))
-                            }
-                            placeholder={field.placeholder || ''}
-                            rows={4}
-                            className={`w-full rounded-2xl py-3 px-4 text-sm font-medium outline-none border transition-all ${
-                              theme === 'dark'
-                                ? 'bg-slate-950 border-slate-800 text-white focus:border-indigo-500'
-                                : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
-                            }`}
-                          />
-                          {field.description ? <p className="text-xs text-slate-500 px-1">{field.description}</p> : null}
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div key={field.name} className="space-y-2">
-                        <Input
-                          type={field.type === 'number' ? 'number' : field.type === 'password' ? 'password' : 'text'}
-                          value={field.type === 'number' ? (value ?? '') : String(value || '')}
-                          onChange={(event) =>
-                            setDraftConfig((prev) => ({
-                              ...prev,
-                              [field.name]:
-                                field.type === 'number'
-                                  ? (event.target.value === '' ? '' : Number(event.target.value))
-                                  : event.target.value
-                            }))
-                          }
-                          label={field.label}
-                          placeholder={field.placeholder}
-                        />
-                        {field.description ? <p className="text-xs text-slate-500 px-1">{field.description}</p> : null}
-                      </div>
-                    );
-                  })
+                  <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-6 text-center">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No fields required</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      This provider does not define custom configuration fields.
+                    </p>
+                  </div>
                 )}
+
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+                  {editor.isNew ? (
+                    <Button variant="secondary" onClick={cancelNewProvider}>
+                      Cancel
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" onClick={resetEditor}>
+                      Reset
+                    </Button>
+                  )}
+                  <Button
+                    variant="primary"
+                    icon={<FrameworkIcons.Save size={14} />}
+                    onClick={() => void handleSaveProvider()}
+                    isLoading={saving}
+                  >
+                    {editor.isNew ? 'Add Provider' : 'Save Provider'}
+                  </Button>
+                </div>
               </div>
-            </Card>
-          </div>
+            )}
+          </Card>
         </div>
       </div>
     </div>

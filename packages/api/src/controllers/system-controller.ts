@@ -5,6 +5,10 @@ import { ShortcodeService } from '../services/shortcode-service';
 import { SystemService } from '../services/system-service';
 import { UserManagementService } from '../services/user-management-service';
 import { ResolutionService } from '../services/resolution-service';
+import * as speakeasy from 'speakeasy';
+import * as QRCode from 'qrcode';
+import { createHash, randomBytes } from 'crypto';
+import { users } from '@fromcode/database';
 
 export class SystemController {
   private db: any;
@@ -67,8 +71,70 @@ export class SystemController {
   async updateIntegration(req: Request, res: Response) {
     try {
       const { type } = req.params;
-      const { provider, config } = req.body;
-      const updated = await this.manager.integrations.updateConfig(type, provider, config || {});
+      const { provider, config, profileId, profileName, makeActive, enabled, providerId, providerName } = req.body;
+      const updated = await (this.manager.integrations as any).updateConfig(type, provider, config || {}, {
+        profileId,
+        profileName,
+        providerId,
+        providerName,
+        makeActive: makeActive === undefined ? true : parseBoolean(makeActive),
+        enabled: enabled === undefined ? undefined : parseBoolean(enabled)
+      });
+      res.json({ success: !!updated, integration: updated });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message });
+    }
+  }
+
+  async setIntegrationProviderEnabled(req: Request, res: Response) {
+    try {
+      const { type, providerId } = req.params;
+      const enabled = parseBoolean(req.body?.enabled);
+      const updated = await (this.manager.integrations as any).setProviderEnabled(type, providerId, enabled);
+      res.json({ success: !!updated, integration: updated });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message });
+    }
+  }
+
+  async removeIntegrationProvider(req: Request, res: Response) {
+    try {
+      const { type, providerId } = req.params;
+      const updated = await (this.manager.integrations as any).removeProvider(type, providerId);
+      res.json({ success: !!updated, integration: updated });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message });
+    }
+  }
+
+  async activateIntegrationProfile(req: Request, res: Response) {
+    try {
+      const { type, profileId } = req.params;
+      const updated = await (this.manager.integrations as any).activateProfile(type, profileId);
+      res.json({ success: !!updated, integration: updated });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message });
+    }
+  }
+
+  async renameIntegrationProfile(req: Request, res: Response) {
+    try {
+      const { type, profileId } = req.params;
+      const profileName = String(req.body?.profileName || req.body?.name || '').trim();
+      if (!profileName) {
+        return res.status(400).json({ error: 'profileName is required' });
+      }
+      const updated = await (this.manager.integrations as any).renameProfile(type, profileId, profileName);
+      res.json({ success: !!updated, integration: updated });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message });
+    }
+  }
+
+  async deleteIntegrationProfile(req: Request, res: Response) {
+    try {
+      const { type, profileId } = req.params;
+      const updated = await (this.manager.integrations as any).deleteProfile(type, profileId);
       res.json({ success: !!updated, integration: updated });
     } catch (e: any) {
       res.status(400).json({ error: e.message });
@@ -76,7 +142,24 @@ export class SystemController {
   }
 
   async getFrontendMetadata(req: Request, res: Response) {
-    res.json(await this.themeManager.getFrontendMetadata(this.manager.getRuntimeModules()));
+    const metadata = await this.themeManager.getFrontendMetadata(this.manager.getRuntimeModules());
+    const activePlugins = this.manager.getSortedPlugins(
+      this.manager.getPlugins().filter((p: any) => p.state === 'active')
+    ).map((p: any) => ({
+      slug: p.manifest.slug,
+      version: p.manifest.version,
+      name: p.manifest.name,
+      capabilities: p.manifest.capabilities,
+      ui: {
+        ...(p.manifest.ui || {}),
+        headInjections: this.manager.getHeadInjections(p.manifest.slug)
+      }
+    }));
+
+    res.json({
+      ...metadata,
+      plugins: activePlugins
+    });
   }
 
   async getThemes(req: Request, res: Response) {
@@ -372,5 +455,313 @@ export class SystemController {
       clearInterval(hb);
       this.manager.hooks.off('system:hmr:reload', handler);
     });
+  }
+
+  async sendTestTelemetryEmail(req: Request, res: Response) {
+    try {
+      const user = ((req as any).user || {}) as { id?: string | number; email?: string; roles?: string[] };
+      const result = await (this.manager as any).sendTestEmailTelemetry({
+        id: user.id,
+        email: user.email,
+        roles: Array.isArray(user.roles) ? user.roles : []
+      });
+      res.json({ success: true, ...result });
+    } catch (e: any) {
+      res.status(400).json({ error: e?.message || 'Failed to send telemetry test email' });
+    }
+  }
+
+  async getTwoFactorStatus(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+
+      const db = (this.manager as any).db;
+      const enabledRow = await db.findOne('_system_meta', { key: `user:${userId}:2fa_enabled` });
+      const recoveryCodes = await this.readRecoveryCodeRecords(userId);
+      
+      res.json({
+        enabled: enabledRow?.value === 'true',
+        recoveryCodesRemaining: recoveryCodes.filter((entry) => !entry.usedAt).length
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+
+  async setup2FA(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+
+      const user = await this.users.getUser(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+
+      // Generate a new secret
+      const secret = speakeasy.generateSecret({
+        name: `Fromcode (${user.email})`,
+        length: 32
+      });
+
+      // Generate QR code
+      const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
+
+      // Store the secret temporarily (will be confirmed during verification)
+      const db = (this.manager as any).db;
+      const existingSecret = await db.findOne('_system_meta', { key: `user:${userId}:totp_secret_pending` });
+      
+      if (existingSecret) {
+        await db.update('_system_meta', 
+          { key: `user:${userId}:totp_secret_pending` },
+          { value: secret.base32 }
+        );
+      } else {
+        await db.insert('_system_meta', {
+          key: `user:${userId}:totp_secret_pending`,
+          value: secret.base32
+        });
+      }
+
+      res.json({
+        secret: secret.base32,
+        qrCode
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+
+  async verify2FA(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+
+      const { token } = req.body;
+      if (!token) return res.status(400).json({ error: 'Token is required' });
+
+      const db = (this.manager as any).db;
+      const secretRow = await db.findOne('_system_meta', { key: `user:${userId}:totp_secret_pending` });
+      
+      if (!secretRow) {
+        return res.status(400).json({ error: '2FA setup not initiated. Please start setup first.' });
+      }
+
+      // Verify the token
+      const verified = speakeasy.totp.verify({
+        secret: secretRow.value,
+        encoding: 'base32',
+        token,
+        window: 1
+      });
+
+      if (!verified) {
+        return res.status(400).json({ error: 'Invalid verification code' });
+      }
+
+      // Move secret from pending to active
+      const existingTOTPSecret = await db.findOne('_system_meta', { key: `user:${userId}:totp_secret` });
+      if (existingTOTPSecret) {
+        await db.update('_system_meta',
+          { key: `user:${userId}:totp_secret` },
+          { value: secretRow.value }
+        );
+      } else {
+        await db.insert('_system_meta', {
+          key: `user:${userId}:totp_secret`,
+          value: secretRow.value
+        });
+      }
+      
+      const existing2FAEnabled = await db.findOne('_system_meta', { key: `user:${userId}:2fa_enabled` });
+      if (existing2FAEnabled) {
+        await db.update('_system_meta',
+          { key: `user:${userId}:2fa_enabled` },
+          { value: 'true' }
+        );
+      } else {
+        await db.insert('_system_meta', {
+          key: `user:${userId}:2fa_enabled`,
+          value: 'true'
+        });
+      }
+
+      // Generate one-time recovery codes
+      const recoveryCodes = this.generateRecoveryCodes();
+      const recoveryRecords = recoveryCodes.map((code) => ({
+        hash: this.hashRecoveryCode(code),
+        usedAt: null as string | null,
+        createdAt: new Date().toISOString()
+      }));
+      await this.writeRecoveryCodeRecords(userId, recoveryRecords);
+
+      // Clean up pending secret
+      await db.delete('_system_meta', { key: `user:${userId}:totp_secret_pending` });
+
+      await this.sendSecurityNotification({
+        userId,
+        subject: 'Two-factor authentication enabled',
+        title: 'Two-factor authentication has been enabled on your account.',
+        details: [`Time: ${new Date().toISOString()}`]
+      });
+
+      res.json({
+        success: true,
+        message: '2FA enabled successfully',
+        recoveryCodes
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+
+  async regenerateRecoveryCodes(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+
+      const db = (this.manager as any).db;
+      const enabledRow = await db.findOne('_system_meta', { key: `user:${userId}:2fa_enabled` });
+      if (enabledRow?.value !== 'true') {
+        return res.status(400).json({ error: '2FA must be enabled before recovery codes can be generated.' });
+      }
+
+      const recoveryCodes = this.generateRecoveryCodes();
+      const recoveryRecords = recoveryCodes.map((code) => ({
+        hash: this.hashRecoveryCode(code),
+        usedAt: null as string | null,
+        createdAt: new Date().toISOString()
+      }));
+
+      await this.writeRecoveryCodeRecords(userId, recoveryRecords);
+
+      res.json({
+        success: true,
+        recoveryCodes
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+
+  async disable2FA(req: Request, res: Response) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+
+      const db = (this.manager as any).db;
+      
+      // Remove all 2FA related metadata
+      await db.delete('_system_meta', { key: `user:${userId}:2fa_enabled` });
+      await db.delete('_system_meta', { key: `user:${userId}:totp_secret` });
+      await db.delete('_system_meta', { key: `user:${userId}:totp_secret_pending` });
+      await db.delete('_system_meta', { key: this.getRecoveryCodesKey(userId) });
+
+      await this.sendSecurityNotification({
+        userId,
+        subject: 'Two-factor authentication disabled',
+        title: 'Two-factor authentication has been disabled on your account.',
+        details: [`Time: ${new Date().toISOString()}`]
+      });
+
+      res.json({ success: true, message: '2FA disabled successfully' });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+
+  private getRecoveryCodesKey(userId: number) {
+    return `user:${userId}:2fa_recovery_codes`;
+  }
+
+  private generateRecoveryCodes(count: number = 10): string[] {
+    const codes: string[] = [];
+    while (codes.length < count) {
+      const raw = randomBytes(5).toString('hex').toUpperCase();
+      const formatted = `${raw.slice(0, 5)}-${raw.slice(5, 10)}`;
+      if (!codes.includes(formatted)) {
+        codes.push(formatted);
+      }
+    }
+    return codes;
+  }
+
+  private hashRecoveryCode(code: string): string {
+    return createHash('sha256').update(String(code || '').trim().toUpperCase()).digest('hex');
+  }
+
+  private async readRecoveryCodeRecords(userId: number): Promise<Array<{ hash: string; usedAt: string | null; createdAt?: string }>> {
+    const db = (this.manager as any).db;
+    const row = await db.findOne('_system_meta', { key: this.getRecoveryCodesKey(userId) });
+    const raw = String(row?.value || '').trim();
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((entry) => ({
+          hash: String(entry?.hash || '').trim(),
+          usedAt: entry?.usedAt ? String(entry.usedAt) : null,
+          createdAt: entry?.createdAt ? String(entry.createdAt) : undefined
+        }))
+        .filter((entry) => !!entry.hash);
+    } catch {
+      return [];
+    }
+  }
+
+  private async writeRecoveryCodeRecords(
+    userId: number,
+    records: Array<{ hash: string; usedAt: string | null; createdAt?: string }>
+  ) {
+    const db = (this.manager as any).db;
+    const key = this.getRecoveryCodesKey(userId);
+    const existing = await db.findOne('_system_meta', { key });
+    const value = JSON.stringify(records);
+
+    if (existing) {
+      await db.update('_system_meta', { key }, { value });
+      return;
+    }
+
+    await db.insert('_system_meta', { key, value });
+  }
+
+  private async sendSecurityNotification(options: {
+    userId: number;
+    subject: string;
+    title: string;
+    details?: string[];
+  }) {
+    try {
+      const db = (this.manager as any).db;
+      const enabled = await db.findOne('_system_meta', { key: 'auth_security_notifications' });
+      if (String(enabled?.value || 'true').trim().toLowerCase() !== 'true') {
+        return;
+      }
+
+      const user = await db.findOne(users, { id: options.userId });
+      const recipient = this.normalizeEmail(user?.email);
+      if (!recipient) return;
+
+      const appName = process.env.APP_NAME || 'Fromcode';
+      const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@framework.local';
+      const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
+      const text = `${options.title}\n\n${details.join('\n')}`;
+      const html = `<p>${options.title}</p>${details.length > 0 ? `<ul>${details.map((line) => `<li>${line}</li>`).join('')}</ul>` : ''}`;
+
+      await this.manager.email.send({
+        to: recipient,
+        from: fromAddress,
+        subject: `${appName}: ${options.subject}`,
+        text,
+        html
+      });
+    } catch {
+      // Security notifications are best-effort.
+    }
+  }
+
+  private normalizeEmail(email: any): string {
+    return String(email || '').trim().toLowerCase();
   }
 }

@@ -1,5 +1,11 @@
 import HomeClient from './home-client';
-import { serverFetchJson } from '../lib/server-api';
+import {
+  buildCollectionLookupPath,
+  buildSettingsCollectionPath,
+  buildSystemResolvePath,
+  extractFirstDoc,
+  serverFetchJson
+} from '../lib/server-api';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 
@@ -22,7 +28,7 @@ async function readSettingValue(key: string): Promise<string> {
 }
 
 const readSettingsMap = cache(async () => {
-  const result = await serverFetchJson('/collections/settings?limit=500');
+  const result = await serverFetchJson(buildSettingsCollectionPath(500));
   const docs = Array.isArray(result?.docs)
     ? result.docs
     : Array.isArray(result)
@@ -70,7 +76,7 @@ async function resolveBySlug(slug: string, locale: string, fallbackLocale: strin
   query.set('slug', slug);
   if (locale) query.set('locale', locale);
   if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
-  const result = await serverFetchJson(`/system/resolve?${query.toString()}`);
+  const result = await serverFetchJson(buildSystemResolvePath(query));
   return result?.doc || null;
 }
 
@@ -87,8 +93,8 @@ async function resolveHomeTarget(locale: string, fallbackLocale: string) {
     const collectionSlug = parts[1];
     const recordId = parts.slice(2).join(':');
     if (collectionSlug && recordId) {
-      const result = await serverFetchJson(`/collections/${encodeURIComponent(collectionSlug)}?id=${encodeURIComponent(recordId)}&limit=1`);
-      const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
+      const result = await serverFetchJson(buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 }));
+      const doc = extractFirstDoc(result);
       if (doc) return { content: doc, forcedLayout: null };
     }
   }

@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTheme } from '@/components/theme-context';
 import { FrameworkIcons } from '@/lib/icons';
+import { ROUTES } from '@/lib/constants';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,13 +12,13 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const pathname = usePathname();
 
   const navItems = [
-    { label: 'General', href: '/settings/general', icon: FrameworkIcons.Settings },
-    { label: 'Localization', href: '/settings/localization', icon: FrameworkIcons.Globe },
-    { label: 'Routing', href: '/settings/routing', icon: FrameworkIcons.Link },
-    { label: 'Integrations', href: '/settings/integrations', icon: FrameworkIcons.Orbit },
-    { label: 'Security', href: '/settings/security', icon: FrameworkIcons.Shield },
-    { label: 'Infrastructure', href: '/settings/infrastructure', icon: FrameworkIcons.Activity },
-    { label: 'Updates', href: '/settings/updates', icon: FrameworkIcons.Refresh },
+    { label: 'General', href: ROUTES.SETTINGS.GENERAL, icon: FrameworkIcons.Settings },
+    { label: 'Localization', href: ROUTES.SETTINGS.LOCALIZATION, icon: FrameworkIcons.Globe },
+    { label: 'Routing', href: ROUTES.SETTINGS.ROUTING, icon: FrameworkIcons.Link },
+    { label: 'Integrations', href: ROUTES.SETTINGS.INTEGRATIONS, icon: FrameworkIcons.Orbit },
+    { label: 'Security', href: ROUTES.SETTINGS.SECURITY, icon: FrameworkIcons.Shield },
+    { label: 'Infrastructure', href: ROUTES.SETTINGS.INFRASTRUCTURE, icon: FrameworkIcons.Activity },
+    { label: 'Updates', href: ROUTES.SETTINGS.UPDATES, icon: FrameworkIcons.Refresh },
   ];
 
   return (

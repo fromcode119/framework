@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Slot, PluginsProvider, useTranslation, usePlugins } from '@fromcode/react';
 import { ThemeProvider, useTheme } from '@/components/theme-context';
@@ -15,6 +15,7 @@ import { api } from '@/lib/api';
 import { API_BASE_URL, ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { purgeAuth } from '@/lib/auth-utils';
+import { applyDateLocaleTimezonePatch } from '@/lib/timezone';
 
 const { 
   Menu = () => null, 
@@ -138,7 +139,8 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { loadConfig } = usePlugins();
+  const { loadConfig, settings } = usePlugins();
+  const [, setTimezoneRenderVersion] = useState(0);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarInitialized, setIsSidebarInitialized] = useState(false);
 
@@ -161,7 +163,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   
   // Robust auth page detection
   const isAuthPage = React.useMemo(() => {
-    return pathname?.includes('/login') || pathname?.includes('/setup');
+    return (
+      pathname?.includes('/login') ||
+      pathname?.includes('/setup') ||
+      pathname?.includes('/forgot-password') ||
+      pathname?.includes('/reset-password')
+    );
   }, [pathname]);
 
   const isSetupPath = React.useMemo(() => {
@@ -174,6 +181,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       loadConfig(ENDPOINTS.SYSTEM.METADATA);
     }
   }, [loadConfig, user, isAuthPage]);
+
+  useLayoutEffect(() => {
+    applyDateLocaleTimezonePatch(String(settings?.timezone || ''));
+    setTimezoneRenderVersion((value) => value + 1);
+  }, [settings?.timezone]);
 
   const [isMini, setIsMini] = useState(() => {
     if (typeof window !== 'undefined') {

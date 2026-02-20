@@ -1,5 +1,5 @@
 import { QueueAdapter } from './types';
-import { LocalQueueAdapter } from './adapters/local';
+import { LocalQueueAdapter } from './adapters/local-queue-adapter';
 
 export type QueueAdapterCreator = (options: any) => QueueAdapter;
 

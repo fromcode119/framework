@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import type { SignOptions } from 'jsonwebtoken';
+import { UserPermissionChecker } from './permission-checker';
 
 export interface User {
   id: string;
@@ -17,6 +18,7 @@ export class AuthManager {
   private secret: string;
   private sessionValidator?: SessionValidator;
   private apiKeyValidator?: ApiKeyValidator;
+  private permissionChecker?: UserPermissionChecker;
 
   constructor(secret: string = process.env.JWT_SECRET || 'fromcode-removed-historical-secret') {
     this.secret = secret;
@@ -28,6 +30,10 @@ export class AuthManager {
 
   setApiKeyValidator(validator: ApiKeyValidator) {
     this.apiKeyValidator = validator;
+  }
+
+  setPermissionChecker(checker: UserPermissionChecker) {
+    this.permissionChecker = checker;
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -222,6 +228,51 @@ export class AuthManager {
       next();
     };
   }
+
+  // NEW: Permission-based guard (fine-grained access control)
+  requirePermission(permission: string | string[]) {
+    return async (req: any, res: any, next: any) => {
+      if (!req.user) {
+        console.log(`[AuthManager] Permission guard failed: No user on request for ${req.method} ${req.url}`);
+        return res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
+      }
+
+      if (!this.permissionChecker) {
+        console.error('[AuthManager] Permission checker not configured - falling back to role check');
+        // Fallback: check if user is admin
+        const isAdmin = req.user.roles.includes('admin');
+        if (!isAdmin) {
+          return res.status(403).json({ 
+            error: 'Forbidden: permission system not configured',
+            required: permission
+          });
+        }
+        return next();
+      }
+
+      const permissions = Array.isArray(permission) ? permission : [permission];
+      const userId = parseInt(req.user.id);
+
+      // Check if user has ANY of the required permissions
+      let hasPermission = false;
+      for (const perm of permissions) {
+        if (await this.permissionChecker.hasPermission(userId, perm)) {
+          hasPermission = true;
+          break;
+        }
+      }
+
+      if (!hasPermission) {
+        console.log(`[AuthManager] Permission denied for user ${req.user.email}: requires ${permissions.join(' OR ')}`);
+        return res.status(403).json({ 
+          error: 'Forbidden: missing required permission',
+          required: permissions
+        });
+      }
+
+      next();
+    };
+  }
 }
 
 export interface IAuthService {
@@ -230,3 +281,6 @@ export interface IAuthService {
   generateToken(user: User, options?: { expiresIn?: SignOptions['expiresIn'] }): Promise<string>;
   verifyToken(token: string): Promise<User>;
 }
+
+export { UserPermissionChecker } from './permission-checker';
+

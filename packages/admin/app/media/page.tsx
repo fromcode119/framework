@@ -6,6 +6,7 @@ import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/ui/page-heading';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PromptDialog } from '@/components/ui/prompt-dialog';
 import { MoveDialog } from '@/components/ui/move-dialog';
@@ -270,16 +271,24 @@ export default function MediaPage() {
                   </React.Fragment>
                 ))}
               </div>
-              <div className="flex items-center gap-3">
-                <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 ${
-                  theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-600 text-white'
-                }`}>
-                  <FrameworkIcons.Media size={20} strokeWidth={2.5} />
-                </div>
-                <h1 className={`text-3xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  Media Assets
-                </h1>
-              </div>
+              <Slot
+                name="admin.media.header.title"
+                props={{ theme, currentFolderId, folderPath }}
+                fallback={
+                  <PageHeading
+                    icon={(
+                      <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 ${
+                        theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-600 text-white'
+                      }`}>
+                        <FrameworkIcons.Media size={20} strokeWidth={2.5} />
+                      </div>
+                    )}
+                    title="Media Assets"
+                    subtitle="Manage and organize your media library."
+                    subtitleClassName="text-slate-500 font-bold text-xs tracking-tight opacity-80 mt-2"
+                  />
+                }
+              />
             </div>
             
             <div className="flex items-center gap-4">
@@ -325,7 +334,7 @@ export default function MediaPage() {
               placeholder="Search media..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full rounded-xl py-2 pl-12 pr-4 text-sm outline-none border transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`} 
+              className={`w-full rounded-xl py-2 pl-12 pr-4 text-[13px] outline-none border transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`} 
             />
           </div>
           <div className={`flex items-center border rounded-xl p-0.5 transition-all duration-300 shadow-sm ${

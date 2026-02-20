@@ -17,10 +17,17 @@ export const TagFieldLocal: React.FC<TagFieldLocalProps> = ({ field, value, onCh
   const sourceCollectionSlug = field.admin?.sourceCollection || field.relationTo;
   const sourceCollection = collections.find(c => c.slug === sourceCollectionSlug);
   
-  const targetField = field.admin?.sourceField || 
-                     sourceCollection?.admin?.useAsTitle || 
-                     (sourceCollectionSlug === 'users' ? 'username' : 
-                      sourceCollectionSlug === 'media' ? 'filename' : 'slug');
+  const targetField = sourceCollectionSlug
+    ? (
+        field.admin?.sourceField ||
+        sourceCollection?.admin?.useAsTitle ||
+        (sourceCollectionSlug === 'users'
+          ? 'username'
+          : sourceCollectionSlug === 'media'
+            ? 'filename'
+            : 'slug')
+      )
+    : field.admin?.sourceField;
 
   // Ensure relationship values that might be raw objects or slugs are handled correctly
   const safeValue = React.useMemo(() => {

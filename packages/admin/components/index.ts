@@ -6,6 +6,7 @@ export * from './ui/text-area';
 export * from './ui/tag-field';
 export * from './ui/loader';
 export * from './ui/switch';
+export * from './ui/page-heading';
 export * from './ui/card';
 export * from './ui/badge';
 export * from './ui/confirm-dialog';

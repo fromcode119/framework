@@ -168,6 +168,18 @@ export default function UserProfilePage() {
                     )}
                  </div>
                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Status</span>
+                    <Badge variant={String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'rose' : 'success'} className="px-3 font-bold">
+                      {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
+                    </Badge>
+                 </div>
+                 <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Password Reset</span>
+                    <span className="text-xs font-bold text-slate-400">
+                      {user.forcePasswordReset ? 'Required on next login' : 'Not required'}
+                    </span>
+                 </div>
+                 <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Created</span>
                     <span className="text-xs font-bold text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
                  </div>

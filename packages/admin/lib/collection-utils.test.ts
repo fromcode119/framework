@@ -38,26 +38,26 @@ describe('generatePreviewUrl', () => {
   it('should use customPermalink if available', () => {
     const record = { customPermalink: 'my-custom-path' };
     const url = generatePreviewUrl('http://test.com', record, mockCollection);
-    expect(url).toBe('http://test.com/my-custom-path?preview=1&draft=1');
+    expect(url).toBe('http://test.com/my-custom-path?preview=1');
   });
 
   it('should handle leading slash in customPermalink', () => {
     const record = { customPermalink: '/my-custom-path' };
     const url = generatePreviewUrl('http://test.com', record, mockCollection);
-    expect(url).toBe('http://test.com/my-custom-path?preview=1&draft=1');
+    expect(url).toBe('http://test.com/my-custom-path?preview=1');
   });
 
   it('should fallback to slug with default structure', () => {
     const record = { slug: 'test-post' };
     const url = generatePreviewUrl('http://test.com', record, mockCollection);
-    expect(url).toBe('http://test.com/test-post?preview=1&draft=1');
+    expect(url).toBe('http://test.com/test-post?preview=1');
   });
 
   it('should respect permalinkStructure replacements', () => {
     const record = { slug: 'test-post', createdAt: '2026-02-04T12:00:00Z' };
     const structure = '/:year/:month/:slug';
     const url = generatePreviewUrl('http://test.com', record, mockCollection, structure);
-    expect(url).toBe('http://test.com/2026/02/test-post?preview=1&draft=1');
+    expect(url).toBe('http://test.com/2026/02/test-post?preview=1');
   });
 
   it('should include collection prefix from plugin settings', () => {
@@ -68,7 +68,7 @@ describe('generatePreviewUrl', () => {
     };
     const pluginSettings = { postsPrefix: 'blog' };
     const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
-    expect(url).toBe('http://test.com/blog/test-post?preview=1&draft=1');
+    expect(url).toBe('http://test.com/blog/test-post?preview=1');
   });
 
   it('should handle nested collection prefixes', () => {
@@ -79,7 +79,7 @@ describe('generatePreviewUrl', () => {
     };
     const pluginSettings = { postsPrefix: '/news/weekly' };
     const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
-    expect(url).toBe('http://test.com/news/weekly/test-post?preview=1&draft=1');
+    expect(url).toBe('http://test.com/news/weekly/test-post?preview=1');
   });
 
   it('should prepend collection prefix to customPermalink if missing', () => {
@@ -90,7 +90,7 @@ describe('generatePreviewUrl', () => {
     };
     const pluginSettings = { postsPrefix: 'blog' };
     const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
-    expect(url).toBe('http://test.com/blog/my-custom-path?preview=1&draft=1');
+    expect(url).toBe('http://test.com/blog/my-custom-path?preview=1');
   });
 
   it('should not prepend collection prefix if it is already in customPermalink', () => {
@@ -101,6 +101,6 @@ describe('generatePreviewUrl', () => {
     };
     const pluginSettings = { postsPrefix: 'blog' };
     const url = generatePreviewUrl('http://test.com', record, collectionWithPrefix, '/:slug', pluginSettings);
-    expect(url).toBe('http://test.com/blog/my-custom-path?preview=1&draft=1');
+    expect(url).toBe('http://test.com/blog/my-custom-path?preview=1');
   });
 });

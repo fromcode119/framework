@@ -1,13 +1,50 @@
 import { IntegrationRegistry, IntegrationTypeDefinition, IntegrationProviderDefinition } from './integration-registry';
-import { EmailManager, EmailFactory } from '@fromcode/email';
+import { EmailManager, EmailFactory, EmailOptions } from '@fromcode/email';
 import { MediaManager, StorageFactory } from '@fromcode/media';
 import { CacheManager, CacheFactory } from '@fromcode/cache';
 import { Logger } from '../logging/logger';
 import { EmailIntegrationDefinition } from './providers/email-provider';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';
+import { SsoIntegrationDefinition } from './providers/sso-provider';
 import { sanitizeKey } from '../utils';
 import path from 'path';
+
+type EmailSender = Pick<EmailManager, 'send'>;
+
+class MultiProviderEmailSender implements EmailSender {
+  constructor(
+    private readonly providers: Array<{ key: string; sender: EmailSender }>,
+    private readonly logger: Logger
+  ) {}
+
+  async send(options: EmailOptions): Promise<any> {
+    const settled = await Promise.allSettled(
+      this.providers.map(async (entry) => {
+        const result = await entry.sender.send(options);
+        return { key: entry.key, result };
+      })
+    );
+
+    const failed = settled
+      .filter((item): item is PromiseRejectedResult => item.status === 'rejected')
+      .map((item) => String(item.reason?.message || item.reason || 'unknown error'));
+    const succeeded = settled.filter((item) => item.status === 'fulfilled').length;
+
+    if (!succeeded) {
+      throw new Error(`All enabled email providers failed: ${failed.join(' | ')}`);
+    }
+
+    if (failed.length) {
+      this.logger.warn(
+        `Email delivered with partial provider failures (${succeeded}/${this.providers.length} succeeded): ${failed.join(' | ')}`
+      );
+    }
+
+    const firstSuccess = settled.find((item): item is PromiseFulfilledResult<{ key: string; result: any }> => item.status === 'fulfilled');
+    return firstSuccess?.value?.result;
+  }
+}
 
 /**
  * IntegrationManager
@@ -24,7 +61,7 @@ export class IntegrationManager {
   private instances: Map<string, any> = new Map();
 
   // Integration instances
-  public email!: EmailManager;
+  public email!: EmailSender;
   public storage!: MediaManager;
   public cache!: CacheManager;
 
@@ -43,6 +80,7 @@ export class IntegrationManager {
     this.registry.registerType(EmailIntegrationDefinition);
     this.registry.registerType(StorageIntegrationDefinition);
     this.registry.registerType(CacheIntegrationDefinition);
+    this.registry.registerType(SsoIntegrationDefinition);
   }
 
   /**
@@ -116,13 +154,28 @@ export class IntegrationManager {
    */
   async refreshEmail(preferStored: boolean = true) {
     try {
-      const { instance, resolved } = await this.registry.instantiate<EmailManager>('email', { 
+      const resolvedInstances = await this.registry.instantiateMany<EmailManager>('email', {
         preferStored,
         context: { projectRoot: this.projectRoot, logger: this.logger }
       });
-      this.email = instance;
-      this.logger.info(`Email integration active: ${resolved.providerKey} (${resolved.source})`);
-      return resolved;
+      if (!resolvedInstances.length) {
+        throw new Error('No email providers resolved');
+      }
+
+      if (resolvedInstances.length === 1) {
+        const only = resolvedInstances[0];
+        this.email = only.instance;
+        this.logger.info(`Email integration active: ${only.resolved.providerKey} (${only.resolved.source})`);
+        return only.resolved;
+      }
+
+      this.email = new MultiProviderEmailSender(
+        resolvedInstances.map((entry) => ({ key: entry.resolved.providerKey, sender: entry.instance })),
+        this.logger
+      );
+      const providerKeys = resolvedInstances.map((entry) => entry.resolved.providerKey).join(', ');
+      this.logger.info(`Email integrations active (fan-out): ${providerKeys} (stored)`);
+      return resolvedInstances.map((entry) => entry.resolved);
     } catch (error: any) {
       this.logger.error(`Failed to initialize email integration: ${error.message}. Falling back to mock driver.`);
       this.email = new EmailManager(EmailFactory.create('mock', {}));
@@ -180,6 +233,8 @@ export class IntegrationManager {
       summaries.map(async (summary) => {
         const active = await this.registry.resolve(summary.key).catch(() => null);
         const stored = await this.registry.readStoredConfig(summary.key).catch(() => null);
+        const storedProviders = await this.registry.readStoredProvidersConfig(summary.key).catch(() => null);
+        const storedProfiles = await this.registry.readStoredProfilesConfig(summary.key).catch(() => null);
         return {
           ...summary,
           active: active
@@ -189,7 +244,10 @@ export class IntegrationManager {
                 config: active.config
               }
             : null,
-          stored
+          stored,
+          storedProviders,
+          storedProfiles,
+          activeProfileId: storedProfiles?.activeProfileId || null
         };
       })
     );
@@ -207,6 +265,8 @@ export class IntegrationManager {
 
     const active = await this.registry.resolve(normalizedType).catch(() => null);
     const stored = await this.registry.readStoredConfig(normalizedType).catch(() => null);
+    const storedProviders = await this.registry.readStoredProvidersConfig(normalizedType).catch(() => null);
+    const storedProfiles = await this.registry.readStoredProfilesConfig(normalizedType).catch(() => null);
 
     return {
       ...summary,
@@ -217,16 +277,31 @@ export class IntegrationManager {
             config: active.config
           }
         : null,
-      stored
+      stored,
+      storedProviders,
+      storedProfiles,
+      activeProfileId: storedProfiles?.activeProfileId || null
     };
   }
 
   /**
    * Update configuration for a specific integration type
    */
-  async updateConfig(type: string, provider: string, config: Record<string, any> = {}) {
+  async updateConfig(
+    type: string,
+    provider: string,
+    config: Record<string, any> = {},
+    options: {
+      profileId?: string;
+      profileName?: string;
+      makeActive?: boolean;
+      enabled?: boolean;
+      providerId?: string;
+      providerName?: string;
+    } = {}
+  ) {
     const normalizedType = this.normalizeKey(type);
-    await this.registry.updateStoredConfig(normalizedType, provider, config || {});
+    await this.registry.updateStoredConfig(normalizedType, provider, config || {}, options);
 
     // Refresh if it's a core integration
     if (normalizedType === 'email') await this.refreshEmail(true);
@@ -236,6 +311,66 @@ export class IntegrationManager {
       // Clear instance so it re-instantiates with new config on next get()
       this.instances.delete(normalizedType);
     }
+
+    return this.getConfig(normalizedType);
+  }
+
+  async setProviderEnabled(type: string, providerId: string, enabled: boolean) {
+    const normalizedType = this.normalizeKey(type);
+    await this.registry.setProviderEnabled(normalizedType, providerId, enabled);
+
+    if (normalizedType === 'email') await this.refreshEmail(true);
+    else if (normalizedType === 'storage') await this.refreshStorage(true);
+    else if (normalizedType === 'cache') await this.refreshCache(true);
+    else this.instances.delete(normalizedType);
+
+    return this.getConfig(normalizedType);
+  }
+
+  async removeProvider(type: string, providerId: string) {
+    const normalizedType = this.normalizeKey(type);
+    await this.registry.removeProvider(normalizedType, providerId);
+
+    if (normalizedType === 'email') await this.refreshEmail(true);
+    else if (normalizedType === 'storage') await this.refreshStorage(true);
+    else if (normalizedType === 'cache') await this.refreshCache(true);
+    else this.instances.delete(normalizedType);
+
+    return this.getConfig(normalizedType);
+  }
+
+  async activateProfile(type: string, profileId: string) {
+    const normalizedType = this.normalizeKey(type);
+    await this.registry.setActiveProfile(normalizedType, profileId);
+
+    if (normalizedType === 'email') await this.refreshEmail(true);
+    else if (normalizedType === 'storage') await this.refreshStorage(true);
+    else if (normalizedType === 'cache') await this.refreshCache(true);
+    else this.instances.delete(normalizedType);
+
+    return this.getConfig(normalizedType);
+  }
+
+  async renameProfile(type: string, profileId: string, profileName: string) {
+    const normalizedType = this.normalizeKey(type);
+    await this.registry.renameProfile(normalizedType, profileId, profileName);
+
+    if (normalizedType === 'email') await this.refreshEmail(true);
+    else if (normalizedType === 'storage') await this.refreshStorage(true);
+    else if (normalizedType === 'cache') await this.refreshCache(true);
+    else this.instances.delete(normalizedType);
+
+    return this.getConfig(normalizedType);
+  }
+
+  async deleteProfile(type: string, profileId: string) {
+    const normalizedType = this.normalizeKey(type);
+    await this.registry.deleteProfile(normalizedType, profileId);
+
+    if (normalizedType === 'email') await this.refreshEmail(true);
+    else if (normalizedType === 'storage') await this.refreshStorage(true);
+    else if (normalizedType === 'cache') await this.refreshCache(true);
+    else this.instances.delete(normalizedType);
 
     return this.getConfig(normalizedType);
   }

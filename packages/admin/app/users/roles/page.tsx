@@ -5,6 +5,7 @@ import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/ui/page-heading';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
@@ -18,6 +19,7 @@ export default function RolesPage() {
   const { notify } = useNotify();
   const [roles, setRoles] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
+  const [health, setHealth] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<any>(null);
@@ -26,12 +28,21 @@ export default function RolesPage() {
   async function fetchData() {
     try {
       setLoading(true);
-      const [rolesRes, logsRes] = await Promise.all([
+      const [rolesRes, logsRes, healthRes] = await Promise.all([
         api.get(ENDPOINTS.SYSTEM.ROLES),
-        api.get(ENDPOINTS.SYSTEM.LOGS)
+        api.get(ENDPOINTS.SYSTEM.LOGS),
+        api.get(ENDPOINTS.SYSTEM.HEALTH)
       ]);
+
+      const normalizedLogs = Array.isArray(logsRes?.docs)
+        ? logsRes.docs
+        : Array.isArray(logsRes)
+          ? logsRes
+          : [];
+
       setRoles(rolesRes || []);
-      setLogs(logsRes || []);
+      setLogs(normalizedLogs);
+      setHealth(healthRes || null);
     } catch (err) {
       console.error('Failed to fetch data', err);
     } finally {
@@ -76,21 +87,18 @@ export default function RolesPage() {
       }`}>
         <div className="w-full px-6 lg:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
+            <PageHeading
+              icon={
                 <div className={`h-11 w-11 rounded-full flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 ${
                   theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-600 text-white'
                 }`}>
                   <FrameworkIcons.Shield size={22} strokeWidth={2} />
                 </div>
-                <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  Roles
-                </h1>
-              </div>
-              <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-                Manage user roles and security permissions.
-              </p>
-            </div>
+              }
+              title="Roles"
+              subtitle="Manage user roles and security permissions."
+              subtitleClassName="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-2"
+            />
             
             <div className="flex items-center gap-4">
               <Link href="/users/roles/new">
@@ -111,38 +119,38 @@ export default function RolesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-12 xl:col-span-8 space-y-6">
               <Card title="System Roles & Security Groups">
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4">
                   {roles.map((role) => (
-                    <div key={role.slug} className={`group p-6 md:p-8 rounded-[2.5rem] border transition-all duration-500 ${
+                    <div key={role.slug} className={`group p-4 md:p-5 rounded-2xl border transition-all duration-500 ${
                       theme === 'dark' 
                         ? 'bg-slate-950/40 border-slate-800/50 hover:border-indigo-500/30' 
                         : 'bg-white border-slate-200/60 hover:border-indigo-500/40 hover:shadow-[0_20px_50px_-12px_rgba(79,70,229,0.1)]'
                     }`}>
-                      <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
-                        <div className="flex flex-col sm:flex-row gap-8 w-full">
-                          <div className={`h-16 w-16 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-2xl ${
+                      <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4 w-full">
+                          <div className={`h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-2xl ${
                             role.type === 'system' 
                               ? (theme === 'dark' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white shadow-indigo-600/30')
                               : (theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')
                           }`}>
-                            <FrameworkIcons.Shield size={32} />
+                            <FrameworkIcons.Shield size={22} />
                           </div>
                           
                           <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-3 mb-3">
-                              <h3 className={`font-bold text-2xl tracking-tight transition-colors group-hover:text-indigo-600 ${theme === 'dark' ? 'text-white group-hover:text-indigo-400' : 'text-slate-900'}`}>{role.name}</h3>
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <h3 className={`font-bold text-lg tracking-tight transition-colors group-hover:text-indigo-600 ${theme === 'dark' ? 'text-white group-hover:text-indigo-400' : 'text-slate-900'}`}>{role.name}</h3>
                               <code className={`text-[10px] font-bold uppercase tracking-tight px-3 py-1 rounded-full ${
                                 theme === 'dark' ? 'bg-slate-800 text-slate-500' : 'bg-slate-50 border border-slate-200 text-slate-500'
                               }`}>
                                 {role.slug}
                               </code>
                             </div>
-                            <p className="text-base font-bold text-slate-500 leading-relaxed max-w-2xl mb-8">{role.description}</p>
+                            <p className="text-sm font-bold text-slate-500 leading-relaxed max-w-2xl mb-4">{role.description}</p>
                             
-                            <div className="flex flex-wrap items-center gap-x-12 gap-y-6">
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                                <div className="flex flex-col gap-1">
                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Active Members</span>
-                                 <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{role.users || 0} Users</span>
+                                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{role.users || 0} Users</span>
                                </div>
                                <div className="flex flex-col gap-1">
                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Scope</span>
@@ -154,7 +162,7 @@ export default function RolesPage() {
                                </div>
                                <div className="flex flex-col gap-1">
                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Last Modified</span>
-                                 <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                                    {role.updatedAt ? new Date(role.updatedAt).toLocaleDateString() : 'Initial'}
                                  </span>
                                </div>
@@ -162,25 +170,30 @@ export default function RolesPage() {
                           </div>
                         </div>
                         
-                        <div className="flex flex-row lg:flex-col items-center lg:items-end gap-4 w-full lg:w-auto">
+                        <div className="flex flex-row lg:flex-col items-center lg:items-end gap-2 w-full lg:w-auto">
                           {role.type === 'system' ? (
-                            <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
-                               <FrameworkIcons.Lock size={14} strokeWidth={2} />
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                               <FrameworkIcons.Lock size={12} strokeWidth={2} />
                                <span className="font-bold uppercase tracking-tight text-[10px]">Immutable</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-3">
-                              <Link href={`/users/roles/${role.slug}/edit`}>
-                                <Button variant="ghost" className="h-12 w-12 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 shadow-sm">
-                                  <FrameworkIcons.Edit size={22} />
-                                </Button>
-                              </Link>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                as={Link}
+                                href={`/users/roles/${role.slug}/edit`}
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-slate-600 hover:text-indigo-600 hover:border-indigo-500/50"
+                              >
+                                <FrameworkIcons.Edit size={16} />
+                              </Button>
                               <Button 
                                 variant="ghost" 
+                                size="icon"
                                 onClick={() => { setRoleToDelete(role); setShowDeleteConfirm(true); }}
-                                className="h-12 w-12 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 shadow-sm"
+                                className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-slate-600 hover:text-rose-600 hover:border-rose-500/50"
                               >
-                                <FrameworkIcons.Trash size={22} />
+                                <FrameworkIcons.Trash size={16} />
                               </Button>
                             </div>
                           )}
@@ -290,8 +303,12 @@ export default function RolesPage() {
                 <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">Environment Node 102.v2</span>
-                      <span className="text-[8px] font-bold text-slate-300 dark:text-slate-600 uppercase mt-0.5 tracking-tight">Secure Cluster: Active</span>
+                      <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">
+                        API Version: {health?.version || 'unknown'}
+                      </span>
+                      <span className="text-[8px] font-bold text-slate-300 dark:text-slate-600 uppercase mt-0.5 tracking-tight">
+                        {health?.maintenance ? 'Maintenance Mode: Active' : 'Maintenance Mode: Inactive'}
+                      </span>
                     </div>
                     <Link href="/activity">
                       <Button variant="ghost" className="h-9 px-4 rounded-lg text-[9px] font-bold uppercase tracking-tight hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">

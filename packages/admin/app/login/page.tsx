@@ -21,8 +21,12 @@ export default function LoginPage() {
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totpToken, setTotpToken] = useState('');
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [twoFactorMethod, setTwoFactorMethod] = useState<'totp' | 'recovery'>('totp');
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string; totpToken?: string; recoveryCode?: string }>({});
 
   useEffect(() => {
     // SELF-HEALING: Purge any conflicting cookies on landing to the login page.
@@ -46,7 +50,7 @@ export default function LoginPage() {
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    notify('info', 'Recovery Disabled', 'Password recovery is not enabled in this environment. Please contact your system administrator.');
+    router.push('/forgot-password');
   };
 
   const handleContactSupport = (e: React.FormEvent) => {
@@ -61,6 +65,8 @@ export default function LoginPage() {
     
     if (!email) newFieldErrors.email = 'Required';
     if (!password) newFieldErrors.password = 'Required';
+    if (requiresTwoFactor && twoFactorMethod === 'totp' && !totpToken.trim()) newFieldErrors.totpToken = 'Required';
+    if (requiresTwoFactor && twoFactorMethod === 'recovery' && !recoveryCode.trim()) newFieldErrors.recoveryCode = 'Required';
     
     if (Object.keys(newFieldErrors).length > 0) {
       setFieldErrors(newFieldErrors);
@@ -71,9 +77,30 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      const data = await api.post(ENDPOINTS.AUTH.LOGIN, { email, password });
-      
-      // Redirection is handled inside login() or by the middleware on reload
+      const payload: Record<string, string> = { email, password };
+      if (requiresTwoFactor && twoFactorMethod === 'totp' && totpToken.trim()) {
+        payload.totpToken = totpToken.trim();
+      }
+      if (requiresTwoFactor && twoFactorMethod === 'recovery' && recoveryCode.trim()) {
+        payload.recoveryCode = recoveryCode.trim();
+      }
+
+      const data = await api.post(ENDPOINTS.AUTH.LOGIN, payload);
+
+      if (data?.requiresTwoFactor) {
+        setRequiresTwoFactor(true);
+        setTwoFactorMethod('totp');
+        setError('');
+        return;
+      }
+
+      if (!data?.token || !data?.user) {
+        throw new Error('Login response is missing session data.');
+      }
+
+      setRequiresTwoFactor(false);
+      setTotpToken('');
+      setRecoveryCode('');
       login(data.token, data.user);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -86,8 +113,10 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#020617]">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-xs font-semibold text-slate-500 tracking-wide">Verifying System...</span>
+          <div className="animate-spin text-indigo-600">
+             <FrameworkIcons.Loader size={40} />
+          </div>
+          <span className="text-xs font-semibold text-slate-500 tracking-wide">Verifying...</span>
         </div>
       </div>
     );
@@ -120,7 +149,15 @@ export default function LoginPage() {
               required
               autoComplete="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (requiresTwoFactor) {
+                  setRequiresTwoFactor(false);
+                  setTotpToken('');
+                  setRecoveryCode('');
+                  setTwoFactorMethod('totp');
+                }
+              }}
               error={fieldErrors.email}
               className="group"
             />
@@ -136,10 +173,65 @@ export default function LoginPage() {
                 required
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (requiresTwoFactor) {
+                    setRequiresTwoFactor(false);
+                    setTotpToken('');
+                    setRecoveryCode('');
+                    setTwoFactorMethod('totp');
+                  }
+                }}
                 error={fieldErrors.password}
               />
             </div>
+
+            {requiresTwoFactor ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={twoFactorMethod === 'totp' ? 'primary' : 'outline'}
+                    size="sm"
+                    className="rounded-lg"
+                    onClick={() => setTwoFactorMethod('totp')}
+                  >
+                    Authenticator Code
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={twoFactorMethod === 'recovery' ? 'primary' : 'outline'}
+                    size="sm"
+                    className="rounded-lg"
+                    onClick={() => setTwoFactorMethod('recovery')}
+                  >
+                    Recovery Code
+                  </Button>
+                </div>
+                {twoFactorMethod === 'totp' ? (
+                  <Input
+                    label="2FA Code"
+                    placeholder="123456"
+                    type="text"
+                    required
+                    autoComplete="one-time-code"
+                    value={totpToken}
+                    onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    error={fieldErrors.totpToken}
+                  />
+                ) : (
+                  <Input
+                    label="Recovery Code"
+                    placeholder="ABCDE-12345"
+                    type="text"
+                    required
+                    value={recoveryCode}
+                    onChange={(e) => setRecoveryCode(e.target.value.toUpperCase())}
+                    error={fieldErrors.recoveryCode}
+                  />
+                )}
+              </div>
+            ) : null}
 
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2">
@@ -148,13 +240,6 @@ export default function LoginPage() {
                 </div>
                 <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Secure Session</span>
               </div>
-              <button 
-                type="button" 
-                onClick={() => router.push('/setup')} 
-                className="text-[10px] font-semibold text-indigo-500 hover:underline uppercase tracking-wider"
-              >
-                Initialization Mode
-              </button>
             </div>
 
             <Button 
@@ -162,7 +247,9 @@ export default function LoginPage() {
               className="w-full py-4 text-base transform hover:scale-[1.02] active:scale-[0.98]"
               isLoading={isLoading}
             >
-              Sign In to Portal
+              {requiresTwoFactor
+                ? (twoFactorMethod === 'totp' ? 'Verify 2FA & Sign In' : 'Use Recovery Code & Sign In')
+                : 'Sign In to Portal'}
               {!isLoading && <FrameworkIcons.ArrowRight size={18} className="ml-2" />}
             </Button>
           </form>

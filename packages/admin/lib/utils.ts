@@ -1,4 +1,5 @@
 import { normalizeLocaleCode, isLocaleLikeKey, resolveLocalizedText } from '@fromcode/core/utils';
+import { formatSystemDateTime } from './timezone';
 
 export { normalizeLocaleCode, isLocaleLikeKey, resolveLocalizedText };
 
@@ -52,10 +53,7 @@ export function slugify(text: string): string {
  * Format date to localized string
  */
 export function formatDate(value: any): string {
-  if (!value) return '-';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
-  return date.toLocaleString();
+  return formatSystemDateTime(value);
 }
 
 /**

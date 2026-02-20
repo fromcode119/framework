@@ -34,7 +34,10 @@ export class DiscoveryService {
 
   constructor(private pluginsRoot: string, private projectRoot: string) {}
 
-  public async discoverPlugins(existingPlugins: Map<string, LoadedPlugin>): Promise<{ 
+  public async discoverPlugins(
+    existingPlugins: Map<string, LoadedPlugin>,
+    installedState: Record<string, { sandboxConfig?: any }> = {}
+  ): Promise<{ 
     discovered: { plugin: any, path: string }[], 
     errored: { manifest: any, path: string, error: string }[] 
   }> {
@@ -112,26 +115,38 @@ export class DiscoveryService {
 
             if (fs.existsSync(indexPath)) {
               try {
-                if (manifest.sandbox) {
+                const savedPluginState = existingPlugins.get(manifest.slug as string);
+                const persistedState = installedState[(manifest.slug as string).toLowerCase()];
+                const hasPersistedSandboxConfig = persistedState && Object.prototype.hasOwnProperty.call(persistedState, 'sandboxConfig') && persistedState.sandboxConfig !== undefined;
+                const savedSandboxConfig = hasPersistedSandboxConfig
+                  ? persistedState.sandboxConfig
+                  : savedPluginState?.manifest?.sandbox;
+                const effectiveSandboxConfig = savedSandboxConfig !== undefined ? savedSandboxConfig : manifest.sandbox;
+                const shouldSandbox = effectiveSandboxConfig !== false;
+
+                // Default to sandbox enabled unless explicitly set to false.
+                manifest.sandbox = effectiveSandboxConfig !== undefined ? effectiveSandboxConfig : true;
+
+                // Always load plugin module so lifecycle hooks remain available.
+                // Sandbox mode controls runtime isolation policy, not module metadata availability.
+                const fileUrl = pathToFileURL(indexPath).href;
+                const rawModule = await import(fileUrl);
+                const pluginModule = (rawModule && rawModule.default)
+                  ? { ...rawModule.default, ...rawModule }
+                  : rawModule;
+
+                if (shouldSandbox) {
                   this.logger.info(`Staging sandboxed plugin: ${manifest.slug}`);
                   discovered.push({
-                    plugin: { 
+                    plugin: {
                       manifest,
+                      ...pluginModule,
                       isSandboxed: true,
                       entryPath: indexPath
                     },
                     path: pluginPath
                   });
                 } else {
-                  // Using Dynamic Import instead of require for ESM support and modern Node compliance
-                  const fileUrl = pathToFileURL(indexPath).href;
-                  const rawModule = await import(fileUrl);
-                  
-                  // Handle ESM exports and standard Node modules
-                  const pluginModule = (rawModule && rawModule.default)
-                    ? { ...rawModule.default, ...rawModule }
-                    : rawModule;
-
                   discovered.push({
                     plugin: { manifest, ...pluginModule },
                     path: pluginPath

@@ -9,9 +9,15 @@ import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { useNotification } from '@/components/notification-context';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
+
+const bytesToMB = (value?: number | null): string => {
+  if (value === undefined || value === null || Number.isNaN(value)) return '-';
+  return (value / (1024 * 1024)).toFixed(2);
+};
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
   <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
@@ -33,15 +39,30 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
 export default function SecuritySettingsPage() {
   const { theme } = useTheme();
   const { addNotification } = useNotification();
+  const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
   const [stats, setStats] = useState<any>(null);
+  const [enabledSsoProviders, setEnabledSsoProviders] = useState<string[]>([]);
   const [settings, setSettings] = useState<Record<string, any>>({
     two_factor_enabled: false,
     rate_limit_max: '100',
     rate_limit_window: '900000',
     auth_session_duration_minutes: '10080',
+    auth_password_min_length: '8',
+    auth_password_require_uppercase: true,
+    auth_password_require_lowercase: true,
+    auth_password_require_number: true,
+    auth_password_require_symbol: false,
+    auth_password_history: '5',
+    auth_password_reset_token_minutes: '30',
+    auth_lockout_threshold: '5',
+    auth_lockout_window_minutes: '15',
+    auth_lockout_duration_minutes: '30',
+    auth_captcha_enabled: false,
+    auth_captcha_threshold: '3',
+    auth_security_notifications: true
   });
 
   const fetchStats = async () => {
@@ -59,12 +80,48 @@ export default function SecuritySettingsPage() {
         const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`);
         const docs = response.docs || [];
         const newSettings = { ...settings };
+        const booleanKeys = new Set([
+          'two_factor_enabled',
+          'auth_password_require_uppercase',
+          'auth_password_require_lowercase',
+          'auth_password_require_number',
+          'auth_password_require_symbol',
+          'auth_captcha_enabled',
+          'auth_security_notifications'
+        ]);
+        const managedKeys = new Set([
+          'two_factor_enabled',
+          'rate_limit_max',
+          'rate_limit_window',
+          'auth_session_duration_minutes',
+          'auth_password_min_length',
+          'auth_password_require_uppercase',
+          'auth_password_require_lowercase',
+          'auth_password_require_number',
+          'auth_password_require_symbol',
+          'auth_password_history',
+          'auth_password_reset_token_minutes',
+          'auth_lockout_threshold',
+          'auth_lockout_window_minutes',
+          'auth_lockout_duration_minutes',
+          'auth_captcha_enabled',
+          'auth_captcha_threshold',
+          'auth_security_notifications'
+        ]);
         docs.forEach((s: any) => {
-          if (['two_factor_enabled', 'rate_limit_max', 'rate_limit_window', 'auth_session_duration_minutes'].includes(s.key)) {
-            newSettings[s.key] = s.key === 'two_factor_enabled' ? s.value === 'true' : s.value;
+          if (managedKeys.has(s.key)) {
+            newSettings[s.key] = booleanKeys.has(s.key) ? s.value === 'true' : s.value;
           }
         });
         setSettings(newSettings);
+
+        const ssoIntegration = await api.get(ENDPOINTS.SYSTEM.INTEGRATION('sso')).catch(() => null);
+        const storedProviders = Array.isArray(ssoIntegration?.storedProviders) ? ssoIntegration.storedProviders : [];
+        const enabled = storedProviders
+          .filter((entry: any) => entry && entry.enabled !== false)
+          .map((entry: any) => String(entry.providerKey || '').trim().toLowerCase())
+          .filter(Boolean);
+        setEnabledSsoProviders(Array.from(new Set(enabled)));
       } finally {
         setIsLoading(false);
       }
@@ -91,6 +148,27 @@ export default function SecuritySettingsPage() {
   };
 
   if (isLoading) return <div className="p-12"><Loader label="Hardening Protocols..." /></div>;
+
+  const sandboxHeap = stats?.sandbox?.heap;
+  const sandboxUsedMB = bytesToMB(sandboxHeap?.used_heap_size);
+  const sandboxTotalMB = bytesToMB(sandboxHeap?.total_heap_size);
+  const sandboxLimitMB = bytesToMB(sandboxHeap?.heap_size_limit);
+  const hostMemory =
+    stats?.hostMemory ||
+    stats?.host_memory ||
+    stats?.data?.hostMemory ||
+    stats?.data?.host_memory;
+  const hostRssMB = bytesToMB(hostMemory?.rssBytes ?? hostMemory?.rss_bytes);
+  const hostArrayBuffersMB = bytesToMB(hostMemory?.arrayBuffersBytes ?? hostMemory?.array_buffers_bytes);
+  const hostExternalMB = bytesToMB(hostMemory?.externalBytes ?? hostMemory?.external_bytes);
+  const hostOtherNonIsolateMB = bytesToMB(
+    hostMemory?.otherNonIsolateAllocationsEstimateBytes ?? hostMemory?.other_non_isolate_allocations_estimate_bytes
+  );
+  const hasHostMemory =
+    hostRssMB !== '-' ||
+    hostArrayBuffersMB !== '-' ||
+    hostExternalMB !== '-' ||
+    hostOtherNonIsolateMB !== '-';
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
@@ -139,24 +217,80 @@ export default function SecuritySettingsPage() {
       <div className="p-8 lg:p-12 max-w-5xl space-y-8 pb-24">
         {activeTab === 'dashboard' && stats && (
           <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+             {!stats.sandbox && (
+               <Card className="!bg-amber-500/5 !border-amber-500/20">
+                 <div className="flex items-start gap-4">
+                   <FrameworkIcons.Warning size={20} className="text-amber-500 mt-0.5" />
+                   <div>
+                     <h3 className="font-semibold text-amber-900 dark:text-amber-300 mb-1">Sandbox Isolation Unavailable</h3>
+                     <p className="text-sm text-amber-800/70 dark:text-amber-400/70 leading-relaxed">
+                       V8 isolated-vm sandbox is not active. Plugins are running in the main Node.js process without memory isolation. 
+                       Install <code className="px-1.5 py-0.5 bg-amber-900/10 dark:bg-amber-100/10 rounded text-xs font-mono">isolated-vm</code> to enable secure sandboxing.
+                     </p>
+                   </div>
+                 </div>
+               </Card>
+             )}
+             {stats.sandbox && stats.sandbox.activeContexts === 0 && (
+               <Card className="!bg-sky-500/5 !border-sky-500/20">
+                 <div className="flex items-start gap-4">
+                   <FrameworkIcons.Warning size={20} className="text-sky-500 mt-0.5" />
+                   <div>
+                     <h3 className="font-semibold text-sky-900 dark:text-sky-300 mb-1">
+                       {(stats.pluginIsolation?.sandboxActivePlugins ?? 0) > 0
+                         ? 'Sandbox Runtime Not Attached Yet'
+                         : 'No Active Sandboxed Plugins'}
+                     </h3>
+                     {(stats.pluginIsolation?.sandboxActivePlugins ?? 0) > 0 ? (
+                       <p className="text-sm text-sky-800/70 dark:text-sky-400/70 leading-relaxed">
+                         Sandbox policy is enabled for active plugins, but no isolate context is currently attached.
+                         Runtime-sandbox active plugins: <strong>{stats.pluginIsolation?.sandboxRuntimeActivePlugins ?? 0}</strong>, policy-enabled active plugins: <strong>{stats.pluginIsolation?.sandboxActivePlugins ?? 0}</strong>.
+                         {(stats.pluginIsolation?.sandboxPolicyRuntimeMismatchPlugins ?? 0) > 0 && (
+                           <>
+                             {' '}Mismatch: <strong>{(stats.pluginIsolation?.sandboxPolicyRuntimeMismatchSlugs || []).join(', ')}</strong>.
+                           </>
+                         )}
+                       </p>
+                     ) : (
+                       <p className="text-sm text-sky-800/70 dark:text-sky-400/70 leading-relaxed">
+                         Sandbox runtime is available, but no active plugin currently has sandbox policy enabled.
+                         {' '}Active plugins: <strong>{stats.pluginIsolation?.activePlugins ?? 0}</strong>, sandbox-policy active plugins: <strong>{stats.pluginIsolation?.sandboxActivePlugins ?? 0}</strong>.
+                       </p>
+                     )}
+                   </div>
+                 </div>
+               </Card>
+             )}
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="p-6 relative overflow-hidden">
+                <Card className={`p-6 relative overflow-hidden ${!stats.sandbox ? 'opacity-50' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-semibold tracking-wide text-slate-500">Sandbox Contexts</span>
-                        <FrameworkIcons.Box size={16} className="text-indigo-500" />
-                    </div>
-                    <div className="text-3xl font-bold">{stats.sandbox?.activeContexts || 0}</div>
-                    <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">V8 Isolated Instances</div>
-                </Card>
-                <Card className="p-6 relative overflow-hidden">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-semibold tracking-wide text-slate-500">Memory Usage</span>
-                        <FrameworkIcons.Zap size={16} className="text-amber-500" />
+                        <FrameworkIcons.Box size={16} className={stats.sandbox ? 'text-indigo-500' : 'text-slate-400'} />
                     </div>
                     <div className="text-3xl font-bold">
-                        {stats.sandbox?.heap ? Math.round(stats.sandbox.heap.used_heap_size / (1024 * 1024)) : 0} MB
+                      {stats.sandbox?.activeContexts ?? '-'}
                     </div>
-                    <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Aggregate Sandbox Heap</div>
+                    <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">
+                      {stats.sandbox ? 'V8 Isolated Instances' : 'Sandbox Disabled'}
+                    </div>
+                </Card>
+                <Card className={`p-6 relative overflow-hidden ${!stats.sandbox ? 'opacity-50' : ''}`}>
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-semibold tracking-wide text-slate-500">Memory Usage</span>
+                        <FrameworkIcons.Zap size={16} className={stats.sandbox ? 'text-amber-500' : 'text-slate-400'} />
+                    </div>
+                    <div className="text-3xl font-bold">
+                        {stats.sandbox?.heap ? `${sandboxUsedMB} MB` : '-'}
+                    </div>
+                    <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">
+                      {stats.sandbox ? 'Aggregate Sandbox Heap' : 'No Isolation Active'}
+                    </div>
+                    {stats.sandbox?.heap && (
+                      <div className="mt-3 space-y-1">
+                        <div className="text-[11px] text-slate-500">Used / Total heap: <strong>{sandboxUsedMB} / {sandboxTotalMB} MB</strong></div>
+                        <div className="text-[11px] text-slate-500">Isolate heap limit: <strong>{sandboxLimitMB} MB</strong></div>
+                      </div>
+                    )}
                 </Card>
                 <Card className="p-6 relative overflow-hidden">
                     <div className="flex items-center justify-between mb-2">
@@ -169,6 +303,56 @@ export default function SecuritySettingsPage() {
                     <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Policy Violations (24h)</div>
                 </Card>
              </div>
+
+             <Card title="Runtime Memory Scope">
+               <div className="space-y-4 pt-2">
+                 <p className="text-sm text-slate-600 dark:text-slate-300">
+                   Memory telemetry now includes sandbox isolate memory and host process memory.
+                 </p>
+                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                   <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-500/10 border border-emerald-200/70 dark:border-emerald-500/20">
+                     <p className="text-[10px] font-semibold tracking-wide text-emerald-700 dark:text-emerald-300 uppercase">Included</p>
+                     <p className="text-sm mt-2 text-emerald-900 dark:text-emerald-200">Sandbox isolate heap: <strong>{stats.sandbox?.heap ? `${sandboxUsedMB} MB` : '-'}</strong></p>
+                   </div>
+                   <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20">
+                     <p className="text-[10px] font-semibold tracking-wide text-amber-700 dark:text-amber-300 uppercase">Node RSS</p>
+                     <p className="text-sm mt-2 text-amber-900 dark:text-amber-200">Full process RSS: <strong>{hasHostMemory ? `${hostRssMB} MB` : '-'}</strong></p>
+                   </div>
+                   <div className="p-4 rounded-2xl bg-sky-50/70 dark:bg-sky-500/10 border border-sky-200/70 dark:border-sky-500/20">
+                     <p className="text-[10px] font-semibold tracking-wide text-sky-700 dark:text-sky-300 uppercase">DB/Network Buffers</p>
+                     <p className="text-sm mt-2 text-sky-900 dark:text-sky-200">ArrayBuffers estimate: <strong>{hasHostMemory ? `${hostArrayBuffersMB} MB` : '-'}</strong></p>
+                     <p className="text-[11px] mt-1 text-sky-800/80 dark:text-sky-200/80">External memory: <strong>{hasHostMemory ? `${hostExternalMB} MB` : '-'}</strong></p>
+                   </div>
+                   <div className="p-4 rounded-2xl bg-violet-50/70 dark:bg-violet-500/10 border border-violet-200/70 dark:border-violet-500/20">
+                     <p className="text-[10px] font-semibold tracking-wide text-violet-700 dark:text-violet-300 uppercase">Non-Isolate Allocations</p>
+                     <p className="text-sm mt-2 text-violet-900 dark:text-violet-200">Estimate (RSS - isolate heap): <strong>{hasHostMemory ? `${hostOtherNonIsolateMB} MB` : '-'}</strong></p>
+                   </div>
+                 </div>
+               </div>
+             </Card>
+
+             {stats.pluginIsolation && (
+               <Card title="Plugin Isolation Coverage">
+                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                     <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Total Plugins</p>
+                     <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.totalPlugins}</p>
+                   </div>
+                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                     <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Active Plugins</p>
+                     <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.activePlugins}</p>
+                   </div>
+                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                     <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Sandbox Active</p>
+                     <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.sandboxActivePlugins}</p>
+                   </div>
+                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+                     <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Sandbox Runtime</p>
+                     <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.sandboxRuntimeActivePlugins ?? 0}</p>
+                   </div>
+                 </div>
+               </Card>
+             )}
 
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card title="Defense Modules" className="h-full">
@@ -259,6 +443,198 @@ export default function SecuritySettingsPage() {
                   checked={settings.two_factor_enabled} 
                   onChange={(val) => setSettings(prev => ({ ...prev, two_factor_enabled: val }))} 
                 />
+              </SettingRow>
+
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Mail}
+                title="Security Email Notifications"
+                description="Notify users when login/password/2FA/email-security events occur."
+              >
+                <Switch
+                  checked={settings.auth_security_notifications}
+                  onChange={(val) => setSettings(prev => ({ ...prev, auth_security_notifications: val }))}
+                />
+              </SettingRow>
+            </Card>
+
+            <Card title="Password Policy">
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Key}
+                title="Minimum Password Length"
+                description="Minimum number of characters required for new passwords."
+              >
+                <Input
+                  type="number"
+                  min={8}
+                  max={128}
+                  value={settings.auth_password_min_length}
+                  onChange={(e) => setSettings(prev => ({ ...prev, auth_password_min_length: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Shield}
+                title="Password History"
+                description="Block reuse of the most recent N passwords."
+              >
+                <Input
+                  type="number"
+                  min={0}
+                  max={20}
+                  value={settings.auth_password_history}
+                  onChange={(e) => setSettings(prev => ({ ...prev, auth_password_history: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Lock}
+                title="Password Composition Rules"
+                description="Require specific character classes in passwords."
+              >
+                <div className="flex flex-wrap items-center gap-4">
+                  <Switch
+                    checked={settings.auth_password_require_uppercase}
+                    onChange={(val) => setSettings(prev => ({ ...prev, auth_password_require_uppercase: val }))}
+                    label="Uppercase"
+                  />
+                  <Switch
+                    checked={settings.auth_password_require_lowercase}
+                    onChange={(val) => setSettings(prev => ({ ...prev, auth_password_require_lowercase: val }))}
+                    label="Lowercase"
+                  />
+                  <Switch
+                    checked={settings.auth_password_require_number}
+                    onChange={(val) => setSettings(prev => ({ ...prev, auth_password_require_number: val }))}
+                    label="Number"
+                  />
+                  <Switch
+                    checked={settings.auth_password_require_symbol}
+                    onChange={(val) => setSettings(prev => ({ ...prev, auth_password_require_symbol: val }))}
+                    label="Symbol"
+                  />
+                </div>
+              </SettingRow>
+
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Clock}
+                title="Password Reset Link TTL (minutes)"
+                description="How long reset links remain valid."
+              >
+                <Input
+                  type="number"
+                  min={5}
+                  max={1440}
+                  value={settings.auth_password_reset_token_minutes}
+                  onChange={(e) => setSettings(prev => ({ ...prev, auth_password_reset_token_minutes: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+            </Card>
+
+            <Card title="Login Hardening">
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.ShieldAlert}
+                title="Lockout Threshold"
+                description="Failed attempts before account+IP combination is locked."
+              >
+                <Input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={settings.auth_lockout_threshold}
+                  onChange={(e) => setSettings(prev => ({ ...prev, auth_lockout_threshold: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Clock}
+                title="Lockout Window (minutes)"
+                description="Sliding window for counting failed attempts."
+              >
+                <Input
+                  type="number"
+                  min={1}
+                  max={1440}
+                  value={settings.auth_lockout_window_minutes}
+                  onChange={(e) => setSettings(prev => ({ ...prev, auth_lockout_window_minutes: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Clock}
+                title="Lockout Duration (minutes)"
+                description="How long lockout remains active after threshold is reached."
+              >
+                <Input
+                  type="number"
+                  min={1}
+                  max={43200}
+                  value={settings.auth_lockout_duration_minutes}
+                  onChange={(e) => setSettings(prev => ({ ...prev, auth_lockout_duration_minutes: e.target.value }))}
+                  className="w-full md:w-32"
+                />
+              </SettingRow>
+
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Check}
+                title="Captcha after repeated failures"
+                description="Require captcha token after repeated failed attempts."
+              >
+                <div className="flex items-center gap-4">
+                  <Switch
+                    checked={settings.auth_captcha_enabled}
+                    onChange={(val) => setSettings(prev => ({ ...prev, auth_captcha_enabled: val }))}
+                  />
+                  <Input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={settings.auth_captcha_threshold}
+                    onChange={(e) => setSettings(prev => ({ ...prev, auth_captcha_threshold: e.target.value }))}
+                    className="w-full md:w-24"
+                  />
+                </div>
+              </SettingRow>
+            </Card>
+
+            <Card title="Federated Login (SSO)">
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Plugins}
+                title="Enabled SSO Providers"
+                description="Managed in Integrations. Enable or disable providers there instead of raw JSON."
+              >
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  {enabledSsoProviders.length > 0 ? (
+                    enabledSsoProviders.map((provider) => (
+                      <Badge key={provider} variant="info">
+                        {provider}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="default">none enabled</Badge>
+                  )}
+                  <Button
+                    onClick={() => router.push(ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE('sso'))}
+                    icon={<FrameworkIcons.Settings size={12} />}
+                    className="h-9 px-4"
+                  >
+                    Manage in Integrations
+                  </Button>
+                </div>
               </SettingRow>
             </Card>
 
