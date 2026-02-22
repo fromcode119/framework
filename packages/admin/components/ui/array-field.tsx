@@ -7,6 +7,7 @@ import { Card } from './card';
 import { Input } from './input';
 import { Select } from './select';
 import { TagField } from './tag-field';
+import { RelationshipSelectLocal } from '../collection/relationship-select-local';
 
 interface ArrayFieldProps {
   field: any;
@@ -74,7 +75,24 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
       placeholder: `Enter ${f.label || f.name}...`,
     };
 
-    if (f.type === 'relationship' || f.admin?.component === './tag-field' || f.admin?.component === 'Tags') {
+    const isTagComponent =
+      f.admin?.component === './tag-field' ||
+      f.admin?.component === 'TagField' ||
+      f.admin?.component === 'Tags';
+    const hasMany = f.hasMany !== undefined ? f.hasMany : isTagComponent;
+
+    if (f.type === 'relationship' && !hasMany) {
+      return (
+        <RelationshipSelectLocal
+          field={f}
+          value={val}
+          onChange={(next) => handleUpdateItem(index, f.name, next)}
+          theme={theme || 'light'}
+        />
+      );
+    }
+
+    if (f.type === 'relationship' || isTagComponent) {
        return (
         <TagField 
           {...fieldProps}
@@ -82,7 +100,7 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
           fieldName={f.name}
           sourceCollection={f.admin?.sourceCollection || f.relationTo}
           sourceField={f.admin?.sourceField || (f.admin?.sourceCollection === 'users' ? 'username' : 'slug')}
-          hasMany={f.hasMany !== undefined ? f.hasMany : (f.admin?.component === './tag-field' || f.admin?.component === 'Tags')}
+          hasMany={hasMany}
           allowCreate={f.admin?.sourceCollection !== 'users'}
         />
        );
@@ -92,7 +110,7 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
       return <Select {...fieldProps} options={f.options || []} size="sm" />;
     }
 
-    if (f.type === 'boolean') {
+    if (f.type === 'boolean' || f.type === 'checkbox') {
         return (
             <Select 
                 {...fieldProps} 

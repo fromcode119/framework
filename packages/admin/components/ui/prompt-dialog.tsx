@@ -21,6 +21,7 @@ interface PromptDialogProps {
   cancelLabel?: string;
   isLoading?: boolean;
   icon?: React.ReactNode;
+  inputType?: 'text' | 'password';
 }
 
 export const PromptDialog = ({
@@ -34,7 +35,8 @@ export const PromptDialog = ({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   isLoading = false,
-  icon
+  icon,
+  inputType = 'text'
 }: PromptDialogProps) => {
   const { theme } = useTheme();
   const [value, setValue] = useState(defaultValue);
@@ -101,6 +103,7 @@ export const PromptDialog = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input 
             ref={inputRef}
+            type={inputType}
             placeholder={placeholder}
             value={value}
             onChange={(e) => setValue(e.target.value)}

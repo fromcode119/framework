@@ -60,6 +60,7 @@ export const ENDPOINTS = {
     RESEND_VERIFICATION: v('/auth/resend-verification'),
     FORGOT_PASSWORD: v('/auth/forgot-password'),
     RESET_PASSWORD: v('/auth/reset-password'),
+    VERIFY_PASSWORD: v('/auth/verify-password'),
     CHANGE_PASSWORD: v('/auth/change-password'),
     SECURITY: v('/auth/security'),
     EMAIL_CHANGE_REQUEST: v('/auth/email-change/request'),

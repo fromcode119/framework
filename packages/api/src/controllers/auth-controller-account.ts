@@ -62,6 +62,29 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       res.status(500).json({ error: 'Failed to kill session' });
     }
   }
+
+  async verifyPassword(req: any, res: Response) {
+    const userId = this.parseUserId(req.user?.id);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const password = String(req.body?.password || '');
+    if (!password) return res.status(400).json({ error: 'Password is required' });
+
+    const user = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+      .then((rows: any[]) => rows?.[0]);
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const matches = await this.auth.comparePassword(password, String(user.password || ''));
+    if (!matches) return res.status(400).json({ error: 'Current password is invalid' });
+
+    return res.json({ success: true });
+  }
+
   async changePassword(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });

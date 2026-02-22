@@ -16,7 +16,7 @@ interface PluginSettingsFormProps {
 export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
   pluginSlug,
 }) => {
-  const { triggerRefresh } = usePlugins();
+  const { triggerRefresh } = usePlugins() as any;
   const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,12 +46,15 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
         api.get(ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(pluginSlug)),
         api.get(ENDPOINTS.PLUGINS.SETTINGS(pluginSlug)),
       ]);
+
+      const nextSchema = schemaRes;
+      const nextSettings = settingsRes.settings || {};
+
+      setSchema(nextSchema);
+      setSettings(nextSettings);
       
-      setSchema(schemaRes);
-      setSettings(settingsRes.settings || {});
-      
-      if (schemaRes.tabs && schemaRes.tabs.length > 0) {
-        setActiveTab(schemaRes.tabs[0].id);
+      if (nextSchema.tabs && nextSchema.tabs.length > 0) {
+        setActiveTab(nextSchema.tabs[0].id);
       }
     } catch (err: any) {
       console.error('Failed to load settings:', err);
@@ -96,7 +99,8 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
     
     try {
       const res = await api.post(ENDPOINTS.PLUGINS.SETTINGS_RESET(pluginSlug));
-      setSettings(res.settings || {});
+      const nextSettings = res.settings || {};
+      setSettings(nextSettings);
       setIsDirty(false);
       setStatus({ type: 'success', message: 'Settings reset to defaults.' });
       triggerRefresh();

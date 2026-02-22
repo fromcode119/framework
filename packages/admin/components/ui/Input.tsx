@@ -11,7 +11,15 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   size?: 'sm' | 'md' | 'lg';
 }
 
-export const Input = ({ label, error, className = '', inputClassName = '', value, size = 'md', ...props }: InputProps) => {
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ 
+  label, 
+  error, 
+  className = '', 
+  inputClassName = '', 
+  value, 
+  size = 'md', 
+  ...props 
+}, ref) => {
   // Normalize the value to a string/number, handling objects if they slip through
   const normalizedValue = React.useMemo(() => {
     if (value === null || value === undefined) return '';
@@ -26,6 +34,7 @@ export const Input = ({ label, error, className = '', inputClassName = '', value
       {label && <label className={UI_TEXT.LABEL}>{label}</label>}
       <input
         {...props}
+        ref={ref}
         value={normalizedValue}
         className={`${getFieldClasses(size, inputClassName)} 
           ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
@@ -40,4 +49,6 @@ export const Input = ({ label, error, className = '', inputClassName = '', value
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';

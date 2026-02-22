@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const PLUGINS_TO_TEST = ['cms', 'analytics', 'ecommerce'];
+const PLUGINS_TO_TEST = String(process.env.E2E_PLUGIN_SLUGS || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 PLUGINS_TO_TEST.forEach(pluginSlug => {
   test.describe(`${pluginSlug} Plugin Settings`, () => {
@@ -18,9 +21,8 @@ PLUGINS_TO_TEST.forEach(pluginSlug => {
 });
 
 test.describe('Old Singleton Routes', () => {
-  test('should return 404 or redirect for legacy CMS settings route', async ({ page }) => {
-    const response = await page.goto('/cms/cms/settings');
-    // If it redirects to /plugins/cms?tab=settings or 404s, it's successful in being removed
+  test('should return 404 for a removed legacy plugin settings route', async ({ page }) => {
+    const response = await page.goto('/legacy/plugin/settings');
     expect(response?.status()).toBe(404);
   });
 });

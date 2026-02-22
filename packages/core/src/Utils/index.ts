@@ -263,6 +263,76 @@ export function parseBoolean(value: any): boolean {
 }
 
 /**
+ * Normalizes a menu group key by trimming and lowercasing it, defaulting to a fallback.
+ */
+export function normalizeGroupKey(value?: string, fallback = 'management'): string {
+    const raw = String(value || '').trim();
+    if (!raw) return fallback;
+    return raw.toLowerCase();
+}
+
+/**
+ * Normalizes a menu path by trimming, ensuring it starts with / and removing trailing slashes.
+ */
+export function normalizeMenuPath(value?: any): string {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    if (raw === '/') return '/';
+    return raw.replace(/\/+$/, '').toLowerCase();
+}
+
+/**
+ * Recursively collects all paths from a menu item and its children.
+ */
+export function getNestedMenuPaths(item: any): string[] {
+    const paths: string[] = [];
+    const walk = (node: any) => {
+        if (!node || typeof node !== 'object') return;
+        const path = String(node.path || '').trim();
+        if (path) paths.push(path);
+        const children = Array.isArray(node.children) ? node.children : [];
+        children.forEach((child) => walk(child));
+    };
+    walk(item);
+    return paths;
+}
+
+/**
+ * De-duplicates a list of menu items by:
+ * 1) Removing duplicate child routes.
+ * 2) Removing top-level routes that are already represented as children.
+ * 3) Removing duplicate top-level routes by normalized path.
+ */
+export function deduplicateMenuItems(items: any[]): any[] {
+    const nestedPaths = new Set<string>();
+
+    const withDedupedChildren = items.map((item) => {
+        if (!Array.isArray(item.children) || item.children.length === 0) return item;
+        const seenChildPaths = new Set<string>();
+        const children = item.children.filter((child: any) => {
+            const key = normalizeMenuPath(child?.path);
+            if (!key) return true;
+            if (seenChildPaths.has(key)) return false;
+            seenChildPaths.add(key);
+            nestedPaths.add(key);
+            return true;
+        });
+        return { ...item, children };
+    });
+
+    const seenTopLevelPaths = new Set<string>();
+    return withDedupedChildren.filter((item) => {
+        const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+        const key = normalizeMenuPath(item.path);
+        if (!key) return true;
+        if (!hasChildren && nestedPaths.has(key)) return false;
+        if (seenTopLevelPaths.has(key)) return false;
+        seenTopLevelPaths.add(key);
+        return true;
+    });
+}
+
+/**
  * Normalizes a string by trimming it and ensuring it is a string
  */
 export function normalizeString(value: any): string {
@@ -326,7 +396,7 @@ export function slugify(text: string): string {
 
 /**
  * Parses shortcode-style attributes from a string
- * Example: 'source="cms" limit=5' -> { source: "cms", limit: "5" }
+ * Example: 'source="content" limit=5' -> { source: "content", limit: "5" }
  */
 export function parseAttributes(raw: string): Record<string, string> {
     const attributes: Record<string, string> = {};

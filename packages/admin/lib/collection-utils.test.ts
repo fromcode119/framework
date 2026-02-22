@@ -3,18 +3,18 @@ import { resolveCollection, generatePreviewUrl } from './collection-utils';
 
 describe('resolveCollection', () => {
   const mockCollections: any[] = [
-    { slug: 'cms-posts', shortSlug: 'posts', pluginSlug: 'cms' },
-    { slug: 'ecommerce-products', shortSlug: 'products', pluginSlug: 'ecommerce' }
+    { slug: 'content-posts', shortSlug: 'posts', pluginSlug: 'content' },
+    { slug: 'sales-products', shortSlug: 'products', pluginSlug: 'sales' }
   ];
 
   it('should resolve by full slug', () => {
-    const result = resolveCollection(mockCollections, 'cms', 'cms-posts');
-    expect(result?.slug).toBe('cms-posts');
+    const result = resolveCollection(mockCollections, 'content', 'content-posts');
+    expect(result?.slug).toBe('content-posts');
   });
 
   it('should resolve by short slug', () => {
-    const result = resolveCollection(mockCollections, 'cms', 'posts');
-    expect(result?.slug).toBe('cms-posts');
+    const result = resolveCollection(mockCollections, 'content', 'posts');
+    expect(result?.slug).toBe('content-posts');
   });
 
   it('should return null for non-matching plugin', () => {
@@ -25,9 +25,9 @@ describe('resolveCollection', () => {
 
 describe('generatePreviewUrl', () => {
   const mockCollection: any = { 
-    slug: 'cms-posts', 
+    slug: 'content-posts', 
     shortSlug: 'posts', 
-    pluginSlug: 'cms' 
+    pluginSlug: 'content' 
   };
 
   it('should return # if no record or frontendUrl', () => {

@@ -26,6 +26,7 @@ export const API_ROUTES = {
     RESEND_VERIFICATION: withVersion(API_RESOURCE_PATHS.AUTH.RESEND_VERIFICATION),
     FORGOT_PASSWORD: withVersion(API_RESOURCE_PATHS.AUTH.FORGOT_PASSWORD),
     RESET_PASSWORD: withVersion(API_RESOURCE_PATHS.AUTH.RESET_PASSWORD),
+    VERIFY_PASSWORD: withVersion('/auth/verify-password'),
     CHANGE_PASSWORD: withVersion('/auth/change-password'),
     SECURITY: withVersion('/auth/security'),
     EMAIL_CHANGE_REQUEST: withVersion('/auth/email-change/request'),

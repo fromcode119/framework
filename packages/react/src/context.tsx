@@ -542,9 +542,27 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       return;
     }
 
-    const componentObj: SlotComponent = typeof actualComponent === 'function' || (actualComponent && (actualComponent as any).$$typeof)
-      ? { component: actualComponent, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
-      : actualComponent;
+    let componentObj: SlotComponent;
+    if (
+      actualComponent &&
+      typeof actualComponent === 'object' &&
+      (actualComponent as any).component
+    ) {
+      componentObj = {
+        ...(actualComponent as any),
+        pluginSlug: (actualComponent as any).pluginSlug || pluginSlug || 'unknown',
+        priority: typeof (actualComponent as any).priority === 'number'
+          ? (actualComponent as any).priority
+          : (priority || 0)
+      } as SlotComponent;
+    } else {
+      // Support both React components and plain descriptor objects (e.g. slot descriptor registrations).
+      componentObj = {
+        component: actualComponent,
+        pluginSlug: pluginSlug || 'unknown',
+        priority: priority || 0
+      };
+    }
 
     if (!componentObj || !componentObj.component) {
       console.warn(`[Fromcode] Invalid component object for slot "${slotName}" from plugin "${pluginSlug || 'unknown'}".`);
@@ -965,19 +983,20 @@ export const useTranslation = () => {
 
 export const usePluginAPI = (slug: string) => {
   const { api } = usePlugins();
+  const pluginPrefix = `/plugins/${slug}`;
   
   return useMemo(() => ({
     get: (path: string, options?: any) => 
-      api.get(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, options),
+      api.get(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, options),
     post: (path: string, body?: any, options?: any) => 
-      api.post(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+      api.post(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
     put: (path: string, body?: any, options?: any) => 
-      api.put(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+      api.put(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
     delete: (path: string, options?: any) => 
-      api.delete(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, options),
+      api.delete(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, options),
     patch: (path: string, body?: any, options?: any) => 
-      api.patch(`/${slug}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
-  }), [api, slug]);
+      api.patch(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+  }), [api, pluginPrefix]);
 };
 
 export const usePluginState = (pluginSlug: string, key?: string) => {

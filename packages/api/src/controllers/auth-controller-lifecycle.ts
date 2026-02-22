@@ -4,6 +4,25 @@ import { randomBytes } from 'crypto';
 import { AuthControllerTokenSupport } from './auth-controller-token-support';
 
 export class AuthControllerLifecycle extends AuthControllerTokenSupport {
+  private sanitizeAuthFlowContext(raw: any): Record<string, any> | undefined {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+    const input = raw as Record<string, any>;
+    const output: Record<string, any> = {};
+    for (const [key, value] of Object.entries(input)) {
+      const normalizedKey = String(key || '').trim();
+      if (!normalizedKey) continue;
+      if (value === undefined || value === null) continue;
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (!trimmed) continue;
+        output[normalizedKey] = trimmed;
+        continue;
+      }
+      output[normalizedKey] = value;
+    }
+    return Object.keys(output).length ? output : undefined;
+  }
+
   async getStatus(req: Request, res: Response) {
     try {
       const result = await this.db
@@ -107,8 +126,9 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    const { email, password, firstName, lastName, checkoutSessionId, cartId, orderId } = req.body || {};
+    const { email, password, firstName, lastName, context } = req.body || {};
     const normalizedEmail = this.normalizeEmail(email);
+    const flowContext = this.sanitizeAuthFlowContext(context);
 
     if (!normalizedEmail || !this.isValidEmail(normalizedEmail)) {
       return res.status(400).json({ error: 'A valid email is required' });
@@ -142,13 +162,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
     await this.pushPasswordHistory(newUser.id, hashedPassword);
     await this.upsertMeta(this.getPasswordChangedAtKey(newUser.id), new Date().toISOString());
 
-    const checkoutContext = {
-      checkoutSessionId: String(checkoutSessionId || '').trim() || undefined,
-      cartId: String(cartId || '').trim() || undefined,
-      orderId: String(orderId || '').trim() || undefined
-    };
-
-    const verification = await this.issueEmailVerificationToken(newUser.id, normalizedEmail, checkoutContext);
+    const verification = await this.issueEmailVerificationToken(newUser.id, normalizedEmail, flowContext);
     const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);
     const emailSent = await this.sendVerificationEmail({
       to: normalizedEmail,
@@ -159,14 +173,14 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
     this.manager.hooks.emit('auth:user:registered', {
       userId: newUser.id,
       email: normalizedEmail,
-      checkout: checkoutContext
+      context: flowContext
     });
 
     await this.manager.writeLog(
       'INFO',
       `User registered: ${normalizedEmail}`,
       'system',
-      { userId: newUser.id, email: normalizedEmail, checkout: checkoutContext, emailVerificationSent: emailSent }
+      { userId: newUser.id, email: normalizedEmail, context: flowContext, emailVerificationSent: emailSent }
     ).catch(() => {});
 
     if (!emailSent && process.env.NODE_ENV === 'production') {
@@ -214,22 +228,14 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
     this.manager.hooks.emit('auth:user:verified', {
       userId: result.userId,
       email: result.email,
-      checkout: result.checkout
+      context: result.context
     });
-
-    if (result.checkout && Object.values(result.checkout).some(Boolean)) {
-      this.manager.hooks.emit('auth:user:checkout-link', {
-        userId: result.userId,
-        email: result.email,
-        checkout: result.checkout
-      });
-    }
 
     await this.manager.writeLog(
       'INFO',
       `Email verified for user ${result.email}`,
       'system',
-      { userId: result.userId, email: result.email, checkout: result.checkout }
+      { userId: result.userId, email: result.email, context: result.context }
     ).catch(() => {});
 
     return res.json({

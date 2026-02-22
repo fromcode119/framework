@@ -15,6 +15,29 @@ interface ColorPickerProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+const HEX_COLOR_PATTERN = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+function coerceColorValue(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (value && typeof value === 'object') {
+    const localized = value as Record<string, unknown>;
+    for (const key of Object.keys(localized)) {
+      const candidate = localized[key];
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim();
+      }
+    }
+  }
+  return '';
+}
+
+function normalizeHexColor(value: string): string {
+  if (!value) return '';
+  const match = value.match(HEX_COLOR_PATTERN);
+  if (!match) return '';
+  return value.startsWith('#') ? value : `#${value}`;
+}
+
 export const ColorPicker = ({ 
   value = "#000000", 
   onChange, 
@@ -27,6 +50,9 @@ export const ColorPicker = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const rawValue = coerceColorValue(value);
+  const normalizedValue = normalizeHexColor(rawValue);
+  const pickerValue = normalizedValue || '#000000';
 
   const updatePosition = () => {
     if (containerRef.current) {
@@ -71,9 +97,9 @@ export const ColorPicker = ({
       >
         <div 
           className="w-8 h-5 rounded border border-white/10 dark:border-white/20 shadow-sm"
-          style={{ backgroundColor: value }}
+          style={{ backgroundColor: pickerValue }}
         />
-        <span className="font-mono uppercase tracking-tighter flex-1">{value}</span>
+        <span className="font-mono uppercase tracking-tighter flex-1">{rawValue || pickerValue}</span>
         <FrameworkIcons.Palette size={14} className="text-slate-400" />
       </div>
 
@@ -92,7 +118,7 @@ export const ColorPicker = ({
                 ? 'bg-slate-950/95 border-white/10 backdrop-blur-3xl' 
                 : 'bg-white/95 border-slate-200 shadow-slate-200 backdrop-blur-3xl'}`}
           >
-            <HexColorPicker color={value} onChange={onChange} className="mb-6 !w-full !h-48" />
+            <HexColorPicker color={pickerValue} onChange={onChange} className="mb-6 !w-full !h-48" />
             
             <div className="flex flex-col gap-4">
                <div className="flex items-center gap-2">
@@ -101,7 +127,7 @@ export const ColorPicker = ({
                </div>
                <input 
                  type="text"
-                 value={value}
+                 value={rawValue}
                  onChange={(e) => onChange(e.target.value)}
                  className={`w-full h-10 rounded-lg border text-center font-mono font-semibold transition-all outline-none ${
                    theme === 'dark' 

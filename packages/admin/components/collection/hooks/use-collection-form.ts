@@ -8,6 +8,7 @@ interface UseCollectionFormOptions {
   isNew: boolean;
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
+  getSubmitMetadata?: () => Record<string, any>;
 }
 
 export function useCollectionForm({
@@ -15,7 +16,8 @@ export function useCollectionForm({
   initialData = {},
   isNew,
   onSuccess,
-  onError
+  onError,
+  getSubmitMetadata
 }: UseCollectionFormOptions) {
   const [formData, setFormData] = useState<Record<string, any>>(initialData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,8 +46,9 @@ export function useCollectionForm({
         ? `${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}` 
         : `${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}/${formData.id || initialData.id}`;
 
-      // Attach change summary if provided
-      const payload = summary ? { ...formData, _change_summary: summary } : formData;
+      const submitMetadata = getSubmitMetadata ? getSubmitMetadata() : {};
+      const payloadBase = { ...formData, ...(submitMetadata || {}) };
+      const payload = summary ? { ...payloadBase, _change_summary: summary } : payloadBase;
 
       const result = await (isNew ? api.post(url, payload) : api.put(url, payload));
       

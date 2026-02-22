@@ -6,7 +6,7 @@ import { generatePreviewUrl } from '../../admin/lib/collection-utils';
 describe('URL Generation Logic', () => {
     const mockPostCollection: any = {
         slug: 'posts',
-        pluginSlug: 'cms',
+        pluginSlug: 'content',
         admin: {
             previewPrefixSettingsKey: 'postUrlPrefix'
         }
@@ -14,7 +14,7 @@ describe('URL Generation Logic', () => {
 
     const mockPageCollection: any = {
         slug: 'pages',
-        pluginSlug: 'cms',
+        pluginSlug: 'content',
         admin: {
             previewPrefixSettingsKey: 'pageUrlPrefix'
         }

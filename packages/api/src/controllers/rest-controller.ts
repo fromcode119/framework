@@ -157,9 +157,18 @@ export class RESTController {
 
   async create(collection: Collection, req: any, res?: Response) {
     try {
-      let data = req.body;
+      const { data: sanitizedBody, overrideMeta } = this.extractReadOnlyOverrideMetadata(req.body);
+      let data = sanitizedBody;
       const table = QueryHelper.getVirtualTable(collection);
       const localeContext = await this.localization.getLocaleContext(req);
+
+      await this.enforceReadOnlyFieldConstraints({
+        collection,
+        incomingData: data,
+        existingRecord: null,
+        req,
+        overrideMeta
+      });
       
       // Hooks: Before Create
       if (this.hooks) {
@@ -204,14 +213,16 @@ export class RESTController {
     } catch (err: any) {
       this.logger.error(`Failed to create ${collection.slug} record: ${err.message}`, { stack: err.stack });
       if (!res) throw err;
-      res.status(err.code === '23505' ? 409 : 500).json({ error: err.message });
+      const status = err?.statusCode || (err.code === '23505' ? 409 : 500);
+      res.status(status).json({ error: err.message });
     }
   }
 
   async update(collection: Collection, req: any, res?: Response) {
     try {
       const { id } = req.params;
-      let data = req.body;
+      const { data: sanitizedBody, overrideMeta } = this.extractReadOnlyOverrideMetadata(req.body);
+      let data = sanitizedBody;
       const changeSummary = data._change_summary || `Update ${collection.slug} record`;
       
       // Strip metadata
@@ -229,6 +240,14 @@ export class RESTController {
         if (!res) return null;
         return res.status(404).json({ error: 'Not found' });
       }
+
+      await this.enforceReadOnlyFieldConstraints({
+        collection,
+        incomingData: data,
+        existingRecord: existing,
+        req,
+        overrideMeta
+      });
 
       // Hooks: Before Update
       if (this.hooks) {
@@ -278,7 +297,8 @@ export class RESTController {
     } catch (err: any) {
       this.logger.error(`Failed to update ${collection.slug} record ${req.params.id}: ${err.message}`, { stack: err.stack });
       if (!res) throw err;
-      res.status(err.code === '23505' ? 409 : 500).json({ error: err.message });
+      const status = err?.statusCode || (err.code === '23505' ? 409 : 500);
+      res.status(status).json({ error: err.message });
     }
   }
 
@@ -345,7 +365,7 @@ export class RESTController {
       res.status(201).json(results);
     } catch (err: any) {
       if (!res) throw err;
-      res.status(500).json({ error: err.message });
+      res.status(err?.statusCode || 500).json({ error: err.message });
     }
   }
 
@@ -363,7 +383,8 @@ export class RESTController {
       const pk = collection.primaryKey || 'id';
       const localeContext = await this.localization.getLocaleContext(req);
       
-      let updateData = data;
+      const { data: sanitizedUpdateData, overrideMeta } = this.extractReadOnlyOverrideMetadata(data);
+      let updateData = sanitizedUpdateData;
       if (updateData._change_summary) delete updateData._change_summary;
 
       if (this.hooks) {
@@ -379,6 +400,14 @@ export class RESTController {
         const where = { [pk]: pk === 'id' ? parseInt(id) : id };
         const existing = await this.db.findOne(table, where);
         if (!existing) continue;
+
+        await this.enforceReadOnlyFieldConstraints({
+          collection,
+          incomingData: updateData,
+          existingRecord: existing,
+          req,
+          overrideMeta
+        });
 
         const processedUpdate = await this.processor.processIncomingData(collection, updateData, table, {
           existingRecord: existing,
@@ -526,6 +555,143 @@ export class RESTController {
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
+    }
+  }
+
+  private extractReadOnlyOverrideMetadata(payload: any): {
+    data: Record<string, any>;
+    overrideMeta: { fields: Set<string>; password: string };
+  } {
+    const data = payload && typeof payload === 'object' ? { ...payload } : {};
+    const rawOverride = data._readOnlyOverride && typeof data._readOnlyOverride === 'object'
+      ? data._readOnlyOverride
+      : null;
+    delete data._readOnlyOverride;
+
+    const fields = Array.isArray(rawOverride?.fields)
+      ? rawOverride.fields.map((field: any) => String(field || '').trim()).filter(Boolean)
+      : [];
+    const password = String(rawOverride?.password || '');
+
+    return {
+      data,
+      overrideMeta: {
+        fields: new Set(fields),
+        password
+      }
+    };
+  }
+
+  private isReadOnlyOverrideable(field: any): boolean {
+    return Boolean(
+      field?.admin?.readOnly &&
+      (field?.admin?.readOnlyOverride === 'password' || field?.admin?.allowReadOnlyOverride === true)
+    );
+  }
+
+  private normalizeComparableValue(value: any): any {
+    if (value === undefined || value === null || value === '') return null;
+    if (value instanceof Date) return value.toISOString();
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
+      if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+        const parsed = new Date(trimmed);
+        if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+      }
+      return trimmed;
+    }
+
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : null;
+    }
+
+    if (typeof value === 'boolean') return value;
+    if (Array.isArray(value) || typeof value === 'object') return JSON.stringify(value);
+
+    return value;
+  }
+
+  private hasIncomingReadOnlyChange(nextValue: any, existingValue: any, hasExistingRecord: boolean): boolean {
+    if (nextValue === undefined) return false;
+
+    if (!hasExistingRecord) {
+      const normalized = this.normalizeComparableValue(nextValue);
+      return normalized !== null;
+    }
+
+    const normalizedNext = this.normalizeComparableValue(nextValue);
+    const normalizedExisting = this.normalizeComparableValue(existingValue);
+    return normalizedNext !== normalizedExisting;
+  }
+
+  private makeClientError(message: string, statusCode: number = 400): Error & { statusCode: number } {
+    const err = new Error(message) as Error & { statusCode: number };
+    err.statusCode = statusCode;
+    return err;
+  }
+
+  private async enforceReadOnlyFieldConstraints(args: {
+    collection: Collection;
+    incomingData: Record<string, any>;
+    existingRecord: any | null;
+    req: any;
+    overrideMeta: { fields: Set<string>; password: string };
+  }) {
+    const { collection, incomingData, existingRecord, req, overrideMeta } = args;
+    if (!incomingData || typeof incomingData !== 'object') return;
+
+    const changedOverrideableFields: string[] = [];
+    const hasExistingRecord = Boolean(existingRecord);
+
+    for (const field of collection.fields || []) {
+      if (!field?.admin?.readOnly) continue;
+      const name = String(field.name || '');
+      if (!name || !Object.prototype.hasOwnProperty.call(incomingData, name)) continue;
+
+      const incomingValue = incomingData[name];
+      const snakeName = name.replace(/([A-Z])/g, '_$1').toLowerCase();
+      const existingValue = hasExistingRecord
+        ? (existingRecord?.[name] !== undefined ? existingRecord?.[name] : existingRecord?.[snakeName])
+        : undefined;
+      const changed = this.hasIncomingReadOnlyChange(incomingValue, existingValue, hasExistingRecord);
+      if (!changed) continue;
+
+      if (!this.isReadOnlyOverrideable(field)) {
+        throw this.makeClientError(`Field "${field.label || name}" is read-only and cannot be modified.`);
+      }
+
+      if (!overrideMeta.fields.has(name)) {
+        throw this.makeClientError(`Field "${field.label || name}" requires password override confirmation.`);
+      }
+
+      changedOverrideableFields.push(name);
+    }
+
+    if (!changedOverrideableFields.length) return;
+
+    if (!overrideMeta.password) {
+      throw this.makeClientError('Password is required for read-only field overrides.');
+    }
+    if (!this.auth) {
+      throw this.makeClientError('Password verification is unavailable.', 503);
+    }
+
+    const userId = Number.parseInt(String(req?.user?.id || ''), 10);
+    if (!userId) {
+      throw this.makeClientError('Authentication is required for read-only field overrides.', 401);
+    }
+
+    const user = await this.db.findOne('users', { id: userId });
+    if (!user) {
+      throw this.makeClientError('User not found.', 404);
+    }
+
+    const passwordMatches = await this.auth.comparePassword(String(overrideMeta.password), String(user.password || ''));
+    if (!passwordMatches) {
+      throw this.makeClientError('Current password is invalid.');
     }
   }
 

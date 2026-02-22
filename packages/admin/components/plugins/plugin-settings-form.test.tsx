@@ -41,6 +41,7 @@ vi.mock('@/components/collection/field-renderer', () => ({
 }));
 
 describe('./plugin-settings-form', () => {
+  const pluginSlug = 'sample-plugin';
   const mockSchema = {
     fields: [
       { name: 'siteName', label: 'Site Name', type: 'text' },
@@ -68,7 +69,7 @@ describe('./plugin-settings-form', () => {
   });
 
   it('renders loading state then settings form', async () => {
-    render(<PluginSettingsForm pluginSlug="cms" />);
+    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
     
     // Wait for the loading to finish
     await waitFor(() => expect(screen.queryByText('Site Name')).toBeDefined());
@@ -79,7 +80,7 @@ describe('./plugin-settings-form', () => {
   });
 
   it('switches tabs and shows correct fields', async () => {
-    render(<PluginSettingsForm pluginSlug="cms" />);
+    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
     
     await waitFor(() => screen.getByText('Site Name'));
     
@@ -94,7 +95,7 @@ describe('./plugin-settings-form', () => {
   });
 
   it('updates state when field changes', async () => {
-    render(<PluginSettingsForm pluginSlug="cms" />);
+    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
     
     await waitFor(() => screen.getByTestId('input-siteName'));
     
@@ -109,7 +110,7 @@ describe('./plugin-settings-form', () => {
     (api.put as any).mockResolvedValue({ success: true });
     window.alert = vi.fn();
 
-    render(<PluginSettingsForm pluginSlug="cms" />);
+    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
     
     await waitFor(() => screen.getByTestId('input-siteName'));
     
@@ -120,7 +121,7 @@ describe('./plugin-settings-form', () => {
     fireEvent.click(saveButton);
     
     await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith(expect.stringContaining('/plugins/cms/settings'), expect.objectContaining({
+      expect(api.put).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings`), expect.objectContaining({
         siteName: 'New Name'
       }));
     });
@@ -130,7 +131,7 @@ describe('./plugin-settings-form', () => {
     (api.post as any).mockResolvedValue({ settings: { siteName: 'default' } });
     window.confirm = vi.fn().mockReturnValue(true);
 
-    render(<PluginSettingsForm pluginSlug="cms" />);
+    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
     
     await waitFor(() => screen.getByText('Reset'));
     
@@ -138,19 +139,19 @@ describe('./plugin-settings-form', () => {
     fireEvent.click(resetButton);
     
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith(expect.stringContaining('/plugins/cms/settings/reset'));
+      expect(api.post).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/reset`));
     });
   });
 
   it('handles export by opening new window', async () => {
     window.open = vi.fn();
-    render(<PluginSettingsForm pluginSlug="cms" />);
+    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
     
     await waitFor(() => screen.getByText('Export'));
     
     const exportButton = screen.getByText('Export');
     fireEvent.click(exportButton);
     
-    expect(window.open).toHaveBeenCalledWith(expect.stringContaining('/plugins/cms/settings/export'), '_blank');
+    expect(window.open).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/export`), '_blank');
   });
 });

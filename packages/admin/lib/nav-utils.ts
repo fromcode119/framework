@@ -36,3 +36,49 @@ export function isPathActive(pathname: string, itemPath?: string, candidatePaths
   if (!candidatePaths.length) return isPathMatch(pathname, target);
   return resolveBestMatchPath(pathname, candidatePaths) === target;
 }
+
+export function normalizeGroupKey(value?: string, fallback = 'management'): string {
+  const raw = String(value || '').trim();
+  if (!raw) return fallback;
+  return raw.toLowerCase();
+}
+
+export function normalizeMenuPath(value?: string): string {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (raw === '/') return '/';
+  return raw.replace(/\/+$/, '').toLowerCase();
+}
+
+/**
+ * De-duplicates a list of menu items.
+ * Centralized logic that removes redundant paths and handles nested child de-duplication.
+ */
+export function deduplicateMenuItems(items: any[]): any[] {
+  const nestedPaths = new Set<string>();
+
+  const withDedupedChildren = items.map((item) => {
+    if (!Array.isArray(item.children) || item.children.length === 0) return item;
+    const seenChildPaths = new Set<string>();
+    const children = item.children.filter((child: any) => {
+      const key = normalizeMenuPath(child?.path);
+      if (!key) return true;
+      if (seenChildPaths.has(key)) return false;
+      seenChildPaths.add(key);
+      nestedPaths.add(key);
+      return true;
+    });
+    return { ...item, children };
+  });
+
+  const seenTopLevelPaths = new Set<string>();
+  return withDedupedChildren.filter((item) => {
+    const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+    const key = normalizeMenuPath(item.path);
+    if (!key) return true;
+    if (!hasChildren && nestedPaths.has(key)) return false;
+    if (seenTopLevelPaths.has(key)) return false;
+    seenTopLevelPaths.add(key);
+    return true;
+  });
+}
