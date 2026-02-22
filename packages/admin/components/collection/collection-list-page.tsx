@@ -24,6 +24,109 @@ import { ListFooter } from './list/list-footer';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 
+const RELATIONSHIP_LABEL_CACHE = new Map<string, string>();
+
+function resolveRelationDisplayLabel(value: any): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) return '';
+  if (typeof value === 'object') {
+    return String(value.title || value.name || value.label || value.slug || value.email || value.username || value.id || '').trim();
+  }
+  return '';
+}
+
+function resolveRelationScalar(value: any): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' || typeof value === 'number') return String(value).trim();
+  if (typeof value === 'boolean') return '';
+  if (typeof value === 'object') {
+    return String(value.id ?? value._id ?? value.value ?? value.slug ?? '').trim();
+  }
+  return String(value).trim();
+}
+
+const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ relationTo, raw }) => {
+  const [resolved, setResolved] = useState<Record<string, string>>({});
+
+  const tokens = useMemo(() => {
+    const entries = Array.isArray(raw) ? raw : [raw];
+    return entries
+      .map((entry) => {
+        const value = resolveRelationScalar(entry);
+        const directLabel = resolveRelationDisplayLabel(entry);
+        return { value, directLabel };
+      })
+      .filter((entry) => entry.value || entry.directLabel);
+  }, [raw]);
+
+  useEffect(() => {
+    let disposed = false;
+    if (!relationTo) return () => { disposed = true; };
+
+    const run = async () => {
+      const pending = tokens
+        .filter((entry) => {
+          if (!entry.value) return false;
+          if (entry.directLabel && entry.directLabel !== entry.value) return false;
+          const key = `${relationTo}:${entry.value}`;
+          return !RELATIONSHIP_LABEL_CACHE.has(key) && !resolved[key];
+        })
+        .slice(0, 8);
+
+      if (!pending.length) return;
+
+      const updates: Record<string, string> = {};
+
+      await Promise.all(
+        pending.map(async (entry) => {
+          const key = `${relationTo}:${entry.value}`;
+          try {
+            const byId = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}/${encodeURIComponent(entry.value)}`);
+            const label = resolveRelationDisplayLabel(byId) || entry.value;
+            updates[key] = label;
+            RELATIONSHIP_LABEL_CACHE.set(key, label);
+            return;
+          } catch {
+            try {
+              const bySlug = await api.get(
+                `${ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}?slug=${encodeURIComponent(entry.value)}&limit=1`
+              );
+              const doc = Array.isArray(bySlug) ? bySlug[0] : bySlug?.docs?.[0];
+              const label = resolveRelationDisplayLabel(doc) || entry.value;
+              updates[key] = label;
+              RELATIONSHIP_LABEL_CACHE.set(key, label);
+            } catch {
+              updates[key] = entry.value;
+              RELATIONSHIP_LABEL_CACHE.set(key, entry.value);
+            }
+          }
+        })
+      );
+
+      if (!disposed && Object.keys(updates).length) {
+        setResolved((prev) => ({ ...prev, ...updates }));
+      }
+    };
+
+    run();
+    return () => {
+      disposed = true;
+    };
+  }, [relationTo, resolved, tokens]);
+
+  if (!tokens.length) return <>-</>;
+
+  const labels = tokens.map((entry) => {
+    if (entry.directLabel && entry.directLabel !== entry.value) return entry.directLabel;
+    const key = relationTo && entry.value ? `${relationTo}:${entry.value}` : '';
+    return (key && (resolved[key] || RELATIONSHIP_LABEL_CACHE.get(key))) || entry.directLabel || entry.value;
+  });
+
+  const visible = labels.slice(0, 3).join(', ');
+  return <>{visible}{labels.length > 3 ? '…' : ''}</>;
+};
+
 export default function CollectionListPage({ params }: { params: Promise<{ pluginSlug: string; slug: string }> }) {
   const { pluginSlug, slug } = use(params);
   const router = useRouter();
@@ -147,6 +250,10 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
                     ? 'rose'
                     : 'default';
             return <Badge variant={variant as any}>{value}</Badge>;
+          }
+
+          if (field?.type === 'relationship') {
+            return <RelationshipCellValue relationTo={field.relationTo} raw={raw} />;
           }
 
           if (columnName === 'createdAt' || columnName === 'updatedAt' || field?.type === 'date' || field?.type === 'datetime') {

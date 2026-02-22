@@ -20,6 +20,7 @@ export function setupAuthRoutes(manager: PluginManager, auth: AuthManager) {
   router.post('/logout', (req, res) => controller.logout(req, res));
 
   router.get('/security', auth.guard(), (req, res) => controller.getMySecurityState(req, res));
+  router.post('/verify-password', auth.guard(), (req, res) => controller.verifyPassword(req, res));
   router.post('/change-password', auth.guard(), (req, res) => controller.changePassword(req, res));
   router.post('/email-change/request', auth.guard(), (req, res) => controller.requestEmailChange(req, res));
   router.post('/email-change/confirm', (req, res) => controller.confirmEmailChange(req, res));

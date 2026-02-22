@@ -14,6 +14,7 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import { CodeEditor } from '@/components/ui/code-editor';
 import { PermalinkInput } from '@/components/ui/permalink-input';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { PromptDialog } from '@/components/ui/prompt-dialog';
 import { ArrayField } from '@/components/ui/array-field';
 import { FieldRenderer } from '@/components/collection/field-renderer';
 import { FrameworkIcons } from '@/lib/icons';
@@ -25,29 +26,38 @@ import { resolveCollection, generatePreviewUrl } from '@/lib/collection-utils';
 import { useCollectionForm } from '@/components/collection/hooks/use-collection-form';
 import { useSlugGeneration } from '@/components/collection/hooks/use-slug-generation';
 import { useSlugValidation } from '@/components/collection/hooks/use-slug-validation';
-import { normalizeLocaleCode, resolveLocalizedText } from '@/lib/utils';
+import { normalizeLocaleCode, resolveLocalizedText, evaluateCondition } from '@/lib/utils';
 import { RecordInfo } from '@/components/collection/record-info';
 import { EditHeader } from './edit/edit-header';
 import { RevisionModal } from './edit/revision-modal';
 import { EditFooter } from './edit/edit-footer';
 import { SidebarVersions } from './edit/sidebar-versions';
 
-function shouldShowField(field: any, data: any): boolean {
-  if (!field.admin?.condition) return true;
-  
-  const { field: targetField, operator, value } = field.admin.condition;
-  const actualValue = data[targetField];
+function reviveSerializedRevisionValue(value: any): any {
+  if (Array.isArray(value)) {
+    return value.map((item) => reviveSerializedRevisionValue(item));
+  }
 
-  switch (operator) {
-    case 'equals': return actualValue === value;
-    case 'notEquals': return actualValue !== value;
-    case 'contains': return Array.isArray(actualValue) ? actualValue.includes(value) : String(actualValue).includes(String(value));
-    case 'notContains': return Array.isArray(actualValue) ? !actualValue.includes(value) : !String(actualValue).includes(String(value));
-    case 'greaterThan': return Number(actualValue) > Number(value);
-    case 'lessThan': return Number(actualValue) < Number(value);
-    case 'exists': return actualValue !== undefined && actualValue !== null && actualValue !== '';
-    case 'notExists': return actualValue === undefined || actualValue === null || actualValue === '';
-    default: return true;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nested]) => [key, reviveSerializedRevisionValue(nested)])
+    );
+  }
+
+  if (typeof value !== 'string') return value;
+
+  const trimmed = value.trim();
+  const isStructuredJson =
+    (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+    (trimmed.startsWith('[') && trimmed.endsWith(']'));
+
+  if (!isStructuredJson) return value;
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    return reviveSerializedRevisionValue(parsed);
+  } catch {
+    return value;
   }
 }
 
@@ -68,6 +78,22 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const [loading, setLoading] = useState(!isNew);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [readOnlyOverrideFields, setReadOnlyOverrideFields] = useState<Record<string, true>>({});
+  const [readOnlyOverridePassword, setReadOnlyOverridePassword] = useState('');
+  const [readOnlyOverrideTarget, setReadOnlyOverrideTarget] = useState<{ name: string; label: string } | null>(null);
+  const [readOnlyOverridePasswordTarget, setReadOnlyOverridePasswordTarget] = useState<{ name: string; label: string } | null>(null);
+  const [readOnlyOverrideVerifying, setReadOnlyOverrideVerifying] = useState(false);
+
+  const getReadOnlyOverrideSubmitMetadata = useCallback(() => {
+    const fields = Object.keys(readOnlyOverrideFields || {}).filter(Boolean);
+    if (!fields.length || !readOnlyOverridePassword) return {};
+    return {
+      _readOnlyOverride: {
+        fields,
+        password: readOnlyOverridePassword
+      }
+    };
+  }, [readOnlyOverrideFields, readOnlyOverridePassword]);
   
   const {
     formData,
@@ -79,11 +105,14 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     collectionSlug: resolvedSlug,
     isNew,
     onSuccess: (result) => {
+      setReadOnlyOverrideFields({});
+      setReadOnlyOverridePassword('');
       setStatus({ type: 'success', message: `Entry ${isNew ? 'created' : 'updated'} successfully` });
       if (!isNew) fetchRevisions(1);
       if (isNew) router.push(`/${pluginSlug}/${slug}/${result.id}`);
     },
-    onError: (err) => setStatus({ type: 'error', message: err.message || 'Operation failed' })
+    onError: (err) => setStatus({ type: 'error', message: err.message || 'Operation failed' }),
+    getSubmitMetadata: getReadOnlyOverrideSubmitMetadata
   });
 
   const formDataRef = React.useRef(formData);
@@ -164,7 +193,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         date: new Date(v.created_at || v.createdAt),
         user: v.updated_by || v.updatedBy || 'System',
         action: v.change_summary || 'Update',
-        changes: v.version_data
+        changes: reviveSerializedRevisionValue(v.version_data || {})
       }));
 
       if (page === 1) {
@@ -240,6 +269,13 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     fetchData();
   }, [resolvedSlug, id, isNew, collection]);
 
+  useEffect(() => {
+    setReadOnlyOverrideFields({});
+    setReadOnlyOverridePassword('');
+    setReadOnlyOverrideTarget(null);
+    setReadOnlyOverridePasswordTarget(null);
+  }, [id, isNew, resolvedSlug]);
+
   // Load plugin settings if the collection belongs to a plugin
   useEffect(() => {
     if (collection?.pluginSlug) {
@@ -309,6 +345,45 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
       setStatus({ type: 'error', message: err.message });
       setDeleting(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleReadOnlyOverrideRequest = (target: { name: string; label: string }) => {
+    setReadOnlyOverrideTarget(target);
+  };
+
+  const openReadOnlyOverridePasswordPrompt = () => {
+    if (!readOnlyOverrideTarget) return;
+    setReadOnlyOverridePasswordTarget(readOnlyOverrideTarget);
+    setReadOnlyOverrideTarget(null);
+  };
+
+  const handleReadOnlyOverridePasswordConfirm = async (password: string) => {
+    if (!readOnlyOverridePasswordTarget) return;
+    setReadOnlyOverrideVerifying(true);
+    try {
+      await api.post(ENDPOINTS.AUTH.VERIFY_PASSWORD, {
+        password,
+        purpose: 'read_only_override',
+        collectionSlug: resolvedSlug,
+        field: readOnlyOverridePasswordTarget.name,
+        recordId: isNew ? null : id
+      });
+
+      setReadOnlyOverridePassword(password);
+      setReadOnlyOverrideFields((prev) => ({
+        ...prev,
+        [readOnlyOverridePasswordTarget.name]: true
+      }));
+      setStatus({
+        type: 'success',
+        message: `${readOnlyOverridePasswordTarget.label} unlocked for manual override.`
+      });
+      setReadOnlyOverridePasswordTarget(null);
+    } catch (err: any) {
+      setStatus({ type: 'error', message: err?.message || 'Password verification failed' });
+    } finally {
+      setReadOnlyOverrideVerifying(false);
     }
   };
 
@@ -397,7 +472,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                   {collection.fields
                     .filter(f => {
                       if (f.admin?.hidden || f.admin?.position === 'sidebar') return false;
-                      if (!shouldShowField(f, formData)) return false;
+                      if (!evaluateCondition(f.admin?.condition, formData, f.name)) return false;
                       
                       // Tab filtering
                       if (collection.admin?.tabs && collection.admin.tabs.length > 0) {
@@ -420,6 +495,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                         isNew={isNew}
                         slugWarning={field.name === 'slug' ? slugWarning : undefined}
                         slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
+                        readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
+                        onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
                       />
                     ))}
                 </div>
@@ -452,7 +529,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                   <Card title="Settings">
                     <div className="space-y-6">
                       {collection.fields
-                        .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden && f.name !== 'customPermalink' && shouldShowField(f, formData))
+                        .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden && f.name !== 'customPermalink' && evaluateCondition(f.admin?.condition, formData, f.name))
                         .map((field) => (
                           <FieldRenderer 
                             key={field.name}
@@ -464,6 +541,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                             pluginSettings={pluginSettings}
                             disabled={saving}
                             isNew={isNew}
+                            readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
+                            onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
                           />
                         ))}
                     </div>
@@ -527,10 +606,35 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         collection={collection}
         theme={theme}
         isNew={isNew}
+        discardHref={`/${pluginSlug}/${slug}`}
         handleSubmit={handleSubmit}
         changeSummary={changeSummary}
         setChangeSummary={setChangeSummary}
         saving={saving}
+      />
+
+      <ConfirmDialog 
+        isOpen={Boolean(readOnlyOverrideTarget)}
+        onClose={() => setReadOnlyOverrideTarget(null)}
+        onConfirm={openReadOnlyOverridePasswordPrompt}
+        title="Override Generated Value?"
+        description={`"${readOnlyOverrideTarget?.label || 'This field'}" is read-only because it is generated automatically. Continue to unlock manual override?`}
+        confirmLabel="Continue"
+        cancelLabel="Cancel"
+        variant="primary"
+      />
+
+      <PromptDialog
+        isOpen={Boolean(readOnlyOverridePasswordTarget)}
+        onClose={() => setReadOnlyOverridePasswordTarget(null)}
+        onConfirm={handleReadOnlyOverridePasswordConfirm}
+        isLoading={readOnlyOverrideVerifying}
+        title="Confirm With Password"
+        description={`Enter your account password to unlock "${readOnlyOverridePasswordTarget?.label || 'this field'}".`}
+        placeholder="Current password"
+        confirmLabel="Unlock Field"
+        cancelLabel="Cancel"
+        inputType="password"
       />
 
       <ConfirmDialog 

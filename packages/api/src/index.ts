@@ -640,7 +640,7 @@ export class APIServer {
     vApi.use('/plugins', setupPluginRoutes(this.manager, this.auth));
     vApi.use('/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
     
-    // Mount plugin routes under /plugins for backward compatibility (e.g. /api/v1/plugins/forms/submit)
+    // Keep custom plugin routes before plugin collection fallback routes.
     vApi.use('/plugins', this.pluginRouter);
 
     vApi.use('/marketplace', setupMarketplaceRoutes(this.manager, this.auth));
@@ -648,11 +648,6 @@ export class APIServer {
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
-    
-    // Mount plugin routes FIRST so custom routes take precedence over collection proxies
-    // This allows plugins to define custom endpoints like /api/v1/finance/stats
-    // without being intercepted by the collection route handler
-    vApi.use(this.pluginRouter);
     
     // Then mount collection routes as fallback for CRUD operations
     vApi.use(setupCollectionRoutes(this.manager, this.restController));

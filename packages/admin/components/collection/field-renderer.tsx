@@ -3,7 +3,6 @@ import { Slot, usePlugins } from '@fromcode/react';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { TextArea } from '@/components/ui/text-area';
-import { TagField } from '@/components/ui/tag-field';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { CodeEditor } from '@/components/ui/code-editor';
@@ -12,6 +11,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { normalizeLocaleCode, isLocaleLikeKey } from '@/lib/utils';
 import { parseLocaleRegistry } from '@/lib/locale-utils';
 import { TagFieldLocal } from './tag-field-local';
+import { RelationshipSelectLocal } from './relationship-select-local';
 import { MediaRelationField } from './media-relation-field';
 import { UI_TEXT } from '@/lib/ui';
 
@@ -51,6 +51,8 @@ interface FieldRendererProps {
   errors?: string[];
   slugWarning?: string | null;
   slugManuallyEdited?: boolean;
+  readOnlyOverrideGranted?: boolean;
+  onReadOnlyOverrideRequest?: (field: { name: string; label: string }) => void;
 }
 
 export const FieldRenderer: React.FC<FieldRendererProps> = ({
@@ -64,12 +66,19 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   isNew = false,
   errors,
   slugWarning,
-  slugManuallyEdited
+  slugManuallyEdited,
+  readOnlyOverrideGranted = false,
+  onReadOnlyOverrideRequest
 }) => {
   const plugins = usePlugins();
   const fieldComponents = (plugins as any).fieldComponents || {};
   const settings = (plugins as any)?.settings || {};
-  const isFieldReadOnly = Boolean(disabled || field.admin?.readOnly);
+  const fieldMarkedReadOnly = Boolean(field.admin?.readOnly);
+  const supportsReadOnlyOverride =
+    fieldMarkedReadOnly &&
+    Boolean(field.admin?.readOnlyOverride === 'password' || field.admin?.allowReadOnlyOverride === true);
+  const isFieldReadOnly = Boolean(disabled || (fieldMarkedReadOnly && !readOnlyOverrideGranted));
+  const canRequestReadOnlyOverride = Boolean(!disabled && supportsReadOnlyOverride && isFieldReadOnly && onReadOnlyOverrideRequest);
   const isLocalizedField = Boolean(field.localized);
   const componentHandlesLocalization = isLocalizedField && Boolean(field.admin?.handlesLocalization);
 
@@ -140,6 +149,27 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
     nextMap[activeLocale] = nextValue;
     onChange(nextMap);
   };
+
+  const requestReadOnlyOverride = React.useCallback(() => {
+    if (!canRequestReadOnlyOverride || !onReadOnlyOverrideRequest) return;
+    onReadOnlyOverrideRequest({ name: field.name, label });
+  }, [canRequestReadOnlyOverride, field.name, label, onReadOnlyOverrideRequest]);
+
+  const wrapWithReadOnlyOverride = (node: React.ReactNode, roundedClass: string = 'rounded-lg') => {
+    if (!canRequestReadOnlyOverride) return node;
+    return (
+      <div className="relative">
+        {node}
+        <button
+          type="button"
+          onClick={requestReadOnlyOverride}
+          className={`absolute inset-0 z-20 ${roundedClass} border border-indigo-400/50 bg-indigo-500/[0.03] hover:bg-indigo-500/[0.06] transition-colors`}
+          title={`Override read-only field "${label}"`}
+          aria-label={`Override read-only field ${label}`}
+        />
+      </div>
+    );
+  };
   
   const activeLocaleMeta = localeRegistry.find((item) => item.code === activeLocale) || localeRegistry[0];
   const shouldInlineLocaleSwitcher =
@@ -149,6 +179,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       field.type === 'relationship' ||
       field.type === 'select' ||
       field.type === 'boolean' ||
+      field.type === 'checkbox' ||
       field.type === 'array' ||
       field.type === 'date' ||
       field.type === 'datetime' ||
@@ -235,16 +266,31 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         </label>
 
         <div className="flex items-center gap-2">
-          {isFieldReadOnly && (
+          {!isFieldReadOnly && supportsReadOnlyOverride && readOnlyOverrideGranted && (
             <span
               className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[9px] font-semibold tracking-wide border ${
+                theme === 'dark'
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+              }`}
+            >
+              <FrameworkIcons.Check size={10} />
+              Override unlocked
+            </span>
+          )}
+          {isFieldReadOnly && (
+            <span
+              title={canRequestReadOnlyOverride ? `Click field to override "${label}"` : undefined}
+              className={`inline-flex items-center gap-1 rounded-lg font-semibold border ${
+                canRequestReadOnlyOverride ? 'h-5 px-1.5 text-[8px] tracking-normal' : 'h-6 px-2 text-[9px] tracking-wide'
+              } ${
                 theme === 'dark'
                   ? 'bg-slate-900 border-slate-700 text-slate-300'
                   : 'bg-white border-slate-200 text-slate-500'
               }`}
             >
               <FrameworkIcons.Lock size={10} />
-              Read only
+              {canRequestReadOnlyOverride ? 'Read only' : 'Read only'}
             </span>
           )}
           {isLocalizedField && !componentHandlesLocalization && !shouldInlineLocaleSwitcher && localeSwitcher(false)}
@@ -252,21 +298,37 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       </div>
       
       {field.type === 'relationship' && field.relationTo === 'media' ? (
-        <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} />
+        wrapWithReadOnlyOverride(
+          <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} />
+        )
+      ) : field.type === 'relationship' &&
+        field.admin?.component !== 'TagField' &&
+        field.admin?.component !== 'Tags' &&
+        !field.hasMany ? (
+        wrapWithReadOnlyOverride(
+          <RelationshipSelectLocal
+            field={field}
+            value={currentValue}
+            onChange={updateValue}
+            theme={theme}
+          />
+        )
       ) : field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
-        <TagFieldLocal 
-          field={field} 
-          value={currentValue} 
-          onChange={updateValue}
-          theme={theme}
-          collectionSlug={collectionSlug}
-        />
+        wrapWithReadOnlyOverride(
+          <TagFieldLocal 
+            field={field} 
+            value={currentValue} 
+            onChange={updateValue}
+            theme={theme}
+            collectionSlug={collectionSlug}
+          />
+        )
       ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'CodeEditor' ? (() => {
         const componentName = field.admin.component;
         const CustomComponent = fieldComponents[componentName];
         
         if (CustomComponent) {
-          return (
+          return wrapWithReadOnlyOverride(
             <CustomComponent 
               value={currentValue}
               onChange={updateValue}
@@ -286,123 +348,223 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           </div>
         );
       })() : (field.type === 'textarea' || field.type === 'richText') ? (
-        <div className="relative">
-          <TextArea 
-            value={currentValue || ''}
-            onChange={(e) => updateValue(e.target.value)}
-            disabled={isFieldReadOnly}
-            placeholder={`Enter ${label}...`}
-            error={errors?.[0]}
-            inputClassName={isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}
-          />
-          {isLocalizedField && shouldInlineLocaleSwitcher && (
-            <div className="absolute right-2 top-2 z-20">{localeSwitcher(true)}</div>
-          )}
-        </div>
+        wrapWithReadOnlyOverride(
+          <div className="relative">
+            <TextArea 
+              value={currentValue || ''}
+              onChange={(e) => updateValue(e.target.value)}
+              disabled={isFieldReadOnly}
+              placeholder={`Enter ${label}...`}
+              error={errors?.[0]}
+              inputClassName={isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}
+            />
+            {isLocalizedField && shouldInlineLocaleSwitcher && (
+              <div className="absolute right-2 top-2 z-20">{localeSwitcher(true)}</div>
+            )}
+          </div>
+        )
       ) : field.type === 'json' ? (
-        <div className="relative">
-          <TextArea 
-            value={typeof currentValue === 'object' ? JSON.stringify(currentValue, null, 2) : currentValue || ''}
-            onChange={(e) => {
-              try {
-                const val = JSON.parse(e.target.value);
-                updateValue(val);
-              } catch (err) {
-                updateValue(e.target.value);
-              }
-            }}
-            disabled={isFieldReadOnly}
-            inputClassName={`font-mono text-[12px] ${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}
-          />
-          {isLocalizedField && shouldInlineLocaleSwitcher && (
-            <div className="absolute right-2 top-2 z-20">{localeSwitcher(true)}</div>
-          )}
-        </div>
+        wrapWithReadOnlyOverride(
+          <div className="relative">
+            <TextArea 
+              value={typeof currentValue === 'object' ? JSON.stringify(currentValue, null, 2) : currentValue || ''}
+              onChange={(e) => {
+                try {
+                  const val = JSON.parse(e.target.value);
+                  updateValue(val);
+                } catch (err) {
+                  updateValue(e.target.value);
+                }
+              }}
+              disabled={isFieldReadOnly}
+              inputClassName={`font-mono text-[12px] ${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}
+            />
+            {isLocalizedField && shouldInlineLocaleSwitcher && (
+              <div className="absolute right-2 top-2 z-20">{localeSwitcher(true)}</div>
+            )}
+          </div>
+        )
       ) : field.type === 'array' ? (
-        <ArrayField 
-          field={field}
-          value={currentValue}
-          onChange={updateValue}
-          theme={theme}
-          collectionSlug={collectionSlug}
-          pluginSettings={pluginSettings}
-        />
+        wrapWithReadOnlyOverride(
+          <ArrayField 
+            field={field}
+            value={currentValue}
+            onChange={updateValue}
+            theme={theme}
+            collectionSlug={collectionSlug}
+            pluginSettings={pluginSettings}
+          />
+        )
       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
+        wrapWithReadOnlyOverride(
+          <div className="relative">
+            <Input 
+              type="password"
+              value={currentValue || ''}
+              onChange={(e) => updateValue(e.target.value)}
+              placeholder="••••••••"
+              disabled={isFieldReadOnly}
+              inputClassName={isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}
+            />
+            {isLocalizedField && shouldInlineLocaleSwitcher && (
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">{localeSwitcher(true)}</div>
+            )}
+          </div>
+        )
+      ) : field.type === 'select' ? (
+        (() => {
+          const options = (field.options || []).map((option: any) => ({
+            label: String(option?.label ?? option?.value ?? ''),
+            value: option?.value
+          }));
+          const isMultiSelect = Boolean(field.admin?.multiple || (field as any).multiple);
+
+          if (!isMultiSelect) {
+            return wrapWithReadOnlyOverride(
+              <Select
+                value={currentValue || field.defaultValue || ''}
+                options={options}
+                onChange={updateValue}
+                disabled={isFieldReadOnly}
+                theme={theme}
+              />
+            );
+          }
+
+          const selectedValues = Array.isArray(currentValue)
+            ? currentValue.map((item: any) => String(item)).filter(Boolean)
+            : (typeof currentValue === 'string'
+              ? currentValue.split(',').map((item) => item.trim()).filter(Boolean)
+              : []);
+          const selectedSet = new Set(selectedValues);
+          const optionValueToRaw = new Map(options.map((option) => [String(option.value), option.value]));
+          const optionValueToLabel = new Map(options.map((option) => [String(option.value), option.label]));
+          const availableOptions = options.filter((option) => !selectedSet.has(String(option.value)));
+
+          const persistSelected = (values: string[]) => {
+            const rawValues = values.map((item) => optionValueToRaw.get(item) ?? item);
+            updateValue(rawValues);
+          };
+
+          return wrapWithReadOnlyOverride(
+            <div className="space-y-2">
+              {selectedValues.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedValues.map((selected) => (
+                    <span
+                      key={selected}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${
+                        theme === 'dark'
+                          ? 'bg-slate-900 border-slate-700 text-slate-200'
+                          : 'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      <span>{optionValueToLabel.get(selected) || selected}</span>
+                      {!isFieldReadOnly && (
+                        <button
+                          type="button"
+                          onClick={() => persistSelected(selectedValues.filter((item) => item !== selected))}
+                          className="opacity-60 hover:opacity-100 transition-opacity"
+                        >
+                          <FrameworkIcons.Close size={12} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <Select
+                value=""
+                options={availableOptions}
+                onChange={(value) => {
+                  const selected = String(value || '').trim();
+                  if (!selected || selectedSet.has(selected)) return;
+                  persistSelected([...selectedValues, selected]);
+                }}
+                disabled={isFieldReadOnly || availableOptions.length === 0}
+                placeholder={availableOptions.length ? 'Select an option...' : 'All options selected'}
+                theme={theme}
+              />
+            </div>
+          );
+        })()
+      ) : (field.type === 'boolean' || field.type === 'checkbox') ? (
+        wrapWithReadOnlyOverride(
+          <Select
+            value={currentValue?.toString() || field.defaultValue?.toString() || 'false'}
+            options={[{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]}
+            onChange={(val) => updateValue(val === 'true')}
+            disabled={isFieldReadOnly}
+            theme={theme}
+          />
+        )
+      ) : (field.type === 'date' || field.type === 'datetime') ? (
+        wrapWithReadOnlyOverride(
+          <DateTimePicker 
+            value={currentValue}
+            onChange={updateValue}
+            showTime={field.type === 'datetime'}
+            disabled={isFieldReadOnly}
+          />
+        )
+      ) : (field.type === 'color' || field.admin?.component === 'ColorPicker') ? (
+        wrapWithReadOnlyOverride(
+          <ColorPicker 
+            value={currentValue}
+            onChange={updateValue}
+            disabled={isFieldReadOnly}
+          />
+        )
+      ) : (field.type === 'code' || field.admin?.component === 'CodeEditor') ? (
+        wrapWithReadOnlyOverride(
+          <CodeEditor 
+            value={currentValue}
+            onChange={updateValue}
+            language={field.admin?.language || 'javascript'}
+            disabled={isFieldReadOnly}
+          />
+        )
+      ) : (
+      wrapWithReadOnlyOverride(
         <div className="relative">
           <Input 
-            type="password"
-            value={currentValue || ''}
-            onChange={(e) => updateValue(e.target.value)}
-            placeholder="••••••••"
+            type={field.type === 'number' ? 'number' : 'text'}
+            value={currentValue ?? ''}
+            onChange={(e) => {
+              if (field.type === 'number') {
+                const raw = e.target.value;
+                if (raw === '') {
+                  updateValue('');
+                  return;
+                }
+                const parsed = Number(raw);
+                updateValue(Number.isFinite(parsed) ? parsed : raw);
+                return;
+              }
+              updateValue(e.target.value);
+            }}
+            placeholder={`Enter ${label}...`}
             disabled={isFieldReadOnly}
-            inputClassName={isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}
+            inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}
           />
           {isLocalizedField && shouldInlineLocaleSwitcher && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">{localeSwitcher(true)}</div>
           )}
+          {field.name === 'slug' && slugWarning && (
+            <div className="absolute top-full left-0 mt-2 flex items-center gap-2 text-xs font-medium text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">
+               <FrameworkIcons.Alert size={12} />
+               <span>{slugWarning}</span>
+            </div>
+          )}
+          {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
+             <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-md text-[10px] font-semibold tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
+                <FrameworkIcons.Refresh size={8} />
+                Auto
+             </div>
+          )}
         </div>
-      ) : field.type === 'select' ? (
-        <Select
-          value={currentValue || field.defaultValue || ''}
-          options={field.options || []}
-          onChange={updateValue}
-          disabled={isFieldReadOnly}
-          theme={theme}
-        />
-      ) : field.type === 'boolean' ? (
-        <Select
-          value={currentValue?.toString() || field.defaultValue?.toString() || 'false'}
-          options={[{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]}
-          onChange={(val) => updateValue(val === 'true')}
-          disabled={isFieldReadOnly}
-          theme={theme}
-        />
-      ) : (field.type === 'date' || field.type === 'datetime') ? (
-        <DateTimePicker 
-          value={currentValue}
-          onChange={updateValue}
-          showTime={field.type === 'datetime'}
-          disabled={isFieldReadOnly}
-        />
-      ) : (field.type === 'color' || field.admin?.component === 'ColorPicker') ? (
-        <ColorPicker 
-          value={currentValue}
-          onChange={updateValue}
-          disabled={isFieldReadOnly}
-        />
-      ) : (field.type === 'code' || field.admin?.component === 'CodeEditor') ? (
-        <CodeEditor 
-          value={currentValue}
-          onChange={updateValue}
-          language={field.admin?.language || 'javascript'}
-          disabled={isFieldReadOnly}
-        />
-      ) : (
-      <div className="relative">
-        <Input 
-          type={field.type === 'number' ? 'number' : 'text'}
-          value={currentValue || ''}
-          onChange={(e) => updateValue(e.target.value)}
-          placeholder={`Enter ${label}...`}
-          disabled={isFieldReadOnly}
-          inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}
-        />
-        {isLocalizedField && shouldInlineLocaleSwitcher && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">{localeSwitcher(true)}</div>
-        )}
-        {field.name === 'slug' && slugWarning && (
-          <div className="absolute top-full left-0 mt-2 flex items-center gap-2 text-xs font-medium text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">
-             <FrameworkIcons.Alert size={12} />
-             <span>{slugWarning}</span>
-          </div>
-        )}
-        {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
-           <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-md text-[10px] font-semibold tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
-              <FrameworkIcons.Refresh size={8} />
-              Auto
-           </div>
-        )}
-      </div>
+      )
     )}
     {field.admin?.description && (
       <p className={UI_TEXT.SUBTEXT}>{field.admin.description}</p>

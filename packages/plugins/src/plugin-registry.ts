@@ -10,7 +10,7 @@ import { CollectionQueryBuilder } from './types';
 export class PluginRegistry {
   private static instance: PluginRegistry;
   private db?: IDatabaseManager;
-  private entityMap: Map<string, string> = new Map(); // e.g., "cms.pages" -> "fcp_cms_pages"
+  private entityMap: Map<string, string> = new Map(); // e.g., "content.pages" -> "fcp_content_pages"
 
   private constructor() {
     // Automatically register this registry as the global table resolver
@@ -58,8 +58,8 @@ export class PluginRegistry {
 
   /**
    * Returns a cohesive proxy for a plugin.
-   * Usage: getPlugin('cms').pages.find() 
-   * or: getPlugin('cms').collection('pages').find()
+   * Usage: getPlugin('content').pages.find()
+   * or: getPlugin('content').collection('pages').find()
    */
   getPlugin(slug: string): any {
     const pluginProxy = {
@@ -84,7 +84,7 @@ export class PluginRegistry {
         if (prop in target || typeof prop !== 'string') {
           return (target as any)[prop];
         }
-        // Semantic shortcut: getPlugin('cms').pages -> target.collection('pages')
+        // Semantic shortcut: getPlugin('content').pages -> target.collection('pages')
         return target.collection(prop);
       }
     });

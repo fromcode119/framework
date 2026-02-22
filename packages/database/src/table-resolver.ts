@@ -1,8 +1,8 @@
 import { TableNameResolver } from './types';
 
 /**
- * Manages the resolution of semantic table names (e.g., @cms/pages) 
- * to physical database table names (e.g., fcp_cms_pages).
+ * Manages the resolution of semantic table names (e.g., @content/pages)
+ * to physical database table names (e.g., fcp_content_pages).
  */
 export class TableResolver {
   private static resolver: TableNameResolver = (name: any): any => {

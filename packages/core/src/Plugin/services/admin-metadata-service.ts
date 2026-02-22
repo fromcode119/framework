@@ -1,6 +1,11 @@
 import { LoadedPlugin, Collection } from '../../types';
 import { Logger } from '../../logging/logger';
 import {
+  normalizeMenuPath,
+  getNestedMenuPaths,
+  deduplicateMenuItems
+} from '../../utils';
+import {
   buildCollectionRouteKeySet,
   isCollectionMenuPath,
   expectedPageSlotFromPath
@@ -136,12 +141,15 @@ export class AdminMetadataService {
           
           const isExplicitlyHandled = rawMenuItems.some(m => {
              if (m.pluginSlug !== slug) return false;
-             if (m.path === path) return true;
-             const normalizedPath = m.path?.toLowerCase().replace(/^\/[^/]+\//, '').replace(/^\//, '');
-             if (normalizedPath === shortSlug) return true;
-             // Also check the root path if it's a primary collection
-             if (shortSlug === slug && m.path === `/${slug}`) return true;
-             return false;
+             const candidatePaths = getNestedMenuPaths(m);
+             return candidatePaths.some((candidatePath) => {
+               if (candidatePath === path) return true;
+               const normalizedPath = candidatePath?.toLowerCase().replace(/^\/[^/]+\//, '').replace(/^\//, '');
+               if (normalizedPath === shortSlug) return true;
+               // Also check the root path if it's a primary collection
+               if (shortSlug === slug && candidatePath === `/${slug}`) return true;
+               return false;
+             });
           });
 
           if (!isExplicitlyHandled) {
@@ -219,9 +227,13 @@ export class AdminMetadataService {
       }
     });
 
+    const sorted = finalMenu.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+
+    const dedupedMenu = deduplicateMenuItems(sorted);
+
     return {
       plugins: pluginMetadata,
-      menu: finalMenu.sort((a, b) => (a.priority || 0) - (b.priority || 0)),
+      menu: dedupedMenu,
       runtimeModules
     };
   }

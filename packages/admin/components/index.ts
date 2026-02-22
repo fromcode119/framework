@@ -9,6 +9,8 @@ export * from './ui/switch';
 export * from './ui/page-heading';
 export * from './ui/card';
 export * from './ui/badge';
+export * from './ui/stat-card';
+export * from './ui/data-table';
 export * from './ui/confirm-dialog';
 export * from './ui/prompt-dialog';
 export * from './ui/date-time-picker';

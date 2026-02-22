@@ -269,7 +269,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   protected async issueEmailVerificationToken(
     userId: number,
     email: string,
-    checkout?: { checkoutSessionId?: string; cartId?: string; orderId?: string }
+    context?: Record<string, any>
   ): Promise<{ token: string; expiresAt: Date }> {
     const token = randomBytes(32).toString('hex');
     const tokenHash = this.hashToken(token);
@@ -284,7 +284,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
       userId,
       email,
       expiresAt: expiresAt.toISOString(),
-      checkout: checkout || {}
+      context: context && Object.keys(context).length ? context : undefined
     };
 
     await this.upsertMeta(this.getEmailVerifyTokenKey(tokenHash), JSON.stringify(payload));
@@ -300,7 +300,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
     reason?: 'invalid' | 'expired';
     userId?: number;
     email?: string;
-    checkout?: { checkoutSessionId?: string; cartId?: string; orderId?: string };
+    context?: Record<string, any>;
   }> {
     const tokenHash = this.hashToken(token);
     const tokenKey = this.getEmailVerifyTokenKey(tokenHash);
@@ -339,7 +339,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
       ok: true,
       userId,
       email,
-      checkout: payload?.checkout || {}
+      context: payload?.context && typeof payload.context === 'object' ? payload.context : undefined
     };
   }
 

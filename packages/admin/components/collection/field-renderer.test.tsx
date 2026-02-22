@@ -130,4 +130,25 @@ describe('./field-renderer', () => {
 
     expect(screen.getByText('Already taken')).toBeInTheDocument();
   });
+
+  it('renders a select for checkbox type', () => {
+    const field: any = {
+      name: 'required',
+      type: 'checkbox',
+      label: 'Required Add-on'
+    };
+    render(
+      <FieldRenderer
+        field={field}
+        value={false}
+        onChange={vi.fn()}
+        theme="light"
+        collectionSlug="products"
+      />
+    );
+
+    expect(screen.getByTestId('mock-select')).toBeInTheDocument();
+    expect(screen.getByText('Yes')).toBeInTheDocument();
+    expect(screen.getByText('No')).toBeInTheDocument();
+  });
 });

@@ -9,6 +9,7 @@ interface EditFooterProps {
   collection: any;
   theme: string;
   isNew: boolean;
+  discardHref?: string;
   handleSubmit: (e: any, summary: string) => void;
   changeSummary: string;
   setChangeSummary: (val: string) => void;
@@ -19,6 +20,7 @@ export const EditFooter: React.FC<EditFooterProps> = ({
   collection,
   theme,
   isNew,
+  discardHref,
   handleSubmit,
   changeSummary,
   setChangeSummary,
@@ -46,7 +48,13 @@ export const EditFooter: React.FC<EditFooterProps> = ({
           <Button 
             variant="ghost" 
             className="rounded-xl px-6 text-[10px] font-bold uppercase tracking-wide text-slate-400"
-            onClick={() => router.back()}
+            onClick={() => {
+              if (discardHref) {
+                router.push(discardHref);
+                return;
+              }
+              router.back();
+            }}
           >
             Discard Changes
           </Button>

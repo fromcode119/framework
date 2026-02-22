@@ -234,11 +234,7 @@ export default function AdminPage() {
                 // 2. Hide low count entities that aren't core
                 if (s.slug.startsWith('_') || s.slug.startsWith('fcp_')) return false;
                 
-                // Always show high-value business entities even if 0
-                const businessEntities = ['products', 'orders', 'pages', 'posts', 'forms', 'customers'];
-                if (businessEntities.includes(s.slug)) return true;
-
-                // Hide everything else if it has 0 count
+                // Hide empty non-core entities by default
                 if (s.count === 0) return false;
 
                 return true;

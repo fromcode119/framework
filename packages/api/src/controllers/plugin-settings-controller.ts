@@ -3,6 +3,7 @@ import { PluginManager, Logger } from '@fromcode/core';
 
 export class PluginSettingsController {
   private logger = new Logger({ namespace: 'plugin-settings-controller' });
+  private static readonly DYNAMIC_OPTIONS_SOURCE_SYSTEM_LOCALES = 'system_locales';
 
   constructor(private manager: PluginManager) {}
 
@@ -20,7 +21,7 @@ export class PluginSettingsController {
     }
     
     // Get schema
-    const schema = this.manager.getPluginSettings(slug);
+    const schema = await this.getEffectiveSchema(slug);
     
     // Get stored values from current manifest config
     const storedSettings = plugin.manifest.config?.settings || {};
@@ -50,7 +51,7 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin not found' });
     }
 
-    const schema = this.manager.getPluginSettings(slug);
+    const schema = await this.getEffectiveSchema(slug);
     
     // Validate against schema if it exists
     if (schema) {
@@ -103,7 +104,7 @@ export class PluginSettingsController {
    */
   async getSchema(req: Request, res: Response) {
     const { slug } = req.params;
-    const schema = this.manager.getPluginSettings(slug);
+    const schema = await this.getEffectiveSchema(slug);
     
     if (!schema) {
       const allRegistered = Array.from(this.manager.getAllPluginSettings().keys());
@@ -127,7 +128,7 @@ export class PluginSettingsController {
    */
   async resetSettings(req: Request, res: Response) {
     const { slug } = req.params;
-    const schema = this.manager.getPluginSettings(slug);
+    const schema = await this.getEffectiveSchema(slug);
     
     if (!schema) {
       return res.status(404).json({ error: 'Plugin has no settings registered' });
@@ -181,7 +182,7 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin not found' });
     }
 
-    const schema = this.manager.getPluginSettings(slug);
+    const schema = await this.getEffectiveSchema(slug);
     if (schema) {
       // Validate imported data against schema
       const errors = await this.validateSettings(importedSettings, schema);
@@ -265,7 +266,16 @@ export class PluginSettingsController {
           case 'select':
             if (field.options) {
               const validValues = field.options.map((opt: any) => opt.value);
-              if (!validValues.includes(value)) {
+              const isMultiSelect = Boolean(field?.admin?.multiple || field?.multiple);
+              if (isMultiSelect) {
+                const selectedValues = Array.isArray(value)
+                  ? value
+                  : (typeof value === 'string' ? value.split(',').map((part) => part.trim()).filter(Boolean) : []);
+                const hasInvalid = selectedValues.some((selected) => !validValues.includes(selected));
+                if (hasInvalid) {
+                  errors[field.name] = 'Invalid option selected';
+                }
+              } else if (!validValues.includes(value)) {
                 errors[field.name] = 'Invalid option selected';
               }
             }
@@ -275,5 +285,101 @@ export class PluginSettingsController {
     }
     
     return Object.keys(errors).length > 0 ? errors : null;
+  }
+
+  private async getEffectiveSchema(pluginSlug: string): Promise<any | undefined> {
+    const schema = this.manager.getPluginSettings(pluginSlug);
+    if (!schema) return schema;
+    if (!Array.isArray(schema.fields)) return schema;
+
+    let changed = false;
+    let systemLocaleOptions: Array<{ label: string; value: string }> | null = null;
+
+    const fields = await Promise.all(schema.fields.map(async (field: any) => {
+      const source = String(field?.admin?.optionsSource || field?.admin?.optionSource || '')
+        .trim()
+        .toLowerCase();
+      if (source !== PluginSettingsController.DYNAMIC_OPTIONS_SOURCE_SYSTEM_LOCALES) {
+        return field;
+      }
+
+      if (!systemLocaleOptions) {
+        systemLocaleOptions = await this.getSystemLocaleOptions();
+      }
+
+      if (!systemLocaleOptions.length) {
+        return field;
+      }
+
+      changed = true;
+      return {
+        ...field,
+        type: 'select',
+        options: systemLocaleOptions,
+        admin: {
+          ...(field.admin || {})
+        }
+      };
+    }));
+
+    return changed ? { ...schema, fields } : schema;
+  }
+
+  private async getSystemLocaleOptions(): Promise<Array<{ label: string; value: string }>> {
+    const db = (this.manager as any).db;
+    if (!db?.findOne) {
+      return [];
+    }
+
+    const toCode = (value: any): string => String(value || '').trim().toLowerCase().replace(/_/g, '-');
+    const options: Array<{ label: string; value: string }> = [];
+    const seen = new Set<string>();
+    const pushOption = (code: string, label?: string) => {
+      const normalized = toCode(code);
+      if (!normalized || seen.has(normalized)) return;
+      seen.add(normalized);
+      options.push({
+        value: normalized,
+        label: String(label || normalized.toUpperCase())
+      });
+    };
+
+    try {
+      const localesRow = await db.findOne('_system_meta', { key: 'localization_locales' });
+      const rawLocales = String(localesRow?.value || '').trim();
+      if (rawLocales) {
+        try {
+          const parsed = JSON.parse(rawLocales);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((item: any) => {
+              if (item?.enabled === false) return;
+              pushOption(item?.code || item?.isoCode || item?.locale, item?.name);
+            });
+          }
+        } catch {
+          // Ignore malformed locale registry and fallback to enabled_locales.
+        }
+      }
+
+      if (!options.length) {
+        const enabledRow = await db.findOne('_system_meta', { key: 'enabled_locales' });
+        String(enabledRow?.value || '')
+          .split(',')
+          .map((part: string) => toCode(part))
+          .filter(Boolean)
+          .forEach((code: string) => pushOption(code, code.toUpperCase()));
+      }
+
+      if (!options.length) {
+        const defaultLocaleRow = await db.findOne('_system_meta', { key: 'default_locale' });
+        const fallbackLocaleRow = await db.findOne('_system_meta', { key: 'fallback_locale' });
+        pushOption(defaultLocaleRow?.value, undefined);
+        pushOption(fallbackLocaleRow?.value, undefined);
+      }
+    } catch (error: any) {
+      this.logger.warn(`Failed to derive locale options from global settings: ${error?.message || 'unknown error'}`);
+    }
+
+    return options;
   }
 }

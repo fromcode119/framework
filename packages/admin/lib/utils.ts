@@ -57,6 +57,57 @@ export function formatDate(value: any): string {
 }
 
 /**
+ * Get nested object value from string path
+ */
+export function getNestedValue(obj: any, path: string): any {
+  if (!obj || !path) return undefined;
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+/**
+ * Evaluates field visibility conditions from plugin schemas
+ */
+export function evaluateCondition(condition: any, data: any, fieldName?: string): boolean {
+  if (!condition) return true;
+
+  // Pattern: (data, siblingData)
+  if (typeof condition === 'function') {
+    try {
+      return !!condition(data, data);
+    } catch (e) {
+      console.warn(`Condition function failed for ${fieldName || 'field'}:`, e);
+      return true;
+    }
+  }
+
+  // Handle object conditions: { field, operator, value }
+  if (typeof condition !== 'object' || Array.isArray(condition)) {
+    return true;
+  }
+
+  const { field: targetPath, operator, value } = condition;
+  const actualValue = getNestedValue(data, targetPath);
+
+  switch (operator) {
+    case 'equals': return actualValue === value;
+    case 'notEquals': return actualValue !== value;
+    case 'contains': {
+      if (Array.isArray(actualValue)) return actualValue.includes(value);
+      return String(actualValue || '').includes(String(value));
+    }
+    case 'notContains': {
+      if (Array.isArray(actualValue)) return !actualValue.includes(value);
+      return !String(actualValue || '').includes(String(value));
+    }
+    case 'greaterThan': return Number(actualValue) > Number(value);
+    case 'lessThan': return Number(actualValue) < Number(value);
+    case 'exists': return actualValue !== undefined && actualValue !== null && actualValue !== '';
+    case 'notExists': return actualValue === undefined || actualValue === null || actualValue === '';
+    default: return true;
+  }
+}
+
+/**
  * Capitalize first letter
  */
 export function capitalize(text: string): string {

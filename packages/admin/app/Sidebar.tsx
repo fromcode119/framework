@@ -14,7 +14,9 @@ import {
   normalizeNavPath, 
   isPathMatch, 
   resolveBestMatchPath, 
-  isPathActive 
+  isPathActive,
+  normalizeGroupKey,
+  normalizeMenuPath
 } from '@/lib/nav-utils';
 
 const { 
@@ -265,9 +267,9 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   });
 
   // Group menu items by their group property
-  const groupedMenu = authorizedMenuItems.reduce((acc: Record<string, any[]>, item) => {
-    // Slugs are always lowercase
-    const rawGroup = (item.group || 'management').toLowerCase();
+  const groupedMenu = authorizedMenuItems
+    .reduce((acc: Record<string, any[]>, item) => {
+    const rawGroup = normalizeGroupKey(item.group);
     
     // Manual mapping for core items if they don't have a group
     let groupKey = rawGroup;
@@ -279,10 +281,10 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
       groupKey = 'system';
     }
 
-    if (!acc[groupKey]) acc[groupKey] = [];
-    acc[groupKey].push(item);
-    return acc;
-  }, {});
+      if (!acc[groupKey]) acc[groupKey] = [];
+      acc[groupKey].push(item);
+      return acc;
+    }, {});
 
   // Sort order: Core -> Management -> Plugins -> System (bottom)
   const GROUP_PRIORITY = ['core', 'management'];
@@ -327,7 +329,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
            {!isMini && <Slot name="admin.layout.sidebar.top" />}
         </div>
         {sortedGroups.map((group, groupIdx) => {
-          const items = groupedMenu[group];
+          const items = groupedMenu[group] || [];
           const displayGroup = group === 'core' ? 'Core' : (group.charAt(0).toUpperCase() + group.slice(1));
           const isCollapsed = collapsedGroups.includes(group);
           

@@ -104,6 +104,7 @@ export class ResolutionService {
         let searchId: number | null = null;
         let searchSlug: string | null = null;
         const prefix = collection.shortSlug || collection.slug;
+        const hasSlugField = collection.fields.some((f: any) => f?.name === 'slug');
 
         if (pathSegments.length > 0 && pathSegments[0] === prefix) {
           searchSlug = pathSegments.slice(1).join('/');
@@ -116,6 +117,12 @@ export class ResolutionService {
               searchSlug = pathSegments[idx];
             }
           });
+        }
+
+        // Never query by slug for collections that do not have a slug field.
+        // Otherwise the REST layer may ignore the unknown filter and return arbitrary records.
+        if (searchSlug && !hasSlugField) {
+          searchSlug = null;
         }
 
         if (searchId || searchSlug) {

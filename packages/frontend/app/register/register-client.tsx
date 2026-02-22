@@ -65,7 +65,7 @@ export default function RegisterPage() {
           lastName,
           email,
           password,
-          ...checkoutContext
+          context: checkoutContext
         })
       });
 
