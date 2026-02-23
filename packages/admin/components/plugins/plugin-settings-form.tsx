@@ -125,7 +125,7 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
   };
 
   const handleExport = () => {
-    window.open(ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug), '_blank');
+    window.open(api.getURL(ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug)), '_blank');
   };
 
   useImperativeHandle(ref, () => ({
@@ -288,6 +288,25 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
         </div>
       </div>
 
+      {/* Action bar */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          {isDirty && (
+            <span className="text-sm font-semibold text-amber-600">Unsaved changes</span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Button type="button" variant="ghost" onClick={handleExport}>
+            Export
+          </Button>
+          <Button type="button" variant="ghost" onClick={handleReset}>
+            Reset
+          </Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save Settings'}
+          </Button>
+        </div>
+      </div>
 
       {/* Action bar */}
       <div className="flex items-center justify-between gap-3">

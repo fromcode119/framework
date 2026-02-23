@@ -14,6 +14,7 @@ module.exports = {
     '^@fromcode119/email$': '<rootDir>/../email/src',
     '^@fromcode119/scheduler$': '<rootDir>/../scheduler/src',
     '^@fromcode119/marketplace-client$': '<rootDir>/../marketplace-client/src',
+    '^@fromcode119/plugins$': '<rootDir>/../plugins/src',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
 };
