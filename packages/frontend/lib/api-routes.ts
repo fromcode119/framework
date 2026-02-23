@@ -1,4 +1,4 @@
-import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/sdk';
+import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode119/sdk';
 import { resolveFrontendApiBaseUrl } from './api-base-url';
 
 export const FRONTEND_API_VERSION = normalizeApiVersion();

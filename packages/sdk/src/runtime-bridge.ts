@@ -4,8 +4,8 @@ export const RUNTIME_GLOBALS = {
 } as const;
 
 export const RUNTIME_MODULE_NAMES = {
-  ADMIN: '@fromcode/admin',
-  ADMIN_COMPONENTS: '@fromcode/admin/components'
+  ADMIN: '@fromcode119/admin',
+  ADMIN_COMPONENTS: '@fromcode119/admin/components'
 } as const;
 
 export const ADMIN_RUNTIME_EXPORT_KEYS = [
@@ -44,7 +44,7 @@ export const ADMIN_RUNTIME_EXPORT_KEYS = [
  * This is used by plugins to communicate with the shared singleton state
  * managed by the framework core.
  */
-export function getFrameworkRuntimeBridge<T = any>(moduleName: string = '@fromcode/react'): T {
+export function getFrameworkRuntimeBridge<T = any>(moduleName: string = '@fromcode119/react'): T {
   if (typeof window === 'undefined') return {} as T;
   
   const win = window as any;

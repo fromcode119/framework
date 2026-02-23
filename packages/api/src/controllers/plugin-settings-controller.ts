@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { PluginManager, Logger, SystemTable } from '@fromcode/core';
-import { SystemMetaKey } from '@fromcode/sdk/internal';
+import { PluginManager, Logger, SystemTable } from '@fromcode119/core';
+import { SystemMetaKey } from '@fromcode119/sdk/internal';
 
 export class PluginSettingsController {
   private logger = new Logger({ namespace: 'plugin-settings-controller' });

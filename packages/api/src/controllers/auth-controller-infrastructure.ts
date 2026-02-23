@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { AuthManager } from '@fromcode/auth';
-import { PluginManager, SystemTable, Logger } from '@fromcode/core';
-import { SystemMetaKey } from '@fromcode/sdk/internal';
-import type { IDatabaseManager } from '@fromcode/database';
+import { AuthManager } from '@fromcode119/auth';
+import { PluginManager, SystemTable, Logger } from '@fromcode119/core';
+import { SystemMetaKey } from '@fromcode119/sdk/internal';
+import type { IDatabaseManager } from '@fromcode119/database';
 import { APP_ROUTES } from '../constants';
 import { getRequestHostAndProto, getRequestOrigin, getCookieDomain, isHttps } from '../utils/url';
 import { normalizeEmail, isValidEmail, hashToken, hashRecoveryCode, parseRoles, parseUserId } from '../utils/auth';

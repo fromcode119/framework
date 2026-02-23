@@ -1,4 +1,4 @@
-import { normalizeLocaleCode, isLocaleLikeKey, resolveLocalizedText } from '@fromcode/core/utils';
+import { normalizeLocaleCode, isLocaleLikeKey, resolveLocalizedText } from '@fromcode119/core/utils';
 import { formatSystemDateTime } from './timezone';
 import { api } from './api';
 

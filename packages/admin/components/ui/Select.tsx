@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { RootFramework } from '@fromcode/react';
+import { RootFramework } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
 import { getFieldClasses, UI_TEXT } from '@/lib/ui';
 

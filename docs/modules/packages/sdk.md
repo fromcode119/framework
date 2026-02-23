@@ -1,4 +1,4 @@
-# Package Module: @fromcode/sdk
+# Package Module: @fromcode119/sdk
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/sdk`
@@ -9,8 +9,8 @@ Developer SDK for creating framework plugins with typed helpers and lifecycle AP
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/sdk`
-- `npm run dev --workspace=@fromcode/sdk`
+- `npm run build --workspace=@fromcode119/sdk`
+- `npm run dev --workspace=@fromcode119/sdk`
 
 ## Integration Notes
 

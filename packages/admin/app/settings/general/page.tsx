@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Slot } from '@fromcode/react';
+import { Slot } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { useNotification } from '@/components/notification-context';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 

@@ -2,9 +2,9 @@ import path from 'path';
 import fs from 'fs-extra';
 import * as readline from 'readline';
 import chalk from 'chalk';
-import { DatabaseFactory, DatabaseManager } from '@fromcode/database';
-import { DiscoveryService, MarketplaceCatalogService, getProjectRoot as getFrameworkProjectRoot, getPluginsDir as getFrameworkPluginsDir, getThemesDir as getFrameworkThemesDir } from '@fromcode/core';
-import { MarketplaceClient } from '@fromcode/marketplace-client';
+import { DatabaseFactory, DatabaseManager } from '@fromcode119/database';
+import { DiscoveryService, MarketplaceCatalogService, getProjectRoot as getFrameworkProjectRoot, getPluginsDir as getFrameworkPluginsDir, getThemesDir as getFrameworkThemesDir } from '@fromcode119/core';
+import { MarketplaceClient } from '@fromcode119/marketplace-client';
 
 export function getProjectRoot(): string {
   return getFrameworkProjectRoot();

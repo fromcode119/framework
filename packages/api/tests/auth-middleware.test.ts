@@ -1,4 +1,4 @@
-import { AuthManager } from '@fromcode/auth';
+import { AuthManager } from '@fromcode119/auth';
 import * as jwt from 'jsonwebtoken';
 
 describe('AuthManager Middleware Conflict Fix', () => {

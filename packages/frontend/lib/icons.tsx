@@ -1,4 +1,4 @@
-import { FrameworkIcons, FrameworkIconRegistry, IconName, IconNames } from '@fromcode/react';
+import { FrameworkIcons, FrameworkIconRegistry, IconName, IconNames } from '@fromcode119/react';
 
 // Register system icons with the global registry
 if (typeof window !== 'undefined') {

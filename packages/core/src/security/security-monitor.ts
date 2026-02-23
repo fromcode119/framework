@@ -1,7 +1,7 @@
-import { IDatabaseManager } from '@fromcode/database';
-import { Logger } from '@fromcode/sdk';
+import { IDatabaseManager } from '@fromcode119/database';
+import { Logger } from '@fromcode119/sdk';
 import { PluginManager } from '../plugin/plugin-manager';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 export interface SecurityEvent {
   type: 'anomaly' | 'violation' | 'denial_spike';

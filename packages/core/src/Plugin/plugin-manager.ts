@@ -1,13 +1,13 @@
 import { FromcodePlugin, LoadedPlugin, PluginContext, PluginManifest, Collection } from '../types';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 import { HookManager } from '../hooks/hook-manager';
 import { QueueManager } from '../queue/queue-manager';
 import { SchemaManager } from '../database/schema-manager';
 import { MigrationManager } from '../database/migration-manager';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { I18nManager } from '../i18n/i18n-manager';
-import { DatabaseFactory, sql, IDatabaseManager } from '@fromcode/database';
-import { SchedulerService } from '@fromcode/scheduler';
+import { DatabaseFactory, sql, IDatabaseManager } from '@fromcode119/database';
+import { SchedulerService } from '@fromcode119/scheduler';
 import { BackupService } from '../management/backup-service';
 import { MigrationCoordinator } from '../management/migration-coordinator';
 import { RecordVersions } from '../collections/record-versions';
@@ -30,7 +30,7 @@ import { MiddlewareManager } from './services/middleware-manager';
 import { WorkflowService } from './services/workflow-service';
 import { WebhookService } from '../webhook/webhook-service';
 import { WebhooksCollection } from '../collections/webhooks';
-import { registry } from '@fromcode/plugins';
+import { registry } from '@fromcode119/plugins';
 import { IntegrationManager } from '../integrations';
 
 export class PluginManager implements PluginManagerInterface {
@@ -540,7 +540,7 @@ If you received this message, your configured Email integration is working for t
   }
 
   async saveSandboxConfig(slug: string, config: any) {
-    const { systemPlugins, eq } = require('@fromcode/database');
+    const { systemPlugins, eq } = require('@fromcode119/database');
     const isExplicitlyDisabled = config === false || (config && typeof config === 'object' && config.enabled === false);
     const normalizedConfig = isExplicitlyDisabled
       ? false

@@ -1,4 +1,4 @@
-import { CacheManager, CacheFactory } from '@fromcode/cache';
+import { CacheManager, CacheFactory } from '@fromcode119/cache';
 import { IntegrationTypeDefinition } from '../integration-registry';
 
 export const CacheIntegrationDefinition: IntegrationTypeDefinition<CacheManager> = {

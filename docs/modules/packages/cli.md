@@ -1,4 +1,4 @@
-# Package Module: @fromcode/cli
+# Package Module: @fromcode119/cli
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/cli`
@@ -9,8 +9,8 @@ Framework CLI package used for local tooling and automation commands.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/cli`
-- `npm run dev --workspace=@fromcode/cli`
+- `npm run build --workspace=@fromcode119/cli`
+- `npm run dev --workspace=@fromcode119/cli`
 
 ## Integration Notes
 

@@ -1,4 +1,4 @@
-import { MiddlewareConfig, MiddlewareStage } from '@fromcode/sdk';
+import { MiddlewareConfig, MiddlewareStage } from '@fromcode119/sdk';
 
 export class MiddlewareManager {
   private middlewares: MiddlewareConfig[] = [];

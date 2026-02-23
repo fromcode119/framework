@@ -1,6 +1,6 @@
-import { Logger } from '@fromcode/sdk';
-import { IDatabaseManager, sql } from '@fromcode/database';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { Logger } from '@fromcode119/sdk';
+import { IDatabaseManager, sql } from '@fromcode119/database';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 export class AuditManager {
   private logger = new Logger({ namespace: 'Audit' });

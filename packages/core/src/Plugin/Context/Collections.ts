@@ -1,7 +1,7 @@
 import { Collection, LoadedPlugin } from '../../types';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { PluginManagerInterface, createSecurityHelpers } from './utils';
-import { registry } from '@fromcode/plugins';
+import { registry } from '@fromcode119/plugins';
 
 export function createCollectionsProxy(
   plugin: LoadedPlugin,

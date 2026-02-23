@@ -1,7 +1,26 @@
 {
-  "name": "@fromcode/admin",
+  "name": "@fromcode119/admin",
   "version": "0.1.0",
   "main": "dist/index.js",
+  "bin": {
+    "fromcode-admin": "scripts/admin.js"
+  },
+  "files": [
+    ".next",
+    "public",
+    "scripts",
+    "app",
+    "components",
+    "lib",
+    "next.config.*",
+    "tailwind.config.*",
+    "postcss.config.*",
+    "tsconfig.json"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "build": "next build",
     "dev": "next dev --webpack -H 0.0.0.0",
@@ -9,8 +28,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@fromcode/core": "*",
-    "@fromcode/react": "*",
+    "@fromcode119/core": "*",
+    "@fromcode119/react": "*",
     "@monaco-editor/react": "^4.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^2.30.0",

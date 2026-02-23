@@ -5,7 +5,7 @@ import {
   type RenderShortcodesPayload,
   type RenderShortcodesResponse,
   type ShortcodeCatalogResponse
-} from '@fromcode/sdk';
+} from '@fromcode119/sdk';
 import { usePlugins } from './context';
 
 type ListShortcodesOptions = {

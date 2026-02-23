@@ -1,5 +1,5 @@
 {
-  "name": "@fromcode/core",
+  "name": "@fromcode119/core",
   "version": "0.1.0",
   "main": "dist/index.js",
   "exports": {
@@ -51,14 +51,14 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode/cache": "*",
-    "@fromcode/database": "*",
-    "@fromcode/email": "*",
-    "@fromcode/plugins": "*",
-    "@fromcode/marketplace-client": "^0.1.0",
-    "@fromcode/media": "*",
-    "@fromcode/scheduler": "*",
-    "@fromcode/sdk": "*",
+    "@fromcode119/cache": "*",
+    "@fromcode119/database": "*",
+    "@fromcode119/email": "*",
+    "@fromcode119/plugins": "*",
+    "@fromcode119/marketplace-client": "^0.1.0",
+    "@fromcode119/media": "*",
+    "@fromcode119/scheduler": "*",
+    "@fromcode119/sdk": "*",
     "@types/ws": "^8.18.1",
     "adm-zip": "^0.5.10",
     "bull": "^4.16.5",
@@ -80,5 +80,9 @@
     "@types/tar": "^6.1.13",
     "@types/uuid": "^9.0.8",
     "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   }
 }

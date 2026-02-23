@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { Logger } from '@fromcode/core';
+import { Logger } from '@fromcode119/core';
 import { getCookieDomain, isHttps } from '../utils/url';
 
 const logger = new Logger({ namespace: 'security' });

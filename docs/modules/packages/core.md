@@ -1,4 +1,4 @@
-# Package Module: @fromcode/core
+# Package Module: @fromcode119/core
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/core`
@@ -9,9 +9,9 @@ Kernel runtime (plugin manager, sandbox execution, hooks lifecycle, extension lo
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/core`
-- `npm run postbuild --workspace=@fromcode/core`
-- `npm run dev --workspace=@fromcode/core`
+- `npm run build --workspace=@fromcode119/core`
+- `npm run postbuild --workspace=@fromcode119/core`
+- `npm run dev --workspace=@fromcode119/core`
 
 ## Integration Notes
 

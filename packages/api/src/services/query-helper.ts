@@ -1,6 +1,6 @@
-import { Collection } from '@fromcode/sdk';
-import { createDynamicTable } from '@fromcode/database';
-import { timestamp, desc, sql, and, ilike, or } from '@fromcode/database';
+import { Collection } from '@fromcode119/sdk';
+import { createDynamicTable } from '@fromcode119/database';
+import { timestamp, desc, sql, and, ilike, or } from '@fromcode119/database';
 
 export class QueryHelper {
   private static virtualTables: Map<string, any> = new Map();

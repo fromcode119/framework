@@ -1,4 +1,4 @@
-import { MediaManager, StorageFactory } from '@fromcode/media';
+import { MediaManager, StorageFactory } from '@fromcode119/media';
 import { IntegrationTypeDefinition } from '../integration-registry';
 import path from 'path';
 

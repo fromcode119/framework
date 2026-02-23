@@ -1,7 +1,25 @@
 {
-  "name": "@fromcode/frontend",
+  "name": "@fromcode119/frontend",
   "version": "0.1.0",
-  "private": true,
+  "bin": {
+    "fromcode-frontend": "scripts/frontend.js"
+  },
+  "files": [
+    ".next",
+    "public",
+    "scripts",
+    "app",
+    "components",
+    "lib",
+    "next.config.*",
+    "tailwind.config.*",
+    "postcss.config.*",
+    "tsconfig.json"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "dev": "next dev --webpack -H 0.0.0.0",
     "build": "next build",
@@ -14,8 +32,8 @@
     "react-dom": "19.0.0",
     "lucide-react": "^0.563.0",
     "js-cookie": "^3.0.5",
-    "@fromcode/core": "*",
-    "@fromcode/react": "*"
+    "@fromcode119/core": "*",
+    "@fromcode119/react": "*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

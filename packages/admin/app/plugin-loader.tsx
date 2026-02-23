@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { api } from '@/lib/api';
 import { ENDPOINTS, API_BASE_URL } from '@/lib/constants';
 import { useAuth } from '@/components/auth-context';
 import { usePathname } from 'next/navigation';
-import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES } from '@fromcode/sdk';
+import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES } from '@fromcode119/sdk';
 
 interface AdminPluginMetadata {
   slug: string;

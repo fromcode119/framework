@@ -1,24 +1,31 @@
 {
-  "name": "@fromcode/api",
+  "name": "@fromcode119/api",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "fromcode-api": "dist/bin.js"
+  },
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
+    "start": "node dist/bin.js",
     "test": "jest"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "dependencies": {
-    "@fromcode/auth": "*",
-    "@fromcode/core": "*",
-    "@fromcode/database": "*",
-    "@fromcode/media": "*",
-    "@fromcode/scheduler": "*",
-    "@fromcode/sdk": "*",
+    "@fromcode119/auth": "*",
+    "@fromcode119/core": "*",
+    "@fromcode119/database": "*",
+    "@fromcode119/media": "*",
+    "@fromcode119/scheduler": "*",
+    "@fromcode119/sdk": "*",
     "@types/ws": "^8.18.1",
     "adm-zip": "^0.5.10",
     "cookie-parser": "^1.4.7",

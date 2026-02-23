@@ -7,7 +7,7 @@ import { api } from '../../lib/api';
 import { ENDPOINTS } from '../../lib/constants';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { RootFramework } from '@fromcode/react';
+import { RootFramework } from '@fromcode119/react';
 import { TYPOGRAPHY } from '../../lib/typography';
 import { UI_TEXT } from '../../lib/ui';
 

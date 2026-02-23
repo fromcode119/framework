@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
 import { FieldRenderer } from '@/components/collection/field-renderer';

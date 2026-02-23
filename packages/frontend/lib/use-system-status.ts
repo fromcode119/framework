@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ApiPath } from '@fromcode/sdk';
+import { ApiPath } from '@fromcode119/sdk';
 import { buildFrontendApiUrl } from './api-routes';
 
 export type SystemStatus = 'LOADING' | 'OK' | 'MAINTENANCE';

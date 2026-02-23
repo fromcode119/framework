@@ -1,6 +1,6 @@
 import { LoadedPlugin } from '../../types';
 import { PluginManagerInterface } from './utils';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 export function createSettingsProxy(
   plugin: LoadedPlugin,

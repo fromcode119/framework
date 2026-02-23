@@ -1,4 +1,4 @@
-import type { IDatabaseManager } from '@fromcode/sdk';
+import type { IDatabaseManager } from '@fromcode119/sdk';
 
 export { 
   IDatabaseManager, 
@@ -22,7 +22,7 @@ export {
   CollectionQueryInterface,
   CandidateLookupOptions,
   UpsertByCandidatesOptions
-} from '@fromcode/sdk';
+} from '@fromcode119/sdk';
 
 export interface SystemMigration {
   version: number;

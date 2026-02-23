@@ -1,5 +1,5 @@
-import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/sdk';
-import { ApiPath, AppPath, StorageConfig, PublicRoutePrefixes } from '@fromcode/sdk/internal';
+import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode119/sdk';
+import { ApiPath, AppPath, StorageConfig, PublicRoutePrefixes } from '@fromcode119/sdk/internal';
 import { resolveStoragePublicUrlBase as resolveBase, resolveStoragePublicPath as resolvePath } from './utils/url';
 
 /**

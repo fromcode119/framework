@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode, useEffect } from 'react';
-import { PluginsProvider, Override, usePlugins, Slot } from '@fromcode/react';
+import { PluginsProvider, Override, usePlugins, Slot } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import { useSystemStatus } from '../lib/use-system-status';
 import MaintenanceScreen from '../components/maintenance-screen';

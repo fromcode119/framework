@@ -1,5 +1,5 @@
 {
-  "name": "@fromcode/scheduler",
+  "name": "@fromcode119/scheduler",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,12 +11,16 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode/database": "*",
-    "@fromcode/sdk": "*",
+    "@fromcode119/database": "*",
+    "@fromcode119/sdk": "*",
     "node-cron": "^4.2.1"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.11",
     "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   }
 }

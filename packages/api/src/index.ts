@@ -16,12 +16,12 @@ import {
   HookAdapterFactory,
   QueueAdapterFactory,
   SystemTable
-} from '@fromcode/core';
-import { SystemMetaKey } from '@fromcode/sdk/internal';
-import { AuthManager } from '@fromcode/auth';
-import { MediaManager } from '@fromcode/media';
-import { CacheFactory, CacheManager } from '@fromcode/cache';
-import { systemSessions, eq, and, gt } from '@fromcode/database';
+} from '@fromcode119/core';
+import { SystemMetaKey } from '@fromcode119/sdk/internal';
+import { AuthManager } from '@fromcode119/auth';
+import { MediaManager } from '@fromcode119/media';
+import { CacheFactory, CacheManager } from '@fromcode119/cache';
+import { systemSessions, eq, and, gt } from '@fromcode119/database';
 import * as path from 'path';
 import * as fs from 'fs';
 import { RESTController } from './controllers/rest-controller';
@@ -47,7 +47,7 @@ import { UserCollection, MediaCollection, SettingsCollection } from './collectio
 import { generateOpenAPI } from './swagger';
 import { createCollectionMiddleware } from './middlewares/collection';
 import { csrfMiddleware, xssMiddleware } from './middlewares/security';
-import { SchedulerService } from '@fromcode/scheduler';
+import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from './services/graph-ql-service';
 import { createHandler } from 'graphql-http/lib/use/express';
 import { createHash } from 'crypto';
@@ -127,7 +127,7 @@ export class APIServer {
     this.mediaManager = (this.manager as any).storage;
     if (!this.mediaManager) {
       this.logger.warn('Storage integration not initialized. Falling back to default LocalMediaManager.');
-      const { StorageFactory } = require('@fromcode/media');
+      const { StorageFactory } = require('@fromcode119/media');
       const fallback = this.resolveLocalUploadsConfig(undefined);
       this.mediaManager = new MediaManager(
         StorageFactory.create('local', { uploadDir: fallback.uploadDir, publicUrlBase: fallback.publicUrlBase })
@@ -408,7 +408,7 @@ export class APIServer {
   private setupAuthIntegration() {
     // Initialize Permission Checker
     const db = (this.manager as any).db;
-    const { UserPermissionChecker } = require('@fromcode/auth');
+    const { UserPermissionChecker } = require('@fromcode119/auth');
     const permissionChecker = new UserPermissionChecker(db);
     this.auth.setPermissionChecker(permissionChecker);
     this.logger.info('Permission checker initialized and configured');
@@ -762,17 +762,53 @@ export class APIServer {
   }
 }
 
-async function bootstrap() {
-  // Load environment variables from .env files
-  const projectRoot = path.resolve(process.cwd(), '../../');
-  const envPaths = [
-    path.join(process.cwd(), '.env'),
-    path.join(projectRoot, '.env')
-  ];
+export async function bootstrap() {
+  // Resolve project root for .env loading.
+  //
+  // Priority:
+  //  1. FROMCODE_PROJECT_ROOT env var — explicit override (used by starters and published packages)
+  //  2. Walk up from cwd looking for the framework workspace root (packages/core + packages/api siblings)
+  //  3. process.cwd() — fallback for standalone apps / published npm packages
+  //
+  // This means:
+  //  • Framework monorepo devs  : cwd = packages/api/ → walks up → finds framework/Source/ → loads .env + .env.local there
+  //  • starters/local           : FROMCODE_PROJECT_ROOT=../../starters/local → loads starters/local/.env
+  //  • Published package users  : no workspace found → process.cwd() = their project root → loads .env there
+  function findProjectRoot(): string {
+    if (process.env.FROMCODE_PROJECT_ROOT) {
+      return path.resolve(process.env.FROMCODE_PROJECT_ROOT);
+    }
+    let current = process.cwd();
+    const fsRoot = path.parse(current).root;
+    while (current !== fsRoot) {
+      try {
+        const pkgPath = path.join(current, 'package.json');
+        if (fs.existsSync(pkgPath)) {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          if (
+            pkg?.name === '@fromcode119/framework' ||
+            (Array.isArray(pkg?.workspaces) &&
+              fs.existsSync(path.join(current, 'packages', 'core')) &&
+              fs.existsSync(path.join(current, 'packages', 'api')))
+          ) {
+            return current;
+          }
+        }
+      } catch {}
+      current = path.dirname(current);
+    }
+    return process.cwd();
+  }
 
-  for (const envPath of envPaths) {
-    if (fs.existsSync(envPath)) {
+  const projectRoot = findProjectRoot();
+
+  // Load .env, deduplicating when cwd === projectRoot.
+  // Only one .env file is needed — copy .env.example to .env and edit.
+  const seen = new Set<string>();
+  for (const envPath of [path.join(process.cwd(), '.env'), path.join(projectRoot, '.env')]) {
+    if (!seen.has(envPath) && fs.existsSync(envPath)) {
       dotenv.config({ path: envPath });
+      seen.add(envPath);
     }
   }
 
@@ -798,20 +834,20 @@ async function bootstrap() {
     
     // Register Default Adapters (Lazy)
     HookAdapterFactory.register('local', () => {
-      const { LocalHookAdapter } = require('@fromcode/core/src/hooks/adapters/local-hook-adapter');
+      const { LocalHookAdapter } = require('@fromcode119/core/src/hooks/adapters/local-hook-adapter');
       return new LocalHookAdapter();
     });
     HookAdapterFactory.register('redis', (opts) => {
-      const { RedisHookAdapter } = require('@fromcode/core/src/hooks/adapters/redis-hook-adapter');
+      const { RedisHookAdapter } = require('@fromcode119/core/src/hooks/adapters/redis-hook-adapter');
       return new RedisHookAdapter(opts.redisUrl || process.env.REDIS_URL!, opts.namespace);
     });
     
     QueueAdapterFactory.register('local', () => {
-      const { LocalQueueAdapter } = require('@fromcode/core/src/queue/adapters/local-queue-adapter');
+      const { LocalQueueAdapter } = require('@fromcode119/core/src/queue/adapters/local-queue-adapter');
       return new LocalQueueAdapter();
     });
     QueueAdapterFactory.register('bull', (opts) => {
-      const { BullQueueAdapter } = require('@fromcode/core/src/queue/adapters/bull-queue-adapter');
+      const { BullQueueAdapter } = require('@fromcode119/core/src/queue/adapters/bull-queue-adapter');
       return new BullQueueAdapter(opts.redisUrl || process.env.REDIS_URL!, opts.namespace);
     });
     QueueAdapterFactory.register('redis', (opts) => QueueAdapterFactory.create('bull', opts));

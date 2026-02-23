@@ -1,4 +1,4 @@
-# Package Module: @fromcode/scheduler
+# Package Module: @fromcode119/scheduler
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/scheduler`
@@ -9,8 +9,8 @@ Scheduling/job orchestration primitives for background workflows.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/scheduler`
-- `npm run dev --workspace=@fromcode/scheduler`
+- `npm run build --workspace=@fromcode119/scheduler`
+- `npm run dev --workspace=@fromcode119/scheduler`
 
 ## Integration Notes
 

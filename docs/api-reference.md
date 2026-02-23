@@ -93,7 +93,7 @@ context.hooks.on('socket:message:my-plugin:action', ({ ws, payload }) => {
 
 ### System Update Service
 Used to check and apply updates to the Fromcode Core.
-- **Service**: `SystemUpdateService` (available in `@fromcode/core`)
+- **Service**: `SystemUpdateService` (available in `@fromcode119/core`)
 - **Key Methods**:
     - `checkUpdate()`: Compares current `package.json` version with the Marketplace Hub.
     - `applyUpdate()`: Downloads latest ZIP, creates a system backup, and overwrites changed files.

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState, use, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

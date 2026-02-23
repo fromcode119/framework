@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, use, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

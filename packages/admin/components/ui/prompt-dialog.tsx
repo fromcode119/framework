@@ -5,7 +5,7 @@ import { useTheme } from '@/components/theme-context';
 import { Button } from './button';
 import { Input } from './input';
 import { FrameworkIcons } from '@/lib/icons';
-import { RootFramework } from '@fromcode/react';
+import { RootFramework } from '@fromcode119/react';
 
 const { Close: X } = FrameworkIcons;
 

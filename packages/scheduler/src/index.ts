@@ -1,6 +1,6 @@
-import { IDatabaseManager, sql } from '@fromcode/database';
-import { Logger } from '@fromcode/sdk';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { IDatabaseManager, sql } from '@fromcode119/database';
+import { Logger } from '@fromcode119/sdk';
+import { SystemTable } from '@fromcode119/sdk/internal';
 import cron, { ScheduledTask } from 'node-cron';
 
 const logger = new Logger({ namespace: 'scheduler' });

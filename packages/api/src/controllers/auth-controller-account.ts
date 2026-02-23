@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 import { AuthControllerLifecycle } from './auth-controller-lifecycle';
 
 export class AuthControllerAccount extends AuthControllerLifecycle {

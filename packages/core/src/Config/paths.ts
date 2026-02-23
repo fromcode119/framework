@@ -16,7 +16,7 @@ function isFrameworkRoot(candidate: string): boolean {
     const pkgPath = path.join(candidate, 'package.json');
     if (!fs.existsSync(pkgPath)) return false;
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-    if (pkg?.name === '@fromcode/framework') return true;
+    if (pkg?.name === '@fromcode119/framework') return true;
 
     const hasWorkspaceShape =
       Array.isArray(pkg?.workspaces) &&

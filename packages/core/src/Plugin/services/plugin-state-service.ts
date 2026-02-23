@@ -1,6 +1,6 @@
-import { IDatabaseManager } from '@fromcode/database';
-import { Logger } from '@fromcode/sdk';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { IDatabaseManager } from '@fromcode119/database';
+import { Logger } from '@fromcode119/sdk';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 export class PluginStateService {
   private logger = new Logger({ namespace: 'PluginState' });

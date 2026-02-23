@@ -1,5 +1,5 @@
 import React from 'react';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode119/react';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { TextArea } from '@/components/ui/text-area';

@@ -1,6 +1,6 @@
 import express from 'express';
-import { AuthManager } from '@fromcode/auth';
-import { PluginManager } from '@fromcode/core';
+import { AuthManager } from '@fromcode119/auth';
+import { PluginManager } from '@fromcode119/core';
 import { PluginSettingsController } from '../controllers/plugin-settings-controller';
 
 export function setupPluginSettingsRoutes(manager: PluginManager, auth: AuthManager) {

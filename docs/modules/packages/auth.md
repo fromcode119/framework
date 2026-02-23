@@ -1,4 +1,4 @@
-# Package Module: @fromcode/auth
+# Package Module: @fromcode119/auth
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/auth`
@@ -9,8 +9,8 @@ Authentication and authorization primitives shared across runtime modules.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/auth`
-- `npm run dev --workspace=@fromcode/auth`
+- `npm run build --workspace=@fromcode119/auth`
+- `npm run dev --workspace=@fromcode119/auth`
 
 ## Integration Notes
 

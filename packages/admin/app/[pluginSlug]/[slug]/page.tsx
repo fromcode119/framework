@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use, useEffect } from 'react';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode119/react';
 import CollectionListPage from '@/components/collection/collection-list-page';
 import { resolveCollection } from '@/lib/collection-utils';
 import { CollectionNotFound } from '@/components/collection/collection-not-found';

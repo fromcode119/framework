@@ -37,7 +37,7 @@ The "WordPress of TypeScript" - a plugin-first, enterprise-grade framework.
 ## Creating a Plugin
 
 ```typescript
-import { definePlugin } from '@fromcode/sdk';
+import { definePlugin } from '@fromcode119/sdk';
 
 export default definePlugin({
   manifest: {
@@ -71,7 +71,7 @@ Fromcode supports a decentralized, metadata-driven extension model for runtime l
    In your plugin's UI entry point:
    ```javascript
    import * as FA from './lib/fa-icons.js';
-   import { FrameworkIconRegistry } from '@fromcode/react';
+   import { FrameworkIconRegistry } from '@fromcode119/react';
 
    FrameworkIconRegistry.registerProvider('fontawesome', FA);
    ```
@@ -83,6 +83,6 @@ Fromcode supports a decentralized, metadata-driven extension model for runtime l
    ```
    Or dynamically:
    ```tsx
-   import { getIcon } from '@fromcode/react';
+   import { getIcon } from '@fromcode119/react';
    const Icon = getIcon('FaUser');
    ```

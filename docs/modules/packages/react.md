@@ -1,4 +1,4 @@
-# Package Module: @fromcode/react
+# Package Module: @fromcode119/react
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/react`
@@ -9,8 +9,8 @@ Shared React components/slot system used by admin/frontend/plugin UIs.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/react`
-- `npm run dev --workspace=@fromcode/react`
+- `npm run build --workspace=@fromcode119/react`
+- `npm run dev --workspace=@fromcode119/react`
 
 ## Integration Notes
 

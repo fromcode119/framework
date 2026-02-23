@@ -1,4 +1,4 @@
-# Package Module: @fromcode/cache
+# Package Module: @fromcode119/cache
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/cache`
@@ -9,8 +9,8 @@ Caching abstractions and runtime adapters used by API/services.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/cache`
-- `npm run dev --workspace=@fromcode/cache`
+- `npm run build --workspace=@fromcode119/cache`
+- `npm run dev --workspace=@fromcode119/cache`
 
 ## Integration Notes
 

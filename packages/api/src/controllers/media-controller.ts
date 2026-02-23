@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { PluginManager, Logger } from '@fromcode/core';
-import { MediaManager } from '@fromcode/media';
-import { media, mediaFolders, eq, desc, ilike, or, and, isNull } from '@fromcode/database';
+import { PluginManager, Logger } from '@fromcode119/core';
+import { MediaManager } from '@fromcode119/media';
+import { media, mediaFolders, eq, desc, ilike, or, and, isNull } from '@fromcode119/database';
 import { resolvePublicUrl } from '../utils/url';
 
 export class MediaController {

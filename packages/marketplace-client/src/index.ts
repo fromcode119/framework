@@ -1,4 +1,4 @@
-import { MarketplacePlugin, MarketplaceData, Logger } from '@fromcode/sdk';
+import { MarketplacePlugin, MarketplaceData, Logger } from '@fromcode119/sdk';
 
 const logger = new Logger({ namespace: 'marketplace-client' });
 

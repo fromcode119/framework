@@ -1,4 +1,4 @@
-import { IDatabaseManager, TableResolver, normalizeFindOptions, normalizeWhereClause, normalizeRecord } from '@fromcode/database';
+import { IDatabaseManager, TableResolver, normalizeFindOptions, normalizeWhereClause, normalizeRecord } from '@fromcode119/database';
 import { CollectionQueryBuilder } from './types';
 
 /**

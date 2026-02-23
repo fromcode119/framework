@@ -10,7 +10,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { PageHeading } from '@/components/ui/page-heading';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
-import { RootFramework } from '@fromcode/react';
+import { RootFramework } from '@fromcode119/react';
 import Link from 'next/link';
 
 export default function ActivityPage() {

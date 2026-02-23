@@ -1,4 +1,4 @@
-import { IDatabaseManager, count, systemLogs, systemAuditLogs, systemPlugins, desc, or, ilike, eq, and, isNull } from '@fromcode/database';
+import { IDatabaseManager, count, systemLogs, systemAuditLogs, systemPlugins, desc, or, ilike, eq, and, isNull } from '@fromcode119/database';
 
 export class SystemService {
   constructor(private db: IDatabaseManager, private drizzle: any) {}

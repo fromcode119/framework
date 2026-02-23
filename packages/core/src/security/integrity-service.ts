@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 
 export class IntegrityService {
   private static logger = new Logger({ namespace: 'integrity-service' });

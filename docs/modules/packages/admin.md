@@ -1,4 +1,4 @@
-# Package Module: @fromcode/admin
+# Package Module: @fromcode119/admin
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/admin`
@@ -9,10 +9,10 @@ Admin control panel application (Next.js) for managing collections, plugins, set
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/admin`
-- `npm run dev --workspace=@fromcode/admin`
-- `npm run start --workspace=@fromcode/admin`
-- `npm run test --workspace=@fromcode/admin`
+- `npm run build --workspace=@fromcode119/admin`
+- `npm run dev --workspace=@fromcode119/admin`
+- `npm run start --workspace=@fromcode119/admin`
+- `npm run test --workspace=@fromcode119/admin`
 
 ## Integration Notes
 

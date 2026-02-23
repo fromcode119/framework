@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ThemeManager, Logger } from '@fromcode/core';
+import { ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
 import path from 'path';
 

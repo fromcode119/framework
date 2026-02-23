@@ -1,4 +1,4 @@
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { QueueAdapter } from './types';
 import { QueueAdapterFactory } from './queue-adapter-factory';
 

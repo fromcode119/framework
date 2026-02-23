@@ -1,5 +1,5 @@
-import { Collection } from '@fromcode/sdk';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { Collection } from '@fromcode119/sdk';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 export const WebhooksCollection: Collection = {
   slug: SystemTable.WEBHOOKS,

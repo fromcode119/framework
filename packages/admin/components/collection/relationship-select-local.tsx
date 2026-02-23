@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { queryCollectionDocByField, queryCollectionDocById, queryCollectionDocs, usePlugins } from '@fromcode/react';
+import { queryCollectionDocByField, queryCollectionDocById, queryCollectionDocs, usePlugins } from '@fromcode119/react';
 import { Select } from '@/components/ui/select';
 import { api } from '@/lib/api';
 import { resolveLabelText } from '@/lib/utils';

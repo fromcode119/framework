@@ -1,4 +1,4 @@
-import { Collection, HookManager, PluginManager, sanitizeKey, parseAttributes, resolveCollection } from '@fromcode/core';
+import { Collection, HookManager, PluginManager, sanitizeKey, parseAttributes, resolveCollection } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 
 export interface ShortcodeDefinition {

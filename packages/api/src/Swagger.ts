@@ -1,4 +1,4 @@
-import { Collection } from '@fromcode/core';
+import { Collection } from '@fromcode119/core';
 
 export function generateOpenAPI(collections: Collection[]) {
   const paths: any = {};

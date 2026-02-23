@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { BackupService } from './backup-service';
-import { Logger } from '@fromcode/sdk';
-import { MarketplaceClient } from '@fromcode/marketplace-client';
+import { Logger } from '@fromcode119/sdk';
+import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';
 import { getProjectRoot } from '../config/paths';

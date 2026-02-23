@@ -1,6 +1,6 @@
 import { LoadedPlugin } from '../../types';
 import { PluginManagerInterface } from './utils';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 function normalizeRoles(raw: any): string[] {
   if (Array.isArray(raw)) return raw.map((r: any) => String(r ?? '').toLowerCase()).filter(Boolean);

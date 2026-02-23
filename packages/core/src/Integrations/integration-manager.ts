@@ -1,8 +1,8 @@
 import { IntegrationRegistry, IntegrationTypeDefinition, IntegrationProviderDefinition } from './integration-registry';
-import { EmailManager, EmailFactory, EmailOptions } from '@fromcode/email';
-import { MediaManager, StorageFactory } from '@fromcode/media';
-import { CacheManager, CacheFactory } from '@fromcode/cache';
-import { Logger } from '@fromcode/sdk';
+import { EmailManager, EmailFactory, EmailOptions } from '@fromcode119/email';
+import { MediaManager, StorageFactory } from '@fromcode119/media';
+import { CacheManager, CacheFactory } from '@fromcode119/cache';
+import { Logger } from '@fromcode119/sdk';
 import { EmailIntegrationDefinition } from './providers/email-provider';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';

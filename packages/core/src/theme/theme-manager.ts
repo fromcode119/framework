@@ -1,10 +1,10 @@
 import { ThemeManifest, IDatabaseManager } from '../types';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 import path from 'path';
 import fs from 'fs';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { BackupService } from '../management/backup-service';
-import { MarketplaceClient } from '@fromcode/marketplace-client';
+import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { Seeder } from '../database/seeder';
 import { getThemesDir } from '../config/paths';
 

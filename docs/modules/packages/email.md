@@ -1,4 +1,4 @@
-# Package Module: @fromcode/email
+# Package Module: @fromcode119/email
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/email`
@@ -9,8 +9,8 @@ Email transport abstraction and provider drivers used by auth/forms/system notif
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/email`
-- `npm run dev --workspace=@fromcode/email`
+- `npm run build --workspace=@fromcode119/email`
+- `npm run dev --workspace=@fromcode119/email`
 
 ## Integration Notes
 

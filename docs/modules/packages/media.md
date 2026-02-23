@@ -1,4 +1,4 @@
-# Package Module: @fromcode/media
+# Package Module: @fromcode119/media
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/media`
@@ -9,8 +9,8 @@ Media domain utilities for file metadata and media collection integration.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/media`
-- `npm run dev --workspace=@fromcode/media`
+- `npm run build --workspace=@fromcode119/media`
+- `npm run dev --workspace=@fromcode119/media`
 
 ## Integration Notes
 

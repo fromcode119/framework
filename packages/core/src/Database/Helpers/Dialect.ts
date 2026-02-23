@@ -1,4 +1,4 @@
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 
 const logger = new Logger({ namespace: 'DialectHelper' });
 

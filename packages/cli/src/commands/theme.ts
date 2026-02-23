@@ -146,7 +146,7 @@ export const init = () => {
             '.svg': 'dataurl',
             '.png': 'dataurl'
           },
-          external: ['react', 'react-dom', '@fromcode/react', 'lucide-react']
+          external: ['react', 'react-dom', '@fromcode119/react', 'lucide-react']
         });
 
         console.log(chalk.green('Theme build completed successfully!'));

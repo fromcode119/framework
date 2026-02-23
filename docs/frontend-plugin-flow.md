@@ -312,7 +312,7 @@
 // Scenario: Add live chat to your site
 
 // 1. Install plugin
-$ fromcode plugins install @fromcode/livechat
+$ fromcode plugins install @fromcode119/livechat
 
 // 2. Enable in admin panel
 // (One click in UI)

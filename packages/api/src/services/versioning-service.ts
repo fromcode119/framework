@@ -1,5 +1,5 @@
-import { IDatabaseManager, eq, and, desc, inArray, users } from '@fromcode/database';
-import { Collection, RecordVersions, Logger, SystemTable } from '@fromcode/core';
+import { IDatabaseManager, eq, and, desc, inArray, users } from '@fromcode119/database';
+import { Collection, RecordVersions, Logger, SystemTable } from '@fromcode119/core';
 
 export class VersioningService {
   private logger = new Logger({ namespace: 'versioning' });
