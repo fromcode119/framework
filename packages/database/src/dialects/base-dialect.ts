@@ -53,7 +53,7 @@ export abstract class BaseDialect {
     if (typeof orderBy === 'object' && Object.getPrototypeOf(orderBy) === Object.prototype) {
       return Object.entries(orderBy).map(([column, direction]) => {
         const orderFn = String(direction).toLowerCase() === 'desc' ? desc : asc;
-        return orderFn(sql.identifier(column));
+        return orderFn(sql.identifier(toSnakeCase(column)));
       });
     }
 
@@ -75,7 +75,7 @@ export abstract class BaseDialect {
       return { sql: '', values: [] };
     }
 
-    const conditions = whereColumns.map((column, index) => `"${column}" = $${index + 1}`);
+    const conditions = whereColumns.map((column, index) => `"${toSnakeCase(column)}" = $${index + 1}`);
     const values = whereColumns.map((column) => this.normalizeParamValue(where[column]));
 
     return {
@@ -96,7 +96,7 @@ export abstract class BaseDialect {
 
     if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
       const clauses = Object.entries(orderBy)
-        .map(([k, v]) => `"${k}" ${String(v).toUpperCase()}`)
+        .map(([k, v]) => `"${toSnakeCase(k)}" ${String(v).toUpperCase()}`)
         .join(', ');
       return ` ORDER BY ${clauses}`;
     }
