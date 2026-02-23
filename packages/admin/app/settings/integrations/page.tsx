@@ -491,14 +491,7 @@ export default function IntegrationsSettingsPage() {
                 {activeIntegration?.description || 'Configure provider instances for this integration.'}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={activeIntegration?.active?.source === 'stored' ? 'green' : 'amber'}>
-                Runtime Source: {String(activeIntegration?.active?.source || 'default').toUpperCase()}
-              </Badge>
-              <Badge variant="blue">
-                Runtime Provider: {String(activeIntegration?.active?.provider || activeIntegration?.defaultProvider || '-').toUpperCase()}
-              </Badge>
-            </div>
+
           </div>
         </Card>
 
