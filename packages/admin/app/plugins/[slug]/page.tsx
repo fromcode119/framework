@@ -33,6 +33,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [marketplaceItem, setMarketplaceItem] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'permissions' | 'resources'>('overview');
   const [logs, setLogs] = useState<any[]>([]);
@@ -391,7 +393,14 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
           {activeTab === 'settings' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <PluginSettingsForm pluginSlug={slug} />
+               <PluginSettingsForm
+                 pluginSlug={slug}
+                 formId="plugin-settings-form"
+                 onStateChange={(dirty, saving) => {
+                   setSettingsDirty(dirty);
+                   setSettingsSaving(saving);
+                 }}
+               />
             </div>
           )}
 
@@ -587,25 +596,61 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
         {/* Right Column: Metadata & Details */}
         <div className="space-y-8">
+          {activeTab === 'settings' && (
+            <Card className={`border-0 p-6 animate-in fade-in duration-300 ${
+              theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'
+            }`}>
+              <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-5 ${
+                theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+              }`}>
+                Save Changes
+              </h3>
+              {settingsDirty && (
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                  <span className="text-xs font-bold text-amber-500">Unsaved changes</span>
+                </div>
+              )}
+              <button
+                type="submit"
+                form="plugin-settings-form"
+                disabled={settingsSaving || !settingsDirty}
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all ${
+                  settingsSaving || !settingsDirty
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 active:scale-95'
+                }`}
+              >
+                {settingsSaving
+                  ? <><FrameworkIcons.Loader size={14} className="animate-spin" /> Saving...</>
+                  : <><FrameworkIcons.Check size={14} /> Save Settings</>
+                }
+              </button>
+            </Card>
+          )}
           <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
             <h3 className={`text-[11px] font-semibold tracking-wider mb-8 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
               Manifest Details
             </h3>
             <div className="space-y-8">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold tracking-wider text-slate-500">Security Layers</span>
-                <div className="flex -space-x-1.5">
-                   {plugin.capabilities && plugin.capabilities.length > 0 ? (
-                     plugin.capabilities.slice(0, 4).map(c => (
-                       <div key={c} title={c} className={`w-8 h-8 rounded-full border-2 ${theme === 'dark' ? 'border-slate-900 bg-slate-800' : 'border-white bg-slate-100'} flex items-center justify-center text-indigo-500 shadow-sm`}>
-                         {c.includes('api') ? <FrameworkIcons.Globe size={14} /> : 
-                          c.includes('db') ? <FrameworkIcons.Database size={14} /> : <FrameworkIcons.Shield size={14} />}
-                       </div>
-                     ))
-                   ) : (
-                     <span className="text-[10px] font-semibold text-slate-400">ISOLATED</span>
-                   )}
-                </div>
+              <div className="space-y-2">
+                <span className="text-xs font-semibold tracking-wider text-slate-500">Capabilities</span>
+                {plugin.capabilities && plugin.capabilities.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {plugin.capabilities.map(c => (
+                      <span key={c} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${
+                        theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {c.includes('api') ? <FrameworkIcons.Globe size={10} /> :
+                         c.includes('db') || c.includes('database') ? <FrameworkIcons.Database size={10} /> :
+                         c.includes('hook') ? <FrameworkIcons.Zap size={10} /> : <FrameworkIcons.Shield size={10} />}
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[10px] font-semibold text-slate-400 mt-1">No special capabilities declared.</p>
+                )}
               </div>
 
               <div className="flex justify-between items-center">
