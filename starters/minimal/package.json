@@ -9,11 +9,11 @@
     "plugin:create": "fromcode plugin create"
   },
   "dependencies": {
-    "@fromcode/core": "latest",
-    "@fromcode/api": "latest"
+    "@fromcode119/core": "latest",
+    "@fromcode119/api": "latest"
   },
   "devDependencies": {
-    "@fromcode/cli": "latest",
+    "@fromcode119/cli": "latest",
     "typescript": "^5.0.0"
   }
 }
