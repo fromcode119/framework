@@ -5,6 +5,14 @@ import { vi } from 'vitest';
 import { api } from '@/lib/api';
 
 // Mock dependecies
+vi.mock('@fromcode119/react', async (importOriginal) => {
+  const actual = await importOriginal() as any;
+  return {
+    ...actual,
+    usePlugins: () => ({ triggerRefresh: vi.fn() })
+  };
+});
+
 vi.mock('@/lib/api', () => ({
   api: {
     get: vi.fn(),
