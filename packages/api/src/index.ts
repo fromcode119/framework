@@ -210,6 +210,12 @@ export class APIServer {
     try {
       const db = (this.manager as any).db;
       
+      const hasMetaTable = await db.tableExists(SystemTable.META);
+      if (!hasMetaTable) {
+        this.logger.warn(`System meta table "${SystemTable.META}" not found. Skipping settings sync.`);
+        return;
+      }
+
       const rows = await db.find(SystemTable.META, {
         columns: {
           key: true,
@@ -249,6 +255,12 @@ export class APIServer {
     try {
       const db = (this.manager as any).db;
       
+      const hasMetaTable = await db.tableExists(SystemTable.META);
+      if (!hasMetaTable) {
+        this.logger.warn(`System meta table "${SystemTable.META}" not found. Skipping default settings injection.`);
+        return;
+      }
+
       const defaults = [
         { key: SystemMetaKey.PLATFORM_NAME, value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
         { key: SystemMetaKey.SITE_NAME, value: 'Fromcode', description: 'Public site name used in emails and frontend.', group: 'General' },
@@ -527,6 +539,12 @@ export class APIServer {
       // 3. Emergency DB Sync - only if both caches are empty
       if (val === null || val === undefined) {
         const db = (this.manager as any).db;
+        
+        const hasMetaTable = await db.tableExists(SystemTable.META);
+        if (!hasMetaTable) {
+           return true; // Default ON if meta table is missing (fail-safe)
+        }
+
         const row = await db.findOne(SystemTable.META, { key: SystemMetaKey.MAINTENANCE_MODE });
         if (row) {
           val = row.value;

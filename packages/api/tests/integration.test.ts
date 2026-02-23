@@ -12,6 +12,7 @@ describe('System E2E / Integration', () => {
     beforeAll(async () => {
         // Setup minimal mock environment
         process.env.DATABASE_URL = ':memory:';
+        process.env.API_VERSION_PREFIX = 'v1';
         auth = new AuthManager('test-secret-123');
         manager = new PluginManager();
         themeManager = new ThemeManager((manager as any).db);

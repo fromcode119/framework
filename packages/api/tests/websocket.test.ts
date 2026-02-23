@@ -16,9 +16,11 @@ describe('web-socket-manager', () => {
     const wss = manager.initialize(server);
 
     server.on('upgrade', (request, socket, head) => {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request);
-      });
+      if (wss) {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit('connection', ws, request);
+        });
+      }
     });
 
     server.listen(0, () => {
