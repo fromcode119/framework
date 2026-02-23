@@ -8,8 +8,10 @@ The "WordPress of TypeScript" - a plugin-first, enterprise-grade framework.
 - **Docker**: For production-ready builds and orchestration
 
 ## Documentation
-- [Framework Plan](docs/framework-plan.md) - Detailed technical architecture and vision.
-- [Development Roadmap](docs/framework-roadmap.md) - Current progress and future tasks.
+- [Global Setup Guide](docs/setup/global-setup.md) - Canonical local setup with framework domains and workspace services.
+- [Module Documentation Index](docs/modules/README.md) - Framework package operational docs.
+- [Plugin Development Guide](docs/plugin-development-guide.md) - Creating plugins, collections, hooks, and capabilities.
+- [API Reference](docs/api-reference.md) - REST API documentation.
 
 ## Structure
 

@@ -1,0 +1,65 @@
+# Docker Compose for API + Admin Mode
+# Usage: docker-compose -f deploy/docker-compose.api-admin.yml up
+
+services:
+  api:
+    build:
+      context: ..
+      target: base
+    command: npm run start --workspace=@fromcode/api
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - NODE_ENV=production
+      - PUBLIC_URL=${API_PUBLIC_URL}
+      - PLUGINS_DIR=/app/plugins
+      - THEMES_DIR=/app/themes
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ../public/uploads:/app/public/uploads
+      - ${SHARED_PLUGINS_DIR:-../plugins}:/app/plugins
+      - ${SHARED_THEMES_DIR:-../themes}:/app/themes
+    networks:
+      - framework
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: ..
+      target: base
+    command: npm run start --workspace=@fromcode/admin
+    environment:
+      - API_URL=http://api:4000
+      - NEXT_PUBLIC_API_URL=${API_PUBLIC_URL}
+      - NODE_ENV=production
+    depends_on:
+      - api
+    networks:
+      - framework
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - framework
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - framework
+    restart: unless-stopped
+
+networks:
+  framework:
+
+volumes:
+  postgres_data:
