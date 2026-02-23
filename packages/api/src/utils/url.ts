@@ -40,11 +40,18 @@ export function isHttps(req: Request): boolean {
 }
 
 /**
+ * Safely retrieves a request header, handling cases where req.get may not be a function.
+ */
+function safeGetHeader(req: Request, header: string): string | undefined {
+    return typeof req.get === 'function' ? req.get(header) : undefined;
+}
+
+/**
  * Extracts host and protocol from the request, respecting X-Forwarded headers.
  */
 export function getRequestHostAndProto(req: Request): { host: string; proto: string } {
-    const host = String(req.get('x-forwarded-host') || req.get('host') || '').split(',')[0].trim();
-    const proto = String(req.get('x-forwarded-proto') || (req.protocol === 'https' ? 'https' : 'http')).split(',')[0].trim();
+    const host = String(safeGetHeader(req, 'x-forwarded-host') || safeGetHeader(req, 'host') || '').split(',')[0].trim();
+    const proto = String(safeGetHeader(req, 'x-forwarded-proto') || (req.protocol === 'https' ? 'https' : 'http')).split(',')[0].trim();
     return { host, proto: proto || 'http' };
 }
 
@@ -52,7 +59,7 @@ export function getRequestHostAndProto(req: Request): { host: string; proto: str
  * Returns the full origin from the request, preferring Origin or Referer headers.
  */
 export function getRequestOrigin(req: Request): string {
-    const candidates = [req.get('origin'), req.get('referer')];
+    const candidates = [safeGetHeader(req, 'origin'), safeGetHeader(req, 'referer')];
     for (const raw of candidates) {
         const value = String(raw || '').trim();
         if (!value) continue;
