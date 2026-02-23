@@ -2,7 +2,7 @@ import express from 'express';
 import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { RESTController } from '../controllers/rest-controller';
-import { createCollectionMiddleware } from '../Middlewares/Collection';
+import { createCollectionMiddleware } from '../middlewares/collection';
 
 export function setupVersioningRoutes(manager: PluginManager, auth: AuthManager, restController: RESTController) {
   const router = express.Router();
