@@ -308,6 +308,25 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
         </div>
       </div>
 
+      {/* Action bar */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={handleReset}>
+            Reset
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={handleExport}>
+            Export
+          </Button>
+        </div>
+        <div className="flex items-center gap-3">
+          {isDirty && (
+            <span className="text-sm text-amber-600 font-medium">Unsaved changes</span>
+          )}
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save Settings'}
+          </Button>
+        </div>
+      </div>
     </form>
   );
 });
