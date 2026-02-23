@@ -1,5 +1,5 @@
 import { LoadedPlugin, Collection } from '../../types';
-import { Logger } from '../../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import {
   normalizeMenuPath,
   getNestedMenuPaths,
@@ -50,19 +50,24 @@ export class AdminMetadataService {
     const rawMenuItems: any[] = [];
 
     // System Items
-    rawMenuItems.push({ label: 'Themes', path: '/themes', icon: 'Palette', group: 'Platform', pluginSlug: 'system', priority: 90 });
+    rawMenuItems.push({ label: 'Dashboard', path: '/', icon: 'Dashboard', group: 'Core', pluginSlug: 'system', priority: 10 });
     rawMenuItems.push({
       label: 'Users',
       path: '/users',
       icon: 'Users',
       group: 'Platform',
       pluginSlug: 'system',
-      priority: 80,
+      priority: 11,
+      isGroup: true,
       children: [
+        { label: 'Users List', path: '/users', icon: 'Users' },
         { label: 'Roles', path: '/users/roles', icon: 'Shield' },
         { label: 'Permissions', path: '/users/permissions', icon: 'Lock' }
       ]
     });
+    rawMenuItems.push({ label: 'Plugins', path: '/plugins', icon: 'Package', group: 'Management', pluginSlug: 'system', priority: 20 });
+    rawMenuItems.push({ label: 'Media', path: '/media', icon: 'Image', group: 'Core', pluginSlug: 'system', priority: 30 });
+    rawMenuItems.push({ label: 'Themes', path: '/themes', icon: 'Palette', group: 'Platform', pluginSlug: 'system', priority: 90 });
     rawMenuItems.push({ label: 'Activity', path: '/activity', icon: 'Activity', group: 'Platform', pluginSlug: 'system', priority: 85 });
 
     // Plugin Items

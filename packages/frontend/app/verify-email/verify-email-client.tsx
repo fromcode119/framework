@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { API_RESOURCE_PATHS } from '@fromcode/core/utils';
+import { ApiPath } from '@fromcode/sdk';
 import { buildFrontendApiUrl } from '../../lib/api-routes';
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +23,7 @@ export default function VerifyEmailPage() {
     setStatus('verifying');
     setMessage('');
     try {
-      const response = await fetch(buildFrontendApiUrl(API_RESOURCE_PATHS.AUTH.VERIFY_EMAIL), {
+      const response = await fetch(buildFrontendApiUrl(ApiPath.AUTH.VERIFY_EMAIL), {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -49,7 +49,7 @@ export default function VerifyEmailPage() {
     event.preventDefault();
     setIsResending(true);
     try {
-      const response = await fetch(buildFrontendApiUrl(API_RESOURCE_PATHS.AUTH.RESEND_VERIFICATION), {
+      const response = await fetch(buildFrontendApiUrl(ApiPath.AUTH.RESEND_VERIFICATION), {
         method: 'POST',
         credentials: 'include',
         headers: {

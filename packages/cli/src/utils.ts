@@ -3,37 +3,21 @@ import fs from 'fs-extra';
 import * as readline from 'readline';
 import chalk from 'chalk';
 import { DatabaseFactory, DatabaseManager } from '@fromcode/database';
-import { DiscoveryService, MarketplaceCatalogService } from '@fromcode/core';
+import { DiscoveryService, MarketplaceCatalogService, getProjectRoot as getFrameworkProjectRoot, getPluginsDir as getFrameworkPluginsDir, getThemesDir as getFrameworkThemesDir } from '@fromcode/core';
 import { MarketplaceClient } from '@fromcode/marketplace-client';
 
 export function getProjectRoot(): string {
-  let current = process.cwd();
-  while (current !== path.parse(current).root) {
-    if (fs.existsSync(path.join(current, 'plugins')) || fs.existsSync(path.join(current, 'themes'))) {
-      return current;
-    }
-    const pkgPath = path.join(current, 'package.json');
-    if (fs.existsSync(pkgPath)) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-        if (pkg.name === '@fromcode/framework') return current;
-      } catch {}
-    }
-    current = path.dirname(current);
-  }
-  return process.cwd();
+  return getFrameworkProjectRoot();
 }
 
 export function getPluginsDir(): string {
-  const root = getProjectRoot();
-  const dir = process.env.PLUGINS_DIR || path.resolve(root, 'plugins');
+  const dir = getFrameworkPluginsDir();
   if (!fs.existsSync(dir)) fs.ensureDirSync(dir);
   return dir;
 }
 
 export function getThemesDir(): string {
-  const root = getProjectRoot();
-  const dir = process.env.THEMES_DIR || path.resolve(root, 'themes');
+  const dir = getFrameworkThemesDir();
   if (!fs.existsSync(dir)) fs.ensureDirSync(dir);
   return dir;
 }

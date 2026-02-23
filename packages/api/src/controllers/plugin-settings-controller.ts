@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { PluginManager, Logger } from '@fromcode/core';
+import { PluginManager, Logger, SystemTable } from '@fromcode/core';
+import { SystemMetaKey } from '@fromcode/sdk/internal';
 
 export class PluginSettingsController {
   private logger = new Logger({ namespace: 'plugin-settings-controller' });
@@ -345,7 +346,7 @@ export class PluginSettingsController {
     };
 
     try {
-      const localesRow = await db.findOne('_system_meta', { key: 'localization_locales' });
+      const localesRow = await db.findOne(SystemTable.META, { key: SystemMetaKey.LOCALIZATION_LOCALES });
       const rawLocales = String(localesRow?.value || '').trim();
       if (rawLocales) {
         try {
@@ -362,7 +363,7 @@ export class PluginSettingsController {
       }
 
       if (!options.length) {
-        const enabledRow = await db.findOne('_system_meta', { key: 'enabled_locales' });
+        const enabledRow = await db.findOne(SystemTable.META, { key: SystemMetaKey.ENABLED_LOCALES });
         String(enabledRow?.value || '')
           .split(',')
           .map((part: string) => toCode(part))
@@ -371,8 +372,8 @@ export class PluginSettingsController {
       }
 
       if (!options.length) {
-        const defaultLocaleRow = await db.findOne('_system_meta', { key: 'default_locale' });
-        const fallbackLocaleRow = await db.findOne('_system_meta', { key: 'fallback_locale' });
+        const defaultLocaleRow = await db.findOne(SystemTable.META, { key: SystemMetaKey.DEFAULT_LOCALE });
+        const fallbackLocaleRow = await db.findOne(SystemTable.META, { key: SystemMetaKey.FALLBACK_LOCALE });
         pushOption(defaultLocaleRow?.value, undefined);
         pushOption(fallbackLocaleRow?.value, undefined);
       }

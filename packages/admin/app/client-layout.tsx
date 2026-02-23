@@ -16,6 +16,7 @@ import { API_BASE_URL, ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { purgeAuth } from '@/lib/auth-utils';
 import { applyDateLocaleTimezonePatch } from '@/lib/timezone';
+import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES } from '@fromcode/sdk';
 
 const { 
   Menu = () => null, 
@@ -320,14 +321,63 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const runtimeModules = React.useMemo(() => ({
-    '@fromcode/admin': SharedComponents,
-    '@fromcode/admin/components': SharedComponents
-  }), []);
+  const adminRuntimeModule = React.useMemo(() => {
+    const source = SharedComponents as Record<string, any>;
+    const requiredExports = [
+      'PluginPageHeader',
+      'PluginOverviewCard',
+      'PluginStatsList',
+      'PluginChartCard',
+      'PluginEmptyState',
+      'MediaPicker',
+      'Button',
+      'Input',
+      'TextArea',
+      'Select',
+      'TagField',
+      'Loader',
+      'Switch',
+      'Card',
+      'Badge',
+      'ConfirmDialog',
+      'PromptDialog',
+      'DateTimePicker',
+      'ColorPicker',
+      'CodeEditor',
+      'VisualMenuField',
+      'PageHeading',
+      'StatCard',
+      'DataTable',
+      'Icon',
+      'ThemeProvider',
+      'ThemeContext',
+      'NotificationContext'
+    ];
 
-  // Expose components for the dynamic import map bridge
+    const bridge: Record<string, any> = {};
+    requiredExports.forEach((key) => {
+      bridge[key] = source[key];
+    });
+
+    Object.keys(source).forEach((key) => {
+      if (!(key in bridge)) {
+        bridge[key] = source[key];
+      }
+    });
+
+    return bridge;
+  }, []);
+
+  const runtimeModules = React.useMemo(() => ({
+    '@fromcode/admin': adminRuntimeModule,
+    '@fromcode/admin/components': adminRuntimeModule
+  }), [adminRuntimeModule]);
+
+  // Pre-seed runtime module registry for deterministic bridge readiness.
   if (typeof window !== 'undefined') {
-    (window as any).FromcodeAdmin = SharedComponents;
+    const runtimeRegistry = ((window as any)[RUNTIME_GLOBALS.MODULES] ||= {});
+    runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN] = adminRuntimeModule;
+    runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS] = adminRuntimeModule;
   }
 
   return (

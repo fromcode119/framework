@@ -18,6 +18,7 @@
     "@fromcode/database": "*",
     "@fromcode/media": "*",
     "@fromcode/scheduler": "*",
+    "@fromcode/sdk": "*",
     "@types/ws": "^8.18.1",
     "adm-zip": "^0.5.10",
     "cookie-parser": "^1.4.7",

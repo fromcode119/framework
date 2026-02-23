@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode/core';
 import { MediaManager } from '@fromcode/media';
 import { media, mediaFolders, eq, desc, ilike, or, and, isNull } from '@fromcode/database';
+import { resolvePublicUrl } from '../utils/url';
 
 export class MediaController {
   private db: any;
@@ -69,7 +70,7 @@ export class MediaController {
         updatedAt: insertedRaw?.updated_at ?? insertedRaw?.updatedAt
       };
 
-      res.json({ ...inserted, url: result.url });
+      res.json({ ...inserted, url: resolvePublicUrl(req as Request, result.url) });
     } catch (err: any) {
       this.logger.error(`Upload error: ${err.message}`);
       res.status(500).json({ error: err.message });
@@ -137,10 +138,12 @@ export class MediaController {
         files = await selectFilesBasic();
       }
 
-      res.json(files.map((f: any) => ({
-        ...f,
-        url: this.mediaManager.driver.getUrl(f.path)
-      })));
+      res.json(
+        files.map((f: any) => ({
+          ...f,
+          url: resolvePublicUrl(req, this.mediaManager.driver.getUrl(f.path))
+        }))
+      );
     } catch (err: any) {
       this.logger.error(`Failed to fetch media: ${err.message}`, err);
       res.status(500).json({ error: `Failed to fetch media: ${err.message}` });

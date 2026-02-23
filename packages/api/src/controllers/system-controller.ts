@@ -1,5 +1,11 @@
 import { Request, Response } from 'express';
-import { PluginManager, ThemeManager, SystemUpdateService, parseBoolean } from '@fromcode/core';
+import { 
+  PluginManager, 
+  ThemeManager, 
+  SystemUpdateService, 
+  parseBoolean,
+  SystemTable
+} from '@fromcode/core';
 import { RESTController } from './rest-controller';
 import { ShortcodeService } from '../services/shortcode-service';
 import { SystemService } from '../services/system-service';
@@ -9,6 +15,7 @@ import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { createHash, randomBytes } from 'crypto';
 import { users } from '@fromcode/database';
+import { hashRecoveryCode, normalizeEmail } from '../utils/auth';
 
 export class SystemController {
   private db: any;
@@ -37,7 +44,7 @@ export class SystemController {
       }
       if (frontendMeta?.runtimeModules) metadata.runtimeModules = frontendMeta.runtimeModules;
 
-      const settings = await (this.manager as any).db.find('_system_meta');
+      const settings = await (this.manager as any).db.find(SystemTable.META);
       const settingsMap: Record<string, any> = {};
       settings.forEach((s: any) => settingsMap[s.key] = s.value);
       metadata.settings = settingsMap;
@@ -477,7 +484,7 @@ export class SystemController {
       if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
 
       const db = (this.manager as any).db;
-      const enabledRow = await db.findOne('_system_meta', { key: `user:${userId}:2fa_enabled` });
+      const enabledRow = await db.findOne(SystemTable.META, { key: `user:${userId}:2fa_enabled` });
       const recoveryCodes = await this.readRecoveryCodeRecords(userId);
       
       res.json({
@@ -508,15 +515,15 @@ export class SystemController {
 
       // Store the secret temporarily (will be confirmed during verification)
       const db = (this.manager as any).db;
-      const existingSecret = await db.findOne('_system_meta', { key: `user:${userId}:totp_secret_pending` });
+      const existingSecret = await db.findOne(SystemTable.META, { key: `user:${userId}:totp_secret_pending` });
       
       if (existingSecret) {
-        await db.update('_system_meta', 
+        await db.update(SystemTable.META, 
           { key: `user:${userId}:totp_secret_pending` },
           { value: secret.base32 }
         );
       } else {
-        await db.insert('_system_meta', {
+        await db.insert(SystemTable.META, {
           key: `user:${userId}:totp_secret_pending`,
           value: secret.base32
         });
@@ -540,7 +547,7 @@ export class SystemController {
       if (!token) return res.status(400).json({ error: 'Token is required' });
 
       const db = (this.manager as any).db;
-      const secretRow = await db.findOne('_system_meta', { key: `user:${userId}:totp_secret_pending` });
+      const secretRow = await db.findOne(SystemTable.META, { key: `user:${userId}:totp_secret_pending` });
       
       if (!secretRow) {
         return res.status(400).json({ error: '2FA setup not initiated. Please start setup first.' });
@@ -559,27 +566,27 @@ export class SystemController {
       }
 
       // Move secret from pending to active
-      const existingTOTPSecret = await db.findOne('_system_meta', { key: `user:${userId}:totp_secret` });
+      const existingTOTPSecret = await db.findOne(SystemTable.META, { key: `user:${userId}:totp_secret` });
       if (existingTOTPSecret) {
-        await db.update('_system_meta',
+        await db.update(SystemTable.META,
           { key: `user:${userId}:totp_secret` },
           { value: secretRow.value }
         );
       } else {
-        await db.insert('_system_meta', {
+        await db.insert(SystemTable.META, {
           key: `user:${userId}:totp_secret`,
           value: secretRow.value
         });
       }
       
-      const existing2FAEnabled = await db.findOne('_system_meta', { key: `user:${userId}:2fa_enabled` });
+      const existing2FAEnabled = await db.findOne(SystemTable.META, { key: `user:${userId}:2fa_enabled` });
       if (existing2FAEnabled) {
-        await db.update('_system_meta',
+        await db.update(SystemTable.META,
           { key: `user:${userId}:2fa_enabled` },
           { value: 'true' }
         );
       } else {
-        await db.insert('_system_meta', {
+        await db.insert(SystemTable.META, {
           key: `user:${userId}:2fa_enabled`,
           value: 'true'
         });
@@ -595,7 +602,7 @@ export class SystemController {
       await this.writeRecoveryCodeRecords(userId, recoveryRecords);
 
       // Clean up pending secret
-      await db.delete('_system_meta', { key: `user:${userId}:totp_secret_pending` });
+      await db.delete(SystemTable.META, { key: `user:${userId}:totp_secret_pending` });
 
       await this.sendSecurityNotification({
         userId,
@@ -620,7 +627,7 @@ export class SystemController {
       if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
 
       const db = (this.manager as any).db;
-      const enabledRow = await db.findOne('_system_meta', { key: `user:${userId}:2fa_enabled` });
+      const enabledRow = await db.findOne(SystemTable.META, { key: `user:${userId}:2fa_enabled` });
       if (enabledRow?.value !== 'true') {
         return res.status(400).json({ error: '2FA must be enabled before recovery codes can be generated.' });
       }
@@ -651,10 +658,10 @@ export class SystemController {
       const db = (this.manager as any).db;
       
       // Remove all 2FA related metadata
-      await db.delete('_system_meta', { key: `user:${userId}:2fa_enabled` });
-      await db.delete('_system_meta', { key: `user:${userId}:totp_secret` });
-      await db.delete('_system_meta', { key: `user:${userId}:totp_secret_pending` });
-      await db.delete('_system_meta', { key: this.getRecoveryCodesKey(userId) });
+      await db.delete(SystemTable.META, { key: `user:${userId}:2fa_enabled` });
+      await db.delete(SystemTable.META, { key: `user:${userId}:totp_secret` });
+      await db.delete(SystemTable.META, { key: `user:${userId}:totp_secret_pending` });
+      await db.delete(SystemTable.META, { key: this.getRecoveryCodesKey(userId) });
 
       await this.sendSecurityNotification({
         userId,
@@ -686,12 +693,12 @@ export class SystemController {
   }
 
   private hashRecoveryCode(code: string): string {
-    return createHash('sha256').update(String(code || '').trim().toUpperCase()).digest('hex');
+    return hashRecoveryCode(code);
   }
 
   private async readRecoveryCodeRecords(userId: number): Promise<Array<{ hash: string; usedAt: string | null; createdAt?: string }>> {
     const db = (this.manager as any).db;
-    const row = await db.findOne('_system_meta', { key: this.getRecoveryCodesKey(userId) });
+    const row = await db.findOne(SystemTable.META, { key: this.getRecoveryCodesKey(userId) });
     const raw = String(row?.value || '').trim();
     if (!raw) return [];
     try {
@@ -715,15 +722,15 @@ export class SystemController {
   ) {
     const db = (this.manager as any).db;
     const key = this.getRecoveryCodesKey(userId);
-    const existing = await db.findOne('_system_meta', { key });
+    const existing = await db.findOne(SystemTable.META, { key });
     const value = JSON.stringify(records);
 
     if (existing) {
-      await db.update('_system_meta', { key }, { value });
+      await db.update(SystemTable.META, { key }, { value });
       return;
     }
 
-    await db.insert('_system_meta', { key, value });
+    await db.insert(SystemTable.META, { key, value });
   }
 
   private async sendSecurityNotification(options: {
@@ -734,7 +741,7 @@ export class SystemController {
   }) {
     try {
       const db = (this.manager as any).db;
-      const enabled = await db.findOne('_system_meta', { key: 'auth_security_notifications' });
+      const enabled = await db.findOne(SystemTable.META, { key: SystemMetaKey.AUTH_SECURITY_NOTIFICATIONS });
       if (String(enabled?.value || 'true').trim().toLowerCase() !== 'true') {
         return;
       }
@@ -744,7 +751,7 @@ export class SystemController {
       if (!recipient) return;
 
       const appName = process.env.APP_NAME || 'Fromcode';
-      const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@framework.local';
+      const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@fromcode.com';
       const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
       const text = `${options.title}\n\n${details.join('\n')}`;
       const html = `<p>${options.title}</p>${details.length > 0 ? `<ul>${details.map((line) => `<li>${line}</li>`).join('')}</ul>` : ''}`;
@@ -762,6 +769,6 @@ export class SystemController {
   }
 
   private normalizeEmail(email: any): string {
-    return String(email || '').trim().toLowerCase();
+    return normalizeEmail(email);
   }
 }

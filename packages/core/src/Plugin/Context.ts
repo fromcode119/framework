@@ -2,7 +2,7 @@ import {
   PluginContext, 
   LoadedPlugin, 
 } from '../types';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { PluginManagerInterface, createSecurityHelpers } from './context/utils';
 import { createApiProxy } from './context/api';
 import { createDatabaseProxy } from './context/database';
@@ -17,6 +17,9 @@ import { createCollectionsProxy } from './context/collections';
 import { createI18nProxy } from './context/i18n';
 import { createSettingsProxy } from './context/settings';
 import { createUiProxy } from './context/ui';
+import { createUsersProxy } from './context/users';
+import { createMetaProxy } from './context/meta';
+import { createRolesProxy } from './context/roles';
 
 export { PluginManagerInterface };
 
@@ -128,6 +131,9 @@ export function createPluginContext(
         manager.hooks.on(event, handler);
       }
     },
+    users: createUsersProxy(plugin, manager),
+    meta: createMetaProxy(manager),
+    roles: createRolesProxy(manager),
     collections: createCollectionsProxy(plugin, manager, rootLogger, security),
     settings: createSettingsProxy(plugin, manager),
     i18n: createI18nProxy(plugin, manager, security),

@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { ENDPOINTS, API_BASE_URL } from '@/lib/constants';
 import { useAuth } from '@/components/auth-context';
 import { usePathname } from 'next/navigation';
+import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES } from '@fromcode/sdk';
 
 interface AdminPluginMetadata {
   slug: string;
@@ -113,24 +114,44 @@ export default function PluginLoader() {
     if (typeof window === 'undefined' || isAuthLoading || !user || !isReady) return;
 
     async function loadPlugins() {
+      const resolveAdminComponentsModule = () => {
+        const runtimeRegistry = (window as any)?.[RUNTIME_GLOBALS.MODULES] || {};
+        return runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS] || runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN] || null;
+      };
+
       // Small delay to ensure GlobalInitializer has run
       // and window.FrameworkIcons, window.React, window.ReactDOM are available
       let retryCount = 0;
       while (
         (!(window as any).FrameworkIcons || 
          !(window as any).React || 
-         !(window as any).Lucide) && 
+         !(window as any).Lucide ||
+         !(window as any).Fromcode ||
+         !resolveAdminComponentsModule() ||
+         typeof resolveAdminComponentsModule()?.Select === 'undefined') && 
         retryCount < 100
       ) {
         await new Promise(resolve => setTimeout(resolve, 50));
         retryCount++;
       }
 
-      if (!(window as any).FrameworkIcons || !(window as any).React || !(window as any).Lucide) {
+      const adminComponentsModule = resolveAdminComponentsModule();
+
+      if (
+        !(window as any).FrameworkIcons ||
+        !(window as any).React ||
+        !(window as any).Lucide ||
+        !(window as any).Fromcode ||
+        !adminComponentsModule ||
+        typeof adminComponentsModule.Select === 'undefined'
+      ) {
         console.error("[Admin] Required globals not found on window. Plugin loading aborted.", {
           icons: !!(window as any).FrameworkIcons,
           react: !!(window as any).React,
           lucide: !!(window as any).Lucide,
+          bridge: !!(window as any).Fromcode,
+          adminBridge: !!adminComponentsModule,
+          select: typeof adminComponentsModule?.Select !== 'undefined',
         });
         // Do not stop forever on startup races; request another refresh cycle.
         setTimeout(() => triggerRefresh(), 250);

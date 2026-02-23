@@ -1,5 +1,5 @@
 import { Collection } from '@fromcode/sdk';
-import { normalizeLocaleCode, isLocaleLikeKey, isMeaningfulLocalizedValue } from '@fromcode/core';
+import { normalizeLocaleCode, isLocaleLikeKey, isMeaningfulLocalizedValue, SystemTable } from '@fromcode/core';
 
 export class LocalizationService {
   constructor(private db: any) {}
@@ -52,7 +52,7 @@ export class LocalizationService {
 
     let settingsMap: Record<string, any> = {};
     try {
-      const settingsRows = await this.db.find('_system_meta');
+      const settingsRows = await this.db.find(SystemTable.META);
       if (Array.isArray(settingsRows)) {
         settingsRows.forEach((row: any) => {
           if (row.key) settingsMap[row.key] = row.value;

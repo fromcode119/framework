@@ -1,10 +1,12 @@
 import { ThemeManifest, IDatabaseManager } from '../types';
+import { SystemTable } from '@fromcode/sdk/internal';
 import path from 'path';
 import fs from 'fs';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { BackupService } from '../management/backup-service';
 import { MarketplaceClient } from '@fromcode/marketplace-client';
 import { Seeder } from '../database/seeder';
+import { getThemesDir } from '../config/paths';
 
 export class ThemeManager {
   private activeTheme: string | null = null;
@@ -15,10 +17,7 @@ export class ThemeManager {
   private seeder: Seeder;
 
   constructor(private db: any, private pluginManager?: any) {
-    const rootDir = this.getProjectRoot();
-    this.themesRoot = process.env.THEMES_DIR 
-      ? path.resolve(process.env.THEMES_DIR)
-      : path.resolve(rootDir, 'themes');
+    this.themesRoot = getThemesDir();
     this.client = new MarketplaceClient();
     this.seeder = new Seeder(db);
   }
@@ -52,21 +51,6 @@ export class ThemeManager {
     } catch (e) {}
 
     return { available: false, currentVersion: theme.version };
-  }
-
-  private getProjectRoot(): string {
-    let current = process.cwd();
-    while (current !== path.parse(current).root) {
-      const pkgPath = path.join(current, 'package.json');
-      if (fs.existsSync(pkgPath)) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-          if (pkg.name === '@fromcode/framework') return current;
-        } catch {}
-      }
-      current = path.dirname(current);
-    }
-    return process.cwd();
   }
 
   async init() {
@@ -261,7 +245,7 @@ export class ThemeManager {
 
   private async loadActiveTheme() {
     try {
-      const row = await this.db.findOne('_system_themes', { state: 'active' });
+      const row = await this.db.findOne(SystemTable.THEMES, { state: 'active' });
       if (row) {
         this.activeTheme = row.slug;
         this.logger.info(`Active theme set to: ${row.slug}`);
@@ -277,14 +261,14 @@ export class ThemeManager {
     if (!manifest) throw new Error(`Theme "${slug}" not found.`);
     
     // Deactivate previous
-    await this.db.update('_system_themes', { state: 'active' }, { state: 'inactive' });
+    await this.db.update(SystemTable.THEMES, { state: 'active' }, { state: 'inactive' });
     
     // Activate new
-    const existing = await this.db.findOne('_system_themes', { slug });
+    const existing = await this.db.findOne(SystemTable.THEMES, { slug });
     if (existing) {
-        await this.db.update('_system_themes', { slug }, { state: 'active', updated_at: new Date() });
-    } else {
-        await this.db.insert('_system_themes', { slug, state: 'active' });
+        await this.db.update(SystemTable.THEMES, { slug }, { state: 'active', updated_at: new Date() });
+      } else {
+        await this.db.insert(SystemTable.THEMES, { slug, state: 'active' });
     }
     
     this.activeTheme = slug;
@@ -306,13 +290,13 @@ export class ThemeManager {
     const resetConfig = options?.resetConfig === true;
 
     if (resetConfig) {
-      const existing = await this.db.findOne('_system_themes', { slug });
+      const existing = await this.db.findOne(SystemTable.THEMES, { slug });
       const state = existing?.state || 'inactive';
 
       if (existing) {
-        await this.db.update('_system_themes', { slug }, { config: {}, updated_at: new Date() });
+        await this.db.update(SystemTable.THEMES, { slug }, { config: {}, updated_at: new Date() });
       } else {
-        await this.db.insert('_system_themes', { slug, state, config: {} });
+        await this.db.insert(SystemTable.THEMES, { slug, state, config: {} });
       }
 
       this.logger.info(`Theme "${slug}" configuration reset to defaults.`);
@@ -330,22 +314,22 @@ export class ThemeManager {
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
     
-    const existing = await this.db.findOne('_system_themes', { slug });
+    const existing = await this.db.findOne(SystemTable.THEMES, { slug });
     if (existing) {
       const mergedConfig = {
         ...(existing.config || {}),
         ...config
       };
-      await this.db.update('_system_themes', { slug }, { config: mergedConfig, updated_at: new Date() });
+      await this.db.update(SystemTable.THEMES, { slug }, { config: mergedConfig, updated_at: new Date() });
     } else {
-      await this.db.insert('_system_themes', { slug, config, updated_at: new Date() });
+      await this.db.insert(SystemTable.THEMES, { slug, config, updated_at: new Date() });
     }
     
     this.logger.info(`Configuration saved for theme: ${slug}`);
   }
 
   async getThemeConfig(slug: string): Promise<any> {
-    const row = await this.db.findOne('_system_themes', { slug });
+    const row = await this.db.findOne(SystemTable.THEMES, { slug });
     return row?.config || {};
   }
 
@@ -364,7 +348,7 @@ export class ThemeManager {
     
     // Also cleanup DB if entry exists
     try {
-      await this.db.delete('_system_themes', { slug });
+      await this.db.delete(SystemTable.THEMES, { slug });
     } catch (e: any) {
       this.logger.warn(`Failed to cleanup DB entries for deleted theme ${slug}: ${e.message}`);
     }

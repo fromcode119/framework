@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { Logger } from '@fromcode/core';
+import { getCookieDomain, isHttps } from '../utils/url';
 
 const logger = new Logger({ namespace: 'security' });
 
@@ -9,18 +10,7 @@ const logger = new Logger({ namespace: 'security' });
  */
 export function csrfMiddleware(req: Request, res: Response, next: NextFunction) {
     // Determine the root domain for cross-subdomain cookies
-    let domain = process.env.COOKIE_DOMAIN;
-    
-    // Fallback: Try to extract domain from Host or X-Forwarded-Host if available
-    const host = req.get('x-forwarded-host') || req.get('host') || req.hostname;
-    const hostname = host.split(':')[0];
-
-    if (!domain && hostname.includes('.') && !hostname.match(/^\d+\.\d+\.\d+\.\d+$/) && hostname !== 'localhost') {
-        const parts = hostname.split('.');
-        if (parts.length >= 2) {
-            domain = '.' + parts.slice(-2).join('.');
-        }
-    }
+    const domain = process.env.COOKIE_DOMAIN || getCookieDomain(req);
 
     // 1. Generate CSRF token if not present in cookies OR if we need to ensure domain-scoping
     // We explicitly ensure it's on the root domain on health/status checks or if missing
@@ -29,11 +19,11 @@ export function csrfMiddleware(req: Request, res: Response, next: NextFunction) 
         const token = (typeof existingToken === 'string' ? existingToken : null) || crypto.randomBytes(32).toString('hex');
         
         const isProd = process.env.NODE_ENV === 'production';
-        const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https';
+        const secure = isProd && isHttps(req);
 
         const cookieOptions: any = { 
             httpOnly: false,
-            secure: isProd && isHttps,
+            secure,
             sameSite: 'lax',
             path: '/'
         };

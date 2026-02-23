@@ -1,4 +1,4 @@
-import { API_RESOURCE_PATHS, buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/core/utils';
+import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/sdk';
 import { resolveFrontendApiBaseUrl } from './api-base-url';
 
 export const FRONTEND_API_VERSION = normalizeApiVersion();

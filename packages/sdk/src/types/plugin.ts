@@ -128,6 +128,29 @@ export interface PluginContext {
   readonly runtime: {
     registerModule(name: string, config: { keys: string[], type: 'icon' | 'lib' }): void;
   };
+
+  readonly users: {
+    findAdmins(options?: { limit?: number }): Promise<Array<{ id: any; email: string; roles: string[] }>>;
+    findByRole(role: string, options?: { limit?: number }): Promise<Array<{ id: any; email: string; roles: string[] }>>;
+    findById(id: any): Promise<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] } | null>;
+    findByEmail(email: string): Promise<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] } | null>;
+  };
+
+  /**
+   * Read-only access to the system meta store.
+   * Use instead of querying SystemTable.META directly.
+   */
+  readonly meta: {
+    get(key: string): Promise<string | null>;
+  };
+
+  /**
+   * Role management helpers.
+   * Use instead of querying SystemTable.ROLES directly.
+   */
+  readonly roles: {
+    ensure(slug: string, data: { name: string; description?: string; type?: string; permissions?: any[] }): Promise<void>;
+  };
 }
 
 export interface FromcodePlugin {
@@ -144,13 +167,15 @@ export interface FromcodePlugin {
 
 /**
  * Represents an installed plugin at runtime, combining manifest data with system state.
- * This is primarily used in Admin UI and API responses.
  */
-export interface Plugin extends PluginManifest {
+export interface LoadedPlugin extends FromcodePlugin {
+  instanceId: string;
   state: 'inactive' | 'loading' | 'active' | 'error';
-  healthStatus?: 'healthy' | 'warning' | 'error';
+  path?: string; // Absolute path to the plugin folder
   approvedCapabilities?: string[];
+  error?: string; // Error message if state is 'error'
+  isSandboxed?: boolean;
+  entryPath?: string;
+  healthStatus?: 'healthy' | 'warning' | 'error';
   iconUrl?: string; // Resolved absolute URL for the plugin icon
-  error?: string;   // Error message if state is 'error'
-  path?: string;    // Local file path
 }

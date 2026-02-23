@@ -31,7 +31,7 @@ export const AddSandboxConfigMigration: SystemMigration = {
         try {
           await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN "sandbox_config"`);
         } catch (e) {
-          console.warn('Could not drop column sandbox_config from _system_plugins (SQLite version limitation)');
+          // SQLite 3.35+ feature: silently skip if column drop is unsupported
         }
       }
     });

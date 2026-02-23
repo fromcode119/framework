@@ -1,5 +1,5 @@
 import { LoadedPlugin, PluginContext } from '../../types';
-import { Logger } from '../../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { PluginPermissionsService } from '../../security/plugin-permissions-service';
 
 export interface PluginManagerInterface {

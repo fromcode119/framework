@@ -1,6 +1,7 @@
-import { IDatabaseManager, sql, eq, count, and, or, desc, gte, systemAuditLogs } from '@fromcode/database';
-import { Logger } from '../logging/logger';
+import { IDatabaseManager } from '@fromcode/database';
+import { Logger } from '@fromcode/sdk';
 import { PluginManager } from '../plugin/plugin-manager';
+import { SystemTable } from '@fromcode/sdk/internal';
 
 export interface SecurityEvent {
   type: 'anomaly' | 'violation' | 'denial_spike';
@@ -37,46 +38,29 @@ export class SecurityMonitor {
 
   public async getSecurityStats() {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
-    const violationCount = await this.db.drizzle
-      .select({ value: count() })
-      .from(systemAuditLogs)
-      .where(
-        and(
-          eq(systemAuditLogs.status, 'violation'),
-          gte(systemAuditLogs.createdAt, twentyFourHoursAgo)
-        )
-      );
 
-    const denialCount = await this.db.drizzle
-      .select({ value: count() })
-      .from(systemAuditLogs)
-      .where(
-        and(
-          eq(systemAuditLogs.status, 'denied'),
-          gte(systemAuditLogs.createdAt, twentyFourHoursAgo)
-        )
-      );
+    const [recentViolations, recentDenials] = await Promise.all([
+      this.db.find(SystemTable.AUDIT_LOGS, { where: { status: 'violation' }, orderBy: { created_at: 'desc' }, limit: 2000 }),
+      this.db.find(SystemTable.AUDIT_LOGS, { where: { status: 'denied' }, orderBy: { created_at: 'desc' }, limit: 2000 })
+    ]);
 
-    const suspiciousPlugins = await this.db.drizzle
-      .select({
-        slug: systemAuditLogs.pluginSlug,
-        count: count()
-      })
-      .from(systemAuditLogs)
-      .where(
-        and(
-          or(eq(systemAuditLogs.status, 'denied'), eq(systemAuditLogs.status, 'violation')),
-          gte(systemAuditLogs.createdAt, twentyFourHoursAgo)
-        )
-      )
-      .groupBy(systemAuditLogs.pluginSlug)
-      .orderBy(desc(count()))
-      .limit(5);
+    const violations24h = recentViolations.filter(r => new Date(r.created_at) >= twentyFourHoursAgo);
+    const denials24h = recentDenials.filter(r => new Date(r.created_at) >= twentyFourHoursAgo);
+
+    const pluginCounts = new Map<string, number>();
+    for (const row of [...violations24h, ...denials24h]) {
+      const slug = row.plugin_slug;
+      if (slug) pluginCounts.set(slug, (pluginCounts.get(slug) ?? 0) + 1);
+    }
+
+    const suspiciousPlugins = Array.from(pluginCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([slug, count]) => ({ slug, count }));
 
     return {
-      violations24h: Number(violationCount[0]?.value || 0),
-      denials24h: Number(denialCount[0]?.value || 0),
+      violations24h: violations24h.length,
+      denials24h: denials24h.length,
       suspiciousPlugins
     };
   }
@@ -97,38 +81,37 @@ export class SecurityMonitor {
    */
   private async checkDenialSpikes() {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    
-    // Using Drizzle to aggregate
-    const results = await this.db.drizzle
-      .select({
-        pluginSlug: systemAuditLogs.pluginSlug,
-        denialCount: count(),
-      })
-      .from(systemAuditLogs)
-      .where(
-        and(
-          eq(systemAuditLogs.status, 'denied'),
-          gte(systemAuditLogs.createdAt, fiveMinutesAgo)
-        )
-      )
-      .groupBy(systemAuditLogs.pluginSlug)
-      .having(({ denialCount }: any) => sql`${denialCount} > 10`);
 
-    for (const row of results) {
-      this.logger.warn(`SECURITY ALERT: Denial spike detected for plugin "${row.pluginSlug}" (${row.denialCount} denials in 5m)`);
-      
-      // Update health status in DB
-      await this.db.update('_system_plugins', { slug: row.pluginSlug }, { 
+    const recentDenials = await this.db.find(SystemTable.AUDIT_LOGS, {
+      where: { status: 'denied' },
+      orderBy: { created_at: 'desc' },
+      limit: 1000
+    });
+
+    const inWindow = recentDenials.filter(r => new Date(r.created_at) >= fiveMinutesAgo);
+
+    const pluginCounts = new Map<string, number>();
+    for (const row of inWindow) {
+      const slug = row.plugin_slug;
+      if (slug) pluginCounts.set(slug, (pluginCounts.get(slug) ?? 0) + 1);
+    }
+
+    for (const [pluginSlug, denialCount] of pluginCounts) {
+      if (denialCount <= 10) continue;
+
+      this.logger.warn(`SECURITY ALERT: Denial spike detected for plugin "${pluginSlug}" (${denialCount} denials in 5m)`);
+
+      await this.db.update(SystemTable.PLUGINS, { slug: pluginSlug }, {
         health_status: 'warning',
         updated_at: new Date()
       });
 
       await this.logSecurityEvent({
         type: 'denial_spike',
-        pluginSlug: row.pluginSlug,
+        pluginSlug,
         severity: 'medium',
-        details: `Detected ${row.denialCount} permission denials in the last 5 minutes. This may indicate an attempt to probe system boundaries.`,
-        metadata: { count: row.denialCount }
+        details: `Detected ${denialCount} permission denials in the last 5 minutes. This may indicate an attempt to probe system boundaries.`,
+        metadata: { count: denialCount }
       });
     }
   }
@@ -139,44 +122,40 @@ export class SecurityMonitor {
   private async checkViolations() {
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
 
-    const violations = await this.db.drizzle
-      .select()
-      .from(systemAuditLogs)
-      .where(
-        and(
-          eq(systemAuditLogs.status, 'violation'),
-          gte(systemAuditLogs.createdAt, oneMinuteAgo)
-        )
-      );
+    const recentViolations = await this.db.find(SystemTable.AUDIT_LOGS, {
+      where: { status: 'violation' },
+      orderBy: { created_at: 'desc' },
+      limit: 200
+    });
+
+    const violations = recentViolations.filter(r => new Date(r.created_at) >= oneMinuteAgo);
 
     for (const violation of violations) {
-      this.logger.error(`SECURITY VIOLATION: Plugin "${violation.pluginSlug}" attempted ${violation.action} on ${violation.resource}`);
-      
-      // Update health status to ERROR
-      await this.db.update('_system_plugins', { slug: violation.pluginSlug }, { 
+      this.logger.error(`SECURITY VIOLATION: Plugin "${violation.plugin_slug}" attempted ${violation.action} on ${violation.resource}`);
+
+      await this.db.update(SystemTable.PLUGINS, { slug: violation.plugin_slug }, {
         health_status: 'error',
         updated_at: new Date()
       });
 
       await this.logSecurityEvent({
         type: 'violation',
-        pluginSlug: violation.pluginSlug,
+        pluginSlug: violation.plugin_slug,
         severity: 'high',
         details: `Resource access violation: Attempted ${violation.action} on unauthorized resource ${violation.resource}.`,
         metadata: violation.metadata
       });
 
-      // AUTOMATIC RESPONSE: For high-severity violations, we can automatically disable the plugin
       if (process.env.AUTO_PROTECT === 'true') {
-        this.logger.info(`AUTO-PROTECT: Disabling compromised plugin "${violation.pluginSlug}"`);
-        await this.pluginManager.disable(violation.pluginSlug);
+        this.logger.info(`AUTO-PROTECT: Disabling compromised plugin "${violation.plugin_slug}"`);
+        await this.pluginManager.disable(violation.plugin_slug);
       }
     }
   }
 
   private async logSecurityEvent(event: SecurityEvent) {
     // Write a system log about the security event itself
-    await this.db.insert('_system_logs', {
+    await this.db.insert(SystemTable.LOGS, {
       plugin_slug: 'security-monitor',
       level: event.severity === 'critical' ? 'ERROR' : 'WARN',
       message: `[SECURITY ${event.type.toUpperCase()}] Plugin "${event.pluginSlug}": ${event.details}`,

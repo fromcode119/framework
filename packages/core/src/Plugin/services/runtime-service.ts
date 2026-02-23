@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '../../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { LoadedPlugin } from '../../types';
+import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES, ADMIN_RUNTIME_EXPORT_KEYS } from '@fromcode/sdk';
 
 export interface RuntimeModuleConfig {
   keys: string[];
@@ -28,59 +29,62 @@ export class RuntimeService {
       const keys = Object.keys(mod);
       
       if (type === 'icon') {
-          // Lucide icons are PascalCase
-          return keys.filter(k => k.length >= 1 && k[0] === k[0].toUpperCase() && k !== 'default');
+        // Lucide icons are PascalCase
+        return keys.filter(k => k.length >= 1 && k[0] === k[0].toUpperCase() && k !== 'default');
       }
       return keys;
     } catch (e) {
-      this.logger.warn(`Could not resolve module ${name} for discovery`);
+      if (type !== 'icon') {
+        this.logger.warn(`Could not resolve module ${name} for discovery`);
+      }
       return [];
     }
   }
 
   private initializeDefaultRegistry() {
-    this.registry.set('react', { 
-      type: 'lib', 
-      keys: ['useState', 'useEffect', 'useMemo', 'useCallback', 'useContext', 'createContext', 'useRef', 'useLayoutEffect', 'useImperativeHandle', 'useDebugValue', 'forwardRef', 'version', 'memo', 'Suspense', 'Fragment'] 
+    // Standard UI libraries - Discovery allows version-agnostic export mapping
+    this.registry.set('react', {
+      type: 'lib',
+      keys: this.discoverModuleKeys('react') || ['useState', 'useEffect', 'useMemo', 'useCallback', 'useContext', 'createContext', 'useRef', 'useLayoutEffect', 'useImperativeHandle', 'useDebugValue', 'forwardRef', 'version', 'memo', 'Suspense', 'Fragment']
     });
-    this.registry.set('react-dom', { 
-      type: 'lib', 
-      keys: ['render', 'hydrate', 'createPortal', 'createRoot'] 
+    this.registry.set('react-dom', {
+      type: 'lib',
+      keys: this.discoverModuleKeys('react-dom') || ['render', 'hydrate', 'createPortal', 'createRoot']
     });
-    this.registry.set('react-dom/client', { 
-      type: 'lib', 
-      keys: ['createRoot', 'hydrateRoot'] 
+    this.registry.set('react-dom/client', {
+      type: 'lib',
+      keys: this.discoverModuleKeys('react-dom/client') || ['createRoot', 'hydrateRoot']
     });
-    this.registry.set('@fromcode/react', { 
-      type: 'lib', 
-      keys: [
-        'slot', 'override', 'usePlugins', 'useTranslation', 'PluginsProvider', 
-        'getIcon', 'createProxyIcon', 'FrameworkIcons', 'FrameworkIconRegistry', 'IconNames',
-        'registerSlotComponent', 'registerFieldComponent', 'registerOverride', 'registerMenuItem', 
-        'registerCollection', 'registerPlugins', 'registerTheme', 'registerSettings', 
-        'registerAPI', 'getAPI', 'loadConfig', 'resolveContent', 'api', 'emit', 'on', 't', 
-        'locale', 'setLocale', 'usePluginAPI'
-      ] 
+
+    // Framework modules - We trust @fromcode/sdk and @fromcode/react to be available
+    this.registry.set('@fromcode/react', {
+      type: 'lib',
+      keys: this.discoverModuleKeys('@fromcode/react')
     });
+    this.registry.set('@fromcode/sdk', {
+       type: 'lib',
+       keys: this.discoverModuleKeys('@fromcode/sdk')
+    });
+
+    // JSX Runtimes (Internal React usage)
     this.registry.set('react-jsx', { type: 'lib', keys: [] });
     this.registry.set('react/jsx-runtime', { type: 'lib', keys: ['jsx', 'jsxs', 'Fragment'] });
     this.registry.set('react/jsx-dev-runtime', { type: 'lib', keys: ['jsxDEV', 'Fragment'] });
-    
-    // Core Admin Components (Available as a bridge for plugins)
-    this.registry.set('@fromcode/admin/components', {
-      type: 'lib',
-      keys: [
-        'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 
-        'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 
-        'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext'
-      ]
-    });
-    
-    // Auto-discover Lucide icons
-    const lucideKeys = this.discoverModuleKeys('lucide-react', 'icon');
 
-    this.registry.set('lucide-react', { 
-      type: 'icon', 
+    // Core Admin Modules (Driven by SDK constants)
+    this.registry.set(RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS, {
+      type: 'lib',
+      keys: [...ADMIN_RUNTIME_EXPORT_KEYS]
+    });
+    this.registry.set(RUNTIME_MODULE_NAMES.ADMIN, {
+      type: 'lib',
+      keys: [...ADMIN_RUNTIME_EXPORT_KEYS]
+    });
+
+    // Icons
+    const lucideKeys = this.discoverModuleKeys('lucide-react', 'icon');
+    this.registry.set('lucide-react', {
+      type: 'icon',
       keys: lucideKeys
     });
   }
@@ -123,16 +127,24 @@ export class RuntimeService {
       
       source = (this.templates['icons'] || '').replace('{{EXPORTS}}', exports);
     } else {
-      const globalObject = {
-        'react': 'window.React',
-        'react-dom': 'window.ReactDOM || window.ReactDom',
-        'react-dom/client': 'window.ReactDOM || window.ReactDom',
-        '@fromcode/react': 'window.Fromcode',
-        '@fromcode/admin/components': 'window.FromcodeAdmin'
-      }[name] || 'window.Fromcode';
+      let globalObject = 'window.Fromcode';
+
+      if (name === 'react') {
+        globalObject = 'window.React';
+      } else if (name.startsWith('react-dom')) {
+        globalObject = 'window.ReactDOM || window.ReactDom';
+      } else if (name.startsWith('@fromcode/')) {
+        // Use the centralized runtime module registry if available
+        globalObject = `(window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}['${name}']) || window.Fromcode`;
+        
+        // Special case for admin components which might be bundled together
+        if (name === RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS || name === RUNTIME_MODULE_NAMES.ADMIN) {
+          globalObject = `(window.${RUNTIME_GLOBALS.MODULES} && (window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS}'] || window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN}'] || window.Fromcode))`;
+        }
+      }
 
       const exports = (config.keys || [])
-        .map((key: string) => `export const ${key} = ${globalObject}['${key}'];`)
+        .map((key: string) => `export const ${key} = ${globalObject} ? ${globalObject}['${key}'] : undefined;`)
         .join('\n');
 
       source = (this.templates['lib'] || '')

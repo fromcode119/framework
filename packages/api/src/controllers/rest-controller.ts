@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import { Collection, Logger, RecordVersions, HookManager, parseBoolean } from '@fromcode/core';
 import { AuthManager } from '@fromcode/auth';
+import { COLLECTION_HOOK_PHASES, CollectionHookPhase, collectionHookEvent } from '@fromcode/sdk';
+import { normalizePath } from '../utils/url';
 import { 
   IDatabaseManager, 
   sql, 
@@ -42,6 +44,15 @@ export class RESTController {
     this.suggestionService = new SuggestionService(db);
     this.localization = new LocalizationService(db);
     this.processor = new DataProcessorService(auth, this.localization);
+  }
+
+  private async callCollectionHook<T>(
+    collection: Collection,
+    phase: CollectionHookPhase,
+    payload: T
+  ): Promise<T> {
+    if (!this.hooks) return payload;
+    return await this.hooks.call(collectionHookEvent(collection.slug, phase), payload) as T;
   }
 
   /**
@@ -171,10 +182,8 @@ export class RESTController {
       });
       
       // Hooks: Before Create
-      if (this.hooks) {
-        data = await this.hooks.call(`collection:${collection.slug}:beforeCreate`, data);
-        data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
-      }
+      data = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_CREATE, data);
+      data = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_SAVE, data);
 
       // Restore REST-specific validation if in REST mode
       if (res) {
@@ -191,10 +200,8 @@ export class RESTController {
 
       // Hooks: After Create
       let finalItem = newItem;
-      if (this.hooks) {
-        finalItem = await this.hooks.call(`collection:${collection.slug}:afterCreate`, newItem);
-        finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
-      }
+      finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_CREATE, newItem);
+      finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
 
       if (collection.versions !== false) {
         await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, `Initial creation of ${collection.slug} record`);
@@ -250,10 +257,8 @@ export class RESTController {
       });
 
       // Hooks: Before Update
-      if (this.hooks) {
-        data = await this.hooks.call(`collection:${collection.slug}:beforeUpdate`, data);
-        data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
-      }
+      data = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_UPDATE, data);
+      data = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_SAVE, data);
 
       if (res) {
         const errors = collection.fields.filter(f => data[f.name] !== undefined && f.required && !data[f.name]).map(f => `Field "${f.name}" cannot be empty`);
@@ -275,10 +280,8 @@ export class RESTController {
 
       // Hooks: After Update
       let finalItem = updated;
-      if (this.hooks) {
-        finalItem = await this.hooks.call(`collection:${collection.slug}:afterUpdate`, updated);
-        finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
-      }
+      finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_UPDATE, updated);
+      finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
 
       if (collection.versions !== false) {
         await this.versioningService.createSnapshot(collection, id, finalItem, req.user, changeSummary);
@@ -332,10 +335,8 @@ export class RESTController {
       const localeContext = await this.localization.getLocaleContext(req);
 
       for (let data of items) {
-        if (this.hooks) {
-          data = await this.hooks.call(`collection:${collection.slug}:beforeCreate`, data);
-          data = await this.hooks.call(`collection:${collection.slug}:beforeSave`, data);
-        }
+        data = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_CREATE, data);
+        data = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_SAVE, data);
 
         this.assertPermalinkNotReserved(collection, data);
         
@@ -348,10 +349,8 @@ export class RESTController {
         const newItem = await this.db.insert(table, insertData);
         
         let finalItem = newItem;
-        if (this.hooks) {
-          finalItem = await this.hooks.call(`collection:${collection.slug}:afterCreate`, newItem);
-          finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
-        }
+        finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_CREATE, newItem);
+        finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
         await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, individualSummary);
         this.emitCollectionEvent(collection, 'created', finalItem);
         this.emitCollectionEvent(collection, 'saved', finalItem);
@@ -387,10 +386,8 @@ export class RESTController {
       let updateData = sanitizedUpdateData;
       if (updateData._change_summary) delete updateData._change_summary;
 
-      if (this.hooks) {
-        updateData = await this.hooks.call(`collection:${collection.slug}:beforeUpdate`, updateData);
-        updateData = await this.hooks.call(`collection:${collection.slug}:beforeSave`, updateData);
-      }
+      updateData = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_UPDATE, updateData);
+      updateData = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.BEFORE_SAVE, updateData);
 
       this.assertPermalinkNotReserved(collection, updateData);
 
@@ -416,10 +413,8 @@ export class RESTController {
         const updated = await this.db.update(table, where, processedUpdate);
         if (updated) {
           let finalItem = updated;
-          if (this.hooks) {
-            finalItem = await this.hooks.call(`collection:${collection.slug}:afterUpdate`, updated);
-            finalItem = await this.hooks.call(`collection:${collection.slug}:afterSave`, finalItem);
-          }
+          finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_UPDATE, updated);
+          finalItem = await this.callCollectionHook(collection, COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
           await this.versioningService.createSnapshot(collection, id, finalItem, req.user, changeSummary);
           this.emitCollectionEvent(collection, 'updated', finalItem);
           this.emitCollectionEvent(collection, 'saved', finalItem);
@@ -478,7 +473,7 @@ export class RESTController {
     try {
       const { field } = req.params;
       const { q } = req.query as any;
-      res.json(await this.suggestionService.getSuggestions(collection, field, q, QueryHelper.getVirtualTable(collection)));
+      res.json(await this.suggestionService.getSuggestions(collection, field, q));
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -715,30 +710,12 @@ export class RESTController {
       return [];
     };
 
-    const normalizePath = (raw: string): string => {
-      let value = String(raw || '').trim();
-      if (!value) return '';
-      if (/^https?:\/\//i.test(value)) {
-        try {
-          value = new URL(value).pathname || '';
-        } catch {
-          // Ignore malformed absolute URL and continue with raw value.
-        }
-      }
-      value = value.split('?')[0].split('#')[0].trim();
-      if (!value) return '';
-      value = value.startsWith('/') ? value : `/${value}`;
-      value = value.replace(/\/{2,}/g, '/');
-      if (value.length > 1) value = value.replace(/\/+$/, '');
-      return value.toLowerCase();
-    };
-
     for (const fieldName of targetFields) {
       const values = extractCandidates(data[fieldName]);
       for (const rawValue of values) {
-        const pathValue = normalizePath(rawValue);
+        const pathValue = normalizePath(rawValue).toLowerCase();
         if (!pathValue || pathValue === '/') continue;
-        const firstSegment = pathValue.replace(/^\/+/, '').split('/')[0]?.toLowerCase() || '';
+        const firstSegment = pathValue.replace(/^\/+/, '').split('/')[0] || '';
         if (reservedRootSegments.has(firstSegment) || reservedExactPaths.has(pathValue)) {
           throw new Error(`Permalink "${pathValue}" is reserved and cannot be used.`);
         }

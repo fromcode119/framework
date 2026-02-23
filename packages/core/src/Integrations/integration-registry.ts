@@ -1,5 +1,6 @@
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { sanitizeKey } from '../utils';
+import { SystemTable } from '@fromcode/sdk/internal';
 
 export type IntegrationConfigFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';
 
@@ -517,7 +518,7 @@ export class IntegrationRegistry {
     if (!runtime) return null;
 
     try {
-      const providersRow = await this.db.findOne('_system_meta', { key: this.getProvidersSettingKey(normalizedType) });
+      const providersRow = await this.db.findOne(SystemTable.META, { key: this.getProvidersSettingKey(normalizedType) });
       const raw = String(providersRow?.value || '').trim();
       if (raw) {
         const parsed = this.safeParseJson(raw, []);
@@ -612,8 +613,8 @@ export class IntegrationRegistry {
 
   private async readStored(typeKey: string): Promise<{ providerKey: string; config: Record<string, any> } | null> {
     try {
-      const providerRow = await this.db.findOne('_system_meta', { key: this.getProviderSettingKey(typeKey) });
-      const configRow = await this.db.findOne('_system_meta', { key: this.getConfigSettingKey(typeKey) });
+      const providerRow = await this.db.findOne(SystemTable.META, { key: this.getProviderSettingKey(typeKey) });
+      const configRow = await this.db.findOne(SystemTable.META, { key: this.getConfigSettingKey(typeKey) });
 
       const providerKey = this.normalize(String(providerRow?.value || ''));
       const rawConfig = String(configRow?.value || '').trim();
@@ -654,7 +655,7 @@ export class IntegrationRegistry {
     if (!runtime) return null;
 
     try {
-      const profilesRow = await this.db.findOne('_system_meta', { key: this.getProfilesSettingKey(normalizedType) });
+      const profilesRow = await this.db.findOne(SystemTable.META, { key: this.getProfilesSettingKey(normalizedType) });
       const rawProfiles = String(profilesRow?.value || '').trim();
 
       if (rawProfiles) {
@@ -747,10 +748,10 @@ export class IntegrationRegistry {
   }
 
   private async upsertMeta(entry: { key: string; value: string; group?: string; description?: string }) {
-    const existing = await this.db.findOne('_system_meta', { key: entry.key });
+    const existing = await this.db.findOne(SystemTable.META, { key: entry.key });
     if (existing) {
       await this.db.update(
-        '_system_meta',
+        SystemTable.META,
         { key: entry.key },
         {
           value: entry.value,
@@ -762,7 +763,7 @@ export class IntegrationRegistry {
       return;
     }
 
-    await this.db.insert('_system_meta', {
+    await this.db.insert(SystemTable.META, {
       key: entry.key,
       value: entry.value,
       group: entry.group || 'integrations',

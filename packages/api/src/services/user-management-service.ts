@@ -3,7 +3,7 @@ import {
   systemRolesToPermissions, systemPermissions 
 } from '@fromcode/database';
 import { AuthManager } from '@fromcode/auth';
-import { PluginManager, Logger } from '@fromcode/core';
+import { PluginManager, Logger, SystemTable } from '@fromcode/core';
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });
@@ -232,22 +232,22 @@ export class UserManagementService {
   }
 
   private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {
-    const row = await this.db.findOne('_system_meta', { key: `user:${userId}:account_status` });
+    const row = await this.db.findOne(SystemTable.META, { key: `user:${userId}:account_status` });
     const value = String(row?.value || '').trim().toLowerCase();
     return value === 'suspended' ? 'suspended' : 'active';
   }
 
   private async readForcePasswordReset(userId: number): Promise<boolean> {
-    const row = await this.db.findOne('_system_meta', { key: `user:${userId}:force_password_reset` });
+    const row = await this.db.findOne(SystemTable.META, { key: `user:${userId}:force_password_reset` });
     return String(row?.value || '').trim().toLowerCase() === 'true';
   }
 
   private async upsertMeta(key: string, value: string) {
-    const existing = await this.db.findOne('_system_meta', { key });
+    const existing = await this.db.findOne(SystemTable.META, { key });
     if (existing) {
-      await this.db.update('_system_meta', { key }, { value });
+      await this.db.update(SystemTable.META, { key }, { value });
       return;
     }
-    await this.db.insert('_system_meta', { key, value });
+    await this.db.insert(SystemTable.META, { key, value });
   }
 }

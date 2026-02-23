@@ -1,7 +1,8 @@
 import { Collection } from '../types';
+import { SystemTable } from '@fromcode/sdk/internal';
 
 export const RecordVersions: Collection = {
-  slug: '_system_record_versions',
+  slug: SystemTable.RECORD_VERSIONS,
   shortSlug: 'versions',
   name: 'Record Versions',
   system: true,

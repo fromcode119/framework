@@ -1,5 +1,5 @@
 import { Collection, LoadedPlugin } from '../../types';
-import { Logger } from '../../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { PluginManagerInterface, createSecurityHelpers } from './utils';
 import { registry } from '@fromcode/plugins';
 

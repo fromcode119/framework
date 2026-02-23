@@ -1,7 +1,8 @@
 import { Collection } from '@fromcode/sdk';
+import { SystemTable } from '@fromcode/sdk/internal';
 
 export const WebhooksCollection: Collection = {
-  slug: '_system_webhooks',
+  slug: SystemTable.WEBHOOKS,
   admin: {
     group: 'Settings',
     icon: 'webhook',

@@ -1,5 +1,6 @@
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { IDatabaseManager, sql } from '@fromcode/database';
+import { SystemTable } from '@fromcode/sdk/internal';
 
 export class AuditManager {
   private logger = new Logger({ namespace: 'Audit' });
@@ -16,7 +17,7 @@ export class AuditManager {
     this.logger.info(`[${status.toUpperCase()}] Plugin "${pluginSlug}" performed ${action} on ${resource}`);
 
     try {
-      await this.db.insert('_system_audit_logs', {
+      await this.db.insert(SystemTable.AUDIT_LOGS, {
         plugin_slug: pluginSlug,
         action,
         resource,

@@ -1,7 +1,8 @@
 import { IDatabaseManager, sql } from '@fromcode/database';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { SystemMigration } from '../types';
 import { loadMigrations } from './migrations';
+import { SystemTable } from '@fromcode/sdk/internal';
 
 export class MigrationManager {
   private logger = new Logger({ namespace: 'migration-manager' });
@@ -9,7 +10,7 @@ export class MigrationManager {
   constructor(private db: IDatabaseManager) {}
 
   async init() {
-    await this.db.ensureMigrationTable('_system_migrations');
+    await this.db.ensureMigrationTable(SystemTable.MIGRATIONS);
   }
 
   async migrate(pluginMigrations: SystemMigration[] = []) {
@@ -17,7 +18,7 @@ export class MigrationManager {
     const systemMigrations = loadMigrations();
     const allMigrations = [...systemMigrations, ...pluginMigrations];
     
-    const executed = await this.db.find('_system_migrations', { columns: { version: true } });
+    const executed = await this.db.find(SystemTable.MIGRATIONS, { columns: { version: true } });
     const executedVersions = new Set(executed.map((m: any) => m.version));
 
     const pending = allMigrations
@@ -34,7 +35,7 @@ export class MigrationManager {
     for (const migration of pending) {
       this.logger.info(`Running migration: ${migration.name} (v${migration.version})...`);
       await migration.up(this.db, sql);
-      await this.db.insert('_system_migrations', {
+      await this.db.insert(SystemTable.MIGRATIONS, {
         name: migration.name,
         version: migration.version,
         batch
@@ -52,7 +53,7 @@ export class MigrationManager {
       return;
     }
 
-    const toRollback = await this.db.find('_system_migrations', { 
+    const toRollback = await this.db.find(SystemTable.MIGRATIONS, { 
       where: { batch },
       orderBy: { version: 'desc' }
     });
@@ -67,7 +68,7 @@ export class MigrationManager {
         this.logger.info(`Rolling back: ${migration.name} (v${migration.version})...`);
         await migration.down(this.db, sql);
       }
-      await this.db.delete('_system_migrations', { id: record.id });
+      await this.db.delete(SystemTable.MIGRATIONS, { id: record.id });
     }
 
     this.logger.info('Rollback completed successfully.');

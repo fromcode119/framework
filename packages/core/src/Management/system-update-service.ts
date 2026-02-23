@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { BackupService } from './backup-service';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { MarketplaceClient } from '@fromcode/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';
+import { getProjectRoot } from '../config/paths';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
@@ -20,26 +21,6 @@ export class SystemUpdateService {
     }
   }
 
-  private static getProjectRoot(): string {
-    let current = process.cwd();
-    // Try to find the monorepo root by looking for @fromcode/framework
-    while (current !== path.parse(current).root) {
-      const pkgPath = path.join(current, 'package.json');
-      if (fs.existsSync(pkgPath)) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-          if (pkg.name === '@fromcode/framework') {
-            return current;
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
-      current = path.dirname(current);
-    }
-    return process.cwd();
-  }
-
   static async checkUpdate() {
     try {
       const marketplaceData = await this.client.fetch();
@@ -47,7 +28,7 @@ export class SystemUpdateService {
       if (!marketplaceData.core) return null;
 
       let currentVersion = '0.0.0';
-      const rootDir = this.getProjectRoot();
+      const rootDir = getProjectRoot();
       const pkgPath = path.resolve(rootDir, 'package.json');
       if (fs.existsSync(pkgPath)) {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
@@ -86,7 +67,7 @@ export class SystemUpdateService {
       throw new Error(`Pre-update backup failed: ${err.message}`);
     }
 
-    const rootDir = this.getProjectRoot();
+    const rootDir = getProjectRoot();
     const tempDir = path.resolve(rootDir, `.tmp-system-update-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
 

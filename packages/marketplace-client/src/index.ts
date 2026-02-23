@@ -1,4 +1,6 @@
-import { MarketplacePlugin, MarketplaceData } from '@fromcode/sdk';
+import { MarketplacePlugin, MarketplaceData, Logger } from '@fromcode/sdk';
+
+const logger = new Logger({ namespace: 'marketplace-client' });
 
 export { MarketplacePlugin, MarketplaceData };
 
@@ -30,7 +32,7 @@ export class MarketplaceClient {
         return await fs.readJson(localPath) as MarketplaceData;
       }
     } catch (error: any) {
-      console.error(`[MarketplaceClient] Failed to fetch marketplace: ${error.message}`);
+      logger.error(`[MarketplaceClient] Failed to fetch marketplace: ${error.message}`);
       return { plugins: [], themes: [] };
     }
   }
@@ -90,7 +92,7 @@ export class MarketplaceClient {
     const marketplaceBase = this.marketplaceUrl.substring(0, this.marketplaceUrl.lastIndexOf('/'));
     const publishUrl = `${marketplaceBase}/api/plugins/publish`;
 
-    console.log(`[MarketplaceClient] Uploading ${path.basename(zipPath)} to ${publishUrl}...`);
+    logger.info(`[MarketplaceClient] Uploading ${path.basename(zipPath)} to ${publishUrl}...`);
 
     // In a real implementation, we would use FormData to upload the file
     // For now, we simulate the upload

@@ -36,12 +36,26 @@ export default function InstalledPluginsPage() {
 
   async function fetchPlugins() {
     try {
-      const [data, reg] = await Promise.all([
+      const [pluginsResult, marketplaceResult] = await Promise.allSettled([
         api.get(`${ENDPOINTS.PLUGINS.LIST}?refresh=1`),
         api.get(ENDPOINTS.PLUGINS.MARKETPLACE)
       ]);
-      setPlugins(Array.isArray(data) ? data : []);
-      setMarketplaceData(reg.plugins || []);
+
+      if (pluginsResult.status === 'fulfilled') {
+        setPlugins(Array.isArray(pluginsResult.value) ? pluginsResult.value : []);
+      } else {
+        console.error('Failed to fetch installed plugins', pluginsResult.reason);
+        setPlugins([]);
+      }
+
+      if (marketplaceResult.status === 'fulfilled') {
+        const reg = marketplaceResult.value;
+        setMarketplaceData(Array.isArray(reg?.plugins) ? reg.plugins : []);
+      } else {
+        // Marketplace outage should not block Installed list rendering.
+        console.warn('Marketplace unavailable, continuing with installed plugins only', marketplaceResult.reason);
+        setMarketplaceData([]);
+      }
     } catch (err) {
       console.error("Failed to fetch plugins", err);
     } finally {

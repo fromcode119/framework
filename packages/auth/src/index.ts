@@ -1,6 +1,8 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
+import { Logger } from '@fromcode/sdk';
 import { UserPermissionChecker } from './permission-checker';
 
 export interface User {
@@ -19,8 +21,12 @@ export class AuthManager {
   private sessionValidator?: SessionValidator;
   private apiKeyValidator?: ApiKeyValidator;
   private permissionChecker?: UserPermissionChecker;
+  private logger = new Logger({ namespace: 'auth-manager' });
 
-  constructor(secret: string = process.env.JWT_SECRET || 'fromcode-removed-historical-secret') {
+  constructor(secret: string = process.env.JWT_SECRET || '') {
+    if (!secret) {
+      throw new Error('AuthManager: JWT_SECRET must be set in environment variables. No default is allowed for security.');
+    }
     this.secret = secret;
   }
 
@@ -47,7 +53,7 @@ export class AuthManager {
   async generateToken(user: User, options: { expiresIn?: SignOptions['expiresIn'] } = {}): Promise<string> {
     const payload = {
       ...user,
-      jti: user.jti || Math.random().toString(36).substring(7),
+      jti: user.jti || randomUUID(),
     };
     return jwt.sign(payload, this.secret, { expiresIn: options.expiresIn ?? '15m' }); // Short-lived access token
   }
@@ -55,7 +61,7 @@ export class AuthManager {
   async generateRefreshToken(user: User): Promise<string> {
     const payload = {
       id: user.id,
-      jti: user.jti || Math.random().toString(36).substring(7),
+      jti: user.jti || randomUUID(),
       type: 'refresh'
     };
     return jwt.sign(payload, this.secret, { expiresIn: '7d' }); // Long-lived refresh token
@@ -107,7 +113,7 @@ export class AuthManager {
                   return next();
               }
           } catch (e) {
-              console.error('[AuthManager] API Key validation failed', e);
+              this.logger.error(`API Key validation failed: ${e}`);
           }
       }
 
@@ -154,7 +160,7 @@ export class AuthManager {
           const user = await this.verifyToken(t);
           if (user) {
             req.user = user;
-            console.debug(`[AuthManager] Session validated using token candidate (${t.substring(0, 10)}...) for ${req.url || 'unknown'}`);
+            this.logger.debug(`Session validated using token candidate (${t.substring(0, 10)}...) for ${req.url || 'unknown'}`);
             break;
           }
         } catch (err: any) {
@@ -163,18 +169,18 @@ export class AuthManager {
           if (msg.includes('expired')) {
             hasExpiredToken = true;
           }
-          console.debug(`[AuthManager] Token candidate failed: ${msg}`);
+          this.logger.debug(`Token candidate failed: ${msg}`);
         }
       }
 
       if (tokenCandidates.length > 0 && !req.user) {
          if (req.url && !req.url.includes('/status') && !req.url.includes('/health')) {
-            console.warn(`[AuthManager] All ${tokenCandidates.length} token candidates failed for ${req.url}`);
+            this.logger.warn(`All ${tokenCandidates.length} token candidates failed for ${req.url}`);
          }
 
          // SELF-HEALING: If we have an expired token, clear it to prevent redirect loops or stale sessions
          if (hasExpiredToken && res.clearCookie) {
-            console.log(`[AuthManager] Expired token detected for ${req.url}. Clearing auth/security cookies.`);
+            this.logger.info(`Expired token detected for ${req.url}. Clearing auth/security cookies.`);
             
             const isProd = process.env.NODE_ENV === 'production';
             const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' || req.get('x-forwarded-port') === '443';
@@ -214,7 +220,7 @@ export class AuthManager {
   guard(roles: string[] = []) {
     return (req: any, res: any, next: any) => {
       if (!req.user) {
-        console.log(`[AuthManager] Guard failed: No user on request for ${req.method} ${req.url}`);
+        this.logger.warn(`Guard failed: No user on request for ${req.method} ${req.url}`);
         return res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
       }
 
@@ -233,12 +239,12 @@ export class AuthManager {
   requirePermission(permission: string | string[]) {
     return async (req: any, res: any, next: any) => {
       if (!req.user) {
-        console.log(`[AuthManager] Permission guard failed: No user on request for ${req.method} ${req.url}`);
+        this.logger.warn(`Permission guard failed: No user on request for ${req.method} ${req.url}`);
         return res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
       }
 
       if (!this.permissionChecker) {
-        console.error('[AuthManager] Permission checker not configured - falling back to role check');
+        this.logger.error('Permission checker not configured - falling back to role check');
         // Fallback: check if user is admin
         const isAdmin = req.user.roles.includes('admin');
         if (!isAdmin) {
@@ -263,7 +269,7 @@ export class AuthManager {
       }
 
       if (!hasPermission) {
-        console.log(`[AuthManager] Permission denied for user ${req.user.email}: requires ${permissions.join(' OR ')}`);
+        this.logger.warn(`Permission denied for user ${req.user.email}: requires ${permissions.join(' OR ')}`);
         return res.status(403).json({ 
           error: 'Forbidden: missing required permission',
           required: permissions

@@ -1,5 +1,6 @@
 import { LoadedPlugin } from '../../types';
 import { PluginManagerInterface } from './utils';
+import { SystemTable } from '@fromcode/sdk/internal';
 
 export function createSettingsProxy(
   plugin: LoadedPlugin,
@@ -10,7 +11,7 @@ export function createSettingsProxy(
       manager.registerPluginSettings(plugin.manifest.slug, schema);
     },
     get: async () => {
-      const stored = await manager.db.findOne('_system_plugin_settings', { plugin_slug: plugin.manifest.slug });
+      const stored = await manager.db.findOne(SystemTable.PLUGIN_SETTINGS, { plugin_slug: plugin.manifest.slug });
       const storedSettings = stored?.settings?.settings || {};
       const schema = manager.getPluginSettings(plugin.manifest.slug);
       
@@ -26,7 +27,7 @@ export function createSettingsProxy(
       return storedSettings;
     },
     update: async (values: Record<string, any>) => {
-      const stored = await manager.db.findOne('_system_plugin_settings', { plugin_slug: plugin.manifest.slug });
+      const stored = await manager.db.findOne(SystemTable.PLUGIN_SETTINGS, { plugin_slug: plugin.manifest.slug });
       const currentConfig = stored?.settings || {};
       
       await manager.savePluginConfig(plugin.manifest.slug, {

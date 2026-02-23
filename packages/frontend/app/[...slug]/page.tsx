@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import DynamicContentClient from '../dynamic-content-client';
 import {
   buildCollectionLookupPath,
@@ -21,15 +21,7 @@ type DynamicPageProps = {
   searchParams?: MaybePromise<SearchParams>;
 };
 
-const RESERVED_ROOT_SEGMENTS = new Set([
-  'api',
-  '_next',
-  'plugins',
-  'themes',
-  'media',
-  'uploads'
-]);
-
+const RESERVED_ROOT_SEGMENTS = new Set(['api', '_next', 'plugins', 'themes', 'media', 'uploads']);
 
 const STATIC_FILE_EXT_RE = /\.(?:map|js|mjs|cjs|css|png|jpe?g|gif|svg|ico|webp|avif|woff2?|ttf|eot|json|txt|xml|webm|mp4|mov|pdf)$/i;
 
@@ -254,6 +246,7 @@ export default async function DynamicContentPage({ params, searchParams }: Dynam
   }
 
   const slug = normalizedSegments.join('/').trim();
+
   const locale = await resolveLocale(resolvedSearchParams, pathLocale, routingConfig.strategy);
   const fallbackLocale = normalizeLocaleCode(readSearchValue(resolvedSearchParams, 'fallback_locale'));
 

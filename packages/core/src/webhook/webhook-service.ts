@@ -1,5 +1,5 @@
 import { HookManager } from '../hooks/hook-manager';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { signPayload } from '../security/plugin-signature-service';
 import WebhooksCollection from '../collections/webhooks';
 

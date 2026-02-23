@@ -1,31 +1,5 @@
-import { 
-  IDatabaseManager, 
-  IMediaManager, 
-  IEmailManager, 
-  ICacheManager,
-  PluginCapability,
-  ThemeManifest,
-  MenuItemManifest,
-  PluginManifest,
-  FieldType,
-  Field,
-  Access,
-  Collection,
-  PluginContext,
-  FromcodePlugin,
-  MiddlewareStage,
-  MiddlewareConfig,
-  MarketplacePlugin,
-  PluginEntry,
-  MarketplaceTheme,
-  MarketplaceData
-} from '@fromcode/sdk';
-
 export { 
   IDatabaseManager, 
-  IMediaManager, 
-  IEmailManager, 
-  ICacheManager,
   PluginCapability,
   ThemeManifest,
   MenuItemManifest,
@@ -36,29 +10,17 @@ export {
   Collection,
   PluginContext,
   FromcodePlugin,
+  LoadedPlugin,
   MiddlewareStage,
   MiddlewareConfig,
   MarketplacePlugin,
   PluginEntry,
   MarketplaceTheme,
-  MarketplaceData
-};
-
-// Aliases for compatibility
-export type MediaManager = IMediaManager;
-export type EmailManager = IEmailManager;
-export type CacheManager = ICacheManager;
-
-export interface LoadedPlugin extends FromcodePlugin {
-  instanceId: string;
-  state: 'inactive' | 'loading' | 'active' | 'error';
-  path?: string; // Absolute path to the plugin folder
-  approvedCapabilities?: string[];
-  error?: string; // Error message if state is 'error'
-  isSandboxed?: boolean;
-  entryPath?: string;
-  healthStatus?: 'healthy' | 'warning' | 'error';
-}
+  MarketplaceData,
+  CollectionQueryInterface,
+  CandidateLookupOptions,
+  UpsertByCandidatesOptions
+} from '@fromcode/sdk';
 
 export interface SystemMigration {
   version: number;
@@ -75,22 +37,3 @@ export interface I18nConfig {
 export interface TranslationMap {
   [key: string]: string | TranslationMap;
 }
-
-export interface CollectionQueryInterface {
-  find(options?: any): Promise<any[]>;
-  findOne(where: any): Promise<any | null>;
-  insert(data: any): Promise<any>;
-  update(where: any, data: any): Promise<any>;
-  delete(where: any): Promise<boolean>;
-  count(where?: any): Promise<number>;
-}
-
-export type CandidateLookupOptions = {
-  fields?: string[];
-  scanLimit?: number;
-};
-
-export type UpsertByCandidatesOptions = CandidateLookupOptions & {
-  idField?: string;
-  updateWhere?: (record: any) => Record<string, any>;
-};

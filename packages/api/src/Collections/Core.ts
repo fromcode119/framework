@@ -1,9 +1,10 @@
-import { Collection } from '@fromcode/core';
+import { Collection, SystemTable } from '@fromcode/core';
 import { MediaCollection as Media } from '@fromcode/media';
 
 export const UserCollection: Collection = {
   slug: 'users',
   name: 'Users',
+  tableName: SystemTable.USERS,
   system: true,
   fields: [
     { name: 'email', label: 'E-Mail', type: 'text', required: true, unique: true },
@@ -28,7 +29,7 @@ export { Media as MediaCollection };
 export const SettingsCollection: Collection = {
   slug: 'settings',
   name: 'Global Settings',
-  tableName: '_system_meta',
+  tableName: SystemTable.META,
   primaryKey: 'key',
   timestamps: false,
   system: true,

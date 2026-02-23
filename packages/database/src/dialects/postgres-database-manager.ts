@@ -37,12 +37,22 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     return pgTable(tableName, tableColumns);
   }
 
+  protected getLikeOperator(): string {
+    return 'ILIKE';
+  }
+
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
-    const { limit, offset, orderBy, where, columns } = options;
+    const { limit, offset, orderBy, where, columns, joins, search } = options;
     
     // If it's a string (dynamic table), use raw SQL to ensure all columns are retrieved
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
+
+      if (joins && joins.length > 0) {
+        const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, options);
+        const rows = await this.executeRawSelect(sqlStr, values);
+        return this.processJoinedRows(rows, joins);
+      }
       let sqlQuery = `SELECT `;
       
       if (columns && Object.keys(columns).length > 0) {
@@ -56,7 +66,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       
       sqlQuery += ` FROM "${tableName}"`;
       
-      const { sql: whereClause, values } = this.buildRawWhereClause(where);
+      const { sql: whereClause, values } = this.buildRawFilterSQL(where, search);
       sqlQuery += whereClause;
       sqlQuery += this.buildRawOrderByClause(orderBy);
       
@@ -157,6 +167,15 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     const conditions = this.buildWhereConditions(where);
     const result = await this.drizzle.delete(tableOrName).where(and(...conditions)).returning();
     return result.length > 0;
+  }
+
+  protected getParamPlaceholder(index: number): string {
+    return `$${index}`;
+  }
+
+  protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
+    const result = await this.pool.query(sqlStr, values);
+    return result.rows;
   }
 
   async count(tableName: string, where: any = {}): Promise<number> {

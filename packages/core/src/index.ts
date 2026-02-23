@@ -1,6 +1,5 @@
 export * from './types';
 export { RecordVersions } from './collections/record-versions';
-export { MediaCollection as Media } from '@fromcode/media';
 export { PluginManager, type PluginManagerInterface } from './plugin/plugin-manager';
 export { ThemeManager } from './theme/theme-manager';
 export { SchemaManager } from './database/schema-manager';
@@ -10,12 +9,13 @@ export { HookManager } from './hooks/hook-manager';
 export { HookAdapterFactory } from './hooks/hook-adapter-factory';
 export { QueueManager } from './queue/queue-manager';
 export { QueueAdapterFactory } from './queue/queue-adapter-factory';
-export { LogLevel, Logger } from './logging/logger';
-export type { LoggerOptions } from './logging/logger';
+export { Logger } from '@fromcode/sdk';
+export type { LoggerOptions } from '@fromcode/sdk';
 export { I18nManager } from './i18n/i18n-manager';
 export * from './utils';
-export { API_RESOURCE_PATHS } from './constants/api-paths';
+export { ApiPath, SystemTable } from '@fromcode/sdk/internal';
 export { env, validateEnv } from './config/env';
+export { getProjectRoot, getPluginsDir, getThemesDir } from './config/paths';
 export { WebSocketManager } from './realtime/web-socket-manager';
 
 // Integrations

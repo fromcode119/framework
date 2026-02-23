@@ -1,4 +1,4 @@
-import { PluginManager, Collection } from '@fromcode/core';
+import { PluginManager, Collection, SystemTable } from '@fromcode/core';
 import { RESTController } from '../controllers/rest-controller';
 
 export class ResolutionService {
@@ -23,7 +23,7 @@ export class ResolutionService {
     // Fetch permalink structure
     let permalinkStructure = '/:slug';
     try {
-      const settings = await this.manager.db.find('_system_meta');
+      const settings = await this.manager.db.find(SystemTable.META);
       const permSetting = settings.find((s: any) => s.key === 'permalink_structure');
       if (permSetting) permalinkStructure = permSetting.value;
     } catch {}

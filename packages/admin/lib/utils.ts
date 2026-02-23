@@ -1,9 +1,33 @@
 import { normalizeLocaleCode, isLocaleLikeKey, resolveLocalizedText } from '@fromcode/core/utils';
 import { formatSystemDateTime } from './timezone';
+import { api } from './api';
 
 export { normalizeLocaleCode, isLocaleLikeKey, resolveLocalizedText };
 
 export const LOCALE_KEY_RE = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/i;
+
+/**
+ * Formats a number of bytes into a human-readable string (KB, MB, GB, etc.)
+ */
+export function formatSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+/**
+ * Resolves a media value (string) into a full URL if needed.
+ */
+export function resolveMediaUrl(value: any): string {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) {
+    return raw;
+  }
+  return api.getURL(raw.startsWith('/') ? raw : `/${raw}`);
+}
 
 /**
  * Deep search utility that attempts to find a display name in any object/structure.

@@ -1,7 +1,7 @@
 // TypeScript namespace import correctly handles isolated-vm's CommonJS export pattern
 import ivm = require('isolated-vm');
 import { PluginManifest, PluginContext } from '@fromcode/sdk';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 
 export class SandboxManager {
   private logger = new Logger({ namespace: 'sandbox-manager' });

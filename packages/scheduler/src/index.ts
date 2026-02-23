@@ -1,5 +1,6 @@
 import { IDatabaseManager, sql } from '@fromcode/database';
 import { Logger } from '@fromcode/sdk';
+import { SystemTable } from '@fromcode/sdk/internal';
 import cron, { ScheduledTask } from 'node-cron';
 
 const logger = new Logger({ namespace: 'scheduler' });
@@ -64,7 +65,7 @@ export class SchedulerService {
    * Register or update a task schedule in the database
    */
   async scheduleTask(task: Omit<SchedulerTask, 'handler' | 'is_active'> & { is_active?: boolean }) {
-    const existing = await this.db.find('_system_scheduler_tasks', {
+    const existing = await this.db.find(SystemTable.SCHEDULER_TASKS, {
       where: { name: task.name },
       limit: 1
     });
@@ -80,10 +81,10 @@ export class SchedulerService {
     };
 
     if (existing.length > 0) {
-      await this.db.update('_system_scheduler_tasks', data, { name: task.name });
+      await this.db.update(SystemTable.SCHEDULER_TASKS, { name: task.name }, data);
       logger.debug(`Updated scheduler task schedule: ${task.name}`);
     } else {
-      await this.db.insert('_system_scheduler_tasks', {
+      await this.db.insert(SystemTable.SCHEDULER_TASKS, {
         ...data,
         created_at: new Date(),
         next_run: task.type === 'interval' ? this.calculateNextRun(task.schedule) : null
@@ -138,7 +139,7 @@ export class SchedulerService {
    * Sync active cron tasks from database to memory
    */
   private async syncFromDatabase() {
-    const activeTasks = await this.db.find('_system_scheduler_tasks', {
+    const activeTasks = await this.db.find(SystemTable.SCHEDULER_TASKS, {
       where: { is_active: true }
     });
 
@@ -175,7 +176,7 @@ export class SchedulerService {
    */
   private async pulse() {
     const now = new Date();
-    const tasks = await this.db.find('_system_scheduler_tasks', {
+    const tasks = await this.db.find(SystemTable.SCHEDULER_TASKS, {
       where: { type: 'interval', is_active: true }
     });
 
@@ -187,14 +188,14 @@ export class SchedulerService {
         
         // Calculate next run
         const nextRun = this.calculateNextRun(task.schedule);
-        await this.db.update('_system_scheduler_tasks', {
+        await this.db.update(SystemTable.SCHEDULER_TASKS, { name: task.name }, {
           last_run: now,
           next_run: nextRun
-        }, { name: task.name });
+        });
       } else if (!task.next_run) {
         // First run initialization
         const nextRun = this.calculateNextRun(task.schedule);
-        await this.db.update('_system_scheduler_tasks', { next_run: nextRun }, { name: task.name });
+        await this.db.update(SystemTable.SCHEDULER_TASKS, { name: task.name }, { next_run: nextRun });
       }
     }
   }
@@ -222,9 +223,9 @@ export class SchedulerService {
       }
 
       // Update last run in DB
-      await this.db.update('_system_scheduler_tasks', {
+      await this.db.update(SystemTable.SCHEDULER_TASKS, { name }, {
         last_run: new Date()
-      }, { name });
+      });
 
     } catch (error: any) {
       logger.error(`Failed to run task "${name}": ${error.message}`);
