@@ -9,7 +9,9 @@ vi.mock('@fromcode119/react', async (importOriginal) => {
   const actual = await importOriginal() as any;
   return {
     ...actual,
-    usePlugins: () => ({ triggerRefresh: vi.fn() })
+    usePlugins: () => ({
+      triggerRefresh: vi.fn(),
+    }),
   };
 });
 
