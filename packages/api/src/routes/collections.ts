@@ -1,7 +1,7 @@
 import express from 'express';
 import { PluginManager } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
-import { createCollectionMiddleware } from '../Middlewares/Collection';
+import { createCollectionMiddleware } from '../middlewares/collection';
 
 export function setupCollectionRoutes(manager: PluginManager, restController: RESTController) {
   const router = express.Router();
