@@ -1,4 +1,4 @@
-export * from './icons';
+export * from './Icons';
 export { 
   PluginsProvider, usePlugins, useTranslation, usePluginAPI,
   registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem,
@@ -6,8 +6,8 @@ export {
   registerAPI, getAPI, loadConfig, resolveContent, emit, on, t, locale, setLocale, api
 } from './context';
 export * from '@fromcode119/sdk';
-export { Slot } from './slot';
-export { Override } from './override';
+export { Slot } from './Slot';
+export { Override } from './Override';
 export { RootFramework } from './root-framework';
 export { useSystemShortcodes } from './system-shortcodes';
 export { queryCollectionDocs, queryCollectionDocById, queryCollectionDocByField } from './collection-queries';
