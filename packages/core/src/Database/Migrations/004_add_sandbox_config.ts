@@ -13,10 +13,17 @@ export const AddSandboxConfigMigration: SystemMigration = {
         `);
       },
       sqlite: async () => {
-        await db.execute(sql`
-          ALTER TABLE "_system_plugins" 
-          ADD COLUMN "sandbox_config" TEXT DEFAULT '{}'
-        `);
+        try {
+          await db.execute(sql`
+            ALTER TABLE "_system_plugins" 
+            ADD COLUMN "sandbox_config" TEXT DEFAULT '{}'
+          `);
+        } catch (e: any) {
+          // SQLite lacks IF NOT EXISTS for ADD COLUMN — silently ignore if column already exists.
+          // Drizzle wraps the error so check both e.message and e.cause.message.
+          const msg: string = (e?.message ?? '') + (e?.cause?.message ?? '');
+          if (!msg.includes('duplicate column name')) throw e;
+        }
       }
     });
   },

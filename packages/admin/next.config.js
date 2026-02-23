@@ -2,6 +2,7 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '',
   reactStrictMode: true,
   transpilePackages: ['@fromcode/react'],
   turbopack: {},

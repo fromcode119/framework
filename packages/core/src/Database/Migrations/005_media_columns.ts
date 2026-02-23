@@ -75,6 +75,27 @@ export const MediaColumnsBackfill: SystemMigration = {
         if (Number(fkRow.count) === 0) {
           await db.execute(sql.raw(`ALTER TABLE media ADD CONSTRAINT media_folder_fk FOREIGN KEY (folder_id) REFERENCES media_folders(id) ON DELETE SET NULL`));
         }
+      },
+      sqlite: async () => {
+        // SQLite requires individual ADD COLUMN statements — no IF NOT EXISTS.
+        // Swallow duplicate-column errors so existing schemas pass cleanly.
+        const addIfMissing = async (col: string, def: string) => {
+          try {
+            await db.execute(sql.raw(`ALTER TABLE "media" ADD COLUMN "${col}" ${def}`));
+          } catch (e: any) {
+            const msg = (e?.message ?? '') + (e?.cause?.message ?? '');
+            if (!msg.includes('duplicate column name')) throw e;
+          }
+        };
+        await addIfMissing('original_name', 'TEXT');
+        await addIfMissing('mime_type', 'TEXT');
+        await addIfMissing('file_size', 'INTEGER');
+        await addIfMissing('width', 'INTEGER');
+        await addIfMissing('height', 'INTEGER');
+        await addIfMissing('alt', 'TEXT');
+        await addIfMissing('caption', 'TEXT');
+        await addIfMissing('folder_id', 'INTEGER');
+        await addIfMissing('updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP');
       }
     });
   }

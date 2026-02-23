@@ -13,7 +13,11 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   constructor(connection: string) {
     super();
-    const dbPath = connection.startsWith('sqlite:') ? connection.replace('sqlite:', '') : connection;
+    const dbPath = connection.startsWith('sqlite:')
+      ? connection.replace('sqlite:', '')
+      : connection.startsWith('file:')
+        ? connection.replace('file:', '')
+        : connection;
     this.sqlite = new Database(dbPath);
     this.drizzle = drizzle(this.sqlite);
   }

@@ -11,10 +11,11 @@ import { FrameworkIcons } from '@/lib/icons';
 import { Loader } from '@/components/ui/loader';
 import { useNotification } from '@/components/notification-context';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-context';
 
 export default function UserSecurityPage() {
+  const router = useRouter();
   const { theme } = useTheme();
   const { id } = useParams();
   const { user: authUser } = useAuth();
@@ -136,7 +137,7 @@ export default function UserSecurityPage() {
       const result = await api.post(ENDPOINTS.AUTH.REVOKE_MY_SESSION(sessionId), {});
       addNotification({ title: 'Session Revoked', message: 'Device session revoked successfully.', type: 'success' });
       if (result?.revokedCurrent) {
-        window.location.href = '/login';
+        router.push('/login');
         return;
       }
       await fetchMySessions();

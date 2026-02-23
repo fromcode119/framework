@@ -138,6 +138,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const { theme } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { loadConfig, settings } = usePlugins();
@@ -212,10 +213,10 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         if (initialized === false && !isSetupPath) {
           console.log("[ClientLayout] System uninitialized -> setup");
           purgeAuth();
-          window.location.href = '/setup';
+          router.push('/setup');
         } else if (initialized === true && isSetupPath) {
           console.log("[ClientLayout] System initialized -> login");
-          window.location.href = '/login';
+          router.push('/login');
         }
       } catch (e) {
         console.error("Initialization check failed", e);
@@ -229,7 +230,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isInitialized === true && !user && !isAuthPage && !isAuthLoading) {
       console.log("[ClientLayout] Guard: Moving to login");
-      window.location.href = '/login';
+      router.push('/login');
     }
   }, [user, isInitialized, isAuthPage, isAuthLoading]);
 
@@ -250,7 +251,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <button 
             onClick={() => {
                purgeAuth();
-               window.location.href = '/login';
+               router.push('/login');
             }}
             className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-semibold tracking-wide text-[11px] shadow-2xl hover:scale-[1.02] transition-transform"
           >
