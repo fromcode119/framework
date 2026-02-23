@@ -6,7 +6,7 @@ services:
     build:
       context: ..
       target: base
-    command: npm run start --workspace=@fromcode/api
+    command: npm run start --workspace=@fromcode119/api
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
@@ -29,7 +29,7 @@ services:
     build:
       context: ..
       target: base
-    command: npm run start --workspace=@fromcode/admin
+    command: npm run start --workspace=@fromcode119/admin
     environment:
       - API_URL=http://api:4000
       - NEXT_PUBLIC_API_URL=${API_PUBLIC_URL}
