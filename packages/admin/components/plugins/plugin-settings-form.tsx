@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { usePlugins } from '@fromcode/react';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
@@ -15,13 +15,20 @@ interface PluginSettingsFormProps {
   onStateChange?: (isDirty: boolean, saving: boolean) => void;
 }
 
-export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
+export interface PluginSettingsFormHandle {
+  exportSettings: () => void;
+  importSettings: () => void;
+  resetSettings: () => void;
+}
+
+export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSettingsFormProps>(function PluginSettingsForm({
   pluginSlug,
   formId,
   onStateChange,
-}) => {
+}, ref) {
   const { triggerRefresh } = usePlugins() as any;
   const { theme } = useTheme();
+  const importInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [schema, setSchema] = useState<any>(null);
@@ -132,6 +139,12 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    exportSettings: handleExport,
+    importSettings: () => importInputRef.current?.click(),
+    resetSettings: handleReset,
+  }));
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -238,44 +251,8 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
         </div>
       )}
 
-      {/* Data Tools */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={handleExport}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
-            theme === 'dark'
-              ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-              : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'
-          }`}
-        >
-          <FrameworkIcons.Download size={13} />
-          Export
-        </button>
-        <label className="cursor-pointer">
-          <input type="file" accept=".json" onChange={handleImport} className="hidden" />
-          <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
-            theme === 'dark'
-              ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-              : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'
-          }`}>
-            <FrameworkIcons.Upload size={13} />
-            Import
-          </span>
-        </label>
-        <button
-          type="button"
-          onClick={handleReset}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
-            theme === 'dark'
-              ? 'bg-slate-900 border-slate-800 text-rose-400 hover:text-rose-300 hover:border-rose-500/30'
-              : 'bg-white border-slate-200 text-rose-500 hover:text-rose-600 hover:border-rose-200 shadow-sm'
-          }`}
-        >
-          <FrameworkIcons.Refresh size={13} />
-          Reset
-        </button>
-      </div>
+      {/* hidden file input for import */}
+      <input ref={importInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
 
       {/* Tabs */}
       {schema.tabs && schema.tabs.length > 0 && (
@@ -325,4 +302,4 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
 
     </form>
   );
-};
+});

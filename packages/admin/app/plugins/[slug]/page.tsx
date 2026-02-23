@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState, useEffect } from 'react';
+import React, { use, useState, useEffect, useRef } from 'react';
 import { Slot, usePlugins, Plugin } from '@fromcode/react';
 import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import { ENDPOINTS } from '@/lib/constants';
 import { useNotify } from '@/components/notification-context';
 import { Loader } from '@/components/ui/loader';
 import { Select } from '@/components/ui/select';
-import { PluginSettingsForm } from '@/components/plugins/plugin-settings-form';
+import { PluginSettingsForm, PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form';
 
 export default function PluginDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -35,6 +35,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
+  const settingsFormRef = useRef<PluginSettingsFormHandle>(null);
+  const [showDefinition, setShowDefinition] = useState(false);
   const [marketplaceItem, setMarketplaceItem] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'permissions' | 'resources'>('overview');
   const [logs, setLogs] = useState<any[]>([]);
@@ -394,6 +396,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
           {activeTab === 'settings' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                <PluginSettingsForm
+                 ref={settingsFormRef}
                  pluginSlug={slug}
                  formId="plugin-settings-form"
                  onStateChange={(dirty, saving) => {
@@ -626,6 +629,44 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                   : <><FrameworkIcons.Check size={14} /> Save Settings</>
                 }
               </button>
+              <div className={`mt-4 pt-4 border-t flex gap-2 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
+                <button
+                  type="button"
+                  onClick={() => settingsFormRef.current?.exportSettings()}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                    theme === 'dark'
+                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700'
+                      : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white shadow-sm'
+                  }`}
+                  title="Export settings as JSON"
+                >
+                  <FrameworkIcons.Download size={12} /> Export
+                </button>
+                <button
+                  type="button"
+                  onClick={() => settingsFormRef.current?.importSettings()}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                    theme === 'dark'
+                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700'
+                      : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white shadow-sm'
+                  }`}
+                  title="Import settings from JSON"
+                >
+                  <FrameworkIcons.Upload size={12} /> Import
+                </button>
+                <button
+                  type="button"
+                  onClick={() => settingsFormRef.current?.resetSettings()}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                    theme === 'dark'
+                      ? 'bg-slate-800 border-slate-700 text-rose-400 hover:text-rose-300 hover:border-rose-500/30'
+                      : 'bg-slate-50 border-slate-200 text-rose-500 hover:text-rose-700 hover:border-rose-200 shadow-sm'
+                  }`}
+                  title="Reset settings to defaults"
+                >
+                  <FrameworkIcons.Refresh size={12} /> Reset
+                </button>
+              </div>
             </Card>
           )}
           <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
@@ -633,23 +674,20 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
               Manifest Details
             </h3>
             <div className="space-y-8">
-              <div className="space-y-2">
+              <div className="flex justify-between items-center">
                 <span className="text-xs font-semibold tracking-wider text-slate-500">Capabilities</span>
                 {plugin.capabilities && plugin.capabilities.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {plugin.capabilities.map(c => (
-                      <span key={c} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${
-                        theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {c.includes('api') ? <FrameworkIcons.Globe size={10} /> :
-                         c.includes('db') || c.includes('database') ? <FrameworkIcons.Database size={10} /> :
-                         c.includes('hook') ? <FrameworkIcons.Zap size={10} /> : <FrameworkIcons.Shield size={10} />}
-                        {c}
-                      </span>
-                    ))}
-                  </div>
+                  <button
+                    onClick={() => handleTabChange('permissions')}
+                    className={`flex items-center gap-1.5 text-[11px] font-bold transition-colors ${
+                      theme === 'dark' ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'
+                    }`}
+                  >
+                    <FrameworkIcons.Shield size={12} />
+                    {plugin.capabilities.length} declared
+                  </button>
                 ) : (
-                  <p className="text-[10px] font-semibold text-slate-400 mt-1">No special capabilities declared.</p>
+                  <span className="text-[10px] font-semibold text-slate-400">None</span>
                 )}
               </div>
 
@@ -662,11 +700,14 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             </div>
             
             <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
-              <button className={`w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl border font-semibold uppercase tracking-wider text-[11px] transition-all ${
-                theme === 'dark' 
-                  ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' 
-                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'
-              }`}>
+              <button
+                onClick={() => setShowDefinition(true)}
+                className={`w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl border font-semibold uppercase tracking-wider text-[11px] transition-all ${
+                  theme === 'dark' 
+                    ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' 
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'
+                }`}
+              >
                 <FrameworkIcons.Code size={16} strokeWidth={2.5} />
                 View Definition
               </button>
@@ -699,6 +740,45 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
         description={`Are you sure you want to delete ${plugin.name}? This will remove all associated files and data from the system. This action cannot be undone.`}
         confirmLabel="Uninstall Plugin"
       />
+
+      {showDefinition && (
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowDefinition(false)}
+        >
+          <div
+            className={`relative w-full max-w-2xl max-h-[80vh] flex flex-col rounded-3xl shadow-2xl overflow-hidden border ${
+              theme === 'dark' ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'
+            }`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className={`flex items-center justify-between px-8 py-5 border-b ${
+              theme === 'dark' ? 'border-white/5' : 'border-slate-100'
+            }`}>
+              <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${
+                theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+              }`}>
+                Plugin Manifest — {plugin.slug}
+              </h3>
+              <button
+                onClick={() => setShowDefinition(false)}
+                className={`h-8 w-8 rounded-xl flex items-center justify-center transition-colors ${
+                  theme === 'dark' ? 'text-slate-500 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <FrameworkIcons.X size={16} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <pre className={`p-8 text-[11px] leading-relaxed font-mono ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
+                {JSON.stringify(plugin, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
