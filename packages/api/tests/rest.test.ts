@@ -36,6 +36,7 @@ describe('rest-controller', () => {
   });
 
   it('update modifies a record', async () => {
+    mockDb.findOne.mockResolvedValue({ id: '1', title: 'Old Title' });
     mockDb.update.mockResolvedValue({ id: '1', title: 'New Title' });
     
     const req: any = { params: { id: '1' }, body: { title: 'New Title' } };

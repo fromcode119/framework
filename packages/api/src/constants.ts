@@ -37,10 +37,18 @@ export const RESERVED_PERMALINK_CONFIG = {
 
 
 export const API_VERSION = normalizeApiVersion();
+
+/**
+ * Get the API version prefix dynamically.
+ */
+export function getApiVersionPrefix() {
+  return buildApiVersionPrefix();
+}
+
 export const API_PREFIXES = {
   BASE: '/api',
-  VERSIONED: buildApiVersionPrefix()
-} as const;
+  get VERSIONED() { return buildApiVersionPrefix(); }
+};
 
 const normalizeRoutePath = (path: unknown, fallback: string) => {
   const value = String(path || '').trim();
