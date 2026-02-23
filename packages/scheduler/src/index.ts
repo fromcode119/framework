@@ -123,6 +123,21 @@ export class SchedulerService {
   }
 
   /**
+   * Stop the scheduler
+   */
+  async stop() {
+    if (this.pulseInterval) {
+      clearInterval(this.pulseInterval);
+      this.pulseInterval = null;
+    }
+    for (const job of this.cronJobs.values()) {
+      job.stop();
+    }
+    this.cronJobs.clear();
+    logger.info(`Scheduler service stopped.`);
+  }
+
+  /**
    * Run a registered handler by name.
    * Useful for queue workers.
    */
@@ -248,22 +263,5 @@ export class SchedulerService {
     };
 
     return new Date(now.getTime() + amount * (msMap[unit] || 60000));
-  }
-
-  /**
-   * Stop the scheduler
-   */
-  stop() {
-    if (this.pulseInterval) {
-      clearInterval(this.pulseInterval);
-      this.pulseInterval = null;
-    }
-
-    for (const job of this.cronJobs.values()) {
-      job.stop();
-    }
-    this.cronJobs.clear();
-    
-    logger.info('Scheduler service stopped');
   }
 }

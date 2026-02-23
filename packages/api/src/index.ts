@@ -63,6 +63,7 @@ export class APIServer {
   private cache: CacheManager;
   private settingsCache: Map<string, string> = new Map();
   private scheduler: SchedulerService;
+  private settingsInterval?: NodeJS.Timeout;
   
   constructor(private manager: PluginManager, private themeManager: ThemeManager, private auth: AuthManager) {
     const cacheDriver = process.env.REDIS_URL ? 'redis' : 'memory';
@@ -195,13 +196,23 @@ export class APIServer {
     this.logger.info('API Server initialized successfully.');
   }
 
+  public async shutdown() {
+    this.logger.info('Shutting down API Server...');
+    if (this.settingsInterval) {
+      clearInterval(this.settingsInterval);
+      this.settingsInterval = undefined;
+    }
+    await this.manager.shutdown();
+    this.logger.info('API Server shut down complete.');
+  }
+
   private async setupSettingsSync() {
     // Initial load - must be completed before server accepts requests
     await this.refreshSettingsCache();
     
     // Refresh every 5 minutes (production) or 10 seconds (development)
     const interval = process.env.NODE_ENV === 'development' ? 10 * 1000 : 5 * 60 * 1000;
-    setInterval(() => {
+    this.settingsInterval = setInterval(() => {
       this.refreshSettingsCache().catch(err => this.logger.error('Background cache sync failed: ' + err));
     }, interval);
   }

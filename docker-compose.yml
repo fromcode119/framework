@@ -9,7 +9,7 @@ services:
     build:
       context: .
       target: base
-    command: npm run dev --workspace=@fromcode/api
+    command: npm run dev --workspace=@fromcode119/api
     env_file: .env
     environment:
       - PLUGINS_DIR=/app/plugins
@@ -39,7 +39,7 @@ services:
     build:
       context: .
       target: base
-    command: npm run dev --workspace=@fromcode/admin
+    command: npm run dev --workspace=@fromcode119/admin
     environment:
       - API_URL=${INTERNAL_API_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
@@ -66,7 +66,7 @@ services:
     build:
       context: .
       target: base
-    command: npm run dev --workspace=@fromcode/frontend
+    command: npm run dev --workspace=@fromcode119/frontend
     environment:
       - API_URL=${INTERNAL_API_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}

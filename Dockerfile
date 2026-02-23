@@ -52,7 +52,7 @@ FROM base AS api-only
 RUN npm run build:api
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=api
-CMD ["npm", "run", "start", "--workspace=@fromcode/api"]
+CMD ["npm", "run", "start", "--workspace=@fromcode119/api"]
 
 # ===================================
 # MODE 2: API + Admin
@@ -80,7 +80,7 @@ RUN npm run build:frontend
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=frontend
 ENV API_URL=https://api.example.com
-CMD ["npm", "run", "start", "--workspace=@fromcode/frontend"]
+CMD ["npm", "run", "start", "--workspace=@fromcode119/frontend"]
 
 # ===================================
 # MODE 5: Admin Only
@@ -89,4 +89,4 @@ FROM base AS admin-only
 RUN npm run build:admin
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=admin
-CMD ["npm", "run", "start", "--workspace=@fromcode/admin"]
+CMD ["npm", "run", "start", "--workspace=@fromcode119/admin"]

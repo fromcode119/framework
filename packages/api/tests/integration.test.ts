@@ -26,7 +26,7 @@ describe('System E2E / Integration', () => {
 
     afterAll(async () => {
         if (server) {
-            // No await server.close()? Let's check APIServer
+            await server.shutdown();
         }
     });
 
