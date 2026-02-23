@@ -49,7 +49,7 @@ describe('media-controller.listFiles', () => {
     expect(res.status).not.toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(
       expect.arrayContaining([
-        expect.objectContaining({ url: 'mock-url', filename: 'file.jpg' }),
+        expect.objectContaining({ url: '/mock-url', filename: 'file.jpg' }),
       ])
     );
   });
@@ -84,7 +84,7 @@ describe('media-controller.listFiles', () => {
     expect(res.status).not.toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(
       expect.arrayContaining([
-        expect.objectContaining({ url: 'mock-url', filename: 'file.png' }),
+        expect.objectContaining({ url: '/mock-url', filename: 'file.png' }),
       ])
     );
   });
