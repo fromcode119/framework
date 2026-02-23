@@ -1,5 +1,6 @@
 export * from './types';
 export * from './logging';
+export * from './relations';
 export { ApiPath, AppPath } from './constants';
 export * from './collections';
 export * from './localization';
