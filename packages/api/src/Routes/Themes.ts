@@ -1,6 +1,6 @@
 import express from 'express';
-import { AuthManager } from '@fromcode/auth';
-import { ThemeManager } from '@fromcode/core';
+import { AuthManager } from '@fromcode119/auth';
+import { ThemeManager } from '@fromcode119/core';
 import { ThemeController } from '../controllers/theme-controller';
 
 export function setupThemeRoutes(manager: ThemeManager, auth: AuthManager) {

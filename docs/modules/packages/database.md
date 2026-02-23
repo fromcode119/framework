@@ -1,4 +1,4 @@
-# Package Module: @fromcode/database
+# Package Module: @fromcode119/database
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/database`
@@ -9,8 +9,8 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/database`
-- `npm run dev --workspace=@fromcode/database`
+- `npm run build --workspace=@fromcode119/database`
+- `npm run dev --workspace=@fromcode119/database`
 
 ## Integration Notes
 

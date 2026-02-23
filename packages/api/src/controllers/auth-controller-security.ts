@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { randomBytes } from 'crypto';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 import { AuthControllerAccount } from './auth-controller-account';
 import type { ApiTokenRecord } from './auth-controller-types';
 

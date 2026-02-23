@@ -1,7 +1,7 @@
-import { Logger } from '@fromcode/sdk';
-import { PluginManifest } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
+import { PluginManifest } from '@fromcode119/sdk';
 import { DiscoveryService } from '../plugin/services/discovery-service';
-import { MarketplaceClient, MarketplacePlugin } from '@fromcode/marketplace-client';
+import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
 import path from 'path';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/sdk';
+import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode119/sdk';
 import { Slot } from './slot';
 import { Override } from './override';
 import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './icons';
@@ -17,7 +17,7 @@ import {
   getFrameworkRuntimeBridge,
   normalizeLocaleCode,
   resolveLocalizedLabel
-} from '@fromcode/sdk';
+} from '@fromcode119/sdk';
 
 export interface SlotComponent {
   component: React.ComponentType<any>;
@@ -92,7 +92,7 @@ const PluginContext = createContext<PluginContextValue | null>(null);
 const inFlightGetRequests = new Map<string, Promise<any>>();
 
 // --- Standalone Bridge Exports ---
-// These allow plugins to import { registerX } from '@fromcode/react' 
+// These allow plugins to import { registerX } from '@fromcode119/react' 
 // when running inside the framework's dynamic bridge environment.
 
 /**
@@ -828,8 +828,8 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
       // Centralized runtime module registry
       const runtimeRegistry = ((window as any)[RUNTIME_GLOBALS.MODULES] ||= {});
-      runtimeRegistry['@fromcode/react'] = bridge;
-      runtimeRegistry['@fromcode/sdk'] = bridge; // Most SDK exports are available on the bridge
+      runtimeRegistry['@fromcode119/react'] = bridge;
+      runtimeRegistry['@fromcode119/sdk'] = bridge; // Most SDK exports are available on the bridge
 
       (window as any).Fromcode = bridge;
       (window as any).getIcon = getIcon;
@@ -859,7 +859,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         adminExportKeys.map((key) => `export const ${key} = ${adminModuleAccessor} ? ${adminModuleAccessor}.${key} : undefined;`).join('\n') +
         `\nexport default ${adminModuleAccessor};`;
 
-      const reactModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}['@fromcode/react']`;
+      const reactModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}['@fromcode119/react']`;
       const reactExportSource = Object.keys(bridge)
         .filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof))
         .map(key => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : window.Fromcode.${key};`)
@@ -873,10 +873,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           "lucide-react": "data:application/javascript," + encodeURIComponent(
             Object.keys((window as any).Lucide || (window as any).FrameworkIcons || {}).map(key => `export const ${key} = (window.Lucide || window.FrameworkIcons).${key};`).join('\n') + `\nexport default (window.Lucide || window.FrameworkIcons);`
           ),
-          "@fromcode/react": "data:application/javascript," + encodeURIComponent(reactExportSource),
-          "@fromcode/sdk": "data:application/javascript," + encodeURIComponent(reactExportSource),
-          "@fromcode/admin/components": "data:application/javascript," + encodeURIComponent(adminExportSource),
-          "@fromcode/admin": "data:application/javascript," + encodeURIComponent(adminExportSource)
+          "@fromcode119/react": "data:application/javascript," + encodeURIComponent(reactExportSource),
+          "@fromcode119/sdk": "data:application/javascript," + encodeURIComponent(reactExportSource),
+          "@fromcode119/admin/components": "data:application/javascript," + encodeURIComponent(adminExportSource),
+          "@fromcode119/admin": "data:application/javascript," + encodeURIComponent(adminExportSource)
       };
 
       // Merge server-side and client-side modules from stabilityRef

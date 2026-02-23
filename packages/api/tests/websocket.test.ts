@@ -1,5 +1,5 @@
-import { WebSocketManager } from '@fromcode/core';
-import { HookManager } from '@fromcode/core';
+import { WebSocketManager } from '@fromcode119/core';
+import { HookManager } from '@fromcode119/core';
 import { WebSocket } from 'ws';
 import * as http from 'http';
 

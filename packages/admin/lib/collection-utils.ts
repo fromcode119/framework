@@ -1,5 +1,5 @@
-import type { Collection } from '@fromcode/core';
-import { resolveCollection as coreResolveCollection, generatePreviewUrl as coreGeneratePreviewUrl } from '@fromcode/core/utils';
+import type { Collection } from '@fromcode119/core';
+import { resolveCollection as coreResolveCollection, generatePreviewUrl as coreGeneratePreviewUrl } from '@fromcode119/core/utils';
 
 export { coreResolveCollection as resolveCollection };
 

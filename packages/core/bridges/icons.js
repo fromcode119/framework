@@ -1,5 +1,5 @@
 // Dynamic Icon Bridge
-import { createProxyIcon } from '@fromcode/react';
+import { createProxyIcon } from '@fromcode119/react';
 
 // Explicitly export known keys for named imports
 {{EXPORTS}}

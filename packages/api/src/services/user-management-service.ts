@@ -1,9 +1,9 @@
 import { 
   IDatabaseManager, eq, count, users, systemRoles, systemUsersToRoles, 
   systemRolesToPermissions, systemPermissions 
-} from '@fromcode/database';
-import { AuthManager } from '@fromcode/auth';
-import { PluginManager, Logger, SystemTable } from '@fromcode/core';
+} from '@fromcode119/database';
+import { AuthManager } from '@fromcode119/auth';
+import { PluginManager, Logger, SystemTable } from '@fromcode119/core';
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });

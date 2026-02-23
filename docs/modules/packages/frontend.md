@@ -1,4 +1,4 @@
-# Package Module: @fromcode/frontend
+# Package Module: @fromcode119/frontend
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/frontend`
@@ -9,10 +9,10 @@ Public-facing frontend (Next.js) that resolves CMS/plugin content and renders th
 
 ## Workspace Commands
 
-- `npm run dev --workspace=@fromcode/frontend`
-- `npm run build --workspace=@fromcode/frontend`
-- `npm run start --workspace=@fromcode/frontend`
-- `npm run lint --workspace=@fromcode/frontend`
+- `npm run dev --workspace=@fromcode119/frontend`
+- `npm run build --workspace=@fromcode119/frontend`
+- `npm run start --workspace=@fromcode119/frontend`
+- `npm run lint --workspace=@fromcode119/frontend`
 
 ## Integration Notes
 

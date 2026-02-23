@@ -1,6 +1,6 @@
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { sanitizeKey } from '../utils';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 export type IntegrationConfigFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';
 

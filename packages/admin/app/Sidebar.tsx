@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { useAuth } from '@/components/auth-context';
 import { Icon } from '@/components/icon';

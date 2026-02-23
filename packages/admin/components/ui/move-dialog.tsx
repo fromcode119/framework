@@ -6,7 +6,7 @@ import { Button } from './button';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
-import { RootFramework } from '@fromcode/react';
+import { RootFramework } from '@fromcode119/react';
 
 const { Folder, Left, Loader, Check } = FrameworkIcons;
 

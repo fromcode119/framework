@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SystemTable, SystemMetaKey } from '@fromcode/sdk/internal';
+import { SystemTable, SystemMetaKey } from '@fromcode119/sdk/internal';
 import { AuthControllerInfrastructure } from './auth-controller-infrastructure';
 import type {
   AccountStatus,

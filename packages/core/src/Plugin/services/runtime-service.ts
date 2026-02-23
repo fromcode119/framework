@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { LoadedPlugin } from '../../types';
-import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES, ADMIN_RUNTIME_EXPORT_KEYS } from '@fromcode/sdk';
+import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES, ADMIN_RUNTIME_EXPORT_KEYS } from '@fromcode119/sdk';
 
 export interface RuntimeModuleConfig {
   keys: string[];
@@ -56,14 +56,14 @@ export class RuntimeService {
       keys: this.discoverModuleKeys('react-dom/client') || ['createRoot', 'hydrateRoot']
     });
 
-    // Framework modules - We trust @fromcode/sdk and @fromcode/react to be available
-    this.registry.set('@fromcode/react', {
+    // Framework modules - We trust @fromcode119/sdk and @fromcode119/react to be available
+    this.registry.set('@fromcode119/react', {
       type: 'lib',
-      keys: this.discoverModuleKeys('@fromcode/react')
+      keys: this.discoverModuleKeys('@fromcode119/react')
     });
-    this.registry.set('@fromcode/sdk', {
+    this.registry.set('@fromcode119/sdk', {
        type: 'lib',
-       keys: this.discoverModuleKeys('@fromcode/sdk')
+       keys: this.discoverModuleKeys('@fromcode119/sdk')
     });
 
     // JSX Runtimes (Internal React usage)
@@ -133,7 +133,7 @@ export class RuntimeService {
         globalObject = 'window.React';
       } else if (name.startsWith('react-dom')) {
         globalObject = 'window.ReactDOM || window.ReactDom';
-      } else if (name.startsWith('@fromcode/')) {
+      } else if (name.startsWith('@fromcode119/')) {
         // Use the centralized runtime module registry if available
         globalObject = `(window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}['${name}']) || window.Fromcode`;
         

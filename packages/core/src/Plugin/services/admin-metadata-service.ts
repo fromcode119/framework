@@ -1,5 +1,5 @@
 import { LoadedPlugin, Collection } from '../../types';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import {
   normalizeMenuPath,
   getNestedMenuPaths,

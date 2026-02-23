@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
 import { useTheme } from '@/components/theme-context';
 import { useNotify } from '@/components/notification-context';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
-import type { PluginEntry } from '@fromcode/core';
+import type { PluginEntry } from '@fromcode119/core';
 
 export default function MarketplacePage() {
   const router = useRouter();

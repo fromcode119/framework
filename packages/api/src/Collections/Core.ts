@@ -1,5 +1,5 @@
-import { Collection, SystemTable } from '@fromcode/core';
-import { MediaCollection as Media } from '@fromcode/media';
+import { Collection, SystemTable } from '@fromcode119/core';
+import { MediaCollection as Media } from '@fromcode119/media';
 
 export const UserCollection: Collection = {
   slug: 'users',

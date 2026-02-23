@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { usePlugins, Plugin } from '@fromcode/react';
+import { usePlugins, Plugin } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';

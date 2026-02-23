@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { MigrationManager, Seeder } from '@fromcode/core';
+import { MigrationManager, Seeder } from '@fromcode119/core';
 import { getDatabase } from '../utils';
 
 export function registerDatabaseCommands(program: Command) {

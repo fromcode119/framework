@@ -1,5 +1,5 @@
-import { IDatabaseManager, sql, desc } from '@fromcode/database';
-import { Collection } from '@fromcode/core';
+import { IDatabaseManager, sql, desc } from '@fromcode119/database';
+import { Collection } from '@fromcode119/core';
 
 export class ActivityService {
   constructor(private db: IDatabaseManager) {}

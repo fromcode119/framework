@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Environment — ONE .env is all you need
+.env
+# .env.example is safe to commit (no secrets)
+
+# SQLite database
+data/
+
+# Uploaded files
+public/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+*.log
+
+# IDE
+.vscode/
+.idea/

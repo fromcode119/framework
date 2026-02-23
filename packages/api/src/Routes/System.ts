@@ -1,6 +1,6 @@
 import express from 'express';
-import { AuthManager } from '@fromcode/auth';
-import { PluginManager, ThemeManager } from '@fromcode/core';
+import { AuthManager } from '@fromcode119/auth';
+import { PluginManager, ThemeManager } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 import { SystemController } from '../controllers/system-controller';
 

@@ -8,10 +8,10 @@ import { Badge } from '../ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
 import { useTheme } from '../theme-context';
 import { useNotify } from '../notification-context';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 
 import { useRouter } from 'next/navigation';
-import type { PluginEntry } from '@fromcode/core';
+import type { PluginEntry } from '@fromcode119/core';
 
 const Marketplace: React.FC = () => {
   const router = useRouter();

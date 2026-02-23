@@ -1,4 +1,4 @@
-# Package Module: @fromcode/marketplace-client
+# Package Module: @fromcode119/marketplace-client
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/marketplace-client`
@@ -9,8 +9,8 @@ Marketplace client utilities for discovering/installing external plugins/themes.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/marketplace-client`
-- `npm run dev --workspace=@fromcode/marketplace-client`
+- `npm run build --workspace=@fromcode119/marketplace-client`
+- `npm run dev --workspace=@fromcode119/marketplace-client`
 
 ## Integration Notes
 

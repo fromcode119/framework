@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ApiPath } from '@fromcode/sdk';
+import { ApiPath } from '@fromcode119/sdk';
 import { buildFrontendApiUrl } from '../../lib/api-routes';
 export const dynamic = 'force-dynamic';
 

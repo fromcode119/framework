@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-context';
 import { StatCard } from '@/components/ui/stat-card';

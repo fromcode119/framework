@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { PluginManager, SystemTable } from '@fromcode/core';
-import { SystemMetaKey } from '@fromcode/sdk/internal';
+import { PluginManager, SystemTable } from '@fromcode119/core';
+import { SystemMetaKey } from '@fromcode119/sdk/internal';
 import { randomBytes } from 'crypto';
 import { AuthControllerTokenSupport } from './auth-controller-token-support';
 

@@ -1,5 +1,5 @@
-import { IDatabaseManager } from '@fromcode/database';
-import { Logger } from '@fromcode/core';
+import { IDatabaseManager } from '@fromcode119/database';
+import { Logger } from '@fromcode119/core';
 
 export class UserPermissionChecker {
   private logger = new Logger({ namespace: 'permission-checker' });

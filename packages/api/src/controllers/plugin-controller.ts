@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { PluginManager, Logger, parseBoolean } from '@fromcode/core';
+import { PluginManager, Logger, parseBoolean } from '@fromcode119/core';
 
 export class PluginController {
   private logger = new Logger({ namespace: 'plugin-controller' });
@@ -164,7 +164,7 @@ export class PluginController {
   async logs(req: Request, res: Response) {
     const { slug } = req.params;
     const db = (this.manager as any).db.drizzle;
-    const { systemLogs, eq, desc } = require('@fromcode/database');
+    const { systemLogs, eq, desc } = require('@fromcode119/database');
     
     try {
       const logs = await db.select()

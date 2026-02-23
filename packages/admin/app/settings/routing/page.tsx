@@ -8,7 +8,7 @@ import { Select } from '@/components/ui/select';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { useNotification } from '@/components/notification-context';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { ENDPOINTS } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Slot } from '@fromcode/react';
+import { Slot } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

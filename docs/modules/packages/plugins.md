@@ -1,4 +1,4 @@
-# Package Module: @fromcode/plugins
+# Package Module: @fromcode119/plugins
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/plugins`
@@ -9,8 +9,8 @@ Shared plugin framework utilities and contracts for plugin runtime code.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/plugins`
-- `npm run dev --workspace=@fromcode/plugins`
+- `npm run build --workspace=@fromcode119/plugins`
+- `npm run dev --workspace=@fromcode119/plugins`
 
 ## Integration Notes
 

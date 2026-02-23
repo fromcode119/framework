@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { UserPermissionChecker } from './permission-checker';
 
 export interface User {

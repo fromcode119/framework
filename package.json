@@ -1,5 +1,5 @@
 {
-  "name": "@fromcode/framework",
+  "name": "@fromcode119/framework",
   "version": "0.1.1",
   "private": true,
   "workspaces": [
@@ -8,17 +8,20 @@
   "scripts": {
     "build": "tsc -b",
     "build:api": "tsc -b packages/api",
-    "build:admin": "npm run build --workspace=@fromcode/admin",
-    "build:frontend": "npm run build --workspace=@fromcode/frontend",
+    "build:admin": "npm run build --workspace=@fromcode119/admin",
+    "build:frontend": "npm run build --workspace=@fromcode119/frontend",
     "audit:core-boundary": "node scripts/audit-core-boundary.mjs",
     "dev": "npm run dev --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "test:plugins": "npm run test --workspace=@fromcode/admin -- --config ../../vitest.plugins.config.ts",
+    "test:plugins": "npm run test --workspace=@fromcode119/admin -- --config ../../vitest.plugins.config.ts",
     "fromcode": "tsx packages/cli/src/bin.ts",
-    "start:all": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\" \"PORT=3002 npm run start --workspace=@fromcode/frontend\"",
-    "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\"",
-    "start:all:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\" \"PORT=3002 npm run start --workspace=@fromcode/frontend\"",
-    "start:api-admin:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode/api\" \"PORT=3001 npm run start --workspace=@fromcode/admin\""
+    "start:all": "concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\" \"PORT=3002 npm run start --workspace=@fromcode119/frontend\"",
+    "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\"",
+    "start:all:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\" \"PORT=3002 npm run start --workspace=@fromcode119/frontend\"",
+    "start:api-admin:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\"",
+    "dev:local": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node starters/local/proxy.js\" \"PORT=4000 npm run dev --workspace=@fromcode119/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --workspace=@fromcode119/admin\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 npm run dev --workspace=@fromcode119/frontend\"",
+    "dev:local:api-admin": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node starters/local/proxy.js\" \"PORT=4000 npm run dev --workspace=@fromcode119/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --workspace=@fromcode119/admin\"",
+    "dev:local:api": "PORT=4000 npm run dev --workspace=@fromcode119/api"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",
@@ -27,7 +30,9 @@
     "tar": "^7.5.7"
   },
   "devDependencies": {
+    "@types/http-proxy": "^1.17.17",
     "concurrently": "^8.2.2",
+    "http-proxy": "^1.18.1",
     "tsx": "^4.21.0"
   },
   "overrides": {

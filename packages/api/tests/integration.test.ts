@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { APIServer } from '../src/index';
-import { PluginManager, ThemeManager } from '@fromcode/core';
-import { AuthManager } from '@fromcode/auth';
+import { PluginManager, ThemeManager } from '@fromcode119/core';
+import { AuthManager } from '@fromcode119/auth';
 
 describe('System E2E / Integration', () => {
     let server: APIServer;

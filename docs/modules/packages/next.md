@@ -1,4 +1,4 @@
-# Package Module: @fromcode/next
+# Package Module: @fromcode119/next
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/next`
@@ -9,8 +9,8 @@ Next.js integration helpers for framework runtime composition.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/next`
-- `npm run dev --workspace=@fromcode/next`
+- `npm run build --workspace=@fromcode119/next`
+- `npm run dev --workspace=@fromcode119/next`
 
 ## Integration Notes
 

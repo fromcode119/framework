@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PluginManager } from '@fromcode/core';
+import { PluginManager } from '@fromcode119/core';
 
 export const createCollectionMiddleware = (manager: PluginManager) => {
   return (req: any, res: Response, next: NextFunction) => {

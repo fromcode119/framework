@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from './input';
 import { Button } from './button';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
-import type { Collection } from '@fromcode/core';
+import type { Collection } from '@fromcode119/core';
 import { getCollectionPrefix } from '@/lib/collection-utils';
 import { getFieldClasses, UI_TEXT } from '@/lib/ui';
 

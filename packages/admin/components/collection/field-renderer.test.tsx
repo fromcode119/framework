@@ -4,7 +4,7 @@ import { FieldRenderer } from './field-renderer';
 import React from 'react';
 
 // Mock usePlugins
-vi.mock('@fromcode/react', () => ({
+vi.mock('@fromcode119/react', () => ({
   usePlugins: vi.fn(() => ({
     collections: [],
     fieldComponents: {}

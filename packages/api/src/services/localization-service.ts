@@ -1,5 +1,5 @@
-import { Collection } from '@fromcode/sdk';
-import { normalizeLocaleCode, isLocaleLikeKey, isMeaningfulLocalizedValue, SystemTable } from '@fromcode/core';
+import { Collection } from '@fromcode119/sdk';
+import { normalizeLocaleCode, isLocaleLikeKey, isMeaningfulLocalizedValue, SystemTable } from '@fromcode119/core';
 
 export class LocalizationService {
   constructor(private db: any) {}

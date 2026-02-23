@@ -3,7 +3,7 @@ import {
   buildCollectionListPath,
   CollectionListPathOptions,
   extractCollectionDocs
-} from '@fromcode/sdk';
+} from '@fromcode119/sdk';
 
 export interface CollectionApiClient {
   get: (path: string, options?: any) => Promise<any>;

@@ -1,6 +1,6 @@
 import express from 'express';
-import { PluginManager } from '@fromcode/core';
-import { AuthManager } from '@fromcode/auth';
+import { PluginManager } from '@fromcode119/core';
+import { AuthManager } from '@fromcode119/auth';
 import { RESTController } from '../controllers/rest-controller';
 import { createCollectionMiddleware } from '../middlewares/collection';
 

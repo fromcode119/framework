@@ -1,5 +1,5 @@
 import { PluginManagerInterface } from './utils';
-import { SystemTable } from '@fromcode/sdk/internal';
+import { SystemTable } from '@fromcode119/sdk/internal';
 
 /**
  * Creates a roles proxy for plugins.

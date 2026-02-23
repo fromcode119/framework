@@ -1,6 +1,6 @@
-import { EmailManager, EmailFactory } from '@fromcode/email';
+import { EmailManager, EmailFactory } from '@fromcode119/email';
 import { IntegrationTypeDefinition } from '../integration-registry';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 
 const logger = new Logger({ namespace: 'email-provider' });
 

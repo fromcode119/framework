@@ -1,5 +1,5 @@
-import { IDatabaseManager } from '@fromcode/database';
-import { Collection, Logger } from '@fromcode/core';
+import { IDatabaseManager } from '@fromcode119/database';
+import { Collection, Logger } from '@fromcode119/core';
 
 export class SuggestionService {
   private logger = new Logger({ namespace: 'Suggestions' });

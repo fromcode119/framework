@@ -5,7 +5,7 @@ import path from 'path';
 import archiver from 'archiver';
 import { spawn } from 'child_process';
 import * as esbuild from 'esbuild';
-import { PluginManifest } from '@fromcode/sdk';
+import { PluginManifest } from '@fromcode119/sdk';
 import { getPluginsDir, ask, t, compileStyles, getMarketplace, getMarketplaceClient } from '../utils';
 
 export function registerPluginCommands(program: Command) {
@@ -347,7 +347,7 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
         console.log(chalk.gray(`Entry: ${entryPoints[0]}`));
         console.log(chalk.gray(`Output: ${outFile}`));
 
-        let external = ['react', 'react-dom', '@fromcode/react', '@fromcode/admin', '@fromcode/admin/components', 'lucide-react', 'react/jsx-runtime'];
+        let external = ['react', 'react-dom', '@fromcode119/react', '@fromcode119/admin', '@fromcode119/admin/components', 'lucide-react', 'react/jsx-runtime'];
         const manifestPath = path.join(pluginDir, 'manifest.json');
         if (fs.existsSync(manifestPath)) {
           try {
@@ -410,13 +410,13 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
             format: 'cjs',
             outfile: path.join(pluginDir, 'index.js'),
             external: [
-              '@fromcode/sdk', 
-              '@fromcode/core', 
-              '@fromcode/database', 
-              '@fromcode/media', 
-              '@fromcode/email', 
-              '@fromcode/cache', 
-              '@fromcode/scheduler',
+              '@fromcode119/sdk', 
+              '@fromcode119/core', 
+              '@fromcode119/database', 
+              '@fromcode119/media', 
+              '@fromcode119/email', 
+              '@fromcode119/cache', 
+              '@fromcode119/scheduler',
               'express',
               'knex',
               'drizzle-orm',

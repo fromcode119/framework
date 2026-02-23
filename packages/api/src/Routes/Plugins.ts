@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
-import { AuthManager } from '@fromcode/auth';
-import { PluginManager } from '@fromcode/core';
+import { AuthManager } from '@fromcode119/auth';
+import { PluginManager } from '@fromcode119/core';
 import { PluginController } from '../controllers/plugin-controller';
 
 export function setupPluginRoutes(manager: PluginManager, auth: AuthManager) {

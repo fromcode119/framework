@@ -11,8 +11,8 @@ import {
   GraphQLFieldConfig,
   GraphQLResolveInfo
 } from 'graphql';
-import { Collection, Field, FieldType } from '@fromcode/core';
-import { PluginManager } from '@fromcode/core';
+import { Collection, Field, FieldType } from '@fromcode119/core';
+import { PluginManager } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 
 export class GraphQLService {

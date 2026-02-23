@@ -1,4 +1,4 @@
-import { ApiPath, buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/sdk';
+import { ApiPath, buildApiVersionPrefix, normalizeApiVersion } from '@fromcode119/sdk';
 
 export const SERVER_API_VERSION = normalizeApiVersion();
 export const SERVER_API_VERSION_PREFIX = buildApiVersionPrefix();

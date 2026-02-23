@@ -1,4 +1,4 @@
-import { normalizeLocaleCode } from '@fromcode/sdk';
+import { normalizeLocaleCode } from '@fromcode119/sdk';
 
 export interface PreferredLocaleOptions {
   fallback?: string;

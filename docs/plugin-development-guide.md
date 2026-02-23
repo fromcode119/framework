@@ -59,7 +59,7 @@ The framework provides lifecycle hooks for collections.
 
 ### Example: Auto-generating SEO titles
 ```typescript
-import { collectionHookEvents } from '@fromcode/sdk';
+import { collectionHookEvents } from '@fromcode119/sdk';
 
 const POSTS_HOOKS = collectionHookEvents('posts');
 

@@ -10,10 +10,10 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useNotify } from '@/components/notification-context';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
-import type { MarketplaceTheme } from '@fromcode/core';
+import type { MarketplaceTheme } from '@fromcode119/core';
 
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
 import AdmZip from 'adm-zip';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
 import { BackupService } from '../../management/backup-service';
 import { z } from 'zod';

@@ -33,8 +33,8 @@ Detailed look at how plugins interact with the Next.js frontend and the UI slot 
 Fromcode is a **plugin-first** framework. This means the core kernel is kept minimal, handles security and data orchestration, while all functional features (CMS, E-commerce, SEO) are implemented as self-contained plugins.
 
 ### Key Architecture Pieces
-- **Kernel (@fromcode/core)**: Plugin loader, hook manager, and security sandbox.
-- **Admin Panel (@fromcode/admin)**: A dynamic React/Next.js interface that adapts based on enabled plugins.
+- **Kernel (@fromcode119/core)**: Plugin loader, hook manager, and security sandbox.
+- **Admin Panel (@fromcode119/admin)**: A dynamic React/Next.js interface that adapts based on enabled plugins.
 - **Marketplace**: A distribution hub for sharing and installing plugins and themes.
 - **SDK**: Tools for local development, testing, and building assets.
 

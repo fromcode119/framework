@@ -1,4 +1,4 @@
-import { buildApiVersionPrefix } from '@fromcode/sdk';
+import { buildApiVersionPrefix } from '@fromcode119/sdk';
 
 export function normalizeRequestPath(path: string): string {
   if (!path) return '/';

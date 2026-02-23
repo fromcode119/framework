@@ -1,4 +1,4 @@
-# Package Module: @fromcode/api
+# Package Module: @fromcode119/api
 
 - Version: `0.1.0`
 - Path: `framework/Source/packages/api`
@@ -9,10 +9,10 @@ Main backend API runtime that loads plugins/themes, exposes REST APIs, handles a
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode/api`
-- `npm run dev --workspace=@fromcode/api`
-- `npm run start --workspace=@fromcode/api`
-- `npm run test --workspace=@fromcode/api`
+- `npm run build --workspace=@fromcode119/api`
+- `npm run dev --workspace=@fromcode119/api`
+- `npm run start --workspace=@fromcode119/api`
+- `npm run test --workspace=@fromcode119/api`
 
 ## Integration Notes
 

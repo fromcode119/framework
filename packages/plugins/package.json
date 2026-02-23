@@ -1,5 +1,5 @@
 {
-  "name": "@fromcode/plugins",
+  "name": "@fromcode119/plugins",
   "version": "0.1.0",
   "main": "dist/index.js",
   "exports": {
@@ -18,10 +18,14 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode/database": "*",
-    "@fromcode/sdk": "*"
+    "@fromcode119/database": "*",
+    "@fromcode119/sdk": "*"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   }
 }

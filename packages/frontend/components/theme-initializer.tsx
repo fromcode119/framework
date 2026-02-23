@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 
 export default function ThemeInitializer() {
   const { loadConfig, themeVariables } = usePlugins();

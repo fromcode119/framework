@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Slot, usePlugins } from '@fromcode/react';
+import { Slot, usePlugins } from '@fromcode119/react';
 
 type HomeClientProps = {
   initialContent: any | null;

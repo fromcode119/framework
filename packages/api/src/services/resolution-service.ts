@@ -1,4 +1,4 @@
-import { PluginManager, Collection, SystemTable } from '@fromcode/core';
+import { PluginManager, Collection, SystemTable } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 
 export class ResolutionService {

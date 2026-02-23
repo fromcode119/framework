@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Slot } from '@fromcode/react';
+import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';

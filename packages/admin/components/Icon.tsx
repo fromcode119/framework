@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons, getIcon } from '@fromcode/react';
+import { FrameworkIcons, getIcon } from '@fromcode119/react';
 
 interface IconProps {
   name: string;

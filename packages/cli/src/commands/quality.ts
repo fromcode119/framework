@@ -16,7 +16,7 @@ export function registerQualityCommands(program: Command) {
       
       try {
         const cmd = options.package 
-          ? `npm run test --workspace=@fromcode/${options.package}`
+          ? `npm run test --workspace=@fromcode119/${options.package}`
           : `npm run test`;
         
         execSync(cmd, { stdio: 'inherit', cwd: root });

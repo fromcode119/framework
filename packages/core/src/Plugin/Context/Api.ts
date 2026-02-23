@@ -1,5 +1,5 @@
 import { LoadedPlugin, MiddlewareConfig } from '../../types';
-import { Logger } from '@fromcode/sdk';
+import { Logger } from '@fromcode119/sdk';
 import { PluginManagerInterface, createSecurityHelpers } from './utils';
 import { RateLimiter } from '../../security/rate-limiter';
 

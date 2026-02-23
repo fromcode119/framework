@@ -1,5 +1,5 @@
 {
-  "name": "@fromcode/cli",
+  "name": "@fromcode119/cli",
   "version": "0.1.0",
   "bin": {
     "fromcode": "dist/bin.js"
@@ -9,9 +9,9 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode/core": "*",
-    "@fromcode/database": "*",
-    "@fromcode/marketplace-client": "^0.1.0",
+    "@fromcode119/core": "*",
+    "@fromcode119/database": "*",
+    "@fromcode119/marketplace-client": "^0.1.0",
     "archiver": "^7.0.1",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
@@ -32,5 +32,9 @@
     "@types/sass": "^1.43.1",
     "tsx": "^4.21.0",
     "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   }
 }

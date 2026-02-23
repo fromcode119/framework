@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { SystemMetaKey } from '@fromcode/sdk/internal';
+import { SystemMetaKey } from '@fromcode119/sdk/internal';
 import { 
   PluginManager, 
   ThemeManager, 
   SystemUpdateService, 
   parseBoolean,
   SystemTable
-} from '@fromcode/core';
+} from '@fromcode119/core';
 import { RESTController } from './rest-controller';
 import { ShortcodeService } from '../services/shortcode-service';
 import { SystemService } from '../services/system-service';
@@ -15,7 +15,7 @@ import { ResolutionService } from '../services/resolution-service';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { createHash, randomBytes } from 'crypto';
-import { users } from '@fromcode/database';
+import { users } from '@fromcode119/database';
 import { hashRecoveryCode, normalizeEmail } from '../utils/auth';
 
 export class SystemController {

@@ -1,5 +1,5 @@
 {
-  "name": "@fromcode/react",
+  "name": "@fromcode119/react",
   "version": "0.1.0",
   "main": "src/index.ts",
   "module": "src/index.ts",
@@ -21,13 +21,17 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@fromcode/core": "*",
-    "@fromcode/sdk": "*",
+    "@fromcode119/core": "*",
+    "@fromcode119/sdk": "*",
     "lucide-react": "^0.563.0"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   }
 }

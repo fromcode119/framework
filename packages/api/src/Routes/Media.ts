@@ -1,8 +1,8 @@
 import express from 'express';
 import multer from 'multer';
-import { AuthManager } from '@fromcode/auth';
-import { PluginManager } from '@fromcode/core';
-import { MediaManager } from '@fromcode/media';
+import { AuthManager } from '@fromcode119/auth';
+import { PluginManager } from '@fromcode119/core';
+import { MediaManager } from '@fromcode119/media';
 import { MediaController } from '../controllers/media-controller';
 
 export function setupMediaRoutes(manager: PluginManager, auth: AuthManager, mediaManager: MediaManager) {

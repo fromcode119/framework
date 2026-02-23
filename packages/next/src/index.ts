@@ -1,4 +1,4 @@
-import { LoadedPlugin } from '@fromcode/core';
+import { LoadedPlugin } from '@fromcode119/core';
 
 export interface HeadInjection {
   tag: string;

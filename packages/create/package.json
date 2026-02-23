@@ -1,0 +1,23 @@
+{
+  "name": "@fromcode119/create",
+  "version": "0.1.0",
+  "description": "Create a new Fromcode app",
+  "bin": {
+    "create-fromcode": "index.js"
+  },
+  "files": [
+    "index.js",
+    "template"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "keywords": [
+    "fromcode",
+    "create",
+    "scaffolder",
+    "cms"
+  ],
+  "license": "MIT"
+}

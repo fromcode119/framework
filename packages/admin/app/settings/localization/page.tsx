@@ -11,7 +11,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { useNotification } from '@/components/notification-context';
-import { usePlugins } from '@fromcode/react';
+import { usePlugins } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 
 type LocaleItem = {
