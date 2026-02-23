@@ -826,7 +826,7 @@ export async function bootstrap() {
 
     if (!process.env.DATABASE_URL) {
       console.error('FATAL ERROR: DATABASE_URL is not defined in environment or .env file.');
-      console.error('Looked in:', envPaths);
+      console.error('Project root:', projectRoot);
       process.exit(1);
     }
 

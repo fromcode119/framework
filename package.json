@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc -b && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
     "build:api": "tsc -b packages/api",
     "build:admin": "npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run build --workspace=@fromcode119/frontend",

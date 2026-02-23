@@ -27,35 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── Build all TypeScript packages ─────────────────────────────────────
-      - name: Build TypeScript packages
-        run: |
-          npm run build --workspace=packages/auth    --if-present
-          npm run build --workspace=packages/cache   --if-present
-          npm run build --workspace=packages/core    --if-present
-          npm run build --workspace=packages/database --if-present
-          npm run build --workspace=packages/email   --if-present
-          npm run build --workspace=packages/marketplace-client --if-present
-          npm run build --workspace=packages/media   --if-present
-          npm run build --workspace=packages/next    --if-present
-          npm run build --workspace=packages/plugins --if-present
-          npm run build --workspace=packages/react   --if-present
-          npm run build --workspace=packages/scheduler --if-present
-          npm run build --workspace=packages/sdk     --if-present
-          npm run build --workspace=packages/cli     --if-present
-          npm run build --workspace=packages/api     --if-present
-
-      # ── Build Next.js apps ─────────────────────────────────────────────────
-      - name: Build Admin
-        run: npm run build --workspace=packages/admin
-        env:
-          # Stub values so next build doesn't fail on missing env
-          NEXT_PUBLIC_API_URL: http://localhost:3000
-
-      - name: Build Frontend
-        run: npm run build --workspace=packages/frontend
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:3000
+      # ── Build all packages ────────────────────────────────────────────────
+      - name: Build
+        run: npm run build
 
       # ── Publish all non-private packages ──────────────────────────────────
       - name: Publish packages
