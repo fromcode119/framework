@@ -1,6 +1,6 @@
 import { Collection } from '../types';
 import { IDatabaseManager } from '@fromcode/database';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 
 export class SchemaManager {
   private logger = new Logger({ namespace: 'schema-manager' });

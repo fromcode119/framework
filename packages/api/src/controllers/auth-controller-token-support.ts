@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
-import { eq, and, systemSessions } from '@fromcode/database';
+import { SystemTable, SystemMetaKey } from '@fromcode/sdk/internal';
 import { AuthControllerPolicy } from './auth-controller-policy';
 import type { ApiTokenRecord } from './auth-controller-types';
 
@@ -16,7 +16,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   protected async issuePasswordResetToken(userId: number, email: string): Promise<{ token: string; expiresAt: Date }> {
     const token = randomBytes(32).toString('hex');
     const tokenHash = this.hashToken(token);
-    const ttlMinutes = await this.getSettingNumber('auth_password_reset_token_minutes', this.defaultPasswordResetExpiryMinutes, 5, 1440);
+    const ttlMinutes = await this.getSettingNumber(SystemMetaKey.AUTH_PASSWORD_RESET_TOKEN_MINUTES, this.defaultPasswordResetExpiryMinutes, 5, 1440);
     const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 
     const previousHash = String((await this.getMetaValue(this.getPasswordResetTokenHashKey(userId))) || '').trim();
@@ -76,7 +76,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   protected async issueEmailChangeToken(userId: number, oldEmail: string, newEmail: string): Promise<{ token: string; expiresAt: Date }> {
     const token = randomBytes(32).toString('hex');
     const tokenHash = this.hashToken(token);
-    const ttlMinutes = await this.getSettingNumber('auth_email_change_token_minutes', this.defaultEmailChangeExpiryMinutes, 10, 1440);
+    const ttlMinutes = await this.getSettingNumber(SystemMetaKey.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, this.defaultEmailChangeExpiryMinutes, 10, 1440);
     const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 
     const previousHash = String((await this.getMetaValue(this.getEmailChangeTokenHashKey(userId))) || '').trim();
@@ -164,24 +164,18 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   }
 
   protected async revokeAllSessionsForUser(userId: number) {
-    await this.db.update(systemSessions)
-      .set({ isRevoked: true, updatedAt: new Date() })
-      .where(and(eq(systemSessions.userId, userId), eq(systemSessions.isRevoked, false)));
+    await this.db.update(SystemTable.SESSIONS, { userId, isRevoked: false }, { isRevoked: true, updatedAt: new Date() });
   }
 
   protected async revokeOtherSessionsForUser(userId: number, currentJti: string): Promise<number> {
-    const activeSessions = await this.db.select({ id: systemSessions.id, tokenId: systemSessions.tokenId })
-      .from(systemSessions)
-      .where(and(eq(systemSessions.userId, userId), eq(systemSessions.isRevoked, false)));
+    const activeSessions = await this.db.find(SystemTable.SESSIONS, { where: { userId, isRevoked: false } });
 
     const targetIds = activeSessions
       .filter((row: any) => String(row?.tokenId || '') !== String(currentJti || ''))
       .map((row: any) => String(row.id));
 
     for (const id of targetIds) {
-      await this.db.update(systemSessions)
-        .set({ isRevoked: true, updatedAt: new Date() })
-        .where(eq(systemSessions.id, id));
+      await this.db.update(SystemTable.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });
     }
 
     return targetIds.length;
@@ -225,7 +219,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
         window: 1
       });
     } catch (e) {
-      console.error('[AuthController] TOTP verification failed:', e);
+      this.logger.error(`[AuthController] TOTP verification failed: ${e}`);
       return false;
     }
   }

@@ -1,7 +1,7 @@
-import { buildApiVersionPrefix } from '@fromcode/core/utils';
+import { buildApiVersionPrefix } from '@fromcode/sdk';
 
 const API_VERSION_PREFIX = buildApiVersionPrefix();
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.framework.local';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 const v = (path: string) => `${API_VERSION_PREFIX}${path}`;
 const withQuery = (path: string, query: Record<string, string | number | boolean | undefined | null>) => {

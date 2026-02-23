@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@fromcode/core": "*",
+    "@fromcode/sdk": "*",
     "lucide-react": "^0.563.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { randomBytes } from 'crypto';
-import { users, eq } from '@fromcode/database';
+import { SystemTable } from '@fromcode/sdk/internal';
 import { AuthControllerAccount } from './auth-controller-account';
 import type { ApiTokenRecord } from './auth-controller-types';
 
@@ -9,7 +9,7 @@ export class AuthControllerSecurity extends AuthControllerAccount {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const user = await this.db.select().from(users).where(eq(users.id, userId)).limit(1).then((rows: any[]) => rows?.[0]);
+    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const status = await this.getUserAccountStatus(userId);

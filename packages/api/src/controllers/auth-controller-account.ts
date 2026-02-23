@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
-import { users, systemSessions, eq, and, gt, sql } from '@fromcode/database';
+import { SystemTable } from '@fromcode/sdk/internal';
 import { AuthControllerLifecycle } from './auth-controller-lifecycle';
 
 export class AuthControllerAccount extends AuthControllerLifecycle {
   async logout(req: any, res: Response) {
     if (req.user && req.user.jti) {
       try {
-        await this.db.update(systemSessions)
-          .set({ isRevoked: true, updatedAt: new Date() })
-          .where(eq(systemSessions.tokenId, req.user.jti));
+        await this.db.update(SystemTable.SESSIONS, { tokenId: req.user.jti }, { isRevoked: true, updatedAt: new Date() });
 
         await this.manager.writeLog(
           'INFO',
@@ -25,27 +23,18 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
 
   async getSessions(req: Request, res: Response) {
     try {
-      const result = await this.db.select({
-        id: systemSessions.id,
-        userId: systemSessions.userId,
-        tokenId: systemSessions.tokenId,
-        userAgent: systemSessions.userAgent,
-        ipAddress: systemSessions.ipAddress,
-        isRevoked: systemSessions.isRevoked,
-        expiresAt: systemSessions.expiresAt,
-        createdAt: systemSessions.createdAt,
-        updatedAt: systemSessions.updatedAt,
-        email: users.email
-      })
-      .from(systemSessions)
-      .innerJoin(users, eq(systemSessions.userId, users.id))
-      .where(and(
-        eq(systemSessions.isRevoked, false),
-        gt(systemSessions.expiresAt, new Date())
-      ))
-      .orderBy(sql`${systemSessions.createdAt} DESC`);
+      const sessions = await this.db.find(SystemTable.SESSIONS, {
+        where: { isRevoked: false },
+        orderBy: { createdAt: 'desc' },
+        joins: [{
+          table: SystemTable.USERS,
+          on: { from: 'userId', to: 'id' },
+          columns: ['email']
+        }]
+      });
 
-      res.json(result);
+      const now = new Date();
+      res.json(sessions.filter((s: any) => new Date(s.expiresAt) > now));
     } catch {
       res.status(500).json({ error: 'Failed to fetch sessions' });
     }
@@ -54,9 +43,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
   async killSession(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      await this.db.update(systemSessions)
-        .set({ isRevoked: true, updatedAt: new Date() })
-        .where(eq(systemSessions.id, id));
+      await this.db.update(SystemTable.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });
       res.json({ success: true });
     } catch {
       res.status(500).json({ error: 'Failed to kill session' });
@@ -70,12 +57,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     const password = String(req.body?.password || '');
     if (!password) return res.status(400).json({ error: 'Password is required' });
 
-    const user = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1)
-      .then((rows: any[]) => rows?.[0]);
+    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -94,7 +76,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       return res.status(400).json({ error: 'Current password and new password are required' });
     }
 
-    const user = await this.db.select().from(users).where(eq(users.id, userId)).limit(1).then((rows: any[]) => rows?.[0]);
+    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const currentMatches = await this.auth.comparePassword(String(currentPassword), String(user.password || ''));
@@ -112,7 +94,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     }
 
     const hashed = await this.auth.hashPassword(String(newPassword));
-    await this.db.update(users).set({ password: hashed, updatedAt: new Date() }).where(eq(users.id, userId));
+    await this.db.update(SystemTable.USERS, { id: userId }, { password: hashed, updatedAt: new Date() });
     await this.pushPasswordHistory(userId, hashed);
     await this.upsertMeta(this.getPasswordChangedAtKey(userId), new Date().toISOString());
     await this.setForcePasswordReset(userId, false);
@@ -144,28 +126,15 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-      const result = await this.db.select({
-        id: systemSessions.id,
-        tokenId: systemSessions.tokenId,
-        userAgent: systemSessions.userAgent,
-        ipAddress: systemSessions.ipAddress,
-        isRevoked: systemSessions.isRevoked,
-        expiresAt: systemSessions.expiresAt,
-        createdAt: systemSessions.createdAt,
-        updatedAt: systemSessions.updatedAt
-      })
-      .from(systemSessions)
-      .where(and(
-        eq(systemSessions.userId, userId),
-        eq(systemSessions.isRevoked, false),
-        gt(systemSessions.expiresAt, new Date())
-      ))
-      .orderBy(sql`${systemSessions.createdAt} DESC`);
-
+      const sessions = await this.db.find(SystemTable.SESSIONS, { where: { userId, isRevoked: false } });
+      const now = new Date();
       const currentJti = String(req.user?.jti || '');
-      const docs = Array.isArray(result)
-        ? result.map((session: any) => ({ ...session, isCurrent: String(session.tokenId || '') === currentJti }))
-        : [];
+
+      const docs = sessions
+        .filter((s: any) => new Date(s.expiresAt) > now)
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .map((s: any) => ({ ...s, isCurrent: String(s.tokenId || '') === currentJti }));
+
       return res.json({ docs, totalDocs: docs.length });
     } catch {
       return res.status(500).json({ error: 'Failed to load sessions' });
@@ -179,16 +148,11 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     if (!sessionId) return res.status(400).json({ error: 'Session id is required' });
 
     try {
-      const match = await this.db.select({ id: systemSessions.id, tokenId: systemSessions.tokenId })
-        .from(systemSessions)
-        .where(and(eq(systemSessions.id, sessionId), eq(systemSessions.userId, userId)))
-        .limit(1);
+      const match = await this.db.find(SystemTable.SESSIONS, { where: { id: sessionId, userId }, limit: 1 });
       const session = match?.[0];
       if (!session) return res.status(404).json({ error: 'Session not found' });
 
-      await this.db.update(systemSessions)
-        .set({ isRevoked: true, updatedAt: new Date() })
-        .where(and(eq(systemSessions.id, sessionId), eq(systemSessions.userId, userId)));
+      await this.db.update(SystemTable.SESSIONS, { id: sessionId, userId }, { isRevoked: true, updatedAt: new Date() });
 
       const currentJti = String(req.user?.jti || '');
       const revokedCurrent = String(session.tokenId || '') === currentJti;
@@ -229,8 +193,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       return res.status(400).json({ error: 'Current password is required' });
     }
 
-    const row = await this.db.select().from(users).where(eq(users.id, userId)).limit(1);
-    const user = row?.[0];
+    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const oldEmail = this.normalizeEmail(user.email);
@@ -243,8 +206,8 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       return res.status(400).json({ error: 'Current password is invalid' });
     }
 
-    const existing = await this.db.select().from(users).where(eq(users.email, newEmail)).limit(1);
-    if (existing?.[0]) {
+    const existing = await this.db.findOne(SystemTable.USERS, { email: newEmail });
+    if (existing) {
       return res.status(409).json({ error: 'This email is already used by another account' });
     }
 
@@ -303,14 +266,12 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       });
     }
 
-    const emailOwner = await this.db.select().from(users).where(eq(users.email, result.newEmail)).limit(1);
-    if (emailOwner?.[0] && Number(emailOwner[0].id) !== result.userId) {
+    const emailOwner = await this.db.findOne(SystemTable.USERS, { email: result.newEmail });
+    if (emailOwner && Number(emailOwner.id) !== result.userId) {
       return res.status(409).json({ error: 'This email is already used by another account' });
     }
 
-    await this.db.update(users)
-      .set({ email: result.newEmail, updatedAt: new Date() })
-      .where(eq(users.id, result.userId));
+    await this.db.update(SystemTable.USERS, { id: result.userId }, { email: result.newEmail, updatedAt: new Date() });
     await this.setEmailVerified(result.userId, true);
     await this.revokeAllSessionsForUser(result.userId);
 

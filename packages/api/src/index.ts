@@ -14,8 +14,10 @@ import {
   WebSocketManager, 
   validateEnv,
   HookAdapterFactory,
-  QueueAdapterFactory
+  QueueAdapterFactory,
+  SystemTable
 } from '@fromcode/core';
+import { SystemMetaKey } from '@fromcode/sdk/internal';
 import { AuthManager } from '@fromcode/auth';
 import { MediaManager } from '@fromcode/media';
 import { CacheFactory, CacheManager } from '@fromcode/cache';
@@ -29,7 +31,8 @@ import {
   LEGACY_API_ROUTES,
   PUBLIC_ROUTE_PREFIXES,
   STORAGE_CONFIG,
-  resolveStoragePublicUrl
+  resolveStoragePublicPath,
+  resolveStoragePublicUrlBase
 } from './constants';
 import { setupAuthRoutes } from './routes/auth';
 import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
@@ -82,34 +85,68 @@ export class APIServer {
     this.socket = new WebSocketManager(manager.hooks);
   }
 
+  private resolveLocalUploadsConfig(mediaManager?: MediaManager): { uploadDir: string; publicUrlBase: string; publicPath: string } {
+    const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
+    let uploadDir = process.env[STORAGE_CONFIG.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, STORAGE_CONFIG.DEFAULT_UPLOADS_SUBDIR);
+    let publicUrlBase = resolveStoragePublicUrlBase(process.env[STORAGE_CONFIG.PUBLIC_URL_ENV]);
+
+    const driver: any = mediaManager?.driver;
+    if (driver && String(driver.provider || '').trim().toLowerCase() === 'local') {
+      const driverUploadDir = String(driver.uploadDir || '').trim();
+      const driverPublicUrlBase = String(driver.publicUrlBase || '').trim();
+      if (driverUploadDir) {
+        uploadDir = path.isAbsolute(driverUploadDir)
+          ? path.normalize(driverUploadDir)
+          : path.resolve(frameworkRoot, driverUploadDir);
+      }
+      if (driverPublicUrlBase) {
+        publicUrlBase = resolveStoragePublicUrlBase(driverPublicUrlBase);
+      }
+    }
+
+    return {
+      uploadDir,
+      publicUrlBase,
+      publicPath: resolveStoragePublicPath(publicUrlBase)
+    };
+  }
+
   public async initialize() {
     this.logger.info('Initializing API Server infrastructure...');
-    this.setupCors();
     
     // Support nested proxies (e.g. Traefik -> Nginx -> Node)
     this.app.set('trust proxy', (ip: string) => {
       if (process.env.NODE_ENV === 'development') return true;
       return ip === '127.0.0.1' || ip === '::1';
     });
-
-    // Serve static uploads BEFORE any auth/security middleware
-    // This ensures public files are accessible without CSRF tokens or authentication
-    const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
-    const systemUploadDir = process.env[STORAGE_CONFIG.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, STORAGE_CONFIG.DEFAULT_UPLOADS_SUBDIR);
-    const publicUrl = resolveStoragePublicUrl(process.env[STORAGE_CONFIG.PUBLIC_URL_ENV]);
     
-    this.logger.info(`Serving static uploads from: ${systemUploadDir} at ${publicUrl}`);
-    this.app.use(STORAGE_CONFIG.DEFAULT_PUBLIC_URL, express.static(systemUploadDir));
-    if (publicUrl !== STORAGE_CONFIG.DEFAULT_PUBLIC_URL) {
-      this.app.use(publicUrl, express.static(systemUploadDir));
+    // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
+    await this.setupSettingsSync();
+    this.setupCors();
+
+    this.mediaManager = (this.manager as any).storage;
+    if (!this.mediaManager) {
+      this.logger.warn('Storage integration not initialized. Falling back to default LocalMediaManager.');
+      const { StorageFactory } = require('@fromcode/media');
+      const fallback = this.resolveLocalUploadsConfig(undefined);
+      this.mediaManager = new MediaManager(
+        StorageFactory.create('local', { uploadDir: fallback.uploadDir, publicUrlBase: fallback.publicUrlBase })
+      );
+    }
+
+    // Serve static uploads BEFORE any auth/security middleware.
+    // Must follow the active local storage config so saved files and served files share the same root.
+    const uploadsConfig = this.resolveLocalUploadsConfig(this.mediaManager);
+    this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);
+    this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir));
+    if (uploadsConfig.publicPath !== STORAGE_CONFIG.DEFAULT_PUBLIC_URL) {
+      this.app.use(STORAGE_CONFIG.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir));
     }
 
     this.app.use(express.json());
     this.app.use(xssMiddleware);
     this.app.use(cookieParser());
     this.app.use(csrfMiddleware);
-
-    await this.setupSettingsSync();
 
     const limiter = rateLimit({
       windowMs: parseInt(this.settingsCache.get('rate_limit_window') || process.env.RATE_LIMIT_WINDOW_MS || '900000'),
@@ -128,16 +165,6 @@ export class APIServer {
     } as any);
 
     this.app.use(`${API_PREFIXES.BASE}/`, limiter);
-    this.mediaManager = (this.manager as any).storage;
-    
-    if (!this.mediaManager) {
-      this.logger.warn('Storage integration not initialized. Falling back to default LocalMediaManager.');
-      const { StorageFactory } = require('@fromcode/media');
-      const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
-      const systemUploadDir = process.env[STORAGE_CONFIG.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, STORAGE_CONFIG.DEFAULT_UPLOADS_SUBDIR);
-      const publicUrl = resolveStoragePublicUrl(process.env[STORAGE_CONFIG.PUBLIC_URL_ENV]);
-      this.mediaManager = new MediaManager(StorageFactory.create('local', { uploadDir: systemUploadDir, publicUrlBase: publicUrl }));
-    }
 
     this.setupAuthIntegration();
     this.registerCoreCollection('users', UserCollection);
@@ -183,7 +210,7 @@ export class APIServer {
     try {
       const db = (this.manager as any).db;
       
-      const rows = await db.find('_system_meta', {
+      const rows = await db.find(SystemTable.META, {
         columns: {
           key: true,
           value: true,
@@ -223,46 +250,50 @@ export class APIServer {
       const db = (this.manager as any).db;
       
       const defaults = [
-        { key: 'platform_name', value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
-        { key: 'frontend_url', value: 'http://frontend.framework.local', description: 'The primary URL for your frontend application.', group: 'General' },
-        { key: 'timezone', value: 'UTC', description: 'Default system timezone for scheduling and display.', group: 'General' },
-        { key: 'routing_home_target', value: 'auto', description: 'Homepage route target. Examples: auto, layout:<name>, collection:<slug>:<id>', group: 'Routing' },
-        { key: 'permalink_structure', value: '/:slug', description: 'The default URL structure for your content (e.g. /:year/:month/:slug)', group: 'General' },
-        { key: 'maintenance_mode', value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'Settings' },
-        { key: 'rate_limit_max', value: '100', description: 'Maximum requests per window per IP', group: 'security' },
-        { key: 'rate_limit_window', value: '900000', description: 'Rate limit window in milliseconds (15min = 900000)', group: 'security' },
-        { key: 'auth_session_duration_minutes', value: '10080', description: 'Login session duration in minutes for access token/cookie/session expiry.', group: 'security' },
-        { key: 'auth_password_min_length', value: '8', description: 'Minimum required password length.', group: 'security' },
-        { key: 'auth_password_require_uppercase', value: 'true', description: 'Require uppercase letters in passwords.', group: 'security' },
-        { key: 'auth_password_require_lowercase', value: 'true', description: 'Require lowercase letters in passwords.', group: 'security' },
-        { key: 'auth_password_require_number', value: 'true', description: 'Require digits in passwords.', group: 'security' },
-        { key: 'auth_password_require_symbol', value: 'false', description: 'Require symbols in passwords.', group: 'security' },
-        { key: 'auth_password_history', value: '5', description: 'Prevent reuse of the last N passwords.', group: 'security' },
-        { key: 'auth_password_breach_check', value: 'false', description: 'Enable optional breach-check hook for passwords.', group: 'security' },
-        { key: 'auth_password_reset_token_minutes', value: '30', description: 'Password reset token lifetime in minutes.', group: 'security' },
-        { key: 'auth_email_change_token_minutes', value: '60', description: 'Email change token lifetime in minutes.', group: 'security' },
-        { key: 'auth_lockout_threshold', value: '5', description: 'Failed login attempts before temporary lockout.', group: 'security' },
-        { key: 'auth_lockout_window_minutes', value: '15', description: 'Window in minutes for counting failed logins.', group: 'security' },
-        { key: 'auth_lockout_duration_minutes', value: '30', description: 'Lockout duration in minutes after threshold is reached.', group: 'security' },
-        { key: 'auth_captcha_enabled', value: 'false', description: 'Require captcha after repeated login failures.', group: 'security' },
-        { key: 'auth_captcha_threshold', value: '3', description: 'Failed attempts before captcha is required.', group: 'security' },
-        { key: 'auth_security_notifications', value: 'true', description: 'Send user-facing security notification emails for auth events.', group: 'security' },
-        { key: 'two_factor_enabled', value: 'false', description: 'Enable two-factor authentication for admin accounts.', group: 'security' },
-        { key: 'localization_locales', value: '[{"code":"en","name":"English","enabled":true}]', description: 'JSON array of available locales with code, name and enabled state.', group: 'Localization' },
-        { key: 'enabled_locales', value: 'en', description: 'Comma-separated list of enabled locale codes for compatibility layers.', group: 'Localization' },
-        { key: 'default_locale', value: 'en', description: 'Default locale for system-level operations.', group: 'Localization' },
-        { key: 'admin_default_locale', value: 'en', description: 'Default language for the admin interface.', group: 'Localization' },
-        { key: 'frontend_default_locale', value: 'en', description: 'Default language for public frontend rendering.', group: 'Localization' },
-        { key: 'locale_url_strategy', value: 'query', description: 'Locale URL strategy for frontend routes: query, path, or none.', group: 'Localization' },
-        { key: 'frontend_auth_enabled', value: 'true', description: 'Enable customer-facing authentication flows on the frontend (register, verify, forgot/reset password).', group: 'security' },
-        { key: 'frontend_registration_enabled', value: 'true', description: 'Allow new customer self-registration on the frontend.', group: 'security' },
-        { key: 'email_notifications', value: 'true', description: 'Receive system alerts and audit snapshots via email.', group: 'Engagement' }
+        { key: SystemMetaKey.PLATFORM_NAME, value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
+        { key: SystemMetaKey.SITE_NAME, value: 'Fromcode', description: 'Public site name used in emails and frontend.', group: 'General' },
+        { key: SystemMetaKey.SITE_URL, value: 'http://localhost:3000', description: 'Base URL for the public site.', group: 'General' },
+        { key: SystemMetaKey.FRONTEND_URL, value: 'http://localhost:3000', description: 'The primary URL for your frontend application.', group: 'General' },
+        { key: SystemMetaKey.ADMIN_URL, value: 'http://localhost:3001', description: 'The primary URL for your admin dashboard.', group: 'General' },
+        { key: SystemMetaKey.PLATFORM_DOMAIN, value: 'framework.local', description: 'Root domain for the entire platform setup (e.g. example.com). Used for cross-site cookie sharing and CORS validation.', group: 'General' },
+        { key: SystemMetaKey.TIMEZONE, value: 'UTC', description: 'Default system timezone for scheduling and display.', group: 'General' },
+        { key: SystemMetaKey.ROUTING_HOME_TARGET, value: 'auto', description: 'Homepage route target. Examples: auto, layout:<name>, collection:<slug>:<id>', group: 'Routing' },
+        { key: SystemMetaKey.PERMALINK_STRUCTURE, value: '/:slug', description: 'The default URL structure for your content (e.g. /:year/:month/:slug)', group: 'General' },
+        { key: SystemMetaKey.MAINTENANCE_MODE, value: 'false', description: 'Enable global maintenance mode (blocks non-admin API access)', group: 'Settings' },
+        { key: SystemMetaKey.RATE_LIMIT_MAX, value: '100', description: 'Maximum requests per window per IP', group: 'security' },
+        { key: SystemMetaKey.RATE_LIMIT_WINDOW, value: '900000', description: 'Rate limit window in milliseconds (15min = 900000)', group: 'security' },
+        { key: SystemMetaKey.AUTH_SESSION_DURATION, value: '10080', description: 'Login session duration in minutes for access token/cookie/session expiry.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_MIN_LENGTH, value: '8', description: 'Minimum required password length.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_REQUIRE_UPPERCASE, value: 'true', description: 'Require uppercase letters in passwords.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_REQUIRE_LOWERCASE, value: 'true', description: 'Require lowercase letters in passwords.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_REQUIRE_NUMBER, value: 'true', description: 'Require digits in passwords.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_REQUIRE_SYMBOL, value: 'false', description: 'Require symbols in passwords.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_HISTORY, value: '5', description: 'Prevent reuse of the last N passwords.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_BREACH_CHECK, value: 'false', description: 'Enable optional breach-check hook for passwords.', group: 'security' },
+        { key: SystemMetaKey.AUTH_PASSWORD_RESET_TOKEN_MINUTES, value: '30', description: 'Password reset token lifetime in minutes.', group: 'security' },
+        { key: SystemMetaKey.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, value: '60', description: 'Email change token lifetime in minutes.', group: 'security' },
+        { key: SystemMetaKey.AUTH_LOCKOUT_THRESHOLD, value: '5', description: 'Failed login attempts before temporary lockout.', group: 'security' },
+        { key: SystemMetaKey.AUTH_LOCKOUT_WINDOW_MINUTES, value: '15', description: 'Window in minutes for counting failed logins.', group: 'security' },
+        { key: SystemMetaKey.AUTH_LOCKOUT_DURATION_MINUTES, value: '30', description: 'Lockout duration in minutes after threshold is reached.', group: 'security' },
+        { key: SystemMetaKey.AUTH_CAPTCHA_ENABLED, value: 'false', description: 'Require captcha after repeated login failures.', group: 'security' },
+        { key: SystemMetaKey.AUTH_CAPTCHA_THRESHOLD, value: '3', description: 'Failed attempts before captcha is required.', group: 'security' },
+        { key: SystemMetaKey.AUTH_SECURITY_NOTIFICATIONS, value: 'true', description: 'Send user-facing security notification emails for auth events.', group: 'security' },
+        { key: SystemMetaKey.TWO_FACTOR_ENABLED, value: 'false', description: 'Enable two-factor authentication for admin accounts.', group: 'security' },
+        { key: SystemMetaKey.LOCALIZATION_LOCALES, value: '[{"code":"en","name":"English","enabled":true}]', description: 'JSON array of available locales with code, name and enabled state.', group: 'Localization' },
+        { key: SystemMetaKey.ENABLED_LOCALES, value: 'en', description: 'Comma-separated list of enabled locale codes for compatibility layers.', group: 'Localization' },
+        { key: SystemMetaKey.DEFAULT_LOCALE, value: 'en', description: 'Default locale for system-level operations.', group: 'Localization' },
+        { key: SystemMetaKey.ADMIN_DEFAULT_LOCALE, value: 'en', description: 'Default language for the admin interface.', group: 'Localization' },
+        { key: SystemMetaKey.FRONTEND_DEFAULT_LOCALE, value: 'en', description: 'Default language for public frontend rendering.', group: 'Localization' },
+        { key: SystemMetaKey.LOCALE_URL_STRATEGY, value: 'query', description: 'Locale URL strategy for frontend routes: query, path, or none.', group: 'Localization' },
+        { key: SystemMetaKey.FRONTEND_AUTH_ENABLED, value: 'true', description: 'Enable customer-facing authentication flows on the frontend (register, verify, forgot/reset password).', group: 'security' },
+        { key: SystemMetaKey.FRONTEND_REGISTRATION_ENABLED, value: 'true', description: 'Allow new customer self-registration on the frontend.', group: 'security' },
+        { key: SystemMetaKey.EMAIL_NOTIFICATIONS, value: 'true', description: 'Receive system alerts and audit snapshots via email.', group: 'Engagement' }
       ];
 
       for (const d of defaults) {
-        const existing = await db.findOne('_system_meta', { key: d.key });
+        const existing = await db.findOne(SystemTable.META, { key: d.key });
         if (!existing) {
-          await db.insert('_system_meta', d);
+          await db.insert(SystemTable.META, d);
           this.settingsCache.set(d.key, d.value);
           await this.cache.set(`system_setting:${d.key}`, d.value);
         } else {
@@ -274,7 +305,7 @@ export class APIServer {
           
           // Only update if metadata actually changed to reduce DB churn
           if (existing.description !== d.description || existing.group !== d.group) {
-            await db.update('_system_meta', { key: d.key }, { 
+            await db.update(SystemTable.META, { key: d.key }, { 
               description: d.description, 
               group: d.group 
             });
@@ -289,18 +320,26 @@ export class APIServer {
   private setupCors() {
     const corsOptions: cors.CorsOptions = {
       origin: (origin, callback) => {
-        // In development, handle wide-open CORS.
-        const nodeEnv = (process.env.NODE_ENV || 'development').toLowerCase();
-        const isDevelopment = nodeEnv === 'development' || nodeEnv === 'dev' || nodeEnv === 'test';
-        
-        if (!origin || isDevelopment) {
+        // If no origin, it's not a cross-origin request (like a local script or server-to-server)
+        if (!origin) {
           return callback(null, true);
         }
 
+        const nodeEnv = (process.env.NODE_ENV || 'development').toLowerCase();
+        const isDevelopment = nodeEnv === 'development' || nodeEnv === 'dev' || nodeEnv === 'test';
+        
         try {
           const url = new URL(origin);
           const hostname = url.hostname;
           
+          // 1. Check development defaults
+          if (isDevelopment) {
+            if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.local') || hostname.endsWith('.test')) {
+              return callback(null, true);
+            }
+          }
+
+          // 2. Build whitelist from environment and settings
           const envAllowed = process.env.CORS_ALLOWED_DOMAINS 
             ? process.env.CORS_ALLOWED_DOMAINS.split(',').map(d => d.trim().toLowerCase())
             : [];
@@ -308,14 +347,23 @@ export class APIServer {
           const allowedDomains = [
             'localhost', 
             '127.0.0.1', 
-            'fromcode.local', 
-            'framework.local', 
-            'api.framework.local',
-            'admin.framework.local',
-            'frontend.framework.local',
             ...envAllowed
           ];
+
+          // Add platform core domains from settings
+          const platformDomain = this.settingsCache.get(SystemMetaKey.PLATFORM_DOMAIN);
+          const adminUrl = this.settingsCache.get(SystemMetaKey.ADMIN_URL);
+          const frontendUrl = this.settingsCache.get(SystemMetaKey.FRONTEND_URL);
+
+          if (platformDomain) allowedDomains.push(platformDomain);
+          if (adminUrl) {
+            try { allowedDomains.push(new URL(adminUrl).hostname); } catch(e) {}
+          }
+          if (frontendUrl) {
+            try { allowedDomains.push(new URL(frontendUrl).hostname); } catch(e) {}
+          }
           
+          // 3. Validate hostname against whitelist (supports exact match or subdomains)
           const isAllowed = allowedDomains.some(domain => {
             const lowHost = hostname.toLowerCase();
             const lowDomain = domain.toLowerCase();
@@ -416,7 +464,7 @@ export class APIServer {
 
       try {
         const keyHash = createHash('sha256').update(rawKey).digest('hex');
-        const lookupRow = await db.findOne('_system_meta', { key: `auth:api_token:${keyHash}` });
+        const lookupRow = await db.findOne(SystemTable.META, { key: `auth:api_token:${keyHash}` });
         if (!lookupRow?.value) return null;
 
         let payload: any = null;
@@ -468,10 +516,10 @@ export class APIServer {
   private async getMaintenanceStatus(): Promise<boolean> {
     try {
       // 1. Try Global Cache (Redis) first - Highest Authority
-      let redisVal = await this.cache.get('system_setting:maintenance_mode');
+      let redisVal = await this.cache.get(`system_setting:${SystemMetaKey.MAINTENANCE_MODE}`);
       
       // 2. Fallback to Local Memory Map
-      let memoryVal = this.settingsCache.get('maintenance_mode');
+      let memoryVal = this.settingsCache.get(SystemMetaKey.MAINTENANCE_MODE);
 
       let val = redisVal;
       if (val === null || val === undefined) val = memoryVal;
@@ -479,11 +527,11 @@ export class APIServer {
       // 3. Emergency DB Sync - only if both caches are empty
       if (val === null || val === undefined) {
         const db = (this.manager as any).db;
-        const row = await db.findOne('_system_meta', { key: 'maintenance_mode' });
+        const row = await db.findOne(SystemTable.META, { key: SystemMetaKey.MAINTENANCE_MODE });
         if (row) {
           val = row.value;
-          this.settingsCache.set('maintenance_mode', row.value);
-          await this.cache.set('system_setting:maintenance_mode', row.value);
+          this.settingsCache.set(SystemMetaKey.MAINTENANCE_MODE, row.value);
+          await this.cache.set(`system_setting:${SystemMetaKey.MAINTENANCE_MODE}`, row.value);
         }
       }
 

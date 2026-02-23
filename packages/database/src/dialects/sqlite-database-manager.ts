@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import { sql, eq, and, count as drizzleCount, desc, asc } from 'drizzle-orm';
+import { sql, eq, and, or, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
@@ -38,11 +38,17 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
-    const { limit, offset, orderBy, where, columns } = options;
+    const { limit, offset, orderBy, where, columns, joins, search } = options;
     
     let query;
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
+
+      if (joins && joins.length > 0) {
+        const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, options);
+        const rows = await this.executeRawSelect(sqlStr, values);
+        return this.processJoinedRows(rows, joins);
+      }
       if (columns && Object.keys(columns).length > 0) {
         const selectFields: Record<string, any> = {};
         for (const [key, value] of Object.entries(columns)) {
@@ -58,15 +64,21 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       query = this.drizzle.select().from(tableOrName);
     }
 
+    const allConditions: any[] = [];
     if (where) {
       if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-        const conditions = this.buildWhereConditions(where);
-        if (conditions.length > 0) {
-          query = query.where(and(...conditions));
-        }
+        allConditions.push(...this.buildWhereConditions(where));
       } else {
-        query = query.where(where);
+        allConditions.push(where);
       }
+    }
+    if (search && search.columns.length > 0 && search.value) {
+      const pattern = `%${search.value}%`;
+      const likeConditions = search.columns.map((col: string) => like(sql`${sql.identifier(col)}`, pattern));
+      allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
+    }
+    if (allConditions.length > 0) {
+      query = query.where(and(...allConditions));
     }
 
     const orderExprs = this.buildOrderBy(orderBy);
@@ -83,6 +95,10 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   async findOne(tableOrName: any, where: any): Promise<any | null> {
     const results = await this.find(tableOrName, { where, limit: 1 });
     return results[0] || null;
+  }
+
+  protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
+    return this.sqlite.prepare(sqlStr).all(...values);
   }
 
   async insert(tableOrName: any, data: any): Promise<any> {

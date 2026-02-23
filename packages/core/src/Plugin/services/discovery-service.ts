@@ -2,11 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
 import AdmZip from 'adm-zip';
-import { Logger } from '../../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
 import { BackupService } from '../../management/backup-service';
 import { z } from 'zod';
-import { pathToFileURL } from 'url';
+import Module from 'module';
+import { getThemesDir } from '../../config/paths';
 
 const manifestSchema = z.object({
   name: z.string(),
@@ -32,7 +33,31 @@ export interface DependencyIssue {
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
 
-  constructor(private pluginsRoot: string, private projectRoot: string) {}
+  constructor(private pluginsRoot: string, private projectRoot: string) {
+    this.ensureSharedModuleResolution();
+  }
+
+  private ensureSharedModuleResolution(): void {
+    try {
+      const projectNodeModules = path.resolve(this.projectRoot, 'node_modules');
+      if (!fs.existsSync(projectNodeModules) || !fs.statSync(projectNodeModules).isDirectory()) return;
+
+      const delimiter = path.delimiter;
+      const existing = String(process.env.NODE_PATH || '')
+        .split(delimiter)
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+
+      if (!existing.includes(projectNodeModules)) {
+        process.env.NODE_PATH = existing.length > 0
+          ? `${projectNodeModules}${delimiter}${existing.join(delimiter)}`
+          : projectNodeModules;
+        (Module as any)._initPaths();
+      }
+    } catch {
+      // Best effort: plugin resolution still has fallback behavior.
+    }
+  }
 
   public async discoverPlugins(
     existingPlugins: Map<string, LoadedPlugin>,
@@ -44,7 +69,7 @@ export class DiscoveryService {
     this.logger.info(`Scanning for plugins in ${this.pluginsRoot}...`);
     const roots = [this.pluginsRoot];
     
-    const themesDir = path.resolve(this.projectRoot, 'themes');
+    const themesDir = getThemesDir();
     if (fs.existsSync(themesDir)) {
       const themes = fs.readdirSync(themesDir);
       for (const themeSlug of themes) {
@@ -129,8 +154,16 @@ export class DiscoveryService {
 
                 // Always load plugin module so lifecycle hooks remain available.
                 // Sandbox mode controls runtime isolation policy, not module metadata availability.
-                const fileUrl = pathToFileURL(indexPath).href;
-                const rawModule = await import(fileUrl);
+                let rawModule: any;
+                try {
+                  // Prefer absolute filesystem path imports for CJS/TSX compatibility.
+                  rawModule = await import(indexPath);
+                } catch (pathImportErr: any) {
+                  // Fallback to file URL import for strict ESM environments.
+                  const { pathToFileURL } = await import('url');
+                  const fileUrl = pathToFileURL(indexPath).href;
+                  rawModule = await import(fileUrl);
+                }
                 const pluginModule = (rawModule && rawModule.default)
                   ? { ...rawModule.default, ...rawModule }
                   : rawModule;

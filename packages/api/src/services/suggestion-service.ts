@@ -1,4 +1,4 @@
-import { IDatabaseManager, and, or, ilike, isNotNull } from '@fromcode/database';
+import { IDatabaseManager } from '@fromcode/database';
 import { Collection, Logger } from '@fromcode/core';
 
 export class SuggestionService {
@@ -6,31 +6,26 @@ export class SuggestionService {
 
   constructor(private db: IDatabaseManager) {}
 
-  async getSuggestions(collection: Collection, field: string, q?: string, table?: any) {
+  async getSuggestions(collection: Collection, field: string, q?: string) {
     try {
       const config = collection.fields.find(f => f.name === field);
-      
-      // Safety: If field doesn't exist, don't crash the suggestions API, just return empty
+
       if (!config && field !== 'id' && field !== 'slug' && field !== 'username') {
         this.logger.warn(`Suggestions requested for non-existent field "${field}" in collection "${collection.slug}"`);
         return [];
       }
 
-      const actualTable = table || (this.db as any).createDynamicTable({
-        slug: collection.tableName || collection.slug,
-        fields: collection.fields.map((f: any) => ({ name: f.name, type: f.type })),
-        primaryKey: collection.primaryKey || 'id',
-        timestamps: collection.timestamps !== false
-      });
+      const tableName = collection.tableName || collection.slug;
+      const search = String(q || '').trim().toLowerCase();
 
       if (config && (config.type === 'json' || config.admin?.component === 'TagField' || config.admin?.component === 'Tags')) {
-        const sourceRows = await this.db.drizzle
-          .select({ value: actualTable[field] })
-          .from(actualTable)
-          .where(isNotNull(actualTable[field]))
-          .limit(300);
+        const rows = await this.db.find(tableName, {
+          columns: { [field]: true },
+          limit: 300
+          // Note: JSON/tags fields are stored as serialized arrays — LIKE on the raw
+          // JSON string is unreliable, so search filtering is done in JS below.
+        });
 
-        const search = String(q || '').trim().toLowerCase();
         const seen = new Set<string>();
         const out: Array<{ label: string; value: string }> = [];
 
@@ -43,8 +38,8 @@ export class SuggestionService {
           out.push({ label: value, value });
         };
 
-        for (const row of sourceRows) {
-          const raw = (row as any)?.value;
+        for (const row of rows) {
+          const raw = row[field];
           if (raw === null || raw === undefined) continue;
 
           if (Array.isArray(raw)) {
@@ -73,48 +68,41 @@ export class SuggestionService {
         }
 
         return out.slice(0, 50);
-      } else if (actualTable[field]) {
-        const isUserSearch = collection.slug === 'users' && (field === 'username' || field === 'email');
-        const conditions: any[] = [];
-        
-        if (!isUserSearch) {
-            conditions.push(isNotNull(actualTable[field]));
-        }
-        
-        if (q) {
-          if (isUserSearch) {
-             const userConditions: any[] = [];
-             if (actualTable['username']) userConditions.push(ilike(actualTable['username'], `%${q}%`));
-             if (actualTable['email']) userConditions.push(ilike(actualTable['email'], `%${q}%`));
-             
-             if (userConditions.length > 0) {
-                conditions.push(or(...userConditions));
-             }
-          } else {
-             conditions.push(ilike(actualTable[field], `%${q}%`));
-          }
-        }
-
-        // Simpler implementation for now as we are refactoring
-        const labelFieldName = (collection.admin?.useAsTitle && actualTable[collection.admin.useAsTitle]) 
-          ? collection.admin.useAsTitle 
-          : field;
-
-        const result = await this.db.drizzle
-          .select({
-            value: actualTable[field],
-            label: actualTable[labelFieldName] || actualTable[field]
-          })
-          .from(actualTable)
-          .where(and(...conditions))
-          .groupBy(actualTable[field], actualTable[labelFieldName])
-          .limit(50);
-        
-        return result.map((r: any) => ({ label: r.label, value: r.value }));
       } else {
-        // Field not in table and no special handling
-        this.logger.warn(`Suggestions field "${field}" not found in table for collection "${collection.slug}"`);
-        return [];
+        const isUserSearch = collection.slug === 'users' && (field === 'username' || field === 'email');
+        const labelFieldName = collection.admin?.useAsTitle || field;
+
+        const columnsToFetch: Record<string, boolean> = { [field]: true };
+        if (labelFieldName !== field) columnsToFetch[labelFieldName] = true;
+        if (isUserSearch) {
+          columnsToFetch['username'] = true;
+          columnsToFetch['email'] = true;
+        }
+
+        const searchColumns = isUserSearch ? ['username', 'email'] : [field];
+
+        const rows = await this.db.find(tableName, {
+          columns: columnsToFetch,
+          ...(search ? { search: { columns: searchColumns, value: search } } : {}),
+          limit: 50
+        });
+
+        const seen = new Set<string>();
+        const out: Array<{ label: string; value: string }> = [];
+
+        for (const row of rows) {
+          const value = row[field];
+          if (value === null || value === undefined) continue;
+
+          const strValue = String(value);
+          if (seen.has(strValue)) continue;
+          seen.add(strValue);
+
+          const label = row[labelFieldName] ?? strValue;
+          out.push({ label: String(label), value: strValue });
+        }
+
+        return out;
       }
     } catch (err: any) {
       this.logger.error(`Suggestions error in ${collection.slug} for ${field}:`, err);

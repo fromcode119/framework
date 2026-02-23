@@ -4,6 +4,7 @@ import * as tar from 'tar';
 import AdmZip from 'adm-zip';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getProjectRoot } from '../config/paths';
 
 const execAsync = promisify(exec);
 
@@ -13,23 +14,8 @@ const execAsync = promisify(exec);
  * Useful for rollbacks during failed updates or migrations.
  */
 export class BackupService {
-  private static getProjectRoot(): string {
-    let current = process.cwd();
-    while (current !== path.parse(current).root) {
-      const pkgPath = path.join(current, 'package.json');
-      if (fs.existsSync(pkgPath)) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-          if (pkg.name === '@fromcode/framework') return current;
-        } catch {}
-      }
-      current = path.dirname(current);
-    }
-    return process.cwd();
-  }
-
   private static getBackupsDir(): string {
-    return path.resolve(this.getProjectRoot(), 'backups');
+    return path.resolve(getProjectRoot(), 'backups');
   }
 
   /**
@@ -180,7 +166,7 @@ export class BackupService {
     } else if (dbUrl.includes('.db') || dbUrl.startsWith('sqlite')) {
       // Handle SQLite
       const sqlitePath = dbUrl.startsWith('sqlite://') ? dbUrl.replace('sqlite://', '') : dbUrl;
-      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(this.getProjectRoot(), sqlitePath);
+      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(getProjectRoot(), sqlitePath);
       
       if (fs.existsSync(absPath)) {
         const dumpPath = path.join(backupsPath, `db-copy-${timestamp}.db`);
@@ -198,7 +184,7 @@ export class BackupService {
    */
   static async createSystemBackup(): Promise<string> {
     const backupsPath = this.ensureBackupsDir('system');
-    const rootDir = this.getProjectRoot();
+    const rootDir = getProjectRoot();
     
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFileName = `system-${timestamp}.tar.gz`;

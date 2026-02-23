@@ -1,4 +1,4 @@
-import { API_RESOURCE_PATHS, buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/core/utils';
+import { ApiPath, buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/sdk';
 
 export const SERVER_API_VERSION = normalizeApiVersion();
 export const SERVER_API_VERSION_PREFIX = buildApiVersionPrefix();
@@ -7,13 +7,13 @@ const DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';
 
 export function buildSystemResolvePath(query: URLSearchParams | string) {
   const queryString = typeof query === 'string' ? query : query.toString();
-  return `${API_RESOURCE_PATHS.SYSTEM.RESOLVE}?${queryString}`;
+  return `${ApiPath.SYSTEM.RESOLVE}?${queryString}`;
 }
 
 export function buildSettingsCollectionPath(limit = 500) {
   const query = new URLSearchParams();
   query.set('limit', String(limit));
-  return `${API_RESOURCE_PATHS.COLLECTIONS.SETTINGS}?${query.toString()}`;
+  return `${ApiPath.COLLECTIONS.SETTINGS}?${query.toString()}`;
 }
 
 export function buildCollectionLookupPath(collectionSlug: string, options: { id?: string; limit?: number } = {}) {
@@ -21,7 +21,7 @@ export function buildCollectionLookupPath(collectionSlug: string, options: { id?
   const query = new URLSearchParams();
   if (options.id) query.set('id', String(options.id));
   query.set('limit', String(options.limit ?? 1));
-  return `${API_RESOURCE_PATHS.COLLECTIONS.BASE}/${slug}?${query.toString()}`;
+  return `${ApiPath.COLLECTIONS.BASE}/${slug}?${query.toString()}`;
 }
 
 export function extractFirstDoc(result: any): any {

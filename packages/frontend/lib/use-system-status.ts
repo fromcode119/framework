@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { API_RESOURCE_PATHS } from '@fromcode/core/utils';
+import { ApiPath } from '@fromcode/sdk';
 import { buildFrontendApiUrl } from './api-routes';
 
 export type SystemStatus = 'LOADING' | 'OK' | 'MAINTENANCE';
@@ -23,7 +23,7 @@ export function useSystemStatus() {
   useEffect(() => {
     async function initializeSystem() {
       try {
-        const healthPath = (API_RESOURCE_PATHS as any)?.SYSTEM?.HEALTH || '/health';
+        const healthPath = (ApiPath as any)?.SYSTEM?.HEALTH;
 
         // 1. Check system health and maintenance status (Whitelisted)
         let maintenance = false;

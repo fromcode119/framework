@@ -1,4 +1,4 @@
-import { sql, count, eq, and, or } from 'drizzle-orm';
+import { sql, eq, and, or } from 'drizzle-orm';
 import { LoadedPlugin } from '../../types';
 import { PluginManagerInterface, createSecurityHelpers } from './utils';
 import { RateLimiter } from '../../security/rate-limiter';
@@ -43,7 +43,6 @@ export function createDatabaseProxy(
       }
 
       if (prop === 'sql') return wrappedSql;
-      if (prop === 'count') return count;
       if (prop === 'eq') return eq;
       if (prop === 'and') return and;
       if (prop === 'or') return or;

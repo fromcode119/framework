@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '../../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { LoadedPlugin, FromcodePlugin } from '../../types';
+import { SystemTable } from '@fromcode/sdk/internal';
 import { PluginManagerInterface } from '../context';
 import { PluginPermissionsService } from '../../security/plugin-permissions-service';
 import { PluginSignatureService } from '../../security/plugin-signature-service';
@@ -247,7 +248,7 @@ export class LifecycleService {
       if (plugin.state === 'active') await this.disable(slug);
     }
 
-    await this.manager.db.delete('_system_plugins', { slug });
+    await this.manager.db.delete(SystemTable.PLUGINS, { slug });
     const pluginPath = plugin?.path;
     this.manager.plugins.delete(slug);
 

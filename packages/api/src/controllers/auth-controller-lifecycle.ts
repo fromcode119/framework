@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { users, systemRoles, eq, count } from '@fromcode/database';
+import { PluginManager, SystemTable } from '@fromcode/core';
+import { SystemMetaKey } from '@fromcode/sdk/internal';
 import { randomBytes } from 'crypto';
 import { AuthControllerTokenSupport } from './auth-controller-token-support';
 
@@ -25,11 +26,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
 
   async getStatus(req: Request, res: Response) {
     try {
-      const result = await this.db
-        .select({ total: count() })
-        .from(users);
-
-      const initialized = Number(result[0].total) > 0;
+      const initialized = (await this.db.count(SystemTable.USERS)) > 0;
 
       if (!initialized) {
         this.clearAuthCookies(req, res);
@@ -43,36 +40,11 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
 
   async setup(req: Request, res: Response) {
     try {
-      const check = await this.db.select({ total: count() }).from(users);
-      if (Number(check[0].total) > 0) {
+      if ((await this.db.count(SystemTable.USERS)) > 0) {
         return res.status(400).json({ error: 'System already initialized' });
       }
-
-      await this.db.insert(systemRoles).values([
-        {
-          slug: 'admin',
-          name: 'Administrator',
-          description: 'Complete unrestricted access to all system modules and settings.',
-          type: 'system',
-          permissions: JSON.stringify(['*'])
-        },
-        {
-          slug: 'editor',
-          name: 'Content Editor',
-          description: 'Can create, edit and delete collections but cannot modify system settings.',
-          type: 'custom',
-          permissions: JSON.stringify(['content:read', 'content:write'])
-        },
-        {
-          slug: 'user',
-          name: 'Standard User',
-          description: 'Regular account with access to assigned frontend capabilities only.',
-          type: 'custom',
-          permissions: JSON.stringify([])
-        }
-      ]).onConflictDoNothing();
     } catch (e) {
-      console.error('[AuthController] Setup initialization failed:', e);
+      this.logger.error(`[AuthController] Setup initialization failed: ${e}`);
     }
 
     const { email, password } = req.body || {};
@@ -89,13 +61,11 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
     }
 
     const hashedPassword = await this.auth.hashPassword(String(password));
-    const [newUser]: any = await this.db.insert(users)
-      .values({
-        email: normalizedEmail,
-        password: hashedPassword,
-        roles: ['admin']
-      })
-      .returning();
+    const newUser: any = await this.db.insert(SystemTable.USERS, {
+      email: normalizedEmail,
+      password: hashedPassword,
+      roles: ['admin']
+    });
 
     await this.setEmailVerified(newUser.id, true);
     await this.setUserAccountStatus(newUser.id, 'active');
@@ -141,21 +111,19 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
       return res.status(400).json({ error: passwordError });
     }
 
-    const existing = await this.db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
-    if (existing?.[0]) {
+    const existing = await this.db.findOne(SystemTable.USERS, { email: normalizedEmail });
+    if (existing) {
       return res.status(409).json({ error: 'Email is already registered' });
     }
 
     const hashedPassword = await this.auth.hashPassword(String(password));
-    const [newUser]: any = await this.db.insert(users)
-      .values({
-        email: normalizedEmail,
-        password: hashedPassword,
-        roles: ['customer'],
-        firstName: String(firstName || '').trim() || null,
-        lastName: String(lastName || '').trim() || null
-      })
-      .returning();
+    const newUser: any = await this.db.insert(SystemTable.USERS, {
+      email: normalizedEmail,
+      password: hashedPassword,
+      roles: ['customer'],
+      firstName: String(firstName || '').trim() || null,
+      lastName: String(lastName || '').trim() || null
+    });
 
     await this.setUserAccountStatus(newUser.id, 'active');
     await this.setForcePasswordReset(newUser.id, false);
@@ -258,8 +226,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
       return res.status(400).json({ error: 'A valid email is required' });
     }
 
-    const results = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
-    const user = results?.[0];
+    const user = await this.db.findOne(SystemTable.USERS, { email });
     if (!user) {
       return res.json({
         success: true,
@@ -347,8 +314,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
         }
       }
 
-      const results = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
-      const user = results[0];
+      const user = await this.db.findOne(SystemTable.USERS, { email });
 
       if (user) {
         const status = await this.getUserAccountStatus(user.id);
@@ -395,8 +361,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
           });
         }
 
-        const db = (this.manager as any).db;
-        const twoFactorMeta = await db.findOne('_system_meta', {
+        const twoFactorMeta = await this.db.findOne(SystemTable.META, {
           key: `user:${user.id}:2fa_enabled`
         });
 
@@ -415,7 +380,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
           let twoFactorMethod: 'totp' | 'recovery' | null = null;
 
           if (hasTotpToken) {
-            const secretRow = await db.findOne('_system_meta', {
+            const secretRow = await this.db.findOne(SystemTable.META, {
               key: `user:${user.id}:totp_secret`
             });
 
@@ -496,7 +461,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
       ).catch(() => {});
       return res.status(401).json({ error: 'Invalid email or password' });
     } catch (err: any) {
-      console.error(`[AuthController] Login exception for ${email}:`, err);
+      this.logger.error(`[AuthController] Login exception for ${email}: ${err}`);
       return res.status(500).json({ error: 'Internal server error during login' });
     }
   }
@@ -543,8 +508,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
     const genericMessage = 'If an account exists, a password reset link has been sent.';
 
     try {
-      const result = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
-      const user = result?.[0];
+      const user = await this.db.findOne(SystemTable.USERS, { email });
       if (!user) {
         return res.json({ success: true, message: genericMessage });
       }
@@ -571,7 +535,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
 
       return res.json({ success: true, message: genericMessage });
     } catch (error) {
-      console.error('[AuthController] forgotPassword failed:', error);
+      this.logger.error(`[AuthController] forgotPassword failed: ${error}`);
       return res.json({ success: true, message: genericMessage });
     }
   }
@@ -596,7 +560,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
       });
     }
 
-    const user = await this.db.select().from(users).where(eq(users.id, tokenResult.userId)).limit(1).then((rows: any[]) => rows?.[0]);
+    const user = await this.db.findOne(SystemTable.USERS, { id: tokenResult.userId });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -611,7 +575,7 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
     }
 
     const hashed = await this.auth.hashPassword(newPassword);
-    await this.db.update(users).set({ password: hashed, updatedAt: new Date() }).where(eq(users.id, tokenResult.userId));
+    await this.db.update(SystemTable.USERS, { id: tokenResult.userId }, { password: hashed, updatedAt: new Date() });
     await this.pushPasswordHistory(tokenResult.userId, hashed);
     await this.upsertMeta(this.getPasswordChangedAtKey(tokenResult.userId), new Date().toISOString());
     await this.setForcePasswordReset(tokenResult.userId, false);
@@ -672,18 +636,17 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
       return res.status(400).json({ error: 'SSO payload did not provide a valid email' });
     }
 
-    let user = await this.db.select().from(users).where(eq(users.email, email)).limit(1).then((rows: any[]) => rows?.[0]);
+    let user = await this.db.findOne(SystemTable.USERS, { email });
     if (!user) {
       const generatedPassword = randomBytes(24).toString('hex');
       const hashedPassword = await this.auth.hashPassword(generatedPassword);
-      const [created]: any = await this.db.insert(users).values({
+      user = await this.db.insert(SystemTable.USERS, {
         email,
         password: hashedPassword,
         roles: Array.isArray(payload?.roles) && payload.roles.length > 0 ? payload.roles : ['customer'],
         firstName: String(payload?.firstName || '').trim() || null,
         lastName: String(payload?.lastName || '').trim() || null
-      }).returning();
-      user = created;
+      });
       await this.setUserAccountStatus(user.id, 'active');
       await this.setForcePasswordReset(user.id, false);
       await this.pushPasswordHistory(user.id, hashedPassword);
@@ -719,11 +682,11 @@ export class AuthControllerLifecycle extends AuthControllerTokenSupport {
 
   protected async isFrontendAuthEnabledForRequest(req: Request): Promise<boolean> {
     if (!this.isFrontendRequestContext(req)) return true;
-    return this.getSettingBoolean('frontend_auth_enabled', true);
+    return this.getSettingBoolean(SystemMetaKey.FRONTEND_AUTH_ENABLED, true);
   }
 
   protected async isFrontendRegistrationEnabled(): Promise<boolean> {
-    return this.getSettingBoolean('frontend_registration_enabled', true);
+    return this.getSettingBoolean(SystemMetaKey.FRONTEND_REGISTRATION_ENABLED, true);
   }
 
   protected isFrontendRequestContext(req: Request): boolean {

@@ -1,10 +1,9 @@
 "use client";
 
 import React from 'react';
-import { usePlugins } from '@fromcode/react';
+import { queryCollectionDocByField, queryCollectionDocById, queryCollectionDocs, usePlugins } from '@fromcode/react';
 import { Select } from '@/components/ui/select';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
 import { resolveLabelText } from '@/lib/utils';
 
 interface RelationshipSelectLocalProps {
@@ -78,11 +77,10 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
 
     const fetchOptions = async () => {
       try {
-        const searchParam = search.trim();
-        const query = searchParam ? `&search=${encodeURIComponent(searchParam)}` : '';
-        const url = `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollectionSlug}?limit=30${query}`;
-        const response = await api.get(url);
-        const docs = Array.isArray(response) ? response : (response?.docs || []);
+        const docs = await queryCollectionDocs(api, sourceCollectionSlug, {
+          limit: 30,
+          search: search.trim() || undefined
+        });
         const nextOptions = mapDocsToOptions(docs);
 
         if (!disposed) {
@@ -93,16 +91,13 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
 
         // Ensure the currently selected value resolves to a label.
         try {
-          const byId = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollectionSlug}/${encodeURIComponent(currentValue)}`);
+          const byId = await queryCollectionDocById(api, sourceCollectionSlug, currentValue);
           const resolved = mapDocsToOptions([byId])[0];
           if (resolved && !disposed) upsertOption(resolved);
         } catch {
           try {
-            const byField = await api.get(
-              `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollectionSlug}?${encodeURIComponent(lookupField)}=${encodeURIComponent(currentValue)}&limit=1`
-            );
-            const byFieldDocs = Array.isArray(byField) ? byField : (byField?.docs || []);
-            const resolved = mapDocsToOptions(byFieldDocs)[0];
+            const byFieldDoc = await queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
+            const resolved = byFieldDoc ? mapDocsToOptions([byFieldDoc])[0] : undefined;
             if (resolved && !disposed) upsertOption(resolved);
           } catch {
             if (!disposed) {

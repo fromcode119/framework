@@ -1,9 +1,10 @@
 import { FromcodePlugin, LoadedPlugin, PluginContext, PluginManifest, Collection } from '../types';
+import { SystemTable } from '@fromcode/sdk/internal';
 import { HookManager } from '../hooks/hook-manager';
 import { QueueManager } from '../queue/queue-manager';
 import { SchemaManager } from '../database/schema-manager';
 import { MigrationManager } from '../database/migration-manager';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { I18nManager } from '../i18n/i18n-manager';
 import { DatabaseFactory, sql, IDatabaseManager } from '@fromcode/database';
 import { SchedulerService } from '@fromcode/scheduler';
@@ -13,11 +14,11 @@ import { RecordVersions } from '../collections/record-versions';
 import { AuditManager } from '../security/audit-manager';
 import { SecurityMonitor } from '../security/security-monitor';
 import { MarketplaceCatalogService } from '../marketplace/marketplace-catalog-service';
-import path from 'path';
-import fs from 'fs';
 import { createHash } from 'crypto';
 import { createPluginContext, PluginManagerInterface } from './context';
 export { PluginManagerInterface };
+
+import { getProjectRoot, getPluginsDir } from '../config/paths';
 
 // Services
 import { RuntimeService } from './services/runtime-service';
@@ -71,7 +72,7 @@ export class PluginManager implements PluginManagerInterface {
   public get cache() { return this.integrations.cache; }
 
   constructor() {
-    this.projectRoot = this.getProjectRoot();
+    this.projectRoot = getProjectRoot();
     this.db = DatabaseFactory.create(process.env.DATABASE_URL || '');
     this.integrations = new IntegrationManager(this.db as any, this.projectRoot, this.logger);
     this.audit = new AuditManager(this.db);
@@ -92,9 +93,7 @@ export class PluginManager implements PluginManagerInterface {
     // Initialize Global Plugin Registry for cohesion
     registry.setDatabase(this.db);
 
-    this.pluginsRoot = process.env.PLUGINS_DIR 
-      ? path.resolve(process.env.PLUGINS_DIR)
-      : path.resolve(this.projectRoot, 'plugins');
+    this.pluginsRoot = getPluginsDir();
 
     // Initialize Services
     this.runtime = new RuntimeService(this.projectRoot);
@@ -103,21 +102,6 @@ export class PluginManager implements PluginManagerInterface {
     this.marketplace = new MarketplaceCatalogService(this.discovery);
     this.admin = new AdminMetadataService();
     this.lifecycle = new LifecycleService(this, this.registry, this.discovery, this.schemaManager);
-  }
-
-
-
-  private getProjectRoot(): string {
-    let current = process.cwd();
-    while (current !== path.parse(current).root) {
-      if (fs.existsSync(path.join(current, 'package.json'))) {
-        try {
-          if (JSON.parse(fs.readFileSync(path.join(current, 'package.json'), 'utf8')).name === '@fromcode/framework') return current;
-        } catch {}
-      }
-      current = path.dirname(current);
-    }
-    return process.cwd();
   }
 
   async init() {
@@ -250,7 +234,7 @@ export class PluginManager implements PluginManagerInterface {
 
   private async isEmailTelemetryEnabled(): Promise<boolean> {
     try {
-      const row = await this.db.findOne('_system_meta', { key: 'email_notifications' });
+      const row = await this.db.findOne(SystemTable.META, { key: 'email_notifications' });
       const raw = String(row?.value || '').trim().toLowerCase();
       if (!raw) return true;
       return raw === 'true' || raw === '1' || raw === 'yes' || raw === 'on';
@@ -261,7 +245,7 @@ export class PluginManager implements PluginManagerInterface {
 
   private async getMetaValue(key: string): Promise<string> {
     try {
-      const row = await this.db.findOne('_system_meta', { key });
+      const row = await this.db.findOne(SystemTable.META, { key });
       return String(row?.value || '').trim();
     } catch {
       return '';
@@ -270,11 +254,11 @@ export class PluginManager implements PluginManagerInterface {
 
   private async upsertMetaValue(key: string, value: string): Promise<void> {
     try {
-      const existing = await this.db.findOne('_system_meta', { key });
+      const existing = await this.db.findOne(SystemTable.META, { key });
       if (existing) {
-        await this.db.update('_system_meta', { key }, { value });
+        await this.db.update(SystemTable.META, { key }, { value });
       } else {
-        await this.db.insert('_system_meta', { key, value });
+        await this.db.insert(SystemTable.META, { key, value });
       }
     } catch {
       // Best-effort telemetry metadata.
@@ -407,7 +391,7 @@ ${contextText}
 
     const now = Date.now();
     const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
-    const rows = await this.db.find('_system_logs', {
+    const rows = await this.db.find(SystemTable.LOGS, {
       orderBy: 'timestamp DESC',
       limit: 2000
     }).catch(() => []);
@@ -627,7 +611,7 @@ If you received this message, your configured Email integration is working for t
     const plugin = this.plugins.get(slug);
     if (plugin) {
       plugin.state = 'error';
-      await this.db.update('_system_plugins', { slug }, { state: 'error', health_status: 'error', updated_at: new Date() });
+      await this.db.update(SystemTable.PLUGINS, { slug }, { state: 'error', health_status: 'error', updated_at: new Date() });
     }
   }
 

@@ -1,5 +1,5 @@
-import { IDatabaseManager, sql } from '@fromcode/database';
-import { Logger } from '../logging/logger';
+import { IDatabaseManager } from '@fromcode/database';
+import { Logger } from '@fromcode/sdk';
 import { PluginManifest } from '../types';
 
 /**
@@ -55,9 +55,7 @@ export class MigrationCoordinator {
    */
   async validateDatabaseState(): Promise<boolean> {
     try {
-      // Check for basic system tables
-      await this.db.drizzle.execute(sql`SELECT 1 FROM _system_meta LIMIT 1`);
-      return true;
+      return await this.db.tableExists('_system_meta');
     } catch (err) {
       this.logger.error('Pre-migration state check failed. System tables missing.');
       return false;

@@ -20,21 +20,13 @@ import {
 } from '@/lib/nav-utils';
 
 const { 
-  Dashboard = () => null, 
-  Plugins = () => null, 
-  Users = () => null, 
-  Settings = () => null, 
-  Text = () => null, 
-  Media = () => null,
-  System = () => null,
-  Package = () => null,
-  Down = () => null,
-  Close = () => null,
+  Close = () => null, 
   Zap = () => null,
+  Down = () => null,
+  Left = () => null,
+  // System-level icons still used directly
   Activity = () => null,
-  Refresh = () => null,
-  Palette = () => null,
-  Left = () => null
+  Settings = () => null
 } = (FrameworkIcons || {}) as any;
 
 interface NavItemProps {
@@ -359,74 +351,20 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                 </div>
               )}
               {(!isCollapsed || isMini) && (
-                group === 'core' ? (
-                  <>
-                    <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
-                    
-                    {/* Users and Media */}
-                    <NavItem 
-                      icon={<Users size={18}/>} 
-                      label="Users" 
-                      href="/users" 
-                      active={pathname.startsWith('/users')} 
-                      onClick={onClose} 
-                      children={menuItems.find(m => m.path === '/users')?.children}
-                      isMini={isMini}
-                    />
-
-                    <NavItem icon={<Media size={18}/>} label="Media" href="/media" active={pathname.startsWith('/media')} onClick={onClose} isMini={isMini} />
-                    
-                    {/* Other Core items */}
-                    {items.filter(i => !['/', '/media', '/users'].includes(i.path)).map((item, idx) => (
-                      <NavItem 
-                        key={`${item.pluginSlug}-${idx}`}
-                        icon={<Icon name={item.icon || 'Package'} size={18} />}
-                        label={item.label}
-                        href={item.path}
-                        active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
-                        onClick={onClose}
-                        children={item.children}
-                        isMini={isMini}
-                      />
-                    ))}
-                  </>
-                ) : group === 'management' ? (
-                  <>
-                    <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname.startsWith('/plugins')} onClick={onClose} isMini={isMini} />
-                    <NavItem icon={<Palette size={18}/>} label="Themes" href="/themes" active={pathname.startsWith('/themes')} onClick={onClose} isMini={isMini} />
-                    
-                    {/* Other Management items */}
-                    {items.filter(i => !['/plugins', '/themes'].includes(i.path)).map((item, idx) => (
-                      <NavItem 
-                        key={`${item.pluginSlug}-${idx}`}
-                        icon={<Icon name={item.icon || 'Package'} size={18} />}
-                        label={item.label}
-                        href={item.path}
-                        active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
-                        onClick={onClose}
-                        children={item.children}
-                        isMini={isMini}
-                        isGroupHeader={item.isGroup}
-                        version={plugins.find(p => p.slug === item.pluginSlug)?.version}
-                      />
-                    ))}
-                  </>
-                ) : (
-                  items.map((item, idx) => (
-                    <NavItem 
-                      key={`${item.pluginSlug}-${idx}`}
-                      icon={<Icon name={item.icon || 'Package'} size={18} />}
-                      label={item.label}
-                      href={item.path}
-                      active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
-                      onClick={onClose}
-                      children={item.children}
-                      isMini={isMini}
-                      isGroupHeader={item.isGroup}
-                      version={plugins.find(p => p.slug === item.pluginSlug)?.version}
-                    />
-                  ))
-                )
+                items.map((item, idx) => (
+                  <NavItem 
+                    key={`${item.pluginSlug || 'system'}-${item.path}-${idx}`}
+                    icon={<Icon name={item.icon || 'Package'} size={18} />}
+                    label={item.label}
+                    href={item.path}
+                    active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
+                    onClick={onClose}
+                    children={item.children}
+                    isMini={isMini}
+                    isGroupHeader={item.isGroup}
+                    version={plugins.find(p => p.slug === item.pluginSlug)?.version}
+                  />
+                ))
               )}
             </React.Fragment>
           );
@@ -451,8 +389,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
             )}
             {(!collapsedGroups.includes('core-fallback') || isMini) && (
               <>
-                <NavItem icon={<Dashboard size={18}/>} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
-                <NavItem icon={<Plugins size={18}/>} label="Plugins" href="/plugins" active={pathname === '/plugins'} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<Icon name="Dashboard" size={18} />} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<Icon name="Package" size={18} />} label="Plugins" href="/plugins" active={pathname === '/plugins'} onClick={onClose} isMini={isMini} />
               </>
             )}
           </>

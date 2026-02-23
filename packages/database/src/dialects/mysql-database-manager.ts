@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import { sql, eq, and, count as drizzleCount, desc, asc } from 'drizzle-orm';
+import { sql, eq, and, or, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { mysqlTable, text } from 'drizzle-orm/mysql-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
@@ -34,7 +34,13 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
   }
 
   async find(tableName: string, options: any = {}): Promise<any[]> {
-    const { limit, offset, orderBy, where, columns } = options;
+    const { limit, offset, orderBy, where, columns, joins, search } = options;
+
+    if (joins && joins.length > 0) {
+      const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, options);
+      const rows = await this.executeRawSelect(sqlStr, values);
+      return this.processJoinedRows(rows, joins);
+    }
     
     let query;
     if (columns && Object.keys(columns).length > 0) {
@@ -49,15 +55,21 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
       query = this.drizzle.select().from(sql`${sql.identifier(tableName)}`);
     }
 
+    const allConditions: any[] = [];
     if (where) {
       if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-        const conditions = this.buildWhereConditions(where);
-        if (conditions.length > 0) {
-          query = query.where(and(...conditions));
-        }
+        allConditions.push(...this.buildWhereConditions(where));
       } else {
-        query = query.where(where);
+        allConditions.push(where);
       }
+    }
+    if (search && search.columns.length > 0 && search.value) {
+      const pattern = `%${search.value}%`;
+      const likeConditions = search.columns.map((col: string) => like(sql`${sql.identifier(col)}`, pattern));
+      allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
+    }
+    if (allConditions.length > 0) {
+      query = query.where(and(...allConditions));
     }
 
     const orderExprs = this.buildOrderBy(orderBy);
@@ -109,6 +121,11 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     const conditions = this.buildWhereConditions(where);
     const [result] = await this.drizzle.delete(table).where(and(...conditions));
     return result.affectedRows > 0;
+  }
+
+  protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
+    const [rows] = await this.pool.execute(sqlStr, values);
+    return rows as any[];
   }
 
   async count(tableName: string, where: any = {}): Promise<number> {

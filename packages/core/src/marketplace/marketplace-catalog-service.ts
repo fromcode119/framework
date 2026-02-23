@@ -1,4 +1,4 @@
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { PluginManifest } from '@fromcode/sdk';
 import { DiscoveryService } from '../plugin/services/discovery-service';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode/marketplace-client';

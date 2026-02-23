@@ -13,6 +13,7 @@ import { MoveDialog } from '@/components/ui/move-dialog';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
+import { formatSize, resolveMediaUrl } from '@/lib/utils';
 
 const { 
   File,
@@ -226,14 +227,6 @@ export default function MediaPage() {
     }
   };
 
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
-
   return (
     <div className="w-full pb-24 animate-in fade-in duration-500">
       <input 
@@ -430,12 +423,15 @@ export default function MediaPage() {
             ))}
 
             {items.map((item) => (
+              (() => {
+                const mediaUrl = resolveMediaUrl(item.url);
+                return (
               viewMode === 'grid' ? (
                 <Card key={item.id} className="p-0 overflow-hidden group rounded-3xl bg-white dark:bg-slate-900/50 border-none shadow-xl shadow-slate-200/50 dark:shadow-none">
                   <div className={`aspect-square relative flex items-center justify-center ${theme === 'dark' ? 'bg-slate-800/50' : 'bg-slate-700/5'}`}>
                     {item.mimeType.startsWith('image/') ? (
                       <img 
-                        src={item.url} 
+                        src={mediaUrl} 
                         alt={item.originalName} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -445,7 +441,7 @@ export default function MediaPage() {
                     
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <a 
-                          href={item.url} 
+                          href={mediaUrl} 
                           download 
                           className="p-2 bg-white rounded-lg text-slate-900 hover:bg-slate-100 transition-colors"
                           target="_blank"
@@ -489,7 +485,7 @@ export default function MediaPage() {
                 <Card key={item.id} className="p-3 flex items-center gap-4 group rounded-xl bg-white dark:bg-slate-900/50 border-none shadow-sm">
                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center overflow-hidden ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
                       {item.mimeType.startsWith('image/') ? (
-                        <img src={item.url} alt="" className="w-full h-full object-cover" />
+                        <img src={mediaUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <File size={20} className="text-slate-400" />
                       )}
@@ -499,7 +495,7 @@ export default function MediaPage() {
                       <div className="text-[10px] text-slate-500 font-medium">{formatSize(item.fileSize)} • {item.mimeType}</div>
                    </div>
                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <a href={item.url} download className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500"><Download size={16} /></a>
+                      <a href={mediaUrl} download className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500"><Download size={16} /></a>
                       <button 
                         onClick={() => {
                           setMovingItem({ id: item.id, type: 'file' });
@@ -521,6 +517,8 @@ export default function MediaPage() {
                    </div>
                 </Card>
               )
+              );
+            })()
             ))}
           </div>
         )}

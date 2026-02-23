@@ -2,7 +2,7 @@ import { IntegrationRegistry, IntegrationTypeDefinition, IntegrationProviderDefi
 import { EmailManager, EmailFactory, EmailOptions } from '@fromcode/email';
 import { MediaManager, StorageFactory } from '@fromcode/media';
 import { CacheManager, CacheFactory } from '@fromcode/cache';
-import { Logger } from '../logging/logger';
+import { Logger } from '@fromcode/sdk';
 import { EmailIntegrationDefinition } from './providers/email-provider';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';

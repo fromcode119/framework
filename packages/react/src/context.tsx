@@ -2,11 +2,22 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import { buildApiVersionPrefix, normalizeApiVersion } from './api-version';
+import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode/sdk';
 import { Slot } from './slot';
 import { Override } from './override';
 import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './icons';
 import { RootFramework } from './root-framework';
+import { useSystemShortcodes } from './system-shortcodes';
+import { queryCollectionDocs, queryCollectionDocById, queryCollectionDocByField } from './collection-queries';
+import { getPreferredBrowserLocale } from './browser-localization';
+import {
+  ADMIN_RUNTIME_EXPORT_KEYS,
+  RUNTIME_GLOBALS,
+  RUNTIME_MODULE_NAMES,
+  getFrameworkRuntimeBridge,
+  normalizeLocaleCode,
+  resolveLocalizedLabel
+} from '@fromcode/sdk';
 
 export interface SlotComponent {
   component: React.ComponentType<any>;
@@ -84,7 +95,12 @@ const inFlightGetRequests = new Map<string, Promise<any>>();
 // These allow plugins to import { registerX } from '@fromcode/react' 
 // when running inside the framework's dynamic bridge environment.
 
-const getBridge = () => (typeof window !== 'undefined' ? (window as any).Fromcode : {});
+/**
+ * Helper to get the current bridge for standalone (non-hook) access.
+ * This is primarily used by plugins loaded via ESM/CJS that need to talk back
+ * to the framework core.
+ */
+const getBridge = () => getFrameworkRuntimeBridge();
 
 export const registerSlotComponent = (...args: any[]) => getBridge().registerSlotComponent?.(...args);
 export const registerFieldComponent = (...args: any[]) => getBridge().registerFieldComponent?.(...args);
@@ -102,16 +118,15 @@ export const resolveContent = (...args: any[]) => getBridge().resolveContent?.(.
 export const emit = (...args: any[]) => getBridge().emit?.(...args);
 export const on = (...args: any[]) => getBridge().on?.(...args);
 export const t = (...args: any[]) => getBridge().t?.(...args);
-export const locale = typeof window !== 'undefined' ? (window as any).Fromcode?.locale : 'en';
+export const locale = () => getBridge().locale?.() as string | undefined;
 export const setLocale = (...args: any[]) => getBridge().setLocale?.(...args);
-export const api = {
-  getBaseUrl: (...args: any[]) => getBridge().api?.getBaseUrl?.(...args),
-  get: (...args: any[]) => getBridge().api?.get?.(...args),
-  post: (...args: any[]) => getBridge().api?.post?.(...args),
-  put: (...args: any[]) => getBridge().api?.put?.(...args),
-  patch: (...args: any[]) => getBridge().api?.patch?.(...args),
-  delete: (...args: any[]) => getBridge().api?.delete?.(...args),
-};
+
+export const api = new Proxy({}, {
+  get: (_, prop) => {
+    const bridge = getBridge();
+    return bridge.api?.[prop];
+  }
+}) as any;
 
 export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children: ReactNode, apiUrl?: string, runtimeModules?: Record<string, any> }) => {
   const [slots, setSlots] = useState<Record<string, SlotComponent[]>>({});
@@ -691,10 +706,6 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       (window as any).Fromcode = {};
     }
 
-    if (!(window as any).FromcodeAdmin) {
-      (window as any).FromcodeAdmin = {};
-    }
-    
     const fc = (window as any).Fromcode;
     fc.React = React;
     fc.ReactDOM = ReactDOM;
@@ -796,17 +807,29 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         on,
         t: stableT,
         api: stableApiBridge,
-        locale,
+        locale: () => stabilityRef.current.locale,
         setLocale,
         usePlugins,
         useTranslation,
         usePluginAPI,
         usePluginState,
+        useSystemShortcodes,
+        queryCollectionDocs,
+        queryCollectionDocById,
+        queryCollectionDocByField,
+        getPreferredBrowserLocale,
+        normalizeLocaleCode,
+        resolveLocalizedLabel,
         isReady,
         // Non-hook versions for direct access from CJS/ESM bridge
         getState: () => stabilityRef.current,
         PluginsProvider
       };
+
+      // Centralized runtime module registry
+      const runtimeRegistry = ((window as any)[RUNTIME_GLOBALS.MODULES] ||= {});
+      runtimeRegistry['@fromcode/react'] = bridge;
+      runtimeRegistry['@fromcode/sdk'] = bridge; // Most SDK exports are available on the bridge
 
       (window as any).Fromcode = bridge;
       (window as any).getIcon = getIcon;
@@ -817,6 +840,31 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       (window as any).ReactDom = ReactDOM;
 
       // --- Consolidated Runtime Import Map Generation ---
+      const adminModule =
+        runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS] ||
+        runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN] ||
+        {};
+      const adminExportKeys = Array.from(
+        new Set<string>([
+          ...ADMIN_RUNTIME_EXPORT_KEYS,
+          ...Object.keys(adminModule)
+        ])
+      ).filter((key) => {
+        if (!key || key === 'default' || key === '__esModule') return false;
+        if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) return false;
+        return true;
+      });
+      const adminModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && (window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS}'] || window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN}'])`;
+      const adminExportSource =
+        adminExportKeys.map((key) => `export const ${key} = ${adminModuleAccessor} ? ${adminModuleAccessor}.${key} : undefined;`).join('\n') +
+        `\nexport default ${adminModuleAccessor};`;
+
+      const reactModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}['@fromcode/react']`;
+      const reactExportSource = Object.keys(bridge)
+        .filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof))
+        .map(key => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : window.Fromcode.${key};`)
+        .join('\n') + `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
+
       const imports: Record<string, string> = {
           "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = window.React;",
           "react-dom": "data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = window.ReactDOM;",
@@ -825,41 +873,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           "lucide-react": "data:application/javascript," + encodeURIComponent(
             Object.keys((window as any).Lucide || (window as any).FrameworkIcons || {}).map(key => `export const ${key} = (window.Lucide || window.FrameworkIcons).${key};`).join('\n') + `\nexport default (window.Lucide || window.FrameworkIcons);`
           ),
-          "@fromcode/react": "data:application/javascript," + encodeURIComponent(
-            Object.keys(bridge).filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof)).map(key => `export const ${key} = window.Fromcode.${key};`).join('\n') + `\nexport default window.Fromcode;`
-          ),
-          "@fromcode/admin/components": "data:application/javascript," + encodeURIComponent(
-            ['MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker', 'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'NotificationContext']
-              .map(key => `export const ${key} = window.FromcodeAdmin ? window.FromcodeAdmin.${key} : undefined;`).join('\n') + `\nexport default window.FromcodeAdmin;`
-          ),
-          "@fromcode/admin": "data:application/javascript," + encodeURIComponent(
-            [
-              'PluginPageHeader',
-              'PluginOverviewCard',
-              'PluginStatsList',
-              'PluginChartCard',
-              'PluginEmptyState',
-              'MediaPicker',
-              'Button',
-              'Input',
-              'TextArea',
-              'Select',
-              'TagField',
-              'Loader',
-              'Switch',
-              'Card',
-              'Badge',
-              'ConfirmDialog',
-              'PromptDialog',
-              'DateTimePicker',
-              'ColorPicker',
-              'CodeEditor',
-              'VisualMenuField',
-              'Icon',
-              'ThemeContext',
-              'NotificationContext'
-            ].map(key => `export const ${key} = window.FromcodeAdmin ? window.FromcodeAdmin.${key} : undefined;`).join('\n') + `\nexport default window.FromcodeAdmin;`
-          )
+          "@fromcode/react": "data:application/javascript," + encodeURIComponent(reactExportSource),
+          "@fromcode/sdk": "data:application/javascript," + encodeURIComponent(reactExportSource),
+          "@fromcode/admin/components": "data:application/javascript," + encodeURIComponent(adminExportSource),
+          "@fromcode/admin": "data:application/javascript," + encodeURIComponent(adminExportSource)
       };
 
       // Merge server-side and client-side modules from stabilityRef
@@ -879,11 +896,18 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
       if (currentClientModules) {
           Object.entries(currentClientModules).forEach(([name, mod]) => {
-              const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
-              (window as any)[`_fc_mod_${safeName}`] = mod;
-              const keys = Object.keys(mod);
+              runtimeRegistry[name] = mod;
+              const runtimeModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}[${JSON.stringify(name)}]`;
+              const keys = (
+                name === RUNTIME_MODULE_NAMES.ADMIN || name === RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS
+                  ? Array.from(new Set<string>([
+                      ...ADMIN_RUNTIME_EXPORT_KEYS,
+                      ...Object.keys(mod || {})
+                    ]))
+                  : Object.keys(mod || {})
+              );
               imports[name] = "data:application/javascript," + encodeURIComponent(
-                  keys.map(key => `export const ${key} = window._fc_mod_${safeName}.${key};`).join('\n') + `\nexport default window._fc_mod_${safeName};`
+                  keys.map(key => `export const ${key} = ${runtimeModuleAccessor} ? ${runtimeModuleAccessor}.${key} : undefined;`).join('\n') + `\nexport default ${runtimeModuleAccessor};`
               );
           });
       }
