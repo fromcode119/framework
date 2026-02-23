@@ -3,9 +3,9 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode119/sdk';
-import { Slot } from './Slot';
-import { Override } from './Override';
-import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './Icons';
+import { Slot } from './slot';
+import { Override } from './override';
+import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './icons';
 import { RootFramework } from './root-framework';
 import { useSystemShortcodes } from './system-shortcodes';
 import { queryCollectionDocs, queryCollectionDocById, queryCollectionDocByField } from './collection-queries';
