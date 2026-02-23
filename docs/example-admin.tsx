@@ -87,7 +87,7 @@ const DashboardView = ({ theme, selectedRows, setSelectedRows }) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const rows = [
     { id: 1, domain: "b2b-cloud-expert.com", niche: "SaaS Reviews", status: "Active", output: "124", health: 92 },
-    { id: 2, domain: "logistics-hub.io", niche: "Supply Chain", status: "Active", output: "89", health: 85 },
+    { id: 2, domain: "supply-hub.io", niche: "Supply Chain", status: "Active", output: "89", health: 85 },
     { id: 3, domain: "fintech-pulse.net", niche: "Banking Tech", status: "Paused", output: "210", health: 45 },
     { id: 4, domain: "hr-automation.tech", niche: "Recruitment", status: "Active", output: "56", health: 98 },
   ];
