@@ -219,6 +219,31 @@ export class PluginManager implements PluginManagerInterface {
     return manifest;
   }
 
+  /**
+   * Shuts down all active plugin manager services.
+   */
+  async shutdown() {
+    this.logger.info('Shutting down PluginManager services...');
+    
+    if (this.scheduler) {
+      await this.scheduler.stop();
+    }
+    
+    if (this.security) {
+      this.security.stop();
+    }
+    
+    if (this.jobs) {
+      await this.jobs.close();
+    }
+    
+    if (this.webhooks) {
+        // Any cleanup for webhooks?
+    }
+
+    this.logger.info('PluginManager shutdown complete.');
+  }
+
   // Delegate Lifecycle
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}) { return this.lifecycle.enable(slug, options); }
   async disable(slug: string) { return this.lifecycle.disable(slug); }
