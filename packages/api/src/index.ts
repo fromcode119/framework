@@ -34,19 +34,19 @@ import {
   resolveStoragePublicPath,
   resolveStoragePublicUrlBase
 } from './constants';
-import { setupAuthRoutes } from './routes/auth';
-import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
-import { setupPluginSettingsRoutes } from './routes/plugin-settings';
-import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
-import { setupMarketplaceRoutes } from './routes/marketplace';
-import { setupSystemRoutes } from './routes/system';
-import { setupMediaRoutes } from './routes/media';
-import { setupVersioningRoutes } from './routes/versioning';
-import { setupCollectionRoutes, setupBaseCollectionRoutes } from './routes/collections';
-import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
-import { generateOpenAPI } from './swagger';
-import { createCollectionMiddleware } from './middlewares/collection';
-import { csrfMiddleware, xssMiddleware } from './middlewares/security';
+import { setupAuthRoutes } from './Routes/Auth';
+import { setupPluginRoutes, setupPluginAssetRoutes } from './Routes/Plugins';
+import { setupPluginSettingsRoutes } from './Routes/plugin-settings';
+import { setupThemeRoutes, setupThemeAssetRoutes } from './Routes/Themes';
+import { setupMarketplaceRoutes } from './Routes/Marketplace';
+import { setupSystemRoutes } from './Routes/System';
+import { setupMediaRoutes } from './Routes/Media';
+import { setupVersioningRoutes } from './Routes/Versioning';
+import { setupCollectionRoutes, setupBaseCollectionRoutes } from './Routes/Collections';
+import { UserCollection, MediaCollection, SettingsCollection } from './Collections/Core';
+import { generateOpenAPI } from './Swagger';
+import { createCollectionMiddleware } from './Middlewares/Collection';
+import { csrfMiddleware, xssMiddleware } from './Middlewares/Security';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from './services/graph-ql-service';
 import { createHandler } from 'graphql-http/lib/use/express';
