@@ -1,5 +1,5 @@
 import { sql, eq, and, desc, asc } from 'drizzle-orm';
-import { normalizeParamValue } from '../naming-strategy';
+import { normalizeParamValue, toSnakeCase } from '../naming-strategy';
 import type { JoinClause } from '../types';
 
 /**
@@ -127,7 +127,7 @@ export abstract class BaseDialect {
     if (where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
       for (const [column, value] of Object.entries(where)) {
         values.push(this.normalizeParamValue(value as any));
-        conditions.push(`"${column}" = ${this.getParamPlaceholder(values.length)}`);
+        conditions.push(`"${toSnakeCase(column)}" = ${this.getParamPlaceholder(values.length)}`);
       }
     }
 

@@ -17,6 +17,18 @@ export class UserManagementService {
     this.drizzle = (db as any).drizzle;
   }
 
+  private mergeRoles(columnRoles: any, rbacRoles: string[]): string[] {
+    let col: string[] = [];
+    try {
+      col = Array.isArray(columnRoles)
+        ? columnRoles.map((r: any) => String(r ?? '').trim().toLowerCase()).filter(Boolean)
+        : typeof columnRoles === 'string'
+          ? (columnRoles.startsWith('[') ? JSON.parse(columnRoles) : columnRoles.split(',').map((r: string) => r.trim()).filter(Boolean))
+          : [];
+    } catch { col = []; }
+    return [...new Set([...col, ...rbacRoles])];
+  }
+
   async getUsers() {
     const allUsers = await this.db.find(users);
     return Promise.all(allUsers.map(async (user: any) => {
@@ -31,7 +43,7 @@ export class UserManagementService {
       ]);
       return {
         ...safeUser,
-        roles: userRoles.map((r: any) => r.roleSlug),
+        roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
         accountStatus,
         forcePasswordReset
       };
@@ -53,7 +65,7 @@ export class UserManagementService {
     ]);
     return {
       ...safeUser,
-      roles: userRoles.map((r: any) => r.roleSlug),
+      roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
       accountStatus,
       forcePasswordReset
     };
@@ -62,6 +74,7 @@ export class UserManagementService {
   async saveUser(id: number | null, data: any) {
     const updateData: any = {
       email: data.email,
+      username: data.username ?? null,
       firstName: data.firstName,
       lastName: data.lastName,
       updatedAt: new Date()

@@ -11,10 +11,14 @@ import { ENDPOINTS } from '@/lib/constants';
 
 interface PluginSettingsFormProps {
   pluginSlug: string;
+  formId?: string;
+  onStateChange?: (isDirty: boolean, saving: boolean) => void;
 }
 
 export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
   pluginSlug,
+  formId,
+  onStateChange,
 }) => {
   const { triggerRefresh } = usePlugins() as any;
   const { theme } = useTheme();
@@ -37,6 +41,10 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
       return () => clearTimeout(timer);
     }
   }, [status]);
+
+  useEffect(() => {
+    onStateChange?.(isDirty, saving);
+  }, [isDirty, saving]);
 
   const loadSettings = async () => {
     setLoading(true);
@@ -110,8 +118,18 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
   };
 
   const handleExport = async () => {
-    const url = api.getURL(ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug));
-    window.open(url, '_blank');
+    try {
+      const blob = await api.get(ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug));
+      const json = JSON.stringify(blob, null, 2);
+      const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${pluginSlug}-settings.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setStatus({ type: 'error', message: 'Export failed: ' + err.message });
+    }
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,9 +146,9 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
         await loadSettings();
         setIsDirty(false);
         triggerRefresh();
-        alert('Settings imported successfully!');
+        setStatus({ type: 'success', message: 'Settings imported successfully.' });
       } catch (error: any) {
-        alert('Import failed: ' + error.message);
+        setStatus({ type: 'error', message: 'Import failed: ' + error.message });
       }
     };
     reader.readAsText(file);
@@ -202,6 +220,7 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
 
   return (
     <form
+      id={formId}
       className="space-y-6"
       onSubmit={(event) => {
         event.preventDefault();
@@ -218,6 +237,45 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
           <p className="text-sm font-bold">{status.message}</p>
         </div>
       )}
+
+      {/* Data Tools */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleExport}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
+            theme === 'dark'
+              ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+              : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'
+          }`}
+        >
+          <FrameworkIcons.Download size={13} />
+          Export
+        </button>
+        <label className="cursor-pointer">
+          <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+          <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
+            theme === 'dark'
+              ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+              : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'
+          }`}>
+            <FrameworkIcons.Upload size={13} />
+            Import
+          </span>
+        </label>
+        <button
+          type="button"
+          onClick={handleReset}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
+            theme === 'dark'
+              ? 'bg-slate-900 border-slate-800 text-rose-400 hover:text-rose-300 hover:border-rose-500/30'
+              : 'bg-white border-slate-200 text-rose-500 hover:text-rose-600 hover:border-rose-200 shadow-sm'
+          }`}
+        >
+          <FrameworkIcons.Refresh size={13} />
+          Reset
+        </button>
+      </div>
 
       {/* Tabs */}
       {schema.tabs && schema.tabs.length > 0 && (
@@ -264,60 +322,7 @@ export const PluginSettingsForm: React.FC<PluginSettingsFormProps> = ({
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={handleExport}
-            icon={<FrameworkIcons.Download size={16} />}
-          >
-            Export
-          </Button>
-          <label className="cursor-pointer">
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <Button
-              variant="secondary"
-              as="span"
-              icon={<FrameworkIcons.Upload size={16} />}
-            >
-              Import
-            </Button>
-          </label>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={handleReset}
-            className="text-red-500 hover:text-red-600"
-            icon={<FrameworkIcons.Refresh size={16} />}
-          >
-            Reset
-          </Button>
-        </div>
 
-        <div className="flex items-center gap-3">
-          {isDirty && (
-            <span className="text-sm font-bold text-amber-500 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              Unsaved changes
-            </span>
-          )}
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={saving || !isDirty}
-            icon={saving ? <FrameworkIcons.Loader size={16} className="animate-spin" /> : <FrameworkIcons.Check size={16} />}
-          >
-            {saving ? 'Saving...' : 'Save Settings'}
-          </Button>
-        </div>
-      </div>
     </form>
   );
 };
