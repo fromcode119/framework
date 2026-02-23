@@ -1,3 +1,5 @@
+import type { IDatabaseManager } from '@fromcode/sdk';
+
 export { 
   IDatabaseManager, 
   PluginCapability,

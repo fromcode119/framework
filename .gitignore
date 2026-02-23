@@ -29,6 +29,7 @@ packages/*/src/**/*.d.ts.map
 
 # Environment Variables
 .env
+.env.local
 *.env.local
 *.env.development.local
 *.env.test.local
@@ -41,6 +42,7 @@ yarn-error.log*
 *.log
 
 # Project specific
+data/
 /plugins/
 !plugins/.gitkeep
 !plugins/[slug]

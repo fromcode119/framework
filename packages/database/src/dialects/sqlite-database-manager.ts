@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import { sql, eq, and, or, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
+import { sql, eq, and, or, like, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
@@ -13,7 +13,11 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   constructor(connection: string) {
     super();
-    const dbPath = connection.startsWith('sqlite:') ? connection.replace('sqlite:', '') : connection;
+    const dbPath = connection.startsWith('sqlite:')
+      ? connection.replace('sqlite:', '')
+      : connection.startsWith('file:')
+        ? connection.replace('file:', '')
+        : connection;
     this.sqlite = new Database(dbPath);
     this.drizzle = drizzle(this.sqlite);
   }
@@ -32,15 +36,14 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   private getDynamicTable(tableName: string, columns: string[]) {
     const tableColumns: Record<string, any> = {};
     for (const col of columns) {
-      tableColumns[col] = text(col);
+      tableColumns[col] = text(toSnakeCase(col));
     }
     return sqliteTable(tableName, tableColumns);
   }
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
     const { limit, offset, orderBy, where, columns, joins, search } = options;
-    
-    let query;
+
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
 
@@ -49,20 +52,30 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
         const rows = await this.executeRawSelect(sqlStr, values);
         return this.processJoinedRows(rows, joins);
       }
+
+      // Build SELECT column list
+      let columnPart = '*';
       if (columns && Object.keys(columns).length > 0) {
-        const selectFields: Record<string, any> = {};
-        for (const [key, value] of Object.entries(columns)) {
-          if (value) {
-            selectFields[key] = sql`${sql.identifier(key)}`;
-          }
-        }
-        query = this.drizzle.select(selectFields).from(sql`${sql.identifier(tableName)}`);
-      } else {
-        query = this.drizzle.select().from(sql`${sql.identifier(tableName)}`);
+        const selected = Object.entries(columns)
+          .filter(([, v]) => v)
+          .map(([k]) => `"${k}"`);
+        if (selected.length > 0) columnPart = selected.join(', ');
       }
-    } else {
-      query = this.drizzle.select().from(tableOrName);
+
+      // Use raw SQL for dynamic table names — drizzle.select() without args produces
+      // an empty column list ("select  from …") which SQLite rejects
+      const searchArg = (search && search.columns?.length > 0 && search.value) ? search : undefined;
+      const { sql: whereSql, values } = this.buildRawFilterSQL(where, searchArg);
+      let sqlStr = `SELECT ${columnPart} FROM "${tableName}"${whereSql}`;
+      if (orderBy) sqlStr += this.buildRawOrderByClause(orderBy);
+      if (limit) sqlStr += ` LIMIT ${limit}`;
+      if (offset) sqlStr += ` OFFSET ${offset}`;
+
+      return this.executeRawSelect(sqlStr, values);
     }
+
+    // tableOrName is a Drizzle table schema object
+    let query = this.drizzle.select().from(tableOrName);
 
     const allConditions: any[] = [];
     if (where) {
@@ -102,42 +115,61 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   async insert(tableOrName: any, data: any): Promise<any> {
-    let table;
     const normalizedData = this.normalizeData(data);
+
     if (typeof tableOrName === 'string') {
-      const columns = Object.keys(normalizedData);
-      table = this.getDynamicTable(tableOrName, columns);
-    } else {
-      table = tableOrName;
+      // Use raw SQL so RETURNING * returns ALL columns (including auto-generated id)
+      // and so camelCase keys are mapped to snake_case column names
+      const cols = Object.keys(normalizedData);
+      const colsSql = cols.map((k) => `"${toSnakeCase(k)}"`).join(', ');
+      const placeholders = cols.map(() => '?').join(', ');
+      const values = cols.map((k) => normalizedData[k]);
+      const rawSql = `INSERT INTO "${tableOrName}" (${colsSql}) VALUES (${placeholders}) RETURNING *`;
+      const result = this.sqlite.prepare(rawSql).get(...values);
+      return result || null;
     }
-    const [result] = await this.drizzle.insert(table).values(normalizedData).returning();
+
+    const [result] = await this.drizzle.insert(tableOrName).values(normalizedData).returning();
     return result;
   }
 
   async update(tableOrName: any, where: any, data: any): Promise<any> {
-    let table;
     const normalizedData = this.normalizeData(data);
+
     if (typeof tableOrName === 'string') {
-      const allColumns = [...new Set([...Object.keys(where), ...Object.keys(normalizedData)])];
-      table = this.getDynamicTable(tableOrName, allColumns);
-    } else {
-      table = tableOrName;
+      // Use raw SQL so camelCase keys are converted to snake_case column names
+      const setClauses: string[] = [];
+      const setValues: any[] = [];
+      for (const [k, v] of Object.entries(normalizedData)) {
+        setClauses.push(`"${toSnakeCase(k)}" = ?`);
+        setValues.push(v);
+      }
+      if (setClauses.length === 0) return null;
+      const { sql: whereSql, values: whereValues } = this.buildRawFilterSQL(where);
+      const rawSql = `UPDATE "${tableOrName}" SET ${setClauses.join(', ')}${whereSql} RETURNING *`;
+      const results = this.sqlite.prepare(rawSql).all(...setValues, ...whereValues);
+      return results[0] || null;
     }
-    
+
     const conditions = this.buildWhereConditions(where);
-    
-    const [result] = await this.drizzle.update(table)
+    const [result] = await this.drizzle.update(tableOrName)
       .set(normalizedData)
       .where(and(...conditions))
       .returning();
-    
+
     return result;
   }
 
   private normalizeData(data: any): any {
     const normalized: any = {};
     for (const [key, value] of Object.entries(data)) {
-      if (value !== null && typeof value === 'object' && !(value instanceof Date)) {
+      if (value === undefined) {
+        normalized[key] = null;
+      } else if (value instanceof Date) {
+        normalized[key] = value.toISOString();
+      } else if (typeof value === 'boolean') {
+        normalized[key] = value ? 1 : 0;
+      } else if (value !== null && typeof value === 'object') {
         normalized[key] = JSON.stringify(value);
       } else {
         normalized[key] = value;
@@ -146,36 +178,39 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     return normalized;
   }
 
+  protected override normalizeParamValue(value: any): any {
+    if (value === undefined || value === null) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'boolean') return value ? 1 : 0;
+    if (Buffer.isBuffer(value)) return value;
+    if (typeof value === 'object') return JSON.stringify(value);
+    return value;
+  }
+
   async delete(tableOrName: any, where: any): Promise<boolean> {
-    let table;
     if (typeof tableOrName === 'string') {
-      const columns = Object.keys(where);
-      table = this.getDynamicTable(tableOrName, columns);
-    } else {
-      table = tableOrName;
+      const { sql: whereSql, values: whereValues } = this.buildRawFilterSQL(where);
+      const rawSql = `DELETE FROM "${tableOrName}"${whereSql}`;
+      const result = this.sqlite.prepare(rawSql).run(...whereValues);
+      return result.changes > 0;
     }
-    
+
     const conditions = this.buildWhereConditions(where);
-    const result = await this.drizzle.delete(table).where(and(...conditions)).returning();
+    const result = await this.drizzle.delete(tableOrName).where(and(...conditions)).returning();
     return result.length > 0;
   }
 
   async count(tableName: string, where: any = {}): Promise<number> {
-    let query = this.drizzle.select({ total: drizzleCount() }).from(sql`${sql.identifier(tableName)}`);
-    
-    if (where) {
-      const isPlainWhere = typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-      if (isPlainWhere) {
-        const conditions = this.buildWhereConditions(where);
-        if (conditions.length > 0) {
-          query = query.where(and(...conditions));
-        }
-      } else {
-        query = query.where(where);
-      }
+    const isPlainWhere = where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
+    if (isPlainWhere && Object.keys(where).length > 0) {
+      const { sql: whereSql, values } = this.buildRawFilterSQL(where);
+      const rawSql = `SELECT COUNT(*) as total FROM "${tableName}"${whereSql}`;
+      const result = this.sqlite.prepare(rawSql).get(...values) as any;
+      return Number(result?.total || 0);
     }
 
-    const [result] = await query;
+    const rawSql = `SELECT COUNT(*) as total FROM "${tableName}"`;
+    const result = this.sqlite.prepare(rawSql).get() as any;
     return Number(result?.total || 0);
   }
 

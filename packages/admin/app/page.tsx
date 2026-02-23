@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Slot, usePlugins } from '@fromcode/react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-context';
 import { StatCard } from '@/components/ui/stat-card';
 import { Card, CardHeader } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
 
 export default function AdminPage() {
+  const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { slots, refreshVersion } = usePlugins();
   const [stats, setStats] = useState<any[]>([]);
@@ -254,7 +256,7 @@ export default function AdminPage() {
                 }
                 
                 return (
-                  <div key={s.slug} className="p-6 rounded-3xl border flex items-center justify-between transition-all hover:shadow-xl hover:shadow-indigo-500/5 group cursor-pointer bg-white border-slate-100 shadow-lg shadow-slate-200/50 dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none animate-in fade-in duration-300" onClick={() => window.location.href = adminPath}>
+                  <div key={s.slug} className="p-6 rounded-3xl border flex items-center justify-between transition-all hover:shadow-xl hover:shadow-indigo-500/5 group cursor-pointer bg-white border-slate-100 shadow-lg shadow-slate-200/50 dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none animate-in fade-in duration-300" onClick={() => router.push(adminPath)}>
                     <div className="flex items-center gap-4">
                       <div className="p-3.5 rounded-2xl transition-all duration-300 bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:group-hover:bg-indigo-500/20">
                         <DynamicIcon name={s.icon || 'Database'} size={20} />
@@ -297,7 +299,7 @@ export default function AdminPage() {
                  <Button 
                    variant="ghost" 
                    size="sm" 
-                   onClick={() => window.location.href = '/plugins'} 
+                   onClick={() => router.push('/plugins')} 
                    className="text-[11px] font-bold tracking-tight px-4 group text-indigo-600 bg-indigo-50/50 hover:bg-indigo-600 hover:text-white rounded-xl transition-all dark:text-indigo-400 dark:bg-transparent dark:hover:bg-slate-800 uppercase"
                  >
                     View All <FrameworkIcons.ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />

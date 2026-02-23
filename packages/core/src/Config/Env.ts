@@ -19,7 +19,7 @@ export const envSchema = z.object({
   DB_DIALECT: z.enum(['postgres', 'mysql', 'sqlite']).default('postgres'),
 
   // Redis / Caching
-  REDIS_URL: z.string().url().optional(),
+  REDIS_URL: z.preprocess(v => (v === '' ? undefined : v), z.string().url().optional()),
   REDIS_HOST: z.string().optional(),
   REDIS_PORT: z.string().transform((v) => parseInt(v, 10)).optional(),
 
