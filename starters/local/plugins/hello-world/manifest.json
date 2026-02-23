@@ -1,0 +1,8 @@
+{
+  "slug": "hello-world",
+  "name": "Hello World",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "Sample local plugin. Edit index.ts, run npm run plugin:build hello-world.",
+  "capabilities": ["api", "admin"]
+}

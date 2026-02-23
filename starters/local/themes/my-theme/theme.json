@@ -1,0 +1,13 @@
+{
+  "name": "My Theme",
+  "version": "1.0.0",
+  "description": "Local theme. Edit variables freely.",
+  "variables": {
+    "--color-primary": "#4F46E5",
+    "--color-background": "#ffffff",
+    "--color-text": "#0F172A",
+    "--font-body": "Inter, sans-serif",
+    "--radius-card": "1.5rem"
+  },
+  "layout": "default"
+}

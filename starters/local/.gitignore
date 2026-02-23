@@ -1,0 +1,11 @@
+data/
+plugins/*/index.js
+plugins/*/index.js.map
+plugins/*/ui/bundle.js
+plugins/*/ui/bundle.js.map
+themes/*/bundle.js
+themes/*/bundle.js.map
+.next/
+.env
+node_modules/
+.DS_Store
