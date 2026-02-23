@@ -4,6 +4,7 @@ const path = require('path');
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@fromcode119/core', '@fromcode119/react'],
+  turbopack: {},
   images: {
     remotePatterns: [
       {
