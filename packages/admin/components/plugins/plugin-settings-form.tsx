@@ -124,19 +124,8 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
     }
   };
 
-  const handleExport = async () => {
-    try {
-      const blob = await api.get(ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug));
-      const json = JSON.stringify(blob, null, 2);
-      const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${pluginSlug}-settings.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err: any) {
-      setStatus({ type: 'error', message: 'Export failed: ' + err.message });
-    }
+  const handleExport = () => {
+    window.open(api.getURL(ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug)), '_blank');
   };
 
   useImperativeHandle(ref, () => ({
@@ -299,6 +288,25 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
         </div>
       </div>
 
+      {/* Action bar */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          {isDirty && (
+            <span className="text-sm font-semibold text-amber-600">Unsaved changes</span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Button type="button" variant="ghost" onClick={handleExport}>
+            Export
+          </Button>
+          <Button type="button" variant="ghost" onClick={handleReset}>
+            Reset
+          </Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save Settings'}
+          </Button>
+        </div>
+      </div>
 
     </form>
   );
