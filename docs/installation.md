@@ -2,11 +2,13 @@
 
 Welcome to the **Fromcode Framework**. This guide will walk you through setting up your development environment.
 
+> For the current `*.framework.local` local-domain workflow and full module map, start with [`docs/setup/global-setup.md`](./setup/global-setup.md).
+
 ## Prerequisites
 
-- **Node.js**: v18 or higher (v20 recommended)
+- **Node.js**: v22 or higher (required for `isolated-vm` plugin sandboxing)
 - **Docker**: For running PostgreSQL, Redis, and other services
-- **npm**: v9 or higher
+- **npm**: v11 or higher
 
 ## Initial Setup
 
@@ -57,4 +59,4 @@ For production, we recommend using our pre-configured Docker templates located i
 - **API-Only**: Headless CMS deployment.
 - **Frontend-Only**: Edge deployment connecting to an external API.
 
-For more details, see [Deployment Guides](./deployment.md).
+For deployment compose templates, see the `framework/Source/deploy` directory.

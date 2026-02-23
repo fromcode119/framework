@@ -1,0 +1,21 @@
+# Docker Compose for Frontend-Only Mode
+# Usage: docker-compose -f deploy/docker-compose.frontend-only.yml up
+
+services:
+  frontend:
+    build:
+      context: ..
+      target: base
+    command: npm run start --workspace=@fromcode/frontend
+    environment:
+      - API_URL=${EXTERNAL_API_URL}
+      - NEXT_PUBLIC_API_URL=${EXTERNAL_API_URL}
+      - NODE_ENV=production
+    networks:
+      - public
+    restart: unless-stopped
+
+networks:
+  public:
+    external: true
+    name: web

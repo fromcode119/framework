@@ -4,6 +4,13 @@ Welcome to the Fromcode Framework documentation. This site provides everything y
 
 ## 📖 Navigation
 
+### [Global Setup Guide](./setup/global-setup.md)
+Canonical environment and runtime setup using local framework domains, Docker, and workspace scripts.
+
+### [Module Documentation Index](./modules/README.md)
+Framework package documentation index.
+
+
 ### [Installation Guide](./installation.md)
 Learn how to set up the framework locally and in production environment.
 

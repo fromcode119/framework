@@ -59,7 +59,11 @@ The framework provides lifecycle hooks for collections.
 
 ### Example: Auto-generating SEO titles
 ```typescript
-context.hooks.on('collection:posts:beforeSave', async (post) => {
+import { collectionHookEvents } from '@fromcode/sdk';
+
+const POSTS_HOOKS = collectionHookEvents('posts');
+
+context.hooks.on(POSTS_HOOKS.beforeSave, async (post) => {
   if (!post.seo_title && post.title) {
     post.seo_title = post.title;
   }
