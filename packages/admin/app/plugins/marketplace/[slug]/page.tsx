@@ -10,7 +10,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { useTheme } from '@/components/theme-context';
 import { useNotify } from '@/components/notification-context';
 import { usePlugins } from '@fromcode119/react';
-import type { PluginEntry } from '@fromcode119/core';
+import type { PluginEntry } from '@fromcode119/core/shared';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
 
