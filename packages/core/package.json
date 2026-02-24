@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/core",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "dist/index.js",
   "exports": {
     ".": {
@@ -55,7 +55,7 @@
     "@fromcode119/database": "*",
     "@fromcode119/email": "*",
     "@fromcode119/plugins": "*",
-    "@fromcode119/marketplace-client": "^0.1.4",
+    "@fromcode119/marketplace-client": "^0.1.5",
     "@fromcode119/media": "*",
     "@fromcode119/scheduler": "*",
     "@fromcode119/sdk": "*",
