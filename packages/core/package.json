@@ -12,6 +12,11 @@
       "import": "./dist/utils/index.js",
       "require": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
+    },
+    "./shared": {
+      "import": "./dist/shared.js",
+      "require": "./dist/shared.js",
+      "types": "./dist/shared.d.ts"
     }
   },
   "browser": {
