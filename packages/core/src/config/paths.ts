@@ -108,15 +108,16 @@ export function getProjectRoot(): string {
  */
 export function getPluginsDir(): string {
   const root = getProjectRoot();
+  const isDev = isFrameworkRoot(root);
   const candidates = [
     process.env.SHARED_PLUGINS_DIR,
     process.env.PLUGINS_DIR,
-    '../../plugins',
-    '../plugins',
+    isDev ? '../../plugins' : null,
+    isDev ? '../plugins' : null,
     'plugins'
   ]
-    .filter((value): value is string => Boolean(String(value || '').trim()))
-    .map((value) => resolveFromRoot(root, value));
+    .filter((value): value is string | null => value !== null && Boolean(String(value || '').trim()))
+    .map((value) => resolveFromRoot(root, value as string));
 
   const deduped = Array.from(new Set(candidates));
   const ranked = deduped
@@ -138,15 +139,16 @@ export function getPluginsDir(): string {
  */
 export function getThemesDir(): string {
   const root = getProjectRoot();
+  const isDev = isFrameworkRoot(root);
   const candidates = [
     process.env.SHARED_THEMES_DIR,
     process.env.THEMES_DIR,
-    '../../themes',
-    '../themes',
+    isDev ? '../../themes' : null,
+    isDev ? '../themes' : null,
     'themes'
   ]
-    .filter((value): value is string => Boolean(String(value || '').trim()))
-    .map((value) => resolveFromRoot(root, value));
+    .filter((value): value is string | null => value !== null && Boolean(String(value || '').trim()))
+    .map((value) => resolveFromRoot(root, value as string));
 
   const deduped = Array.from(new Set(candidates));
   const ranked = deduped
