@@ -6,6 +6,7 @@ on:
     tags-ignore:
       - 'v*.*.*'     # handled by publish.yml
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -32,3 +33,5 @@ jobs:
 
       - name: Test
         run: npm test --workspaces --if-present
+        env:
+          LOG_LEVEL: ERROR

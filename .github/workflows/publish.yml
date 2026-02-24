@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Auto Tag version"]
+    types:
+      - completed
 
 jobs:
   publish:
