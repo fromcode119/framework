@@ -25,11 +25,11 @@ def revert_aliases(package_root):
 
                 # Pattern to find the relative imports we generated
                 # matches things like: from '../../components/'
-                # We need to escape the dots in the regex.
+                # We only want to revert things that look like imports/mocks
                 escaped_prefix = rel_prefix.replace('.', '\\.')
-                pattern = f"(['\"]){escaped_prefix}([^'\"]+)(['\"])"
+                pattern = rf"((?:from|import|mock|importActual)\s*\(?\s*['\"]){escaped_prefix}([^'\"]+)(['\"])"
                 
-                new_content = re.sub(pattern, f"\\1@/\\2\\3", content)
+                new_content = re.sub(pattern, r"\1@/\2\3", content)
 
                 if new_content != content:
                     with open(filepath, 'w') as f:
