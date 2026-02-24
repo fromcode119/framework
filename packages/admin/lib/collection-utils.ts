@@ -1,4 +1,4 @@
-import { Collection, resolveCollection as coreResolveCollection, generatePreviewUrl as coreGeneratePreviewUrl } from '@fromcode119/core';
+import { Collection, resolveCollection as coreResolveCollection, generatePreviewUrl as coreGeneratePreviewUrl } from '@fromcode119/core/shared';
 
 export { coreResolveCollection as resolveCollection };
 

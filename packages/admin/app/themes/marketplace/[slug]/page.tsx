@@ -13,7 +13,7 @@ import { useNotify } from '@/components/notification-context';
 import { usePlugins } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
-import type { MarketplaceTheme } from '@fromcode119/core';
+import type { MarketplaceTheme } from '@fromcode119/core/shared';
 
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
