@@ -12,6 +12,8 @@
     "baseUrl": ".",
     "paths": {
       "@fromcode119/core": ["packages/core/src"],
+      "@fromcode119/core/shared": ["packages/core/src/shared"],
+      "@fromcode119/core/utils": ["packages/core/src/utils"],
       "@fromcode119/database": ["packages/database/src"],
       "@fromcode119/sdk": ["packages/sdk/src"],
       "@fromcode119/sdk/internal": ["packages/sdk/src/internal"],
