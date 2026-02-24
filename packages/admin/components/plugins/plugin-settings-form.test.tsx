@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PluginSettingsForm } from './plugin-settings-form';
 import { vi } from 'vitest';
-import { api } from '@/lib/api';
+import { api } from '../../lib/api';
 
 // Mock dependecies
 vi.mock('@fromcode119/react', async (importOriginal) => {
@@ -15,7 +15,7 @@ vi.mock('@fromcode119/react', async (importOriginal) => {
   };
 });
 
-vi.mock('@/lib/api', () => ({
+vi.mock('../../lib/api', () => ({
   api: {
     get: vi.fn(),
     put: vi.fn(),
@@ -25,19 +25,19 @@ vi.mock('@/lib/api', () => ({
   }
 }));
 
-vi.mock('@/lib/constants', async () => {
-  const actual = await vi.importActual('@/lib/constants') as any;
+vi.mock('../../lib/constants', async () => {
+  const actual = await vi.importActual('../../lib/constants') as any;
   return {
     ...actual,
     // Ensure we use the real ENDPOINTS so paths match the component
   };
 });
 
-vi.mock('@/components/theme-context', () => ({
+vi.mock('../../components/theme-context', () => ({
   useTheme: () => ({ theme: 'light' })
 }));
 
-vi.mock('@/components/collection/field-renderer', () => ({
+vi.mock('../../components/collection/field-renderer', () => ({
   FieldRenderer: ({ field, value, onChange }: any) => (
     <div data-testid={`field-${field.name}`}>
       <label>{field.label || field.name}</label>

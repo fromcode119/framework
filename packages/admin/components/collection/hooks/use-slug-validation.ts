@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { api } from '../../../lib/api';
+import { ENDPOINTS } from '../../../lib/constants';
 
 interface UseSlugValidationOptions {
   slug: string;

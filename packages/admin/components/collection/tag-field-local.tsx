@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePlugins } from '@fromcode119/react';
-import { TagField } from '@/components/ui/tag-field';
+import { TagField } from '../../components/ui/tag-field';
 
 interface TagFieldLocalProps {
   field: any;

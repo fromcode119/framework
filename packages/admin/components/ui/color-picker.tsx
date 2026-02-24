@@ -2,10 +2,10 @@
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { HexColorPicker } from 'react-colorful';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '../../lib/icons';
 import { RootFramework } from '@fromcode119/react';
 import { useTheme } from '../theme-context';
-import { getFieldClasses } from '@/lib/ui';
+import { getFieldClasses } from '../../lib/ui';
 
 interface ColorPickerProps {
   value?: string;

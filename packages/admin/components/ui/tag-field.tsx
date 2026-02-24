@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { UI_FIELD, UI_COMMON, getFieldClasses } from '@/lib/ui';
-import { resolveLabelText, slugify } from '@/lib/utils';
+import { FrameworkIcons } from '../../lib/icons';
+import { api } from '../../lib/api';
+import { ENDPOINTS } from '../../lib/constants';
+import { UI_FIELD, UI_COMMON, getFieldClasses } from '../../lib/ui';
+import { resolveLabelText, slugify } from '../../lib/utils';
 
 interface TagFieldProps {
   value: string[] | string;

@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Input } from './input';
 import { Button } from './button';
 import { usePlugins } from '@fromcode119/react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '../../lib/icons';
 import type { Collection } from '@fromcode119/core/shared';
-import { getCollectionPrefix } from '@/lib/collection-utils';
-import { getFieldClasses, UI_TEXT } from '@/lib/ui';
+import { getCollectionPrefix } from '../../lib/collection-utils';
+import { getFieldClasses, UI_TEXT } from '../../lib/ui';
 
 interface PermalinkInputProps {
   value: string;

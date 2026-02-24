@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Loader } from '@/components/ui/loader';
-import { Badge } from '@/components/ui/badge';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { useNotify } from '@/components/notification-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/theme-context';
+import { Card } from '../../../components/ui/card';
+import { Loader } from '../../../components/ui/loader';
+import { Badge } from '../../../components/ui/badge';
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog';
+import { useNotify } from '../../../components/notification-context';
+import { api } from '../../../lib/api';
+import { ENDPOINTS } from '../../../lib/constants';
+import { FrameworkIcons } from '../../../lib/icons';
+import { useTheme } from '../../../components/theme-context';
 
 export default function UpdatesPage() {
   const { theme } = useTheme();

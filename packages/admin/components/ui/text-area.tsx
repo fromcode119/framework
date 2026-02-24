@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { getFieldClasses, UI_TEXT } from '@/lib/ui';
+import { getFieldClasses, UI_TEXT } from '../../lib/ui';
 
 interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;

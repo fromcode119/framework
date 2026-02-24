@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { PageHeading } from '@/components/ui/page-heading';
-import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { useTheme } from '../../../components/theme-context';
+import { Card } from '../../../components/ui/card';
+import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { PageHeading } from '../../../components/ui/page-heading';
+import { FrameworkIcons } from '../../../lib/icons';
+import { api } from '../../../lib/api';
+import { ENDPOINTS } from '../../../lib/constants';
 import Link from 'next/link';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { useNotify } from '@/components/notification-context';
-import { Loader } from '@/components/ui/loader';
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog';
+import { useNotify } from '../../../components/notification-context';
+import { Loader } from '../../../components/ui/loader';
 
 export default function RolesPage() {
   const { theme } = useTheme();
