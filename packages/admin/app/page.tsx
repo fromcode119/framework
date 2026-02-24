@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import { Slot, usePlugins } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../components/auth-context';
-import { StatCard } from '../components/ui/stat-card';
-import { Card, CardHeader } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { PageHeading } from '../components/ui/page-heading';
-import { Icon as DynamicIcon } from '../components/icon';
-import { api } from '../lib/api';
-import { ENDPOINTS, ROUTES } from '../lib/constants';
-import { FrameworkIcons } from '../lib/icons';
-import { APP_VERSION, APP_NAME, APP_CHANNEL } from '../lib/env';
+import { useAuth } from '@/components/auth-context';
+import { StatCard } from '@/components/ui/stat-card';
+import { Card, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/ui/page-heading';
+import { Icon as DynamicIcon } from '@/components/icon';
+import { api } from '@/lib/api';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { FrameworkIcons } from '@/lib/icons';
+import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
 
 export default function AdminPage() {
   const router = useRouter();

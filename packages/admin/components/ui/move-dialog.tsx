@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../../components/theme-context';
+import { useTheme } from '@/components/theme-context';
 import { Button } from './button';
-import { api } from '../../lib/api';
-import { ENDPOINTS } from '../../lib/constants';
-import { FrameworkIcons } from '../../lib/icons';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { FrameworkIcons } from '@/lib/icons';
 import { RootFramework } from '@fromcode119/react';
 
 const { Folder, Left, Loader, Check } = FrameworkIcons;

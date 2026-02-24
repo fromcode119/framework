@@ -1,18 +1,18 @@
 "use client";
 
 import React, { use, useState, useEffect } from 'react';
-import { useTheme } from '../../../../components/theme-context';
-import { Card } from '../../../../components/ui/card';
-import { Badge } from '../../../../components/ui/badge';
-import { FrameworkIcons } from '../../../../lib/icons';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api } from '../../../../lib/api';
-import { ENDPOINTS } from '../../../../lib/constants';
-import { useNotify } from '../../../../components/notification-context';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { useNotify } from '@/components/notification-context';
 import { usePlugins } from '@fromcode119/react';
-import { Dropdown } from '../../../../components/ui/dropdown';
-import { Lightbox } from '../../../../components/ui/lightbox';
+import { Dropdown } from '@/components/ui/dropdown';
+import { Lightbox } from '@/components/ui/lightbox';
 import type { MarketplaceTheme } from '@fromcode119/core/shared';
 
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {

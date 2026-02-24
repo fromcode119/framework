@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useTheme } from '../../../../components/theme-context';
-import { Card } from '../../../../components/ui/card';
-import { Button } from '../../../../components/ui/button';
-import { Input } from '../../../../components/ui/input';
-import { FrameworkIcons } from '../../../../lib/icons';
-import { api } from '../../../../lib/api';
-import { ENDPOINTS } from '../../../../lib/constants';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { FrameworkIcons } from '@/lib/icons';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
-import { Badge } from '../../../../components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 
 export default function NewPermissionPage() {
   const { theme } = useTheme();

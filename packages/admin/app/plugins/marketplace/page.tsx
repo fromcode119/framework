@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { api } from '../../../lib/api';
-import { ENDPOINTS } from '../../../lib/constants';
-import { Card } from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
-import { FrameworkIcons } from '../../../lib/icons';
-import { useTheme } from '../../../components/theme-context';
-import { useNotify } from '../../../components/notification-context';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { FrameworkIcons } from '@/lib/icons';
+import { useTheme } from '@/components/theme-context';
+import { useNotify } from '@/components/notification-context';
 import { usePlugins } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import type { PluginEntry } from '@fromcode119/core/shared';

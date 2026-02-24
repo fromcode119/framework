@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useTheme } from '../components/theme-context';
-import { FrameworkIcons } from '../lib/icons';
+import { useTheme } from '@/components/theme-context';
+import { FrameworkIcons } from '@/lib/icons';
 
 export default function NotFound() {
   const { theme } = useTheme();

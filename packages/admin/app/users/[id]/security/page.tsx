@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../../../../components/theme-context';
-import { Card } from '../../../../components/ui/card';
-import { Button } from '../../../../components/ui/button';
-import { Input } from '../../../../components/ui/input';
-import { api } from '../../../../lib/api';
-import { ENDPOINTS } from '../../../../lib/constants';
-import { FrameworkIcons } from '../../../../lib/icons';
-import { Loader } from '../../../../components/ui/loader';
-import { useNotification } from '../../../../components/notification-context';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { FrameworkIcons } from '@/lib/icons';
+import { Loader } from '@/components/ui/loader';
+import { useNotification } from '@/components/notification-context';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '../../../../components/auth-context';
+import { useAuth } from '@/components/auth-context';
 
 export default function UserSecurityPage() {
   const router = useRouter();

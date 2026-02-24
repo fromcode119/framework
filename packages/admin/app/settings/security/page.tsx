@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../../../components/theme-context';
-import { Card } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Switch } from '../../../components/ui/switch';
-import { FrameworkIcons } from '../../../lib/icons';
-import { api } from '../../../lib/api';
-import { useNotification } from '../../../components/notification-context';
-import { ENDPOINTS } from '../../../lib/constants';
-import { Loader } from '../../../components/ui/loader';
-import { Badge } from '../../../components/ui/badge';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { FrameworkIcons } from '@/lib/icons';
+import { api } from '@/lib/api';
+import { useNotification } from '@/components/notification-context';
+import { ENDPOINTS } from '@/lib/constants';
+import { Loader } from '@/components/ui/loader';
+import { Badge } from '@/components/ui/badge';
 
 const bytesToMB = (value?: number | null): string => {
   if (value === undefined || value === null || Number.isNaN(value)) return '-';

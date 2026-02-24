@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Card } from '../../../components/ui/card';
-import { FrameworkIcons } from '../../../lib/icons';
+import { Card } from '@/components/ui/card';
+import { FrameworkIcons } from '@/lib/icons';
 
 interface SidebarVersionsProps {
   revisions: any[];

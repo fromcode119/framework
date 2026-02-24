@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { slugify } from '../../../lib/utils';
+import { slugify } from '@/lib/utils';
 
 interface UseSlugGenerationOptions {
   sourceValue: string;

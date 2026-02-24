@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../components/auth-context';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { FrameworkIcons } from '../../lib/icons';
+import { useAuth } from '@/components/auth-context';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
-import { api } from '../../lib/api';
-import { ENDPOINTS } from '../../lib/constants';
-import { APP_VERSION, APP_NAME, APP_CHANNEL } from '../../lib/env';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
 
 const { Zap, Mail, Lock, ArrowRight, Shield: ShieldCheck, UserPlus, Orbit } = FrameworkIcons;
 

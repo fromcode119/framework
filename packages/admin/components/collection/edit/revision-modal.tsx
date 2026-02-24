@@ -1,9 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Card } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { FrameworkIcons } from '../../../lib/icons';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FrameworkIcons } from '@/lib/icons';
 
 interface RevisionModalProps {
   selectedRevision: any;

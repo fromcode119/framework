@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FrameworkIcons } from '../../lib/icons';
+import { FrameworkIcons } from '@/lib/icons';
 
 interface Column<T> {
   header: string;

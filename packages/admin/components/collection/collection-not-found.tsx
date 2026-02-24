@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '../../components/ui/button';
-import { FrameworkIcons } from '../../lib/icons';
+import { Button } from '@/components/ui/button';
+import { FrameworkIcons } from '@/lib/icons';
 
 interface CollectionNotFoundProps {
   theme: 'light' | 'dark';
