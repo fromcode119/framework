@@ -13,7 +13,7 @@ vi.mock('@fromcode119/react', () => ({
 }));
 
 // Mock icons
-vi.mock('../../lib/icons', () => {
+vi.mock('@/lib/icons', () => {
   const MockIcon = () => <div data-testid="mock-icon" />;
   return {
     FrameworkIcons: {
@@ -24,7 +24,7 @@ vi.mock('../../lib/icons', () => {
 });
 
 // Mock the UI components used by FieldRenderer
-vi.mock('../../components/ui/input', () => ({
+vi.mock('@/components/ui/input', () => ({
   Input: ({ onChange, value, placeholder }: any) => (
     <input 
       data-testid="mock-input" 
@@ -35,7 +35,7 @@ vi.mock('../../components/ui/input', () => ({
   )
 }));
 
-vi.mock('../../components/ui/select', () => ({
+vi.mock('@/components/ui/select', () => ({
   Select: ({ onChange, value, options }: any) => (
     <select data-testid="mock-select" value={value} onChange={(e) => onChange(e.target.value)}>
       {options.map((opt: any) => (

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { FrameworkIcons } from '../../lib/icons';
-import { Button } from '../../components/ui/button';
+import { FrameworkIcons } from '@/lib/icons';
+import { Button } from '@/components/ui/button';
 
 interface CollectionHeaderProps {
   collection: any;

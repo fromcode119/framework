@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import ForgotPasswordClient from './forgot-password-client';
-import { isFrontendAuthEnabled } from '../../lib/frontend-auth-settings';
+import { isFrontendAuthEnabled } from '@/lib/frontend-auth-settings';
 
 export const dynamic = 'force-dynamic';
 

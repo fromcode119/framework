@@ -21,6 +21,9 @@ const nextConfig = {
     ],
   },
   webpack: (config, { isServer, dev }) => {
+    // Force aliasing of @ to handle cases where the package is inside node_modules
+    config.resolve.alias['@'] = path.resolve(__dirname);
+
     // Standard Docker/macOS watch optimization
     if (dev && !isServer) {
       config.watchOptions = {

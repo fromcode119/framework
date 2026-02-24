@@ -2,17 +2,17 @@
 
 import React, { use, useState, useEffect } from 'react';
 import { usePlugins } from '@fromcode119/react';
-import { useTheme } from '../../../components/theme-context';
-import { Card } from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
-import { Switch } from '../../../components/ui/switch';
-import { ConfirmDialog } from '../../../components/ui/confirm-dialog';
-import { FrameworkIcons } from '../../../lib/icons';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { api } from '../../../lib/api';
-import { ENDPOINTS } from '../../../lib/constants';
-import { useNotify } from '../../../components/notification-context';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { useNotify } from '@/components/notification-context';
 
 const CORE_LAYOUTS = [
     { id: 'core/layouts/Default', label: 'Default Page', description: 'Used for standard content pages.' },

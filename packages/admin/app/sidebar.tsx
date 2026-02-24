@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { Slot, usePlugins } from '@fromcode119/react';
-import { useTheme } from '../components/theme-context';
-import { useAuth } from '../components/auth-context';
-import { Icon } from '../components/icon';
-import { FrameworkIcons } from '../lib/icons';
+import { useTheme } from '@/components/theme-context';
+import { useAuth } from '@/components/auth-context';
+import { Icon } from '@/components/icon';
+import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { APP_NAME } from '../lib/env';
-import { ROUTES } from '../lib/constants';
+import { APP_NAME } from '@/lib/env';
+import { ROUTES } from '@/lib/constants';
 import { 
   normalizeNavPath, 
   isPathMatch, 
@@ -17,7 +17,7 @@ import {
   isPathActive,
   normalizeGroupKey,
   normalizeMenuPath
-} from '../lib/nav-utils';
+} from '@/lib/nav-utils';
 
 const { 
   Close = () => null, 

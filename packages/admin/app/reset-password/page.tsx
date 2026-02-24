@@ -3,12 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
-import { api } from '../../lib/api';
-import { ENDPOINTS } from '../../lib/constants';
-import { FrameworkIcons } from '../../lib/icons';
-import { APP_NAME } from '../../lib/env';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { FrameworkIcons } from '@/lib/icons';
+import { APP_NAME } from '@/lib/env';
 
 export default function ResetPasswordPage() {
   const router = useRouter();

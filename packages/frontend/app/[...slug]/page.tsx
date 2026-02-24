@@ -7,7 +7,7 @@ import {
   extractFirstDoc,
   serverFetchJson,
   serverFetchResponse
-} from '../../lib/server-api';
+} from '@/lib/server-api';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 

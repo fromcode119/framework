@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, Upload, X, Check, Image as ImageIcon, File, Loader2 } from 'lucide-react';
-import { api } from '../../lib/api';
-import { ENDPOINTS } from '../../lib/constants';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { RootFramework } from '@fromcode119/react';
-import { TYPOGRAPHY } from '../../lib/typography';
-import { UI_TEXT } from '../../lib/ui';
+import { TYPOGRAPHY } from '@/lib/typography';
+import { UI_TEXT } from '@/lib/ui';
 
 interface MediaItem {
   id: string;

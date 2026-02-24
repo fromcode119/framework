@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import './admin.css';
 import ClientLayout from './client-layout';
-import { AuthProvider } from '../components/auth-context';
-import { NotificationProvider } from '../components/notification-context';
-import { FrameworkIcons } from '../lib/icons';
+import { AuthProvider } from '@/components/auth-context';
+import { NotificationProvider } from '@/components/notification-context';
+import { FrameworkIcons } from '@/lib/icons';
 
 export const metadata: Metadata = {
   title: 'Fromcode Admin',

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '../../components/theme-context';
+import { useTheme } from '@/components/theme-context';
 import { Button } from './button';
 import { Input } from './input';
-import { FrameworkIcons } from '../../lib/icons';
+import { FrameworkIcons } from '@/lib/icons';
 import { RootFramework } from '@fromcode119/react';
 
 const { Close: X } = FrameworkIcons;

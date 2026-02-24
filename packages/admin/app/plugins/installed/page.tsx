@@ -2,18 +2,18 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePlugins, Plugin } from '@fromcode119/react';
-import { useTheme } from '../../../components/theme-context';
-import { api } from '../../../lib/api';
-import { ENDPOINTS } from '../../../lib/constants';
-import { Card } from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
-import { Switch } from '../../../components/ui/switch';
-import { ConfirmDialog } from '../../../components/ui/confirm-dialog';
-import { DependencyDialog, DependencyIssue } from '../../../components/ui/dependency-dialog';
-import { useNotify } from '../../../components/notification-context';
-import { FrameworkIcons } from '../../../lib/icons';
+import { useTheme } from '@/components/theme-context';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { DependencyDialog, DependencyIssue } from '@/components/ui/dependency-dialog';
+import { useNotify } from '@/components/notification-context';
+import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
-import { Loader } from '../../../components/ui/loader';
+import { Loader } from '@/components/ui/loader';
 
 export default function InstalledPluginsPage() {
   const { theme } = useTheme();

@@ -5,7 +5,7 @@ import {
   buildSystemResolvePath,
   extractFirstDoc,
   serverFetchJson
-} from '../lib/server-api';
+} from '@/lib/server-api';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 

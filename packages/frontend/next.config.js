@@ -20,6 +20,9 @@ const nextConfig = {
     ],
   },
   webpack: (config, { dev, isServer }) => {
+    // Force aliasing of @ to handle cases where the package is inside node_modules
+    config.resolve.alias['@'] = __dirname;
+
     if (dev && !isServer) {
       config.watchOptions = {
         poll: 1000,

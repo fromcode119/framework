@@ -2,19 +2,19 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTheme } from '../../../components/theme-context';
-import { useNotification } from '../../../components/notification-context';
-import { Card } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { TextArea } from '../../../components/ui/text-area';
-import { Select } from '../../../components/ui/select';
-import { Switch } from '../../../components/ui/switch';
-import { Badge } from '../../../components/ui/badge';
-import { Loader } from '../../../components/ui/loader';
-import { FrameworkIcons } from '../../../lib/icons';
-import { ENDPOINTS, ROUTES } from '../../../lib/constants';
-import { api } from '../../../lib/api';
+import { useTheme } from '@/components/theme-context';
+import { useNotification } from '@/components/notification-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { TextArea } from '@/components/ui/text-area';
+import { Select } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Loader } from '@/components/ui/loader';
+import { FrameworkIcons } from '@/lib/icons';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { api } from '@/lib/api';
 
 type IntegrationFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';
 

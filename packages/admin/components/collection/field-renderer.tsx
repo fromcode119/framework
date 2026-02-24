@@ -1,19 +1,19 @@
 import React from 'react';
 import { Slot, usePlugins } from '@fromcode119/react';
-import { Input } from '../../components/ui/input';
-import { Select } from '../../components/ui/select';
-import { TextArea } from '../../components/ui/text-area';
-import { DateTimePicker } from '../../components/ui/date-time-picker';
-import { ColorPicker } from '../../components/ui/color-picker';
-import { CodeEditor } from '../../components/ui/code-editor';
-import { ArrayField } from '../../components/ui/array-field';
-import { FrameworkIcons } from '../../lib/icons';
-import { normalizeLocaleCode, isLocaleLikeKey } from '../../lib/utils';
-import { parseLocaleRegistry } from '../../lib/locale-utils';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { TextArea } from '@/components/ui/text-area';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
+import { ColorPicker } from '@/components/ui/color-picker';
+import { CodeEditor } from '@/components/ui/code-editor';
+import { ArrayField } from '@/components/ui/array-field';
+import { FrameworkIcons } from '@/lib/icons';
+import { normalizeLocaleCode, isLocaleLikeKey } from '@/lib/utils';
+import { parseLocaleRegistry } from '@/lib/locale-utils';
 import { TagFieldLocal } from './tag-field-local';
 import { RelationshipSelectLocal } from './relationship-select-local';
 import { MediaRelationField } from './media-relation-field';
-import { UI_TEXT } from '../../lib/ui';
+import { UI_TEXT } from '@/lib/ui';
 
 interface CollectionField {
   name: string;
