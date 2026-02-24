@@ -116,6 +116,10 @@ const pkg = {
     "@fromcode119/cli": "latest",
     "concurrently": "^8.2.2",
     "http-proxy": "^1.18.1",
+    "typescript": "^5.3.3",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/node": "^20.11.0"
   },
 };
 
