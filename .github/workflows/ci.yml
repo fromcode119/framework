@@ -27,5 +27,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Fix imports in build
+        run: python3 scripts/fix-imports.py
+
       - name: Test
         run: npm test --workspaces --if-present
