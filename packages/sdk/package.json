@@ -4,13 +4,13 @@
   "main": "dist/index.js",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
+      "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./internal": {
-      "import": "./src/internal.ts",
-      "require": "./src/internal.ts",
+      "import": "./dist/internal.js",
+      "require": "./dist/internal.js",
       "types": "./dist/internal.d.ts"
     }
   },
