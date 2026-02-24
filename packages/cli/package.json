@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "bin": {
     "fromcode": "dist/bin.js"
   },
@@ -11,7 +11,7 @@
   "dependencies": {
     "@fromcode119/core": "*",
     "@fromcode119/database": "*",
-    "@fromcode119/marketplace-client": "^0.1.0",
+    "@fromcode119/marketplace-client": "^0.1.2",
     "archiver": "^7.0.1",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
