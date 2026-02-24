@@ -10,13 +10,16 @@ export interface LoggerOptions {
   minLevel?: LogLevel;
 }
 
+const envLogLevel = process.env.LOG_LEVEL?.toUpperCase();
+const defaultLogLevel = envLogLevel && envLogLevel in LogLevel ? (LogLevel as any)[envLogLevel] : LogLevel.DEBUG;
+
 export class Logger {
   private namespace: string;
   private minLevel: LogLevel;
 
   constructor(options: LoggerOptions = {}) {
     this.namespace = options.namespace || 'system';
-    this.minLevel = options.minLevel !== undefined ? options.minLevel : LogLevel.DEBUG;
+    this.minLevel = options.minLevel !== undefined ? options.minLevel : defaultLogLevel;
   }
 
   private format(level: string, message: string): string {
