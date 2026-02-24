@@ -2,10 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FrameworkIcons } from '@/lib/icons';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import { FrameworkIcons } from '../../../lib/icons';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Select } from '../../../components/ui/select';
 
 interface EditHeaderProps {
   collection: any;

@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
-import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { useNotification } from '@/components/notification-context';
+import { useTheme } from '../../../components/theme-context';
+import { Card } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { Select } from '../../../components/ui/select';
+import { FrameworkIcons } from '../../../lib/icons';
+import { api } from '../../../lib/api';
+import { useNotification } from '../../../components/notification-context';
 import { usePlugins } from '@fromcode119/react';
-import { ENDPOINTS } from '@/lib/constants';
-import { Loader } from '@/components/ui/loader';
+import { ENDPOINTS } from '../../../lib/constants';
+import { Loader } from '../../../components/ui/loader';
 
 const PLACEHOLDERS = [
   { label: ':slug', description: 'The sanitized post title (recommended)', example: 'hello-world' },

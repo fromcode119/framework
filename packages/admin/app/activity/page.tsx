@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FrameworkIcons } from '@/lib/icons';
-import { DataTable } from '@/components/ui/data-table';
-import { PageHeading } from '@/components/ui/page-heading';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { useTheme } from '../../components/theme-context';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { FrameworkIcons } from '../../lib/icons';
+import { DataTable } from '../../components/ui/data-table';
+import { PageHeading } from '../../components/ui/page-heading';
+import { api } from '../../lib/api';
+import { ENDPOINTS } from '../../lib/constants';
 import { RootFramework } from '@fromcode119/react';
 import Link from 'next/link';
 

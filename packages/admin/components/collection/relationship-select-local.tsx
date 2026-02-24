@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { queryCollectionDocByField, queryCollectionDocById, queryCollectionDocs, usePlugins } from '@fromcode119/react';
-import { Select } from '@/components/ui/select';
-import { api } from '@/lib/api';
-import { resolveLabelText } from '@/lib/utils';
+import { Select } from '../../components/ui/select';
+import { api } from '../../lib/api';
+import { resolveLabelText } from '../../lib/utils';
 
 interface RelationshipSelectLocalProps {
   field: any;

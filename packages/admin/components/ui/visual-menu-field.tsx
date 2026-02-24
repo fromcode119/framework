@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '../../lib/icons';
 import { Input } from './input';
 import { Select } from './select';
 import { TagField } from './tag-field';

@@ -3,26 +3,26 @@
 import React, { useEffect, useMemo, useState, use, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Slot, usePlugins } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { FrameworkIcons } from '@/lib/icons';
+import { useTheme } from '../../components/theme-context';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { FrameworkIcons } from '../../lib/icons';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { resolveCollection, generatePreviewUrl } from '@/lib/collection-utils';
-import { FieldRenderer } from '@/components/collection/field-renderer';
-import { CollectionNotFound } from '@/components/collection/collection-not-found';
-import { CollectionQuickEditCard } from '@/components/collection/collection-quick-edit-card';
+import { api } from '../../lib/api';
+import { ENDPOINTS } from '../../lib/constants';
+import { resolveCollection, generatePreviewUrl } from '../../lib/collection-utils';
+import { FieldRenderer } from '../../components/collection/field-renderer';
+import { CollectionNotFound } from '../../components/collection/collection-not-found';
+import { CollectionQuickEditCard } from '../../components/collection/collection-quick-edit-card';
 
 import { CollectionListHeader } from './list/list-header';
 import { FilterBar } from './list/filter-bar';
 import { BulkActions } from './list/bulk-actions';
 import { ListFooter } from './list/list-footer';
 
-import { DataTable } from '@/components/ui/data-table';
-import { Button } from '@/components/ui/button';
+import { DataTable } from '../../components/ui/data-table';
+import { Button } from '../../components/ui/button';
 
 const RELATIONSHIP_LABEL_CACHE = new Map<string, string>();
 

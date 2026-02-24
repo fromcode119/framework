@@ -1,9 +1,9 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/theme-context';
-import { FrameworkIcons } from '@/lib/icons';
-import { ROUTES } from '@/lib/constants';
+import { useTheme } from '../../components/theme-context';
+import { FrameworkIcons } from '../../lib/icons';
+import { ROUTES } from '../../lib/constants';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 

@@ -2,17 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/theme-context';
-import { useNotify } from '@/components/notification-context';
+import { api } from '../../../../lib/api';
+import { ENDPOINTS } from '../../../../lib/constants';
+import { Card } from '../../../../components/ui/card';
+import { Badge } from '../../../../components/ui/badge';
+import { FrameworkIcons } from '../../../../lib/icons';
+import { useTheme } from '../../../../components/theme-context';
+import { useNotify } from '../../../../components/notification-context';
 import { usePlugins } from '@fromcode119/react';
 import type { PluginEntry } from '@fromcode119/core/shared';
-import { Dropdown } from '@/components/ui/dropdown';
-import { Lightbox } from '@/components/ui/lightbox';
+import { Dropdown } from '../../../../components/ui/dropdown';
+import { Lightbox } from '../../../../components/ui/lightbox';
 
 export default function MarketplaceDetailPage() {
   const { slug } = useParams();

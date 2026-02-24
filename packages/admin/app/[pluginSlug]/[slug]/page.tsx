@@ -2,12 +2,12 @@
 
 import React, { use, useEffect } from 'react';
 import { Slot, usePlugins } from '@fromcode119/react';
-import CollectionListPage from '@/components/collection/collection-list-page';
-import { resolveCollection } from '@/lib/collection-utils';
-import { CollectionNotFound } from '@/components/collection/collection-not-found';
-import { PluginNotFound } from '@/components/plugins/plugin-not-found';
-import { Loader } from '@/components/ui/loader';
-import { useTheme } from '@/components/theme-context';
+import CollectionListPage from '../../../components/collection/collection-list-page';
+import { resolveCollection } from '../../../lib/collection-utils';
+import { CollectionNotFound } from '../../../components/collection/collection-not-found';
+import { PluginNotFound } from '../../../components/plugins/plugin-not-found';
+import { Loader } from '../../../components/ui/loader';
+import { useTheme } from '../../../components/theme-context';
 import { useRouter } from 'next/navigation';
 
 export default function CollectionListRoute({ params }: { params: Promise<{ pluginSlug: string; slug: string }> }) {
