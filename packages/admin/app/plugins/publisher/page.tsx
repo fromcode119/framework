@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/theme-context';
-import { useNotify } from '@/components/notification-context';
-import { useAuth } from '@/components/auth-context';
-import { api } from '@/lib/api';
-import { slugify } from '@/lib/utils';
+import { Card } from '../../../components/ui/card';
+import { FrameworkIcons } from '../../../lib/icons';
+import { useTheme } from '../../../components/theme-context';
+import { useNotify } from '../../../components/notification-context';
+import { useAuth } from '../../../components/auth-context';
+import { api } from '../../../lib/api';
+import { slugify } from '../../../lib/utils';
 
 const PublisherPortal = () => {
     const { theme } = useTheme();

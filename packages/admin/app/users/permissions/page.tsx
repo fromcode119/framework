@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { PageHeading } from '@/components/ui/page-heading';
-import { FrameworkIcons } from '@/lib/icons';
-import { DataTable } from '@/components/ui/data-table';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { Loader } from '@/components/ui/loader';
+import { useTheme } from '../../../components/theme-context';
+import { Card } from '../../../components/ui/card';
+import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { PageHeading } from '../../../components/ui/page-heading';
+import { FrameworkIcons } from '../../../lib/icons';
+import { DataTable } from '../../../components/ui/data-table';
+import { api } from '../../../lib/api';
+import { ENDPOINTS } from '../../../lib/constants';
+import { Loader } from '../../../components/ui/loader';
 import Link from 'next/link';
 
 export default function PermissionsPage() {

@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Slot } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { useTheme } from '../../components/theme-context';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { api } from '../../lib/api';
+import { ENDPOINTS, ROUTES } from '../../lib/constants';
+import { FrameworkIcons } from '../../lib/icons';
 import Link from 'next/link';
 
 interface User {
@@ -21,12 +21,12 @@ interface User {
   forcePasswordReset?: boolean;
 }
 
-import { DataTable } from '@/components/ui/data-table';
-import { Button } from '@/components/ui/button';
-import { StatCard } from '@/components/ui/stat-card';
-import { Loader } from '@/components/ui/loader';
-import { Dropdown } from '@/components/ui/dropdown';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { DataTable } from '../../components/ui/data-table';
+import { Button } from '../../components/ui/button';
+import { StatCard } from '../../components/ui/stat-card';
+import { Loader } from '../../components/ui/loader';
+import { Dropdown } from '../../components/ui/dropdown';
+import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { useRouter } from 'next/navigation';
 
 export default function UsersPage() {

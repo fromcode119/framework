@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { usePlugins } from '@fromcode119/react';
-import { Button } from '@/components/ui/button';
-import { FrameworkIcons } from '@/lib/icons';
-import { FieldRenderer } from '@/components/collection/field-renderer';
-import { useTheme } from '@/components/theme-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { Button } from '../../components/ui/button';
+import { FrameworkIcons } from '../../lib/icons';
+import { FieldRenderer } from '../../components/collection/field-renderer';
+import { useTheme } from '../../components/theme-context';
+import { api } from '../../lib/api';
+import { ENDPOINTS } from '../../lib/constants';
 
 interface PluginSettingsFormProps {
   pluginSlug: string;

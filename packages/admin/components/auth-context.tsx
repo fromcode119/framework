@@ -3,9 +3,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { purgeAuth, getCookieDomain } from '@/lib/auth-utils';
+import { api } from '../lib/api';
+import { ENDPOINTS } from '../lib/constants';
+import { purgeAuth, getCookieDomain } from '../lib/auth-utils';
 
 interface User {
   id: string;

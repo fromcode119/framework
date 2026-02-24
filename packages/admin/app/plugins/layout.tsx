@@ -3,8 +3,8 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useTheme } from '@/components/theme-context';
-import { FrameworkIcons } from '@/lib/icons';
+import { useTheme } from '../../components/theme-context';
+import { FrameworkIcons } from '../../lib/icons';
 
 export default function PluginsLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();

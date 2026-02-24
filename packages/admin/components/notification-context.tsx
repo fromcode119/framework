@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '../lib/icons';
 
 const { 
   Check = () => null, 

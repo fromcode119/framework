@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { useTheme } from '../../../components/theme-context';
+import { Card } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Switch } from '../../../components/ui/switch';
+import { api } from '../../../lib/api';
+import { ENDPOINTS } from '../../../lib/constants';
+import { FrameworkIcons } from '../../../lib/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 

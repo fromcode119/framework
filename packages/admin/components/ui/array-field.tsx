@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '../../lib/icons';
 import { GripVertical } from 'lucide-react';
 import { Card } from './card';
 import { Input } from './input';

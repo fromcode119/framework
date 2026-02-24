@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Slot } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { useNotification } from '@/components/notification-context';
+import { useTheme } from '../../../components/theme-context';
+import { Card } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Switch } from '../../../components/ui/switch';
+import { FrameworkIcons } from '../../../lib/icons';
+import { api } from '../../../lib/api';
+import { useNotification } from '../../../components/notification-context';
 import { usePlugins } from '@fromcode119/react';
-import { ENDPOINTS } from '@/lib/constants';
-import { Loader } from '@/components/ui/loader';
+import { ENDPOINTS } from '../../../lib/constants';
+import { Loader } from '../../../components/ui/loader';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
   <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>

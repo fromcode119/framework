@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateAdminRegistryContent } from '@/lib/runtime-registry';
+import { generateAdminRegistryContent } from '../../lib/runtime-registry';
 
 /**
  * Framework Icon Registry Proxy (Client-side)
