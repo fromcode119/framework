@@ -19,12 +19,18 @@ export function createCollectionsProxy(
 
       const tablePrefix = `fcp_${plugin.manifest.slug.replace(/-/g, '_')}_`;
       const inputSlug = collection.slug;
-      const prefixedSlug = inputSlug.startsWith(tablePrefix) ? inputSlug : `${tablePrefix}${inputSlug}`;
+      
+      // Clean slug to avoid "ecommerce_ecommerce-categories" kind of redundancy
+      const cleanInputSlug = inputSlug.startsWith(`${plugin.manifest.slug}-`)
+        ? inputSlug.slice(plugin.manifest.slug.length + 1)
+        : inputSlug;
+        
+      const prefixedSlug = inputSlug.startsWith(tablePrefix) ? inputSlug : `${tablePrefix}${cleanInputSlug}`;
 
-      if (inputSlug.startsWith(plugin.manifest.slug) || inputSlug.startsWith('fcp_')) {
+      if ((inputSlug.startsWith(plugin.manifest.slug) && inputSlug !== plugin.manifest.slug) || inputSlug.startsWith('fcp_')) {
         rootLogger.warn(
-          `Collection slug "${inputSlug}" in plugin "${plugin.manifest.slug}" may be redundantly prefixed. ` +
-          `The framework automatically handles table prefixing (final table: ${prefixedSlug}).`
+          `Collection slug "${inputSlug}" in plugin "${plugin.manifest.slug}" was automatically cleaned to be used as table name. ` +
+          `Final table: ${prefixedSlug}`
         );
       }
       
