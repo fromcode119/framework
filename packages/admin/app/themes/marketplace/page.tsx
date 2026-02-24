@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNotify } from '@/components/notification-context';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
-import type { MarketplaceTheme } from '@fromcode119/core';
+import type { MarketplaceTheme } from '@fromcode119/core/shared';
 
 export default function ThemesMarketplacePage() {
   const { theme } = useTheme();
