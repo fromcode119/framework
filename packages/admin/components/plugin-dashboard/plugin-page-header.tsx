@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { PageHeading } from '../../components/ui/page-heading';
+import { PageHeading } from '@/components/ui/page-heading';
 
 interface PluginPageHeaderProps {
   title: string;

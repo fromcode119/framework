@@ -2,9 +2,9 @@
 
 import React, { useEffect } from 'react';
 import { Button } from './button';
-import { FrameworkIcons } from '../../lib/icons';
+import { FrameworkIcons } from '@/lib/icons';
 import { RootFramework } from './root-framework';
-import { useTheme } from '../../components/theme-context';
+import { useTheme } from '@/components/theme-context';
 
 const { Warning: AlertTriangle, Close: X, Box } = FrameworkIcons;
 

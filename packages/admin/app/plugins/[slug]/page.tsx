@@ -2,22 +2,22 @@
 
 import React, { use, useState, useEffect, useRef } from 'react';
 import { Slot, usePlugins, Plugin } from '@fromcode119/react';
-import { useTheme } from '../../../components/theme-context';
-import { Card } from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
-import { Button } from '../../../components/ui/button';
-import { Switch } from '../../../components/ui/switch';
-import { ConfirmDialog } from '../../../components/ui/confirm-dialog';
-import { FrameworkIcons } from '../../../lib/icons';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { api } from '../../../lib/api';
-import { ENDPOINTS } from '../../../lib/constants';
-import { useNotify } from '../../../components/notification-context';
-import { Loader } from '../../../components/ui/loader';
-import { Select } from '../../../components/ui/select';
-import { PluginSettingsForm, PluginSettingsFormHandle } from '../../../components/plugins/plugin-settings-form';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { useNotify } from '@/components/notification-context';
+import { Loader } from '@/components/ui/loader';
+import { Select } from '@/components/ui/select';
+import { PluginSettingsForm, PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form';
 
 export default function PluginDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);

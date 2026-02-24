@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons } from '../../lib/icons';
-import { MediaPicker } from '../../components/media/media-picker';
+import { FrameworkIcons } from '@/lib/icons';
+import { MediaPicker } from '@/components/media/media-picker';
 
 interface MediaRelationFieldProps {
   value: any;

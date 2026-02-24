@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '../../components/ui/card';
-import { FrameworkIcons } from '../../lib/icons';
-import { api } from '../../lib/api';
-import { ENDPOINTS } from '../../lib/constants';
-import { Button } from '../../components/ui/button';
+import { Card } from '@/components/ui/card';
+import { FrameworkIcons } from '@/lib/icons';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { Button } from '@/components/ui/button';
 
 interface Version {
   id: number;

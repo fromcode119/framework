@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons } from '../../../lib/icons';
-import { Select } from '../../../components/ui/select';
+import { FrameworkIcons } from '@/lib/icons';
+import { Select } from '@/components/ui/select';
 
 interface FilterBarProps {
   slug: string;

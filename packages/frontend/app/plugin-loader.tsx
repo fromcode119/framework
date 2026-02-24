@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { usePlugins } from '@fromcode119/react';
-import { resolveFrontendApiBaseUrl } from '../lib/api-base-url';
+import { resolveFrontendApiBaseUrl } from '@/lib/api-base-url';
 
 export default function PluginLoader() {
   const { plugins, activeTheme, api } = usePlugins();

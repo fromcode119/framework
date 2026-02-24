@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useTheme } from '../../../../components/theme-context';
-import { api } from '../../../../lib/api';
-import { ENDPOINTS } from '../../../../lib/constants';
-import { FrameworkIcons } from '../../../../lib/icons';
-import { Button } from '../../../../components/ui/button';
-import { Card } from '../../../../components/ui/card';
-import { Badge } from '../../../../components/ui/badge';
+import { useTheme } from '@/components/theme-context';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { FrameworkIcons } from '@/lib/icons';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Loader } from '../../../../components/ui/loader';
+import { Loader } from '@/components/ui/loader';
 
 export default function UserRolesPage() {
   const { id } = useParams();

@@ -3,19 +3,19 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Slot, PluginsProvider, useTranslation, usePlugins } from '@fromcode119/react';
-import { ThemeProvider, useTheme } from '../components/theme-context';
-import * as SharedComponents from '../components';
+import { ThemeProvider, useTheme } from '@/components/theme-context';
+import * as SharedComponents from '@/components';
 import Sidebar from './sidebar';
 import PluginLoader from './plugin-loader';
-import { FrameworkIcons } from '../lib/icons';
-import { Dropdown } from '../components/ui/dropdown';
+import { FrameworkIcons } from '@/lib/icons';
+import { Dropdown } from '@/components/ui/dropdown';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '../components/auth-context';
-import { api } from '../lib/api';
-import { API_BASE_URL, ENDPOINTS } from '../lib/constants';
-import { Loader } from '../components/ui/loader';
-import { purgeAuth } from '../lib/auth-utils';
-import { applyDateLocaleTimezonePatch } from '../lib/timezone';
+import { useAuth } from '@/components/auth-context';
+import { api } from '@/lib/api';
+import { API_BASE_URL, ENDPOINTS } from '@/lib/constants';
+import { Loader } from '@/components/ui/loader';
+import { purgeAuth } from '@/lib/auth-utils';
+import { applyDateLocaleTimezonePatch } from '@/lib/timezone';
 import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES } from '@fromcode119/sdk';
 
 const { 

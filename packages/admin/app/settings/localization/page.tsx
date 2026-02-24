@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '../../../components/theme-context';
-import { Card } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Select } from '../../../components/ui/select';
-import { Switch } from '../../../components/ui/switch';
-import { FrameworkIcons } from '../../../lib/icons';
-import { api } from '../../../lib/api';
-import { ENDPOINTS } from '../../../lib/constants';
-import { useNotification } from '../../../components/notification-context';
+import { useTheme } from '@/components/theme-context';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { FrameworkIcons } from '@/lib/icons';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
+import { useNotification } from '@/components/notification-context';
 import { usePlugins } from '@fromcode119/react';
-import { Loader } from '../../../components/ui/loader';
+import { Loader } from '@/components/ui/loader';
 
 type LocaleItem = {
   id: string;

@@ -1,6 +1,6 @@
 import { useState, useCallback, FormEvent } from 'react';
-import { api } from '../../../lib/api';
-import { ENDPOINTS } from '../../../lib/constants';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/constants';
 
 interface UseCollectionFormOptions {
   collectionSlug: string;
