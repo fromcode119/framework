@@ -4,7 +4,7 @@ const path = require('path');
 const nextConfig = {
   basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '',
   reactStrictMode: true,
-  transpilePackages: ['@fromcode119/react'],
+  transpilePackages: ['@fromcode119/react', '@fromcode119/admin'],
   turbopack: {},
   images: {
     remotePatterns: [

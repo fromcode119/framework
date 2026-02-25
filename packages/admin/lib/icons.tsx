@@ -8,23 +8,29 @@ if (typeof window !== 'undefined') {
     IconNamesExport: IconNames
   });
   
-  // Use index access to avoid "as any" causing parse errors in some environments
-  const registry = FrameworkIconRegistry || (FrameworkIcons as any)?.['FrameworkIconRegistry'];
+  // @ts-ignore
+  const registry = FrameworkIconRegistry || (FrameworkIcons && FrameworkIcons['FrameworkIconRegistry']);
   const icons = FrameworkIcons;
   
-  if (registry && typeof (registry as any).registerProvider === 'function') {
-    (registry as any).registerProvider('system', icons);
-    (window as any).FrameworkIcons = icons;
-    (window as any).FrameworkIconRegistry = registry;
+  // @ts-ignore
+  if (registry && typeof registry.registerProvider === 'function') {
+    // @ts-ignore
+    registry.registerProvider('system', icons);
+    // @ts-ignore
+    window.FrameworkIcons = icons;
+    // @ts-ignore
+    window.FrameworkIconRegistry = registry;
     console.log('[Icons] Registry initialized successfully.');
   } else {
     console.warn('[Icons] Failed to initialize registry: symbols missing or mismatch.');
     // Fallback: set it anyway if icons exist
-    if (icons) (window as any).FrameworkIcons = icons;
+    // @ts-ignore
+    if (icons) window.FrameworkIcons = icons;
   }
 }
 
 // Ensure we are exporting the object correctly
+// @ts-ignore
 export const Icons = FrameworkIcons;
 export { FrameworkIcons, IconNames };
 export type { IconName };

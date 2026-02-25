@@ -3,7 +3,7 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@fromcode119/core', '@fromcode119/react'],
+  transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/frontend'],
   turbopack: {},
   images: {
     remotePatterns: [
