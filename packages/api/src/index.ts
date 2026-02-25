@@ -168,10 +168,10 @@ export class APIServer {
     this.app.use(`${API_PREFIXES.BASE}/`, limiter);
 
     this.setupAuthIntegration();
-    this.registerCoreCollection('users', UserCollection);
-    this.registerCoreCollection('media', MediaCollection);
-    this.registerCoreCollection('settings', SettingsCollection);
-    this.registerCoreCollection('_system_record_versions', RecordVersions);
+    await this.registerCoreCollection('users', UserCollection);
+    await this.registerCoreCollection('media', MediaCollection);
+    await this.registerCoreCollection('settings', SettingsCollection);
+    await this.registerCoreCollection('_system_record_versions', RecordVersions);
     this.setupMiddleware();
     this.setupRoutes();
 
@@ -743,13 +743,15 @@ export class APIServer {
     this.app.use(LEGACY_API_ROUTES.COLLECTIONS.BASE, setupBaseCollectionRoutes(this.manager, this.restController));
   }
 
-  private registerCoreCollection(slug: string, collection: any) {
+  private async registerCoreCollection(slug: string, collection: any) {
     const existing = this.manager.getCollections().find(c => c.slug === slug);
     if (!existing) {
       (this.manager as any).registeredCollections.set(slug, { 
         collection, 
         pluginSlug: 'system' 
       });
+      // Ensure the schema is in sync for core collections
+      await this.manager.schemaManager.syncCollection(collection);
     }
   }
 
