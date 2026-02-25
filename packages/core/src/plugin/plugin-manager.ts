@@ -55,7 +55,7 @@ export class PluginManager implements PluginManagerInterface {
   public pluginSettings: Map<string, any> = new Map();
   
   private coordinator: MigrationCoordinator;
-  private schemaManager: SchemaManager;
+  public schemaManager: SchemaManager;
   private migrationManager: MigrationManager;
   public projectRoot: string;
   public pluginsRoot: string;
