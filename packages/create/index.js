@@ -7,14 +7,13 @@ const path = require('path');
 // ─── Argument parsing ────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
-const flags = process.argv.slice(2).filter(a => a.startsWith('--'));
-const withFrontend = flags.includes('--frontend');
+const withFrontend = true; // Always include frontend by default
 
 const projectName = args[0];
 if (!projectName) {
-  console.error('Usage: npx @fromcode119/create <project-name> [--frontend]');
+  console.error('Usage: npx @fromcode119/create <project-name>');
   console.error('');
-  console.error('  --frontend   Also scaffold the public-facing frontend app');
+  console.error('  Creates a new Fromcode project with API, Admin and Frontend.');
   process.exit(1);
 }
 
@@ -71,27 +70,15 @@ if (fs.existsSync(TEMPLATE_DIR)) {
 // ─── package.json ────────────────────────────────────────────────────────────
 
 const pkgDeps = {
-  "@fromcode119/api": "latest",
-  "@fromcode119/admin": "latest",
+  "@fromcode119/api": "^0.1.18",
+  "@fromcode119/admin": "^0.1.18",
+  "@fromcode119/frontend": "^0.1.18",
 };
-if (withFrontend) {
-  pkgDeps["@fromcode119/frontend"] = "latest";
-}
 
 const devScripts = {
-  "dev:api-admin": withFrontend
-    ? undefined
-    : `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node proxy.js" "PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin"`,
-  "dev": withFrontend
-    ? `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node proxy.js" "PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin" "NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 fromcode-frontend"`
-    : `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node proxy.js" "PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin"`,
+  "dev": `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node proxy.js" "PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin" "NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 fromcode-frontend"`,
   "dev:api": "PORT=4000 fromcode-api",
-  "start:api-admin": withFrontend
-    ? undefined
-    : `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node proxy.js" "NODE_ENV=production PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin"`,
-  "start": withFrontend
-    ? `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node proxy.js" "NODE_ENV=production PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin" "NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 fromcode-frontend"`
-    : `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node proxy.js" "NODE_ENV=production PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin"`,
+  "start": `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node proxy.js" "NODE_ENV=production PORT=4000 fromcode-api" "NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 fromcode-admin" "NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 fromcode-frontend"`,
   "start:api": "NODE_ENV=production PORT=4000 fromcode-api",
   "plugin:build": "fromcode plugin build",
   "plugin:dev": "fromcode plugin dev",
@@ -113,7 +100,7 @@ const pkg = {
   scripts: devScripts,
   dependencies: pkgDeps,
   devDependencies: {
-    "@fromcode119/cli": "latest",
+    "@fromcode119/cli": "^0.1.18",
     "concurrently": "^8.2.2",
     "http-proxy": "^1.18.1",
     "typescript": "^5.3.3",
@@ -148,7 +135,7 @@ const envContent = [
   'PROXY_PORT=3000',
   'API_PORT=4000',
   'ADMIN_PORT=3001',
-  withFrontend ? 'FRONTEND_PORT=3002' : '# FRONTEND_PORT=3002',
+  'FRONTEND_PORT=3002',
   '',
   'NODE_ENV=development',
   '',
