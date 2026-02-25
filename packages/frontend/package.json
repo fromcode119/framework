@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/frontend",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "bin": {
     "fromcode-frontend": "scripts/frontend.js"
   },
@@ -33,12 +33,11 @@
     "lucide-react": "^0.563.0",
     "js-cookie": "^3.0.5",
     "@fromcode119/core": "*",
-    "@fromcode119/react": "*"
-  },
-  "devDependencies": {
+    "@fromcode119/react": "*",
     "typescript": "^5.3.3",
     "@types/node": "^22.10.1",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0"
-  }
+  },
+  "devDependencies": {}
 }
