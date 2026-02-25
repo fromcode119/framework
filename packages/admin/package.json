@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/admin",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "main": "dist/index.js",
   "bin": {
     "fromcode-admin": "scripts/admin.js"
