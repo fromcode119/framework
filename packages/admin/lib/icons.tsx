@@ -8,11 +8,12 @@ if (typeof window !== 'undefined') {
     IconNamesExport: IconNames
   });
   
-  const registry = FrameworkIconRegistry || (FrameworkIcons as any)?.FrameworkIconRegistry;
+  // Use index access to avoid "as any" causing parse errors in some environments
+  const registry = FrameworkIconRegistry || (FrameworkIcons as any)?.['FrameworkIconRegistry'];
   const icons = FrameworkIcons;
   
-  if (registry && typeof registry.registerProvider === 'function') {
-    registry.registerProvider('system', icons);
+  if (registry && typeof (registry as any).registerProvider === 'function') {
+    (registry as any).registerProvider('system', icons);
     (window as any).FrameworkIcons = icons;
     (window as any).FrameworkIconRegistry = registry;
     console.log('[Icons] Registry initialized successfully.');
