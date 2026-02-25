@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/create",
-  "version": "0.1.11",
+  "version": "0.1.17",
   "description": "Create a new Fromcode app",
   "bin": {
     "create-fromcode": "index.js"
