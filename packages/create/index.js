@@ -70,9 +70,9 @@ if (fs.existsSync(TEMPLATE_DIR)) {
 // ─── package.json ────────────────────────────────────────────────────────────
 
 const pkgDeps = {
-  "@fromcode119/api": "^0.1.18",
-  "@fromcode119/admin": "^0.1.18",
-  "@fromcode119/frontend": "^0.1.18",
+  "@fromcode119/api": "^0.1.20",
+  "@fromcode119/admin": "^0.1.20",
+  "@fromcode119/frontend": "^0.1.20",
 };
 
 const devScripts = {

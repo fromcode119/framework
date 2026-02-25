@@ -214,13 +214,22 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   async createTable(collection: ISchemaCollection): Promise<void> {
     const tableName = collection.slug;
     const columnDefs: any[] = [];
+    const fieldSnakeNames = collection.fields.map(f => toSnakeCase(f.name));
 
-    columnDefs.push(sql`id SERIAL PRIMARY KEY`);
-    columnDefs.push(sql`created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
-    columnDefs.push(sql`updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
+    if (!fieldSnakeNames.includes('id')) {
+      columnDefs.push(sql`id SERIAL PRIMARY KEY`);
+    }
+
+    if (!fieldSnakeNames.includes('created_at')) {
+      columnDefs.push(sql`created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
+    }
+
+    if (!fieldSnakeNames.includes('updated_at')) {
+      columnDefs.push(sql`updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
+    }
 
     for (const field of collection.fields) {
-      if (field.name === 'id') continue;
+      if (field.name === 'id' && !fieldSnakeNames.includes('id')) continue;
       columnDefs.push(this.fieldToSqlFragment(field));
     }
 
