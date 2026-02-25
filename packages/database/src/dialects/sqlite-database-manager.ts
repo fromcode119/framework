@@ -234,13 +234,20 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   async createTable(collection: ISchemaCollection): Promise<void> {
     const tableName = collection.slug;
     const columnDefs: any[] = [];
+    const fieldSnakeNames = collection.fields.map(f => toSnakeCase(f.name));
 
-    columnDefs.push(sql`id INTEGER PRIMARY KEY AUTOINCREMENT`);
-    columnDefs.push(sql`created_at TEXT DEFAULT CURRENT_TIMESTAMP`);
-    columnDefs.push(sql`updated_at TEXT DEFAULT CURRENT_TIMESTAMP`);
+    if (!fieldSnakeNames.includes('id')) {
+      columnDefs.push(sql`id INTEGER PRIMARY KEY AUTOINCREMENT`);
+    }
+    if (!fieldSnakeNames.includes('created_at')) {
+      columnDefs.push(sql`created_at TEXT DEFAULT CURRENT_TIMESTAMP`);
+    }
+    if (!fieldSnakeNames.includes('updated_at')) {
+      columnDefs.push(sql`updated_at TEXT DEFAULT CURRENT_TIMESTAMP`);
+    }
 
     for (const field of collection.fields) {
-      if (field.name === 'id') continue;
+      if (field.name === 'id' && !fieldSnakeNames.includes('id')) continue;
       columnDefs.push(this.fieldToSqlFragment(field));
     }
 
