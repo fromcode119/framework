@@ -17,7 +17,7 @@ def bump_versions():
                     version_parts = data['version'].split('.')
                     if len(version_parts) == 3:
                         # Increment patch version
-                        version_parts[2] = "17"
+                        version_parts[2] = "18"
                         new_version = '.'.join(version_parts)
                         data['version'] = new_version
                         
