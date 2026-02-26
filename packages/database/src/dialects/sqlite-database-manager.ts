@@ -192,7 +192,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     return result;
   }
 
-  async upsert(tableOrName: any, data: any, options: { target: string | any; set: any }): Promise<any> {
+  async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
     const normalizedData = this.normalizeData(data);
     const normalizedSet = this.normalizeData(options.set);
     const query = this.drizzle.insert(tableOrName).values(normalizedData).onConflictDoUpdate({
