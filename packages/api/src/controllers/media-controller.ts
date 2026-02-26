@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
-import { media, mediaFolders, eq, desc, ilike, or, and, isNull } from '@fromcode119/database';
+import { media, mediaFolders, eq, desc, ilike, like, or, and, isNull } from '@fromcode119/database';
 import { resolvePublicUrl } from '../utils/url';
 
 export class MediaController {
@@ -83,9 +83,10 @@ export class MediaController {
       let conditions: any[] = [];
       
       if (q) {
+        const likeOp = (this.manager as any).db.dialect === 'postgres' ? ilike : like;
         conditions.push(or(
-           ilike(media.originalName, `%${q}%`),
-           ilike(media.filename, `%${q}%`)
+           likeOp(media.originalName, `%${q}%`),
+           likeOp(media.filename, `%${q}%`)
         ));
       }
 
