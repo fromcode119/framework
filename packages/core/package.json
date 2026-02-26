@@ -1,19 +1,23 @@
 {
   "name": "@fromcode119/core",
-  "version": "0.1.28",
-  "main": "dist/index.js",
+  "version": "0.1.29",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./utils": {
+      "development": "./src/utils/index.ts",
       "import": "./dist/utils/index.js",
       "require": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
     },
     "./shared": {
+      "development": "./src/shared.ts",
       "import": "./dist/shared.js",
       "require": "./dist/shared.js",
       "types": "./dist/shared.d.ts"

@@ -70,7 +70,7 @@ if (fs.existsSync(TEMPLATE_DIR)) {
 // ─── package.json ────────────────────────────────────────────────────────────
 
 const pkgDeps = {
-  "@fromcode119/api": "^0.1.28",
+  "@fromcode119/api": "^0.1.29",
 };
 
 const devScripts = {
@@ -98,7 +98,7 @@ const pkg = {
   scripts: devScripts,
   dependencies: pkgDeps,
   devDependencies: {
-    "@fromcode119/cli": "^0.1.28",
+    "@fromcode119/cli": "^0.1.29",
     "concurrently": "^8.2.2",
     "http-proxy": "^1.18.1",
     "typescript": "^5.3.3",
