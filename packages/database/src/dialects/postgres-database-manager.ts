@@ -193,7 +193,7 @@ const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', 
     return result;
   }
 
-  async upsert(tableOrName: any, data: any, options: { target: string | any; set: any }): Promise<any> {
+  async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
     const { target, set } = options;
     const query = this.drizzle.insert(tableOrName).values(data).onConflictDoUpdate({
       target: typeof target === 'string' ? (tableOrName as any)[target] : target,

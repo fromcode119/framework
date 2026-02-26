@@ -179,7 +179,7 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     return this.findOne(tableName, where);
   }
 
-  async upsert(tableOrName: any, data: any, options: { target: string | any; set: any }): Promise<any> {
+  async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
     // MySQL Drizzle uses onDuplicateKeyUpdate
     const query = this.drizzle.insert(tableOrName).values(data).onDuplicateKeyUpdate({
       set: options.set
