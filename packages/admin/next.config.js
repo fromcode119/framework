@@ -7,9 +7,9 @@ const nextConfig = {
   transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk'],
   turbopack: {
     resolveAlias: {
-      '@fromcode119/react': '../react/src',
-      '@fromcode119/core': '../core/src',
-      '@fromcode119/sdk': '../sdk/src',
+      '@fromcode119/react': path.resolve(__dirname, '../react/src'),
+      '@fromcode119/core': path.resolve(__dirname, '../core/src'),
+      '@fromcode119/sdk': path.resolve(__dirname, '../sdk/src'),
     },
   },
   images: {
