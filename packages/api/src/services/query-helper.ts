@@ -1,6 +1,5 @@
 import { Collection } from '@fromcode119/sdk';
-import { createDynamicTable } from '@fromcode119/database';
-import { timestamp, desc, sql, and, ilike, like, or } from '@fromcode119/database';
+import { createDynamicTable, IDatabaseManager, timestamp, sql } from '@fromcode119/database';
 
 export class QueryHelper {
   private static virtualTables: Map<string, any> = new Map();
@@ -40,15 +39,14 @@ export class QueryHelper {
     return table;
   }
 
-  public static buildWhereClause(collection: Collection, table: any, filters: any, search?: string, dialect: string = 'postgres') {
+  public static buildWhereClause(db: IDatabaseManager, collection: Collection, table: any, filters: any, search?: string) {
     const whereChunks: any[] = [];
-    const likeOp = dialect === 'postgres' ? ilike : like;
 
     // Handle Search (across all text/textarea fields)
     if (search) {
       const searchFields = collection.fields.filter(f => f.type === 'text' || f.type === 'textarea');
       if (searchFields.length > 0) {
-        whereChunks.push(or(...searchFields.map(f => likeOp(table[f.name], `%${search}%`))));
+        whereChunks.push(db.or(...searchFields.map(f => db.like(table[f.name], `%${search}%`))));
       }
     }
 
@@ -56,26 +54,26 @@ export class QueryHelper {
     Object.entries(filters).forEach(([key, value]) => {
       const column = table[key];
       if (column) {
-         whereChunks.push(sql`${column} = ${value}`);
+         whereChunks.push(db.eq(column, value));
       } else if (key === 'created_at' && table['createdAt']) {
-         whereChunks.push(sql`${table['createdAt']} = ${value}`);
+         whereChunks.push(db.eq(table['createdAt'], value));
       } else if (key === 'updated_at' && table['updatedAt']) {
-         whereChunks.push(sql`${table['updatedAt']} = ${value}`);
+         whereChunks.push(db.eq(table['updatedAt'], value));
       }
     });
 
-    return whereChunks.length > 0 ? and(...whereChunks) : undefined;
+    return whereChunks.length > 0 ? db.and(...whereChunks) : undefined;
   }
 
-  public static buildOrderBy(collection: Collection, table: any, sort?: string) {
+  public static buildOrderBy(db: IDatabaseManager, collection: Collection, table: any, sort?: string) {
     const pk = collection.primaryKey || 'id';
-    let orderBy: any[] = [table[pk] ? desc(table[pk]) : desc(sql`1`)]; 
+    let orderBy: any[] = [table[pk] ? db.desc(table[pk]) : db.desc(sql`1`)]; 
     
     if (sort) {
       const isDesc = sort.startsWith('-');
       const fieldName = isDesc ? sort.substring(1) : sort;
       if (table[fieldName]) {
-        orderBy = [isDesc ? desc(table[fieldName]) : sql`${table[fieldName]} asc`];
+        orderBy = [isDesc ? db.desc(table[fieldName]) : sql`${table[fieldName]} asc`];
       }
     }
     return orderBy;

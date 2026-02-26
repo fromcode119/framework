@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import { sql, eq, and, or, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
+import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { mysqlTable, text } from 'drizzle-orm/mysql-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
@@ -10,6 +10,18 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
   private pool: mysql.Pool;
   public readonly drizzle: any;
   public readonly dialect = 'mysql' as const;
+
+  // Standard operators
+  public readonly like = like;
+  public readonly eq = eq;
+  public readonly ne = ne;
+  public readonly and = and;
+  public readonly or = or;
+  public readonly isNull = isNull;
+  public readonly isNotNull = isNotNull;
+  public readonly inArray = inArray;
+  public readonly desc = desc;
+  public readonly asc = asc;
 
   constructor(connection: string) {
     super();
@@ -33,26 +45,76 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     return mysqlTable(tableName, tableColumns);
   }
 
-  async find(tableName: string, options: any = {}): Promise<any[]> {
+  async find(tableOrName: any, options: any = {}): Promise<any[]> {
     const { limit, offset, orderBy, where, columns, joins, search } = options;
 
-    if (joins && joins.length > 0) {
-      const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, options);
-      const rows = await this.executeRawSelect(sqlStr, values);
-      return this.processJoinedRows(rows, joins);
-    }
-    
-    let query;
-    if (columns && Object.keys(columns).length > 0) {
-      const selectFields: Record<string, any> = {};
-      for (const [key, value] of Object.entries(columns)) {
-        if (value) {
-          selectFields[key] = sql`${sql.identifier(key)}`;
+    if (typeof tableOrName === 'string') {
+        if (joins && joins.length > 0) {
+        const { sql: sqlStr, values } = this.buildJoinedSQL(tableOrName, joins, options);
+        const rows = await this.executeRawSelect(sqlStr, values);
+        return this.processJoinedRows(rows, joins);
         }
+        
+        let query;
+        if (columns && Object.keys(columns).length > 0) {
+        const selectFields: Record<string, any> = {};
+        for (const [key, value] of Object.entries(columns)) {
+            if (value) {
+            selectFields[key] = sql`${sql.identifier(key)}`;
+            }
+        }
+        query = this.drizzle.select(selectFields).from(sql`${sql.identifier(tableOrName)}`);
+        } else {
+        query = this.drizzle.select().from(sql`${sql.identifier(tableOrName)}`);
+        }
+
+        const allConditions: any[] = [];
+        if (where) {
+        if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
+            allConditions.push(...this.buildWhereConditions(where));
+        } else {
+            allConditions.push(where);
+        }
+        }
+        if (search && search.columns.length > 0 && search.value) {
+        const pattern = `%${search.value}%`;
+        const likeConditions = search.columns.map((col: string) => like(sql`${sql.identifier(col)}`, pattern));
+        allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
+        }
+        if (allConditions.length > 0) {
+        query = query.where(and(...allConditions));
+        }
+
+        const orderExprs = this.buildOrderBy(orderBy);
+        if (orderExprs) {
+        query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
+        }
+
+        if (limit) query = query.limit(limit);
+        if (offset) query = query.offset(offset);
+
+        const [rows] = await query;
+        return rows || [];
+    }
+
+    // tableOrName is a Drizzle table schema object
+    let query: any;
+    
+    if (columns && Object.keys(columns).length > 0) {
+      const selection: Record<string, any> = {};
+      for (const [key, val] of Object.entries(columns)) {
+        if (val) selection[key] = (tableOrName as any)[key];
       }
-      query = this.drizzle.select(selectFields).from(sql`${sql.identifier(tableName)}`);
+      query = this.drizzle.select(selection).from(tableOrName);
     } else {
-      query = this.drizzle.select().from(sql`${sql.identifier(tableName)}`);
+      query = this.drizzle.select().from(tableOrName);
+    }
+
+    if (joins && joins.length > 0) {
+      for (const join of joins) {
+        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
+        query = joinFn.call(query, join.table, join.on);
+      }
     }
 
     const allConditions: any[] = [];
@@ -65,7 +127,10 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     }
     if (search && search.columns.length > 0 && search.value) {
       const pattern = `%${search.value}%`;
-      const likeConditions = search.columns.map((col: string) => like(sql`${sql.identifier(col)}`, pattern));
+      const likeConditions = search.columns.map((col: string) => {
+          const colObj = typeof tableOrName[col] !== 'undefined' ? tableOrName[col] : sql`${sql.identifier(col)}`;
+          return this.like(colObj, pattern);
+      });
       allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
     }
     if (allConditions.length > 0) {
@@ -74,14 +139,14 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
 
     const orderExprs = this.buildOrderBy(orderBy);
     if (orderExprs) {
-      query = query.orderBy(...orderExprs);
+      query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
     }
 
     if (limit) query = query.limit(limit);
     if (offset) query = query.offset(offset);
 
-    const [rows] = await query;
-    return rows || [];
+    const [results] = await query;
+    return results;
   }
 
   async findOne(tableName: string, where: any): Promise<any | null> {
@@ -114,6 +179,15 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     return this.findOne(tableName, where);
   }
 
+  async upsert(tableOrName: any, data: any, options: { target: string | any; set: any }): Promise<any> {
+    // MySQL Drizzle uses onDuplicateKeyUpdate
+    const query = this.drizzle.insert(tableOrName).values(data).onDuplicateKeyUpdate({
+      set: options.set
+    });
+    const [result] = await query;
+    return { ...data, id: result.insertId };
+  }
+
   async delete(tableName: string, where: any): Promise<boolean> {
     const columns = Object.keys(where);
     const table = this.getDynamicTable(tableName, columns);
@@ -128,19 +202,31 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     return rows as any[];
   }
 
-  async count(tableName: string, where: any = {}): Promise<number> {
-    let query = this.drizzle.select({ total: drizzleCount() }).from(sql`${sql.identifier(tableName)}`);
+  async count(tableOrName: any, options: any = {}): Promise<number> {
+    const { where, joins } = options;
+    const isString = typeof tableOrName === 'string';
+    const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
     
-    if (where) {
-      const isPlainWhere = typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-      if (isPlainWhere) {
-        const conditions = this.buildWhereConditions(where);
-        if (conditions.length > 0) {
-          query = query.where(and(...conditions));
-        }
-      } else {
-        query = query.where(where);
+    let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
+
+    if (joins && joins.length > 0) {
+      for (const join of joins) {
+        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
+        query = joinFn.call(query, join.table, join.on);
       }
+    }
+
+    const conditions: any[] = [];
+    if (where) {
+      if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
+        conditions.push(...this.buildWhereConditions(where));
+      } else {
+        conditions.push(where);
+      }
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
 
     const [result] = await query;

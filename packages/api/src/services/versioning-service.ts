@@ -1,4 +1,4 @@
-import { IDatabaseManager, eq, and, desc, inArray, users } from '@fromcode119/database';
+import { IDatabaseManager, users } from '@fromcode119/database';
 import { Collection, RecordVersions, Logger, SystemTable } from '@fromcode119/core';
 
 export class VersioningService {
@@ -53,7 +53,7 @@ export class VersioningService {
     if (versions.length > 0) {
       const userIds = [...new Set(versions.map(v => v.updated_by).filter(Boolean))];
       if (userIds.length > 0) {
-        const userData = await this.db.find(users, { where: inArray(users.id, userIds) });
+        const userData = await this.db.find(users, { where: this.db.inArray(users.id, userIds) });
         const userMap = new Map(userData.map(u => [u.id, u.email || u.username]));
         versions = versions.map(v => ({ 
           ...v, 
@@ -62,7 +62,7 @@ export class VersioningService {
       }
     }
 
-    const total = await this.db.count(RecordVersions.slug, where);
+    const total = await this.db.count(RecordVersions.slug, { where });
 
     return {
       docs: versions,
