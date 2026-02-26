@@ -87,7 +87,7 @@ export class RESTController {
         }
       }
 
-      const whereClause = QueryHelper.buildWhereClause(collection, table, filters, search);
+      const whereClause = QueryHelper.buildWhereClause(collection, table, filters, search, this.db.dialect);
       const orderBy = QueryHelper.buildOrderBy(collection, table, sort);
       
       const limitVal = Math.min(parseInt(limit as string) || 10, 100);
