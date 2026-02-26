@@ -1,4 +1,4 @@
-import { IDatabaseManager, count, systemLogs, systemAuditLogs, systemPlugins, desc, or, ilike, eq, and, isNull } from '@fromcode119/database';
+import { IDatabaseManager, count, systemLogs, systemAuditLogs, systemPlugins, desc, or, ilike, like, eq, and, isNull } from '@fromcode119/database';
 
 export class SystemService {
   constructor(private db: IDatabaseManager, private drizzle: any) {}
@@ -8,9 +8,10 @@ export class SystemService {
     const limit = params.limit || 50;
     const offset = (page - 1) * limit;
 
+    const likeOp = this.db.dialect === 'postgres' ? ilike : like;
     let whereClause = params.search ? or(
-      ilike(systemLogs.message, `%${params.search}%`),
-      ilike(systemLogs.pluginSlug, `%${params.search}%`)
+      likeOp(systemLogs.message, `%${params.search}%`),
+      likeOp(systemLogs.pluginSlug, `%${params.search}%`)
     ) : undefined;
 
     const activityFilter = or(
@@ -55,10 +56,11 @@ export class SystemService {
 
     const conditions: any[] = [];
     if (params.search) {
+      const likeOp = this.db.dialect === 'postgres' ? ilike : like;
       conditions.push(or(
-        ilike(systemAuditLogs.resource, `%${params.search}%`),
-        ilike(systemAuditLogs.action, `%${params.search}%`),
-        ilike(systemAuditLogs.pluginSlug, `%${params.search}%`)
+        likeOp(systemAuditLogs.resource, `%${params.search}%`),
+        likeOp(systemAuditLogs.action, `%${params.search}%`),
+        likeOp(systemAuditLogs.pluginSlug, `%${params.search}%`)
       ));
     }
     if (params.status) {

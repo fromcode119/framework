@@ -1,6 +1,6 @@
 import { Collection } from '@fromcode119/sdk';
 import { createDynamicTable } from '@fromcode119/database';
-import { timestamp, desc, sql, and, ilike, or } from '@fromcode119/database';
+import { timestamp, desc, sql, and, ilike, like, or } from '@fromcode119/database';
 
 export class QueryHelper {
   private static virtualTables: Map<string, any> = new Map();
@@ -40,14 +40,15 @@ export class QueryHelper {
     return table;
   }
 
-  public static buildWhereClause(collection: Collection, table: any, filters: any, search?: string) {
+  public static buildWhereClause(collection: Collection, table: any, filters: any, search?: string, dialect: string = 'postgres') {
     const whereChunks: any[] = [];
+    const likeOp = dialect === 'postgres' ? ilike : like;
 
     // Handle Search (across all text/textarea fields)
     if (search) {
       const searchFields = collection.fields.filter(f => f.type === 'text' || f.type === 'textarea');
       if (searchFields.length > 0) {
-        whereChunks.push(or(...searchFields.map(f => ilike(table[f.name], `%${search}%`))));
+        whereChunks.push(or(...searchFields.map(f => likeOp(table[f.name], `%${search}%`))));
       }
     }
 
