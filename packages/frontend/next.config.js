@@ -3,8 +3,14 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/frontend'],
-  turbopack: {},
+  transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk'],
+  turbopack: {
+    resolveAlias: {
+      '@fromcode119/react': '../react/src',
+      '@fromcode119/core': '../core/src',
+      '@fromcode119/sdk': '../sdk/src',
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -22,6 +28,9 @@ const nextConfig = {
   webpack: (config, { dev, isServer }) => {
     // Force aliasing of @ to handle cases where the package is inside node_modules
     config.resolve.alias['@'] = __dirname;
+    config.resolve.alias['@fromcode119/react'] = path.resolve(__dirname, '../react/src');
+    config.resolve.alias['@fromcode119/core'] = path.resolve(__dirname, '../core/src');
+    config.resolve.alias['@fromcode119/sdk'] = path.resolve(__dirname, '../sdk/src');
 
     if (dev && !isServer) {
       config.watchOptions = {

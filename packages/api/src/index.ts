@@ -438,14 +438,11 @@ export class APIServer {
 
     this.auth.setSessionValidator(async (jti) => {
       try {
-        const drizzle = db.drizzle;
-        
-        // Use the imported systemSessions schema for type-safety and correct mapping
-        const results = await drizzle
-          .select()
-          .from(systemSessions)
-          .where(eq(systemSessions.tokenId, jti))
-          .limit(1);
+        // Use the driver's find method instead of raw drizzle
+        const results = await db.find(systemSessions, {
+          where: db.eq(systemSessions.tokenId, jti),
+          limit: 1
+        });
         
         const session = results[0];
         

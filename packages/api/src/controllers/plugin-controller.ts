@@ -163,15 +163,15 @@ export class PluginController {
 
   async logs(req: Request, res: Response) {
     const { slug } = req.params;
-    const db = (this.manager as any).db.drizzle;
-    const { systemLogs, eq, desc } = require('@fromcode119/database');
+    const db = (this.manager as any).db;
+    const { systemLogs } = require('@fromcode119/database');
     
     try {
-      const logs = await db.select()
-        .from(systemLogs)
-        .where(eq(systemLogs.pluginSlug, slug))
-        .orderBy(desc(systemLogs.timestamp))
-        .limit(100);
+      const logs = await db.find(systemLogs, {
+        where: db.eq(systemLogs.pluginSlug, slug),
+        orderBy: db.desc(systemLogs.timestamp),
+        limit: 100
+      });
       res.json(logs);
     } catch (err: any) {
       res.status(500).json({ error: err.message });

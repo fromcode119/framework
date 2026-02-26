@@ -19,6 +19,7 @@
       "@fromcode119/sdk/internal": ["packages/sdk/src/internal"],
       "@fromcode119/auth": ["packages/auth/src"],
       "@fromcode119/media": ["packages/media/src"],
+      "@fromcode119/react": ["packages/react/src"],
       "@fromcode119/email": ["packages/email/src"],
       "@fromcode119/cache": ["packages/cache/src"],
       "@fromcode119/scheduler": ["packages/scheduler/src"],

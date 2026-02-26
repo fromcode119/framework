@@ -15,11 +15,11 @@ import { ResolutionService } from '../services/resolution-service';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { createHash, randomBytes } from 'crypto';
-import { users } from '@fromcode119/database';
+import { users, IDatabaseManager } from '@fromcode119/database';
 import { hashRecoveryCode, normalizeEmail } from '../utils/auth';
 
 export class SystemController {
-  private db: any;
+  private db: IDatabaseManager;
   private shortcodes: ShortcodeService;
   private system: SystemService;
   private users: UserManagementService;
@@ -27,9 +27,9 @@ export class SystemController {
 
   constructor(private manager: PluginManager, private themeManager: ThemeManager, private restController: RESTController) {
     const dbWrapper = (manager as any).db;
-    this.db = dbWrapper.drizzle;
+    this.db = dbWrapper;
     this.shortcodes = new ShortcodeService(manager, restController);
-    this.system = new SystemService(dbWrapper, this.db);
+    this.system = new SystemService(dbWrapper);
     this.users = new UserManagementService(dbWrapper, manager.auth, manager);
     this.resolution = new ResolutionService(manager, restController);
   }

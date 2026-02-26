@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/admin",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "main": "dist/index.js",
   "bin": {
     "fromcode-admin": "scripts/admin.js"
@@ -30,6 +30,7 @@
   "dependencies": {
     "@fromcode119/core": "*",
     "@fromcode119/react": "*",
+    "@fromcode119/sdk": "*",
     "@monaco-editor/react": "^4.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^2.30.0",

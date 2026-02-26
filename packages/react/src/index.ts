@@ -6,6 +6,7 @@ export {
   registerAPI, getAPI, loadConfig, resolveContent, emit, on, t, locale, setLocale, api
 } from './context';
 export * from '@fromcode119/sdk';
+export type { LoadedPlugin as Plugin } from '@fromcode119/sdk';
 export { Slot } from './slot';
 export { Override } from './override';
 export { RootFramework } from './root-framework';
