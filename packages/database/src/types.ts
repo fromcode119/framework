@@ -46,6 +46,21 @@ export interface JoinClause {
 export interface IDatabaseManager {
   readonly drizzle: any; 
   readonly dialect: string;
+  
+  // Dialect-aware operators
+  readonly like: (column: any, value: any) => any;
+  
+  // Standard operators (proxied for driver-only usage)
+  readonly eq: any;
+  readonly ne: any;
+  readonly and: any;
+  readonly or: any;
+  readonly isNull: any;
+  readonly isNotNull: any;
+  readonly inArray: any;
+  readonly desc: any;
+  readonly asc: any;
+
   execute(query: any): Promise<any>;
   connect(): Promise<void>;
   
@@ -56,7 +71,7 @@ export interface IDatabaseManager {
     offset?: number; 
     orderBy?: any;
     columns?: Record<string, boolean>;
-    joins?: JoinClause[];
+    joins?: any[]; // Can be JoinClause[] or Drizzle-style joins
     /** Push a LIKE/ILIKE filter to the DB. columns are OR-ed, ANDed with where. */
     search?: { columns: string[]; value: string };
   }): Promise<any[]>;
@@ -67,9 +82,11 @@ export interface IDatabaseManager {
   
   update(tableOrName: any, where: any, data: any): Promise<any>;
   
+  upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any>;
+  
   delete(tableOrName: any, where: any): Promise<boolean>;
   
-  count(tableName: string, where?: any): Promise<number>;
+  count(tableOrName: any, options?: { where?: any; joins?: any[] }): Promise<number>;
 
   // Schema Management (Agnostic)
   getTables(): Promise<string[]>;

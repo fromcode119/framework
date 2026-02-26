@@ -75,7 +75,7 @@ export abstract class BaseDialect {
       return { sql: '', values: [] };
     }
 
-    const conditions = whereColumns.map((column, index) => `"${toSnakeCase(column)}" = $${index + 1}`);
+    const conditions = whereColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`);
     const values = whereColumns.map((column) => this.normalizeParamValue(where[column]));
 
     return {
@@ -179,7 +179,7 @@ export abstract class BaseDialect {
     const selectParts: string[] = [];
     if (columns && Object.keys(columns).length > 0) {
       for (const [k, v] of Object.entries(columns)) {
-        if (v) selectParts.push(`"t0"."${k}"`);
+        if (v) selectParts.push(`"t0"."${toSnakeCase(k)}"`);
       }
     } else {
       selectParts.push('"t0".*');
@@ -187,7 +187,7 @@ export abstract class BaseDialect {
     for (let i = 0; i < joins.length; i++) {
       const alias = `t${i + 1}`;
       for (const col of joins[i].columns) {
-        selectParts.push(`"${alias}"."${col}" AS "j${i}__${col}"`);
+        selectParts.push(`"${alias}"."${toSnakeCase(col)}" AS "j${i}__${col}"`);
       }
     }
 
@@ -198,7 +198,7 @@ export abstract class BaseDialect {
       const join = joins[i];
       const alias = `t${i + 1}`;
       const joinType = join.type === 'left' ? 'LEFT JOIN' : 'INNER JOIN';
-      sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0"."${join.on.from}" = "${alias}"."${join.on.to}"`;
+      sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0"."${toSnakeCase(join.on.from)}" = "${alias}"."${toSnakeCase(join.on.to)}"`;
     }
 
     // WHERE clause (main table columns only)
@@ -208,7 +208,7 @@ export abstract class BaseDialect {
       if (entries.length > 0) {
         const conditions = entries.map(([k, v]) => {
           values.push(this.normalizeParamValue(v));
-          return `"t0"."${k}" = ${this.getParamPlaceholder(values.length)}`;
+          return `"t0"."${toSnakeCase(k)}" = ${this.getParamPlaceholder(values.length)}`;
         });
         sqlStr += ` WHERE ${conditions.join(' AND ')}`;
       }

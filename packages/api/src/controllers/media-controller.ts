@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
-import { media, mediaFolders, eq, desc, ilike, like, or, and, isNull } from '@fromcode119/database';
+import { media, mediaFolders, IDatabaseManager } from '@fromcode119/database';
 import { resolvePublicUrl } from '../utils/url';
 
 export class MediaController {
-  private db: any;
+  private db: IDatabaseManager;
   private logger = new Logger({ namespace: 'media-controller' });
 
   constructor(private manager: PluginManager, private mediaManager: MediaManager) {
-    this.db = (manager as any).db.drizzle;
+    this.db = (manager as any).db;
   }
 
   async upload(req: any, res: Response) {
@@ -81,12 +81,12 @@ export class MediaController {
     const { q, folderId } = req.query;
     try {
       let conditions: any[] = [];
+      const { or, and, eq, isNull, desc } = this.db;
       
       if (q) {
-        const likeOp = (this.manager as any).db.dialect === 'postgres' ? ilike : like;
         conditions.push(or(
-           likeOp(media.originalName, `%${q}%`),
-           likeOp(media.filename, `%${q}%`)
+           this.db.like(media.originalName, `%${q}%`),
+           this.db.like(media.filename, `%${q}%`)
         ));
       }
 
@@ -97,46 +97,42 @@ export class MediaController {
 
       const whereClause = conditions.length > 0 ? (conditions.length === 1 ? conditions[0] : and(...conditions)) : undefined;
 
-      const selectFilesFull = async () => {
-        return this.db.select({
-          id: media.id,
-          filename: media.filename,
-          originalName: media.originalName,
-          mimeType: media.mimeType,
-          fileSize: media.fileSize,
-          width: media.width,
-          height: media.height,
-          alt: media.alt,
-          caption: media.caption,
-          path: media.path,
-          folderId: media.folderId,
-          createdAt: media.createdAt,
-          updatedAt: media.updatedAt,
-        }).from(media)
-          .where(whereClause)
-          .orderBy(desc(media.createdAt));
-      };
-
-      const selectFilesBasic = async () => {
-        return this.db.select({
-          id: media.id,
-          filename: media.filename,
-          mimeType: media.mimeType,
-          fileSize: media.fileSize,
-          path: media.path,
-          createdAt: media.createdAt,
-        }).from(media)
-          .where(whereClause)
-          .orderBy(desc(media.createdAt));
-      };
-
       let files: any[] = [];
       try {
-        files = await selectFilesFull();
+        files = await this.db.find(media, {
+            columns: {
+                id: true,
+                filename: true,
+                originalName: true,
+                mimeType: true,
+                fileSize: true,
+                width: true,
+                height: true,
+                alt: true,
+                caption: true,
+                path: true,
+                folderId: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+            where: whereClause,
+            orderBy: desc(media.createdAt)
+        });
       } catch (err) {
         // Fallback for older schemas missing optional columns
         this.logger.warn('Media list fallback to basic columns', err);
-        files = await selectFilesBasic();
+        files = await this.db.find(media, {
+            columns: {
+                id: true,
+                filename: true,
+                mimeType: true,
+                fileSize: true,
+                path: true,
+                createdAt: true,
+            },
+            where: whereClause,
+            orderBy: desc(media.createdAt)
+        });
       }
 
       res.json(
@@ -155,10 +151,10 @@ export class MediaController {
     const { parentId } = req.query;
     try {
       const targetParent = parentId === 'null' ? null : (parentId ? Number(parentId) : null);
-      const folders = await this.db.select()
-        .from(mediaFolders)
-        .where(targetParent === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, targetParent))
-        .orderBy(mediaFolders.name);
+      const folders = await this.db.find(mediaFolders, {
+        where: targetParent === null ? this.db.isNull(mediaFolders.parentId) : this.db.eq(mediaFolders.parentId, targetParent),
+        orderBy: mediaFolders.name
+      });
       res.json(folders);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -171,23 +167,22 @@ export class MediaController {
       const pId = parentId ? Number(parentId) : null;
       
       // Check for duplicates
-      const [existing] = await this.db.select()
-        .from(mediaFolders)
-        .where(
-          and(
-            eq(mediaFolders.name, name),
-            pId === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, pId)
-          )
-        ).limit(1);
+      const [existing] = await this.db.find(mediaFolders, {
+        where: this.db.and(
+            this.db.eq(mediaFolders.name, name),
+            pId === null ? this.db.isNull(mediaFolders.parentId) : this.db.eq(mediaFolders.parentId, pId)
+          ),
+        limit: 1
+      });
 
       if (existing) {
         return res.status(400).json({ error: 'A folder with this name already exists here' });
       }
 
-      const [folder] = await this.db.insert(mediaFolders).values({
+      const folder = await this.db.insert(mediaFolders, {
         name,
         parentId: pId
-      }).returning();
+      });
       res.json(folder);
     } catch (err: any) {
       res.status(500).json({ error: err.message });

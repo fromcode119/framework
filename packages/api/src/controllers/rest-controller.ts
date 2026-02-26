@@ -5,17 +5,7 @@ import { COLLECTION_HOOK_PHASES, CollectionHookPhase, collectionHookEvent } from
 import { normalizePath } from '../utils/url';
 import { 
   IDatabaseManager, 
-  sql, 
-  and, 
-  or,
-  eq, 
-  ilike,
-  desc,
-  asc,
-  createDynamicTable,
-  users,
-  inArray,
-  timestamp
+  users
 } from '@fromcode119/database';
 import { ActivityService } from '../services/activity-service';
 import { VersioningService } from '../services/versioning-service';
@@ -87,8 +77,8 @@ export class RESTController {
         }
       }
 
-      const whereClause = QueryHelper.buildWhereClause(collection, table, filters, search, this.db.dialect);
-      const orderBy = QueryHelper.buildOrderBy(collection, table, sort);
+      const whereClause = QueryHelper.buildWhereClause(this.db, collection, table, filters, search);
+      const orderBy = QueryHelper.buildOrderBy(this.db, collection, table, sort);
       
       const limitVal = Math.min(parseInt(limit as string) || 10, 100);
       const offsetVal = parseInt(offset as string) || 0;
@@ -104,13 +94,13 @@ export class RESTController {
       if (collection.slug === '_system_record_versions' && rowsResult.length > 0) {
         const userIds = [...new Set(rowsResult.map(r => r.updated_by).filter(Boolean))];
         if (userIds.length > 0) {
-          const userData = await this.db.find(users, { where: inArray(users.id, userIds) });
+          const userData = await this.db.find(users, { where: this.db.inArray(users.id, userIds) });
           const userMap = new Map(userData.map(u => [u.id, u.email || u.username]));
           rowsResult = rowsResult.map(r => ({ ...r, updated_by: userMap.get(r.updated_by) || r.updated_by }));
         }
       }
 
-      const total = await this.db.count(collection.tableName || collection.slug, whereClause);
+      const total = await this.db.count(collection.tableName || collection.slug, { where: whereClause });
 
       const result = {
         docs: this.processor.filterHiddenFields(collection, rowsResult, { localeContext, rawLocalized }),
@@ -444,7 +434,7 @@ export class RESTController {
       const table = QueryHelper.getVirtualTable(collection);
       const pk = collection.primaryKey || 'id';
       
-      const success = await this.db.delete(table, inArray(table[pk], ids.map((id: any) => pk === 'id' ? parseInt(id) : id)));
+      const success = await this.db.delete(table, this.db.inArray(table[pk], ids.map((id: any) => pk === 'id' ? parseInt(id) : id)));
 
       if (success) {
         this.emitCollectionEvent(collection, 'deleted', {

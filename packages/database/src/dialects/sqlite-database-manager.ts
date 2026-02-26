@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import { sql, eq, and, or, like, desc, asc } from 'drizzle-orm';
+import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
@@ -10,6 +10,18 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   private sqlite: Database.Database;
   public readonly drizzle: any;
   public readonly dialect = 'sqlite' as const;
+
+  // Standard operators
+  public readonly like = like;
+  public readonly eq = eq;
+  public readonly ne = ne;
+  public readonly and = and;
+  public readonly or = or;
+  public readonly isNull = isNull;
+  public readonly isNotNull = isNotNull;
+  public readonly inArray = inArray;
+  public readonly desc = desc;
+  public readonly asc = asc;
 
   constructor(connection: string) {
     super();
@@ -75,7 +87,24 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     }
 
     // tableOrName is a Drizzle table schema object
-    let query = this.drizzle.select().from(tableOrName);
+    let query: any;
+    
+    if (columns && Object.keys(columns).length > 0) {
+      const selection: Record<string, any> = {};
+      for (const [key, val] of Object.entries(columns)) {
+        if (val) selection[key] = (tableOrName as any)[key];
+      }
+      query = this.drizzle.select(selection).from(tableOrName);
+    } else {
+      query = this.drizzle.select().from(tableOrName);
+    }
+
+    if (joins && joins.length > 0) {
+      for (const join of joins) {
+        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
+        query = joinFn.call(query, join.table, join.on);
+      }
+    }
 
     const allConditions: any[] = [];
     if (where) {
@@ -87,7 +116,10 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     }
     if (search && search.columns.length > 0 && search.value) {
       const pattern = `%${search.value}%`;
-      const likeConditions = search.columns.map((col: string) => like(sql`${sql.identifier(col)}`, pattern));
+      const likeConditions = search.columns.map((col: string) => {
+          const colObj = typeof tableOrName[col] !== 'undefined' ? tableOrName[col] : sql`${sql.identifier(col)}`;
+          return this.like(colObj, pattern);
+      });
       allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
     }
     if (allConditions.length > 0) {
@@ -96,7 +128,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
     const orderExprs = this.buildOrderBy(orderBy);
     if (orderExprs) {
-      query = query.orderBy(...orderExprs);
+      query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
     }
 
     if (limit) query = query.limit(limit);
@@ -160,6 +192,17 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     return result;
   }
 
+  async upsert(tableOrName: any, data: any, options: { target: string | any; set: any }): Promise<any> {
+    const normalizedData = this.normalizeData(data);
+    const normalizedSet = this.normalizeData(options.set);
+    const query = this.drizzle.insert(tableOrName).values(normalizedData).onConflictDoUpdate({
+      target: typeof options.target === 'string' ? (tableOrName as any)[options.target] : options.target,
+      set: normalizedSet
+    }).returning();
+    const [result] = await query;
+    return result;
+  }
+
   private normalizeData(data: any): any {
     const normalized: any = {};
     for (const [key, value] of Object.entries(data)) {
@@ -200,17 +243,51 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     return result.length > 0;
   }
 
-  async count(tableName: string, where: any = {}): Promise<number> {
+  async count(tableOrName: any, options: any = {}): Promise<number> {
+    const { where, joins } = options;
+    const isString = typeof tableOrName === 'string';
+    const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
+    
+    // Check if we can use simple raw SQL for performance
     const isPlainWhere = where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    if (isPlainWhere && Object.keys(where).length > 0) {
-      const { sql: whereSql, values } = this.buildRawFilterSQL(where);
-      const rawSql = `SELECT COUNT(*) as total FROM "${tableName}"${whereSql}`;
-      const result = this.sqlite.prepare(rawSql).get(...values) as any;
+    const hasJoins = joins && joins.length > 0;
+
+    if (isString && !hasJoins) {
+      if (isPlainWhere && Object.keys(where).length > 0) {
+        const { sql: whereSql, values } = this.buildRawFilterSQL(where);
+        const rawSql = `SELECT COUNT(*) as total FROM "${tableOrName}"${whereSql}`;
+        const result = this.sqlite.prepare(rawSql).get(...values) as any;
+        return Number(result?.total || 0);
+      }
+      const rawSql = `SELECT COUNT(*) as total FROM "${tableOrName}"`;
+      const result = this.sqlite.prepare(rawSql).get() as any;
       return Number(result?.total || 0);
     }
 
-    const rawSql = `SELECT COUNT(*) as total FROM "${tableName}"`;
-    const result = this.sqlite.prepare(rawSql).get() as any;
+    // Use Drizzle for complex counts
+    let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
+
+    if (hasJoins) {
+      for (const join of joins) {
+        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
+        query = joinFn.call(query, join.table, join.on);
+      }
+    }
+
+    const conditions: any[] = [];
+    if (where) {
+      if (isPlainWhere) {
+        conditions.push(...this.buildWhereConditions(where));
+      } else {
+        conditions.push(where);
+      }
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const [result] = await query;
     return Number(result?.total || 0);
   }
 

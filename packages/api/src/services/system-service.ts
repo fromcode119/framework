@@ -1,17 +1,18 @@
-import { IDatabaseManager, count, systemLogs, systemAuditLogs, systemPlugins, desc, or, ilike, like, eq, and, isNull } from '@fromcode119/database';
+import { IDatabaseManager, systemLogs, systemAuditLogs, systemPlugins } from '@fromcode119/database';
 
 export class SystemService {
-  constructor(private db: IDatabaseManager, private drizzle: any) {}
+  constructor(private db: IDatabaseManager) {}
 
   async getLogs(params: { page?: number; limit?: number; search?: string }) {
     const page = params.page || 1;
     const limit = params.limit || 50;
     const offset = (page - 1) * limit;
 
-    const likeOp = this.db.dialect === 'postgres' ? ilike : like;
+    const { or, and, eq, isNull, desc } = this.db;
+
     let whereClause = params.search ? or(
-      likeOp(systemLogs.message, `%${params.search}%`),
-      likeOp(systemLogs.pluginSlug, `%${params.search}%`)
+      this.db.like(systemLogs.message, `%${params.search}%`),
+      this.db.like(systemLogs.pluginSlug, `%${params.search}%`)
     ) : undefined;
 
     const activityFilter = or(
@@ -21,24 +22,26 @@ export class SystemService {
     );
     const finalWhere = whereClause ? and(whereClause, activityFilter) : activityFilter;
 
-    const totalResult = await this.drizzle.select({ value: count() }).from(systemLogs)
-      .leftJoin(systemPlugins, eq(systemLogs.pluginSlug, systemPlugins.slug))
-      .where(finalWhere);
-    const totalDocs = Number(totalResult[0]?.value || 0);
+    const totalDocs = await this.db.count(systemLogs, {
+      joins: [{ table: systemPlugins, on: eq(systemLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+      where: finalWhere
+    });
 
-    const docs = await this.drizzle.select({
-      id: systemLogs.id,
-      pluginSlug: systemLogs.pluginSlug,
-      level: systemLogs.level,
-      message: systemLogs.message,
-      context: systemLogs.context,
-      timestamp: systemLogs.timestamp
-    }).from(systemLogs)
-      .leftJoin(systemPlugins, eq(systemLogs.pluginSlug, systemPlugins.slug))
-      .where(finalWhere)
-      .orderBy(desc(systemLogs.timestamp))
-      .limit(limit)
-      .offset(offset);
+    const docs = await this.db.find(systemLogs, {
+      columns: {
+        id: true,
+        pluginSlug: true,
+        level: true,
+        message: true,
+        context: true,
+        timestamp: true
+      },
+      joins: [{ table: systemPlugins, on: eq(systemLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+      where: finalWhere,
+      orderBy: desc(systemLogs.timestamp),
+      limit,
+      offset
+    });
 
     return {
       docs,
@@ -54,13 +57,14 @@ export class SystemService {
     const limit = params.limit || 50;
     const offset = (page - 1) * limit;
 
+    const { or, and, eq, isNull, desc } = this.db;
+
     const conditions: any[] = [];
     if (params.search) {
-      const likeOp = this.db.dialect === 'postgres' ? ilike : like;
       conditions.push(or(
-        likeOp(systemAuditLogs.resource, `%${params.search}%`),
-        likeOp(systemAuditLogs.action, `%${params.search}%`),
-        likeOp(systemAuditLogs.pluginSlug, `%${params.search}%`)
+        this.db.like(systemAuditLogs.resource, `%${params.search}%`),
+        this.db.like(systemAuditLogs.action, `%${params.search}%`),
+        this.db.like(systemAuditLogs.pluginSlug, `%${params.search}%`)
       ));
     }
     if (params.status) {
@@ -75,25 +79,27 @@ export class SystemService {
     );
     const finalWhere = baseWhere ? and(baseWhere, auditFilter) : auditFilter;
 
-    const totalResult = await this.drizzle.select({ value: count() }).from(systemAuditLogs)
-      .leftJoin(systemPlugins, eq(systemAuditLogs.pluginSlug, systemPlugins.slug))
-      .where(finalWhere);
-    const totalDocs = Number(totalResult[0]?.value || 0);
+    const totalDocs = await this.db.count(systemAuditLogs, {
+      joins: [{ table: systemPlugins, on: eq(systemAuditLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+      where: finalWhere
+    });
 
-    const docs = await this.drizzle.select({
-      id: systemAuditLogs.id,
-      pluginSlug: systemAuditLogs.pluginSlug,
-      action: systemAuditLogs.action,
-      resource: systemAuditLogs.resource,
-      status: systemAuditLogs.status,
-      metadata: systemAuditLogs.metadata,
-      createdAt: systemAuditLogs.createdAt
-    }).from(systemAuditLogs)
-      .leftJoin(systemPlugins, eq(systemAuditLogs.pluginSlug, systemPlugins.slug))
-      .where(finalWhere)
-      .orderBy(desc(systemAuditLogs.createdAt))
-      .limit(limit)
-      .offset(offset);
+    const docs = await this.db.find(systemAuditLogs, {
+      columns: {
+        id: true,
+        pluginSlug: true,
+        action: true,
+        resource: true,
+        status: true,
+        metadata: true,
+        createdAt: true
+      },
+      joins: [{ table: systemPlugins, on: eq(systemAuditLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+      where: finalWhere,
+      orderBy: desc(systemAuditLogs.createdAt),
+      limit,
+      offset
+    });
 
     return {
       docs,

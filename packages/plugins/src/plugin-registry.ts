@@ -74,7 +74,7 @@ export class PluginRegistry {
           insert: (data: any) => this.db!.insert(resolvedTable, normalizeRecord(data)),
           update: (where: any, data: any) => this.db!.update(resolvedTable, normalizeWhereClause(where), normalizeRecord(data)),
           delete: (where: any) => this.db!.delete(resolvedTable, normalizeWhereClause(where)),
-          count: (where: any) => this.db!.count(resolvedTable, normalizeWhereClause(where)),
+          count: (where: any) => this.db!.count(resolvedTable, { where: normalizeWhereClause(where) }),
         } as CollectionQueryBuilder;
       }
     };

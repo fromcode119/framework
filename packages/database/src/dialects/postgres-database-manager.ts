@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { sql, eq, and, count as drizzleCount, desc, asc } from 'drizzle-orm';
+import { sql, eq, and, or, ne, isNull, isNotNull, inArray, count as drizzleCount, desc, asc, ilike } from 'drizzle-orm';
 import { pgTable, text } from 'drizzle-orm/pg-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
@@ -10,6 +10,18 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   private pool: Pool;
   public readonly drizzle: any;
   public readonly dialect = 'postgres' as const;
+  
+  // Standard operators
+  public readonly like = ilike;
+  public readonly eq = eq;
+  public readonly ne = ne;
+  public readonly and = and;
+  public readonly or = or;
+  public readonly isNull = isNull;
+  public readonly isNotNull = isNotNull;
+  public readonly inArray = inArray;
+  public readonly desc = desc;
+  public readonly asc = asc;
 
   constructor(connection: string) {
     super();
@@ -58,7 +70,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       if (columns && Object.keys(columns).length > 0) {
         sqlQuery += Object.entries(columns)
           .filter(([_, v]) => v)
-          .map(([k, _]) => `"${k}"`)
+          .map(([k, _]) => `"${toSnakeCase(k)}"`)
           .join(', ');
       } else {
         sqlQuery += `*`;
@@ -78,7 +90,24 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     }
 
     // Otherwise use Drizzle for typed table objects
-    let query = this.drizzle.select().from(tableOrName);
+    let query: any;
+    
+    if (columns && Object.keys(columns).length > 0) {
+      const selection: Record<string, any> = {};
+      for (const [key, val] of Object.entries(columns)) {
+        if (val) selection[key] = (tableOrName as any)[key];
+      }
+      query = this.drizzle.select(selection).from(tableOrName);
+    } else {
+      query = this.drizzle.select().from(tableOrName);
+    }
+
+    if (joins && joins.length > 0) {
+      for (const join of joins) {
+        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
+        query = joinFn.call(query, join.table, join.on);
+      }
+    }
 
     const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
     const conditions = this.buildWhereConditions(where);
@@ -88,9 +117,19 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       query = query.where(where);
     }
 
+    if (search && search.columns.length > 0 && search.value) {
+        const pattern = `%${search.value}%`;
+        const likeConditions = search.columns.map((col: string) => {
+            const colObj = typeof tableOrName[col] !== 'undefined' ? tableOrName[col] : sql`${sql.identifier(col)}`;
+            return this.like(colObj, pattern);
+        });
+        const searchExpr = likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions);
+        query = query.where(searchExpr);
+    }
+
     const orderExprs = this.buildOrderBy(orderBy);
     if (orderExprs) {
-      query = query.orderBy(...orderExprs);
+      query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
     }
 
     if (limit) query = query.limit(limit);
@@ -112,8 +151,8 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
         const result = await this.pool.query(`INSERT INTO "${tableName}" DEFAULT VALUES RETURNING *`);
         return result.rows[0] || null;
       }
-      const identifiers = columns.map((column) => `"${column}"`).join(', ');
-      const placeholders = columns.map((_, index) => `$${index + 1}`).join(', ');
+const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', ');
+      const placeholders = columns.map((_, index) => this.getParamPlaceholder(index + 1)).join(', ');
       const values = columns.map((column) => this.normalizeParamValue(data[column]));
       const result = await this.pool.query(
         `INSERT INTO "${tableName}" (${identifiers}) VALUES (${placeholders}) RETURNING *`,
@@ -132,9 +171,9 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       const whereColumns = Object.keys(where || {});
       if (!setColumns.length) throw new Error(`No update fields provided for table "${tableName}"`);
       if (!whereColumns.length) throw new Error(`Unsafe update blocked: missing where clause for table "${tableName}"`);
-
-      const setClause = setColumns.map((column, index) => `"${column}" = $${index + 1}`).join(', ');
-      const whereClause = whereColumns.map((column, index) => `"${column}" = $${setColumns.length + index + 1}`).join(' AND ');
+      
+      const setClause = setColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
+      const whereClause = whereColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
 
       const values = [
         ...setColumns.map((column) => this.normalizeParamValue(data[column])),
@@ -151,6 +190,16 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       .set(data)
       .where(and(...conditions))
       .returning();
+    return result;
+  }
+
+  async upsert(tableOrName: any, data: any, options: { target: string | any; set: any }): Promise<any> {
+    const { target, set } = options;
+    const query = this.drizzle.insert(tableOrName).values(data).onConflictDoUpdate({
+      target: typeof target === 'string' ? (tableOrName as any)[target] : target,
+      set
+    }).returning();
+    const [result] = await query;
     return result;
   }
 
@@ -178,11 +227,22 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     return result.rows;
   }
 
-  async count(tableName: string, where: any = {}): Promise<number> {
+  async count(tableOrName: any, options: any = {}): Promise<number> {
+    const { where, joins } = options;
+    const isString = typeof tableOrName === 'string';
+    const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
+    
+    let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
+
+    if (joins && joins.length > 0) {
+      for (const join of joins) {
+        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
+        query = joinFn.call(query, join.table, join.on);
+      }
+    }
+
     const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
     const conditions = this.buildWhereConditions(where);
-    let query = this.drizzle.select({ total: drizzleCount() }).from(sql`${sql.identifier(tableName)}`);
-    
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {

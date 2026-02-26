@@ -4,8 +4,14 @@ const path = require('path');
 const nextConfig = {
   basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '',
   reactStrictMode: true,
-  transpilePackages: ['@fromcode119/react', '@fromcode119/admin'],
-  turbopack: {},
+  transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk'],
+  turbopack: {
+    resolveAlias: {
+      '@fromcode119/react': '../react/src',
+      '@fromcode119/core': '../core/src',
+      '@fromcode119/sdk': '../sdk/src',
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -23,6 +29,9 @@ const nextConfig = {
   webpack: (config, { isServer, dev }) => {
     // Force aliasing of @ to handle cases where the package is inside node_modules
     config.resolve.alias['@'] = path.resolve(__dirname);
+    config.resolve.alias['@fromcode119/react'] = path.resolve(__dirname, '../react/src');
+    config.resolve.alias['@fromcode119/core'] = path.resolve(__dirname, '../core/src');
+    config.resolve.alias['@fromcode119/sdk'] = path.resolve(__dirname, '../sdk/src');
 
     // Standard Docker/macOS watch optimization
     if (dev && !isServer) {
