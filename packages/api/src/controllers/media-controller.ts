@@ -116,7 +116,7 @@ export class MediaController {
                 updatedAt: true,
             },
             where: whereClause,
-            orderBy: desc(media.createdAt)
+            orderBy: this.db.desc(media.createdAt)
         });
       } catch (err) {
         // Fallback for older schemas missing optional columns
@@ -131,7 +131,7 @@ export class MediaController {
                 createdAt: true,
             },
             where: whereClause,
-            orderBy: desc(media.createdAt)
+            orderBy: this.db.desc(media.createdAt)
         });
       }
 
