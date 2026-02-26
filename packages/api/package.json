@@ -26,6 +26,8 @@
     "@fromcode119/media": "*",
     "@fromcode119/scheduler": "*",
     "@fromcode119/sdk": "*",
+    "@fromcode119/admin": "*",
+    "@fromcode119/frontend": "*",
     "@types/ws": "^8.18.1",
     "adm-zip": "^0.5.10",
     "cookie-parser": "^1.4.7",
