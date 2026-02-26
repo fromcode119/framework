@@ -1,9 +1,11 @@
 {
   "name": "@fromcode119/sdk",
-  "version": "0.1.28",
-  "main": "dist/index.js",
+  "version": "0.1.29",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
@@ -14,7 +16,6 @@
       "types": "./dist/internal.d.ts"
     }
   },
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
