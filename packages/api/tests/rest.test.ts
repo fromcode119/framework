@@ -10,7 +10,12 @@ describe('rest-controller', () => {
       findOne: jest.fn(),
       insert: jest.fn(),
       update: jest.fn(),
-      count: jest.fn().mockResolvedValue(1)
+      count: jest.fn().mockResolvedValue(1),
+      desc: jest.fn().mockImplementation((col) => ({ desc: col })),
+      asc: jest.fn().mockImplementation((col) => ({ asc: col })),
+      eq: jest.fn().mockImplementation((col, val) => ({ eq: [col, val] })),
+      and: jest.fn().mockImplementation((...args) => ({ and: args })),
+      or: jest.fn().mockImplementation((...args) => ({ or: args })),
     };
     controller = new RESTController(mockDb);
   });
