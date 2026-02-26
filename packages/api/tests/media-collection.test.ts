@@ -8,7 +8,12 @@ describe('Media Collection REST', () => {
   beforeEach(() => {
     mockDb = {
       find: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0)
+      count: jest.fn().mockResolvedValue(0),
+      desc: jest.fn().mockReturnValue('desc_order'),
+      asc: jest.fn().mockReturnValue('asc_order'),
+      eq: jest.fn().mockReturnValue('eq_op'),
+      and: jest.fn().mockImplementation((...args) => args),
+      or: jest.fn().mockImplementation((...args) => args),
     };
     controller = new RESTController(mockDb);
   });

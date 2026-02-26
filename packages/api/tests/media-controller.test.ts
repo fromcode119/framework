@@ -18,28 +18,31 @@ describe('media-controller.listFiles', () => {
   });
 
   it('returns files with url using full column set', async () => {
-    const selectMock = jest.fn().mockReturnValue(
-      buildChain([
-        {
-          id: 1,
-          filename: 'file.jpg',
-          originalName: 'file.jpg',
-          mimeType: 'image/jpeg',
-          fileSize: 123,
-          width: 10,
-          height: 10,
-          alt: null,
-          caption: null,
-          path: 'uploads/file.jpg',
-          folderId: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ])
-    );
+    const mockFiles = [
+      {
+        id: 1,
+        filename: 'file.jpg',
+        originalName: 'file.jpg',
+        mimeType: 'image/jpeg',
+        fileSize: 123,
+        width: 10,
+        height: 10,
+        alt: null,
+        caption: null,
+        path: 'uploads/file.jpg',
+        folderId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
 
-    const mockDb = { select: selectMock } as any;
-    const controller = new MediaController({ db: { drizzle: mockDb } } as any, {
+    const mockDb = { 
+      find: jest.fn().mockResolvedValue(mockFiles),
+      desc: jest.fn().mockReturnValue('desc_order'),
+      asc: jest.fn().mockReturnValue('asc_order'),
+    } as any;
+    
+    const controller = new MediaController({ db: mockDb } as any, {
       driver: { getUrl: () => 'mock-url' },
     } as any);
 
@@ -55,26 +58,31 @@ describe('media-controller.listFiles', () => {
   });
 
   it('falls back to basic column set when full select fails', async () => {
-    const selectMock = jest
+    const mockFiles = [
+      {
+        id: 2,
+        filename: 'file.png',
+        mimeType: 'image/png',
+        fileSize: 456,
+        path: 'uploads/file.png',
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
+    const findMock = jest
       .fn()
       .mockImplementationOnce(() => {
         throw new Error('missing column');
       })
-      .mockReturnValue(
-        buildChain([
-          {
-            id: 2,
-            filename: 'file.png',
-            mimeType: 'image/png',
-            fileSize: 456,
-            path: 'uploads/file.png',
-            createdAt: new Date().toISOString(),
-          },
-        ])
-      );
+      .mockResolvedValue(mockFiles);
 
-    const mockDb = { select: selectMock } as any;
-    const controller = new MediaController({ db: { drizzle: mockDb } } as any, {
+    const mockDb = { 
+      find: findMock,
+      desc: jest.fn().mockReturnValue('desc_order'),
+      asc: jest.fn().mockReturnValue('asc_order'),
+    } as any;
+
+    const controller = new MediaController({ db: mockDb } as any, {
       driver: { getUrl: () => 'mock-url' },
     } as any);
 
