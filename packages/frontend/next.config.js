@@ -7,8 +7,11 @@ const nextConfig = {
   turbopack: {
     resolveAlias: {
       '@fromcode119/react': '../react/src',
+      '@fromcode119/react/*': '../react/src/*',
       '@fromcode119/core': '../core/src',
+      '@fromcode119/core/*': '../core/src/*',
       '@fromcode119/sdk': '../sdk/src',
+      '@fromcode119/sdk/*': '../sdk/src/*',
     },
   },
   images: {
@@ -27,10 +30,19 @@ const nextConfig = {
   },
   webpack: (config, { dev, isServer }) => {
     // Force aliasing of @ to handle cases where the package is inside node_modules
-    config.resolve.alias['@'] = __dirname;
-    config.resolve.alias['@fromcode119/react'] = path.resolve(__dirname, '../react/src');
-    config.resolve.alias['@fromcode119/core'] = path.resolve(__dirname, '../core/src');
-    config.resolve.alias['@fromcode119/sdk'] = path.resolve(__dirname, '../sdk/src');
+    config.resolve.alias['@'] = path.resolve(__dirname);
+    config.resolve.alias['@fromcode119/react'] = path.resolve(__dirname, '../react/src/index.ts');
+    config.resolve.alias['@fromcode119/core'] = path.resolve(__dirname, '../core/src/index.ts');
+    config.resolve.alias['@fromcode119/sdk'] = path.resolve(__dirname, '../sdk/src/index.ts');
+
+    // Also support sub-path imports from source
+    config.resolve.alias['@fromcode119/react/'] = path.resolve(__dirname, '../react/src/');
+    config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
+    config.resolve.alias['@fromcode119/sdk/'] = path.resolve(__dirname, '../sdk/src/');
+
+    // Add SDK source to modules to ensure it's found when transpiling other packages
+    config.resolve.modules.push(path.resolve(__dirname, '../sdk/src'));
+    config.resolve.modules.push(path.resolve(__dirname, '../../node_modules'));
 
     if (dev && !isServer) {
       config.watchOptions = {
