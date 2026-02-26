@@ -18,6 +18,7 @@ export interface PluginManagerInterface {
   pluginsRoot: string;
   registeredCollections: Map<string, any>;
   headInjections: Map<string, any[]>;
+  schemaManager: any;
   runtime: any;
   getPlugins(): LoadedPlugin[];
   enable(slug: string): Promise<void>;

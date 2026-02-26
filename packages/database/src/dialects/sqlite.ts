@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import { sql, eq, and, count as drizzleCount, desc, asc } from 'drizzle-orm';
+import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
@@ -10,6 +10,18 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   private sqlite: Database.Database;
   public readonly drizzle: any;
   public readonly dialect = 'sqlite' as const;
+
+  // Standard operators
+  public readonly like = like;
+  public readonly eq = eq;
+  public readonly ne = ne;
+  public readonly and = and;
+  public readonly or = or;
+  public readonly isNull = isNull;
+  public readonly isNotNull = isNotNull;
+  public readonly inArray = inArray;
+  public readonly desc = desc;
+  public readonly asc = asc;
 
   constructor(connection: string) {
     super();

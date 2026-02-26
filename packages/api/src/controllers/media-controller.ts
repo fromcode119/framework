@@ -205,7 +205,7 @@ export class MediaController {
         if (pId !== null) {
           let checkParentId: number | null = pId;
           while (checkParentId !== null) {
-            const [parent]: any = await this.db.select().from(mediaFolders).where(eq(mediaFolders.id, checkParentId)).limit(1);
+            const parent: any = await this.db.findOne(mediaFolders, { id: checkParentId });
             if (!parent) break;
             if (parent.parentId === folderId) {
               return res.status(400).json({ error: 'Cannot move a folder into its own descendant' });
@@ -217,29 +217,33 @@ export class MediaController {
 
       // Check for name duplicates if name or parentId is changing
       if (name || pId !== undefined) {
-        const [existingFolder]: any = await this.db.select().from(mediaFolders).where(eq(mediaFolders.id, folderId)).limit(1);
+        const existingFolder: any = await this.db.findOne(mediaFolders, { id: folderId });
         const finalName = name || existingFolder.name;
         const finalParentId = pId !== undefined ? pId : existingFolder.parentId;
 
         // Simplified duplicate check logic
         const conditions = [
-          eq(mediaFolders.name, finalName),
-          finalParentId === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, finalParentId)
+          this.db.eq(mediaFolders.name, finalName),
+          finalParentId === null ? this.db.isNull(mediaFolders.parentId) : this.db.eq(mediaFolders.parentId, finalParentId)
         ];
         
-        const [dup]: any = await this.db.select().from(mediaFolders).where(and(...conditions)).limit(1);
+        const [dup]: any = await this.db.find(mediaFolders, {
+          where: this.db.and(...conditions),
+          limit: 1
+        });
         if (dup && dup.id !== folderId) {
           return res.status(400).json({ error: 'A folder with this name already exists in the target location' });
         }
       }
 
-      const [updated] = await this.db.update(mediaFolders)
-        .set({ 
+      const updated = await this.db.update(
+        mediaFolders,
+        { id: folderId },
+        { 
           ...(name && { name }), 
           ...(parentId !== undefined && { parentId: parentId === 'null' ? null : Number(parentId) }) 
-        })
-        .where(eq(mediaFolders.id, folderId))
-        .returning();
+        }
+      );
       res.json(updated);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -250,10 +254,11 @@ export class MediaController {
     const { id } = req.params;
     const { folderId } = req.body;
     try {
-      const [updated] = await this.db.update(media)
-        .set({ folderId: folderId === 'null' ? null : Number(folderId) })
-        .where(eq(media.id, Number(id)))
-        .returning();
+      const updated = await this.db.update(
+        media,
+        { id: Number(id) },
+        { folderId: folderId === 'null' ? null : Number(folderId) }
+      );
       res.json(updated);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -267,7 +272,7 @@ export class MediaController {
       let currentId: number | null = Number(id);
       
       while (currentId) {
-        const [folder]: any = await this.db.select().from(mediaFolders).where(eq(mediaFolders.id, currentId)).limit(1);
+        const folder: any = await this.db.findOne(mediaFolders, { id: currentId });
         if (!folder) break;
         folderPath.unshift(folder);
         currentId = folder.parentId;
@@ -283,7 +288,7 @@ export class MediaController {
     const { id } = req.params;
     try {
       // For now, we just delete the folder. Media items with this folderId will have it set to null due to FK constraint.
-      await this.db.delete(mediaFolders).where(eq(mediaFolders.id, Number(id)));
+      await this.db.delete(mediaFolders, { id: Number(id) });
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -293,11 +298,11 @@ export class MediaController {
   async deleteFile(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const [file]: any = await this.db.select().from(media).where(eq(media.id, Number(id))).limit(1);
+      const file: any = await this.db.findOne(media, { id: Number(id) });
       if (!file) return res.status(404).json({ error: 'File not found' });
 
       await this.mediaManager.remove(file.path);
-      await this.db.delete(media).where(eq(media.id, Number(id)));
+      await this.db.delete(media, { id: Number(id) });
       
       res.json({ success: true });
     } catch (err: any) {

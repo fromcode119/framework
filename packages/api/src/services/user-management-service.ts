@@ -139,7 +139,7 @@ export class UserManagementService {
       type: data.type || 'custom',
       permissions: Array.isArray(data.permissions) ? data.permissions : []
     }, {
-      target: systemRoles.slug,
+      target: 'slug',
       set: {
         name: data.name,
         description: data.description,
