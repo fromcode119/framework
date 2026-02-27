@@ -23,6 +23,7 @@ export interface ThemeManifest {
   slots?: string[]; // Defined slot names this theme provides
   overrides?: { name: string; component: string; priority?: number }[]; // Component overrides
   dependencies?: Record<string, string>; // Plugins required by this theme
+  bundledPlugins?: string[]; // Relative paths to plugin .zip archives bundled inside the theme package
   seeds?: string; // Path to seed file
   variables?: Record<string, string>;
   variableSchema?: Record<string, {
@@ -32,6 +33,22 @@ export interface ThemeManifest {
     options?: { label: string; value: string }[];
     group?: string;
   }>;
+  settingsDefaults?: Record<string, any>;
+  settingsSchema?: Record<string, {
+    label: string;
+    type: 'text' | 'number' | 'boolean' | 'select' | 'integration' | 'json';
+    description?: string;
+    options?: { label: string; value: string }[];
+    group?: string;
+    placeholder?: string;
+    integrationType?: string;
+  }>;
+  integrationRequirements?: {
+    type: string;
+    label?: string;
+    description?: string;
+    required?: boolean;
+  }[];
   runtimeModules?: Record<string, string | { keys?: string[], type?: 'icon' | 'lib', url?: string }>;
   ui: {
     entry: string;

@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --exclude \"${FROMCODE_PROJECT_ROOT:-.}/plugins/**\" --exclude \"${FROMCODE_PROJECT_ROOT:-.}/themes/**\" --exclude \"${FROMCODE_PROJECT_ROOT:-.}/uploads/**\" src/index.ts",
     "start": "node dist/bin.js",
     "test": "jest"
   },

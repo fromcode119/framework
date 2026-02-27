@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import semver from 'semver';
 import AdmZip from 'adm-zip';
 import { Logger } from '@fromcode119/sdk';
@@ -91,6 +92,7 @@ export class DiscoveryService {
       
       for (const dir of pluginDirs) {
         if (dir.startsWith('.')) continue;
+        if (dir.startsWith('ext-') || dir.startsWith('fromcode-plugin-ext-')) continue;
 
         const pluginPath = path.join(root, dir);
         if (!fs.statSync(pluginPath).isDirectory()) continue;
@@ -350,16 +352,42 @@ export class DiscoveryService {
     }
   }
 
+  private isZipArchive(filePath: string): boolean {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.zip') return true;
+    if (ext === '.tar' || ext === '.tgz' || ext === '.gz') return false;
+
+    // Upload middleware can strip extensions; detect ZIP by signature ("PK").
+    try {
+      const fd = fs.openSync(filePath, 'r');
+      try {
+        const header = Buffer.alloc(4);
+        const bytesRead = fs.readSync(fd, header, 0, 4, 0);
+        return bytesRead >= 2 && header[0] === 0x50 && header[1] === 0x4b;
+      } finally {
+        fs.closeSync(fd);
+      }
+    } catch {
+      return false;
+    }
+  }
+
   async installFromZip(filePath: string): Promise<PluginManifest> {
-    const tempDir = path.join(path.dirname(filePath), `ext-${Date.now()}`);
-    fs.mkdirSync(tempDir, { recursive: true });
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-ext-'));
 
     try {
-      if (filePath.endsWith('.zip')) {
+      if (this.isZipArchive(filePath)) {
         const zip = new AdmZip(filePath);
         zip.extractAllTo(tempDir, true);
       } else {
-        await BackupService.restore(filePath, tempDir);
+        try {
+          await BackupService.restore(filePath, tempDir);
+        } catch (error: any) {
+          if (String(error?.message || '').includes('TAR_BAD_ARCHIVE')) {
+            throw new Error('Unsupported archive format. Upload a .zip plugin package.');
+          }
+          throw error;
+        }
       }
 
       const contentDir = this.findManifestDir(tempDir);

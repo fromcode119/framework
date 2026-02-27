@@ -1,4 +1,5 @@
 import { buildApiVersionPrefix } from '@fromcode119/sdk';
+import { toAdminPath } from './admin-path';
 
 const API_VERSION_PREFIX = buildApiVersionPrefix();
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
@@ -46,7 +47,24 @@ export const ROUTES = {
     SECURITY: '/settings/security',
     INFRASTRUCTURE: '/settings/infrastructure',
     UPDATES: '/settings/updates'
+  },
+  THEMES: {
+    ROOT: '/themes',
+    INSTALLED: '/themes/installed',
+    MARKETPLACE: '/themes/marketplace',
+    DETAIL: (slug: string) => `/themes/${slug}`,
+    MARKETPLACE_DETAIL: (slug: string) => `/themes/marketplace/${slug}`,
+    SETTINGS_TAB: (slug: string) => withQuery(`/themes/${slug}`, { tab: 'settings' })
   }
+} as const;
+
+export const ADMIN_URLS = {
+  PATH: (path: string) => toAdminPath(path),
+  AUTH: {
+    LOGIN: () => toAdminPath(ROUTES.AUTH.LOGIN),
+    LOGIN_SESSION_EXPIRED: () =>
+      toAdminPath(withQuery(ROUTES.AUTH.LOGIN, { reason: 'session_expired' })),
+  },
 } as const;
 
 export const ENDPOINTS = {
@@ -80,6 +98,7 @@ export const ENDPOINTS = {
     ACTIVE: v('/plugins/active'),
     MARKETPLACE: v('/marketplace/plugins'),
     UPLOAD: v('/plugins/upload'),
+    UPLOAD_INSPECT: v('/plugins/upload/inspect'),
     STAGED: v('/system/admin/metadata'),
     INSTALL: (slug: string) => v(`/marketplace/install/${slug}`),
     TOGGLE: (slug: string) => v(`/plugins/${slug}/toggle`),
@@ -96,6 +115,8 @@ export const ENDPOINTS = {
     BASE: v('/themes'),
     LIST: v('/themes'),
     MARKETPLACE: v('/themes/marketplace'),
+    UPLOAD: v('/themes/upload'),
+    UPLOAD_INSPECT: v('/themes/upload/inspect'),
     ACTIVATE: (slug: string) => v(`/themes/${slug}/activate`),
     RESET: (slug: string) => v(`/themes/${slug}/reset`),
     INSTALL: (slug: string) => v(`/themes/${slug}/install`),

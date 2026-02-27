@@ -8,7 +8,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { useNotify } from '@/components/notification-context';
 import { APP_NAME } from '@/lib/env';
 import { purgeAuth } from '@/lib/auth-utils';
@@ -37,7 +37,7 @@ export default function LoginPage() {
       try {
         const data = await api.get(ENDPOINTS.AUTH.STATUS);
         if (data.initialized === false) {
-          router.push('/setup');
+          router.push(ROUTES.AUTH.SETUP);
         }
       } catch (err) {
         console.warn("API health check failed. Defaulting to manual login.", err);
@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/forgot-password');
+    router.push(ROUTES.AUTH.FORGOT_PASSWORD);
   };
 
   const handleContactSupport = (e: React.FormEvent) => {

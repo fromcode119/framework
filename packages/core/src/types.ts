@@ -1,8 +1,8 @@
 import type { IDatabaseManager } from '@fromcode119/sdk';
 
-export { 
-  IDatabaseManager, 
-  PluginCapability,
+export { PluginCapability, MiddlewareStage } from '@fromcode119/sdk';
+export type {
+  IDatabaseManager,
   ThemeManifest,
   MenuItemManifest,
   PluginManifest,
@@ -13,7 +13,6 @@ export {
   PluginContext,
   FromcodePlugin,
   LoadedPlugin,
-  MiddlewareStage,
   MiddlewareConfig,
   MarketplacePlugin,
   PluginEntry,

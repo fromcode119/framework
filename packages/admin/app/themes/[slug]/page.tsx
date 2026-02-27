@@ -7,11 +7,13 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ColorPicker } from '@/components/ui/color-picker';
 import { FrameworkIcons } from '@/lib/icons';
+import { Select } from '@/components/ui/select';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { useNotify } from '@/components/notification-context';
 
 const CORE_LAYOUTS = [
@@ -36,6 +38,22 @@ interface Theme {
     options?: { label: string; value: string }[];
     group?: string;
   }>;
+  settingsDefaults?: Record<string, any>;
+  settingsSchema?: Record<string, {
+    label: string;
+    type: 'text' | 'number' | 'boolean' | 'select' | 'integration' | 'json';
+    description?: string;
+    options?: { label: string; value: string }[];
+    group?: string;
+    placeholder?: string;
+    integrationType?: string;
+  }>;
+  integrationRequirements?: {
+    type: string;
+    label?: string;
+    description?: string;
+    required?: boolean;
+  }[];
   layouts?: { name: string; label: string; description?: string }[];
   overrides?: { name: string; component: string; priority?: number }[];
 }
@@ -73,6 +91,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   const [dbConfig, setDbConfig] = useState<any>({});
   const [tempVariables, setTempVariables] = useState<Record<string, string>>({});
   const [tempLayouts, setTempLayouts] = useState<Record<string, string>>({});
+  const [tempSettings, setTempSettings] = useState<Record<string, any>>({});
   const { theme: adminTheme } = useTheme();
 
   const fetchTheme = async () => {
@@ -96,6 +115,12 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
 
         // Initialize temp layouts from db config
         setTempLayouts(configData.config?.layouts || {});
+
+        // Initialize extra theme settings from manifest defaults + persisted config
+        setTempSettings({
+          ...(found.settingsDefaults || {}),
+          ...(configData.config?.settings || {})
+        });
         
         // Check for updates in marketplace
         const marketplace = Array.isArray(marketplaceData) ? marketplaceData : (marketplaceData.themes || []);
@@ -158,7 +183,8 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
       await api.post(ENDPOINTS.THEMES.CONFIG(slug), {
         ...dbConfig,
         variables: tempVariables,
-        layouts: tempLayouts
+        layouts: tempLayouts,
+        settings: tempSettings
       });
       notify('success', 'Configuration Saved', 'Visual protocols updated successfully.');
       await fetchTheme();
@@ -241,6 +267,10 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     setTempLayouts(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleSettingChange = (key: string, value: any) => {
+    setTempSettings(prev => ({ ...prev, [key]: value }));
+  };
+
   const handleTabChange = (tabId: 'overview' | 'settings') => {
     setActiveTab(tabId);
     const params = new URLSearchParams(searchParams.toString());
@@ -267,6 +297,21 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     if (!groupedVariables[group]) groupedVariables[group] = [];
     groupedVariables[group].push(key);
   });
+
+  // Group theme settings by schema group
+  const groupedThemeSettings: Record<string, string[]> = {};
+  const themeSettingsSchema = themeDetail.settingsSchema || {};
+  const allThemeSettingKeys = Array.from(
+    new Set([...Object.keys(themeSettingsSchema), ...Object.keys(tempSettings || {})])
+  );
+  allThemeSettingKeys.forEach((key) => {
+    const group = themeSettingsSchema[key]?.group || 'General';
+    if (!groupedThemeSettings[group]) groupedThemeSettings[group] = [];
+    groupedThemeSettings[group].push(key);
+  });
+  const integrationRequirements = Array.isArray(themeDetail.integrationRequirements)
+    ? themeDetail.integrationRequirements
+    : [];
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-500">
@@ -429,7 +474,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                                 <div className={`text-[10px] font-semibold uppercase tracking-wide text-slate-500`}>{schema?.label || key}</div>
                                                 {schema?.description && (
                                                     <div className="group/tip relative flex items-center">
-                                                        <FrameworkIcons.Info size={12} className="text-slate-500 cursor-help" />
+                                                        <FrameworkIcons.Help size={12} className="text-slate-500 cursor-help" />
                                                         <div className="absolute left-full ml-2 w-48 p-3 rounded-xl bg-slate-900 text-[10px] text-slate-300 opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-50 font-medium">
                                                             {schema.description}
                                                         </div>
@@ -438,15 +483,19 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                             </div>
                                             
                                             {type === 'select' ? (
-                                                <select 
-                                                    value={value}
-                                                    onChange={e => handleVariableChange(key, e.target.value)}
-                                                    className={`w-full bg-transparent border-0 p-0 text-sm font-semibold focus:ring-0 ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}
-                                                >
-                                                    {schema?.options?.map(opt => (
-                                                        <option key={opt.value} value={opt.value} className="bg-slate-900">{opt.label}</option>
-                                                    ))}
-                                                </select>
+                                                <Select
+                                                    value={value || ''}
+                                                    onChange={(nextValue) => handleVariableChange(key, String(nextValue || ''))}
+                                                    options={(schema?.options || []).map((opt) => ({
+                                                        value: String(opt.value),
+                                                        label: opt.label,
+                                                    }))}
+                                                    placeholder="Select value"
+                                                    searchable={false}
+                                                    theme={adminTheme}
+                                                    className="w-full"
+                                                    triggerClassName="bg-transparent border-0 p-0 min-h-0 h-auto text-sm font-semibold shadow-none ring-0"
+                                                />
                                             ) : type === 'font' ? (
                                                 <div className="flex items-center gap-4">
                                                      <div className="flex-1 relative group/font">
@@ -468,6 +517,12 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                                         ABC
                                                     </div>
                                                 </div>
+                                            ) : type === 'color' ? (
+                                                <ColorPicker
+                                                    value={value}
+                                                    onChange={(nextValue) => handleVariableChange(key, nextValue)}
+                                                    className="w-full"
+                                                />
                                             ) : type === 'image' ? (
                                                 <div className="flex items-center gap-4">
                                                      <input 
@@ -491,19 +546,6 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                             )}
                                         </div>
 
-                                        {type === 'color' && (
-                                            <div className="relative group">
-                                                <input 
-                                                    type="color"
-                                                    value={value}
-                                                    onChange={e => handleVariableChange(key, e.target.value)}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                                />
-                                                <div className={`w-12 h-12 rounded-2xl shadow-2xl border-4 transform rotate-3 transition-transform group-hover:rotate-0 ${
-                                                    adminTheme === 'dark' ? 'border-slate-800' : 'border-white ring-1 ring-slate-200/50'
-                                                }`} style={{ backgroundColor: value }} />
-                                            </div>
-                                        )}
                                     </div>
                                 );
                             })}
@@ -548,16 +590,19 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                     </div>
 
                                     <div className="mt-auto">
-                                        <select 
+                                        <Select
                                             value={tempLayouts[layout.id] || ''}
-                                            onChange={e => handleLayoutChange(layout.id, e.target.value)}
-                                            className={`w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-semibold focus:ring-0 ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}
-                                        >
-                                            <option value="" className="bg-slate-900">System Default</option>
-                                            {themeDetail.layouts?.map(l => (
-                                                <option key={l.name} value={l.name} className="bg-slate-900">{l.label}</option>
-                                            ))}
-                                        </select>
+                                            onChange={(nextValue) => handleLayoutChange(layout.id, String(nextValue || ''))}
+                                            options={[
+                                                { value: '', label: 'System Default' },
+                                                ...(themeDetail.layouts?.map((l) => ({ value: l.name, label: l.label })) || [])
+                                            ]}
+                                            placeholder="System Default"
+                                            searchable={false}
+                                            theme={adminTheme}
+                                            className="w-full"
+                                            triggerClassName="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-semibold"
+                                        />
                                     </div>
                                 </div>
                             );
@@ -597,8 +642,130 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                  
                  {!allVarKeys.length && (
                    <Card className={`border-0 p-20 flex flex-col items-center justify-center rounded-[3rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-                      <FrameworkIcons.Info size={32} className="text-slate-300 mb-4" />
+                      <FrameworkIcons.Help size={32} className="text-slate-300 mb-4" />
                       <p className="text-slate-500 font-semibold uppercase tracking-wide text-[10px]">No configurable protocols found</p>
+                   </Card>
+                 )}
+
+                 {allThemeSettingKeys.length > 0 && (
+                   <Card className={`border-0 p-10 rounded-[2.5rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+                     <div className="flex items-center gap-4 mb-10">
+                       <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-500">
+                         <FrameworkIcons.Settings size={20} />
+                       </div>
+                       <div>
+                         <h3 className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                           Theme Extensions
+                         </h3>
+                         <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">
+                           Integration links and additional configurable settings.
+                         </p>
+                       </div>
+                     </div>
+
+                     <div className="space-y-8">
+                       {Object.entries(groupedThemeSettings).map(([group, keys]) => (
+                         <div key={group} className="space-y-4">
+                           <h4 className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{group}</h4>
+                           {keys.map((key) => {
+                             const schema = themeSettingsSchema[key];
+                             const rawValue = tempSettings[key];
+                             const inferredType =
+                               schema?.type ||
+                               (typeof rawValue === 'boolean' ? 'boolean' : typeof rawValue === 'number' ? 'number' : 'text');
+                             const type = inferredType as 'text' | 'number' | 'boolean' | 'select' | 'integration' | 'json';
+
+                             return (
+                               <div
+                                 key={key}
+                                 className={`p-6 rounded-2xl border transition-all ${
+                                   adminTheme === 'dark'
+                                     ? 'bg-slate-800/30 border-white/5'
+                                     : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)]'
+                                 }`}
+                               >
+                                 <div className="flex items-center justify-between gap-4 mb-3">
+                                   <div className="min-w-0">
+                                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                       {schema?.label || key}
+                                     </div>
+                                     {schema?.description && (
+                                       <p className="text-[11px] text-slate-500 mt-1">{schema.description}</p>
+                                     )}
+                                   </div>
+                                   {schema?.integrationType && (
+                                     <Link
+                                       href={ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)}
+                                       className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600"
+                                     >
+                                       Open Integration
+                                     </Link>
+                                   )}
+                                 </div>
+
+                                 {type === 'boolean' ? (
+                                   <Switch
+                                     checked={Boolean(rawValue)}
+                                     onChange={(checked) => handleSettingChange(key, checked)}
+                                   />
+                                 ) : type === 'select' ? (
+                                   <Select
+                                     value={String(rawValue ?? '')}
+                                     onChange={(nextValue) => handleSettingChange(key, String(nextValue ?? ''))}
+                                     options={(schema?.options || []).map((opt) => ({
+                                       value: String(opt.value),
+                                       label: opt.label
+                                     }))}
+                                     placeholder={schema?.placeholder || 'Select value'}
+                                     searchable={false}
+                                     theme={adminTheme}
+                                     className="w-full"
+                                   />
+                                 ) : type === 'number' ? (
+                                   <input
+                                     type="number"
+                                     value={rawValue ?? ''}
+                                     onChange={(e) => {
+                                       const next = e.target.value;
+                                       handleSettingChange(key, next === '' ? '' : Number(next));
+                                     }}
+                                     className={`w-full rounded-xl px-4 py-2 text-sm font-semibold border ${
+                                       adminTheme === 'dark'
+                                         ? 'bg-slate-900/50 border-white/10 text-white'
+                                         : 'bg-slate-50 border-slate-200 text-slate-900'
+                                     }`}
+                                   />
+                                 ) : type === 'json' ? (
+                                   <textarea
+                                     rows={4}
+                                     value={typeof rawValue === 'string' ? rawValue : JSON.stringify(rawValue ?? {}, null, 2)}
+                                     onChange={(e) => handleSettingChange(key, e.target.value)}
+                                     placeholder={schema?.placeholder || '{ }'}
+                                     className={`w-full rounded-xl px-4 py-3 text-sm font-medium border ${
+                                       adminTheme === 'dark'
+                                         ? 'bg-slate-900/50 border-white/10 text-white'
+                                         : 'bg-slate-50 border-slate-200 text-slate-900'
+                                     }`}
+                                   />
+                                 ) : (
+                                   <input
+                                     type="text"
+                                     value={rawValue ?? ''}
+                                     onChange={(e) => handleSettingChange(key, e.target.value)}
+                                     placeholder={schema?.placeholder || (type === 'integration' ? 'Integration value' : '')}
+                                     className={`w-full rounded-xl px-4 py-2 text-sm font-semibold border ${
+                                       adminTheme === 'dark'
+                                         ? 'bg-slate-900/50 border-white/10 text-white'
+                                         : 'bg-slate-50 border-slate-200 text-slate-900'
+                                     }`}
+                                   />
+                                 )}
+                               </div>
+                             );
+                           })}
+                         </div>
+                       ))}
+                     </div>
                    </Card>
                  )}
               </div>
@@ -693,37 +860,70 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
               </p>
             </Card>
 
-            {themeDetail.state !== 'active' && (
-              <Card className={`border-0 p-10 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-red-500/10 border border-red-500/20 shadow-2xl shadow-red-500/5' : 'bg-red-50 border border-red-100 shadow-sm'}`}>
-                  <div className="flex items-center gap-3 mb-6">
-                    <FrameworkIcons.Warning size={18} className="text-red-500" />
-                    <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${adminTheme === 'dark' ? 'text-red-400' : 'text-red-600'}`}>
-                        System Purge
-                    </h3>
-                  </div>
-                  <p className={`text-[11px] font-bold leading-relaxed mb-8 ${adminTheme === 'dark' ? 'text-red-300/70' : 'text-red-700/70'}`}>
-                      Removing this theme artifact is permanent. All local layout variations will be destroyed.
-                  </p>
-                  <button 
-                      onClick={openDeleteConfirm}
-                      className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-[10px] font-semibold uppercase tracking-wide rounded-2xl transition-all shadow-xl shadow-black/10 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white"
-                  >
-                      Destroy Theme
-                  </button>
+            {integrationRequirements.length > 0 && (
+              <Card className={`border-0 p-8 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+                <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-6 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Integration Requirements
+                </h3>
+                <div className="space-y-3">
+                  {integrationRequirements.map((integration) => (
+                    <div
+                      key={integration.type}
+                      className={`p-4 rounded-xl border ${
+                        adminTheme === 'dark'
+                          ? 'bg-slate-800/40 border-white/10'
+                          : 'bg-slate-50 border-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {integration.label || integration.type}
+                          </p>
+                          <p className="text-[10px] text-slate-500 mt-1">
+                            {integration.description || `Configure ${integration.type} integration for this theme.`}
+                          </p>
+                        </div>
+                        <Badge variant={integration.required === false ? 'gray' : 'warning'}>
+                          {integration.required === false ? 'Optional' : 'Required'}
+                        </Badge>
+                      </div>
+                      <div className="mt-3">
+                        <Link
+                          href={ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(integration.type)}
+                          className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600"
+                        >
+                          Open Integration Settings
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </Card>
-            ) || (
-              <div className={`p-8 rounded-[2rem] border-2 border-dashed ${adminTheme === 'dark' ? 'border-indigo-500/20 bg-indigo-500/5' : 'border-slate-100 bg-slate-50/50'}`}>
-                  <div className="flex flex-col items-center gap-3">
-                     <FrameworkIcons.Lock size={20} className="text-indigo-500" />
-                     <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 text-center opacity-70">
-                        Protected: Active core theme
-                     </p>
-                  </div>
-              </div>
             )}
-          </div>
-        </div>
-      </div>
+
+	            <Card className={`border-0 p-10 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-red-500/10 border border-red-500/20 shadow-2xl shadow-red-500/5' : 'bg-red-50 border border-red-100 shadow-sm'}`}>
+	                <div className="flex items-center gap-3 mb-6">
+	                  <FrameworkIcons.Warning size={18} className="text-red-500" />
+	                  <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${adminTheme === 'dark' ? 'text-red-400' : 'text-red-600'}`}>
+	                      System Purge
+	                  </h3>
+	                </div>
+	                <p className={`text-[11px] font-bold leading-relaxed mb-8 ${adminTheme === 'dark' ? 'text-red-300/70' : 'text-red-700/70'}`}>
+	                  {themeDetail.state === 'active'
+	                    ? 'This theme is currently active. On delete, the system will switch to another theme if available, or continue with no active theme.'
+	                    : 'Removing this theme artifact is permanent. All local layout variations will be destroyed.'}
+	                </p>
+	                <button 
+	                    onClick={openDeleteConfirm}
+	                    className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-[10px] font-semibold uppercase tracking-wide rounded-2xl transition-all shadow-xl shadow-black/10 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white"
+	                >
+	                    {themeDetail.state === 'active' ? 'Switch & Destroy Theme' : 'Destroy Theme'}
+	                </button>
+	            </Card>
+	          </div>
+	        </div>
+	      </div>
 
       <ConfirmDialog
         isOpen={isRunSeedsConfirmOpen}
@@ -754,7 +954,11 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
         onClose={() => setIsDeleteConfirmOpen(false)}
         onConfirm={handleDelete}
         title="Delete Theme?"
-        description={`Are you sure you want to delete "${themeDetail?.name || 'this theme'}"? This action cannot be undone.`}
+        description={
+          themeDetail?.state === 'active'
+            ? `Theme "${themeDetail?.name || 'this theme'}" is active. The system will activate another theme if available, or continue with no active theme. Continue?`
+            : `Are you sure you want to delete "${themeDetail?.name || 'this theme'}"? This action cannot be undone.`
+        }
         confirmLabel="Delete Theme"
         cancelLabel="Cancel"
         variant="danger"

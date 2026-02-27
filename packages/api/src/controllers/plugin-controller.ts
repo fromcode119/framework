@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { PluginManager, Logger, parseBoolean } from '@fromcode119/core';
+import AdmZip from 'adm-zip';
 
 export class PluginController {
   private logger = new Logger({ namespace: 'plugin-controller' });
@@ -198,6 +199,18 @@ export class PluginController {
     }
   }
 
+  async inspectUpload(req: any, res: Response) {
+    if (!req.file) return res.status(400).json({ error: 'No file' });
+    try {
+      const info = this.inspectPluginArchive(req.file.path);
+      res.json({ success: true, info });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Invalid plugin archive' });
+    } finally {
+      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    }
+  }
+
   async serveAssets(req: Request, res: Response) {
     const { slug } = req.params;
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
@@ -215,6 +228,82 @@ export class PluginController {
       res.sendFile(absolutePath);
     } else {
       res.status(404).end();
+    }
+  }
+
+  private inspectPluginArchive(filePath: string) {
+    if (!this.isZipArchive(filePath)) {
+      throw new Error('Unsupported archive format. Upload a .zip plugin package.');
+    }
+
+    const zip = new AdmZip(filePath);
+    const entries = zip.getEntries();
+    const manifestEntry = entries.find((entry) =>
+      !entry.isDirectory && entry.entryName.toLowerCase().endsWith('/manifest.json')
+    ) || entries.find((entry) =>
+      !entry.isDirectory && entry.entryName.toLowerCase() === 'manifest.json'
+    );
+
+    if (!manifestEntry) {
+      throw new Error('Invalid plugin package: manifest.json not found.');
+    }
+
+    let manifest: any;
+    try {
+      manifest = JSON.parse(manifestEntry.getData().toString('utf8'));
+    } catch {
+      throw new Error('Invalid plugin package: manifest.json is not valid JSON.');
+    }
+
+    const slug = String(manifest?.slug || '').trim().toLowerCase();
+    if (!slug) {
+      throw new Error('Invalid plugin package: missing "slug" in manifest.json.');
+    }
+
+    const existing = this.manager.getPlugins().find((plugin: any) => plugin?.manifest?.slug === slug);
+    const dependencies = Object.keys(manifest?.dependencies || {});
+    const peerDependencies = Object.keys(manifest?.peerDependencies || {});
+    const hasUiBundle = entries.some((entry) => {
+      if (entry.isDirectory) return false;
+      const normalized = entry.entryName.replace(/\\/g, '/').toLowerCase();
+      return normalized.endsWith('/ui/bundle.js') || normalized === 'ui/bundle.js';
+    });
+
+    return {
+      slug,
+      name: String(manifest?.name || slug),
+      version: String(manifest?.version || '0.0.0'),
+      description: String(manifest?.description || ''),
+      files: entries.filter((entry) => !entry.isDirectory).length,
+      hasUiBundle,
+      dependencies,
+      peerDependencies,
+      existing: existing
+        ? {
+            installed: true,
+            version: String(existing?.manifest?.version || ''),
+            state: String(existing?.state || 'inactive'),
+          }
+        : { installed: false },
+    };
+  }
+
+  private isZipArchive(filePath: string): boolean {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.zip') return true;
+    if (ext === '.tar' || ext === '.tgz' || ext === '.gz') return false;
+
+    try {
+      const fd = fs.openSync(filePath, 'r');
+      try {
+        const header = Buffer.alloc(4);
+        const bytesRead = fs.readSync(fd, header, 0, 4, 0);
+        return bytesRead >= 2 && header[0] === 0x50 && header[1] === 0x4b;
+      } finally {
+        fs.closeSync(fd);
+      }
+    } catch {
+      return false;
     }
   }
 }

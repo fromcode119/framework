@@ -9,14 +9,38 @@ type HomeClientProps = {
 };
 
 function renderContent(content: any) {
+  const rawContent = content?.content;
+  const hasStringContent = typeof rawContent === 'string' && rawContent.trim().length > 0;
+  const hasStructuredContent = Array.isArray(rawContent)
+    ? rawContent.length > 0
+    : !!(rawContent && typeof rawContent === 'object' && Object.keys(rawContent).length > 0);
+
+  if (!hasStringContent && !hasStructuredContent) {
+    return (
+      <div className="text-center space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
+        <h1 className="text-4xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-6xl">
+          {content?.title || 'Fromcode Framework'}
+        </h1>
+        <p className="text-lg text-[var(--foreground)] opacity-70">
+          Your frontend is running. Add/publish homepage content to replace this starter view.
+        </p>
+        <div className="flex gap-4 justify-center">
+          <a href="/admin" className="btn-primary">
+            Go to Admin
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      <Slot name="frontend.content.display" props={{ content: content.content }} />
+      <Slot name="frontend.content.display" props={{ content: rawContent }} />
 
-      {(!content.content || typeof content.content === 'string') && (
+      {(typeof rawContent === 'string') && (
         <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
           <h1 className="text-4xl font-black mb-8">{content.title}</h1>
-          <div dangerouslySetInnerHTML={{ __html: content.content || '' }} />
+          <div dangerouslySetInnerHTML={{ __html: rawContent || '' }} />
         </div>
       )}
 
@@ -35,18 +59,16 @@ export default function HomeClient({ initialContent, forcedLayout }: HomeClientP
       themeLayouts?.DefaultLayout ||
       (({ children }: any) => <>{children}</>);
 
-    return <LayoutComponent page={initialContent}>{renderContent(initialContent)}</LayoutComponent>;
+    return (
+      <LayoutComponent page={initialContent}>
+        {renderContent(initialContent)}
+      </LayoutComponent>
+    );
   }
 
   if (forcedLayout && themeLayouts?.[forcedLayout]) {
     const ForcedLayoutComponent = themeLayouts[forcedLayout];
     return <ForcedLayoutComponent />;
-  }
-
-  const FallbackLayout = themeLayouts?.DefaultLayout || themeLayouts?.Home || themeLayouts?.Main;
-
-  if (FallbackLayout) {
-    return <FallbackLayout />;
   }
 
   return (
