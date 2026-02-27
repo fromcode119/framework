@@ -423,6 +423,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                 isMini={isMini} 
                 children={[
                   { label: 'General', path: ROUTES.SETTINGS.GENERAL, icon: 'Settings' },
+                  { label: 'Framework', path: ROUTES.SETTINGS.FRAMEWORK, icon: 'System' },
                   { label: 'Integrations', path: ROUTES.SETTINGS.INTEGRATIONS, icon: 'Orbit' },
                   { label: 'Localization', path: ROUTES.SETTINGS.LOCALIZATION, icon: 'Globe' },
                   { label: 'Routing', path: ROUTES.SETTINGS.ROUTING, icon: 'Link' },

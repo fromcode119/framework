@@ -9,9 +9,9 @@ import { FrameworkIcons } from '@/lib/icons';
 import { DataTable } from '@/components/ui/data-table';
 import { PageHeading } from '@/components/ui/page-heading';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { RootFramework } from '@fromcode119/react';
-import Link from 'next/link';
+import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 
 export default function ActivityPage() {
   const { theme } = useTheme();
@@ -276,8 +276,8 @@ export default function ActivityPage() {
                 <Button 
                   type="submit"
                   variant="secondary"
-                  size="sm" 
-                  className="px-6 py-2.5 rounded-xl font-semibold tracking-wide text-[11px]"
+                  size="md" 
+                  className="px-6 rounded-xl font-semibold tracking-wide text-[11px]"
                   icon={<FrameworkIcons.Search size={16} />}
                 >
                   Filter history
@@ -414,32 +414,16 @@ export default function ActivityPage() {
         </RootFramework>
       )}
 
-      {/* Premium Footer */}
-      <div className={`p-10 border-t mt-auto ${
-        theme === 'dark' ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
-      }`}>
-        <div className="w-full px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                <span className="text-[10px] font-semibold tracking-wide text-slate-500 dark:text-slate-400">
-                  System Activity Log
-                </span>
-              </div>
-              <p className="text-[9px] font-semibold text-slate-400">Global ledger of administrative actions and system events.</p>
-            </div>
-            
-            <div className="flex items-center gap-4 text-[10px] font-semibold tracking-wide text-slate-400">
-               <Link href="/users" className="hover:text-indigo-500 transition-colors">Users</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <Link href="/users/roles" className="hover:text-indigo-500 transition-colors">Roles</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <Link href="/users/permissions" className="hover:text-indigo-500 transition-colors">Permissions</Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminPageFooter
+        label="System Activity Log"
+        description="Global ledger of administrative actions and system events."
+        accent="emerald"
+        links={[
+          { label: 'Users', href: ROUTES.USERS.LIST },
+          { label: 'Roles', href: ROUTES.USERS.ROLE_LIST },
+          { label: 'Permissions', href: ROUTES.USERS.PERMISSIONS },
+        ]}
+      />
     </div>
   );
 }

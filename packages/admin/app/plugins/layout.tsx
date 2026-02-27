@@ -5,21 +5,27 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/components/theme-context';
 import { FrameworkIcons } from '@/lib/icons';
+import { FRAMEWORK_RESOURCES, ROUTES } from '@/lib/constants';
 
 export default function PluginsLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const pathname = usePathname() || '';
 
   const tabs = [
-    { label: 'Installed', href: '/plugins/installed', icon: <FrameworkIcons.Layers size={16} /> },
-    { label: 'Marketplace', href: '/plugins/marketplace', icon: <FrameworkIcons.ShoppingBag size={16} /> },
+    { label: 'Installed', href: ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
+    { label: 'Marketplace', href: ROUTES.PLUGINS.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
   ];
 
-  const isMarketplace = pathname.startsWith('/plugins/marketplace');
+  const isMarketplace = pathname.startsWith(ROUTES.PLUGINS.MARKETPLACE);
   const isInstalled =
-    pathname === '/plugins' ||
-    pathname.startsWith('/plugins/installed') ||
-    (pathname.startsWith('/plugins/') && !isMarketplace);
+    pathname === ROUTES.PLUGINS.ROOT ||
+    pathname.startsWith(ROUTES.PLUGINS.INSTALLED) ||
+    (pathname.startsWith(`${ROUTES.PLUGINS.ROOT}/`) && !isMarketplace);
+  const isPluginDetail =
+    pathname.startsWith(`${ROUTES.PLUGINS.ROOT}/`) &&
+    !pathname.startsWith(ROUTES.PLUGINS.INSTALLED) &&
+    !pathname.startsWith(ROUTES.PLUGINS.MARKETPLACE) &&
+    pathname !== ROUTES.PLUGINS.PUBLISHER;
   const activeTab = isMarketplace ? tabs[1] : tabs[0];
 
   return (
@@ -34,7 +40,7 @@ export default function PluginsLayout({ children }: { children: React.ReactNode 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-1">
               <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {pathname.includes('/plugins/') && !isMarketplace && !pathname.includes('/installed') ? 'Plugin Detail' : activeTab.label}
+                {isPluginDetail ? 'Plugin Detail' : activeTab.label}
               </h1>
               <p className={`text-base font-medium max-w-2xl ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                 {isMarketplace
@@ -49,7 +55,7 @@ export default function PluginsLayout({ children }: { children: React.ReactNode 
                 : 'bg-slate-100/80 border-slate-200/60 shadow-sm'
             }`}>
               {tabs.map(tab => {
-                const isActive = tab.href === '/plugins/installed' ? isInstalled : (tab.href === '/plugins/marketplace' ? isMarketplace : false);
+                const isActive = tab.href === ROUTES.PLUGINS.INSTALLED ? isInstalled : (tab.href === ROUTES.PLUGINS.MARKETPLACE ? isMarketplace : false);
                 
                 return (
                   <Link 
@@ -98,9 +104,9 @@ export default function PluginsLayout({ children }: { children: React.ReactNode 
             </div>
             
             <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-               <span className="hover:text-indigo-500 transition-colors cursor-help">Developer Portal</span>
+               <Link href={ROUTES.PLUGINS.PUBLISHER} className="hover:text-indigo-500 transition-colors">Developer Portal</Link>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <span className="hover:text-indigo-500 transition-colors cursor-help">Documentation</span>
+               <a href={FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Documentation</a>
             </div>
           </div>
         </div>

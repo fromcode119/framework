@@ -63,6 +63,7 @@ export default function MediaPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [error, setError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   
   // Dialog States
   const [isFolderPromptOpen, setIsFolderPromptOpen] = useState(false);
@@ -76,6 +77,7 @@ export default function MediaPage() {
   const [isActionLoading, setIsActionLoading] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragDepthRef = useRef(0);
 
   const fetchMedia = async () => {
     setLoading(true);
@@ -188,28 +190,72 @@ export default function MediaPage() {
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const uploadFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files);
+    if (list.length === 0) return;
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    if (currentFolderId) formData.append('folderId', currentFolderId.toString());
-
+    setError(null);
     try {
-      await fetch(api.getURL(ENDPOINTS.MEDIA.UPLOAD), {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
+      for (const file of list) {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (currentFolderId) formData.append('folderId', currentFolderId.toString());
+        await api.upload(ENDPOINTS.MEDIA.UPLOAD, formData);
+      }
+
       fetchMedia();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload failed:', err);
+      setError(err?.message || 'Upload failed');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    await uploadFiles(files);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const isFileDrag = (e: React.DragEvent) => e.dataTransfer?.types?.includes('Files');
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepthRef.current += 1;
+    setIsDragOver(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepthRef.current = 0;
+    setIsDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (!files?.length) return;
+    await uploadFiles(files);
   };
 
   const handleDelete = async () => {
@@ -233,6 +279,7 @@ export default function MediaPage() {
         type="file" 
         ref={fileInputRef} 
         className="hidden" 
+        multiple
         onChange={handleUpload}
       />
       
@@ -309,6 +356,35 @@ export default function MediaPage() {
       </div>
 
       <div className="w-full px-6 lg:px-12 pt-12 space-y-8 pb-12">
+        <div
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`rounded-2xl border-2 border-dashed transition-all p-6 flex flex-col sm:flex-row items-center justify-between gap-4 ${
+            isDragOver
+              ? 'border-indigo-500 bg-indigo-500/10'
+              : theme === 'dark'
+                ? 'border-slate-700 bg-slate-900/30'
+                : 'border-slate-300 bg-slate-50/80'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-xl ${isDragOver ? 'bg-indigo-500 text-white' : 'bg-indigo-500/10 text-indigo-500'}`}>
+              <Upload size={18} />
+            </div>
+            <div className="text-sm">
+              <div className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                {isDragOver ? 'Drop files to upload' : 'Drag files here'}
+              </div>
+              <div className="text-xs text-slate-500">Upload images, videos, or documents to the current folder.</div>
+            </div>
+          </div>
+          <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Browse Files'}
+          </Button>
+        </div>
+
         {error && (
           <div className={`p-4 rounded-xl border flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${theme === 'dark' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-600'}`}>
             <Alert size={18} />

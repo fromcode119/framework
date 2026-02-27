@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
 import { Icon as DynamicIcon } from '@/components/icon';
 import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { ENDPOINTS, FRAMEWORK_RESOURCES, ROUTES } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
 
@@ -366,16 +366,21 @@ export default function AdminPage() {
                       "Need help scaling your framework? Check the documentation for architecture best practices."
                     </p>
                   </div>
-                  <Button variant="secondary" className="w-full justify-between group" as="a" href="/docs">
+                  <Button
+                    variant="secondary"
+                    className="w-full justify-between group"
+                    as="a"
+                    href={ROUTES.SETTINGS.FRAMEWORK}
+                  >
                      Developer Guide
                      <FrameworkIcons.ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <div className="pt-2 flex items-center justify-center gap-4 text-[10px] font-semibold tracking-wide text-slate-400">
-                     <a href="#" className="hover:text-indigo-500 transition-colors">Github</a>
+                     <a href={FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Github</a>
                      <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                     <a href="#" className="hover:text-indigo-500 transition-colors">Discord</a>
+                     <a href={FRAMEWORK_RESOURCES.DISCORD} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Discord</a>
                      <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                     <a href="#" className="hover:text-indigo-500 transition-colors">Twitter</a>
+                     <a href={FRAMEWORK_RESOURCES.TWITTER} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Twitter</a>
                   </div>
                </div>
             </Card>
@@ -398,11 +403,11 @@ export default function AdminPage() {
             </div>
             
             <div className="flex items-center gap-4 text-[10px] font-bold tracking-tight text-slate-400 uppercase">
-              <span className="hover:text-indigo-500 cursor-pointer transition-colors">Documentation</span>
+              <a href={FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Documentation</a>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <span className="hover:text-indigo-500 cursor-pointer transition-colors">Framework Roadmap</span>
+              <a href={FRAMEWORK_RESOURCES.FRAMEWORK_ROADMAP} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Framework Roadmap</a>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <span className="hover:text-indigo-500 cursor-pointer transition-colors">Support</span>
+              <a href={FRAMEWORK_RESOURCES.SUPPORT} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Support</a>
             </div>
           </div>
         </div>

@@ -9,8 +9,9 @@ import { PageHeading } from '@/components/ui/page-heading';
 import { FrameworkIcons } from '@/lib/icons';
 import { DataTable } from '@/components/ui/data-table';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
+import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 import Link from 'next/link';
 
 export default function PermissionsPage() {
@@ -199,32 +200,15 @@ export default function PermissionsPage() {
         </div>
       </div>
 
-      {/* Premium Footer */}
-      <div className={`mt-auto border-t ${
-        theme === 'dark' ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
-      }`}>
-        <div className="w-full px-6 lg:px-12 py-10">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 border-t border-slate-100 dark:border-slate-800 pt-10">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
-                  Permissions Registry
-                </span>
-              </div>
-              <p className="text-[9px] font-bold tracking-tight text-slate-400">Manage system capabilities and plugin permissions.</p>
-            </div>
-            
-            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight text-slate-400">
-               <Link href="/users" className="hover:text-indigo-500 transition-colors">Users</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <Link href="/users/roles" className="hover:text-indigo-500 transition-colors">Roles</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <Link href="/activity" className="hover:text-indigo-500 transition-colors">Activity Log</Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminPageFooter
+        label="Permissions Registry"
+        description="Manage system capabilities and plugin permissions."
+        links={[
+          { label: 'Users', href: ROUTES.USERS.LIST },
+          { label: 'Roles', href: ROUTES.USERS.ROLE_LIST },
+          { label: 'Activity Log', href: ROUTES.ACTIVITY },
+        ]}
+      />
     </div>
   );
 }

@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
 import { FrameworkIcons } from '@/lib/icons';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import Link from 'next/link';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useNotify } from '@/components/notification-context';
 import { Loader } from '@/components/ui/loader';
+import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 
 export default function RolesPage() {
   const { theme } = useTheme();
@@ -323,32 +324,15 @@ export default function RolesPage() {
         </div>
       </div>
 
-      {/* Premium Footer */}
-      <div className={`mt-auto border-t ${
-        theme === 'dark' ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
-      }`}>
-        <div className="w-full px-6 lg:px-12 py-10">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
-                  Roles Management
-                </span>
-              </div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Manage and customize system access roles.</p>
-            </div>
-            
-            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight text-slate-400">
-               <Link href="/users" className="hover:text-indigo-500 transition-colors">Users</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <Link href="/users/permissions" className="hover:text-indigo-500 transition-colors">Permissions</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <Link href="/activity" className="hover:text-indigo-500 transition-colors">Activity Log</Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminPageFooter
+        label="Roles Management"
+        description="Manage and customize system access roles."
+        links={[
+          { label: 'Users', href: ROUTES.USERS.LIST },
+          { label: 'Permissions', href: ROUTES.USERS.PERMISSIONS },
+          { label: 'Activity Log', href: ROUTES.ACTIVITY },
+        ]}
+      />
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}

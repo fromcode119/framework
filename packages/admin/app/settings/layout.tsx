@@ -13,6 +13,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   const navItems = [
     { label: 'General', href: ROUTES.SETTINGS.GENERAL, icon: FrameworkIcons.Settings },
+    { label: 'Framework', href: ROUTES.SETTINGS.FRAMEWORK, icon: FrameworkIcons.System },
     { label: 'Localization', href: ROUTES.SETTINGS.LOCALIZATION, icon: FrameworkIcons.Globe },
     { label: 'Routing', href: ROUTES.SETTINGS.ROUTING, icon: FrameworkIcons.Link },
     { label: 'Integrations', href: ROUTES.SETTINGS.INTEGRATIONS, icon: FrameworkIcons.Orbit },
