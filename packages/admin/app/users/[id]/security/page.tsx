@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { Loader } from '@/components/ui/loader';
 import { useNotification } from '@/components/notification-context';
@@ -137,7 +137,7 @@ export default function UserSecurityPage() {
       const result = await api.post(ENDPOINTS.AUTH.REVOKE_MY_SESSION(sessionId), {});
       addNotification({ title: 'Session Revoked', message: 'Device session revoked successfully.', type: 'success' });
       if (result?.revokedCurrent) {
-        router.push('/login');
+        router.push(ROUTES.AUTH.LOGIN);
         return;
       }
       await fetchMySessions();

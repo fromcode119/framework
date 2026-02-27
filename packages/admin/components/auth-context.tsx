@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { purgeAuth, getCookieDomain } from '@/lib/auth-utils';
 
 interface User {
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     Cookies.set('fc_user', JSON.stringify(userData), cookieOptions);
     setUser(userData);
-    router.push('/');
+    router.push(ROUTES.ROOT);
   };
 
   const logout = async () => {
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     purgeAuth();
     setUser(null);
-    window.location.href = '/login';
+    router.push(ROUTES.AUTH.LOGIN);
   };
 
   return (

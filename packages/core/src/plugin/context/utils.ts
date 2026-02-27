@@ -22,7 +22,7 @@ export interface PluginManagerInterface {
   runtime: any;
   getPlugins(): LoadedPlugin[];
   enable(slug: string): Promise<void>;
-  disable(slug: string): Promise<void>;
+  disable(slug: string, options?: { persistState?: boolean }): Promise<void>;
   delete(slug: string): Promise<void>;
   getHeadInjections(slug: string): any[];
   savePluginConfig(slug: string, config: any): Promise<void>;

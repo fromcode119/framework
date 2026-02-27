@@ -127,6 +127,7 @@ export const FrameworkIcons = {
   Link: Lucide.Link,
   Activity: Lucide.Activity,
   Alert: Lucide.AlertCircle,
+  Info: Lucide.Info,
   Warning: Lucide.AlertTriangle,
   Clock: Lucide.Clock,
   Terminal: Lucide.Terminal,

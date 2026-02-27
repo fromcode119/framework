@@ -629,7 +629,9 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             onPageChange={setPage}
             onSort={setSort}
             currentSort={sort}
-            onRowClick={(row) => (window.location.href = `/${pluginSlug}/${slug}/${row.id}`)}
+            onRowClick={(row) => {
+              router.push(`/${pluginSlug}/${slug}/${row.id}`);
+            }}
             selectable
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { APP_NAME } from '@/lib/env';
 
@@ -117,10 +117,10 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="mt-5 flex items-center justify-between text-xs font-semibold">
-          <button onClick={() => router.push('/login')} className="text-indigo-500 hover:text-indigo-400">
+          <button onClick={() => router.push(ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
             Back to Login
           </button>
-          <Link href="/forgot-password" className="text-slate-400 hover:text-slate-300">
+          <Link href={ROUTES.AUTH.FORGOT_PASSWORD} className="text-slate-400 hover:text-slate-300">
             Need new link?
           </Link>
         </div>

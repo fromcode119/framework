@@ -19,6 +19,7 @@ export function setupPluginRoutes(manager: PluginManager, auth: AuthManager) {
   router.get('/marketplace', auth.guard(['admin']), (req, res) => controller.marketplace(req, res));
   router.post('/install/:slug', auth.guard(['admin']), (req, res) => controller.install(req, res));
   router.get('/:slug/logs', auth.guard(['admin']), (req, res) => controller.logs(req, res));
+  router.post('/upload/inspect', auth.guard(['admin']), upload.single('plugin'), (req, res) => controller.inspectUpload(req, res));
   router.post('/upload', auth.guard(['admin']), upload.single('plugin'), (req, res) => controller.upload(req, res));
 
   return router;
@@ -32,4 +33,3 @@ export function setupPluginAssetRoutes(manager: PluginManager) {
 
   return router;
 }
-

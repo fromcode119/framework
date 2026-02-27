@@ -1,7 +1,8 @@
-import { API_BASE_URL } from './constants';
+import { ADMIN_URLS, API_BASE_URL, ROUTES } from './constants';
 import Cookies from 'js-cookie';
 import { purgeAuth } from './auth-utils';
 import { normalizeRequestPath } from './url-utils';
+import { stripAdminBasePath } from './admin-path';
 
 async function request(path: string, options: RequestInit = {}) {
   // Extract token from cookie (if available to JS).
@@ -24,7 +25,6 @@ async function request(path: string, options: RequestInit = {}) {
 
   const normalizedPath = normalizeRequestPath(path);
   const url = normalizedPath.startsWith('http') ? normalizedPath : `${API_BASE_URL}${normalizedPath}`;
-
   const response = await fetch(url, {
     ...options,
     headers,
@@ -32,18 +32,36 @@ async function request(path: string, options: RequestInit = {}) {
   });
 
   if (response.status === 401 && !url.includes('/api/auth/status') && !url.includes('/api/auth/login')) {
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+    if (typeof window !== 'undefined' && stripAdminBasePath(window.location.pathname) !== ROUTES.AUTH.LOGIN) {
       console.warn("[API] 401 Unauthorized detected. Purging session.");
       purgeAuth();
-      window.location.href = '/login?reason=session_expired';
+      window.location.href = ADMIN_URLS.AUTH.LOGIN_SESSION_EXPIRED();
     }
   }
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ error: 'Unknown error' }));
-    const errObj = new Error(errorBody.error || errorBody.message || `HTTP error! status: ${response.status}`) as any;
+    let errorBody: any = null;
+    let rawBody = '';
+    const contentType = response.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      errorBody = await response.json().catch(() => null);
+    } else {
+      rawBody = await response.text().catch(() => '');
+    }
+
+    const message =
+      errorBody?.error ||
+      errorBody?.message ||
+      rawBody.trim() ||
+      response.statusText ||
+      `HTTP error! status: ${response.status}`;
+
+    const errObj = new Error(message) as any;
     errObj.status = response.status;
     errObj.data = errorBody;
+    errObj.raw = rawBody;
+    errObj.url = url;
     throw errObj;
   }
 
@@ -83,9 +101,28 @@ export const api = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      const errObj = new Error(error.error || `HTTP error! status: ${response.status}`) as any;
+      let errorBody: any = null;
+      let rawBody = '';
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json')) {
+        errorBody = await response.json().catch(() => null);
+      } else {
+        rawBody = await response.text().catch(() => '');
+      }
+
+      const message =
+        errorBody?.error ||
+        errorBody?.message ||
+        rawBody.trim() ||
+        response.statusText ||
+        `HTTP error! status: ${response.status}`;
+
+      const errObj = new Error(message) as any;
       errObj.status = response.status;
+      errObj.data = errorBody;
+      errObj.raw = rawBody;
+      errObj.url = url;
       throw errObj;
     }
 

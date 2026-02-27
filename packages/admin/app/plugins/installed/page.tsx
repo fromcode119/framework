@@ -14,6 +14,7 @@ import { useNotify } from '@/components/notification-context';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { Loader } from '@/components/ui/loader';
+import { UploadPreviewDialog, UploadPreviewSection } from '@/components/ui/upload-preview-dialog';
 
 export default function InstalledPluginsPage() {
   const { theme } = useTheme();
@@ -31,67 +32,161 @@ export default function InstalledPluginsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isInspectingUpload, setIsInspectingUpload] = useState(false);
+  const [isDropActive, setIsDropActive] = useState(false);
+  const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null);
+  const [showUploadPreview, setShowUploadPreview] = useState(false);
+  const [uploadPreviewTitle, setUploadPreviewTitle] = useState('');
+  const [uploadPreviewDescription, setUploadPreviewDescription] = useState('');
+  const [uploadPreviewSections, setUploadPreviewSections] = useState<UploadPreviewSection[]>([]);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   async function fetchPlugins() {
+    setLoading(true);
     try {
-      const [pluginsResult, marketplaceResult] = await Promise.allSettled([
-        api.get(`${ENDPOINTS.PLUGINS.LIST}?refresh=1`),
-        api.get(ENDPOINTS.PLUGINS.MARKETPLACE)
-      ]);
-
-      if (pluginsResult.status === 'fulfilled') {
-        setPlugins(Array.isArray(pluginsResult.value) ? pluginsResult.value : []);
-      } else {
-        console.error('Failed to fetch installed plugins', pluginsResult.reason);
-        setPlugins([]);
-      }
-
-      if (marketplaceResult.status === 'fulfilled') {
-        const reg = marketplaceResult.value;
-        setMarketplaceData(Array.isArray(reg?.plugins) ? reg.plugins : []);
-      } else {
-        // Marketplace outage should not block Installed list rendering.
-        console.warn('Marketplace unavailable, continuing with installed plugins only', marketplaceResult.reason);
-        setMarketplaceData([]);
-      }
+      // Always prioritize installed plugins first so this page is responsive
+      // even when marketplace sync is slow/unavailable.
+      const pluginsResult = await api.get(`${ENDPOINTS.PLUGINS.LIST}?refresh=1`);
+      setPlugins(Array.isArray(pluginsResult) ? pluginsResult : []);
     } catch (err) {
-      console.error("Failed to fetch plugins", err);
+      console.error('Failed to fetch installed plugins', err);
+      setPlugins([]);
     } finally {
       setLoading(false);
+    }
+
+    // Fetch marketplace metadata in background with a short timeout.
+    try {
+      const marketplaceTimeoutMs = 3000;
+      const marketplaceResult = await Promise.race([
+        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`Marketplace timeout after ${marketplaceTimeoutMs}ms`)), marketplaceTimeoutMs)
+        )
+      ]);
+      const reg = marketplaceResult as any;
+      setMarketplaceData(Array.isArray(reg?.plugins) ? reg.plugins : []);
+    } catch (err) {
+      console.warn('Marketplace unavailable, continuing with installed plugins only', err);
+      setMarketplaceData([]);
     }
   }
 
   const handleUploadClick = () => {
+    if (isUploading || isInspectingUpload) return;
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const uploadPluginFile = async (file?: File | null) => {
     if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.zip')) {
+      notify('error', 'Upload Failed', 'Only .zip plugin packages are supported.');
+      return;
+    }
 
     setIsUploading(true);
     const formData = new FormData();
     formData.append('plugin', file);
 
     try {
-      const response = await fetch(api.getURL(ENDPOINTS.PLUGINS.UPLOAD), {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-
-      if (!response.ok) throw new Error('Upload failed');
-
+      await api.upload(ENDPOINTS.PLUGINS.UPLOAD, formData);
       notify('success', 'Upload Successful', 'Plugin uploaded successfully.');
       fetchPlugins();
     } catch (err: any) {
       notify('error', 'Upload Failed', err.message);
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const inspectPluginFile = async (file?: File | null) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.zip')) {
+      notify('error', 'Upload Failed', 'Only .zip plugin packages are supported.');
+      return;
+    }
+
+    setIsInspectingUpload(true);
+    const formData = new FormData();
+    formData.append('plugin', file);
+
+    try {
+      const response = await api.upload(ENDPOINTS.PLUGINS.UPLOAD_INSPECT, formData);
+      const info = (response as any)?.info || {};
+      const dependencies = Array.isArray(info.dependencies) ? info.dependencies : [];
+      const peerDependencies = Array.isArray(info.peerDependencies) ? info.peerDependencies : [];
+      const existing = info.existing || { installed: false };
+
+      const summaryItems = [
+        `Name: ${info.name || 'Unknown'}`,
+        `Slug: ${info.slug || 'Unknown'}`,
+        `Version: ${info.version || 'Unknown'}`,
+        `Files: ${info.files ?? 'Unknown'}`,
+        `UI bundle: ${info.hasUiBundle ? 'Yes' : 'No'}`,
+      ];
+
+      const impactItems = existing.installed
+        ? [
+            `This will replace installed plugin "${info.slug}".`,
+            `Current version: ${existing.version || 'Unknown'} (${existing.state || 'unknown'})`,
+            `Incoming version: ${info.version || 'Unknown'}`,
+          ]
+        : ['This plugin is not currently installed.'];
+
+      setUploadPreviewTitle(`Install plugin "${info.name || info.slug || 'package'}"?`);
+      setUploadPreviewDescription('Review package contents before continuing.');
+      setUploadPreviewSections([
+        { title: 'Summary', items: summaryItems },
+        { title: 'Dependencies', items: dependencies.length ? dependencies : ['No required plugin dependencies'] },
+        { title: 'Peer Dependencies', items: peerDependencies.length ? peerDependencies : ['No peer dependencies'] },
+        { title: 'Install Impact', items: impactItems },
+      ]);
+      setPendingUploadFile(file);
+      setShowUploadPreview(true);
+    } catch (err: any) {
+      notify('error', 'Inspect Failed', err.message || 'Could not inspect plugin package.');
+    } finally {
+      setIsInspectingUpload(false);
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    await inspectPluginFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDropActive(false);
+    await inspectPluginFile(event.dataTransfer.files?.[0]);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDropActive(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDropActive(false);
+  };
+
+  const closeUploadPreview = () => {
+    if (isUploading) return;
+    setShowUploadPreview(false);
+    setPendingUploadFile(null);
+  };
+
+  const confirmUploadPreview = async () => {
+    if (!pendingUploadFile) return;
+    await uploadPluginFile(pendingUploadFile);
+    setShowUploadPreview(false);
+    setPendingUploadFile(null);
   };
 
   useEffect(() => {
@@ -176,15 +271,33 @@ export default function InstalledPluginsPage() {
             className={`w-full rounded-2xl py-2.5 pl-11 pr-6 outline-none border-0 font-bold transition-all ${theme === 'dark' ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/5' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-xl shadow-slate-200/50'}`} 
           />
         </div>
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip,.tar.gz" />
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip" />
         <button 
           onClick={handleUploadClick}
-          disabled={isUploading}
+          disabled={isUploading || isInspectingUpload}
           className={`flex items-center justify-center gap-3 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold uppercase tracking-wider text-[11px] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] disabled:opacity-50`}
         >
-          {isUploading ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}
-          <span>Upload (.zip)</span>
+          {isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}
+          <span>{isInspectingUpload ? 'Inspecting...' : 'Upload (.zip)'}</span>
         </button>
+      </div>
+      <div
+        onClick={handleUploadClick}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`cursor-pointer rounded-2xl border-2 border-dashed px-6 py-5 transition-all ${
+          isDropActive
+            ? (theme === 'dark' ? 'border-indigo-400 bg-indigo-500/10' : 'border-indigo-500 bg-indigo-50')
+            : (theme === 'dark' ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} />
+          <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>
+            Drag and drop plugin `.zip` here, or click to upload.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
@@ -395,6 +508,18 @@ export default function InstalledPluginsPage() {
         issues={dependencyIssues}
         pluginSlug={targetPlugin || ''}
         isLoading={isActivating}
+      />
+
+      <UploadPreviewDialog
+        isOpen={showUploadPreview}
+        title={uploadPreviewTitle}
+        description={uploadPreviewDescription}
+        sections={uploadPreviewSections}
+        confirmLabel="Install Plugin"
+        cancelLabel="Cancel"
+        isLoading={isUploading}
+        onClose={closeUploadPreview}
+        onConfirm={confirmUploadPreview}
       />
     </div>
   );

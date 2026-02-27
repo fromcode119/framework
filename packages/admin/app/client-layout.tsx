@@ -12,7 +12,7 @@ import { Dropdown } from '@/components/ui/dropdown';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-context';
 import { api } from '@/lib/api';
-import { API_BASE_URL, ENDPOINTS } from '@/lib/constants';
+import { API_BASE_URL, ENDPOINTS, ROUTES } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { purgeAuth } from '@/lib/auth-utils';
 import { applyDateLocaleTimezonePatch } from '@/lib/timezone';
@@ -213,10 +213,10 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         if (initialized === false && !isSetupPath) {
           console.log("[ClientLayout] System uninitialized -> setup");
           purgeAuth();
-          router.push('/setup');
+          router.push(ROUTES.AUTH.SETUP);
         } else if (initialized === true && isSetupPath) {
           console.log("[ClientLayout] System initialized -> login");
-          router.push('/login');
+          router.push(ROUTES.AUTH.LOGIN);
         }
       } catch (e) {
         console.error("Initialization check failed", e);
@@ -230,7 +230,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isInitialized === true && !user && !isAuthPage && !isAuthLoading) {
       console.log("[ClientLayout] Guard: Moving to login");
-      router.push('/login');
+      router.push(ROUTES.AUTH.LOGIN);
     }
   }, [user, isInitialized, isAuthPage, isAuthLoading]);
 
@@ -251,7 +251,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <button 
             onClick={() => {
                purgeAuth();
-               router.push('/login');
+               router.push(ROUTES.AUTH.LOGIN);
             }}
             className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-semibold tracking-wide text-[11px] shadow-2xl hover:scale-[1.02] transition-transform"
           >

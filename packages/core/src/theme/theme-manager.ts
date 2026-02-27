@@ -2,6 +2,7 @@ import { ThemeManifest, IDatabaseManager } from '../types';
 import { SystemTable } from '@fromcode119/sdk/internal';
 import path from 'path';
 import fs from 'fs';
+import AdmZip from 'adm-zip';
 import { Logger } from '@fromcode119/sdk';
 import { BackupService } from '../management/backup-service';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
@@ -117,12 +118,69 @@ export class ThemeManager {
     }
   }
 
+  async installFromZip(filePath: string): Promise<ThemeManifest> {
+    const tempDir = path.join(path.dirname(filePath), `theme-ext-${Date.now()}`);
+    fs.mkdirSync(tempDir, { recursive: true });
+
+    try {
+      if (this.isZipArchive(filePath)) {
+        const zip = new AdmZip(filePath);
+        zip.extractAllTo(tempDir, true);
+      } else {
+        try {
+          await BackupService.restore(filePath, tempDir);
+        } catch (error: any) {
+          if (String(error?.message || '').includes('TAR_BAD_ARCHIVE')) {
+            throw new Error('Unsupported archive format. Upload a .zip theme package.');
+          }
+          throw error;
+        }
+      }
+
+      const contentDir = this.findThemeManifestDir(tempDir);
+      if (!contentDir) {
+        throw new Error('Invalid theme: theme.json not found anywhere in the archive.');
+      }
+
+      const manifestContent = fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8');
+      const manifest: ThemeManifest = JSON.parse(manifestContent);
+      if (!manifest.slug) {
+        throw new Error('Invalid theme: missing "slug" in theme.json.');
+      }
+
+      const targetDir = path.join(this.themesRoot, manifest.slug);
+      if (fs.existsSync(targetDir)) {
+        await BackupService.create(manifest.slug, targetDir, 'themes');
+        fs.rmSync(targetDir, { recursive: true, force: true });
+      }
+      fs.mkdirSync(targetDir, { recursive: true });
+
+      this.moveDir(contentDir, targetDir);
+      await this.discoverThemes();
+
+      const installedManifest = this.themes.get(manifest.slug) || manifest;
+      await this.installDependencies(installedManifest);
+
+      return installedManifest;
+    } finally {
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch {
+        // no-op cleanup
+      }
+    }
+  }
+
   private async installDependencies(manifest: ThemeManifest, options?: { strict?: boolean }) {
-    if (manifest.dependencies && this.pluginManager) {
+    if (!this.pluginManager) return;
+
+    const failures: string[] = [];
+    await this.installBundledPlugins(manifest, failures);
+
+    if (manifest.dependencies) {
       const depSlugs = Object.keys(manifest.dependencies);
       this.logger.info(`Checking dependencies for theme "${manifest.slug}": ${depSlugs.join(', ')}`);
-      const failures: string[] = [];
-      
+
       for (const depSlug of depSlugs) {
         try {
           // Check if already installed
@@ -144,10 +202,188 @@ export class ThemeManager {
           this.logger.error(message);
         }
       }
+    }
 
-      if (options?.strict && failures.length > 0) {
-        throw new Error(failures.join(' | '));
+    if (options?.strict && failures.length > 0) {
+      throw new Error(failures.join(' | '));
+    }
+  }
+
+  private async installBundledPlugins(manifest: ThemeManifest, failures: string[]) {
+    const themePath = this.resolveThemeDirectory(manifest.slug);
+    const archivePaths = this.getBundledPluginArchivePaths(manifest, themePath);
+    if (archivePaths.length === 0) return;
+
+    this.logger.info(`Installing ${archivePaths.length} bundled plugin archive(s) for theme "${manifest.slug}".`);
+
+    const installedSlugs = new Set<string>();
+    let installedOrUpdated = false;
+
+    for (const archivePath of archivePaths) {
+      try {
+        const archiveManifest = this.readBundledPluginManifest(archivePath);
+        if (archiveManifest?.slug) {
+          const existing = this.pluginManager.plugins.get(archiveManifest.slug);
+          if (existing) {
+            const existingVersion = String(existing?.manifest?.version || '').trim();
+            const archiveVersion = String(archiveManifest.version || '').trim();
+            const sameVersion = !!existingVersion && !!archiveVersion && existingVersion === archiveVersion;
+
+            if (sameVersion) {
+              installedSlugs.add(archiveManifest.slug);
+              this.logger.info(
+                `Skipping bundled plugin "${archiveManifest.slug}" from ${archivePath} (already installed v${existingVersion}).`
+              );
+              continue;
+            }
+          }
+        }
+
+        const installed = await this.pluginManager.installFromZip(archivePath);
+        installedOrUpdated = true;
+        if (installed?.slug) installedSlugs.add(installed.slug);
+        this.logger.info(`Installed bundled plugin "${installed.slug}" from ${archivePath}.`);
+      } catch (err: any) {
+        const message = `Failed to install bundled plugin archive "${archivePath}" for theme "${manifest.slug}": ${err.message}`;
+        failures.push(message);
+        this.logger.error(message);
       }
+    }
+
+    if (installedSlugs.size === 0) return;
+
+    if (installedOrUpdated && typeof this.pluginManager.discoverPlugins === 'function') {
+      await this.pluginManager.discoverPlugins();
+    }
+
+    for (const slug of installedSlugs) {
+      try {
+        await this.pluginManager.enable(slug);
+      } catch (err: any) {
+        const message = `Bundled plugin "${slug}" installed but failed to enable for theme "${manifest.slug}": ${err.message}`;
+        failures.push(message);
+        this.logger.error(message);
+      }
+    }
+  }
+
+  private getBundledPluginArchivePaths(manifest: ThemeManifest, themePath: string): string[] {
+    const archives = new Set<string>();
+
+    const addArchive = (absPath: string) => {
+      if (fs.existsSync(absPath) && fs.statSync(absPath).isFile() && absPath.toLowerCase().endsWith('.zip')) {
+        archives.add(absPath);
+      }
+    };
+
+    const declared = (manifest as any).bundledPlugins;
+    if (Array.isArray(declared)) {
+      for (const entry of declared) {
+        if (typeof entry !== 'string' || !entry.trim()) {
+          this.logger.warn(`Ignoring invalid bundled plugin entry in theme "${manifest.slug}" manifest.`);
+          continue;
+        }
+
+        const resolved = this.resolveThemeRelativePath(themePath, entry);
+        if (!resolved) {
+          this.logger.warn(`Ignoring bundled plugin path outside theme directory: ${entry}`);
+          continue;
+        }
+
+        addArchive(resolved);
+      }
+    } else if (declared !== undefined) {
+      this.logger.warn(`Theme "${manifest.slug}" has invalid "bundledPlugins" format. Expected string[].`);
+    }
+
+    for (const dirName of ['plugins', 'bundled-plugins']) {
+      const dirPath = path.join(themePath, dirName);
+      for (const zipPath of this.collectZipFiles(dirPath)) {
+        addArchive(zipPath);
+      }
+    }
+
+    return Array.from(archives);
+  }
+
+  private resolveThemeRelativePath(themePath: string, relativePath: string): string | null {
+    const candidate = path.resolve(themePath, relativePath);
+    const rel = path.relative(themePath, candidate);
+    if (rel.startsWith('..') || path.isAbsolute(rel)) return null;
+    return candidate;
+  }
+
+  private isZipArchive(filePath: string): boolean {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.zip') return true;
+    if (ext === '.tar' || ext === '.tgz' || ext === '.gz') return false;
+
+    try {
+      const fd = fs.openSync(filePath, 'r');
+      try {
+        const header = Buffer.alloc(4);
+        const bytesRead = fs.readSync(fd, header, 0, 4, 0);
+        return bytesRead >= 2 && header[0] === 0x50 && header[1] === 0x4b;
+      } finally {
+        fs.closeSync(fd);
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  private findThemeManifestDir(dir: string): string | null {
+    if (fs.existsSync(path.join(dir, 'theme.json'))) return dir;
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      if (fs.statSync(fullPath).isDirectory()) {
+        const found = this.findThemeManifestDir(fullPath);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  private collectZipFiles(rootDir: string): string[] {
+    if (!fs.existsSync(rootDir) || !fs.statSync(rootDir).isDirectory()) return [];
+
+    const files: string[] = [];
+    const entries = fs.readdirSync(rootDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue;
+
+      const absolute = path.join(rootDir, entry.name);
+      if (entry.isDirectory()) {
+        files.push(...this.collectZipFiles(absolute));
+      } else if (entry.isFile() && absolute.toLowerCase().endsWith('.zip')) {
+        files.push(absolute);
+      }
+    }
+
+    return files;
+  }
+
+  private readBundledPluginManifest(archivePath: string): { slug: string; version?: string } | null {
+    try {
+      if (!this.isZipArchive(archivePath)) return null;
+
+      const zip = new AdmZip(archivePath);
+      const entries = zip.getEntries();
+      for (const entry of entries) {
+        if (entry.isDirectory) continue;
+        if (!entry.entryName.toLowerCase().endsWith('manifest.json')) continue;
+
+        const parsed = JSON.parse(entry.getData().toString('utf8'));
+        const slug = String(parsed?.slug || '').trim();
+        const version = String(parsed?.version || '').trim();
+        if (slug) return { slug, version: version || undefined };
+      }
+
+      return null;
+    } catch {
+      return null;
     }
   }
 
@@ -220,6 +456,7 @@ export class ThemeManager {
 
   async discoverThemes() {
     this.logger.info(`Scanning for themes in ${this.themesRoot}...`);
+    this.themes.clear();
     if (!fs.existsSync(this.themesRoot)) {
         fs.mkdirSync(this.themesRoot, { recursive: true });
         return;
@@ -335,7 +572,21 @@ export class ThemeManager {
 
   async deleteTheme(slug: string) {
     if (this.activeTheme === slug) {
-      throw new Error(`Cannot delete theme "${slug}" because it is currently active.`);
+      await this.discoverThemes();
+      const fallbackSlug = Array.from(this.themes.keys()).find((candidate) => candidate !== slug);
+
+      if (fallbackSlug) {
+        this.logger.info(
+          `Theme "${slug}" is active. Activating fallback theme "${fallbackSlug}" before deletion.`
+        );
+        await this.activateTheme(fallbackSlug);
+      } else {
+        this.logger.info(
+          `Theme "${slug}" is the only installed theme. Continuing deletion and leaving no active theme.`
+        );
+        await this.db.update(SystemTable.THEMES, { state: 'active' }, { state: 'inactive' });
+        this.activeTheme = null;
+      }
     }
     
     const targetDir = this.resolveThemeDirectory(slug);
