@@ -27,6 +27,7 @@ import { StatCard } from '@/components/ui/stat-card';
 import { Loader } from '@/components/ui/loader';
 import { Dropdown } from '@/components/ui/dropdown';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 import { useRouter } from 'next/navigation';
 
 export default function UsersPage() {
@@ -325,31 +326,15 @@ export default function UsersPage() {
         confirmLabel="Deactivate User"
       />
 
-      <div className={`mt-auto border-t py-12 backdrop-blur-3xl transition-all duration-300 ${
-        theme === 'dark' 
-          ? 'bg-slate-950/40 border-slate-800' 
-          : 'bg-slate-50/50 border-slate-100'
-      }`}>
-        <div className="w-full px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
-              <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400">
-                User Management Infrastructure
-              </span>
-            </div>
-            <p className="text-[10px] font-bold text-slate-400 tracking-tight opacity-70">Manage user accounts and security roles.</p>
-          </div>
-          
-          <div className="flex items-center gap-10 text-[11px] font-bold tracking-tight text-slate-400 uppercase">
-               <Link href={ROUTES.USERS.ROLE_LIST} className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Roles</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-               <Link href={ROUTES.USERS.PERMISSIONS} className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Permissions</Link>
-               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-               <Link href={ROUTES.ACTIVITY} className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">Activity Log</Link>
-          </div>
-        </div>
-      </div>
+      <AdminPageFooter
+        label="User Management Infrastructure"
+        description="Manage user accounts and security roles."
+        links={[
+          { label: 'Roles', href: ROUTES.USERS.ROLE_LIST },
+          { label: 'Permissions', href: ROUTES.USERS.PERMISSIONS },
+          { label: 'Activity Log', href: ROUTES.ACTIVITY },
+        ]}
+      />
     </div>
   );
 }

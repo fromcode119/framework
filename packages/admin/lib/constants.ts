@@ -37,6 +37,14 @@ export const ROUTES = {
     ROLE_LIST: '/users/roles',
     PERMISSIONS: '/users/permissions'
   },
+  PLUGINS: {
+    ROOT: '/plugins',
+    INSTALLED: '/plugins/installed',
+    MARKETPLACE: '/plugins/marketplace',
+    DETAIL: (slug: string) => `/plugins/${slug}`,
+    SETTINGS: (slug: string) => `/plugins/${slug}/settings`,
+    PUBLISHER: '/plugins/publisher',
+  },
   SETTINGS: {
     ROOT: '/settings',
     GENERAL: '/settings/general',
@@ -46,7 +54,8 @@ export const ROUTES = {
     ROUTING: '/settings/routing',
     SECURITY: '/settings/security',
     INFRASTRUCTURE: '/settings/infrastructure',
-    UPDATES: '/settings/updates'
+    UPDATES: '/settings/updates',
+    FRAMEWORK: '/settings/framework',
   },
   THEMES: {
     ROOT: '/themes',
@@ -171,3 +180,14 @@ export const ENDPOINTS = {
     RESTORE: (slug: string, id: string, version: number) => v(`/versions/${slug}/${id}/${version}/restore`),
   }
 };
+
+export const FRAMEWORK_RESOURCES = {
+  DOCUMENTATION: 'https://docs.fromcode.com',
+  DEVELOPER_GUIDE: 'https://docs.fromcode.com/developer-guide',
+  FRAMEWORK_ROADMAP: 'https://github.com/fromcode119',
+  SUPPORT: 'https://docs.fromcode.com/support',
+  GITHUB: 'https://github.com/fromcode119',
+  DISCORD: 'https://discord.gg/fromcode',
+  TWITTER: 'https://x.com/fromcode119',
+  OPENAPI: ENDPOINTS.SYSTEM.OPENAPI,
+} as const;
