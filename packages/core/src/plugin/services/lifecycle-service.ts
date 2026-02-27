@@ -202,7 +202,7 @@ export class LifecycleService {
     }
   }
 
-  async disable(slug: string): Promise<void> {
+  async disable(slug: string, options: { persistState?: boolean } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin || plugin.state !== 'active') return;
 
@@ -229,8 +229,10 @@ export class LifecycleService {
         if (plugin.onDisable) await plugin.onDisable(ctx);
       }
       plugin.state = 'inactive';
-      await this.registry.savePluginState(slug, 'inactive', undefined, plugin.manifest.version);
-      await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);
+      if (options.persistState !== false) {
+        await this.registry.savePluginState(slug, 'inactive', undefined, plugin.manifest.version);
+        await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);
+      }
     } catch (error) {
       this.logger.error(`Error disabling plugin "${slug}": ${error}`);
     }

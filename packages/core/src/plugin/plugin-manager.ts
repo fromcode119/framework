@@ -246,7 +246,7 @@ export class PluginManager implements PluginManagerInterface {
 
   // Delegate Lifecycle
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}) { return this.lifecycle.enable(slug, options); }
-  async disable(slug: string) { return this.lifecycle.disable(slug); }
+  async disable(slug: string, options: { persistState?: boolean } = {}) { return this.lifecycle.disable(slug, options); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }
   async register(plugin: FromcodePlugin, path?: string) { return this.lifecycle.register(plugin, path); }
 
@@ -736,7 +736,7 @@ If you received this message, your configured Email integration is working for t
 
     for (const plugin of shutdownOrder) {
       try {
-        await this.disable(plugin.manifest.slug);
+        await this.disable(plugin.manifest.slug, { persistState: false });
       } catch (err: any) {
         this.logger.warn(`Failed to disable plugin "${plugin.manifest.slug}" during shutdown: ${err?.message || err}`);
       }

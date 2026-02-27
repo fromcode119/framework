@@ -1,19 +1,32 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePlugins } from '@fromcode119/react';
 import { resolveFrontendApiBaseUrl } from '@/lib/api-base-url';
 
 export default function PluginLoader() {
-  const { plugins, activeTheme, api } = usePlugins();
+  const { plugins, activeTheme, api, isReady } = usePlugins();
   const apiUrl =
     (typeof api?.getBaseUrl === 'function' && api.getBaseUrl()) ||
     resolveFrontendApiBaseUrl();
   const theme = activeTheme;
   const pluginList = Array.isArray(plugins) ? plugins : [];
+  const loadedModulesRef = useRef<Set<string>>(new Set());
+  const [retryTick, setRetryTick] = useState(0);
+  const getPluginUiAssetUrl = (pluginSlug: string, asset: string) =>
+    `${apiUrl}/plugins/${pluginSlug}/ui/${asset}`;
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
+    if (!isReady) return;
+
+    // Plugin/theme ESM bundles import bare specifiers (e.g. @fromcode119/react).
+    // Wait until the runtime import map is available before importing modules.
+    const importMapReady = !!document.getElementById('fc-runtime-import-map');
+    if (!importMapReady) {
+      const timer = window.setTimeout(() => setRetryTick((v) => v + 1), 50);
+      return () => window.clearTimeout(timer);
+    }
 
     for (const plugin of pluginList) {
       const injections = Array.isArray(plugin?.ui?.headInjections) ? plugin.ui.headInjections : [];
@@ -44,38 +57,42 @@ export default function PluginLoader() {
         document.head.appendChild(element);
       }
     }
-  }, [pluginList, apiUrl]);
 
-  return (
-    <>
-      {pluginList.map((plugin: any) => {
-        if (!plugin.ui?.entry) return null;
-        const scriptUrl = `${apiUrl}/plugins/${plugin.slug}/ui/${plugin.ui.entry}`;
-        return <script key={plugin.slug} src={scriptUrl} type="module" async />;
-      })}
-      {pluginList.flatMap((plugin: any) => {
-        const css = plugin?.ui?.css;
-        if (!css) return [];
-        const cssList = Array.isArray(css) ? css : [css];
-        return cssList.map((style: string) => (
-          <link
-            key={`plugin-css-${plugin.slug}-${style}`}
-            rel="stylesheet"
-            href={`${apiUrl}/plugins/${plugin.slug}/ui/${style}`}
-          />
-        ));
-      })}
-      {theme && theme.ui?.entry && (
-        <script key={`theme-js-${theme.slug}`} src={`${apiUrl}/themes/${theme.slug}/ui/${theme.ui.entry}`} type="module" async />
-      )}
-      {(() => {
-        const css = theme?.ui?.css || theme?.ui?.styles;
-        if (!css) return null;
-        const cssArray = Array.isArray(css) ? css : [css];
-        return cssArray.map((style: string) => (
-          <link key={`theme-css-${theme.slug}-${style}`} rel="stylesheet" href={`${apiUrl}/themes/${theme.slug}/ui/${style}`} />
-        ));
-      })()}
-    </>
-  );
+    const loadModule = async (moduleKey: string, moduleUrl: string) => {
+      if (!moduleUrl || loadedModulesRef.current.has(moduleKey)) return;
+      try {
+        await import(/* webpackIgnore: true */ moduleUrl);
+        loadedModulesRef.current.add(moduleKey);
+      } catch (err) {
+        console.error(`[frontend] Failed to import runtime module ${moduleKey}:`, err);
+      }
+    };
+
+    // Load plugin runtime modules after import map is registered.
+    pluginList.forEach((plugin: any) => {
+      if (!plugin?.ui?.entry) return;
+      const moduleUrl = getPluginUiAssetUrl(plugin.slug, plugin.ui.entry);
+      void loadModule(`plugin:${plugin.slug}:${plugin.ui.entry}`, moduleUrl);
+    });
+
+    // Ensure plugin-provided CSS is mounted (idempotent).
+    pluginList.forEach((plugin: any) => {
+      const css = plugin?.ui?.css;
+      if (!css) return;
+      const cssList = Array.isArray(css) ? css : [css];
+      cssList.forEach((style: string) => {
+        const href = getPluginUiAssetUrl(plugin.slug, style);
+        if (document.head.querySelector(`link[href="${href}"]`)) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+      });
+    });
+
+    // Theme assets are loaded by loadConfig() in PluginsProvider.
+    // Keep PluginLoader focused on plugin runtime modules to avoid duplicate theme imports.
+  }, [pluginList, apiUrl, isReady, retryTick, theme]);
+
+  return null;
 }

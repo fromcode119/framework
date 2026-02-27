@@ -6,7 +6,10 @@
  *   /api/*    → API server (API_PORT, default 4000)
  *   /admin*   → Admin panel (ADMIN_PORT, default 3001)
  *   /*        → Frontend (FRONTEND_PORT, default 3002)
- *              if FRONTEND_PORT is not set, /* → admin (api-admin mode)
+ *              if FRONTEND_PORT is not set:
+ *                /      → API
+ *                /admin → admin
+ *                other  → admin
  */
 
 const http = require('http');
@@ -33,8 +36,17 @@ function target(port) {
 
 function route(url) {
   if (url.startsWith('/api')) return target(API_PORT);
+  if (url.startsWith('/plugins')) return target(API_PORT);
+  if (url.startsWith('/themes')) return target(API_PORT);
+  if (url.startsWith('/uploads')) return target(API_PORT);
   if (url.startsWith('/admin')) return target(ADMIN_PORT);
-  return FRONTEND_PORT ? target(FRONTEND_PORT) : target(ADMIN_PORT);
+  if (FRONTEND_PORT) return target(FRONTEND_PORT);
+
+  // api-admin mode: keep root on API for quick backend checks.
+  if (url === '/' || url.startsWith('/?')) return target(API_PORT);
+
+  // Preserve admin asset/navigation behavior when frontend is disabled.
+  return target(ADMIN_PORT);
 }
 
 const server = http.createServer((req, res) => {
@@ -50,10 +62,15 @@ server.listen(PROXY_PORT, () => {
   const mode = FRONTEND_PORT ? 'full (api + admin + frontend)' : 'api-admin';
   console.log(`[proxy] http://localhost:${PROXY_PORT}  mode=${mode}`);
   console.log(`[proxy]   /api/*   → :${API_PORT}`);
+  console.log(`[proxy]   /plugins* → :${API_PORT}`);
+  console.log(`[proxy]   /themes*  → :${API_PORT}`);
+  console.log(`[proxy]   /uploads* → :${API_PORT}`);
   console.log(`[proxy]   /admin*  → :${ADMIN_PORT}`);
   if (FRONTEND_PORT) {
     console.log(`[proxy]   /*       → :${FRONTEND_PORT}`);
   } else {
-    console.log(`[proxy]   /*       → :${ADMIN_PORT}  (no frontend)`);
+    console.log(`[proxy]   /        → :${API_PORT}     (no frontend)`);
+    console.log(`[proxy]   /admin*  → :${ADMIN_PORT}`);
+    console.log(`[proxy]   other    → :${ADMIN_PORT}`);
   }
 });

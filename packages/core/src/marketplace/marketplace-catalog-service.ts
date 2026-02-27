@@ -8,12 +8,24 @@ import { pipeline } from 'stream/promises';
 
 export class MarketplaceCatalogService {
   private logger = new Logger({ namespace: 'marketplace' });
-  private client: MarketplaceClient;
+  private client: MarketplaceClient | null = null;
   private manifestCache = new Map<string, PluginManifest>();
+  private marketplaceUrl: string | null = null;
 
   constructor(private discovery: DiscoveryService) {
-    const marketplaceUrl = process.env.MARKETPLACE_URL || 'http://marketplace.fromcode.local/marketplace.json';
-    this.client = new MarketplaceClient(marketplaceUrl);
+    const raw = String(process.env.MARKETPLACE_URL || '').trim();
+    const normalized = raw.toLowerCase();
+    const disabled = normalized === 'off' || normalized === 'false' || normalized === 'disabled';
+
+    if (disabled) {
+      this.logger.info('Marketplace disabled via MARKETPLACE_URL.');
+      return;
+    }
+
+    this.marketplaceUrl = !raw || normalized === 'undefined' || normalized === 'null'
+      ? 'https://marketplace.fromcode.com/marketplace.json'
+      : raw;
+    this.client = new MarketplaceClient(this.marketplaceUrl);
   }
 
   /**
@@ -21,7 +33,10 @@ export class MarketplaceCatalogService {
    */
   public async fetchCatalog(): Promise<MarketplacePlugin[]> {
     try {
-      this.logger.debug(`Fetching marketplace catalog from: ${process.env.MARKETPLACE_URL}`);
+      if (!this.client || !this.marketplaceUrl) {
+        return [];
+      }
+      this.logger.debug(`Fetching marketplace catalog from: ${this.marketplaceUrl}`);
       const data = await this.client.fetch();
       this.logger.info(`Successfully fetched ${data.plugins?.length || 0} plugins from marketplace.`);
       return data.plugins || [];
@@ -56,6 +71,10 @@ export class MarketplaceCatalogService {
    * Download and install a plugin from the marketplace, including its dependencies
    */
   public async downloadAndInstall(slug: string, visited: Set<string> = new Set()): Promise<PluginManifest> {
+    if (!this.client) {
+      throw new Error('Marketplace is disabled.');
+    }
+
     if (visited.has(slug)) {
       this.logger.debug(`Skipping already processed dependency: ${slug}`);
       const cached = this.manifestCache.get(slug);

@@ -169,7 +169,7 @@ export default function AdminPage() {
                   variant="primary" 
                   size="sm" 
                   className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold tracking-tight px-8 h-11 rounded-xl shadow-lg shadow-amber-600/30 uppercase"
-                  onClick={() => window.location.href = ROUTES.SETTINGS.UPDATES}
+                  onClick={() => router.push(ROUTES.SETTINGS.UPDATES)}
                 >
                   View Update Details
                 </Button>

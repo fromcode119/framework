@@ -6,7 +6,7 @@
  *   /api/*    → API server (API_PORT, default 4000)
  *   /admin*   → Admin panel (ADMIN_PORT, default 3001)
  *   /*        → Frontend (FRONTEND_PORT, default 3002)
- *              if FRONTEND_PORT is not set, /* → admin (api-admin mode)
+ *              if FRONTEND_PORT is not set, only /admin* is served
  */
 
 const http = require('http');
@@ -32,27 +32,52 @@ function target(port) {
 }
 
 function route(url) {
-  if (url.startsWith('/api'))   return target(API_PORT);
-  if (url.startsWith('/admin')) return target(ADMIN_PORT);
-  return FRONTEND_PORT ? target(FRONTEND_PORT) : target(ADMIN_PORT);
+  if (url.startsWith('/api'))     return target(API_PORT);
+  if (url.startsWith('/plugins')) return target(API_PORT);
+  if (url.startsWith('/themes'))  return target(API_PORT);
+  if (url.startsWith('/uploads')) return target(API_PORT);
+  if (url.startsWith('/admin'))   return target(ADMIN_PORT);
+  return FRONTEND_PORT ? target(FRONTEND_PORT) : null;
 }
 
 const server = http.createServer((req, res) => {
-  proxy.web(req, res, { target: route(req.url || '/') });
+  const targetUrl = route(req.url || '/');
+  if (!targetUrl) {
+    const body = `<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Frontend Not Running</title></head>
+  <body style="font-family: system-ui; margin: 40px;">
+    <h2>Frontend is not running</h2>
+    <p>Open <a href="/admin">/admin</a> for Admin, or run <code>npm run dev:full</code> to serve frontend on <code>/</code>.</p>
+  </body>
+</html>`;
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(body);
+    return;
+  }
+  proxy.web(req, res, { target: targetUrl });
 });
 
 server.on('upgrade', (req, socket, head) => {
-  proxy.ws(req, socket, head, { target: route(req.url || '/') });
+  const targetUrl = route(req.url || '/');
+  if (!targetUrl) {
+    socket.destroy();
+    return;
+  }
+  proxy.ws(req, socket, head, { target: targetUrl });
 });
 
 server.listen(PROXY_PORT, () => {
   const mode = FRONTEND_PORT ? 'full (api + admin + frontend)' : 'api-admin';
   console.log(`[proxy] http://localhost:${PROXY_PORT}  mode=${mode}`);
   console.log(`[proxy]   /api/*   → :${API_PORT}`);
+  console.log(`[proxy]   /plugins* → :${API_PORT}`);
+  console.log(`[proxy]   /themes*  → :${API_PORT}`);
+  console.log(`[proxy]   /uploads* → :${API_PORT}`);
   console.log(`[proxy]   /admin*  → :${ADMIN_PORT}`);
   if (FRONTEND_PORT) {
     console.log(`[proxy]   /*       → :${FRONTEND_PORT}`);
   } else {
-    console.log(`[proxy]   /*       → :${ADMIN_PORT}  (no frontend)`);
+    console.log(`[proxy]   /*       → 404 + hint  (no frontend; use /admin or dev:full)`);
   }
 });

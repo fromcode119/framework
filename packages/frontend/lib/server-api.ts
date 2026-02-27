@@ -87,8 +87,8 @@ export function getServerApiPrefixes() {
       process.env.INTERNAL_API_URL,
       process.env.API_URL,
       process.env.NEXT_PUBLIC_API_URL,
-      'http://api.framework.local',
-      'http://api.framework.local:3000'
+      'http://localhost:3000',
+      'http://localhost:4000'
     ]
       .map((value) => String(value || '').trim())
       .filter(Boolean)

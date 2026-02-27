@@ -12,7 +12,8 @@ export const envSchema = z.object({
   // Service Discovery & External Networking
   API_URL: z.string().url().optional(),
   ADMIN_URL: z.string().url().optional(),
-  MARKETPLACE_URL: z.string().url().default('https://marketplace.fromcode.com/marketplace.json'),
+  // Accepts URL, local file path, or "off"/"false"/"disabled" to disable marketplace.
+  MARKETPLACE_URL: z.string().min(1).default('https://marketplace.fromcode.com/marketplace.json'),
 
   // Database Configuration
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),

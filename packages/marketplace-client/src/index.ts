@@ -1,23 +1,56 @@
 import { MarketplacePlugin, MarketplaceData, Logger } from '@fromcode119/sdk';
 
 const logger = new Logger({ namespace: 'marketplace-client' });
+const DEFAULT_MARKETPLACE_URL = 'https://marketplace.fromcode.com/marketplace.json';
+const DEFAULT_FETCH_TIMEOUT_MS = 3000;
 
 export { MarketplacePlugin, MarketplaceData };
 
+function isMarketplaceDisabled(value: string): boolean {
+  const normalized = String(value || '').trim().toLowerCase();
+  return ['off', 'false', 'disabled', 'no', '0'].includes(normalized);
+}
+
+function parseFetchTimeoutMs(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_FETCH_TIMEOUT_MS;
+  }
+  return Math.floor(parsed);
+}
+
 export class MarketplaceClient {
   private marketplaceUrl: string;
+  private readonly fetchTimeoutMs: number;
+  private readonly disabled: boolean;
 
   constructor(url?: string) {
-    this.marketplaceUrl = url || process.env.MARKETPLACE_URL || 'https://marketplace.fromcode.com/marketplace.json';
+    const raw = String(url ?? process.env.MARKETPLACE_URL ?? '').trim();
+    this.disabled = isMarketplaceDisabled(raw);
+    this.marketplaceUrl = this.disabled
+      ? ''
+      : (raw || DEFAULT_MARKETPLACE_URL);
+    this.fetchTimeoutMs = parseFetchTimeoutMs(process.env.MARKETPLACE_FETCH_TIMEOUT_MS);
   }
 
   /**
    * Fetch the full marketplace data
    */
   public async fetch(): Promise<MarketplaceData> {
+    if (this.disabled) {
+      return { plugins: [], themes: [] };
+    }
+
     try {
       if (this.marketplaceUrl.startsWith('http')) {
-        const response = await fetch(this.marketplaceUrl);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), this.fetchTimeoutMs);
+        let response: Response;
+        try {
+          response = await fetch(this.marketplaceUrl, { signal: controller.signal });
+        } finally {
+          clearTimeout(timeout);
+        }
         if (!response.ok) {
           throw new Error(`Failed to fetch marketplace: ${response.statusText}`);
         }

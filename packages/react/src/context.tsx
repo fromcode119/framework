@@ -16,7 +16,8 @@ import {
   RUNTIME_MODULE_NAMES,
   getFrameworkRuntimeBridge,
   normalizeLocaleCode,
-  resolveLocalizedLabel
+  resolveLocalizedLabel,
+  resolveRelationValue
 } from '@fromcode119/sdk';
 
 export interface SlotComponent {
@@ -382,7 +383,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
             const script = document.createElement('script');
             script.src = entryUrl;
             script.type = 'module';
-            script.async = true;
+            script.async = false;
             document.head.appendChild(script);
           }
         }
@@ -820,6 +821,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         getPreferredBrowserLocale,
         normalizeLocaleCode,
         resolveLocalizedLabel,
+        resolveRelationValue,
         isReady,
         // Non-hook versions for direct access from CJS/ESM bridge
         getState: () => stabilityRef.current,

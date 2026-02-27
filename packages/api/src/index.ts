@@ -799,7 +799,7 @@ export async function bootstrap() {
   //  3. process.cwd() — fallback for standalone apps / published npm packages
   //
   // This means:
-  //  • Framework monorepo devs  : cwd = packages/api/ → walks up → finds framework/Source/ → loads .env + .env.local there
+  //  • Framework monorepo devs  : cwd = packages/api/ → walks up → finds framework/Source/ → loads .env there
   //  • starters/local           : FROMCODE_PROJECT_ROOT=../../starters/local → loads starters/local/.env
   //  • Published package users  : no workspace found → process.cwd() = their project root → loads .env there
   function findProjectRoot(): string {
@@ -830,14 +830,18 @@ export async function bootstrap() {
 
   const projectRoot = findProjectRoot();
 
-  // Load .env, deduplicating when cwd === projectRoot.
-  // Only one .env file is needed — copy .env.example to .env and edit.
-  const seen = new Set<string>();
-  for (const envPath of [path.join(process.cwd(), '.env'), path.join(projectRoot, '.env')]) {
-    if (!seen.has(envPath) && fs.existsSync(envPath)) {
-      dotenv.config({ path: envPath });
-      seen.add(envPath);
-    }
+  // Load a single .env file only.
+  // Prefer the resolved project root; fall back to cwd for standalone runs.
+  const projectEnvPath = path.join(projectRoot, '.env');
+  const cwdEnvPath = path.join(process.cwd(), '.env');
+  const envPath = fs.existsSync(projectEnvPath)
+    ? projectEnvPath
+    : fs.existsSync(cwdEnvPath)
+      ? cwdEnvPath
+      : null;
+
+  if (envPath) {
+    dotenv.config({ path: envPath, override: true });
   }
 
   process.on('uncaughtException', (err) => {

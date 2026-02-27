@@ -19,7 +19,7 @@ cd framework/Source
 npm install
 
 # 2. Configure your local environment
-cp .env.local.example .env.local   # or create framework/Source/.env.local
+cp .env.example .env               # or create framework/Source/.env
 #    Minimum: set JWT_SECRET. SQLite + in-memory cache work with no other changes.
 
 # 3. Start (from this starters/local/ directory)
@@ -67,7 +67,7 @@ Path routing through the proxy:
 
 ## Environment
 
-Place overrides in `framework/Source/.env.local` (gitignored).
+Use `framework/Source/.env`.
 
 ```env
 DB_DIALECT=sqlite
