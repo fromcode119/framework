@@ -5,23 +5,31 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/components/theme-context';
 import { FrameworkIcons } from '@/lib/icons';
+import { FRAMEWORK_RESOURCES, ROUTES } from '@/lib/constants';
 
 export default function ThemesLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const pathname = usePathname() || '';
 
   const tabs = [
-    { label: 'Installed', href: '/themes/installed', icon: <FrameworkIcons.Layers size={16} /> },
-    { label: 'Marketplace', href: '/themes/marketplace', icon: <FrameworkIcons.ShoppingBag size={16} /> },
+    { label: 'Installed', href: ROUTES.THEMES.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
+    { label: 'Marketplace', href: ROUTES.THEMES.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
   ];
 
-  const isMarketplace = pathname === '/themes/marketplace';
-  const isInstalled = pathname === '/themes/installed' || (pathname.startsWith('/themes/') && !pathname.includes('/marketplace') && pathname !== '/themes/installed');
-  
-  const isDetailPage = pathname.startsWith('/themes/') && !['/themes/installed', '/themes/marketplace'].includes(pathname) && pathname !== '/themes';
+  const isMarketplace = pathname.startsWith(ROUTES.THEMES.MARKETPLACE);
+  const isInstalled =
+    pathname === ROUTES.THEMES.INSTALLED ||
+    (pathname.startsWith(`${ROUTES.THEMES.ROOT}/`) &&
+      !pathname.startsWith(ROUTES.THEMES.MARKETPLACE) &&
+      pathname !== ROUTES.THEMES.INSTALLED);
+  const isDetailPage =
+    pathname.startsWith(`${ROUTES.THEMES.ROOT}/`) &&
+    !pathname.startsWith(ROUTES.THEMES.MARKETPLACE) &&
+    pathname !== ROUTES.THEMES.INSTALLED &&
+    pathname !== ROUTES.THEMES.ROOT;
 
   // Logic to determine active tab strictly
-  const activeTab = pathname.startsWith('/themes/marketplace') ? tabs[1] : tabs[0];
+  const activeTab = isMarketplace ? tabs[1] : tabs[0];
 
   return (
     <div className="w-full pb-24 animate-in fade-in duration-700">
@@ -38,7 +46,7 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
                 {isDetailPage ? 'Theme Detail' : activeTab.label}
               </h1>
               <p className={`text-base font-medium max-w-2xl ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                {pathname.includes('/marketplace')
+                {isMarketplace
                   ? 'Discover and install visual styles to transform your platform.' 
                   : 'Manage your existing installation, layout variables and configuration.'}
               </p>
@@ -50,7 +58,7 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
                 : 'bg-slate-100/80 border-slate-200/60 shadow-sm'
             }`}>
               {tabs.map(tab => {
-                const isActive = (tab.label === 'Installed' && isInstalled) || (tab.label === 'Marketplace' && pathname.startsWith('/themes/marketplace'));
+                const isActive = tab.href === ROUTES.THEMES.INSTALLED ? isInstalled : isMarketplace;
                 
                 return (
                   <Link 
@@ -99,9 +107,9 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
             </div>
             
             <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-               <span className="hover:text-indigo-500 transition-colors cursor-help">Theme Documentation</span>
+               <a href={FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Theme Documentation</a>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <span className="hover:text-indigo-500 transition-colors cursor-help">Marketplace Health</span>
+               <Link href={ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">Marketplace Health</Link>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { 
   IDatabaseManager, users, systemRoles, systemUsersToRoles, 
-  systemRolesToPermissions, systemPermissions 
+  systemRolesToPermissions
 } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger, SystemTable } from '@fromcode119/core';
@@ -188,22 +188,26 @@ export class UserManagementService {
       throw new Error('Permission name is required');
     }
 
-    const existing = await this.db.findOne(systemPermissions, { name: data.name });
+    const now = new Date();
+    const existing = await this.db.findOne(SystemTable.PERMISSIONS, { name: data.name });
     const payload = {
       name: data.name,
       description: data.description || null,
       pluginSlug: data.pluginSlug || 'system',
       group: data.group || 'Other',
       impact: data.impact || 'Medium',
-      updatedAt: new Date()
+      updatedAt: now
     };
 
     if (existing) {
-      await this.db.update(systemPermissions, { name: data.name }, payload);
+      await this.db.update(SystemTable.PERMISSIONS, { name: data.name }, payload);
       return;
     }
 
-    await this.db.insert(systemPermissions, payload);
+    await this.db.insert(SystemTable.PERMISSIONS, {
+      ...payload,
+      createdAt: now
+    });
   }
 
   async deleteUser(id: number) {
@@ -222,25 +226,28 @@ export class UserManagementService {
 
   async getPermissions() {
     const plugins = this.manager.getPlugins().filter(p => p.state === 'active');
-    const dbPermissions = await this.db.find(systemPermissions);
+    const dbPermissions = await this.db.find(SystemTable.PERMISSIONS);
     
     for (const p of plugins) {
       const caps: any[] = Array.isArray(p.manifest.capabilities) ? p.manifest.capabilities : [];
       for (const cap of caps) {
         const name = typeof cap === 'string' ? cap : cap.name;
         if (!dbPermissions.find((d: any) => d.name === name)) {
+          const now = new Date();
           const perm = {
             name,
             description: typeof cap === 'string' ? `Capability from ${p.manifest.name}` : cap.description,
             pluginSlug: p.manifest.slug,
             group: p.manifest.admin?.group || 'Other',
-            impact: 'Medium'
+            impact: 'Medium',
+            createdAt: now,
+            updatedAt: now
           };
-          await this.db.insert(systemPermissions, perm);
+          await this.db.insert(SystemTable.PERMISSIONS, perm);
         }
       }
     }
-    return this.db.find(systemPermissions);
+    return this.db.find(SystemTable.PERMISSIONS);
   }
 
   private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {
