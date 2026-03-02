@@ -57,4 +57,14 @@ describe('System E2E / Integration', () => {
         const res = await request(server.app).get('/api/v1/plugins');
         expect([401, 503]).toContain(res.status);
     });
+
+    it('should expose canonical forge assistant route', async () => {
+        const res = await request(server.app).get('/api/v1/forge/admin/assistant/tools');
+        expect(res.status).not.toBe(404);
+    });
+
+    it('should not expose assistant aliases under system routes', async () => {
+        const res = await request(server.app).get('/api/v1/system/admin/assistant/tools');
+        expect([404, 503]).toContain(res.status);
+    });
 });

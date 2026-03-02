@@ -14,6 +14,8 @@
       "@fromcode119/core": ["packages/core/src"],
       "@fromcode119/core/shared": ["packages/core/src/shared"],
       "@fromcode119/core/utils": ["packages/core/src/utils"],
+      "@fromcode119/ai": ["packages/ai/src"],
+      "@fromcode119/ai/runtime": ["packages/ai/src/admin-assistant-runtime.ts"],
       "@fromcode119/database": ["packages/database/src"],
       "@fromcode119/sdk": ["packages/sdk/src"],
       "@fromcode119/sdk/internal": ["packages/sdk/src/internal"],
@@ -24,6 +26,7 @@
       "@fromcode119/cache": ["packages/cache/src"],
       "@fromcode119/scheduler": ["packages/scheduler/src"],
       "@fromcode119/plugins": ["packages/plugins/src"],
+      "@fromcode119/mcp": ["packages/mcp/src"],
       "@fromcode119/marketplace-client": ["packages/marketplace-client/src"]
     },
     "composite": true,
@@ -32,6 +35,7 @@
   },
   "files": [],
   "references": [
+    { "path": "./packages/ai" },
     { "path": "./packages/core" },
     { "path": "./packages/sdk" },
     { "path": "./packages/react" },
@@ -43,6 +47,7 @@
     { "path": "./packages/media" },
     { "path": "./packages/email" },
     { "path": "./packages/cache" },
+    { "path": "./packages/mcp" },
     { "path": "./packages/scheduler" },
     { "path": "./packages/plugins" },
     { "path": "./packages/marketplace-client" }

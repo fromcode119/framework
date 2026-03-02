@@ -17,6 +17,7 @@ const withQuery = (path: string, query: Record<string, string | number | boolean
 
 export const ROUTES = {
   ROOT: '/',
+  MINIMAL: '/forge',
   ACTIVITY: '/activity',
   AUTH: {
     LOGIN: '/login',

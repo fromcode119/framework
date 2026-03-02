@@ -26,6 +26,25 @@ export { getProjectRoot, getPluginsDir, getThemesDir } from './config/paths';
 // Integrations
 export { IntegrationManager } from './integrations/integration-manager';
 export { IntegrationRegistry } from './integrations/integration-registry';
+export { AdminAssistantRuntime } from './integrations/admin-assistant-runtime';
+export type {
+  AssistantAction,
+  AssistantChatInput,
+  AssistantChatResult,
+  AssistantChatTrace,
+  AssistantPlanArtifact,
+  AssistantPlanStatus,
+  AssistantRunMode,
+  AssistantSessionCheckpoint,
+  AssistantUiHints,
+  AssistantCollectionContext,
+  AssistantExecuteInput,
+  AssistantExecuteResult,
+  ForgeSkillDefinition,
+  AssistantSettingValue,
+  AssistantToolSummary,
+  AdminAssistantRuntimeOptions,
+} from './integrations/admin-assistant-runtime';
 
 // Context
 export { requestContext, getLocale } from './context/request-context';

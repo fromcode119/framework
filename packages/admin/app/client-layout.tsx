@@ -7,12 +7,14 @@ import { ThemeProvider, useTheme } from '@/components/theme-context';
 import * as SharedComponents from '@/components';
 import Sidebar from './sidebar';
 import PluginLoader from './plugin-loader';
+import AdminExtensionLoader from './admin-extension-loader';
 import { FrameworkIcons } from '@/lib/icons';
 import { Dropdown } from '@/components/ui/dropdown';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-context';
 import { api } from '@/lib/api';
 import { API_BASE_URL, ENDPOINTS, ROUTES } from '@/lib/constants';
+import { stripAdminBasePath } from '@/lib/admin-path';
 import { Loader } from '@/components/ui/loader';
 import { purgeAuth } from '@/lib/auth-utils';
 import { applyDateLocaleTimezonePatch } from '@/lib/timezone';
@@ -23,7 +25,6 @@ const {
   Search = () => null, 
   Sun = () => null, 
   Moon = () => null, 
-  Bell = () => null,
   User = () => null,
   Settings = () => null,
   Logout = () => null,
@@ -89,11 +90,16 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
       </div>
       <div className="flex items-center gap-4">
         <Slot name="admin.layout.header.right" />
+        <button
+          onClick={() => router.push(ROUTES.MINIMAL)}
+          className="h-9 w-9 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-cyan-500 hover:border-cyan-400/60 transition-colors inline-flex items-center justify-center"
+          aria-label="Open Forge"
+          title="Open Forge"
+        >
+          <FrameworkIcons.Zap size={14} />
+        </button>
         <button onClick={toggleTheme} className="text-slate-500 hover:text-indigo-500 transition-colors">
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-        <button className="text-slate-500 hover:text-indigo-500 transition-colors">
-          <Bell size={18} />
         </button>
         
         <Dropdown 
@@ -162,6 +168,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   }, [isSidebarOpen, isSidebarInitialized]);
 
   const pathname = usePathname();
+  const normalizedPathname = React.useMemo(() => stripAdminBasePath(pathname || '/'), [pathname]);
+  const isMinimalPath = normalizedPathname?.startsWith(ROUTES.MINIMAL) || normalizedPathname?.startsWith('/minimal');
+  const [isAdvancedMode, setIsAdvancedMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('fc_admin_advanced_mode') === 'true';
+  });
   
   // Robust auth page detection
   const isAuthPage = React.useMemo(() => {
@@ -200,6 +212,19 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     localStorage.setItem('fc_sidebar_mini', isMini.toString());
   }, [isMini]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const syncMode = () => {
+      setIsAdvancedMode(localStorage.getItem('fc_admin_advanced_mode') === 'true');
+    };
+    window.addEventListener('fc:admin-mode-change', syncMode as EventListener);
+    window.addEventListener('storage', syncMode as EventListener);
+    return () => {
+      window.removeEventListener('fc:admin-mode-change', syncMode as EventListener);
+      window.removeEventListener('storage', syncMode as EventListener);
+    };
+  }, []);
+
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -233,6 +258,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       router.push(ROUTES.AUTH.LOGIN);
     }
   }, [user, isInitialized, isAuthPage, isAuthLoading]);
+
+  useEffect(() => {
+    if (isAuthPage || !user || isInitialized !== true) return;
+    if (isAdvancedMode) return;
+    if (!isMinimalPath) {
+      router.replace(ROUTES.MINIMAL);
+    }
+  }, [isAuthPage, user, isInitialized, isAdvancedMode, isMinimalPath, router]);
 
   // Handle Unauthorized State (RBAC)
   if (user && !isAuthPage && !user.roles?.includes('admin')) {
@@ -287,10 +320,22 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+
+  if (isMinimalPath) {
+    return (
+      <div className="min-h-screen transition-all duration-300 ease-in-out font-sans bg-slate-50 dark:bg-[#020617]">
+        <AdminExtensionLoader />
+        <main className="min-h-screen flex flex-col">
+          {children}
+        </main>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col lg:flex-row transition-all duration-300 ease-in-out font-sans bg-slate-50 dark:bg-[#020617]">
       <PluginLoader />
+      <AdminExtensionLoader />
       
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
