@@ -62,12 +62,14 @@
     "dev": "tsc -w"
   },
   "dependencies": {
+    "@fromcode119/ai": "*",
     "@fromcode119/cache": "*",
     "@fromcode119/database": "*",
     "@fromcode119/email": "*",
     "@fromcode119/plugins": "*",
     "@fromcode119/marketplace-client": "^0.1.6",
     "@fromcode119/media": "*",
+    "@fromcode119/mcp": "*",
     "@fromcode119/scheduler": "*",
     "@fromcode119/sdk": "*",
     "@types/ws": "^8.18.1",

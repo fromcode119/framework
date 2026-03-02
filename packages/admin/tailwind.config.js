@@ -4,6 +4,7 @@ module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "../../packages/ai/src/**/*.{js,ts,jsx,tsx,mdx}", // Forge UI mounted via admin slot
     "../../plugins/**/*.{js,ts,jsx,tsx,mdx}", // To allow styling in plugins
   ],
   theme: {

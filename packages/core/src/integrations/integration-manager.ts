@@ -7,6 +7,7 @@ import { EmailIntegrationDefinition } from './providers/email-provider';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';
 import { SsoIntegrationDefinition } from './providers/sso-provider';
+import { AiIntegrationDefinition } from '@fromcode119/ai';
 import { sanitizeKey } from '../utils';
 import path from 'path';
 
@@ -81,6 +82,7 @@ export class IntegrationManager {
     this.registry.registerType(StorageIntegrationDefinition);
     this.registry.registerType(CacheIntegrationDefinition);
     this.registry.registerType(SsoIntegrationDefinition);
+    this.registry.registerType(AiIntegrationDefinition);
   }
 
   /**
@@ -134,6 +136,17 @@ export class IntegrationManager {
       this.logger.error(`Failed to get integration "${normalized}": ${error.message}`);
       throw error;
     }
+  }
+
+  async instantiateWithConfig<T = any>(
+    typeKey: string,
+    providerKey: string,
+    config: Record<string, any> = {}
+  ): Promise<{ instance: T; resolved: any }> {
+    const normalized = this.normalizeKey(typeKey);
+    return this.registry.instantiateWithConfig<T>(normalized, providerKey, config, {
+      context: { projectRoot: this.projectRoot, logger: this.logger },
+    });
   }
 
   /**

@@ -152,6 +152,10 @@ export const FrameworkIcons = {
   Image: Lucide.Image,
   Fingerprint: Lucide.Fingerprint,
   Key: Lucide.Key,
+  MessageSquare: Lucide.MessageSquare,
+  ListChecks: Lucide.ListChecks,
+  Send: Lucide.Send,
+  Wrench: Lucide.Wrench,
 };
 
 /**

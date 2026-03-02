@@ -288,6 +288,42 @@ export class IntegrationRegistry {
     return { instance, resolved };
   }
 
+  async instantiateWithConfig<TInstance = any>(
+    typeKey: string,
+    providerKey: string,
+    config: Record<string, any> = {},
+    options: { context?: { projectRoot?: string; logger?: Logger } } = {}
+  ): Promise<{ instance: TInstance; resolved: IntegrationResolved<TInstance> }> {
+    const normalizedType = this.normalize(typeKey);
+    const runtime = this.types.get(normalizedType);
+    if (!runtime) {
+      throw new Error(`Integration type "${normalizedType}" is not registered`);
+    }
+
+    const normalizedProvider = this.normalize(providerKey);
+    const provider = runtime.providers.get(normalizedProvider);
+    if (!provider) {
+      throw new Error(
+        `Integration "${normalizedType}" provider "${normalizedProvider}" is not registered`
+      );
+    }
+
+    const normalizedConfig = provider.normalizeConfig ? provider.normalizeConfig(config || {}) : (config || {});
+    this.validateProviderConfig(normalizedType, provider, normalizedConfig);
+    const instance = await provider.create(normalizedConfig, options.context);
+
+    return {
+      instance,
+      resolved: {
+        type: normalizedType,
+        providerKey: normalizedProvider,
+        provider,
+        config: normalizedConfig,
+        source: 'stored',
+      },
+    };
+  }
+
   async instantiateMany<TInstance = any>(
     typeKey: string,
     options: { preferStored?: boolean; context?: { projectRoot?: string; logger?: Logger } } = {}
@@ -347,14 +383,28 @@ export class IntegrationRegistry {
       name: providerName,
       providerKey: normalizedProvider,
       config: normalizedConfig,
-      enabled: nextEnabled,
+      enabled: options.makeActive ? true : nextEnabled,
       createdAt: existing?.createdAt || nowIso,
       updatedAt: nowIso
     };
 
-    const nextProviders = existing
+    const nextProvidersBase = existing
       ? existingProviders.map((entry) => (entry.id === existing.id ? nextEntry : entry))
       : existingProviders.concat(nextEntry);
+
+    let nextProviders = nextProvidersBase;
+    if (options.makeActive) {
+      const enforceSingleActive = normalizedType !== 'email';
+      const remaining = nextProvidersBase
+        .filter((entry) => entry.id !== nextEntry.id)
+        .map((entry) =>
+          enforceSingleActive
+            ? { ...entry, enabled: false, updatedAt: nowIso }
+            : entry
+        );
+
+      nextProviders = [nextEntry, ...remaining];
+    }
 
     await this.writeStoredProviders(normalizedType, nextProviders);
   }

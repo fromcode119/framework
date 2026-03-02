@@ -32,6 +32,8 @@
       "@fromcode119/core/*": ["../core/src/*"],
       "@fromcode119/react": ["../react/src"],
       "@fromcode119/react/*": ["../react/src/*"],
+      "@fromcode119/ai": ["../ai/src"],
+      "@fromcode119/ai/*": ["../ai/src/*"],
       "@fromcode119/sdk": ["../sdk/src"],
       "@fromcode119/sdk/*": ["../sdk/src/*"]
     }

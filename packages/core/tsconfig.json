@@ -7,6 +7,7 @@
   },
   "include": ["src/**/*"],
   "references": [
+    { "path": "../ai" },
     { "path": "../sdk" },
     { "path": "../database" },
     { "path": "../media" },
@@ -14,6 +15,7 @@
     { "path": "../cache" },
     { "path": "../scheduler" },
     { "path": "../plugins" },
+    { "path": "../mcp" },
     { "path": "../marketplace-client" }
   ]
 }

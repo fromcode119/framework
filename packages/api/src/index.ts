@@ -40,6 +40,7 @@ import { setupPluginSettingsRoutes } from './routes/plugin-settings';
 import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
 import { setupMarketplaceRoutes } from './routes/marketplace';
 import { setupSystemRoutes } from './routes/system';
+import { setupForgeRoutes } from './routes/forge';
 import { setupMediaRoutes } from './routes/media';
 import { setupVersioningRoutes } from './routes/versioning';
 import { setupCollectionRoutes, setupBaseCollectionRoutes } from './routes/collections';
@@ -144,7 +145,10 @@ export class APIServer {
       this.app.use(STORAGE_CONFIG.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir));
     }
 
-    this.app.use(express.json());
+    const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';
+    const formBodyLimit = process.env.API_FORM_BODY_LIMIT || jsonBodyLimit;
+    this.app.use(express.json({ limit: jsonBodyLimit }));
+    this.app.use(express.urlencoded({ extended: true, limit: formBodyLimit }));
     this.app.use(xssMiddleware);
     this.app.use(cookieParser());
     this.app.use(csrfMiddleware);
@@ -177,6 +181,12 @@ export class APIServer {
 
     // Global Error Handler with CORS support
     this.app.use((err: any, req: any, res: any, next: any) => {
+      if (err?.status === 413 || err?.type === 'entity.too.large') {
+        return res.status(413).json({
+          error: 'Payload Too Large',
+          message: 'Request body is too large. Reduce staged action payload size or increase API_JSON_BODY_LIMIT.',
+        });
+      }
       this.logger.error(`Unhandled Error: ${err.message}`, { stack: err.stack, path: req.path });
       
       // Ensure CORS headers even on error
@@ -720,6 +730,7 @@ export class APIServer {
     vApi.use('/marketplace', setupMarketplaceRoutes(this.manager, this.auth));
     vApi.use('/themes', setupThemeRoutes(this.themeManager, this.auth));
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
+    vApi.use('/forge', setupForgeRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
     
