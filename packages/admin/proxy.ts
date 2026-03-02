@@ -32,13 +32,6 @@ function stripBasePath(pathname: string, basePath: string): string {
   return pathname || '/';
 }
 
-function withBasePath(route: string, basePath: string): string {
-  const normalizedRoute = route.startsWith('/') ? route : `/${route}`;
-  if (!basePath) return normalizedRoute;
-  if (normalizedRoute === '/') return `${basePath}/`;
-  return `${basePath}${normalizedRoute}`;
-}
-
 export function proxy(request: NextRequest) {
   const token = request.cookies.get('fc_token')?.value;
   const basePath = resolveAdminBasePath(request);
@@ -50,7 +43,9 @@ export function proxy(request: NextRequest) {
 
   const redirectTo = (route: string) => {
     const url = request.nextUrl.clone();
-    url.pathname = withBasePath(route, basePath);
+    // In Next middleware, pathname should be basePath-relative.
+    // Setting "/admin/..." here when basePath="/admin" causes "/admin/admin/...".
+    url.pathname = route.startsWith('/') ? route : `/${route}`;
     url.search = '';
     return NextResponse.redirect(url);
   };

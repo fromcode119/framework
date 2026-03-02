@@ -28,6 +28,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@fromcode119/ai": "*",
     "@fromcode119/core": "*",
     "@fromcode119/react": "*",
     "@fromcode119/sdk": "*",

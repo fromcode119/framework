@@ -4,7 +4,7 @@ const path = require('path');
 const nextConfig = {
   basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '',
   reactStrictMode: true,
-  transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk'],
+  transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk', '@fromcode119/ai'],
   turbopack: {
     resolveAlias: {
       '@fromcode119/react': '../react/src',
@@ -13,6 +13,8 @@ const nextConfig = {
       '@fromcode119/core/*': '../core/src/*',
       '@fromcode119/sdk': '../sdk/src',
       '@fromcode119/sdk/*': '../sdk/src/*',
+      '@fromcode119/ai': '../ai/src',
+      '@fromcode119/ai/*': '../ai/src/*',
     },
   },
   images: {
@@ -35,14 +37,17 @@ const nextConfig = {
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
     config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/index.ts');
     config.resolve.alias['@fromcode119/sdk$'] = path.resolve(__dirname, '../sdk/src/index.ts');
+    config.resolve.alias['@fromcode119/ai$'] = path.resolve(__dirname, '../ai/src/index.ts');
 
     config.resolve.alias['@fromcode119/react/'] = path.resolve(__dirname, '../react/src/');
     config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
     config.resolve.alias['@fromcode119/sdk/'] = path.resolve(__dirname, '../sdk/src/');
+    config.resolve.alias['@fromcode119/ai/'] = path.resolve(__dirname, '../ai/src/');
 
     config.resolve.alias['@fromcode119/react'] = path.resolve(__dirname, '../react/src/');
     config.resolve.alias['@fromcode119/core'] = path.resolve(__dirname, '../core/src/');
     config.resolve.alias['@fromcode119/sdk'] = path.resolve(__dirname, '../sdk/src/');
+    config.resolve.alias['@fromcode119/ai'] = path.resolve(__dirname, '../ai/src/');
 
     config.resolve.symlinks = false;
 
