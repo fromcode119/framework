@@ -15,10 +15,13 @@ import { AuditManager } from '../security/audit-manager';
 import { SecurityMonitor } from '../security/security-monitor';
 import { MarketplaceCatalogService } from '../marketplace/marketplace-catalog-service';
 import { createHash } from 'crypto';
+import * as path from 'path';
+import * as fs from 'fs';
 import { createPluginContext, PluginManagerInterface } from './context';
+import { CoreExtensionManager } from '../extensions/extension-manager';
 export { PluginManagerInterface };
 
-import { getProjectRoot, getPluginsDir } from '../config/paths';
+import { getProjectRoot, getPluginsDir, getPackagesDir } from '../config/paths';
 
 // Services
 import { RuntimeService } from './services/runtime-service';
@@ -71,6 +74,9 @@ export class PluginManager implements PluginManagerInterface {
   public get email() { return this.integrations.email; }
   public get cache() { return this.integrations.cache; }
 
+  // Core Extension System
+  public extensions: CoreExtensionManager;
+
   constructor() {
     this.projectRoot = getProjectRoot();
     this.db = DatabaseFactory.create(process.env.DATABASE_URL || '');
@@ -102,12 +108,33 @@ export class PluginManager implements PluginManagerInterface {
     this.marketplace = new MarketplaceCatalogService(this.discovery);
     this.admin = new AdminMetadataService();
     this.lifecycle = new LifecycleService(this, this.registry, this.discovery, this.schemaManager);
+    
+    // Initialize Core Extension System
+    const packagesRoot = getPackagesDir();
+    this.extensions = new CoreExtensionManager(this.db, packagesRoot, this.logger);
   }
 
   async init() {
     await this.migrationManager.migrate();
     await this.coordinator.validateDatabaseState();
     await this.integrations.initialize();
+    
+    // Discover and initialize core extensions BEFORE plugin initialization
+    // This ensures extensions like AI can register integration types before plugins need them
+    this.extensions.setServices({
+      integrations: this.integrations,
+      hooks: this.hooks,
+      plugins: this,
+    });
+    
+    try {
+      await this.extensions.discover();
+      await this.extensions.initializeAll();
+      this.logger.info('Core extensions initialized');
+    } catch (error) {
+      this.logger.error('Failed to initialize core extensions:', error);
+      // Don't fail startup if extensions fail - they're optional
+    }
     
     // Register background workers - MUST happen after migrations but before scheduler starts
     this.jobs.registerWorker('scheduler', async (job) => {
@@ -249,6 +276,117 @@ export class PluginManager implements PluginManagerInterface {
   async disable(slug: string, options: { persistState?: boolean } = {}) { return this.lifecycle.disable(slug, options); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }
   async register(plugin: FromcodePlugin, path?: string) { return this.lifecycle.register(plugin, path); }
+
+  async scaffoldPlugin(input: {
+    slug: string;
+    name: string;
+    description?: string;
+    version?: string;
+    activate?: boolean;
+  }): Promise<{
+    slug: string;
+    name: string;
+    path: string;
+    activated: boolean;
+    activationError: string | null;
+    manifest: any;
+  }> {
+    const slug = String(input.slug || '').trim().toLowerCase();
+    const name = String(input.name || '').trim();
+    const description = String(input.description || '').trim();
+    const version = String(input.version || '1.0.0').trim() || '1.0.0';
+    const activate = input.activate !== false;
+
+    if (!slug || !name) {
+      throw new Error('Plugin slug and name are required');
+    }
+
+    const pluginsDir = getPluginsDir();
+    const pluginPath = path.join(pluginsDir, slug);
+
+    // Check if plugin already exists
+    if (this.plugins.has(slug)) {
+      throw new Error(`Plugin "${slug}" already exists.`);
+    }
+    if (fs.existsSync(pluginPath)) {
+      throw new Error(`Plugin path already exists: ${pluginPath}`);
+    }
+
+    // Create directory structure
+    fs.mkdirSync(path.join(pluginPath, 'ui'), { recursive: true });
+
+    // Create manifest
+    const manifest = {
+      slug,
+      name,
+      version,
+      description,
+      main: 'index.js',
+      capabilities: ['api', 'hooks', 'ui'],
+      ui: {
+        entry: 'index.js',
+      },
+    };
+
+    // Create plugin main file
+    const pluginMain = [
+      "'use strict';",
+      '',
+      'module.exports = {',
+      '  async onInit(context) {',
+      `    context.logger.info('${name} initialized.');`,
+      '  },',
+      '  async onEnable(context) {',
+      `    context.logger.info('${name} enabled.');`,
+      '  },',
+      '  async onDisable(context) {',
+      `    context.logger.info('${name} disabled.');`,
+      '  },',
+      '};',
+      '',
+    ].join('\n');
+
+    // Create UI entry
+    const uiEntry = [
+      'export const init = () => {',
+      `  console.info('[${slug}] UI initialized.');`,
+      '};',
+      '',
+      'if (typeof window !== "undefined" && (window).Fromcode) {',
+      '  init();',
+      '}',
+      '',
+    ].join('\n');
+
+    // Write files
+    fs.writeFileSync(path.join(pluginPath, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(path.join(pluginPath, 'index.js'), pluginMain, 'utf8');
+    fs.writeFileSync(path.join(pluginPath, 'ui', 'index.js'), uiEntry, 'utf8');
+
+    // Discover new plugin
+    await this.discoverPlugins();
+
+    // Enable if requested
+    let activated = false;
+    let activationError: string | null = null;
+    if (activate) {
+      try {
+        await this.enable(slug);
+        activated = true;
+      } catch (error: any) {
+        activationError = String(error?.message || 'Activation failed');
+      }
+    }
+
+    return {
+      slug,
+      name,
+      path: pluginPath,
+      activated,
+      activationError,
+      manifest,
+    };
+  }
 
   async writeLog(level: string, message: string, pluginSlug?: string, context?: any) {
     await this.registry.writeLog(level, message, pluginSlug, context);

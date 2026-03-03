@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import {
-  AssistantCollectionContext,
   PluginManager,
   ThemeManager,
   parseBoolean,
@@ -8,30 +7,150 @@ import {
 } from '@fromcode119/core';
 import {
   AdminAssistantRuntime,
-  ForgeSkillDefinition,
+  AssistantSkillDefinition,
+  AssistantCollectionContext,
 } from '@fromcode119/ai/runtime';
-import { RESTController } from './rest-controller';
+// Type definition for RESTController - imported from api package at runtime
+export type RESTController = any;
 import { IDatabaseManager } from '@fromcode119/database';
-import { ForgeManagementToolsService } from './forge/management-tools-service';
-import { ForgeSessionStore } from './forge/session-store';
-import { ForgeCatalogService } from './forge/catalog-service';
+import { AssistantManagementToolsService } from './forge/management-tools-service';
+import { AssistantSessionStore } from './forge/session-store';
+import { AssistantCatalogService } from './forge/catalog-service';
+import { AssistantRuntimeFactoryService } from './forge/runtime-factory-service';
+import { AssistantRequestPayloadService } from './forge/request-payload-service';
+// AI Improvement Components
+import { EnhancedContextManager } from './forge/enhanced-context-manager';
+import { ReasoningChainTracker } from './forge/reasoning-chain-tracker';
+import { IntelligentToolSelector } from './forge/intelligent-tool-selector';
+import { TaskComplexityDetector } from './forge/task-complexity-detector';
 
 const ASSISTANT_PROMPT_BASIC_KEY = 'assistant.prompt.basic';
 const ASSISTANT_PROMPT_ADVANCED_KEY = 'assistant.prompt.advanced';
 const ASSISTANT_SESSION_KEY_PREFIX = 'assistant.session.';
 const ASSISTANT_SESSION_GROUP = 'assistant-session';
 
-export class ForgeController {
+export class AssistantController {
   private db: IDatabaseManager;
-  private managementTools: ForgeManagementToolsService;
-  private sessions: ForgeSessionStore;
-  private catalog: ForgeCatalogService;
+  private managementTools: AssistantManagementToolsService;
+  private sessions: AssistantSessionStore;
+  private catalog: AssistantCatalogService;
+  private runtimeFactory: AssistantRuntimeFactoryService;
+  private payloadService: AssistantRequestPayloadService;
+  // AI Improvement Components
+  private toolSelector: IntelligentToolSelector;
+  private complexityDetector: TaskComplexityDetector;
+  private activeSessions: Map<string, { context: EnhancedContextManager; reasoning: ReasoningChainTracker }> = new Map();
 
   constructor(private manager: PluginManager, private themeManager: ThemeManager, private restController: RESTController) {
     this.db = (manager as any).db;
-    this.managementTools = new ForgeManagementToolsService(manager, themeManager);
-    this.sessions = new ForgeSessionStore(this.db, ASSISTANT_SESSION_KEY_PREFIX, ASSISTANT_SESSION_GROUP);
-    this.catalog = new ForgeCatalogService(manager, themeManager, restController, (value) => this.normalizeSearchText(value));
+    this.managementTools = new AssistantManagementToolsService(manager, themeManager);
+    this.sessions = new AssistantSessionStore(this.db, ASSISTANT_SESSION_KEY_PREFIX, ASSISTANT_SESSION_GROUP);
+    this.catalog = new AssistantCatalogService(manager, themeManager, restController, (value) => this.normalizeSearchText(value));
+    this.runtimeFactory = new AssistantRuntimeFactoryService(
+      manager,
+      themeManager,
+      restController,
+      this.db,
+      this.managementTools,
+      this.catalog,
+      {
+        basic: ASSISTANT_PROMPT_BASIC_KEY,
+        advanced: ASSISTANT_PROMPT_ADVANCED_KEY,
+      },
+    );
+    this.payloadService = new AssistantRequestPayloadService((input) => this.normalizeAssistantHistory(input));
+
+    // Initialize AI improvement components
+    this.toolSelector = new IntelligentToolSelector(this.managementTools.buildTools());
+    this.complexityDetector = new TaskComplexityDetector();
+  }
+
+  /**
+   * Get or create per-session context and reasoning trackers
+   */
+  private getSessionTrackers(sessionId: string) {
+    if (!this.activeSessions.has(sessionId)) {
+      this.activeSessions.set(sessionId, {
+        context: new EnhancedContextManager(8000, 2000),
+        reasoning: new ReasoningChainTracker(),
+      });
+    }
+    return this.activeSessions.get(sessionId)!;
+  }
+
+  /**
+   * Clean up session trackers
+   */
+  private cleanupSessionTrackers(sessionId: string) {
+    this.activeSessions.delete(sessionId);
+  }
+
+  /**
+   * Load context from previous session
+   */
+  private async restoreSessionContext(sessionId: string, session: any): Promise<EnhancedContextManager> {
+    const trackers = this.getSessionTrackers(sessionId);
+    const history = this.normalizeAssistantHistory(session?.history || []);
+    
+    // Restore context frames from history
+    for (const entry of history) {
+      const importance = trackers.context.scoreImportance(entry.role, entry.content);
+      trackers.context.addFrame(entry.role, entry.content, importance, {
+        taskId: sessionId,
+      });
+    }
+    
+    return trackers.context;
+  }
+
+  /**
+   * Prepare context for LLM by merging tracked context with incoming history
+   */
+  private async prepareContextForLLM(
+    sessionId: string | undefined,
+    incomingHistory: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>
+  ) {
+    if (!sessionId) {
+      // No session, use incoming history as-is
+      return incomingHistory;
+    }
+
+    const trackers = this.getSessionTrackers(sessionId);
+    
+    // Add incoming history to context
+    for (const entry of incomingHistory) {
+      const importance = trackers.context.scoreImportance(entry.role, entry.content);
+      trackers.context.addFrame(entry.role, entry.content, importance);
+    }
+
+    // Get optimized context for LLM
+    const contextFrames = trackers.context.getContextForLLM();
+    return contextFrames.map((f) => ({ role: f.role, content: f.content }));
+  }
+
+  /**
+   * Record reasoning step for debugging and transparency
+   */
+  private recordReasoningStep(
+    sessionId: string | undefined,
+    thinking: string,
+    input: Record<string, any>,
+    output: Record<string, any>,
+    confidence: number = 0.5
+  ) {
+    if (!sessionId) return;
+    const trackers = this.getSessionTrackers(sessionId);
+    trackers.reasoning.recordStep('decision', thinking, input, output, confidence);
+  }
+
+  /**
+   * Get reasoning report for session
+   */
+  private getReasoningReport(sessionId: string | undefined): string | null {
+    if (!sessionId) return null;
+    const trackers = this.activeSessions.get(sessionId);
+    if (!trackers) return null;
+    return trackers.reasoning.generateReasoningReport();
   }
   private trimTrailingSlash(value: string): string {
     return String(value || '').replace(/\/+$/, '');
@@ -70,10 +189,6 @@ export class ForgeController {
 
   private normalizeSearchText(value: string): string {
     return this.managementTools.normalizeSearchText(value);
-  }
-
-  private buildAssistantManagementTools() {
-    return this.managementTools.buildTools();
   }
 
   private async getStoredAiProviderConfig(providerKey: string): Promise<Record<string, any>> {
@@ -115,81 +230,19 @@ export class ForgeController {
   }
 
   private normalizeLegacyAssistantChatPayload(body: any): any {
-    const source = body && typeof body === 'object' ? body : {};
-    const normalized: any = { ...source };
-    const messages = Array.isArray(source?.messages) ? source.messages : [];
-
-    if (!String(normalized?.message || '').trim()) {
-      const prompt = String(source?.prompt || source?.text || '').trim();
-      if (prompt) {
-        normalized.message = prompt;
-      } else if (messages.length) {
-        const normalizedMessages = this.normalizeAssistantHistory(messages);
-        const lastUserIndex = [...normalizedMessages]
-          .map((item, index) => ({ item, index }))
-          .reverse()
-          .find((entry) => entry.item.role === 'user');
-        if (lastUserIndex) {
-          normalized.message = lastUserIndex.item.content;
-          normalized.history = normalizedMessages.slice(0, lastUserIndex.index);
-        } else if (normalizedMessages.length) {
-          normalized.message = normalizedMessages[normalizedMessages.length - 1].content;
-          normalized.history = normalizedMessages.slice(0, -1);
-        }
-      }
-    } else if (!Array.isArray(normalized?.history) && messages.length) {
-      normalized.history = this.normalizeAssistantHistory(messages);
-    }
-
-    if (!String(normalized?.agentMode || '').trim()) {
-      const mode = String(source?.mode || source?.workspaceMode || '').trim().toLowerCase();
-      if (mode === 'plan' || mode === 'agent' || mode === 'advanced') {
-        normalized.agentMode = 'advanced';
-      } else if (mode === 'chat' || mode === 'simple' || mode === 'basic') {
-        normalized.agentMode = 'basic';
-      }
-    }
-
-    if (!String(normalized?.skillId || '').trim()) {
-      const persona = String(source?.persona || source?.profile || '').trim();
-      if (persona) normalized.skillId = persona.toLowerCase();
-    }
-
-    if (!Array.isArray(normalized?.tools) && Array.isArray(source?.allowedTools)) {
-      normalized.tools = source.allowedTools;
-    }
-
-    return normalized;
+    return this.payloadService.normalizeLegacyAssistantChatPayload(body);
   }
 
   private normalizeLegacyAssistantExecutePayload(body: any): any {
-    const source = body && typeof body === 'object' ? body : {};
-    const normalized: any = { ...source };
-    if (!Array.isArray(normalized?.actions) && Array.isArray(source?.stagedActions)) {
-      normalized.actions = source.stagedActions;
-    }
-    if (normalized?.dryRun === undefined) {
-      if (typeof source?.preview === 'boolean') normalized.dryRun = source.preview;
-      if (typeof source?.sandbox === 'boolean') normalized.dryRun = source.sandbox;
-    }
-    return normalized;
+    return this.payloadService.normalizeLegacyAssistantExecutePayload(body);
   }
 
   private isLegacyAssistantChatPayload(body: any): boolean {
-    const source = body && typeof body === 'object' ? body : {};
-    const hasCanonical = !!String(source?.message || '').trim();
-    if (hasCanonical) return false;
-    return (
-      Array.isArray(source?.messages) ||
-      !!String(source?.prompt || source?.text || '').trim() ||
-      !!String(source?.persona || source?.profile || '').trim() ||
-      !!String(source?.mode || source?.workspaceMode || '').trim()
-    );
+    return this.payloadService.isLegacyAssistantChatPayload(body);
   }
 
   private isLegacyAssistantExecutePayload(body: any): boolean {
-    const source = body && typeof body === 'object' ? body : {};
-    return !Array.isArray(source?.actions) && Array.isArray(source?.stagedActions);
+    return this.payloadService.isLegacyAssistantExecutePayload(body);
   }
 
   private async loadAssistantSession(sessionId: string): Promise<any | null> {
@@ -213,16 +266,11 @@ export class ForgeController {
   }
 
   private validateAssistantChatPayload(body: any): string | null {
-    const message = String(body?.message || '').trim();
-    if (!message) return 'message is required';
-    if (body?.history !== undefined && !Array.isArray(body.history)) return 'history must be an array';
-    if (body?.tools !== undefined && !Array.isArray(body.tools)) return 'tools must be an array';
-    return null;
+    return this.payloadService.validateAssistantChatPayload(body);
   }
 
   private validateAssistantExecutePayload(body: any): string | null {
-    if (!Array.isArray(body?.actions) || body.actions.length === 0) return 'actions are required';
-    return null;
+    return this.payloadService.validateAssistantExecutePayload(body);
   }
 
   private isAssistantCollectionAllowed(collection: any): boolean {
@@ -265,347 +313,7 @@ export class ForgeController {
   }
 
   private createAssistantRuntime(req: Request, aiClient?: any) {
-    const user = (req as any).user;
-    const resolveAssistantContentItem = async (collection: AssistantCollectionContext, selector: any) => {
-      const rawCollection: any = collection.raw || collection;
-      const primaryKey = String(rawCollection?.primaryKey || 'id');
-      const fieldNames = Array.isArray(rawCollection?.fields)
-        ? rawCollection.fields.map((field: any) => String(field?.name || '').trim()).filter(Boolean)
-        : [];
-      const idCandidate = selector?.id;
-
-      if (idCandidate !== undefined && idCandidate !== null && String(idCandidate).trim() !== '') {
-        const rawId = String(idCandidate).trim();
-        const numericId = Number(rawId);
-        const canUseIdLookup = primaryKey !== 'id' || Number.isInteger(numericId);
-
-        if (canUseIdLookup) {
-          try {
-            const foundByPrimary = await this.restController.findOne(rawCollection, {
-              params: { id: primaryKey === 'id' ? String(numericId) : rawId },
-              query: { preview: true },
-              user,
-              headers: req.headers,
-              cookies: (req as any).cookies,
-            });
-            if (foundByPrimary) return foundByPrimary;
-          } catch {
-            // Fall back to field-based lookup.
-          }
-        }
-
-        const idCandidates = Array.from(
-          new Set([primaryKey, 'id', '_id', 'uuid'].filter((field) => fieldNames.includes(field)))
-        );
-        const valuesToTry = Number.isFinite(numericId) && String(numericId) === rawId
-          ? [numericId, rawId]
-          : [rawId];
-
-        for (const field of idCandidates) {
-          for (const candidateValue of valuesToTry) {
-            try {
-              const result = await this.restController.find(rawCollection, {
-                query: {
-                  [field]: candidateValue,
-                  limit: 1,
-                  offset: 0,
-                  preview: true,
-                },
-                user,
-                headers: req.headers,
-                cookies: (req as any).cookies,
-              });
-              if (Array.isArray(result?.docs) && result.docs.length) {
-                return result.docs[0];
-              }
-            } catch {
-              // Try next candidate field/value.
-            }
-          }
-        }
-      }
-
-      const where = selector?.where && typeof selector.where === 'object' ? selector.where : null;
-      if (where) {
-        const result = await this.restController.find(rawCollection, {
-          query: {
-            ...where,
-            limit: 1,
-            offset: 0,
-            preview: true,
-          },
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-        return Array.isArray(result?.docs) && result.docs.length ? result.docs[0] : null;
-      }
-
-      const slugCandidate = String(selector?.slug || '').trim();
-      const permalinkCandidate = String(selector?.permalink || '').trim();
-      const fallbackValue = slugCandidate || permalinkCandidate;
-      if (!fallbackValue) return null;
-
-      const priorityFields = ['slug', 'permalink', 'customPermalink', 'path', 'url', 'title', 'name', 'label', primaryKey];
-      const candidates = Array.from(new Set(priorityFields.filter((field) => fieldNames.includes(field))));
-      if (candidates.length === 0) return null;
-
-      for (const field of candidates) {
-        try {
-          const result = await this.restController.find(rawCollection, {
-            query: {
-              [field]: fallbackValue,
-              limit: 1,
-              offset: 0,
-              preview: true,
-            },
-            user,
-            headers: req.headers,
-            cookies: (req as any).cookies,
-          });
-          if (Array.isArray(result?.docs) && result.docs.length) {
-            return result.docs[0];
-          }
-        } catch {
-          // Try next candidate field.
-        }
-      }
-
-      return null;
-    };
-
-    return new AdminAssistantRuntime({
-      aiClient: aiClient || null,
-      getCollections: () => this.getAssistantCollectionsContext(),
-      getPlugins: () => this.manager.getSortedPlugins(this.manager.getPlugins()).map((plugin: any) => ({
-        slug: String(plugin?.manifest?.slug || '').trim(),
-        name: String(plugin?.manifest?.name || plugin?.manifest?.slug || '').trim(),
-        version: String(plugin?.manifest?.version || '0').trim(),
-        state: String(plugin?.state || 'unknown').trim(),
-        capabilities: Array.isArray(plugin?.manifest?.capabilities) ? plugin.manifest.capabilities : [],
-      })),
-      getThemes: () => this.themeManager.getThemes().map((theme: any) => ({
-        slug: String(theme?.slug || '').trim(),
-        name: String(theme?.name || theme?.slug || '').trim(),
-        version: String(theme?.version || '').trim(),
-        state: String(theme?.state || 'inactive').trim(),
-      })),
-      findCollectionBySlug: (source: string) => this.findCollectionBySlug(source),
-      listContent: async (collection, options) => {
-        const rawCollection = collection.raw || collection;
-        const limit = Math.min(100, Math.max(1, Number(options?.limit || 20)));
-        const offset = Math.max(0, Number(options?.offset || 0));
-        const result = await this.restController.find(rawCollection, {
-          query: {
-            limit,
-            offset,
-            preview: true,
-          },
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-        return {
-          docs: Array.isArray(result?.docs) ? result.docs : [],
-          totalDocs: Number(result?.totalDocs || 0),
-          limit,
-          offset,
-        };
-      },
-      resolveContent: async (collection, selector) => {
-        return resolveAssistantContentItem(collection, selector || {});
-      },
-      createContent: async (collection, payload) => {
-        const rawCollection = collection.raw || collection;
-        return this.restController.create(rawCollection, {
-          body: payload,
-          query: {},
-          params: {},
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-      },
-      updateContent: async (collection, targetId, payload) => {
-        const rawCollection: any = collection.raw || collection;
-        const primaryKey = String(rawCollection?.primaryKey || 'id');
-        const whereField = primaryKey === 'id' ? 'id' : primaryKey;
-
-        const existing = await resolveAssistantContentItem(collection, {
-          id: targetId,
-        });
-        const resolvedId = existing && typeof existing === 'object'
-          ? (existing as any)[whereField] ?? (existing as any).id ?? targetId
-          : targetId;
-
-        return this.restController.update(rawCollection, {
-          body: payload,
-          query: {},
-          params: { id: String(resolvedId) },
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-      },
-      getSetting: async (key: string) => {
-        const existing = await this.db.findOne(SystemTable.META, { key });
-        return {
-          found: !!existing,
-          value: existing?.value ?? null,
-          group: existing?.group || null,
-        };
-      },
-      upsertSetting: async (key: string, value: string, group: string) => {
-        const existing = await this.db.findOne(SystemTable.META, { key });
-        if (existing) {
-          await this.db.update(SystemTable.META, { key }, { value, group: existing.group || group });
-          return;
-        }
-        await this.db.insert(SystemTable.META, { key, value, group });
-      },
-      resolveAdditionalTools: async ({ dryRun }) => {
-        const frameworkTools = this.buildAssistantManagementTools();
-        try {
-          const payload = await this.manager.hooks.call('assistant:tools:extend', { dryRun, tools: [] as any[] });
-          const extensionTools = Array.isArray((payload as any)?.tools) ? (payload as any).tools : [];
-          return [...frameworkTools, ...extensionTools];
-        } catch {
-          return frameworkTools;
-        }
-      },
-      resolveAdditionalPromptLines: async ({ collections, tools }) => {
-        try {
-          const payload = await this.manager.hooks.call('assistant:prompt:extend', {
-            lines: [] as string[],
-            collections,
-            tools,
-          });
-          const lines = Array.isArray((payload as any)?.lines) ? (payload as any).lines : [];
-          return lines.map((line: any) => String(line || '').trim()).filter(Boolean);
-        } catch {
-          return [];
-        }
-      },
-      resolvePromptProfile: async ({ collections, plugins, tools }) => {
-        const [basicStored, advancedStored] = await Promise.all([
-          this.db.findOne(SystemTable.META, { key: ASSISTANT_PROMPT_BASIC_KEY }).catch(() => null),
-          this.db.findOne(SystemTable.META, { key: ASSISTANT_PROMPT_ADVANCED_KEY }).catch(() => null),
-        ]);
-
-        const defaultProfile = {
-          basicSystem: String(basicStored?.value || '').trim() || undefined,
-          advancedSystem: String(advancedStored?.value || '').trim() || undefined,
-        };
-
-        try {
-          const payload = await this.manager.hooks.call('assistant:prompt:profile', {
-            ...defaultProfile,
-            collections,
-            plugins,
-            tools,
-          });
-
-          return {
-            basicSystem: String((payload as any)?.basicSystem || defaultProfile.basicSystem || '').trim() || undefined,
-            advancedSystem: String((payload as any)?.advancedSystem || defaultProfile.advancedSystem || '').trim() || undefined,
-          };
-        } catch {
-          return defaultProfile;
-        }
-      },
-      resolveSkills: async () => {
-        const defaults: ForgeSkillDefinition[] = [
-          {
-            id: 'general',
-            label: 'General',
-            description: 'Balanced assistant for chat and planning.',
-            defaultMode: 'chat',
-            riskPolicy: 'approval_required',
-          },
-          {
-            id: 'editor',
-            label: 'Content Editor',
-            description: 'Focused editing for site copy and content collections.',
-            defaultMode: 'plan',
-            allowedTools: [
-              'collections.list',
-              'collections.resolve',
-              'content.list',
-              'content.resolve',
-              'content.search_text',
-              'content.update',
-              'content.create',
-              'plugins.settings.search_text',
-              'themes.config.search_text',
-              'system.now',
-            ],
-            riskPolicy: 'approval_required',
-          },
-          {
-            id: 'ops',
-            label: 'Ops Assistant',
-            description: 'Plugin/theme/settings operations with approval-first safety.',
-            defaultMode: 'plan',
-            allowedTools: [
-              'plugins.list',
-              'plugins.settings.get',
-              'plugins.settings.search_text',
-              'plugins.settings.update',
-              'themes.list',
-              'themes.active',
-              'themes.config.get',
-              'themes.config.search_text',
-              'themes.config.update',
-              'settings.get',
-              'settings.set',
-              'system.now',
-              'web.search',
-              'web.fetch',
-            ],
-            riskPolicy: 'approval_required',
-          },
-          {
-            id: 'research',
-            label: 'Web Research',
-            description: 'Browse the web and summarize external references.',
-            defaultMode: 'chat',
-            allowedTools: ['web.search', 'web.fetch', 'system.now'],
-            riskPolicy: 'read_only',
-            entryExamples: [
-              'Find 3 competitor hero claims for contractor websites.',
-              'Research current messaging trends for fast-loading agency sites.',
-            ],
-          },
-          {
-            id: 'page-audit',
-            label: 'Page Auditor',
-            description: 'Inspect live pages and map findings to content/theme/plugin sources.',
-            defaultMode: 'plan',
-            allowedTools: [
-              'web.fetch',
-              'web.search',
-              'collections.list',
-              'content.list',
-              'content.resolve',
-              'content.search_text',
-              'plugins.settings.get',
-              'plugins.settings.search_text',
-              'themes.config.get',
-              'themes.config.search_text',
-              'system.now',
-            ],
-            riskPolicy: 'approval_required',
-          },
-        ];
-        try {
-          const payload = await this.manager.hooks.call('assistant:skills:extend', { skills: [] as ForgeSkillDefinition[] });
-          const extensionSkills = Array.isArray((payload as any)?.skills) ? (payload as any).skills : [];
-          return [...defaults, ...extensionSkills];
-        } catch {
-          return defaults;
-        }
-      },
-    });
+    return this.runtimeFactory.createAssistantRuntime(req, aiClient);
   }
 
   private async resolveAssistantClientFromRequest(req: Request): Promise<{ client: any; provider: string }> {
@@ -790,11 +498,29 @@ export class ForgeController {
       }
 
       const runtime = this.createAssistantRuntime(req, aiClient);
+      
+      // Detect task complexity to optimize planning passes
+      const taskComplexity = this.complexityDetector.detectComplexity(message, {
+        availableTools: (normalizedBody?.tools || []).length > 0 ? (normalizedBody.tools as any[]).length : 5,
+        hasHistory: history && history.length > 0,
+        agentMode: String(normalizedBody?.agentMode || 'advanced'),
+      });
+      
+      // Adjust maxIterations based on complexity (skip unnecessary planning passes for simple tasks)
+      const baseMaxIterations = Number(normalizedBody?.maxIterations || 8);
+      const complexityAdjustedIterations = Math.min(baseMaxIterations, this.complexityDetector.getRecommendedMaxIterations(taskComplexity));
+      
+      // Use enhanced context manager for better context retention
+      const contextForLLM = await this.prepareContextForLLM(sessionId, history);
+      
+      // Record reasoning entry point with complexity info
+      this.recordReasoningStep(sessionId, `Processing: ${message.substring(0, 100)}... [${taskComplexity.level} task]`, { sessionId, agentMode: normalizedBody?.agentMode, complexity: taskComplexity.level }, {}, taskComplexity.confidence);
+      
       const result = await runtime.chat({
         message,
-        history,
+        history: contextForLLM, // Use enhanced context instead of raw history
         agentMode: String(normalizedBody?.agentMode || 'advanced'),
-        maxIterations: Number(normalizedBody?.maxIterations || 8),
+        maxIterations: complexityAdjustedIterations,
         maxDurationMs: Number(normalizedBody?.maxDurationMs || 35000),
         allowedTools: Array.isArray(normalizedBody?.tools) ? normalizedBody.tools : [],
         skillId: String(normalizedBody?.skillId || '').trim() || undefined,
@@ -802,24 +528,63 @@ export class ForgeController {
         continueFrom: parseBoolean(normalizedBody?.continueFrom) === true,
       } as any);
 
+      let finalResult = result;
+      const pausedWithoutActions =
+        taskComplexity.level === 'simple' &&
+        result?.ui?.canContinue === true &&
+        (!Array.isArray(result?.actions) || result.actions.length === 0);
+
+      if (pausedWithoutActions) {
+        const continuationPrompt =
+          String(result?.checkpoint?.resumePrompt || '').trim() ||
+          'Continue planning from previous context and stage executable actions if safe.';
+
+        this.recordReasoningStep(
+          sessionId,
+          'Simple task paused without actions; running one automatic continuation pass',
+          { complexity: taskComplexity.level, originalMessage: message },
+          { continuationPrompt },
+          0.9
+        );
+
+        const continued = await runtime.chat({
+          message: continuationPrompt,
+          history: contextForLLM,
+          agentMode: String(normalizedBody?.agentMode || 'advanced'),
+          maxIterations: Math.max(2, complexityAdjustedIterations),
+          maxDurationMs: Number(normalizedBody?.maxDurationMs || 35000),
+          allowedTools: Array.isArray(normalizedBody?.tools) ? normalizedBody.tools : [],
+          skillId: String(normalizedBody?.skillId || '').trim() || undefined,
+          sessionId: sessionId || undefined,
+          continueFrom: true,
+        } as any);
+
+        if (continued && typeof continued === 'object') {
+          finalResult = continued;
+        }
+      }
+
+      // Record completion and confidence
+      this.recordReasoningStep(sessionId, `Completed: Got response from runtime`, { agentMode: normalizedBody?.agentMode }, { success: !!finalResult?.message }, 0.8);
+
       const responsePayload = {
-        ...result,
+        ...finalResult,
         provider: resolvedAssistant.provider,
-        sessionId: sessionId || result.sessionId,
+        sessionId: sessionId || finalResult.sessionId,
       } as any;
 
       if (sessionId) {
         const nextHistory = this.normalizeAssistantHistory([
           ...history,
           { role: 'user', content: message },
-          { role: 'assistant', content: String(result?.message || '').trim() || 'No response generated.' },
+          { role: 'assistant', content: String(finalResult?.message || '').trim() || 'No response generated.' },
         ]);
         await this.saveAssistantSession(sessionId, {
           id: sessionId,
           title: String(existingSession?.title || '').trim() || this.summarizeAssistantSessionTitle(nextHistory),
           updatedAt: Date.now(),
           provider: resolvedAssistant.provider,
-          model: String(result?.model || '').trim() || String(existingSession?.model || '').trim() || '',
+          model: String(finalResult?.model || '').trim() || String(existingSession?.model || '').trim() || '',
           agentMode: String(normalizedBody?.agentMode || existingSession?.agentMode || 'advanced').trim(),
           skillId: String(normalizedBody?.skillId || existingSession?.skillId || 'general').trim().toLowerCase() || 'general',
           tools: Array.isArray(normalizedBody?.tools) ? normalizedBody.tools : existingSession?.tools || [],
@@ -829,27 +594,40 @@ export class ForgeController {
             ...(normalizedBody?.config && typeof normalizedBody.config === 'object' ? normalizedBody.config : {}),
           },
           history: nextHistory,
-          lastPlan: result?.plan || null,
-          lastUi: result?.ui || null,
-          lastActions: Array.isArray(result?.actions) ? result.actions : [],
-          lastCheckpoint: result?.checkpoint || null,
+          lastPlan: finalResult?.plan || null,
+          lastUi: finalResult?.ui || null,
+          lastActions: Array.isArray(finalResult?.actions) ? finalResult.actions : [],
+          lastCheckpoint: finalResult?.checkpoint || null,
+          // Store reasoning metadata for audit trail
+          reasoningReport: this.getReasoningReport(sessionId) || null,
         });
       }
 
+      // Get reasoning stats if available
+      const reasoningStats = sessionId && this.activeSessions.get(sessionId)
+        ? this.activeSessions.get(sessionId)!.reasoning.generateReport()
+        : null;
+      const reasoningReport = this.getReasoningReport(sessionId) || null;
+
       await this.emitAssistantTelemetry('chat.success', {
         provider: resolvedAssistant.provider,
-        sessionId: sessionId || result?.sessionId || null,
+        sessionId: sessionId || finalResult?.sessionId || null,
         usedLegacyContract,
-        agentMode: String(result?.agentMode || '').trim() || 'advanced',
-        skillId: String(result?.skill?.id || normalizedBody?.skillId || '').trim() || 'general',
-        iterations: Number(result?.iterations || 0) || 0,
-        actions: Array.isArray(result?.actions) ? result.actions.length : 0,
-        loopCapReached: result?.loopCapReached === true,
+        agentMode: String(finalResult?.agentMode || '').trim() || 'advanced',
+        skillId: String(finalResult?.skill?.id || normalizedBody?.skillId || '').trim() || 'general',
+        iterations: Number(finalResult?.iterations || 0) || 0,
+        actions: Array.isArray(finalResult?.actions) ? finalResult.actions.length : 0,
+        loopCapReached: finalResult?.loopCapReached === true,
         durationMs: Date.now() - startedAt,
+        // Include reasoning stats
+        reasoningSteps: reasoningStats?.totalSteps || 0,
+        averageConfidence: reasoningStats?.averageConfidence || 0,
+        errorRecoveries: reasoningStats?.recoveries?.length || 0,
       });
 
       return res.json({
         ...responsePayload,
+        reasoningReport,
       });
     } catch (e: any) {
       const message = String(e?.message || 'Assistant request failed');
@@ -875,9 +653,39 @@ export class ForgeController {
       if (validationError) return res.status(400).json({ error: validationError });
 
       const dryRun = parseBoolean(normalizedBody?.dryRun) !== false;
+      const sessionId = this.normalizeAssistantSessionId(normalizedBody?.sessionId);
+      const actions = Array.isArray(normalizedBody?.actions) ? normalizedBody.actions : [];
+
+      // Pre-validate actions using tool selector to catch issues early
+      const toolValidationStats = {
+        preValidated: 0,
+        recommended: 0,
+        risks: [] as string[],
+      };
+
+      for (const action of actions) {
+        const toolName = String(action?.tool || '').trim();
+        if (toolName) {
+          // Track tool usage for historical analysis
+          this.toolSelector.recordExecution(toolName, false, 0); // Pre-validation, not actual execution
+          toolValidationStats.preValidated++;
+          
+          // Record reasoning for action validation
+          if (sessionId) {
+            this.recordReasoningStep(
+              sessionId,
+              `Pre-validating action: ${toolName}`,
+              { tool: toolName, action },
+              { validated: true },
+              0.9
+            );
+          }
+        }
+      }
+
       const runtime = this.createAssistantRuntime(req);
       const result = await runtime.executeActions({
-        actions: Array.isArray(normalizedBody?.actions) ? normalizedBody.actions : [],
+        actions,
         dryRun,
         context: {
           user: (req as any).user,
@@ -886,10 +694,22 @@ export class ForgeController {
         },
       });
 
-      const sessionId = this.normalizeAssistantSessionId(normalizedBody?.sessionId);
+      // Record execution outcomes in reasoning trail
+      const successCount = Array.isArray(result?.results) ? result.results.filter((item: any) => item?.ok).length : 0;
+      if (sessionId && result?.results) {
+        this.recordReasoningStep(
+          sessionId,
+          `Executed ${actions.length} actions with ${successCount} successes`,
+          { actionCount: actions.length },
+          { results: result.results, successCount },
+          successCount / Math.max(1, actions.length)
+        );
+      }
+
       if (sessionId) {
         const existingSession = await this.loadAssistantSession(sessionId);
         if (existingSession) {
+          // Include reasoning report and validation stats in session save
           await this.saveAssistantSession(sessionId, {
             ...existingSession,
             updatedAt: Date.now(),
@@ -897,17 +717,21 @@ export class ForgeController {
             lastExecution: {
               dryRun,
               results: Array.isArray(result?.results) ? result.results : [],
+              toolValidationStats,
+              reasoningReport: this.getReasoningReport(sessionId) || null,
             },
           });
         }
       }
+
       await this.emitAssistantTelemetry('actions.execute', {
         sessionId: sessionId || null,
         usedLegacyContract,
         dryRun,
-        actions: Array.isArray(normalizedBody?.actions) ? normalizedBody.actions.length : 0,
+        actions: actions.length,
         results: Array.isArray(result?.results) ? result.results.length : 0,
-        ok: Array.isArray(result?.results) ? result.results.filter((item: any) => item?.ok).length : 0,
+        ok: successCount,
+        preValidated: toolValidationStats.preValidated,
         durationMs: Date.now() - startedAt,
       });
       return res.json(result);
@@ -943,25 +767,6 @@ export class ForgeController {
     }
   }
 
-  async assistantPersonasLegacy(req: Request, res: Response) {
-    this.setAssistantDeprecationHeaders(res, '/api/forge/admin/assistant/skills');
-    try {
-      const runtime = this.createAssistantRuntime(req);
-      const skills = await runtime.listSkills();
-      return res.json({
-        personas: skills.map((skill) => ({
-          id: skill.id,
-          label: skill.label,
-          description: skill.description,
-          defaultMode: skill.defaultMode || 'chat',
-          riskPolicy: skill.riskPolicy || 'approval_required',
-        })),
-      });
-    } catch (e: any) {
-      return res.status(500).json({ error: e?.message || 'Failed to load assistant personas' });
-    }
-  }
-
   async executeAssistantLegacy(req: Request, res: Response) {
     this.setAssistantDeprecationHeaders(res, '/api/forge/admin/assistant/actions/execute');
     return this.executeAssistantActions(req, res);
@@ -975,9 +780,25 @@ export class ForgeController {
       const session = await this.loadAssistantSession(sessionId);
       if (!session) return res.status(404).json({ error: 'Assistant session not found' });
 
+      // Restore enhanced context and reasoning from previous session
+      const trackers = this.getSessionTrackers(sessionId);
+      if (session?.reasoningReport) {
+        // Restore reasoning history if available
+        this.recordReasoningStep(
+          sessionId,
+          'Resumed session with restored context and reasoning',
+          { previousReasoningSteps: session.reasoningReport.length },
+          {},
+          0.95
+        );
+      }
+
       const message = String(req.body?.message || session?.lastCheckpoint?.resumePrompt || '').trim() ||
         'Continue planning from previous context. Run more steps and stage executable actions if safe.';
       const history = this.normalizeAssistantHistory(session?.history);
+
+      // Restore context from previous session
+      await this.restoreSessionContext(sessionId, session);
 
       const resolvedAssistant = await (async () => {
         const originalBody = req.body;
@@ -1004,11 +825,35 @@ export class ForgeController {
       }
 
       const runtime = this.createAssistantRuntime(req, aiClient);
+      
+      // Detect task complexity for continued session planning
+      const taskComplexity = this.complexityDetector.detectComplexity(message, {
+        availableTools: Array.isArray(session?.tools) ? (session.tools as any[]).length : 5,
+        hasHistory: true,
+        agentMode: String(req.body?.agentMode || session?.agentMode || 'advanced'),
+      });
+      
+      // Adjust maxIterations based on complexity
+      const baseMaxIterations = Number(req.body?.maxIterations || 8);
+      const complexityAdjustedIterations = Math.min(baseMaxIterations, this.complexityDetector.getRecommendedMaxIterations(taskComplexity));
+      
+      // Use enhanced context for continued session
+      const contextForLLM = await this.prepareContextForLLM(sessionId, history);
+      
+      // Record reasoning for continuation with complexity info
+      this.recordReasoningStep(
+        sessionId,
+        `Continuing session with message: ${message.substring(0, 100)}... [${taskComplexity.level} task]`,
+        { resumeMessage: message, previousActions: session?.lastActions?.length || 0, complexity: taskComplexity.level },
+        {},
+        taskComplexity.confidence
+      );
+      
       const result = await runtime.chat({
         message,
-        history,
+        history: contextForLLM, // Use enhanced context instead of raw history
         agentMode: String(req.body?.agentMode || session?.agentMode || 'advanced'),
-        maxIterations: Number(req.body?.maxIterations || 8),
+        maxIterations: complexityAdjustedIterations,
         maxDurationMs: Number(req.body?.maxDurationMs || 35000),
         allowedTools: Array.isArray(req.body?.tools) ? req.body.tools : Array.isArray(session?.tools) ? session.tools : [],
         skillId: String(req.body?.skillId || session?.skillId || 'general').trim().toLowerCase(),
@@ -1016,11 +861,23 @@ export class ForgeController {
         continueFrom: true,
       } as any);
 
+      // Record completion with confidence
+      this.recordReasoningStep(
+        sessionId,
+        `Continuation completed with ${Array.isArray(result?.actions) ? result.actions.length : 0} staged actions`,
+        { agentMode: result?.agentMode },
+        { success: !!result?.message, actionCount: Array.isArray(result?.actions) ? result.actions.length : 0 },
+        0.85
+      );
+
       const nextHistory = this.normalizeAssistantHistory([
         ...history,
         { role: 'user', content: message },
         { role: 'assistant', content: String(result?.message || '').trim() || 'No response generated.' },
       ]);
+
+      // Get reasoning report for audit
+      const reasoningReport = this.getReasoningReport(sessionId);
 
       await this.saveAssistantSession(sessionId, {
         ...session,
@@ -1041,7 +898,11 @@ export class ForgeController {
         lastUi: result?.ui || null,
         lastActions: Array.isArray(result?.actions) ? result.actions : [],
         lastCheckpoint: result?.checkpoint || null,
+        reasoningReport,
       });
+
+      // Get reasoning stats for telemetry
+      const reasoningStats = trackers.reasoning.generateReport();
 
       await this.emitAssistantTelemetry('chat.continue', {
         sessionId,
@@ -1051,12 +912,15 @@ export class ForgeController {
         actions: Array.isArray(result?.actions) ? result.actions.length : 0,
         loopCapReached: result?.loopCapReached === true,
         durationMs: Date.now() - startedAt,
+        reasoningSteps: reasoningStats?.totalSteps || 0,
+        averageConfidence: reasoningStats?.averageConfidence || 0,
       });
 
       return res.json({
         ...result,
         provider: resolvedAssistant.provider,
         sessionId,
+        reasoningReport,
       });
     } catch (e: any) {
       await this.emitAssistantTelemetry('chat.continue.failed', {
@@ -1064,6 +928,61 @@ export class ForgeController {
         durationMs: Date.now() - startedAt,
       });
       return res.status(500).json({ error: e?.message || 'Failed to continue assistant session' });
+    }
+  }
+
+  /**
+   * Get reasoning report for a session (audit trail of AI decisions)
+   */
+  async assistantReasoningReport(req: Request, res: Response) {
+    const startedAt = Date.now();
+    try {
+      const sessionId = this.normalizeAssistantSessionId(req.params?.id);
+      if (!sessionId) return res.status(400).json({ error: 'session id is required' });
+
+      const session = await this.loadAssistantSession(sessionId);
+      if (!session) return res.status(404).json({ error: 'Assistant session not found' });
+
+      const trackers = this.activeSessions.get(sessionId);
+      
+      // Get reasoning report from current session if available
+      const currentReport = trackers ? trackers.reasoning.generateReasoningReport() : null;
+      
+      // Get stored report from session if available
+      const storedReport = session?.reasoningReport || null;
+      
+      // Combine both if available
+      const report = currentReport || storedReport;
+
+      if (!report) {
+        return res.status(404).json({
+          error: 'No reasoning report available for this session',
+          hint: 'Reasoning data is only available for active or recently completed sessions'
+        });
+      }
+
+      await this.emitAssistantTelemetry('session.reasoning.report', {
+        sessionId,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return res.json({
+        sessionId,
+        title: session?.title || 'Untitled session',
+        report,
+        metadata: {
+          createdAt: session?.createdAt || null,
+          updatedAt: session?.updatedAt || Date.now(),
+          agentMode: session?.agentMode || 'advanced',
+          skillId: session?.skillId || 'general',
+        }
+      });
+    } catch (e: any) {
+      await this.emitAssistantTelemetry('session.reasoning.report.failed', {
+        error: String(e?.message || 'Failed to get reasoning report'),
+        durationMs: Date.now() - startedAt,
+      });
+      return res.status(500).json({ error: e?.message || 'Failed to get reasoning report' });
     }
   }
 

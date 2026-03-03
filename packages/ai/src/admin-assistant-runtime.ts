@@ -1,5 +1,14 @@
 import { AssistantClient, AssistantMessage } from './types';
 import { createMcpBridge, McpBridge, McpToolDefinition } from '@fromcode119/mcp';
+import {
+  ASSISTANT_RUNTIME_COPY,
+  ASSISTANT_PROMPT_COPY,
+  DEFAULT_ASSISTANT_SKILLS,
+  buildDeterministicReplaceMessage,
+  buildDeterministicTraceMessage,
+  buildPlannerNoActionMessage,
+  buildStagedReplacementMessage,
+} from './assistant-copy';
 
 export type AssistantCollectionContext = {
   slug: string;
@@ -48,7 +57,7 @@ export type AssistantRunMode = 'chat' | 'plan' | 'agent';
 
 export type AssistantSkillRiskPolicy = 'read_only' | 'approval_required' | 'allowlisted_auto_apply';
 
-export type ForgeSkillDefinition = {
+export type AssistantSkillDefinition = {
   id: string;
   label: string;
   description?: string;
@@ -100,6 +109,7 @@ export type AssistantUiHints = {
 export type AssistantSessionCheckpoint = {
   resumePrompt: string;
   reason: 'loop_cap' | 'time_cap' | 'user_continue';
+  planningPassesUsed?: number;
 };
 
 export type AssistantChatResult = {
@@ -111,7 +121,7 @@ export type AssistantChatResult = {
   traces: AssistantChatTrace[];
   plan?: AssistantPlanArtifact;
   ui?: AssistantUiHints;
-  skill?: ForgeSkillDefinition;
+  skill?: AssistantSkillDefinition;
   sessionId?: string;
   checkpoint?: AssistantSessionCheckpoint;
   iterations?: number;
@@ -134,6 +144,7 @@ export type AssistantChatInput = {
   skillId?: string;
   sessionId?: string;
   continueFrom?: boolean;
+  checkpoint?: AssistantSessionCheckpoint;
 };
 
 export type AssistantExecuteInput = {
@@ -151,6 +162,11 @@ export type AssistantSettingValue = {
 export type AssistantPromptProfile = {
   basicSystem?: string;
   advancedSystem?: string;
+};
+
+export type AssistantPromptCopy = {
+  basic?: string[];
+  advanced?: string[];
 };
 
 export type AdminAssistantRuntimeOptions = {
@@ -196,7 +212,12 @@ export type AdminAssistantRuntimeOptions = {
     plugins: AssistantPluginContext[];
     tools: AssistantToolSummary[];
   }) => Promise<AssistantPromptProfile> | AssistantPromptProfile;
-  resolveSkills?: () => Promise<ForgeSkillDefinition[]> | ForgeSkillDefinition[];
+  resolvePromptCopy?: (context: {
+    collections: AssistantCollectionContext[];
+    plugins: AssistantPluginContext[];
+    tools: AssistantToolSummary[];
+  }) => Promise<AssistantPromptCopy> | AssistantPromptCopy;
+  resolveSkills?: () => Promise<AssistantSkillDefinition[]> | AssistantSkillDefinition[];
   now?: () => string;
 };
 
@@ -219,6 +240,8 @@ const TOOL_LABELS: Record<string, string> = {
   'web.fetch': 'Page Fetch',
 };
 
+const INTERNAL_ASSISTANT_SESSION_KEY_PREFIX = 'assistant.session.';
+
 export class AdminAssistantRuntime {
   constructor(private readonly options: AdminAssistantRuntimeOptions) {}
 
@@ -229,105 +252,17 @@ export class AdminAssistantRuntime {
     return 'chat';
   }
 
-  private defaultSkillCatalog(): ForgeSkillDefinition[] {
-    return [
-      {
-        id: 'general',
-        label: 'General',
-        description: 'Balanced assistant for chat, planning, and approvals.',
-        defaultMode: 'chat',
-        riskPolicy: 'approval_required',
-      },
-      {
-        id: 'editor',
-        label: 'Content Editor',
-        description: 'Focus on safe content and copy updates across collections.',
-        defaultMode: 'plan',
-        allowedTools: [
-          'collections.list',
-          'collections.resolve',
-          'content.list',
-          'content.resolve',
-          'content.search_text',
-          'content.update',
-          'content.create',
-          'plugins.settings.search_text',
-          'themes.config.search_text',
-          'system.now',
-        ],
-        systemPromptPatch:
-          'Prioritize deterministic content edits with explicit selectors and field paths. Stage only concrete updates.',
-        riskPolicy: 'approval_required',
-        entryExamples: [
-          'Replace "Slow Websites" with "Better Sites" in homepage copy.',
-          'Update hero title in fcp_cms_pages id=1.',
-        ],
-      },
-      {
-        id: 'ops',
-        label: 'Ops Assistant',
-        description: 'Inspect plugins, themes, and settings with a planning-first workflow.',
-        defaultMode: 'plan',
-        allowedTools: [
-          'plugins.list',
-          'plugins.settings.get',
-          'plugins.settings.search_text',
-          'plugins.settings.update',
-          'themes.list',
-          'themes.active',
-          'themes.config.get',
-          'themes.config.search_text',
-          'themes.config.update',
-          'settings.get',
-          'settings.set',
-          'system.now',
-          'web.search',
-          'web.fetch',
-        ],
-        riskPolicy: 'approval_required',
-      },
-      {
-        id: 'research',
-        label: 'Web Research',
-        description: 'Browse the web and summarize current external references.',
-        defaultMode: 'chat',
-        allowedTools: ['web.search', 'web.fetch', 'system.now'],
-        systemPromptPatch:
-          'Use web.search to discover sources, then web.fetch to cite concrete findings. Keep summaries short and source-linked.',
-        riskPolicy: 'read_only',
-        entryExamples: [
-          'Research top contractor website messaging trends this month.',
-          'Find 3 competitor hero claims and summarize differences.',
-        ],
-      },
-      {
-        id: 'page-audit',
-        label: 'Page Auditor',
-        description: 'Inspect live pages, compare with CMS/theme settings, and stage targeted fixes.',
-        defaultMode: 'plan',
-        allowedTools: [
-          'web.fetch',
-          'web.search',
-          'collections.list',
-          'content.list',
-          'content.resolve',
-          'content.search_text',
-          'plugins.settings.get',
-          'plugins.settings.search_text',
-          'themes.config.get',
-          'themes.config.search_text',
-          'system.now',
-        ],
-        systemPromptPatch:
-          'For website audits, fetch page URLs first, quote exact snippets, then map each issue to concrete content/theme/plugin paths.',
-        riskPolicy: 'approval_required',
-      },
-    ];
+  private defaultSkillCatalog(): AssistantSkillDefinition[] {
+    return DEFAULT_ASSISTANT_SKILLS.map((skill) => ({
+      ...skill,
+      allowedTools: Array.isArray(skill.allowedTools) ? [...skill.allowedTools] : undefined,
+      entryExamples: Array.isArray(skill.entryExamples) ? [...skill.entryExamples] : undefined,
+    })) as AssistantSkillDefinition[];
   }
 
-  private normalizeSkills(skills: ForgeSkillDefinition[]): ForgeSkillDefinition[] {
+  private normalizeSkills(skills: AssistantSkillDefinition[]): AssistantSkillDefinition[] {
     const seen = new Set<string>();
-    const output: ForgeSkillDefinition[] = [];
+    const output: AssistantSkillDefinition[] = [];
     for (const item of Array.isArray(skills) ? skills : []) {
       if (!item || typeof item !== 'object') continue;
       const id = String(item.id || '').trim().toLowerCase();
@@ -354,7 +289,7 @@ export class AdminAssistantRuntime {
     return output;
   }
 
-  async listSkills(): Promise<ForgeSkillDefinition[]> {
+  async listSkills(): Promise<AssistantSkillDefinition[]> {
     const defaults = this.defaultSkillCatalog();
     const extra = await Promise.resolve(this.options.resolveSkills?.() || []);
     return this.normalizeSkills([...(Array.isArray(extra) ? extra : []), ...defaults]);
@@ -369,7 +304,7 @@ export class AdminAssistantRuntime {
     loopCapReached: boolean;
     loopTimeLimitReached: boolean;
     done: boolean;
-    selectedSkill?: ForgeSkillDefinition;
+    selectedSkill?: AssistantSkillDefinition;
   }): AssistantPlanArtifact {
     const {
       planId,
@@ -442,17 +377,24 @@ export class AdminAssistantRuntime {
     loopCapReached: boolean;
     loopTimeLimitReached: boolean;
     done: boolean;
-    selectedSkill?: ForgeSkillDefinition;
+    selectedSkill?: AssistantSkillDefinition;
+    planningPassesUsed?: number;
   }): AssistantUiHints {
-    const { hasActions, loopCapReached, loopTimeLimitReached, done, selectedSkill } = input;
+    const { hasActions, loopCapReached, loopTimeLimitReached, done, selectedSkill, planningPassesUsed } = input;
     const suggestedMode: AssistantRunMode = hasActions
       ? 'plan'
       : (loopCapReached || loopTimeLimitReached) && !done
         ? 'agent'
         : selectedSkill?.defaultMode || 'chat';
     const requiresApproval = hasActions && selectedSkill?.riskPolicy !== 'allowlisted_auto_apply';
+    
+    // Limit planning passes to prevent infinite loops (max 3 continuations)
+    const maxPlanningPasses = 3;
+    const passesUsed = Number(planningPassesUsed || 0);
+    const canContinueMore = passesUsed < maxPlanningPasses;
+    
     return {
-      canContinue: (loopCapReached || loopTimeLimitReached) && !hasActions,
+      canContinue: (loopCapReached || loopTimeLimitReached) && !hasActions && canContinueMore,
       requiresApproval,
       suggestedMode,
       showTechnicalDetailsDefault: false,
@@ -583,42 +525,36 @@ export class AdminAssistantRuntime {
     ];
   }
 
-  private buildDefaultBasicSystemPrompt(): string {
+  private buildDefaultBasicSystemPromptFromCopy(promptCopyOverride?: string[]): string {
+    const copyLines =
+      Array.isArray(promptCopyOverride) && promptCopyOverride.length > 0
+        ? promptCopyOverride.map((line) => String(line || '').trim()).filter(Boolean)
+        : [...ASSISTANT_PROMPT_COPY.basic];
     return [
-      'You are Fromcode Forge assistant running inside a live Fromcode admin instance.',
-      'You have direct access to runtime context passed in this prompt.',
+      ...copyLines,
       'Never claim you cannot access backend data, plugins, or system context.',
-      'If asked about installed/active plugins, answer directly from Installed plugins context.',
       'Chat mode is read-only. Never claim that records, settings, plugins, or themes were changed.',
-      'When user asks to change data, explain that Plan mode is required for staged approval.',
       'Never expose raw internal tool IDs (for example: content.update, settings.set) in user-facing text.',
-      'Use plain language like "I can stage this change in Plan mode".',
-      'Reply conversationally with concise actionable help.',
       'Do not return JSON, code fences, or tool call objects.',
     ].join('\n');
   }
 
-  private buildDefaultAdvancedSystemPrompt(): string {
+  private buildDefaultAdvancedSystemPromptFromCopy(promptCopyOverride?: string[]): string {
+    const copyLines =
+      Array.isArray(promptCopyOverride) && promptCopyOverride.length > 0
+        ? promptCopyOverride.map((line) => String(line || '').trim()).filter(Boolean)
+        : [...ASSISTANT_PROMPT_COPY.advanced];
     return [
-      'You are the Fromcode Admin Assistant.',
-      'You can reason in an autonomous loop and ask for tool calls.',
+      ...copyLines,
       'You are running inside a real Fromcode backend context. Never claim you cannot access backend data.',
-      'If asked about installed or active plugins, use Installed plugins context and/or plugins.list.',
       'Return STRICT JSON only with this shape:',
       '{"message":"string","done":boolean,"toolCalls":[{"tool":"string","input":{...}}],"actions":[{"type":"create_content","collectionSlug":"string","data":{...}},{"type":"update_setting","key":"string","value":"string"},{"type":"mcp_call","tool":"string","input":{...}}]}',
-      'toolCalls are executed in dry-run mode inside chat loop for observation.',
       'actions are staged for explicit user approval before execution.',
       'Never stage read-only tools as actions; keep read tools in toolCalls only.',
-      'When you have enough info, set done=true.',
       'Only use supported action types: create_content, update_setting, mcp_call.',
       'Never claim a mutation is already applied during planning; explicitly say it is staged/pending approval.',
       'update_setting is ONLY for real system meta setting keys. Never use it for content labels, collection text, plugin/theme config, or locale copy.',
-      'For plugin config changes, use plugins.settings.update. For theme config changes, use themes.config.update.',
-      'For copy/label renames, first use content.search_text (and other read tools) to find exact matches, then stage content.update per concrete record/field.',
-      'For cross-system replace requests (content + plugin settings + theme config), run content.search_text, plugins.settings.search_text, and themes.config.search_text before staging writes.',
-      'For content edits, prefer mcp_call with tool "content.update" (target by id/slug/permalink).',
       'For read-only discovery questions (where/find/list), do not stage write actions.',
-      'If the user asks about capabilities, modes, or what you can do/plan, answer directly without tool calls and set done=true.',
       'Never claim a write was applied unless an action is staged and later executed.',
       'User-facing "message" must be plain language. Never expose raw tool IDs in message text.',
       'Do not invent endpoints.',
@@ -956,6 +892,29 @@ export class AdminAssistantRuntime {
       }
     }
 
+    const unquotedPatterns: RegExp[] = [
+      /^(?:change|replace|update|rename|swap|substitute|find\s+and\s+replace)\s+(.+?)\s+(?:with|to)\s+["']([^"']+)["']\s*$/i,
+      /^(?:change|replace|update|rename|swap|substitute|find\s+and\s+replace)\s+["']([^"']+)["']\s+(?:with|to)\s+(.+?)\s*$/i,
+      /^(?:change|replace|update|rename|swap|substitute|find\s+and\s+replace)\s+(.+?)\s+(?:with|to)\s+(.+?)\s*$/i,
+      /^from\s+(.+?)\s+to\s+(.+?)\s*$/i,
+    ];
+
+    const normalizeEdgeQuotes = (value: string) =>
+      String(value || '')
+        .trim()
+        .replace(/^["'“”‘’]+/, '')
+        .replace(/["'“”‘’]+$/, '')
+        .trim();
+
+    for (const pattern of unquotedPatterns) {
+      const match = source.match(pattern);
+      const from = normalizeEdgeQuotes(String(match?.[1] || ''));
+      const to = normalizeEdgeQuotes(String(match?.[2] || ''));
+      if (!from || !to) continue;
+      if (from.toLowerCase() === to.toLowerCase()) continue;
+      return { from, to };
+    }
+
     return null;
   }
 
@@ -1195,6 +1154,7 @@ export class AdminAssistantRuntime {
         const collectionSlug = String((action.input as any)?.collectionSlug || '').trim();
         const recordId = (action.input as any)?.id;
         if (!collectionSlug || recordId === undefined || recordId === null) return false;
+        if (this.isInternalAssistantSessionTarget(collectionSlug, recordId)) return false;
         const payloadEntries = this.collectStringPayloadEntries(payload).filter((entry) =>
           this.objectContainsText(entry.value, replaceInstruction.to),
         );
@@ -1234,6 +1194,7 @@ export class AdminAssistantRuntime {
     if (typeof this.options.resolveContent === 'function') {
       for (const [groupKey, groupMatches] of grouped.entries()) {
         const [collectionSlug, recordIdRaw] = groupKey.split('::');
+        if (this.isInternalAssistantSessionTarget(collectionSlug, recordIdRaw)) continue;
         const collection = this.options.findCollectionBySlug(collectionSlug);
         if (!collection) continue;
 
@@ -1512,6 +1473,22 @@ export class AdminAssistantRuntime {
     return Object.keys(payload).length > 0;
   }
 
+  private isInternalAssistantSessionTarget(collectionSlug: string, recordId: any): boolean {
+    const normalizedCollection = String(collectionSlug || '').trim().toLowerCase();
+    if (normalizedCollection !== 'settings') return false;
+    const normalizedId = String(recordId ?? '').trim().toLowerCase();
+    if (!normalizedId) return false;
+    return normalizedId.startsWith(INTERNAL_ASSISTANT_SESSION_KEY_PREFIX);
+  }
+
+  private isInternalAssistantSessionRecord(collectionSlug: string, record: any): boolean {
+    const normalizedCollection = String(collectionSlug || '').trim().toLowerCase();
+    if (normalizedCollection !== 'settings') return false;
+    const key = String((record as any)?.key || '').trim().toLowerCase();
+    const group = String((record as any)?.group || '').trim().toLowerCase();
+    return key.startsWith(INTERNAL_ASSISTANT_SESSION_KEY_PREFIX) || group === 'assistant-session';
+  }
+
   private buildToolResultsFallbackMessage(
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>,
     currentMessage: string,
@@ -1729,6 +1706,9 @@ export class AdminAssistantRuntime {
             if (resolvedId === undefined || resolvedId === null || String(resolvedId).trim() === '') {
               continue;
             }
+            if (this.isInternalAssistantSessionTarget(collection.slug, resolvedId)) {
+              continue;
+            }
 
             const payloadRaw = (input as any)?.data && typeof (input as any).data === 'object' ? (input as any).data : {};
             const payload = this.normalizePathKeyedObject(payloadRaw);
@@ -1941,6 +1921,7 @@ export class AdminAssistantRuntime {
             for (const doc of docs) {
               if (matches.length >= maxMatches) break;
               if (!doc || typeof doc !== 'object') continue;
+              if (this.isInternalAssistantSessionRecord(collection.slug, doc)) continue;
 
               const recordId = (doc as any)?.[primaryKey] ?? (doc as any)?.id ?? null;
 
@@ -2545,6 +2526,11 @@ export class AdminAssistantRuntime {
     const promptProfile = await Promise.resolve(
       this.options.resolvePromptProfile?.({ collections, plugins, tools: availableTools }) || {}
     );
+    const promptCopy = await Promise.resolve(
+      this.options.resolvePromptCopy?.({ collections, plugins, tools: availableTools }) || {}
+    );
+    const promptCopyBasic = Array.isArray((promptCopy as any)?.basic) ? (promptCopy as any).basic : undefined;
+    const promptCopyAdvanced = Array.isArray((promptCopy as any)?.advanced) ? (promptCopy as any).advanced : undefined;
     const customBasicSystemPrompt = String(promptProfile?.basicSystem || '').trim();
     const customAdvancedSystemPrompt = String(promptProfile?.advancedSystem || '').trim();
 
@@ -2574,7 +2560,7 @@ export class AdminAssistantRuntime {
     const strategicAdviceIntent = this.isStrategicAdviceIntent(message);
     if (strategicAdviceIntent) {
       const systemPrompt = [
-        customBasicSystemPrompt || this.buildDefaultBasicSystemPrompt(),
+        customBasicSystemPrompt || this.buildDefaultBasicSystemPromptFromCopy(promptCopyBasic),
         ...runtimeContextLines,
         ...normalizedExtensionPromptLines,
         'User is asking for high-level strategy and efficiency improvements.',
@@ -2624,7 +2610,7 @@ export class AdminAssistantRuntime {
 
     if (agentMode !== 'advanced') {
       const systemPrompt = [
-        customBasicSystemPrompt || this.buildDefaultBasicSystemPrompt(),
+        customBasicSystemPrompt || this.buildDefaultBasicSystemPromptFromCopy(promptCopyBasic),
         ...runtimeContextLines,
         ...normalizedExtensionPromptLines,
       ].join('\n');
@@ -2778,32 +2764,17 @@ export class AdminAssistantRuntime {
         }
       }
 
-      let deterministicMessage = deterministicSummary;
-      if (deterministicActions.length) {
-        deterministicMessage = [
-          `I found ${totalExactMatches} exact match${totalExactMatches === 1 ? '' : 'es'} for "${replaceInstruction.from}" and staged ${deterministicActions.length} safe change${deterministicActions.length === 1 ? '' : 's'}.`,
-          'Review the staged updates below.',
-          'Then run Preview to confirm before/after, and apply when you are ready.',
-        ].join('\n');
-      } else if (targetTextMatches > 0) {
-        deterministicMessage = [
-          `I could not find exact matches for "${replaceInstruction.from}".`,
-          `I did find ${targetTextMatches} match${targetTextMatches === 1 ? '' : 'es'} for "${replaceInstruction.to}", so this change may already be done.`,
-          'If you want, I can run a broader similarity scan and stage likely candidates for your approval.',
-        ].join('\n');
-      } else if (totalExactMatches === 0 && (broadContentMatches + broadPluginMatches + broadThemeMatches) > 0) {
-        deterministicMessage = [
-          `I did not find exact matches for "${replaceInstruction.from}", but I found likely candidates.`,
-          `Candidates: content ${broadContentMatches}, plugin settings ${broadPluginMatches}, theme config ${broadThemeMatches}.`,
-          'I can stage these as explicit before/after candidates for approval.',
-        ].join('\n');
-      } else if (totalExactMatches === 0) {
-        deterministicMessage = [
-          `I searched content, plugin settings, and theme config for "${replaceInstruction.from}" and found no exact or near matches.`,
-          'No safe actions were staged yet.',
-          'If you share a page slug, collection name, or field path, I can run a targeted search and stage exact updates.',
-        ].join('\n');
-      }
+      const deterministicMessage = buildDeterministicReplaceMessage({
+        from: replaceInstruction.from,
+        to: replaceInstruction.to,
+        actionCount: deterministicActions.length,
+        totalExactMatches,
+        targetTextMatches,
+        broadContentMatches,
+        broadPluginMatches,
+        broadThemeMatches,
+        fallbackSummary: deterministicSummary,
+      });
 
       const deterministicText = this.sanitizeUserFacingMessage(
         this.normalizePlanModeMessage(
@@ -2817,9 +2788,7 @@ export class AdminAssistantRuntime {
       const deterministicTraces: AssistantChatTrace[] = [
         {
           iteration: 1,
-          message: deterministicActions.length
-            ? 'Ran exact text search and staged safe replacement actions.'
-            : 'Ran exact text search across content, plugin settings, and theme config.',
+          message: buildDeterministicTraceMessage(deterministicActions.length > 0),
           phase: 'planner',
           toolCalls: deterministicCalls,
         },
@@ -2858,7 +2827,7 @@ export class AdminAssistantRuntime {
     }
 
     const systemPrompt = [
-      customAdvancedSystemPrompt || this.buildDefaultAdvancedSystemPrompt(),
+      customAdvancedSystemPrompt || this.buildDefaultAdvancedSystemPromptFromCopy(promptCopyAdvanced),
       ...runtimeContextLines,
       ...normalizedExtensionPromptLines,
     ].join('\n');
@@ -2866,7 +2835,7 @@ export class AdminAssistantRuntime {
     const loopHistory: AssistantMessage[] = [...normalizedHistory];
     const stagedActions: AssistantAction[] = [];
     const traces: AssistantChatTrace[] = [];
-    let assistantMessage = 'No response generated.';
+    let assistantMessage: string = ASSISTANT_RUNTIME_COPY.noResponseGenerated;
     let usedModel = '';
     let loopDone = false;
     let loopCapReached = false;
@@ -2925,11 +2894,11 @@ export class AdminAssistantRuntime {
         assistantMessage = rawMessage;
       } else if (parsedActions.length || toolCalls.length) {
         if (toolCalls.length && !parsedActions.length) {
-          assistantMessage = 'Gathering context with tools before finalizing the plan.';
+          assistantMessage = ASSISTANT_RUNTIME_COPY.gatheringContext;
         } else if (parsedActions.length && !toolCalls.length) {
-          assistantMessage = 'Staged actions are ready for preview and approval.';
+          assistantMessage = ASSISTANT_RUNTIME_COPY.stagedActionsReady;
         } else {
-          assistantMessage = 'Collected context and staged candidate actions for approval.';
+          assistantMessage = ASSISTANT_RUNTIME_COPY.collectedContextAndActions;
         }
       }
 
@@ -3071,7 +3040,7 @@ export class AdminAssistantRuntime {
       if (fallbackActions.length) {
         safeActions = await this.filterUnsafeStagedActions(fallbackActions, availableTools);
         if (safeActions.length) {
-          assistantMessage = `Staged ${safeActions.length} replacement action${safeActions.length === 1 ? '' : 's'} from exact matches.`;
+          assistantMessage = buildStagedReplacementMessage(safeActions.length);
           loopDone = true;
         }
       }
@@ -3091,34 +3060,28 @@ export class AdminAssistantRuntime {
     if (!safeActions.length && !readOnlyDiscoveryIntent && !replaceInstruction) {
       const current = String(assistantMessage || '').trim();
       if (!current || this.isInterimPlanningMessage(current) || /no safe executable plan|plan stopped before executable actions/i.test(current)) {
-        assistantMessage =
-          'I could not stage safe write actions yet. Give me one concrete target (collection + id/slug + field), and I will build a clear approval plan.';
+        assistantMessage = ASSISTANT_RUNTIME_COPY.noSafeWriteActions;
       }
     }
     if (!safeActions.length && loopCapReached && !readOnlyDiscoveryIntent && !replaceInstruction) {
-      assistantMessage =
-        'I need one more pass to complete this plan safely. Continue?';
+      assistantMessage = ASSISTANT_RUNTIME_COPY.continuePlanningNeeded;
     }
     if (!safeActions.length && loopCapReached && this.containsPlaceholderTarget(assistantMessage)) {
-      assistantMessage =
-        'I could not stage a reliable plan yet. Please provide a concrete target (collection + record id/slug + field path + new value), then I will stage exact actions for preview.';
+      assistantMessage = ASSISTANT_RUNTIME_COPY.noReliablePlan;
     }
     if (!safeActions.length) {
       const current = String(assistantMessage || '').trim();
       if (!current || this.isInterimPlanningMessage(current)) {
-        assistantMessage = loopDone
-          ? 'Plan finished with no executable actions. No changes were run.'
-          : loopTimeLimitReached
-            ? 'I need one more pass to complete this plan safely. Continue?'
-            : loopCapReached
-            ? 'I need one more pass to complete this plan safely. Continue?'
-            : 'Plan did not finish staging executable actions. No changes were run.';
+        assistantMessage = buildPlannerNoActionMessage({
+          loopDone,
+          loopCapReached,
+          loopTimeLimitReached,
+        });
       }
     }
     if (selectedSkill?.riskPolicy === 'read_only' && safeActions.length > 0) {
       safeActions = [];
-      assistantMessage =
-        'Selected skill is read-only. I gathered context but did not stage write actions. Switch to a writable skill to stage changes.';
+      assistantMessage = ASSISTANT_RUNTIME_COPY.readOnlySkillBlocked;
     }
 
     const normalizedPlanMessage = this.normalizePlanModeMessage(
@@ -3143,18 +3106,25 @@ export class AdminAssistantRuntime {
       done,
       selectedSkill,
     });
+    // Track planning pass count from checkpoint
+    const planningPassesUsed = input.continueFrom && input.checkpoint?.planningPassesUsed
+      ? input.checkpoint.planningPassesUsed + 1
+      : 0;
+    
     const ui = this.buildUiHints({
       hasActions: safeActions.length > 0,
       loopCapReached,
       loopTimeLimitReached,
       done,
       selectedSkill,
+      planningPassesUsed,
     });
     const checkpoint: AssistantSessionCheckpoint | undefined =
       ui.canContinue
         ? {
             resumePrompt: 'Continue planning from previous context. Run more steps and stage executable actions if safe.',
             reason: loopTimeLimitReached ? 'time_cap' : 'loop_cap',
+            planningPassesUsed,
           }
         : undefined;
 

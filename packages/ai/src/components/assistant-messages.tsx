@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
+import { GLASS_BUTTON } from '../ui/glass-morphism';
 import { AssistantMessage, AssistantAction } from '../assistant-utils';
-import { ForgeMessage } from './ForgeMessage';
+import { AssistantMessage as AssistantMessageComponent } from './assistant-message';
 
-interface ForgeMessagesProps {
+interface AssistantMessagesProps {
   messages: AssistantMessage[];
   lastActions: AssistantAction[];
   setChatMode: (mode: 'auto' | 'plan' | 'agent') => void;
@@ -20,7 +21,7 @@ interface ForgeMessagesProps {
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function ForgeMessages({
+export function AssistantMessages({
   messages,
   lastActions,
   setChatMode,
@@ -33,7 +34,7 @@ export function ForgeMessages({
   sandboxMode,
   chatMode,
   messagesEndRef,
-}: ForgeMessagesProps) {
+}: AssistantMessagesProps) {
   if (messages.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
@@ -80,7 +81,7 @@ export function ForgeMessages({
   return (
     <div className="space-y-6 pb-24 pt-4">
       {messages.map((entry, index) => (
-        <ForgeMessage
+        <AssistantMessageComponent
           key={`${entry.role}-${index}`}
           message={entry}
           isLast={index === messages.length - 1}

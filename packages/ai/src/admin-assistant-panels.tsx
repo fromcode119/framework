@@ -31,13 +31,16 @@ export function HistoryPanel({
 }: HistoryPanelProps) {
   return (
     <aside
-      className={`relative z-20 order-first flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r bg-white/96 transition-none dark:bg-[#0a1120]/96 ${
+      className={`relative z-[60] order-first flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r bg-white/96 dark:bg-[#0a1120]/96 ${
         showHistory
-          ? 'w-[360px] max-w-[92vw] border-slate-200/80 p-4 opacity-100 dark:border-white/10'
-          : 'pointer-events-none w-0 border-transparent px-0 py-0 opacity-0'
+          ? 'w-[360px] max-w-[92vw] border-slate-200/80 dark:border-white/10'
+          : 'pointer-events-none w-0 border-transparent'
       }`}
     >
-      <div className="mb-3 flex items-center justify-between">
+      <div className={`flex h-full w-[360px] flex-col p-4 transition-opacity duration-300 ${
+        showHistory ? 'opacity-100' : 'opacity-0'
+      }`}>
+        <div className="mb-3 flex items-center justify-between">
         <div>
           <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">History</h2>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -65,13 +68,16 @@ export function HistoryPanel({
       </div>
       <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
         {historyLoading ? (
-          <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400">
-            Loading history...
-          </p>
+          <div className="group rounded-xl border border-slate-200/70 bg-gradient-to-br from-white/95 to-slate-50/95 px-3 py-3 shadow-sm backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-900/80 dark:to-slate-800/80">
+            <div className="flex items-center gap-2.5">
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-cyan-200 border-t-cyan-600 dark:border-cyan-800 dark:border-t-cyan-400" />
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Loading history</span>
+            </div>
+          </div>
         ) : historySessions.length === 0 ? (
-          <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400">
-            No saved chats yet.
-          </p>
+          <div className="rounded-xl border border-slate-200/70 bg-gradient-to-br from-white/95 to-slate-50/95 px-3 py-3 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-900/80 dark:to-slate-800/80">
+            <p className="text-xs text-slate-500 dark:text-slate-400">No saved chats yet.</p>
+          </div>
         ) : (
           historySessions.map((session) => {
             const active = session.id === activeSessionId;
@@ -110,6 +116,7 @@ export function HistoryPanel({
             );
           })
         )}
+      </div>
       </div>
     </aside>
   );
@@ -158,7 +165,7 @@ export function GatewayPanel({
 }: GatewayPanelProps) {
   return (
     <aside
-      className={`relative z-20 order-last flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-l bg-white/96 transition-none dark:bg-[#0a1120]/96 ${
+      className={`relative z-[60] order-last flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-l bg-white/96 transition-none dark:bg-[#0a1120]/96 ${
         showGateway
           ? 'w-[360px] max-w-[92vw] border-slate-200/80 p-4 opacity-100 dark:border-white/10'
           : 'pointer-events-none w-0 border-transparent px-0 py-0 opacity-0'

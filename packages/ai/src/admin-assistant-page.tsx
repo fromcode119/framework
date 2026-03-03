@@ -3,7 +3,13 @@
 import React, { useMemo, useState } from 'react';
 import { FrameworkIcons, usePlugins } from '@fromcode119/react';
 import { GatewayPanel, HistoryPanel, ToolsOverlay } from './admin-assistant-panels';
-import { ForgeComposer, ForgeConversation, ForgeTopBar } from './components';
+import {
+  AssistantComposer,
+  AssistantConversation,
+  AssistantTopBar,
+  AssistantSimpleTopBar,
+  AssistantSettingsDrawer,
+} from './components';
 import {
   SURFACE_NAME,
   AI_INTEGRATION_ENDPOINT,
@@ -68,9 +74,41 @@ export function AdminAssistantPage() {
   const [historySource, setHistorySource] = useState<'server' | 'local'>('server');
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  const [provider, setProvider] = useState('openai');
+  const [provider, setProvider] = useState(() => {
+    if (typeof window === 'undefined') return 'openai';
+    try {
+      const raw = localStorage.getItem(FORGE_UI_PREFS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const prefProvider = String(parsed?.provider || '').trim().toLowerCase();
+        if (prefProvider && PROVIDER_OPTIONS.some((item) => item.value === prefProvider)) {
+          return prefProvider;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return 'openai';
+  });
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState(PROVIDER_PRESETS.openai[0].value);
+  const [model, setModel] = useState(() => {
+    if (typeof window === 'undefined') return PROVIDER_PRESETS.openai[0].value;
+    try {
+      const raw = localStorage.getItem(FORGE_UI_PREFS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const prefModel = String(parsed?.model || '').trim();
+        if (prefModel) return prefModel;
+        const prefProvider = String(parsed?.provider || '').trim().toLowerCase();
+        if (prefProvider && PROVIDER_PRESETS[prefProvider]) {
+          return PROVIDER_PRESETS[prefProvider][0].value;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return PROVIDER_PRESETS.openai[0].value;
+  });
   const [baseUrl, setBaseUrl] = useState('');
   const [skills, setSkills] = useState<AssistantSkill[]>([{ id: 'general', label: 'General' }]);
   const [skillId, setSkillId] = useState('general');
@@ -90,6 +128,11 @@ export function AdminAssistantPage() {
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
   const [composerHeight, setComposerHeight] = useState(260);
   const [loadingPhaseIndex, setLoadingPhaseIndex] = useState(0);
+  
+  // Settings drawer preferences
+  const [autoApprove, setAutoApprove] = useState(false);
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
+  const [verboseLogging, setVerboseLogging] = useState(false);
 
   const viewportRef = React.useRef<HTMLDivElement>(null);
   const scrollAnchorRef = React.useRef<HTMLDivElement>(null);
@@ -117,10 +160,10 @@ export function AdminAssistantPage() {
   const activeTools = selectedTools.length;
   const loadingPhases =
     chatMode === 'agent'
-      ? ['Analyzing request', 'Selecting tools', 'Running checks', 'Drafting response']
+      ? ['Analyzing your request...', 'Selecting tools...', 'Running diagnostic checks...', 'Preparing response...']
       : chatMode === 'plan'
-        ? ['Analyzing request', 'Scanning data', 'Staging safe steps', 'Drafting plan']
-        : ['Thinking', 'Selecting best approach', 'Drafting response'];
+        ? ['Analyzing your request...', 'Scanning workspace...', 'Planning safe changes...', 'Preparing action plan...']
+        : ['Processing your request...', 'Analyzing context...', 'Preparing response...'];
   const loadingPhaseLabel = loadingPhases[loadingPhaseIndex % loadingPhases.length];
 
   const lastActions = useMemo(() => {
@@ -210,10 +253,7 @@ export function AdminAssistantPage() {
     }
     followLatestRef.current = true;
     setLoadingPhaseIndex(0);
-    const id = window.setInterval(() => {
-      setLoadingPhaseIndex((prev) => prev + 1);
-    }, 1050);
-    return () => window.clearInterval(id);
+    return;
   }, [loading, chatMode]);
 
   React.useEffect(() => {
@@ -241,8 +281,25 @@ export function AdminAssistantPage() {
             ? String(providerConfig?.apiKey || '').trim().length > 0
             : true;
 
-        setProvider(providerKey || 'openai');
-        setModel(modelValue || (PROVIDER_PRESETS[providerKey]?.[0]?.value || PROVIDER_PRESETS.openai[0].value));
+        // Only update provider/model from server if user hasn't set preferences in localStorage
+        // This prevents the integration check from overriding user's last selection on page refresh
+        const hasLocalPrefs = (() => {
+          try {
+            const raw = localStorage.getItem(FORGE_UI_PREFS_STORAGE_KEY);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              return !!(parsed?.provider || parsed?.model);
+            }
+          } catch {
+            // ignore
+          }
+          return false;
+        })();
+
+        if (!hasLocalPrefs) {
+          setProvider(providerKey || 'openai');
+          setModel(modelValue || (PROVIDER_PRESETS[providerKey]?.[0]?.value || PROVIDER_PRESETS.openai[0].value));
+        }
         setBaseUrl(baseUrlValue);
         setIntegrationConfigured(!!firstEnabled || !!integration?.active);
         setHasSavedSecret(hasSecret);
@@ -896,6 +953,10 @@ export function AdminAssistantPage() {
       const plan = result?.plan && typeof result.plan === 'object' ? result.plan : undefined;
       const ui = result?.ui && typeof result.ui === 'object' ? result.ui : undefined;
       const actions = Array.isArray(result?.actions) ? result.actions : [];
+      const reasoningReport =
+        typeof result?.reasoningReport === 'string' && result.reasoningReport.trim()
+          ? result.reasoningReport.trim()
+          : undefined;
       const planStatus = String((plan as any)?.status || '').trim().toLowerCase();
       const suppressPrimaryText =
         !!plan &&
@@ -927,6 +988,7 @@ export function AdminAssistantPage() {
         loopCapReached: result?.loopCapReached === true,
         model: result?.model ? String(result.model) : model,
         provider: result?.provider ? String(result.provider) : provider,
+        reasoningReport,
       };
     },
     [model, provider],
@@ -1258,25 +1320,18 @@ export function AdminAssistantPage() {
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.26),rgba(255,255,255,0.06)_24%,rgba(255,255,255,0)_50%)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01)_20%,rgba(255,255,255,0)_42%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(99,102,241,0.07),transparent_44%)] dark:bg-[radial-gradient(circle_at_50%_16%,rgba(99,102,241,0.14),transparent_44%)]" />
 
-        <ForgeTopBar
-          provider={provider}
-          model={model}
-          chatMode={chatMode}
-          sandboxMode={sandboxMode}
-          showComposerControls={showComposerControls}
-          setShowComposerControls={setShowComposerControls}
-          openAdvancedWorkspace={openAdvancedWorkspace}
-          toggleThemeMode={toggleThemeMode}
+        <AssistantSimpleTopBar
+          sessionTitle="Forge AI"
+          historyCount={historySessions.length}
+          onHistoryToggle={() => setShowHistory(!showHistory)}
+          onSettingsOpen={() => setShowGateway(!showGateway)}
+          onThemeToggle={toggleThemeMode}
           themeMode={themeMode}
-          showGateway={showGateway}
-          setShowGateway={setShowGateway}
-          showHistory={showHistory}
-          setShowHistory={setShowHistory}
         />
 
         <div className="relative z-10 flex min-h-0 flex-1 overflow-hidden">
             <section className="relative min-h-0 flex-1 overflow-hidden">
-              <ForgeConversation
+              <AssistantConversation
                 viewportRef={viewportRef}
                 viewportBottomPadding={viewportBottomPadding}
                 hasConversation={hasConversation}
@@ -1295,24 +1350,16 @@ export function AdminAssistantPage() {
                 loading={loading}
                 loadingPhaseLabel={loadingPhaseLabel}
                 scrollAnchorRef={scrollAnchorRef}
+                chatMode={chatMode}
+                loadingPhaseIndex={loadingPhaseIndex}
+                showTechnicalDetails={showTechnicalDetails}
               />
 
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-slate-100 via-slate-100/88 to-transparent dark:from-[#060b14] dark:via-[#060b14]/88" />
 
-              <ForgeComposer
+              <AssistantComposer
                 composerRef={composerRef}
                 hasConversation={hasConversation}
-                leftDockOffset={leftDockOffset}
-                rightDockOffset={rightDockOffset}
-                controlsVisible={controlsVisible}
-                provider={provider}
-                switchProvider={switchProvider}
-                model={model}
-                setModel={setModel}
-                modelOptions={modelOptions}
-                skillId={skillId}
-                setSkillId={setSkillId}
-                skillOptions={skillOptions}
                 chatMode={chatMode}
                 setChatMode={setChatMode}
                 sandboxMode={sandboxMode}
@@ -1320,10 +1367,9 @@ export function AdminAssistantPage() {
                 runActions={runActions}
                 lastActions={lastActions}
                 selectedActionCount={selectedActionCount}
+                setSelectedActionIndexes={setSelectedActionIndexes}
                 executing={executing}
                 promptUsage={promptUsage}
-                loadingProviderModels={loadingProviderModels}
-                providerModelsError={providerModelsError}
                 fileInputRef={fileInputRef}
                 onFilesSelected={onFilesSelected}
                 attachments={attachments}
@@ -1339,7 +1385,6 @@ export function AdminAssistantPage() {
                 checkingIntegration={checkingIntegration}
                 integrationConfigured={integrationConfigured}
                 quickPrompts={quickPrompts}
-                toolsMenuRef={toolsMenuRef}
                 toolsButtonRef={toolsButtonRef}
                 showTools={showTools}
                 setShowTools={setShowTools}
@@ -1359,25 +1404,33 @@ export function AdminAssistantPage() {
               removeHistorySession={removeHistorySession}
             />
 
-            <GatewayPanel
-              showGateway={showGateway}
-              setShowGateway={setShowGateway}
+            <AssistantSettingsDrawer
+              isOpen={showGateway}
+              onClose={() => setShowGateway(false)}
               provider={provider}
-              switchProvider={switchProvider}
+              onProviderChange={switchProvider}
               providerOptions={PROVIDER_OPTIONS}
               model={model}
-              setModel={setModel}
+              onModelChange={setModel}
               modelOptions={modelOptions}
-              loadingProviderModels={loadingProviderModels}
-              providerModelsError={providerModelsError}
-              hasSavedSecret={hasSavedSecret}
+              loadingModels={loadingProviderModels}
+              modelsError={providerModelsError}
+              skillId={skillId}
+              onSkillIdChange={setSkillId}
+              skillOptions={skillOptions}
               apiKey={apiKey}
-              setApiKey={setApiKey}
+              onApiKeyChange={setApiKey}
+              hasSavedSecret={hasSavedSecret}
               baseUrl={baseUrl}
-              setBaseUrl={setBaseUrl}
-              integrationSaving={integrationSaving}
-              saveIntegration={saveIntegration}
-              openAdvancedAiSettings={openAdvancedAiSettings}
+              onBaseUrlChange={setBaseUrl}
+              onSave={saveIntegration}
+              isSaving={integrationSaving}
+              autoApprove={autoApprove}
+              onAutoApproveChange={setAutoApprove}
+              showTechnicalDetails={showTechnicalDetails}
+              onShowTechnicalDetailsChange={setShowTechnicalDetails}
+              verboseLogging={verboseLogging}
+              onVerboseLoggingChange={setVerboseLogging}
             />
         </div>
       </div>
