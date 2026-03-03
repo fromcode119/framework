@@ -5,6 +5,14 @@ export { RecordVersions } from './collections/record-versions';
 // Core Classes (Server-only)
 export { PluginManager, type PluginManagerInterface } from './plugin/plugin-manager';
 export { ThemeManager } from './theme/theme-manager';
+export { CoreExtensionManager } from './extensions/extension-manager';
+export type {
+  CoreExtensionManifest,
+  LoadedCoreExtension,
+  CoreExtensionModule,
+  CoreExtensionContext,
+  CoreExtensionState,
+} from './extensions/types';
 export { SchemaManager } from './database/schema-manager';
 export { MigrationManager } from './database/migration-manager';
 export { Seeder } from './database/seeder';
@@ -15,36 +23,20 @@ export { QueueAdapterFactory } from './queue/queue-adapter-factory';
 export { I18nManager } from './i18n/i18n-manager';
 export { WebSocketManager } from './realtime/web-socket-manager';
 
+// Capability Registry
+export { capabilities, CapabilityRegistry, type CapabilityMetadata } from './capabilities';
+
 // Shared Utilities
 export { Logger } from '@fromcode119/sdk';
 export type { LoggerOptions } from '@fromcode119/sdk';
 export * from './utils';
 export { ApiPath, SystemTable } from '@fromcode119/sdk/internal';
 export { env, validateEnv } from './config/env';
-export { getProjectRoot, getPluginsDir, getThemesDir } from './config/paths';
+export { getProjectRoot, getPluginsDir, getThemesDir, getPackagesDir } from './config/paths';
 
 // Integrations
 export { IntegrationManager } from './integrations/integration-manager';
 export { IntegrationRegistry } from './integrations/integration-registry';
-export { AdminAssistantRuntime } from './integrations/admin-assistant-runtime';
-export type {
-  AssistantAction,
-  AssistantChatInput,
-  AssistantChatResult,
-  AssistantChatTrace,
-  AssistantPlanArtifact,
-  AssistantPlanStatus,
-  AssistantRunMode,
-  AssistantSessionCheckpoint,
-  AssistantUiHints,
-  AssistantCollectionContext,
-  AssistantExecuteInput,
-  AssistantExecuteResult,
-  ForgeSkillDefinition,
-  AssistantSettingValue,
-  AssistantToolSummary,
-  AdminAssistantRuntimeOptions,
-} from './integrations/admin-assistant-runtime';
 
 // Context
 export { requestContext, getLocale } from './context/request-context';

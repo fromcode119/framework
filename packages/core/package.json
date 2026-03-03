@@ -62,7 +62,6 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode119/ai": "*",
     "@fromcode119/cache": "*",
     "@fromcode119/database": "*",
     "@fromcode119/email": "*",

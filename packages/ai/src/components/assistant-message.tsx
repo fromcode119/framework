@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
+import { GLASS_CARD, GLASS_PANEL, GLASS_BUTTON } from '../ui/glass-morphism';
 import {
   AssistantMessage,
   splitMessageBlocks,
@@ -75,7 +76,7 @@ function renderText(content: string, keyPrefix: string): React.ReactNode {
   return blocks;
 }
 
-export function ForgeMessage({
+export function AssistantMessage({
   message,
   isLast,
   executing,
@@ -148,16 +149,24 @@ export function ForgeMessage({
                 </div>
                 <div className="space-y-2">
                   {message.actions.map((action, idx) => (
-                    <div key={idx} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-white/5 dark:bg-white/5">
-                      <input
-                        type="checkbox"
-                        checked={selectedActionIndexes.includes(idx)}
-                        onChange={(e) => {
-                          if (e.target.checked) setSelectedActionIndexes([...selectedActionIndexes, idx]);
-                          else setSelectedActionIndexes(selectedActionIndexes.filter(i => i !== idx));
-                        }}
-                        className="mt-1 h-4 w-4 rounded border-slate-300"
-                      />
+                    <div key={idx} className="flex items-start gap-3 rounded-xl border border-slate-200/70 bg-gradient-to-br from-white/95 to-slate-50/80 p-3 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-900/80 dark:to-slate-800/60">
+                      <div className="relative mt-1 flex h-4 w-4 shrink-0 items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedActionIndexes.includes(idx)}
+                          onChange={(e) => {
+                            if (e.target.checked) setSelectedActionIndexes([...selectedActionIndexes, idx]);
+                            else setSelectedActionIndexes(selectedActionIndexes.filter(i => i !== idx));
+                          }}
+                          className="peer sr-only"
+                        />
+                        <div className="h-4 w-4 rounded border-2 border-slate-300 bg-white transition peer-checked:border-cyan-500 peer-checked:bg-cyan-500 peer-focus:ring-2 peer-focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-800 dark:peer-checked:border-cyan-400 dark:peer-checked:bg-cyan-400" />
+                        <FrameworkIcons.Check 
+                          size={10} 
+                          className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100" 
+                          strokeWidth={3}
+                        />
+                      </div>
                       <div>
                         <div className="text-xs font-bold text-slate-900 dark:text-white">{formatExecutionTitle(action)}</div>
                         <div className="text-[11px] text-slate-500">{formatExecutionDetail(action)}</div>

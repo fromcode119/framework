@@ -3,6 +3,7 @@
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Select } from './ui/select';
+import { AssistantLoadingState } from './components';
 import {
   MAX_PROMPT_LENGTH,
   PROVIDER_OPTIONS,
@@ -43,7 +44,7 @@ interface ForgeTopBarProps {
   setShowHistory: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function ForgeTopBar({
+export function AssistantTopBar({
   provider,
   model,
   chatMode,
@@ -165,9 +166,12 @@ interface ForgeConversationProps {
   loading: boolean;
   loadingPhaseLabel: string;
   scrollAnchorRef: React.RefObject<HTMLDivElement | null>;
+  chatMode: 'auto' | 'plan' | 'agent';
+  loadingPhaseIndex: number;
+  showTechnicalDetails: boolean;
 }
 
-export function ForgeConversation({
+export function AssistantConversation({
   viewportRef,
   viewportBottomPadding,
   hasConversation,
@@ -186,7 +190,13 @@ export function ForgeConversation({
   loading,
   loadingPhaseLabel,
   scrollAnchorRef,
+  chatMode,
+  loadingPhaseIndex,
+  showTechnicalDetails,
 }: ForgeConversationProps) {
+  // Map chatMode to ConversationMode
+  const conversationMode = chatMode === 'plan' ? 'build' : chatMode === 'agent' ? 'quickfix' : 'chat';
+  
   return (
     <div
       ref={viewportRef}
@@ -198,7 +208,7 @@ export function ForgeConversation({
           <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/85 shadow-[0_18px_55px_rgba(30,64,175,0.18)] dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_18px_55px_rgba(30,64,175,0.35)]">
             <FrameworkIcons.Zap size={22} />
           </div>
-          <p className="text-slate-600 dark:text-slate-300">Good to see you.</p>
+          <p className="text-slate-600 dark:text-slate-300">Welcome back.</p>
           <h2 className="mt-1 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl">How can I help you today?</h2>
           <p className="mt-3 max-w-lg text-sm text-slate-600 dark:text-slate-400">
             I am available 24/7 for your framework. Ask one thing, and I will take it from there.
@@ -213,7 +223,7 @@ export function ForgeConversation({
             const isLatestActionBatch = Array.isArray(entry.actions) && entry.actions === lastActions;
             const showMetaRow = isSystem || !!(entry.provider || entry.model);
             return (
-              <div key={`${entry.role}-${index}`} className={`flex transition-all duration-300 ${isUser ? 'justify-end' : 'justify-start'}`}>
+              <div key={`${entry.role}-${index}`} className={`group flex transition-all duration-300 ${isUser ? 'justify-end' : 'justify-start'}`}>
                 <article
                   className={`relative max-w-[92%] rounded-2xl border px-3.5 py-3 text-sm shadow-[0_16px_40px_rgba(2,6,23,0.2)] dark:shadow-[0_16px_40px_rgba(2,6,23,0.34)] ${
                     isUser
@@ -227,11 +237,11 @@ export function ForgeConversation({
                     <button
                       type="button"
                       onClick={() => forkFromVisibleMessage(index)}
-                      className="absolute right-2 top-2 inline-flex h-5 w-5 items-center justify-center rounded-md border border-transparent text-slate-500 transition hover:border-slate-300 hover:text-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-100"
+                      className="absolute -right-8 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 shadow-sm opacity-0 transition-all group-hover:opacity-100 hover:border-slate-400 hover:bg-white hover:text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                       title="Fork from this message"
                       aria-label="Fork from this message"
                     >
-                      <FrameworkIcons.ArrowLeftRight size={10} />
+                      <FrameworkIcons.ArrowLeftRight size={12} />
                     </button>
                   ) : null}
                   {showMetaRow ? (
@@ -354,7 +364,10 @@ export function ForgeConversation({
                   ) : null}
 
                   {isAssistant && entry.traces && entry.traces.length > 0 && !entry.plan ? (
-                    <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50/90 px-2.5 py-2 dark:border-slate-700 dark:bg-slate-900/55">
+                    <details
+                      className="mt-3 rounded-xl border border-slate-200 bg-slate-50/90 px-2.5 py-2 dark:border-slate-700 dark:bg-slate-900/55"
+                      open={showTechnicalDetails}
+                    >
                       <summary className="cursor-pointer text-[11px] font-semibold text-slate-700 dark:text-slate-200">
                         Behind the scenes ({entry.traces.length} step{entry.traces.length > 1 ? 's' : ''})
                         {entry.loopCapReached ? ' • paused' : ''}
@@ -394,6 +407,20 @@ export function ForgeConversation({
                           </div>
                         ))}
                       </div>
+                    </details>
+                  ) : null}
+
+                  {isAssistant && entry.reasoningReport ? (
+                    <details
+                      className="mt-2 rounded-xl border border-sky-300/45 bg-sky-50/75 px-2.5 py-2 dark:border-sky-300/30 dark:bg-sky-300/12"
+                      open={showTechnicalDetails}
+                    >
+                      <summary className="cursor-pointer text-[11px] font-semibold text-sky-900 dark:text-sky-100">
+                        Thinking summary
+                      </summary>
+                      <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white/90 p-2 text-[10px] leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-950/65 dark:text-slate-200">
+                        {entry.reasoningReport}
+                      </pre>
                     </details>
                   ) : null}
 
@@ -465,14 +492,22 @@ export function ForgeConversation({
                               return (
                                 <label
                                   key={`action-${actionIndex}`}
-                                  className="flex cursor-pointer items-start gap-1.5 rounded-md border border-indigo-300/55 bg-white/80 px-2 py-1 dark:border-indigo-300/28 dark:bg-slate-950/45"
+                                  className="group flex cursor-pointer items-start gap-2.5 rounded-lg border border-indigo-200/60 bg-gradient-to-br from-white/95 to-indigo-50/40 px-3 py-2 transition hover:border-indigo-300/70 hover:shadow-md dark:border-indigo-700/40 dark:from-slate-900/80 dark:to-indigo-950/30 dark:hover:border-indigo-600/50"
                                 >
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={() => toggleActionIndex(actionIndex)}
-                                    className="mt-0.5 h-3.5 w-3.5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-400"
-                                  />
+                                  <div className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={() => toggleActionIndex(actionIndex)}
+                                      className="peer sr-only"
+                                    />
+                                    <div className="h-4 w-4 rounded border-2 border-indigo-300 bg-white transition peer-checked:border-indigo-500 peer-checked:bg-indigo-500 peer-focus:ring-2 peer-focus:ring-indigo-500/20 dark:border-indigo-600 dark:bg-slate-800 dark:peer-checked:border-indigo-400 dark:peer-checked:bg-indigo-400" />
+                                    <FrameworkIcons.Check 
+                                      size={10} 
+                                      className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100" 
+                                      strokeWidth={3}
+                                    />
+                                  </div>
                                   <div className="min-w-0">
                                     <p className="truncate text-[10px] font-semibold text-indigo-900 dark:text-indigo-100">
                                       {formatActionLabel(action)}
@@ -687,21 +722,10 @@ export function ForgeConversation({
             );
           })}
           {loading ? (
-            <div className="flex justify-start">
-              <article className="max-w-[92%] rounded-2xl border border-slate-200/80 bg-white/92 px-3.5 py-3 text-sm text-slate-700 shadow-[0_16px_40px_rgba(2,6,23,0.18)] dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-200 dark:shadow-[0_16px_40px_rgba(2,6,23,0.34)]">
-                <div className="inline-flex items-center gap-2 text-[12px] font-medium">
-                  <span className="relative inline-flex overflow-hidden rounded-md px-1.5 py-0.5">
-                    <span className="pointer-events-none absolute inset-0 -translate-x-full animate-[forge-think-sweep_1.4s_linear_infinite] bg-gradient-to-r from-transparent via-slate-300/70 to-transparent dark:via-cyan-200/30" />
-                    <span className="relative bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700 bg-[length:180%_100%] bg-clip-text text-transparent dark:from-slate-100 dark:via-cyan-200 dark:to-slate-100">
-                      Thinking
-                    </span>
-                  </span>
-                  <span className="text-[11px] text-slate-500 transition-opacity duration-300 dark:text-slate-400">
-                    {loadingPhaseLabel}
-                  </span>
-                </div>
-              </article>
-            </div>
+            <AssistantLoadingState
+              mode={conversationMode}
+              phase={loadingPhaseIndex}
+            />
           ) : null}
           <div ref={scrollAnchorRef} className="h-0" />
         </div>
@@ -1028,11 +1052,11 @@ export function ForgeComposer({
               type="button"
               onClick={openFilePicker}
               disabled={uploadingAttachments}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              title="Upload asset"
-              aria-label="Upload asset"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200/80 bg-gradient-to-br from-white/95 to-slate-50/90 text-slate-500 shadow-sm backdrop-blur-sm transition hover:border-cyan-300 hover:bg-gradient-to-br hover:from-cyan-50 hover:to-sky-50 hover:text-cyan-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-45 dark:border-slate-700/70 dark:from-slate-900/80 dark:to-slate-800/70 dark:text-slate-300 dark:hover:border-cyan-600/50 dark:hover:from-cyan-950/40 dark:hover:to-sky-950/30 dark:hover:text-cyan-400"
+              title="Attach file"
+              aria-label="Attach file"
             >
-              <FrameworkIcons.Plus size={13} />
+              <FrameworkIcons.File size={14} />
             </button>
             <textarea
               ref={textareaRef}
@@ -1059,7 +1083,10 @@ export function ForgeComposer({
             </button>
           </div>
           {uploadingAttachments ? (
-            <div className="mt-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">Uploading assets...</div>
+            <div className="mt-2 flex items-center gap-2 rounded-lg bg-cyan-50/50 px-3 py-1.5 dark:bg-cyan-900/20">
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-cyan-200 border-t-cyan-600 dark:border-cyan-800 dark:border-t-cyan-400" />
+              <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">Uploading assets</span>
+            </div>
           ) : null}
         </div>
 

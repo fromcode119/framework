@@ -90,10 +90,16 @@ export function getProjectRoot(): string {
   }
 
   // Fallback for runtime contexts where cwd is nested inside workspace packages.
-  const fromDirname = path.resolve(__dirname, '../../../../');
-  if (isFrameworkRoot(fromDirname)) {
-    cachedRoot = fromDirname;
-    return fromDirname;
+  try {
+    const pkgPath = require.resolve('@fromcode119/core/package.json');
+    // core is in /packages/core, so its parent's parent is the root.
+    const fromPkg = path.resolve(path.dirname(pkgPath), '../../');
+    if (isFrameworkRoot(fromPkg)) {
+      cachedRoot = fromPkg;
+      return fromPkg;
+    }
+  } catch {
+    // Ignore resolution errors and fallback to cwd
   }
 
   // Last resort: current working directory.
@@ -161,4 +167,38 @@ export function getThemesDir(): string {
   if (existing) return existing;
 
   return path.resolve(root, 'themes');
+}
+
+/**
+ * Resolves the directory where core packages are stored (for core extensions).
+ * This is typically the 'packages' directory in the framework root.
+ */
+export function getPackagesDir(): string {
+  // Allow explicit override via environment variable
+  if (process.env.FROMCODE_PACKAGES_DIR) {
+    return path.resolve(process.env.FROMCODE_PACKAGES_DIR);
+  }
+  
+  const root = getProjectRoot();
+  
+  // Search upward from project root to find packages directory
+  // This works both in framework monorepo and in standalone apps
+  const candidates = [
+    path.resolve(root, 'packages'),
+    path.resolve(root, '..', 'packages'),
+    path.resolve(root, '..', '..', 'packages'),
+  ];
+  
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+      // Verify it's actually a packages directory by checking for core package
+      const corePath = path.join(candidate, 'core');
+      if (fs.existsSync(corePath) && fs.statSync(corePath).isDirectory()) {
+        return candidate;
+      }
+    }
+  }
+  
+  // Default fallback
+  return path.resolve(root, 'packages');
 }

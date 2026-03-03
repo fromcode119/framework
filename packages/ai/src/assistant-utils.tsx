@@ -55,13 +55,6 @@ export type AssistantAction = {
   input?: Record<string, any>;
 };
 
-export type AssistantPersona = {
-  id: string;
-  name: string;
-  description?: string;
-  avatar?: string;
-};
-
 export type AssistantProvider = {
   id: string;
   name: string;
@@ -110,7 +103,7 @@ export type MessageBlock =
   | { type: 'text'; content: string }
   | { type: 'code'; content: string; language: string };
 
-export type ForgeHistorySession = {
+export type AssistantHistorySession = {
   id: string;
   title: string;
   updatedAt: number;

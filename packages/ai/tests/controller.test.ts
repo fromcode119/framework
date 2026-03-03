@@ -1,4 +1,4 @@
-import { ForgeController } from '../src/controllers/forge-controller';
+import { ForgeController } from '../src/api/controller';
 
 type MockReq = any;
 type MockRes = any;
@@ -302,34 +302,6 @@ describe('assistant-controller modernization', () => {
       'assistant:telemetry',
       expect.objectContaining({ event: 'chat.continue' }),
     );
-  });
-
-  it('returns personas through the legacy endpoint adapter', async () => {
-    const { controller } = createControllerHarness();
-    const runtime = {
-      listSkills: jest.fn().mockResolvedValue([
-        { id: 'general', label: 'General', defaultMode: 'chat', riskPolicy: 'approval_required' },
-      ]),
-    };
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
-
-    const req: MockReq = { body: {}, headers: {}, cookies: {} };
-    const res = createResponseMock();
-
-    await controller.assistantPersonasLegacy(req as any, res as any);
-
-    expect(res.setHeader).toHaveBeenCalledWith('Deprecation', 'true');
-    expect(res.json).toHaveBeenCalledWith({
-      personas: [
-        {
-          id: 'general',
-          label: 'General',
-          description: undefined,
-          defaultMode: 'chat',
-          riskPolicy: 'approval_required',
-        },
-      ],
-    });
   });
 
   it('exposes built-in browsing skills in assistant skills endpoint', async () => {

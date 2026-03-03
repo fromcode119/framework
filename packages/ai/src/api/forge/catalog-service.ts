@@ -1,14 +1,30 @@
-import { AssistantCollectionContext, PluginManager, ThemeManager } from '@fromcode119/core';
+import { PluginManager, ThemeManager } from '@fromcode119/core';
+import { AssistantCollectionContext } from '../../admin-assistant-runtime';
 import { Request } from 'express';
-import { RESTController } from '../rest-controller';
+import { RESTController } from '../controller';
 
-export class ForgeCatalogService {
+export class AssistantCatalogService {
   constructor(
     private manager: PluginManager,
     private themeManager: ThemeManager,
     private restController: RESTController,
     private normalizeText: (value: string) => string,
   ) {}
+
+  private getPluginsByCapability(capability: string): any[] {
+    return this.manager.getPlugins().filter((plugin: any) => {
+      const capabilities = Array.isArray(plugin?.manifest?.capabilities)
+        ? plugin.manifest.capabilities
+        : [];
+      return capabilities.includes(capability);
+    });
+  }
+
+  private getCollectionsFromPlugins(pluginSlugs: string[]): AssistantCollectionContext[] {
+    return this.getCollectionsContext().filter(
+      (collection) => pluginSlugs.includes(collection.pluginSlug)
+    );
+  }
 
   isCollectionAllowed(collection: any): boolean {
     const slug = String(collection?.slug || '').trim().toLowerCase();
@@ -82,10 +98,24 @@ export class ForgeCatalogService {
   detectInboxFormsQuery(message: string): { emails: boolean; forms: boolean } | null {
     const normalized = this.normalizeText(message || '');
     if (!normalized) return null;
+
+    // Check if relevant plugins are installed
+    const hasEmailCapability = this.getPluginsByCapability('email').length > 0;
+    const hasFormsCapability = this.getPluginsByCapability('forms').length > 0;
+
+    // Only trigger this intent if at least one plugin declares the capability
+    if (!hasEmailCapability && !hasFormsCapability) return null;
+
     const asksEmails = /\bemail\b|\bemails\b|\bmail\b|\binbox\b/.test(normalized);
     const asksForms = /\bform\b|\bforms\b|\bsubmission\b|\bsubmissions\b|\blead\b|\bleads\b/.test(normalized);
+
+    // Return intent only if the user is asking about something we have capability for
+    if (asksEmails && !hasEmailCapability) return null;
+    if (asksForms && !hasFormsCapability) return null;
+
     if (!asksEmails && !asksForms) return null;
-    return { emails: asksEmails, forms: asksForms };
+
+    return { emails: asksEmails && hasEmailCapability, forms: asksForms && hasFormsCapability };
   }
 
   buildInventoryMessage(): string {
@@ -125,19 +155,33 @@ export class ForgeCatalogService {
     req: Request,
     intent: { emails: boolean; forms: boolean },
   ): Promise<string> {
-    const collections = this.getCollectionsContext();
-    const emailKeywords = ['email', 'mail', 'inbox', 'message', 'contact', 'lead', 'form', 'submission'];
-    const formKeywords = ['form', 'submission', 'lead', 'contact', 'inquiry', 'enquiry'];
-    const keywords = Array.from(
+    const emailPlugins = intent.emails ? this.getPluginsByCapability('email') : [];
+    const formPlugins = intent.forms ? this.getPluginsByCapability('forms') : [];
+    const relevantPluginSlugs = Array.from(
       new Set([
-        ...(intent.emails ? emailKeywords : []),
-        ...(intent.forms ? formKeywords : []),
-      ]),
+        ...emailPlugins.map((p: any) => String(p?.manifest?.slug || '').trim()),
+        ...formPlugins.map((p: any) => String(p?.manifest?.slug || '').trim()),
+      ].filter(Boolean))
     );
 
-    const candidates = collections
-      .filter((collection) => this.collectionMatchesKeywords(collection, keywords))
-      .slice(0, 12);
+    // If plugins declare email/forms capability, use their collections; otherwise fallback to keyword search
+    let candidates: AssistantCollectionContext[] = [];
+    if (relevantPluginSlugs.length > 0) {
+      candidates = this.getCollectionsFromPlugins(relevantPluginSlugs).slice(0, 12);
+    } else {
+      // Fallback: search all collections by keyword matching
+      const emailKeywords = ['email', 'mail', 'inbox', 'message', 'contact'];
+      const formKeywords = ['form', 'submission', 'lead', 'inquiry'];
+      const keywords = Array.from(
+        new Set([
+          ...(intent.emails ? emailKeywords : []),
+          ...(intent.forms ? formKeywords : []),
+        ])
+      );
+      candidates = this.getCollectionsContext()
+        .filter((collection) => this.collectionMatchesKeywords(collection, keywords))
+        .slice(0, 12);
+    }
 
     if (!candidates.length) {
       return intent.emails && intent.forms

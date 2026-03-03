@@ -86,6 +86,7 @@ export type AssistantMessage = {
   loopCapReached?: boolean;
   model?: string;
   provider?: string;
+  reasoningReport?: string;
   execution?: any;
 };
 

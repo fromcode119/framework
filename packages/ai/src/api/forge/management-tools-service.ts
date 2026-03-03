@@ -1,8 +1,6 @@
 import {
   BackupService,
-  getPluginsDir,
   getProjectRoot,
-  getThemesDir,
   parseBoolean,
   PluginManager,
   ThemeManager,
@@ -11,7 +9,7 @@ import type { McpToolDefinition } from '@fromcode119/mcp';
 import * as fs from 'fs';
 import * as path from 'path';
 
-export class ForgeManagementToolsService {
+export class AssistantManagementToolsService {
   constructor(private manager: PluginManager, private themeManager: ThemeManager) {}
 
   public normalizeSearchText(value: string): string {
@@ -654,171 +652,26 @@ export class ForgeManagementToolsService {
   private async scaffoldPlugin(input: any): Promise<any> {
     const slug = this.toAssistantSlug(String(input?.slug || input?.name || ''), 'plugin');
     const name = this.toAssistantTitle(String(input?.name || ''), slug);
-    const description = String(input?.description || '').trim();
-    const version = String(input?.version || '1.0.0').trim() || '1.0.0';
-    const activate = parseBoolean(input?.activate) !== false;
-    const pluginsDir = getPluginsDir();
-    const pluginPath = path.join(pluginsDir, slug);
-
-    if (this.manager.getPlugins().some((plugin: any) => String(plugin?.manifest?.slug || '').trim().toLowerCase() === slug)) {
-      throw new Error(`Plugin "${slug}" already exists.`);
-    }
-    if (fs.existsSync(pluginPath)) {
-      throw new Error(`Plugin path already exists: ${pluginPath}`);
-    }
-
-    fs.mkdirSync(path.join(pluginPath, 'ui'), { recursive: true });
-    const manifest = {
+    
+    return this.manager.scaffoldPlugin({
       slug,
       name,
-      version,
-      description,
-      main: 'index.js',
-      capabilities: ['api', 'hooks', 'ui'],
-      ui: {
-        entry: 'index.js',
-      },
-    };
-
-    const pluginMain = [
-      "'use strict';",
-      '',
-      'module.exports = {',
-      '  async onInit(context) {',
-      `    context.logger.info('${name} initialized.');`,
-      '  },',
-      '  async onEnable(context) {',
-      `    context.logger.info('${name} enabled.');`,
-      '  },',
-      '  async onDisable(context) {',
-      `    context.logger.info('${name} disabled.');`,
-      '  },',
-      '};',
-      '',
-    ].join('\n');
-
-    const uiEntry = [
-      'export const init = () => {',
-      `  console.info('[${slug}] UI initialized.');`,
-      '};',
-      '',
-      'if (typeof window !== "undefined" && (window).Fromcode) {',
-      '  init();',
-      '}',
-      '',
-    ].join('\n');
-
-    fs.writeFileSync(path.join(pluginPath, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(path.join(pluginPath, 'index.js'), pluginMain, 'utf8');
-    fs.writeFileSync(path.join(pluginPath, 'ui', 'index.js'), uiEntry, 'utf8');
-
-    await this.manager.discoverPlugins();
-
-    let activated = false;
-    let activationError: string | null = null;
-    if (activate) {
-      try {
-        await this.manager.enable(slug);
-        activated = true;
-      } catch (error: any) {
-        activationError = String(error?.message || 'Activation failed');
-      }
-    }
-
-    return {
-      slug,
-      name,
-      path: pluginPath,
-      activated,
-      activationError,
-      manifest,
-    };
+      description: String(input?.description || '').trim(),
+      version: String(input?.version || '1.0.0').trim() || '1.0.0',
+      activate: parseBoolean(input?.activate) !== false,
+    });
   }
 
   private async scaffoldTheme(input: any): Promise<any> {
     const slug = this.toAssistantSlug(String(input?.slug || input?.name || ''), 'theme');
     const name = this.toAssistantTitle(String(input?.name || ''), slug);
-    const description = String(input?.description || '').trim();
-    const version = String(input?.version || '1.0.0').trim() || '1.0.0';
-    const activate = parseBoolean(input?.activate) !== false;
-    const themesDir = getThemesDir();
-    const themePath = path.join(themesDir, slug);
-
-    if (this.themeManager.getThemes().some((theme: any) => String(theme?.slug || '').trim().toLowerCase() === slug)) {
-      throw new Error(`Theme "${slug}" already exists.`);
-    }
-    if (fs.existsSync(themePath)) {
-      throw new Error(`Theme path already exists: ${themePath}`);
-    }
-
-    fs.mkdirSync(path.join(themePath, 'ui'), { recursive: true });
-    const themeManifest = {
+    
+    return this.themeManager.scaffoldTheme({
       slug,
       name,
-      version,
-      description,
-      author: 'Forge',
-      ui: {
-        entry: 'index.js',
-        css: ['theme.css'],
-      },
-      variables: {
-        primary: '#0ea5e9',
-        accent: '#f97316',
-        background: '#ffffff',
-        surface: '#f8fafc',
-        text: '#0f172a',
-      },
-    };
-
-    const uiEntry = [
-      "import './theme.css';",
-      '',
-      'export const init = () => {',
-      `  console.info('[theme:${slug}] initialized.');`,
-      '};',
-      '',
-      'if (typeof window !== "undefined") {',
-      '  init();',
-      '}',
-      '',
-    ].join('\n');
-
-    const themeCss = [
-      ':root {',
-      '  --theme-primary: #0ea5e9;',
-      '  --theme-accent: #f97316;',
-      '  --theme-background: #ffffff;',
-      '  --theme-surface: #f8fafc;',
-      '  --theme-text: #0f172a;',
-      '}',
-      '',
-    ].join('\n');
-
-    fs.writeFileSync(path.join(themePath, 'theme.json'), `${JSON.stringify(themeManifest, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(path.join(themePath, 'ui', 'index.js'), uiEntry, 'utf8');
-    fs.writeFileSync(path.join(themePath, 'ui', 'theme.css'), themeCss, 'utf8');
-
-    await this.themeManager.discoverThemes();
-
-    let activated = false;
-    let activationError: string | null = null;
-    if (activate) {
-      try {
-        await this.themeManager.activateTheme(slug);
-        activated = true;
-      } catch (error: any) {
-        activationError = String(error?.message || 'Activation failed');
-      }
-    }
-
-    return {
-      slug,
-      name,
-      path: themePath,
-      activated,
-      activationError,
-      manifest: themeManifest,
-    };
+      description: String(input?.description || '').trim(),
+      version: String(input?.version || '1.0.0').trim() || '1.0.0',
+      activate: parseBoolean(input?.activate) !== false,
+    });
   }
 }

@@ -40,7 +40,6 @@ import { setupPluginSettingsRoutes } from './routes/plugin-settings';
 import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
 import { setupMarketplaceRoutes } from './routes/marketplace';
 import { setupSystemRoutes } from './routes/system';
-import { setupForgeRoutes } from './routes/forge';
 import { setupMediaRoutes } from './routes/media';
 import { setupVersioningRoutes } from './routes/versioning';
 import { setupCollectionRoutes, setupBaseCollectionRoutes } from './routes/collections';
@@ -177,7 +176,7 @@ export class APIServer {
     await this.registerCoreCollection('settings', SettingsCollection);
     await this.registerCoreCollection('_system_record_versions', RecordVersions);
     this.setupMiddleware();
-    this.setupRoutes();
+    await this.setupRoutes();
 
     // Global Error Handler with CORS support
     this.app.use((err: any, req: any, res: any, next: any) => {
@@ -679,7 +678,7 @@ export class APIServer {
     });
   }
 
-  private setupRoutes() {
+  private async setupRoutes() {
     // Dynamically load version from package.json if available
     let coreVersion = '0.1.0';
     try {
@@ -730,11 +729,35 @@ export class APIServer {
     vApi.use('/marketplace', setupMarketplaceRoutes(this.manager, this.auth));
     vApi.use('/themes', setupThemeRoutes(this.themeManager, this.auth));
     vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
-    vApi.use('/forge', setupForgeRoutes(this.manager, this.themeManager, this.auth, this.restController));
     vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
     vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
     
-    // Then mount collection routes as fallback for CRUD operations
+    // Mount extension routes (registered by extensions through CoreExtensionManager)
+    if (this.manager.extensions && typeof (this.manager.extensions as any).getRegisteredApiRoutes === 'function') {
+      try {
+        const extensionRoutes = (this.manager.extensions as any).getRegisteredApiRoutes();
+        for (const [extensionSlug, routeFactory] of extensionRoutes) {
+          try {
+            const extension = (this.manager.extensions as any).getExtension(extensionSlug);
+            const apiPath = extension?.manifest?.apiPath || extensionSlug;
+            
+            this.logger.info(`Mounting API routes for extension: ${extensionSlug} at /${apiPath}`);
+            const router = routeFactory({
+              manager: this.manager,
+              themeManager: this.themeManager,
+              auth: this.auth,
+              restController: this.restController,
+            });
+            vApi.use(`/${apiPath}`, router);
+            this.logger.info(`Successfully mounted routes for extension: ${extensionSlug}`);
+          } catch (error) {
+            this.logger.error(`Failed to mount routes for extension ${extensionSlug}:`, error);
+          }
+        }
+      } catch (e) {
+        this.logger.error('Failed to get extension routes:', e);
+      }
+    }
     vApi.use(setupCollectionRoutes(this.manager, this.restController));
     
     // Mount versioned API
