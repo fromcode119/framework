@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
-import { ForgeHistorySession } from '../assistant-utils';
+import { GLASS_BUTTON, GLASS_PANEL } from '../ui/glass-morphism';
+import { AssistantHistorySession } from '../assistant-utils';
 
-export function ForgeHistory({
+export function AssistantHistory({
   showHistory,
   setShowHistory,
   historySessions,
@@ -14,7 +15,7 @@ export function ForgeHistory({
 }: {
   showHistory: boolean;
   setShowHistory: (val: boolean) => void;
-  historySessions: ForgeHistorySession[];
+  historySessions: AssistantHistorySession[];
   activeSessionId: string;
   startNewSession: () => void;
   openHistorySession: (id: string) => void;

@@ -1,12 +1,26 @@
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest-controller';
-import { ForgeController } from '../controllers/forge-controller';
+import { AssistantController } from './controller';
 
-export function setupForgeRoutes(manager: PluginManager, themeManager: ThemeManager, auth: AuthManager, restController: RESTController) {
+// Type definition for RESTController - imported from api package at runtime
+export type RESTController = any;
+
+export interface AssistantRoutesContext {
+  manager: PluginManager;
+  themeManager: ThemeManager;
+  auth: AuthManager;
+  restController: RESTController;
+}
+
+/**
+ * Register Assistant API routes
+ * Called by AI extension's onInit() hook
+ */
+export function registerAssistantRoutes(context: AssistantRoutesContext): express.Router {
+  const { manager, themeManager, auth, restController } = context;
   const router = express.Router();
-  const controller = new ForgeController(manager, themeManager, restController);
+  const controller = new AssistantController(manager, themeManager, restController);
 
   router.post('/admin/assistant/chat', auth.requirePermission('content:read'), (req, res) => controller.assistantChat(req, res));
   router.get('/admin/assistant/sessions', auth.requirePermission('content:read'), (req, res) => controller.assistantSessions(req, res));
@@ -19,8 +33,7 @@ export function setupForgeRoutes(manager: PluginManager, themeManager: ThemeMana
   router.post('/admin/assistant/actions/execute', auth.requirePermission('content:write'), (req, res) => controller.executeAssistantActions(req, res));
   router.post('/admin/assistant/sessions/:id/continue', auth.requirePermission('content:read'), (req, res) => controller.continueAssistantSession(req, res));
 
-  // Legacy compatibility routes (kept for one release cycle).
-  router.get('/admin/assistant/personas', auth.requirePermission('content:read'), (req, res) => controller.assistantPersonasLegacy(req, res));
+  // Legacy compatibility route (kept for one release cycle).
   router.post('/admin/assistant/execute', auth.requirePermission('content:write'), (req, res) => controller.executeAssistantLegacy(req, res));
 
   return router;

@@ -26,7 +26,7 @@ proxy.on('error', (err, _req, res) => {
   console.error('[proxy error]', err.message);
   if (res && res.writeHead) {
     res.writeHead(502, { 'Content-Type': 'text/plain' });
-    res.end('Service unavailable — is the target process running?');
+    res.end('Service unavailable - is the target process running?');
   }
 });
 

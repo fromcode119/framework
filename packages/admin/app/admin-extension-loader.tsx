@@ -2,8 +2,21 @@
 
 import { useEffect } from 'react';
 import { usePlugins } from '@fromcode119/react';
-import { registerAdminExtension as registerAiAdminExtension } from '@fromcode119/ai/admin';
 import { adminExtensionLoaders } from '@/lib/admin-extensions';
+
+// Dynamic AI extension loader (optional dependency)
+async function loadAiAdminExtension() {
+  try {
+    const aiModule = await import('@fromcode119/ai/admin');
+    return aiModule.registerAdminExtension;
+  } catch (error: any) {
+    if (error?.code === 'MODULE_NOT_FOUND') {
+      console.log('[Admin] AI extension not available (optional dependency)');
+      return null;
+    }
+    throw error;
+  }
+}
 
 export default function AdminExtensionLoader() {
   const { registerSlotComponent, registerMenuItem, refreshVersion } = usePlugins();
@@ -13,12 +26,17 @@ export default function AdminExtensionLoader() {
     const bridge = { registerSlotComponent, registerMenuItem };
 
     const loadExtensions = async () => {
+      // Load built-in AI extension if available
       try {
-        registerAiAdminExtension(bridge);
+        const registerAiAdminExtension = await loadAiAdminExtension();
+        if (registerAiAdminExtension && !cancelled) {
+          registerAiAdminExtension(bridge);
+        }
       } catch (error) {
         console.warn('[Admin] Failed to register built-in AI extension', error);
       }
 
+      // Load extension modules from admin-extensions.ts
       for (const load of adminExtensionLoaders) {
         try {
           const module = await load();

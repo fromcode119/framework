@@ -7,7 +7,6 @@ import { EmailIntegrationDefinition } from './providers/email-provider';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';
 import { SsoIntegrationDefinition } from './providers/sso-provider';
-import { AiIntegrationDefinition } from '@fromcode119/ai';
 import { sanitizeKey } from '../utils';
 import path from 'path';
 
@@ -82,7 +81,8 @@ export class IntegrationManager {
     this.registry.registerType(StorageIntegrationDefinition);
     this.registry.registerType(CacheIntegrationDefinition);
     this.registry.registerType(SsoIntegrationDefinition);
-    this.registry.registerType(AiIntegrationDefinition);
+    // AI integration is now registered by the AI core extension
+    // (see packages/ai/src/extension.ts)
   }
 
   /**
@@ -91,6 +91,17 @@ export class IntegrationManager {
   public registerType(definition: IntegrationTypeDefinition) {
     this.registry.registerType(definition);
     this.logger.info(`Registered integration type: ${definition.key}`);
+  }
+
+  /**
+   * Unregister an integration type
+   */
+  public unregisterType(typeKey: string): boolean {
+    const result = this.registry.unregisterType(typeKey);
+    if (result) {
+      this.logger.info(`Unregistered integration type: ${typeKey}`);
+    }
+    return result;
   }
 
   /**

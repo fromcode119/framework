@@ -9,6 +9,9 @@
   "references": [
     { "path": "../react" },
     { "path": "../sdk" },
-    { "path": "../mcp" }
+    { "path": "../mcp" },
+    { "path": "../core" },
+    { "path": "../database" },
+    { "path": "../auth" }
   ]
 }

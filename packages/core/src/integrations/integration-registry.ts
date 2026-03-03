@@ -113,6 +113,31 @@ export class IntegrationRegistry {
     }
   }
 
+  unregisterType(typeKey: string): boolean {
+    const key = this.normalize(typeKey);
+    const existed = this.types.has(key);
+    if (existed) {
+      this.types.delete(key);
+      this.logger.info(`Unregistered integration type: ${key}`);
+    }
+    return existed;
+  }
+
+  unregisterProvider(typeKey: string, providerKey: string): boolean {
+    const normalizedType = this.normalize(typeKey);
+    const runtime = this.types.get(normalizedType);
+    if (!runtime) {
+      return false;
+    }
+    const normalizedProvider = this.normalize(providerKey);
+    const existed = runtime.providers.has(normalizedProvider);
+    if (existed) {
+      runtime.providers.delete(normalizedProvider);
+      this.logger.info(`Unregistered provider "${normalizedProvider}" from integration type "${normalizedType}"`);
+    }
+    return existed;
+  }
+
   registerProvider<TInstance = any>(typeKey: string, provider: IntegrationProviderDefinition<TInstance>) {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);

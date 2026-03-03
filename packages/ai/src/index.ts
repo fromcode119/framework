@@ -20,5 +20,8 @@ export type {
   AssistantToolSummary,
   AssistantUiHints,
   AdminAssistantRuntimeOptions,
-  ForgeSkillDefinition,
+  AssistantSkillDefinition,
 } from './admin-assistant-runtime';
+
+// API routes registration (optional - loaded dynamically if AI extension is active)
+export { registerAssistantRoutes, type AssistantRoutesContext } from './api/routes';

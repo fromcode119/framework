@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
+import { GLASS_BUTTON, GLASS_CARD } from '../ui/glass-morphism';
 
-export function ForgeHeader({
+export function AssistantHeader({
   showHistory,
   setShowHistory,
   showGateway,
@@ -32,8 +33,8 @@ export function ForgeHeader({
   };
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-6 sm:pt-4">
-      <div className="pointer-events-auto ml-auto flex w-fit items-center gap-2">
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-20 px-3 pt-3 sm:px-6 sm:pt-4">
+      <div className={`pointer-events-auto ml-auto flex w-fit items-center gap-2 ${GLASS_CARD}`}>
         <button
           type="button"
           onClick={() => { setShowHistory(!showHistory); setShowGateway(false); }}

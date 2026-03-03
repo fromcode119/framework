@@ -1,9 +1,9 @@
 import { IDatabaseManager } from '@fromcode119/database';
 import { SystemTable } from '@fromcode119/core';
 
-export type ForgeHistoryEntry = { role: 'system' | 'user' | 'assistant'; content: string };
+export type AssistantHistoryEntry = { role: 'system' | 'user' | 'assistant'; content: string };
 
-export class ForgeSessionStore {
+export class AssistantSessionStore {
   constructor(
     private db: IDatabaseManager,
     private keyPrefix: string,
@@ -22,7 +22,7 @@ export class ForgeSessionStore {
     return `${this.keyPrefix}${sessionId}`;
   }
 
-  normalizeHistory(input: any): ForgeHistoryEntry[] {
+  normalizeHistory(input: any): AssistantHistoryEntry[] {
     const source = Array.isArray(input) ? input : [];
     const roles = new Set(['system', 'user', 'assistant']);
     return source
@@ -38,7 +38,7 @@ export class ForgeSessionStore {
       .filter((entry) => !!entry.content);
   }
 
-  summarizeTitle(history: ForgeHistoryEntry[], fallback: string = 'Untitled session'): string {
+  summarizeTitle(history: AssistantHistoryEntry[], fallback: string = 'Untitled session'): string {
     const firstUser = history.find((entry) => entry.role === 'user' && String(entry.content || '').trim());
     const text = String(firstUser?.content || '').replace(/\s+/g, ' ').trim();
     if (!text) return fallback;

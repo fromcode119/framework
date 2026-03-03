@@ -1,0 +1,47 @@
+{
+  "slug": "ai",
+  "name": "AI Assistant Extension",
+  "version": "0.1.31",
+  "type": "core-extension",
+  "description": "Forge AI assistant with multi-mode operation (chat, planning, agent), MCP-based tool abstraction, and session persistence. Supports OpenAI and Ollama providers.",
+  "author": "Fromcode Core",
+  "main": "dist/extension.js",
+  "apiPath": "forge",
+  "capabilities": [
+    "integrations",
+    "api",
+    "admin",
+    "mcp",
+    "llm",
+    "database:write",
+    "hooks"
+  ],
+  "admin": {
+    "group": "System",
+    "icon": "Sparkles",
+    "slots": [
+      {
+        "slot": "admin.navigation.main",
+        "component": "ForgeNavigationItem",
+        "priority": 100
+      },
+      {
+        "slot": "admin.routes",
+        "component": "ForgeAssistantPage",
+        "priority": 10
+      }
+    ],
+    "routes": [
+      {
+        "path": "/admin/forge",
+        "component": "AdminAssistantPage"
+      }
+    ]
+  },
+  "dependencies": {
+    "framework": ">=0.1.0",
+    "extensions": {
+      "mcp": "*"
+    }
+  }
+}

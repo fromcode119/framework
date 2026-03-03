@@ -3,9 +3,10 @@
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Select } from '../ui/select';
+import { GLASS_CARD, GLASS_INPUT, GLASS_BUTTON, GLASS_BUTTON_PRIMARY } from '../ui/glass-morphism';
 import { PROVIDER_OPTIONS } from '../assistant-utils';
 
-export function ForgeGateway({
+export function AssistantGateway({
   showGateway,
   setShowGateway,
   provider,
@@ -41,9 +42,6 @@ export function ForgeGateway({
   integrationSaving: boolean;
   saveIntegration: () => Promise<void>;
   openAdvancedAiSettings: () => void;
-  personaSid: string;
-  setPersonaSid: (val: string) => void;
-  personas: any[];
   chatMode: 'auto' | 'plan' | 'agent';
   setChatMode: (mode: 'auto' | 'plan' | 'agent') => void;
   sandboxMode: boolean;
