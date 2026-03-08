@@ -1076,6 +1076,12 @@ export function AdminAssistantPage() {
           }
           return { role: entry.role, content: entry.content };
         });
+      const lastAssistantMessage = [...messages].reverse().find((entry) => entry.role === 'assistant');
+      const pendingCheckpoint =
+        lastAssistantMessage?.checkpoint &&
+        lastAssistantMessage?.ui?.needsClarification
+          ? lastAssistantMessage.checkpoint
+          : undefined;
 
       const requestedAgentMode =
         chatMode === 'plan' || chatMode === 'agent'
@@ -1100,6 +1106,8 @@ export function AdminAssistantPage() {
         agentMode: requestedAgentMode,
         maxIterations: requestedMaxIterations,
         maxDurationMs: requestedMaxDurationMs,
+        continueFrom: !!pendingCheckpoint,
+        checkpoint: pendingCheckpoint,
       });
       const assistantMessage = buildAssistantMessageFromResult(result);
       if (assistantMessage.sessionId) {
@@ -1116,8 +1124,13 @@ export function AdminAssistantPage() {
       }
       if (assistantMessage.actions && assistantMessage.actions.length > 0) {
         setNotice(sandboxMode ? 'Plan staged. Review actions, then run Preview Changes.' : 'Plan staged. Review actions, then run Apply Changes.');
+      } else if (assistantMessage.ui?.needsClarification) {
+        const question = String(assistantMessage.ui?.clarifyingQuestion || '').trim();
+        setNotice(question || 'Need one detail to finish staging safely.');
+      } else if (assistantMessage.ui?.loopRecoveryMode === 'best_effort') {
+        setNotice("Draft generated. Confirm target collection + record to stage actions.");
       } else if (assistantMessage.ui?.canContinue) {
-        setNotice('Planning paused before staging final actions. Use Continue Planning.');
+        setNotice('Need another planning pass before staging final actions.');
       } else if (requestedAgentMode === 'advanced' && assistantMessage.loopCapReached && (!assistantMessage.actions || assistantMessage.actions.length === 0)) {
         setNotice('No safe executable plan was generated yet. Try a more specific target (collection + id/slug + exact field).');
       }
@@ -1157,16 +1170,33 @@ export function AdminAssistantPage() {
       const okCount = executionItems.filter((item: any) => resolveExecutionKind(item) === 'ok').length;
       const skippedCount = executionItems.filter((item: any) => resolveExecutionKind(item) === 'skipped').length;
       const failedCount = executionItems.filter((item: any) => resolveExecutionKind(item) === 'failed').length;
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'system',
-          content: dryRun
-            ? `Preview completed: ${okCount} ready, ${skippedCount} unchanged, ${failedCount} failed.`
-            : `Execution completed: ${okCount} applied, ${skippedCount} unchanged, ${failedCount} failed.`,
-          execution: result,
-        },
-      ]);
+      const executionSummary = dryRun
+        ? `Preview completed: ${okCount} ready, ${skippedCount} unchanged, ${failedCount} failed.`
+        : `Execution completed: ${okCount} applied, ${skippedCount} unchanged, ${failedCount} failed.`;
+      setMessages((prev) => {
+        const nextMessages = dryRun
+          ? prev
+          : prev.map((entry) => {
+              if (!Array.isArray(entry.actions) || entry.actions.length === 0) return entry;
+              return {
+                ...entry,
+                actions: [],
+                ui: entry.ui ? { ...entry.ui, requiresApproval: false, canContinue: false } : entry.ui,
+                plan: entry.plan ? { ...entry.plan, status: 'completed' as const } : entry.plan,
+              };
+            });
+        return [
+          ...nextMessages,
+          {
+            role: 'system',
+            content: executionSummary,
+            execution: result,
+          },
+        ];
+      });
+      if (!dryRun) {
+        setSelectedActionIndexes([]);
+      }
       if (options?.invokedByApproval) {
         setNotice(dryRun ? 'Approved and previewed selected actions.' : 'Approved and applied selected actions.');
       }

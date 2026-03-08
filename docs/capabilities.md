@@ -22,6 +22,9 @@ This document lists all available capabilities that a plugin can request in its 
 | `i18n` | Access to translation and localization services. | `ctx.i18n.*`, `ctx.t()` |
 | `plugins:interact`| Permission to check state of other plugins or call their APIs. | `ctx.plugins.isEnabled`, `ctx.plugins.getAPI` |
 | `redis:global` | **High Privilege**: Direct access to the global Redis keyspace. | `ctx.redis.global` |
+| `admin` | Grants access to the Admin Panel. Plugin can register admin navigation items, admin pages, and admin UI components via `ctx.admin.*`. | `ctx.admin.*` |
+| `frontend` | Grants access to the Frontend Renderer. Plugin can register page blocks, custom template renderers, and frontend-accessible APIs. | `ctx.frontend.*` |
+| `integration:shipping_provider` | Declares the plugin as a shipping provider. Allows it to register rate-calculation handlers and order fulfilment callbacks via the Logistics integration API. | `ctx.integrations.shipping.*` |
 
 ## Usage in `manifest.json`
 

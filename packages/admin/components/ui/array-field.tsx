@@ -8,6 +8,7 @@ import { Input } from './input';
 import { Select } from './select';
 import { TagField } from './tag-field';
 import { RelationshipSelectLocal } from '../collection/relationship-select-local';
+import { TagFieldLocal } from '../collection/tag-field-local';
 
 interface ArrayFieldProps {
   field: any;
@@ -92,7 +93,19 @@ export const ArrayField = ({ field, value = [], onChange, theme, collectionSlug,
       );
     }
 
-    if (f.type === 'relationship' || isTagComponent) {
+    if (f.type === 'relationship') {
+       return (
+        <TagFieldLocal
+          field={f}
+          value={val}
+          onChange={(next) => handleUpdateItem(index, f.name, next)}
+          theme={theme || 'light'}
+          collectionSlug={collectionSlug}
+        />
+       );
+    }
+
+    if (isTagComponent) {
        return (
         <TagField 
           {...fieldProps}

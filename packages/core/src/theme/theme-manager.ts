@@ -189,6 +189,11 @@ export class ThemeManager {
             if (existing.state !== 'active') {
               this.logger.info(`Activating existing dependency "${depSlug}" for theme "${manifest.slug}"...`);
               await this.pluginManager.enable(depSlug);
+            } else {
+              this.logger.info(
+                `Dependency "${depSlug}" already active for theme "${manifest.slug}". Forcing schema sync.`
+              );
+              await this.pluginManager.enable(depSlug, { force: true });
             }
             continue;
           }

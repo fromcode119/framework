@@ -130,7 +130,13 @@ export class LifecycleService {
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
-    if (plugin.state === 'active') return;
+    if (plugin.state === 'active') {
+      if (options.force) {
+        this.logger.info(`Plugin "${slug}" already active; forcing collection schema sync.`);
+        await this.syncPluginCollections(slug);
+      }
+      return;
+    }
 
     // Dependency Validation
     if (!options.force) {

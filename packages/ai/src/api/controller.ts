@@ -273,6 +273,30 @@ export class AssistantController {
     return this.payloadService.validateAssistantExecutePayload(body);
   }
 
+  private normalizeAssistantCheckpoint(input: any):
+    | { resumePrompt: string; reason: 'loop_cap' | 'time_cap' | 'user_continue' | 'clarification_needed' | 'loop_recovery'; planningPassesUsed?: number }
+    | undefined {
+    if (!input || typeof input !== 'object') return undefined;
+    const resumePrompt = String((input as any)?.resumePrompt || '').trim();
+    const rawReason = String((input as any)?.reason || '').trim().toLowerCase();
+    const reason =
+      rawReason === 'loop_cap' ||
+      rawReason === 'time_cap' ||
+      rawReason === 'user_continue' ||
+      rawReason === 'clarification_needed' ||
+      rawReason === 'loop_recovery'
+        ? (rawReason as 'loop_cap' | 'time_cap' | 'user_continue' | 'clarification_needed' | 'loop_recovery')
+        : undefined;
+    if (!resumePrompt || !reason) return undefined;
+    const planningPassesUsedRaw = Number((input as any)?.planningPassesUsed);
+    const planningPassesUsed = Number.isFinite(planningPassesUsedRaw) ? Math.max(0, planningPassesUsedRaw) : undefined;
+    return {
+      resumePrompt,
+      reason,
+      planningPassesUsed,
+    };
+  }
+
   private isAssistantCollectionAllowed(collection: any): boolean {
     return this.catalog.isCollectionAllowed(collection);
   }
@@ -515,7 +539,12 @@ export class AssistantController {
       
       // Record reasoning entry point with complexity info
       this.recordReasoningStep(sessionId, `Processing: ${message.substring(0, 100)}... [${taskComplexity.level} task]`, { sessionId, agentMode: normalizedBody?.agentMode, complexity: taskComplexity.level }, {}, taskComplexity.confidence);
-      
+      const requestCheckpoint = this.normalizeAssistantCheckpoint(normalizedBody?.checkpoint || existingSession?.lastCheckpoint);
+      const requestContinueFrom =
+        parseBoolean(normalizedBody?.continueFrom) === true ||
+        requestCheckpoint?.reason === 'clarification_needed' ||
+        requestCheckpoint?.reason === 'loop_recovery';
+
       const result = await runtime.chat({
         message,
         history: contextForLLM, // Use enhanced context instead of raw history
@@ -525,13 +554,15 @@ export class AssistantController {
         allowedTools: Array.isArray(normalizedBody?.tools) ? normalizedBody.tools : [],
         skillId: String(normalizedBody?.skillId || '').trim() || undefined,
         sessionId: sessionId || undefined,
-        continueFrom: parseBoolean(normalizedBody?.continueFrom) === true,
+        continueFrom: requestContinueFrom,
+        checkpoint: requestCheckpoint,
       } as any);
 
       let finalResult = result;
       const pausedWithoutActions =
         taskComplexity.level === 'simple' &&
         result?.ui?.canContinue === true &&
+        result?.ui?.needsClarification !== true &&
         (!Array.isArray(result?.actions) || result.actions.length === 0);
 
       if (pausedWithoutActions) {
@@ -557,6 +588,7 @@ export class AssistantController {
           skillId: String(normalizedBody?.skillId || '').trim() || undefined,
           sessionId: sessionId || undefined,
           continueFrom: true,
+          checkpoint: this.normalizeAssistantCheckpoint(result?.checkpoint),
         } as any);
 
         if (continued && typeof continued === 'object') {
@@ -608,6 +640,17 @@ export class AssistantController {
         ? this.activeSessions.get(sessionId)!.reasoning.generateReport()
         : null;
       const reasoningReport = this.getReasoningReport(sessionId) || null;
+      const finalMessage = String(finalResult?.message || '');
+      const pauseCountPerRequest =
+        (finalMessage.match(/one more pass|continue planning|planning paused/gi) || []).length +
+        (finalResult?.ui?.canContinue === true ? 1 : 0);
+      const repeatedPauseCopyDetected =
+        pauseCountPerRequest > 1 || finalResult?.ui?.loopRecoveryMode === 'best_effort';
+      const draftFastPathUsed = Array.isArray(finalResult?.traces)
+        ? finalResult.traces.some((trace: any) => /draft fast-path/i.test(String(trace?.message || '')))
+        : false;
+      const clarificationVsContinueRate =
+        finalResult?.ui?.needsClarification === true ? 1 : finalResult?.ui?.canContinue === true ? 0 : null;
 
       await this.emitAssistantTelemetry('chat.success', {
         provider: resolvedAssistant.provider,
@@ -623,6 +666,10 @@ export class AssistantController {
         reasoningSteps: reasoningStats?.totalSteps || 0,
         averageConfidence: reasoningStats?.averageConfidence || 0,
         errorRecoveries: reasoningStats?.recoveries?.length || 0,
+        pause_count_per_request: pauseCountPerRequest,
+        repeated_pause_copy_detected: repeatedPauseCopyDetected,
+        draft_fast_path_used: draftFastPathUsed,
+        clarification_vs_continue_rate: clarificationVsContinueRate,
       });
 
       return res.json({
@@ -796,6 +843,7 @@ export class AssistantController {
       const message = String(req.body?.message || session?.lastCheckpoint?.resumePrompt || '').trim() ||
         'Continue planning from previous context. Run more steps and stage executable actions if safe.';
       const history = this.normalizeAssistantHistory(session?.history);
+      const sessionCheckpoint = this.normalizeAssistantCheckpoint(req.body?.checkpoint || session?.lastCheckpoint);
 
       // Restore context from previous session
       await this.restoreSessionContext(sessionId, session);
@@ -859,6 +907,7 @@ export class AssistantController {
         skillId: String(req.body?.skillId || session?.skillId || 'general').trim().toLowerCase(),
         sessionId,
         continueFrom: true,
+        checkpoint: sessionCheckpoint,
       } as any);
 
       // Record completion with confidence
@@ -903,6 +952,17 @@ export class AssistantController {
 
       // Get reasoning stats for telemetry
       const reasoningStats = trackers.reasoning.generateReport();
+      const resultMessage = String(result?.message || '');
+      const pauseCountPerRequest =
+        (resultMessage.match(/one more pass|continue planning|planning paused/gi) || []).length +
+        (result?.ui?.canContinue === true ? 1 : 0);
+      const repeatedPauseCopyDetected =
+        pauseCountPerRequest > 1 || result?.ui?.loopRecoveryMode === 'best_effort';
+      const draftFastPathUsed = Array.isArray(result?.traces)
+        ? result.traces.some((trace: any) => /draft fast-path/i.test(String(trace?.message || '')))
+        : false;
+      const clarificationVsContinueRate =
+        result?.ui?.needsClarification === true ? 1 : result?.ui?.canContinue === true ? 0 : null;
 
       await this.emitAssistantTelemetry('chat.continue', {
         sessionId,
@@ -914,6 +974,10 @@ export class AssistantController {
         durationMs: Date.now() - startedAt,
         reasoningSteps: reasoningStats?.totalSteps || 0,
         averageConfidence: reasoningStats?.averageConfidence || 0,
+        pause_count_per_request: pauseCountPerRequest,
+        repeated_pause_copy_detected: repeatedPauseCopyDetected,
+        draft_fast_path_used: draftFastPathUsed,
+        clarification_vs_continue_rate: clarificationVsContinueRate,
       });
 
       return res.json({

@@ -28,7 +28,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "test": "jest -c jest.config.js"
   },
   "dependencies": {
     "@fromcode119/mcp": "*",

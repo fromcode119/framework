@@ -139,13 +139,13 @@ export class TaskComplexityDetector {
   getRecommendedMaxIterations(complexity: TaskComplexity): number {
     switch (complexity.level) {
       case 'simple':
-        return 4; // 1 discovery + 1 planning + 1 staging + 1 safety fallback
+        return 5; // extra headroom for staged-action completion without pause loops
       case 'moderate':
-        return 5; // extra headroom to avoid unnecessary "continue planning" pauses
+        return 7; // keep moderate tasks from prematurely pausing
       case 'complex':
-        return 8; // Full planning opportunity
+        return 10; // full planning with recovery headroom
       default:
-        return 5; // Fallback to moderate
+        return 7; // Fallback to moderate
     }
   }
 }

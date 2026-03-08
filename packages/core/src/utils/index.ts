@@ -4,6 +4,9 @@ import { Collection, CollectionQueryInterface, CandidateLookupOptions, UpsertByC
  * Shared utility functions for the framework core
  */
 
+// Re-export global utilities from SDK
+export { toSafeIsoDate } from '@fromcode119/sdk';
+
 /**
  * Checks if a value is an object
  */
@@ -135,10 +138,13 @@ export function generatePreviewUrl(
 
     // PRIORITY: If we have an explicit custom permalink override, use it
     if (record.customPermalink) {
-        let path = record.customPermalink.startsWith('/') ? record.customPermalink.substring(1) : record.customPermalink;
+        const rawCustomPermalink = String(record.customPermalink || '').trim();
+        const isAbsoluteOverride = rawCustomPermalink.startsWith('/');
+        let path = rawCustomPermalink.replace(/^\/+/, '');
 
-        // If we have a collection prefix, and the custom permalink doesn't already start with it, prepend it
-        if (prefix && !path.startsWith(prefix + '/')) {
+        // Relative custom permalinks inherit the collection prefix.
+        // Absolute custom permalinks (starting with "/") bypass it.
+        if (!isAbsoluteOverride && prefix && !path.startsWith(prefix + '/')) {
             path = `${prefix}/${path}`.replace(/\/+/g, '/');
         }
 
@@ -413,10 +419,10 @@ export async function findRecordByCandidates(
 }
 
 /**
- * Upsert a record by searching multiple candidate values
+ * Find a record by searching multiple candidate values and upsert it
  * Updates if found, inserts if not found
  */
-export async function upsertRecordByCandidates(
+export async function findAndUpsert(
     collection: CollectionQueryInterface,
     candidates: string[],
     data: Record<string, any>,

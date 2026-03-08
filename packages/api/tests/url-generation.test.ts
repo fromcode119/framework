@@ -31,13 +31,23 @@ describe('URL Generation Logic', () => {
         expect(url).toContain('/blog/hello-world');
     });
 
-    it('should handle custom permalinks with prefix', async () => {
+    it('should handle relative custom permalinks with prefix', async () => {
+        const settings = { postUrlPrefix: '/blog' };
+        
+        const record = { customPermalink: 'my-special-post' };
+        const url = generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
+        
+        expect(url).toContain('/blog/my-special-post');
+    });
+
+    it('should allow absolute custom permalinks to bypass the prefix', async () => {
         const settings = { postUrlPrefix: '/blog' };
         
         const record = { customPermalink: '/my-special-post' };
         const url = generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
         
-        expect(url).toContain('/blog/my-special-post');
+        expect(url).toContain('/my-special-post');
+        expect(url).not.toContain('/blog/my-special-post');
     });
 
     it('should not double-prefix if custom permalink already has it', async () => {

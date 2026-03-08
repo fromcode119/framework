@@ -347,7 +347,7 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
         console.log(chalk.gray(`Entry: ${entryPoints[0]}`));
         console.log(chalk.gray(`Output: ${outFile}`));
 
-        let external = ['react', 'react-dom', '@fromcode119/react', '@fromcode119/admin', '@fromcode119/admin/components', 'lucide-react', 'react/jsx-runtime'];
+        let external = ['react', 'react-dom', '@fromcode119/react', '@fromcode119/sdk', '@fromcode119/admin', '@fromcode119/admin/components', 'lucide-react', 'react/jsx-runtime'];
         const manifestPath = path.join(pluginDir, 'manifest.json');
         if (fs.existsSync(manifestPath)) {
           try {

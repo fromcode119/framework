@@ -106,6 +106,7 @@ export const ApiPath = {
   },
   SYSTEM: {
     HEALTH: '/health',
+    FRONTEND: '/system/frontend',
     RESOLVE: '/system/resolve',
     I18N: '/system/i18n',
     EVENTS: '/system/events',

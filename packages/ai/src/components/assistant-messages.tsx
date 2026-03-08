@@ -45,8 +45,7 @@ export function AssistantMessages({
           Forge AI Assistant
         </h2>
         <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          Welcome to your professional workspace assistant. Select a provider and model above to start
-          building, planning, or exploring.
+          Ask for a draft, an edit, or a quick lookup. I will give you a direct answer and stage safe actions when needed.
         </p>
         <div className="mt-8 grid w-full max-w-lg gap-3 sm:grid-cols-2">
           <button
@@ -70,7 +69,7 @@ export function AssistantMessages({
               Build support
             </span>
             <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              Guidance for your next feature
+              Direct help for your next feature
             </span>
           </button>
         </div>

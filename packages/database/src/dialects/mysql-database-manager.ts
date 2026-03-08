@@ -10,6 +10,7 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
   private pool: mysql.Pool;
   public readonly drizzle: any;
   public readonly dialect = 'mysql' as const;
+  private jsonColumnsCache = new Map<string, Set<string>>();
 
   // Standard operators
   public readonly like = like;
@@ -49,8 +50,9 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     const { limit, offset, orderBy, where, columns, joins, search } = options;
 
     if (typeof tableOrName === 'string') {
+        const normalizedWhere = await this.normalizeWhereForTable(tableOrName, where);
         if (joins && joins.length > 0) {
-        const { sql: sqlStr, values } = this.buildJoinedSQL(tableOrName, joins, options);
+        const { sql: sqlStr, values } = this.buildJoinedSQL(tableOrName, joins, { ...options, where: normalizedWhere });
         const rows = await this.executeRawSelect(sqlStr, values);
         return this.processJoinedRows(rows, joins);
         }
@@ -69,11 +71,11 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
         }
 
         const allConditions: any[] = [];
-        if (where) {
-        if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-            allConditions.push(...this.buildWhereConditions(where));
+        if (normalizedWhere) {
+        if (typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype) {
+            allConditions.push(...this.buildWhereConditions(normalizedWhere));
         } else {
-            allConditions.push(where);
+            allConditions.push(normalizedWhere);
         }
         }
         if (search && search.columns.length > 0 && search.value) {
@@ -155,28 +157,31 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
   }
 
   async insert(tableName: string, data: any): Promise<any> {
-    const columns = Object.keys(data);
+    const normalizedData = await this.normalizeDataForTable(tableName, data);
+    const columns = Object.keys(normalizedData);
     const table = this.getDynamicTable(tableName, columns);
-    const [result] = await this.drizzle.insert(table).values(data);
+    const [result] = await this.drizzle.insert(table).values(normalizedData);
     
     // MySQL insert doesn't return the row with .returning() usually (depends on driver/version)
     // For now, return what we have or try to fetch it if needed.
     // In many cases, result.insertId is useful.
-    return { ...data, id: result.insertId };
+    return { ...normalizedData, id: result.insertId };
   }
 
   async update(tableName: string, where: any, data: any): Promise<any> {
-    const allColumns = [...new Set([...Object.keys(where), ...Object.keys(data)])];
+    const normalizedData = await this.normalizeDataForTable(tableName, data);
+    const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
+    const allColumns = [...new Set([...Object.keys(normalizedWhere || {}), ...Object.keys(normalizedData)])];
     const table = this.getDynamicTable(tableName, allColumns);
     
-    const conditions = this.buildWhereConditions(where);
+    const conditions = this.buildWhereConditions(normalizedWhere);
     
     await this.drizzle
       .update(table)
-      .set(data)
+      .set(normalizedData)
       .where(and(...conditions));
     
-    return this.findOne(tableName, where);
+    return this.findOne(tableName, normalizedWhere);
   }
 
   async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
@@ -189,10 +194,11 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
   }
 
   async delete(tableName: string, where: any): Promise<boolean> {
-    const columns = Object.keys(where);
+    const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
+    const columns = Object.keys(normalizedWhere || {});
     const table = this.getDynamicTable(tableName, columns);
     
-    const conditions = this.buildWhereConditions(where);
+    const conditions = this.buildWhereConditions(normalizedWhere);
     const [result] = await this.drizzle.delete(table).where(and(...conditions));
     return result.affectedRows > 0;
   }
@@ -206,6 +212,7 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     const { where, joins } = options;
     const isString = typeof tableOrName === 'string';
     const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
+    const normalizedWhere = isString ? await this.normalizeWhereForTable(tableOrName, where) : where;
     
     let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
 
@@ -217,11 +224,11 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     }
 
     const conditions: any[] = [];
-    if (where) {
-      if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-        conditions.push(...this.buildWhereConditions(where));
+    if (normalizedWhere) {
+      if (typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype) {
+        conditions.push(...this.buildWhereConditions(normalizedWhere));
       } else {
-        conditions.push(where);
+        conditions.push(normalizedWhere);
       }
     }
     
@@ -275,11 +282,77 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
 
     const query = sql`CREATE TABLE ${sql.identifier(tableName)} (${sql.join(columnDefs, sql`, `)})`;
     await this.execute(query);
+    this.jsonColumnsCache.delete(tableName);
   }
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
     const columnDef = this.fieldToSqlFragment(field);
     await this.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    this.jsonColumnsCache.delete(tableName);
+  }
+
+  private async getJsonColumns(tableName: string): Promise<Set<string>> {
+    const cached = this.jsonColumnsCache.get(tableName);
+    if (cached) return cached;
+
+    const [rows]: any = await this.pool.execute(
+      `SELECT column_name
+       FROM information_schema.columns
+       WHERE table_schema = DATABASE()
+         AND table_name = ?
+         AND data_type = 'json'`,
+      [tableName]
+    );
+    const columns: Set<string> = new Set<string>(
+      (rows || []).map((row: any) => String(row?.column_name || '').toLowerCase())
+    );
+    this.jsonColumnsCache.set(tableName, columns);
+    return columns;
+  }
+
+  private normalizeJsonColumnValue(value: any): any {
+    if (value === undefined || value === null) return null;
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return JSON.stringify(value);
+      try {
+        JSON.parse(trimmed);
+        return trimmed;
+      } catch {
+        return JSON.stringify(value);
+      }
+    }
+
+    return JSON.stringify(value);
+  }
+
+  private async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
+    const jsonColumns = await this.getJsonColumns(tableName);
+    const normalizedColumn = toSnakeCase(column).toLowerCase();
+    if (jsonColumns.has(normalizedColumn)) {
+      return this.normalizeJsonColumnValue(value);
+    }
+    return this.normalizeParamValue(value);
+  }
+
+  private async normalizeDataForTable(tableName: string, data: any): Promise<any> {
+    const normalized: Record<string, any> = {};
+    for (const [column, value] of Object.entries(data || {})) {
+      normalized[column] = await this.normalizeColumnValueForWrite(tableName, column, value);
+    }
+    return normalized;
+  }
+
+  private async normalizeWhereForTable(tableName: string, where: any): Promise<any> {
+    if (!where || typeof where !== 'object' || Object.getPrototypeOf(where) !== Object.prototype) {
+      return where;
+    }
+    const normalized: Record<string, any> = {};
+    for (const [column, value] of Object.entries(where)) {
+      normalized[column] = await this.normalizeColumnValueForWrite(tableName, column, value);
+    }
+    return normalized;
   }
 
   async ensureMigrationTable(tableName: string): Promise<void> {

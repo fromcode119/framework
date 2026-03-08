@@ -10,6 +10,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   private pool: Pool;
   public readonly drizzle: any;
   public readonly dialect = 'postgres' as const;
+  private jsonColumnsCache = new Map<string, Set<string>>();
   
   // Standard operators
   public readonly like = ilike;
@@ -59,9 +60,10 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     // If it's a string (dynamic table), use raw SQL to ensure all columns are retrieved
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
+      const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
 
       if (joins && joins.length > 0) {
-        const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, options);
+        const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, { ...options, where: normalizedWhere });
         const rows = await this.executeRawSelect(sqlStr, values);
         return this.processJoinedRows(rows, joins);
       }
@@ -78,7 +80,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       
       sqlQuery += ` FROM "${tableName}"`;
       
-      const { sql: whereClause, values } = this.buildRawFilterSQL(where, search);
+      const { sql: whereClause, values } = this.buildRawFilterSQL(normalizedWhere, search);
       sqlQuery += whereClause;
       sqlQuery += this.buildRawOrderByClause(orderBy);
       
@@ -151,9 +153,11 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
         const result = await this.pool.query(`INSERT INTO "${tableName}" DEFAULT VALUES RETURNING *`);
         return result.rows[0] || null;
       }
-const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', ');
+      const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', ');
       const placeholders = columns.map((_, index) => this.getParamPlaceholder(index + 1)).join(', ');
-      const values = columns.map((column) => this.normalizeParamValue(data[column]));
+      const values = await Promise.all(
+        columns.map((column) => this.normalizeColumnValueForWrite(tableName, column, data[column]))
+      );
       const result = await this.pool.query(
         `INSERT INTO "${tableName}" (${identifiers}) VALUES (${placeholders}) RETURNING *`,
         values
@@ -175,10 +179,13 @@ const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', 
       const setClause = setColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
       const whereClause = whereColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
 
-      const values = [
-        ...setColumns.map((column) => this.normalizeParamValue(data[column])),
-        ...whereColumns.map((column) => this.normalizeParamValue(where[column]))
-      ];
+      const setValues = await Promise.all(
+        setColumns.map((column) => this.normalizeColumnValueForWrite(tableName, column, data[column]))
+      );
+      const whereValues = await Promise.all(
+        whereColumns.map((column) => this.normalizeColumnValueForWrite(tableName, column, where[column]))
+      );
+      const values = [...setValues, ...whereValues];
 
       const result = await this.pool.query(`UPDATE "${tableName}" SET ${setClause} WHERE ${whereClause} RETURNING *`, values);
       return result.rows[0] || null;
@@ -206,7 +213,8 @@ const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', 
   async delete(tableOrName: any, where: any): Promise<boolean> {
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
-      const { sql: whereClause, values } = this.buildRawWhereClause(where);
+      const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
+      const { sql: whereClause, values } = this.buildRawWhereClause(normalizedWhere);
       if (!whereClause) throw new Error(`Unsafe delete blocked: missing where clause for table "${tableName}"`);
       
       const result = await this.pool.query(`DELETE FROM "${tableName}"${whereClause} RETURNING *`, values);
@@ -225,6 +233,66 @@ const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', 
   protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
     const result = await this.pool.query(sqlStr, values);
     return result.rows;
+  }
+
+  private async getJsonColumns(tableName: string): Promise<Set<string>> {
+    const cached = this.jsonColumnsCache.get(tableName);
+    if (cached) return cached;
+
+    const result = await this.pool.query(
+      `SELECT column_name
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = $1
+         AND data_type IN ('json', 'jsonb')`,
+      [tableName]
+    );
+
+    const columns = new Set(
+      (result.rows || []).map((row: any) => String(row?.column_name || '').toLowerCase())
+    );
+    this.jsonColumnsCache.set(tableName, columns);
+    return columns;
+  }
+
+  private normalizeJsonColumnValue(value: any): any {
+    if (value === undefined || value === null) return null;
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return JSON.stringify(value);
+
+      try {
+        JSON.parse(trimmed);
+        return trimmed;
+      } catch {
+        // JSON/JSONB columns must receive valid JSON syntax.
+        return JSON.stringify(value);
+      }
+    }
+
+    return JSON.stringify(value);
+  }
+
+  private async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
+    const jsonColumns = await this.getJsonColumns(tableName);
+    const normalizedColumn = toSnakeCase(column).toLowerCase();
+    if (jsonColumns.has(normalizedColumn)) {
+      return this.normalizeJsonColumnValue(value);
+    }
+    return this.normalizeParamValue(value);
+  }
+
+  private async normalizeWhereForTable(tableName: string, where: any): Promise<any> {
+    if (!where || typeof where !== 'object' || Object.getPrototypeOf(where) !== Object.prototype) {
+      return where;
+    }
+
+    const normalized: Record<string, any> = {};
+    for (const [column, value] of Object.entries(where)) {
+      normalized[column] = await this.normalizeColumnValueForWrite(tableName, column, value);
+    }
+    return normalized;
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
@@ -295,11 +363,13 @@ const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', 
 
     const query = sql`CREATE TABLE ${sql.identifier(tableName)} (${sql.join(columnDefs, sql`, `)})`;
     await this.execute(query);
+    this.jsonColumnsCache.delete(tableName);
   }
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
     const columnDef = this.fieldToSqlFragment(field);
     await this.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    this.jsonColumnsCache.delete(tableName);
   }
 
   private fieldToSqlFragment(field: ISchemaField): any {

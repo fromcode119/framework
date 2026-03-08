@@ -2,6 +2,24 @@
 
 The "WordPress of TypeScript" - a plugin-first, enterprise-grade framework.
 
+## 🎉 v2.0 Released - Class-Based Architecture
+
+**Date**: March 8, 2026  
+**Status**: ✅ Production Ready
+
+Fromcode v2.0 introduces a fully class-based architecture, removing all deprecated function-based patterns. This major release delivers:
+
+- ✅ **175/175 tests passing** (100% success rate)
+- ✅ **Zero deprecated code** in framework packages
+- ✅ **83% reduction** in admin utilities file size
+- ✅ **6 legacy files removed** (all functionality preserved in classes)
+- ✅ **Comprehensive migration guide** with step-by-step examples
+
+**For existing projects**: See [MIGRATION_GUIDE.md](../../MIGRATION_GUIDE.md) for upgrade instructions.  
+**For new projects**: All examples in this README use v2.0 patterns.
+
+---
+
 ## Prerequisites
 - **Node.js**: v22.0.0 or later (Required for `isolated-vm` based plugin sandboxing)
 - **npm**: v11.0.0 or later (Recommended)

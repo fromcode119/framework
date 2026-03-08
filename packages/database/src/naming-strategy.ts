@@ -14,6 +14,19 @@ export function toSnakeCase(field: string): string {
 }
 
 /**
+ * Convert mixed identifiers (camelCase, kebab-case, spaced strings) to snake_case.
+ * Example: "discountCodes" -> "discount_codes", "discount-codes" -> "discount_codes"
+ */
+export function toSnakeIdentifier(value: string): string {
+  return String(value || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .replace(/_+/g, '_')
+    .toLowerCase();
+}
+
+/**
  * Convert snake_case to camelCase
  * Example: created_at -> createdAt
  */
@@ -114,6 +127,7 @@ export function normalizeParamValue(value: any): any {
 
 export class NamingStrategy {
   static toSnakeCase = toSnakeCase;
+  static toSnakeIdentifier = toSnakeIdentifier;
   static toCamelCase = toCamelCase;
   static isPlainObject = isPlainObject;
   static normalizeWhereClause = normalizeWhereClause;
