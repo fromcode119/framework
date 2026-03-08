@@ -52,4 +52,32 @@ describe('rest-controller', () => {
     expect(mockDb.update).toHaveBeenCalled();
     expect(res.json).toHaveBeenCalled();
   });
+
+  it('find maps page+limit to offset when offset is not provided', async () => {
+    mockDb.find.mockResolvedValue([]);
+    mockDb.count.mockResolvedValue(25);
+
+    const req: any = {
+      query: { page: '3', limit: '10', sort: '-createdAt' },
+      user: { roles: ['admin'] }
+    };
+    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await controller.find(mockCollection, req, res);
+
+    expect(mockDb.find).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        limit: 10,
+        offset: 20
+      })
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        limit: 10,
+        offset: 20,
+        page: 3
+      })
+    );
+  });
 });

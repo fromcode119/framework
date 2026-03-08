@@ -222,6 +222,23 @@ export function AssistantConversation({
             const isSystem = entry.role === 'system';
             const isLatestActionBatch = Array.isArray(entry.actions) && entry.actions === lastActions;
             const showMetaRow = isSystem || !!(entry.provider || entry.model);
+            const needsClarification = entry.ui?.needsClarification === true;
+            const loopRecoveryMode = entry.ui?.loopRecoveryMode || 'none';
+            const showPlanningState =
+              isAssistant &&
+              (needsClarification ||
+                loopRecoveryMode === 'best_effort' ||
+                entry.ui?.canContinue ||
+                (entry.loopCapReached && (!entry.actions || entry.actions.length === 0)));
+            const planningTitle = needsClarification
+              ? loopRecoveryMode === 'best_effort'
+                ? 'Draft ready, target needed'
+                : 'Need one detail to finish staging'
+              : 'Planning paused';
+            const planningBody = needsClarification
+              ? String(entry.ui?.clarifyingQuestion || '').trim() || 'Share collection slug and record id/slug to continue staging.'
+              : 'Run one more planning pass to gather missing context and stage exact actions.';
+            const showContinueButton = !!entry.ui?.canContinue && !needsClarification && loopRecoveryMode !== 'best_effort';
             return (
               <div key={`${entry.role}-${index}`} className={`group flex transition-all duration-300 ${isUser ? 'justify-end' : 'justify-start'}`}>
                 <article
@@ -424,20 +441,22 @@ export function AssistantConversation({
                     </details>
                   ) : null}
 
-                  {isAssistant && (entry.ui?.canContinue || (entry.loopCapReached && (!entry.actions || entry.actions.length === 0))) ? (
+                  {showPlanningState ? (
                     <div className="mt-2 rounded-xl border border-sky-300/55 bg-[linear-gradient(138deg,rgba(248,252,255,0.95),rgba(233,244,255,0.86),rgba(238,242,255,0.82))] p-2 text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] dark:border-sky-300/28 dark:bg-[linear-gradient(138deg,rgba(11,26,44,0.8),rgba(16,30,54,0.7),rgba(24,33,60,0.62))] dark:text-sky-50">
-                      <p className="text-[11px] font-semibold">Planning paused</p>
+                      <p className="text-[11px] font-semibold">{planningTitle}</p>
                       <p className="mt-0.5 text-[10px] text-slate-700 dark:text-sky-100/85">
-                        I need one more pass to finish this plan safely. Continue?
+                        {planningBody}
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => void continuePlanning()}
-                        className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-lg border border-sky-300/65 bg-white/88 px-2 text-[10px] font-semibold text-sky-900 transition hover:bg-white dark:border-sky-300/45 dark:bg-sky-300/14 dark:text-sky-100 dark:hover:bg-sky-300/22"
-                      >
-                        <FrameworkIcons.ListChecks size={11} />
-                        <span>Continue Planning</span>
-                      </button>
+                      {showContinueButton ? (
+                        <button
+                          type="button"
+                          onClick={() => void continuePlanning()}
+                          className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-lg border border-sky-300/65 bg-white/88 px-2 text-[10px] font-semibold text-sky-900 transition hover:bg-white dark:border-sky-300/45 dark:bg-sky-300/14 dark:text-sky-100 dark:hover:bg-sky-300/22"
+                        >
+                          <FrameworkIcons.ListChecks size={11} />
+                          <span>Continue Planning</span>
+                        </button>
+                      ) : null}
                     </div>
                   ) : null}
 

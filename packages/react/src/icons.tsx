@@ -156,6 +156,7 @@ export const FrameworkIcons = {
   ListChecks: Lucide.ListChecks,
   Send: Lucide.Send,
   Wrench: Lucide.Wrench,
+  ExternalLink: Lucide.ExternalLink,
 };
 
 /**

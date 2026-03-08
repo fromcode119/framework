@@ -1,4 +1,4 @@
-import { ForgeController } from '../src/api/controller';
+import { AssistantController } from '../src/api/controller';
 
 type MockReq = any;
 type MockRes = any;
@@ -44,7 +44,7 @@ function createControllerHarness() {
   };
 
   const restController: any = {};
-  const controller = new ForgeController(manager, themeManager, restController);
+  const controller = new AssistantController(manager, themeManager, restController);
 
   return { controller, manager, db };
 }
@@ -304,6 +304,131 @@ describe('assistant-controller modernization', () => {
     );
   });
 
+  it('does not auto-continue when runtime asks for clarification', async () => {
+    const { controller } = createControllerHarness();
+    const runtime = {
+      chat: jest.fn().mockResolvedValue({
+        message: "Here's a draft now; confirm target to apply. Which page should I stage this in?",
+        actions: [],
+        model: 'llama3.1:8b',
+        agentMode: 'advanced',
+        done: true,
+        traces: [{ iteration: 1, phase: 'planner', message: 'Draft fast-path', toolCalls: [] }],
+        ui: {
+          canContinue: true,
+          needsClarification: true,
+          clarifyingQuestion: 'Which page should I stage this in?',
+          loopRecoveryMode: 'best_effort',
+          requiresApproval: false,
+          suggestedMode: 'plan',
+          showTechnicalDetailsDefault: false,
+        },
+        checkpoint: {
+          resumePrompt: 'Continue with collection slug and record id/slug',
+          reason: 'clarification_needed',
+        },
+        iterations: 1,
+        loopCapReached: false,
+      }),
+    };
+
+    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
+      client: { chat: jest.fn() },
+      provider: 'ollama',
+    });
+
+    const req: MockReq = {
+      body: {
+        message: 'Create a homepage draft with hero, proof, CTA, and FAQ.',
+        history: [],
+        agentMode: 'advanced',
+      },
+      headers: {},
+      cookies: {},
+      user: { id: 1 },
+    };
+    const res = createResponseMock();
+
+    await controller.assistantChat(req as any, res as any);
+    expect(runtime.chat).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes session clarification checkpoint into runtime chat', async () => {
+    const { controller, db } = createControllerHarness();
+    db.findOne.mockImplementation(async (_table: string, where: any) => {
+      if (where?.key === 'assistant.session.session-checkpoint') {
+        return {
+          key: where.key,
+          value: JSON.stringify({
+            id: 'session-checkpoint',
+            provider: 'ollama',
+            model: 'llama3.1:8b',
+            agentMode: 'advanced',
+            skillId: 'general',
+            tools: ['content.update'],
+            history: [],
+            lastCheckpoint: {
+              resumePrompt: 'Continue with collection slug and record id/slug',
+              reason: 'clarification_needed',
+              planningPassesUsed: 1,
+            },
+          }),
+          group: 'assistant-session',
+        };
+      }
+      return null;
+    });
+
+    const runtime = {
+      chat: jest.fn().mockResolvedValue({
+        message: 'Staged.',
+        actions: [],
+        model: 'llama3.1:8b',
+        agentMode: 'advanced',
+        done: true,
+        traces: [],
+        ui: {
+          canContinue: false,
+          requiresApproval: false,
+          suggestedMode: 'plan',
+          showTechnicalDetailsDefault: false,
+        },
+      }),
+    };
+
+    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
+      client: { chat: jest.fn() },
+      provider: 'ollama',
+    });
+
+    const req: MockReq = {
+      body: {
+        message: 'Use fcp_cms_pages id 1.',
+        sessionId: 'session-checkpoint',
+        history: [],
+        agentMode: 'advanced',
+      },
+      headers: {},
+      cookies: {},
+      user: { id: 1 },
+    };
+    const res = createResponseMock();
+
+    await controller.assistantChat(req as any, res as any);
+
+    expect(runtime.chat).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: 'session-checkpoint',
+        continueFrom: true,
+        checkpoint: expect.objectContaining({
+          reason: 'clarification_needed',
+        }),
+      }),
+    );
+  });
+
   it('exposes built-in browsing skills in assistant skills endpoint', async () => {
     const { controller } = createControllerHarness();
     const req: MockReq = { body: {}, headers: {}, cookies: {} };
@@ -331,6 +456,89 @@ describe('assistant-controller modernization', () => {
     const payload = (res.json as jest.Mock).mock.calls[0][0];
     const toolNames = Array.isArray(payload?.tools) ? payload.tools.map((entry: any) => entry.tool) : [];
     expect(toolNames).toEqual(expect.arrayContaining(['web.search', 'web.fetch']));
+  });
+
+  it('adds framework file tools to tools endpoint even when runtime list is partial', async () => {
+    const { controller } = createControllerHarness();
+    const runtime = {
+      listTools: jest.fn().mockResolvedValue([
+        { tool: 'web.search', description: 'Search', readOnly: true },
+        { tool: 'web.fetch', description: 'Fetch', readOnly: true },
+      ]),
+    };
+    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+
+    const req: MockReq = { body: {}, headers: {}, cookies: {} };
+    const res = createResponseMock();
+
+    await controller.assistantTools(req as any, res as any);
+
+    const payload = (res.json as jest.Mock).mock.calls[0][0];
+    const toolNames = Array.isArray(payload?.tools) ? payload.tools.map((entry: any) => entry.tool) : [];
+    expect(toolNames).toEqual(
+      expect.arrayContaining([
+        'plugins.files.search_text',
+        'plugins.files.replace_text',
+        'themes.files.search_text',
+        'themes.files.replace_text',
+      ]),
+    );
+  });
+
+  it('lists Anthropic models', async () => {
+    const { controller } = createControllerHarness();
+    const originalFetch = (global as any).fetch;
+    try {
+      (global as any).fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: [{ id: 'claude-3-5-sonnet-latest' }, { id: 'claude-3-7-sonnet-latest' }],
+        }),
+      });
+
+      const req: MockReq = { body: { provider: 'anthropic', config: { apiKey: 'test-key' } }, query: {}, headers: {}, cookies: {} };
+      const res = createResponseMock();
+      await controller.assistantModels(req as any, res as any);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: 'anthropic',
+          models: expect.arrayContaining([
+            expect.objectContaining({ value: 'claude-3-5-sonnet-latest' }),
+          ]),
+        }),
+      );
+    } finally {
+      (global as any).fetch = originalFetch;
+    }
+  });
+
+  it('lists Gemini models', async () => {
+    const { controller } = createControllerHarness();
+    const originalFetch = (global as any).fetch;
+    try {
+      (global as any).fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          models: [{ name: 'models/gemini-1.5-pro' }, { name: 'models/gemini-1.5-flash' }],
+        }),
+      });
+
+      const req: MockReq = { body: { provider: 'gemini', config: { apiKey: 'test-key' } }, query: {}, headers: {}, cookies: {} };
+      const res = createResponseMock();
+      await controller.assistantModels(req as any, res as any);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: 'gemini',
+          models: expect.arrayContaining([
+            expect.objectContaining({ value: 'gemini-1.5-pro' }),
+          ]),
+        }),
+      );
+    } finally {
+      (global as any).fetch = originalFetch;
+    }
   });
 
   it('lists, fetches, forks, and deletes persisted assistant sessions', async () => {

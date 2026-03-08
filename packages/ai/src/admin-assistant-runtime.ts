@@ -3,6 +3,7 @@ import { createMcpBridge, McpBridge, McpToolDefinition } from '@fromcode119/mcp'
 import {
   ASSISTANT_RUNTIME_COPY,
   ASSISTANT_PROMPT_COPY,
+  ASSISTANT_VIBE_SECTION,
   DEFAULT_ASSISTANT_SKILLS,
   buildDeterministicReplaceMessage,
   buildDeterministicTraceMessage,
@@ -104,11 +105,15 @@ export type AssistantUiHints = {
   requiresApproval: boolean;
   suggestedMode: AssistantRunMode;
   showTechnicalDetailsDefault: boolean;
+  needsClarification?: boolean;
+  clarifyingQuestion?: string;
+  missingInputs?: string[];
+  loopRecoveryMode?: 'none' | 'clarify' | 'best_effort';
 };
 
 export type AssistantSessionCheckpoint = {
   resumePrompt: string;
-  reason: 'loop_cap' | 'time_cap' | 'user_continue';
+  reason: 'loop_cap' | 'time_cap' | 'user_continue' | 'clarification_needed' | 'loop_recovery';
   planningPassesUsed?: number;
 };
 
@@ -379,8 +384,23 @@ export class AdminAssistantRuntime {
     done: boolean;
     selectedSkill?: AssistantSkillDefinition;
     planningPassesUsed?: number;
+    needsClarification?: boolean;
+    clarifyingQuestion?: string;
+    missingInputs?: string[];
+    loopRecoveryMode?: 'none' | 'clarify' | 'best_effort';
   }): AssistantUiHints {
-    const { hasActions, loopCapReached, loopTimeLimitReached, done, selectedSkill, planningPassesUsed } = input;
+    const {
+      hasActions,
+      loopCapReached,
+      loopTimeLimitReached,
+      done,
+      selectedSkill,
+      planningPassesUsed,
+      needsClarification,
+      clarifyingQuestion,
+      missingInputs,
+      loopRecoveryMode,
+    } = input;
     const suggestedMode: AssistantRunMode = hasActions
       ? 'plan'
       : (loopCapReached || loopTimeLimitReached) && !done
@@ -394,10 +414,19 @@ export class AdminAssistantRuntime {
     const canContinueMore = passesUsed < maxPlanningPasses;
     
     return {
-      canContinue: (loopCapReached || loopTimeLimitReached) && !hasActions && canContinueMore,
+      canContinue:
+        (loopCapReached || loopTimeLimitReached) &&
+        !hasActions &&
+        canContinueMore &&
+        !needsClarification &&
+        loopRecoveryMode !== 'best_effort',
       requiresApproval,
       suggestedMode,
       showTechnicalDetailsDefault: false,
+      needsClarification: !!needsClarification,
+      clarifyingQuestion: String(clarifyingQuestion || '').trim() || undefined,
+      missingInputs: Array.isArray(missingInputs) ? missingInputs.filter(Boolean) : undefined,
+      loopRecoveryMode: loopRecoveryMode || 'none',
     };
   }
 
@@ -471,12 +500,21 @@ export class AdminAssistantRuntime {
       (/plan mode/.test(lower) || /can'?t make changes|cannot make changes|unable to make changes/.test(lower));
 
     if (looksReadOnly) {
-      return mode === 'basic'
+      text = mode === 'basic'
         ? 'To make changes, switch to **Plan** mode. I will stage the updates and you can approve them before anything is applied.'
         : 'I can stage this in **Plan** mode right now. Review the staged actions, run preview, then approve apply.';
     }
 
-    return text;
+    text = text.replace(
+      /^(?:great question[,!.\s-]*|i['’]?d be happy to help[,!.\s-]*|absolutely[,!.\s-]*)+/i,
+      '',
+    );
+    text = text.replace(
+      /i need one more pass to (?:finish|complete) this plan safely\.?\s*continue\??/gi,
+      ASSISTANT_RUNTIME_COPY.clarificationNeeded,
+    );
+    text = text.replace(/^\s+/, '');
+    return text || 'I am ready.';
   }
 
   private isInterimPlanningMessage(message: string): boolean {
@@ -525,26 +563,40 @@ export class AdminAssistantRuntime {
     ];
   }
 
-  private buildDefaultBasicSystemPromptFromCopy(promptCopyOverride?: string[]): string {
+  private splitPromptLines(value: string): string[] {
+    const text = String(value || '').trim();
+    if (!text) return [];
+    return text
+      .split(/\r?\n/)
+      .map((line) => String(line || '').trim())
+      .filter(Boolean);
+  }
+
+  private buildDefaultBasicSystemPromptFromCopy(promptCopyOverride?: string[], customPromptOverride?: string): string {
     const copyLines =
       Array.isArray(promptCopyOverride) && promptCopyOverride.length > 0
         ? promptCopyOverride.map((line) => String(line || '').trim()).filter(Boolean)
         : [...ASSISTANT_PROMPT_COPY.basic];
+    const customLines = this.splitPromptLines(String(customPromptOverride || ''));
     return [
+      ...customLines,
       ...copyLines,
       'Never claim you cannot access backend data, plugins, or system context.',
       'Chat mode is read-only. Never claim that records, settings, plugins, or themes were changed.',
       'Never expose raw internal tool IDs (for example: content.update, settings.set) in user-facing text.',
       'Do not return JSON, code fences, or tool call objects.',
+      ...ASSISTANT_VIBE_SECTION,
     ].join('\n');
   }
 
-  private buildDefaultAdvancedSystemPromptFromCopy(promptCopyOverride?: string[]): string {
+  private buildDefaultAdvancedSystemPromptFromCopy(promptCopyOverride?: string[], customPromptOverride?: string): string {
     const copyLines =
       Array.isArray(promptCopyOverride) && promptCopyOverride.length > 0
         ? promptCopyOverride.map((line) => String(line || '').trim()).filter(Boolean)
         : [...ASSISTANT_PROMPT_COPY.advanced];
+    const customLines = this.splitPromptLines(String(customPromptOverride || ''));
     return [
+      ...customLines,
       ...copyLines,
       'You are running inside a real Fromcode backend context. Never claim you cannot access backend data.',
       'Return STRICT JSON only with this shape:',
@@ -558,6 +610,7 @@ export class AdminAssistantRuntime {
       'Never claim a write was applied unless an action is staged and later executed.',
       'User-facing "message" must be plain language. Never expose raw tool IDs in message text.',
       'Do not invent endpoints.',
+      ...ASSISTANT_VIBE_SECTION,
     ].join('\n');
   }
 
@@ -823,6 +876,32 @@ export class AdminAssistantRuntime {
     return !explicitWriteTarget;
   }
 
+  private isGreetingIntent(prompt: string): boolean {
+    const text = String(prompt || '').trim().toLowerCase();
+    if (!text) return false;
+    return /^(hi|hey|hello|yo|sup|good (morning|afternoon|evening))[\s!.?]*$/.test(text);
+  }
+
+  private isVagueChangeIntent(prompt: string): boolean {
+    const text = String(prompt || '').trim().toLowerCase();
+    if (!text) return false;
+    const asksChange = /\b(change|update|edit|modify|fix|replace|set)\b/.test(text);
+    if (!asksChange) return false;
+    const looksVague =
+      /\b(can you help|help me|one change|a change|some change|something)\b/.test(text) ||
+      text.length < 90;
+    const hasConcreteTarget =
+      /["'][^"']+["']/.test(text) ||
+      /\b(collection|record|id|slug|field|path|setting|key)\b/.test(text) ||
+      /\bfrom\b.+\bto\b/.test(text) ||
+      /\bhome(page)?\b/.test(text);
+    return looksVague && !hasConcreteTarget;
+  }
+
+  private buildGreetingReply(): string {
+    return 'Hey. We can chat, brainstorm, or ship a concrete change. Tell me what you want, and I will run with it.';
+  }
+
   private buildCapabilityOverviewMessage(
     collections: AssistantCollectionContext[],
     plugins: AssistantPluginContext[],
@@ -842,12 +921,12 @@ export class AdminAssistantRuntime {
     const themeCount = Array.isArray(themes) ? themes.length : 0;
 
     return [
-      `I can edit content and settings with approval-first safety.`,
+      'I can inspect, draft, and stage content/settings changes.',
       `Current scope: ${collectionCount} collections, ${pluginCount} plugins, ${themeCount} themes.`,
       `Tools: ${writableTools.length} write-capable, ${readTools.length} read/search.`,
       '',
       'If you want a change, just say it naturally (example: `Change homepage hero headline to "Better Websites"`).',
-      'I will stage a plan, show preview, then apply only after your approval.',
+      'I stage first, preview next, apply only with your approval.',
     ].join('\n');
   }
 
@@ -860,16 +939,226 @@ export class AdminAssistantRuntime {
     const writeCount = (tools || []).filter((tool) => !tool?.readOnly).length;
     const readCount = (tools || []).filter((tool) => !!tool?.readOnly).length;
     return [
-      'Here is a focused efficiency plan:',
-      '1. Reduce planning dead-ends: ask me to “inspect first, then stage” so we always return findings before actions.',
-      '2. Enforce two-pass flow: discovery pass (read-only) -> action pass (staged changes only).',
-      '3. Improve apply reliability: require exact selectors (collection + id/slug + field path) before writes.',
-      '4. Speed approvals: keep batch preview default, but apply per-action when failures are mixed.',
-      '5. Tighten model routing: use read-only skill for analysis questions, writable skills only for concrete edits.',
+      'Focused efficiency plan:',
+      '1. Ask for explicit targets up front: collection + id/slug + field path.',
+      '2. Keep two passes: discovery first, staged writes second.',
+      '3. Use batch preview first, then apply only validated actions.',
+      '4. Route analysis requests to read-only mode and edits to writable mode.',
       '',
       `Current workspace scope: ${collections.length} collections, ${plugins.length} plugins, ${themes.length} themes (${writeCount} write tools / ${readCount} read tools).`,
-      'If you want, I can now convert this into a concrete implementation plan with milestones and expected impact.',
+      'If you want, I can turn this into an executable implementation plan now.',
     ].join('\n');
+  }
+
+  private isHomepageDraftIntent(prompt: string): boolean {
+    const text = String(prompt || '').trim().toLowerCase();
+    if (!text) return false;
+    const asksHomepage = /\b(homepage|home page|landing page)\b/.test(text);
+    const asksDraft = /\b(draft|first version|write|create|generate|build)\b/.test(text);
+    const hasSections = /\bhero\b/.test(text) && /\bcta\b/.test(text) && /\bfaq\b/.test(text);
+    return (asksHomepage && (asksDraft || hasSections)) || (asksDraft && hasSections);
+  }
+
+  private buildHomepageDraftScaffold(prompt: string): {
+    markdown: string;
+    payload: Record<string, any>;
+  } {
+    const text = String(prompt || '').trim();
+    const brandMatch = text.match(/\bfor\s+([a-z0-9][a-z0-9\s&-]{2,40})/i);
+    const brand = String(brandMatch?.[1] || 'Your Brand').trim();
+    const headline = `Stop losing leads to a weak first impression.`;
+    const subhead = `${brand} helps visitors understand your value in seconds and take action with confidence.`;
+    const primaryCta = 'Book a Free Strategy Call';
+    const secondaryCta = 'See Real Client Results';
+    const proof = [
+      'Trusted by 120+ businesses across high-competition niches.',
+      'Average conversion uplift: +34% after homepage refresh.',
+      'Live support from real specialists, not ticket black holes.',
+    ];
+    const ctaTitle = 'Ready to turn traffic into qualified leads?';
+    const ctaBody = `Tell us your goals, timeline, and constraints. We'll return a sharp homepage plan in 48 hours.`;
+    const faq = [
+      {
+        question: 'How long does a homepage refresh take?',
+        answer: 'Most projects ship in 1-3 weeks depending on content readiness and integrations.',
+      },
+      {
+        question: 'Can you keep our existing brand style?',
+        answer: 'Yes. We keep what works, fix what hurts clarity, and align every section with your current identity.',
+      },
+      {
+        question: 'Do you handle copy and structure?',
+        answer: 'Yes. We provide the full page structure and conversion-focused copy, then refine with your team.',
+      },
+      {
+        question: 'What if we need A/B testing after launch?',
+        answer: 'We can stage follow-up variants for hero, CTA, and FAQ blocks and run iterative tests.',
+      },
+    ];
+
+    const markdown = [
+      '## Hero',
+      `**Headline:** ${headline}`,
+      `**Subhead:** ${subhead}`,
+      `**Primary CTA:** ${primaryCta}`,
+      `**Secondary CTA:** ${secondaryCta}`,
+      '',
+      '## Proof',
+      ...proof.map((item) => `- ${item}`),
+      '',
+      '## CTA Block',
+      `**Title:** ${ctaTitle}`,
+      `**Body:** ${ctaBody}`,
+      `**Button:** ${primaryCta}`,
+      '',
+      '## FAQ',
+      ...faq.map((entry, index) => `${index + 1}. **${entry.question}**\n   ${entry.answer}`),
+    ].join('\n');
+
+    return {
+      markdown,
+      payload: {
+        title: 'Homepage Draft',
+        content: markdown,
+      },
+    };
+  }
+
+  private homepageCandidateCollections(collections: AssistantCollectionContext[]): AssistantCollectionContext[] {
+    const scored = (Array.isArray(collections) ? collections : [])
+      .map((collection) => {
+        const scope = `${collection.slug} ${collection.shortSlug} ${collection.label}`.toLowerCase();
+        let score = 0;
+        if (/\bhome(page)?\b/.test(scope)) score += 5;
+        if (/\b(page|pages|cms|landing|website|site)\b/.test(scope)) score += 3;
+        if (/\bsettings|assistant|session\b/.test(scope)) score -= 4;
+        return { collection, score };
+      })
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+    return scored.map((entry) => entry.collection);
+  }
+
+  private resolveHomepageDocId(collection: AssistantCollectionContext, doc: any): string | number | null {
+    const primaryKey = String((collection as any)?.raw?.primaryKey || 'id');
+    const value = (doc as any)?.[primaryKey] ?? (doc as any)?.id ?? null;
+    if (value === null || value === undefined || String(value).trim() === '') return null;
+    return value;
+  }
+
+  private async resolveHomepageDraftTarget(
+    message: string,
+    collections: AssistantCollectionContext[],
+  ): Promise<{
+    status: 'resolved' | 'missing' | 'ambiguous';
+    target?: { collectionSlug: string; recordId: string | number };
+    candidateCollections: string[];
+  }> {
+    const normalizedMessage = this.normalizeSearchText(message);
+    const explicitCollections = (Array.isArray(collections) ? collections : []).filter((collection) => {
+      const slug = this.normalizeSearchText(collection.slug);
+      const shortSlug = this.normalizeSearchText(collection.shortSlug);
+      return (!!slug && normalizedMessage.includes(slug)) || (!!shortSlug && normalizedMessage.includes(shortSlug));
+    });
+    const candidates = (explicitCollections.length ? explicitCollections : this.homepageCandidateCollections(collections)).slice(0, 6);
+    if (!candidates.length) {
+      return { status: 'missing', candidateCollections: [] };
+    }
+
+    const found = new Map<string, { collectionSlug: string; recordId: string | number }>();
+    for (const collection of candidates) {
+      if (typeof this.options.resolveContent === 'function') {
+        const selectors = [
+          { slug: 'home' },
+          { slug: 'homepage' },
+          { slug: 'index' },
+          { permalink: '/' },
+          { id: 1 },
+        ];
+        for (const selector of selectors) {
+          const existing = await this.options.resolveContent(collection, selector, { dryRun: true }).catch(() => null);
+          if (!existing || typeof existing !== 'object') continue;
+          if (this.isInternalAssistantSessionRecord(collection.slug, existing)) continue;
+          const recordId = this.resolveHomepageDocId(collection, existing);
+          if (recordId === null) continue;
+          found.set(`${collection.slug}:${String(recordId)}`, { collectionSlug: collection.slug, recordId });
+          break;
+        }
+      }
+
+      if (typeof this.options.listContent === 'function' && found.size === 0) {
+        const listed = await this.options.listContent(collection, { limit: 5, offset: 0, context: { dryRun: true } }).catch(() => null);
+        const docs = Array.isArray(listed?.docs)
+          ? listed.docs.filter((doc) => !this.isInternalAssistantSessionRecord(collection.slug, doc))
+          : [];
+        if (!docs.length) continue;
+        const preferred =
+          docs.find((doc) => ['home', 'homepage', 'index', 'root'].includes(String((doc as any)?.slug || '').trim().toLowerCase())) ||
+          docs.find((doc) => String((doc as any)?.permalink || (doc as any)?.path || '').trim() === '/') ||
+          (docs.length === 1 ? docs[0] : null);
+        if (!preferred) continue;
+        const recordId = this.resolveHomepageDocId(collection, preferred);
+        if (recordId === null) continue;
+        found.set(`${collection.slug}:${String(recordId)}`, { collectionSlug: collection.slug, recordId });
+      }
+    }
+
+    const resolved = Array.from(found.values());
+    if (resolved.length === 1) {
+      return {
+        status: 'resolved',
+        target: resolved[0],
+        candidateCollections: candidates.map((entry) => entry.slug),
+      };
+    }
+    if (resolved.length > 1) {
+      return {
+        status: 'ambiguous',
+        candidateCollections: resolved.map((entry) => entry.collectionSlug),
+      };
+    }
+    return {
+      status: candidates.length === 1 ? 'missing' : 'ambiguous',
+      candidateCollections: candidates.map((entry) => entry.slug),
+    };
+  }
+
+  private buildClarificationRequest(
+    intent: 'homepage_draft' | 'general',
+    candidateCollections: string[],
+  ): { question: string; missingInputs: string[]; resumePrompt: string } {
+    const collectionHint = candidateCollections.length
+      ? ` Candidate collections: ${candidateCollections.slice(0, 3).join(', ')}.`
+      : '';
+    if (intent === 'homepage_draft') {
+      return {
+        question: `Which page should I stage this homepage draft into? Reply with collection slug and record id/slug.${collectionHint}`,
+        missingInputs: ['collection slug', 'record id or slug'],
+        resumePrompt: 'Continue planning using the user-provided collection slug and record id/slug. Stage homepage draft actions.',
+      };
+    }
+    return {
+      question:
+        `Need one detail to finish staging: share collection + record id/slug + field path + new value.${collectionHint}`,
+      missingInputs: ['collection slug', 'record id or slug', 'field path', 'new value'],
+      resumePrompt:
+        'Continue planning with the user-provided collection, record id/slug, field path, and new value. Stage executable actions.',
+    };
+  }
+
+  private isGenericPauseCopy(message: string): boolean {
+    const text = String(message || '').trim().toLowerCase();
+    if (!text) return false;
+    return /one more pass|continue planning|planning paused|finish this plan safely/.test(text);
+  }
+
+  private countRecentGenericPauseMessages(history: AssistantMessage[]): number {
+    return (Array.isArray(history) ? history : [])
+      .filter((entry) => entry?.role === 'assistant')
+      .slice(-8)
+      .filter((entry) => this.isGenericPauseCopy(String(entry?.content || '')))
+      .length;
   }
 
   private parseReplaceInstruction(prompt: string): { from: string; to: string } | null {
@@ -2557,15 +2846,181 @@ export class AdminAssistantRuntime {
       };
     }
 
+    // Keep greeting fast, but only for brand-new conversations.
+    // Once there is context, let the model continue naturally.
+    if (this.isGreetingIntent(message) && normalizedHistory.length === 0) {
+      const quickMessage = this.buildGreetingReply();
+      const ui = this.buildUiHints({
+        hasActions: false,
+        loopCapReached: false,
+        loopTimeLimitReached: false,
+        done: true,
+        selectedSkill,
+      });
+      return {
+        message: this.sanitizeUserFacingMessage(quickMessage, 'basic'),
+        actions: [],
+        model: '',
+        agentMode: 'basic',
+        done: true,
+        traces: [],
+        ui,
+        skill: selectedSkill,
+        sessionId,
+        iterations: 1,
+        loopCapReached: false,
+      };
+    }
+
+    if (this.isVagueChangeIntent(message)) {
+      const clarification = this.buildClarificationRequest('general', []);
+      const clarificationMessage = this.sanitizeUserFacingMessage(clarification.question, 'advanced');
+      const ui = this.buildUiHints({
+        hasActions: false,
+        loopCapReached: false,
+        loopTimeLimitReached: false,
+        done: true,
+        selectedSkill,
+        needsClarification: true,
+        clarifyingQuestion: clarification.question,
+        missingInputs: clarification.missingInputs,
+        loopRecoveryMode: 'clarify',
+      });
+      return {
+        message: clarificationMessage,
+        actions: [],
+        model: '',
+        agentMode: agentMode === 'advanced' ? 'advanced' : 'basic',
+        done: true,
+        traces: [],
+        ui,
+        skill: selectedSkill,
+        sessionId,
+        checkpoint: {
+          resumePrompt: clarification.resumePrompt,
+          reason: 'clarification_needed',
+          planningPassesUsed: Number(input?.checkpoint?.planningPassesUsed || 0),
+        },
+        iterations: 1,
+        loopCapReached: false,
+      };
+    }
+
+    if (this.isHomepageDraftIntent(message)) {
+      const scaffold = this.buildHomepageDraftScaffold(message);
+      const targetResolution = await this.resolveHomepageDraftTarget(message, collections);
+      let draftActions: AssistantAction[] = [];
+      let needsClarification = false;
+      let clarifyingQuestion = '';
+      let missingInputs: string[] = [];
+      let loopRecoveryMode: 'none' | 'clarify' | 'best_effort' = 'none';
+
+      if (targetResolution.status === 'resolved' && targetResolution.target) {
+        draftActions = await this.filterUnsafeStagedActions(
+          [
+            {
+              type: 'mcp_call',
+              tool: 'content.update',
+              input: {
+                collectionSlug: targetResolution.target.collectionSlug,
+                id: targetResolution.target.recordId,
+                data: scaffold.payload,
+              },
+              reason: 'Stage homepage draft scaffold.',
+            },
+          ],
+          availableTools,
+        );
+      }
+
+      if (selectedSkill?.riskPolicy === 'read_only') {
+        draftActions = [];
+      }
+
+      let checkpoint: AssistantSessionCheckpoint | undefined;
+      let lead = draftActions.length
+        ? 'Homepage draft is ready and staged for preview.'
+        : ASSISTANT_RUNTIME_COPY.bestEffortDraftReady;
+
+      if (!draftActions.length && selectedSkill?.riskPolicy !== 'read_only') {
+        const clarification = this.buildClarificationRequest('homepage_draft', targetResolution.candidateCollections);
+        needsClarification = true;
+        clarifyingQuestion = clarification.question;
+        missingInputs = clarification.missingInputs;
+        loopRecoveryMode = 'best_effort';
+        checkpoint = {
+          resumePrompt: clarification.resumePrompt,
+          reason: 'clarification_needed',
+          planningPassesUsed: Number(input?.checkpoint?.planningPassesUsed || 0),
+        };
+        lead = `${ASSISTANT_RUNTIME_COPY.bestEffortDraftReady} ${clarification.question}`;
+      }
+
+      if (selectedSkill?.riskPolicy === 'read_only') {
+        lead = ASSISTANT_RUNTIME_COPY.readOnlySkillBlocked;
+      }
+
+      const draftMessage = this.sanitizeUserFacingMessage(
+        [lead, '', scaffold.markdown].join('\n'),
+        'advanced',
+      );
+      const traces: AssistantChatTrace[] = [
+        {
+          iteration: 1,
+          phase: 'planner',
+          message: 'Draft fast-path: generated homepage scaffold and attempted direct staging.',
+          toolCalls: [],
+        },
+      ];
+      const plan = this.buildPlanArtifact({
+        planId,
+        goal: message,
+        message: draftMessage,
+        traces,
+        actions: draftActions,
+        loopCapReached: false,
+        loopTimeLimitReached: false,
+        done: true,
+        selectedSkill,
+      });
+      const ui = this.buildUiHints({
+        hasActions: draftActions.length > 0,
+        loopCapReached: false,
+        loopTimeLimitReached: false,
+        done: true,
+        selectedSkill,
+        needsClarification,
+        clarifyingQuestion,
+        missingInputs,
+        loopRecoveryMode,
+      });
+
+      return {
+        message: draftMessage,
+        actions: draftActions,
+        model: '',
+        agentMode: agentMode === 'advanced' ? 'advanced' : 'basic',
+        done: true,
+        traces,
+        plan,
+        ui,
+        skill: selectedSkill,
+        sessionId,
+        checkpoint,
+        iterations: 1,
+        loopCapReached: false,
+      };
+    }
+
     const strategicAdviceIntent = this.isStrategicAdviceIntent(message);
     if (strategicAdviceIntent) {
       const systemPrompt = [
-        customBasicSystemPrompt || this.buildDefaultBasicSystemPromptFromCopy(promptCopyBasic),
         ...runtimeContextLines,
         ...normalizedExtensionPromptLines,
         'User is asking for high-level strategy and efficiency improvements.',
         'Do not ask for collection/id/field unless the user explicitly asks to execute a concrete change.',
         'Return concise, prioritized recommendations with clear next steps.',
+        this.buildDefaultBasicSystemPromptFromCopy(promptCopyBasic, customBasicSystemPrompt),
       ].join('\n');
 
       const response = await aiClient.chat({
@@ -2610,9 +3065,9 @@ export class AdminAssistantRuntime {
 
     if (agentMode !== 'advanced') {
       const systemPrompt = [
-        customBasicSystemPrompt || this.buildDefaultBasicSystemPromptFromCopy(promptCopyBasic),
         ...runtimeContextLines,
         ...normalizedExtensionPromptLines,
+        this.buildDefaultBasicSystemPromptFromCopy(promptCopyBasic, customBasicSystemPrompt),
       ].join('\n');
 
       const response = await aiClient.chat({
@@ -2827,9 +3282,9 @@ export class AdminAssistantRuntime {
     }
 
     const systemPrompt = [
-      customAdvancedSystemPrompt || this.buildDefaultAdvancedSystemPromptFromCopy(promptCopyAdvanced),
       ...runtimeContextLines,
       ...normalizedExtensionPromptLines,
+      this.buildDefaultAdvancedSystemPromptFromCopy(promptCopyAdvanced, customAdvancedSystemPrompt),
     ].join('\n');
 
     const loopHistory: AssistantMessage[] = [...normalizedHistory];
@@ -3008,6 +3463,12 @@ export class AdminAssistantRuntime {
       new Map(stagedActions.map((action) => [JSON.stringify(action), action])).values()
     );
     let safeActions = await this.filterUnsafeStagedActions(dedupedActions, availableTools);
+    let needsClarification = false;
+    let clarifyingQuestion = '';
+    let missingInputs: string[] = [];
+    let loopRecoveryMode: 'none' | 'clarify' | 'best_effort' = 'none';
+    let recoveryCheckpointReason: AssistantSessionCheckpoint['reason'] | undefined;
+    let recoveryResumePrompt = '';
     const readOnlyDiscoveryIntent = this.isReadOnlyDiscoveryIntent(message);
     if (readOnlyDiscoveryIntent && safeActions.length) {
       safeActions = [];
@@ -3063,13 +3524,31 @@ export class AdminAssistantRuntime {
         assistantMessage = ASSISTANT_RUNTIME_COPY.noSafeWriteActions;
       }
     }
-    if (!safeActions.length && loopCapReached && !readOnlyDiscoveryIntent && !replaceInstruction) {
-      assistantMessage = ASSISTANT_RUNTIME_COPY.continuePlanningNeeded;
-    }
     if (!safeActions.length && loopCapReached && this.containsPlaceholderTarget(assistantMessage)) {
       assistantMessage = ASSISTANT_RUNTIME_COPY.noReliablePlan;
     }
-    if (!safeActions.length) {
+    if (!safeActions.length && loopCapReached && !readOnlyDiscoveryIntent && !replaceInstruction) {
+      const clarificationIntent = this.isHomepageDraftIntent(message) ? 'homepage_draft' : 'general';
+      const clarificationCandidates =
+        clarificationIntent === 'homepage_draft' ? this.homepageCandidateCollections(collections).map((entry) => entry.slug) : [];
+      const clarification = this.buildClarificationRequest(clarificationIntent, clarificationCandidates);
+      const priorPauseCount = this.countRecentGenericPauseMessages(normalizedHistory);
+      const repeatedPauseCopyDetected = priorPauseCount > 0 && this.isGenericPauseCopy(assistantMessage);
+      needsClarification = true;
+      clarifyingQuestion = clarification.question;
+      missingInputs = clarification.missingInputs;
+      recoveryResumePrompt = clarification.resumePrompt;
+      if (repeatedPauseCopyDetected || input?.checkpoint?.reason === 'clarification_needed') {
+        loopRecoveryMode = 'best_effort';
+        recoveryCheckpointReason = 'loop_recovery';
+        assistantMessage = `${ASSISTANT_RUNTIME_COPY.bestEffortDraftReady} ${clarifyingQuestion}`;
+      } else {
+        loopRecoveryMode = 'clarify';
+        recoveryCheckpointReason = 'clarification_needed';
+        assistantMessage = clarifyingQuestion;
+      }
+    }
+    if (!safeActions.length && loopRecoveryMode === 'none') {
       const current = String(assistantMessage || '').trim();
       if (!current || this.isInterimPlanningMessage(current)) {
         assistantMessage = buildPlannerNoActionMessage({
@@ -3094,15 +3573,17 @@ export class AdminAssistantRuntime {
       normalizedPlanMessage,
       agentMode === 'advanced' ? 'advanced' : 'basic',
     );
-    const done = loopDone || safeActions.length > 0;
+    const done = loopDone || safeActions.length > 0 || needsClarification || loopRecoveryMode === 'best_effort';
+    const effectiveLoopCapReached = loopRecoveryMode === 'none' ? loopCapReached : false;
+    const effectiveLoopTimeLimitReached = loopRecoveryMode === 'none' ? loopTimeLimitReached : false;
     const plan = this.buildPlanArtifact({
       planId,
       goal: message,
       message: userFacingMessage,
       traces,
       actions: safeActions,
-      loopCapReached,
-      loopTimeLimitReached,
+      loopCapReached: effectiveLoopCapReached,
+      loopTimeLimitReached: effectiveLoopTimeLimitReached,
       done,
       selectedSkill,
     });
@@ -3113,14 +3594,24 @@ export class AdminAssistantRuntime {
     
     const ui = this.buildUiHints({
       hasActions: safeActions.length > 0,
-      loopCapReached,
-      loopTimeLimitReached,
+      loopCapReached: effectiveLoopCapReached,
+      loopTimeLimitReached: effectiveLoopTimeLimitReached,
       done,
       selectedSkill,
       planningPassesUsed,
+      needsClarification,
+      clarifyingQuestion,
+      missingInputs,
+      loopRecoveryMode,
     });
     const checkpoint: AssistantSessionCheckpoint | undefined =
-      ui.canContinue
+      recoveryCheckpointReason
+        ? {
+            resumePrompt: recoveryResumePrompt || 'Continue planning from previous context and stage executable actions if safe.',
+            reason: recoveryCheckpointReason,
+            planningPassesUsed,
+          }
+        : ui.canContinue
         ? {
             resumePrompt: 'Continue planning from previous context. Run more steps and stage executable actions if safe.',
             reason: loopTimeLimitReached ? 'time_cap' : 'loop_cap',
@@ -3141,7 +3632,7 @@ export class AdminAssistantRuntime {
       sessionId,
       checkpoint,
       iterations: iterationsRan,
-      loopCapReached,
+      loopCapReached: effectiveLoopCapReached,
     };
   }
 

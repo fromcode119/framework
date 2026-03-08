@@ -2,6 +2,7 @@ import { Collection, LoadedPlugin } from '../../types';
 import { Logger } from '@fromcode119/sdk';
 import { PluginManagerInterface, createSecurityHelpers } from './utils';
 import { registry } from '@fromcode119/plugins';
+import { toSnakeIdentifier } from '@fromcode119/database/naming-strategy';
 
 export function createCollectionsProxy(
   plugin: LoadedPlugin,
@@ -24,8 +25,12 @@ export function createCollectionsProxy(
       const cleanInputSlug = inputSlug.startsWith(`${plugin.manifest.slug}-`)
         ? inputSlug.slice(plugin.manifest.slug.length + 1)
         : inputSlug;
-        
-      const prefixedSlug = inputSlug.startsWith(tablePrefix) ? inputSlug : `${tablePrefix}${cleanInputSlug}`;
+
+      const tableSuffixSource = inputSlug.startsWith(tablePrefix)
+        ? inputSlug.replace(tablePrefix, '')
+        : cleanInputSlug;
+      const normalizedTableSuffix = toSnakeIdentifier(tableSuffixSource);
+      const prefixedSlug = `${tablePrefix}${normalizedTableSuffix}`;
 
       if ((inputSlug.startsWith(plugin.manifest.slug) && inputSlug !== plugin.manifest.slug) || inputSlug.startsWith('fcp_')) {
         rootLogger.warn(
@@ -94,7 +99,7 @@ export function createCollectionsProxy(
       });
     },
     extend: (targetPlugin: string, targetCollection: string, extensions: Partial<Collection>) => {
-      const fullSlug = `fcp_${targetPlugin.replace(/-/g, '_')}_${targetCollection}`;
+      const fullSlug = `fcp_${targetPlugin.replace(/-/g, '_')}_${toSnakeIdentifier(targetCollection)}`;
       
       const entry = manager.getCollection(fullSlug);
       if (entry) {

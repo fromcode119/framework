@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState, use, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Slot, usePlugins } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { Card } from '@/components/ui/card';
@@ -23,8 +23,14 @@ import { ListFooter } from './list/list-footer';
 
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const RELATIONSHIP_LABEL_CACHE = new Map<string, string>();
+
+const parsePageQueryValue = (value: string | null): number => {
+  const parsed = Number.parseInt(String(value || '').trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
 
 function resolveRelationDisplayLabel(value: any): string {
   if (value === null || value === undefined) return '';
@@ -130,6 +136,8 @@ const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ re
 export default function CollectionListPage({ params }: { params: Promise<{ pluginSlug: string; slug: string }> }) {
   const { pluginSlug, slug } = use(params);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { collections, settings } = usePlugins();
   const { theme } = useTheme();
   const [data, setData] = useState<any[]>([]);
@@ -152,7 +160,10 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1;
+    return parsePageQueryValue(new URLSearchParams(window.location.search).get('page'));
+  });
   const [sort, setSort] = useState('-createdAt');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -165,10 +176,29 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const [quickEditData, setQuickEditData] = useState<Record<string, any>>({});
   const [quickEditInitialData, setQuickEditInitialData] = useState<Record<string, any>>({});
   const [quickEditStatus, setQuickEditStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [deleteDialogState, setDeleteDialogState] = useState<{ mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const columnsMenuRef = useRef<HTMLDivElement>(null);
 
   const resolvedSlug = collection?.slug || slug;
   const pageSize = 10;
+
+  useEffect(() => {
+    const pageFromUrl = parsePageQueryValue(searchParams.get('page'));
+    setPage((prev) => (prev === pageFromUrl ? prev : pageFromUrl));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (page <= 1) nextParams.delete('page');
+    else nextParams.set('page', String(page));
+
+    const nextQuery = nextParams.toString();
+    const currentQuery = searchParams.toString();
+    if (nextQuery === currentQuery) return;
+
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [page, pathname, router, searchParams]);
 
   const statusField = useMemo(() => {
     if (!collection) return null;
@@ -472,19 +502,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (confirm(`Are you sure you want to delete ${selectedIds.length} selected records?`)) {
-      setLoading(true);
-      try {
-        await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-delete`, { ids: selectedIds });
-        setSelectedIds([]);
-        setPage(1);
-        await fetchData(1);
-      } catch (error) {
-        alert('Error performing bulk delete');
-      } finally {
-        setLoading(false);
-      }
-    }
+    setDeleteDialogState({ mode: 'bulk', ids: [...selectedIds] });
   };
 
   const handleBulkStatusChange = async (newStatus: string) => {
@@ -508,16 +526,46 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     return <CollectionNotFound theme={theme as any} slug={slug} pluginSlug={pluginSlug} />;
   }
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Are you sure you want to delete this record?')) {
-      try {
-        await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
-        setPage(1);
-        await fetchData(1);
-      } catch (error) {
-        alert('Error deleting record');
+    setDeleteDialogState({ mode: 'single', id: String(id) });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialogState) return;
+    setDeleteLoading(true);
+    try {
+      let removedCount = 0;
+
+      if (deleteDialogState.mode === 'single') {
+        await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${deleteDialogState.id}`);
+        removedCount = 1;
+        setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== deleteDialogState.id));
+        if (quickEditExpandedId === deleteDialogState.id) {
+          setQuickEditExpandedId(null);
+          setQuickEditStatus(null);
+        }
+      } else {
+        const ids = deleteDialogState.ids;
+        if (!ids.length) {
+          setDeleteDialogState(null);
+          return;
+        }
+        await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-delete`, { ids });
+        removedCount = ids.length;
+        setSelectedIds([]);
       }
+
+      const totalAfterDelete = Math.max(total - removedCount, 0);
+      const maxValidPage = Math.max(1, Math.ceil(totalAfterDelete / pageSize));
+      const targetPage = Math.min(page, maxValidPage);
+      if (targetPage !== page) setPage(targetPage);
+      await fetchData(targetPage);
+    } catch (error) {
+      alert(deleteDialogState.mode === 'single' ? 'Error deleting record' : 'Error performing bulk delete');
+    } finally {
+      setDeleteLoading(false);
+      setDeleteDialogState(null);
     }
   };
 
@@ -730,6 +778,29 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
         resolvedSlug={resolvedSlug}
         handleExport={handleExport}
         handleImport={handleImport}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteDialogState)}
+        onClose={() => {
+          if (deleteLoading) return;
+          setDeleteDialogState(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleteLoading}
+        title={
+          deleteDialogState?.mode === 'bulk'
+            ? `Delete ${deleteDialogState.ids.length} records`
+            : 'Delete record'
+        }
+        description={
+          deleteDialogState?.mode === 'bulk'
+            ? `Are you sure you want to delete ${deleteDialogState.ids.length} selected records? This action is permanent and cannot be undone.`
+            : 'Are you sure you want to delete this record? This action is permanent and cannot be undone.'
+        }
+        confirmLabel={deleteDialogState?.mode === 'bulk' ? 'Delete Records' : 'Delete Record'}
+        cancelLabel="Cancel"
+        variant="danger"
       />
     </div>
   );

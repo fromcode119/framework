@@ -9,6 +9,7 @@ interface UseCollectionFormOptions {
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
   getSubmitMetadata?: () => Record<string, any>;
+  preparePayload?: (payload: Record<string, any>) => Record<string, any>;
 }
 
 export function useCollectionForm({
@@ -17,7 +18,8 @@ export function useCollectionForm({
   isNew,
   onSuccess,
   onError,
-  getSubmitMetadata
+  getSubmitMetadata,
+  preparePayload
 }: UseCollectionFormOptions) {
   const [formData, setFormData] = useState<Record<string, any>>(initialData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,7 +50,8 @@ export function useCollectionForm({
 
       const submitMetadata = getSubmitMetadata ? getSubmitMetadata() : {};
       const payloadBase = { ...formData, ...(submitMetadata || {}) };
-      const payload = summary ? { ...payloadBase, _change_summary: summary } : payloadBase;
+      const normalizedPayloadBase = preparePayload ? preparePayload(payloadBase) : payloadBase;
+      const payload = summary ? { ...normalizedPayloadBase, _change_summary: summary } : normalizedPayloadBase;
 
       const result = await (isNew ? api.post(url, payload) : api.put(url, payload));
       

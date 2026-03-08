@@ -112,6 +112,10 @@ export type AssistantUiHints = {
   requiresApproval: boolean;
   suggestedMode: 'chat' | 'plan' | 'agent';
   showTechnicalDetailsDefault: boolean;
+  needsClarification?: boolean;
+  clarifyingQuestion?: string;
+  missingInputs?: string[];
+  loopRecoveryMode?: 'none' | 'clarify' | 'best_effort';
 };
 
 export type AssistantSkill = {
@@ -124,7 +128,7 @@ export type AssistantSkill = {
 
 export type AssistantCheckpoint = {
   resumePrompt?: string;
-  reason?: 'loop_cap' | 'time_cap' | 'user_continue';
+  reason?: 'loop_cap' | 'time_cap' | 'user_continue' | 'clarification_needed' | 'loop_recovery';
 };
 
 export type AssistantToolOption = {
@@ -536,6 +540,9 @@ export function buildPlanCardSummary(entry: AssistantMessage): PlanCardSummary {
   const baseSummary = normalizeAssistantBodyText(entry.content || plan?.summary || '');
   const status = String(plan?.status || '').trim().toLowerCase();
   const goal = String(plan?.goal || '').trim() || 'Planned workspace update';
+  const needsClarification = entry.ui?.needsClarification === true;
+  const clarifyingQuestion = String(entry.ui?.clarifyingQuestion || '').trim();
+  const loopRecoveryMode = entry.ui?.loopRecoveryMode || 'none';
 
   const found =
     baseSummary ||
@@ -548,6 +555,8 @@ export function buildPlanCardSummary(entry: AssistantMessage): PlanCardSummary {
   const propose =
     actionCount > 0
       ? `Stage ${actionCount} change${actionCount > 1 ? 's' : ''} for verification before any write.`
+      : needsClarification
+        ? clarifyingQuestion || 'Need one detail to finish staging safely.'
       : entry.ui?.canContinue
         ? 'Run one more planning pass to gather missing context and stage exact actions.'
         : 'Broaden discovery and try another pass before proposing writes.';
@@ -557,7 +566,11 @@ export function buildPlanCardSummary(entry: AssistantMessage): PlanCardSummary {
       ? plan?.previewReady
         ? 'Approve Preview Changes first. If the visual/result diff looks correct, approve Apply Changes.'
         : 'Approve Continue Planning or Preview Changes to inspect impact before any write.'
-      : 'Approve Continue Planning to run one more pass.';
+      : needsClarification
+        ? loopRecoveryMode === 'best_effort'
+          ? 'Review the draft, confirm target collection + record, then approve staged changes.'
+          : 'Reply with the missing target details so I can stage exact actions.'
+        : 'Approve Continue Planning to run one more pass.';
 
   return { goal, found, propose, approval };
 }
@@ -763,4 +776,3 @@ export function formatPreviewValue(value: any): string {
     return String(value);
   }
 }
-
