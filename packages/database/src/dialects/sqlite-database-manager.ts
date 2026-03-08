@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { toSafeIsoDate } from '@fromcode119/sdk';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
 import { toSnakeCase } from '../naming-strategy';
@@ -10,6 +11,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   private sqlite: Database.Database;
   public readonly drizzle: any;
   public readonly dialect = 'sqlite' as const;
+  private jsonColumnsCache = new Map<string, Set<string>>();
 
   // Standard operators
   public readonly like = like;
@@ -58,9 +60,10 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
+      const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
 
       if (joins && joins.length > 0) {
-        const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, options);
+        const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, { ...options, where: normalizedWhere });
         const rows = await this.executeRawSelect(sqlStr, values);
         return this.processJoinedRows(rows, joins);
       }
@@ -77,7 +80,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       // Use raw SQL for dynamic table names — drizzle.select() without args produces
       // an empty column list ("select  from …") which SQLite rejects
       const searchArg = (search && search.columns?.length > 0 && search.value) ? search : undefined;
-      const { sql: whereSql, values } = this.buildRawFilterSQL(where, searchArg);
+      const { sql: whereSql, values } = this.buildRawFilterSQL(normalizedWhere, searchArg);
       let sqlStr = `SELECT ${columnPart} FROM "${tableName}"${whereSql}`;
       if (orderBy) sqlStr += this.buildRawOrderByClause(orderBy);
       if (limit) sqlStr += ` LIMIT ${limit}`;
@@ -147,7 +150,10 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   async insert(tableOrName: any, data: any): Promise<any> {
-    const normalizedData = this.normalizeData(data);
+    const normalizedData =
+      typeof tableOrName === 'string'
+        ? await this.normalizeDataForTable(tableOrName, data)
+        : this.normalizeData(data);
 
     if (typeof tableOrName === 'string') {
       // Use raw SQL so RETURNING * returns ALL columns (including auto-generated id)
@@ -166,9 +172,13 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   async update(tableOrName: any, where: any, data: any): Promise<any> {
-    const normalizedData = this.normalizeData(data);
+    const normalizedData =
+      typeof tableOrName === 'string'
+        ? await this.normalizeDataForTable(tableOrName, data)
+        : this.normalizeData(data);
 
     if (typeof tableOrName === 'string') {
+      const normalizedWhere = await this.normalizeWhereForTable(tableOrName, where);
       // Use raw SQL so camelCase keys are converted to snake_case column names
       const setClauses: string[] = [];
       const setValues: any[] = [];
@@ -177,7 +187,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
         setValues.push(v);
       }
       if (setClauses.length === 0) return null;
-      const { sql: whereSql, values: whereValues } = this.buildRawFilterSQL(where);
+      const { sql: whereSql, values: whereValues } = this.buildRawFilterSQL(normalizedWhere);
       const rawSql = `UPDATE "${tableOrName}" SET ${setClauses.join(', ')}${whereSql} RETURNING *`;
       const results = this.sqlite.prepare(rawSql).all(...setValues, ...whereValues);
       return results[0] || null;
@@ -203,13 +213,15 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     return result;
   }
 
+
+
   private normalizeData(data: any): any {
     const normalized: any = {};
     for (const [key, value] of Object.entries(data)) {
       if (value === undefined) {
         normalized[key] = null;
       } else if (value instanceof Date) {
-        normalized[key] = value.toISOString();
+        normalized[key] = toSafeIsoDate(value);
       } else if (typeof value === 'boolean') {
         normalized[key] = value ? 1 : 0;
       } else if (value !== null && typeof value === 'object') {
@@ -223,7 +235,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   protected override normalizeParamValue(value: any): any {
     if (value === undefined || value === null) return null;
-    if (value instanceof Date) return value.toISOString();
+    if (value instanceof Date) return toSafeIsoDate(value);
     if (typeof value === 'boolean') return value ? 1 : 0;
     if (Buffer.isBuffer(value)) return value;
     if (typeof value === 'object') return JSON.stringify(value);
@@ -232,7 +244,8 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   async delete(tableOrName: any, where: any): Promise<boolean> {
     if (typeof tableOrName === 'string') {
-      const { sql: whereSql, values: whereValues } = this.buildRawFilterSQL(where);
+      const normalizedWhere = await this.normalizeWhereForTable(tableOrName, where);
+      const { sql: whereSql, values: whereValues } = this.buildRawFilterSQL(normalizedWhere);
       const rawSql = `DELETE FROM "${tableOrName}"${whereSql}`;
       const result = this.sqlite.prepare(rawSql).run(...whereValues);
       return result.changes > 0;
@@ -247,14 +260,15 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     const { where, joins } = options;
     const isString = typeof tableOrName === 'string';
     const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
+    const normalizedWhere = isString ? await this.normalizeWhereForTable(tableOrName, where) : where;
     
     // Check if we can use simple raw SQL for performance
-    const isPlainWhere = where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
+    const isPlainWhere = normalizedWhere && typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype;
     const hasJoins = joins && joins.length > 0;
 
     if (isString && !hasJoins) {
-      if (isPlainWhere && Object.keys(where).length > 0) {
-        const { sql: whereSql, values } = this.buildRawFilterSQL(where);
+      if (isPlainWhere && Object.keys(normalizedWhere).length > 0) {
+        const { sql: whereSql, values } = this.buildRawFilterSQL(normalizedWhere);
         const rawSql = `SELECT COUNT(*) as total FROM "${tableOrName}"${whereSql}`;
         const result = this.sqlite.prepare(rawSql).get(...values) as any;
         return Number(result?.total || 0);
@@ -275,11 +289,11 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     }
 
     const conditions: any[] = [];
-    if (where) {
+    if (normalizedWhere) {
       if (isPlainWhere) {
-        conditions.push(...this.buildWhereConditions(where));
+        conditions.push(...this.buildWhereConditions(normalizedWhere));
       } else {
-        conditions.push(where);
+        conditions.push(normalizedWhere);
       }
     }
     
@@ -330,11 +344,72 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
     const query = sql`CREATE TABLE ${sql.identifier(tableName)} (${sql.join(columnDefs, sql`, `)})`;
     await this.execute(query);
+    this.jsonColumnsCache.delete(tableName);
   }
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
     const columnDef = this.fieldToSqlFragment(field);
     await this.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    this.jsonColumnsCache.delete(tableName);
+  }
+
+  private async getJsonColumns(tableName: string): Promise<Set<string>> {
+    const cached = this.jsonColumnsCache.get(tableName);
+    if (cached) return cached;
+
+    const rows = this.sqlite.prepare(`PRAGMA table_info("${tableName.replace(/"/g, '""')}")`).all() as any[];
+    const columns = new Set(
+      (rows || [])
+        .filter((row: any) => String(row?.type || '').toUpperCase().includes('JSON'))
+        .map((row: any) => String(row?.name || '').toLowerCase())
+    );
+    this.jsonColumnsCache.set(tableName, columns);
+    return columns;
+  }
+
+  private normalizeJsonColumnValue(value: any): any {
+    if (value === undefined || value === null) return null;
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return JSON.stringify(value);
+      try {
+        JSON.parse(trimmed);
+        return trimmed;
+      } catch {
+        return JSON.stringify(value);
+      }
+    }
+
+    return JSON.stringify(value);
+  }
+
+  private async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
+    const jsonColumns = await this.getJsonColumns(tableName);
+    const normalizedColumn = toSnakeCase(column).toLowerCase();
+    if (jsonColumns.has(normalizedColumn)) {
+      return this.normalizeJsonColumnValue(value);
+    }
+    return this.normalizeParamValue(value);
+  }
+
+  private async normalizeDataForTable(tableName: string, data: any): Promise<any> {
+    const normalized: any = {};
+    for (const [column, value] of Object.entries(data || {})) {
+      normalized[column] = await this.normalizeColumnValueForWrite(tableName, column, value);
+    }
+    return normalized;
+  }
+
+  private async normalizeWhereForTable(tableName: string, where: any): Promise<any> {
+    if (!where || typeof where !== 'object' || Object.getPrototypeOf(where) !== Object.prototype) {
+      return where;
+    }
+    const normalized: any = {};
+    for (const [column, value] of Object.entries(where)) {
+      normalized[column] = await this.normalizeColumnValueForWrite(tableName, column, value);
+    }
+    return normalized;
   }
 
   async ensureMigrationTable(tableName: string): Promise<void> {

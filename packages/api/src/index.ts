@@ -34,18 +34,19 @@ import {
   resolveStoragePublicPath,
   resolveStoragePublicUrlBase
 } from './constants';
-import { setupAuthRoutes } from './routes/auth';
-import { setupPluginRoutes, setupPluginAssetRoutes } from './routes/plugins';
+import { AuthRouter } from './routes/AuthRouter';
+import { setupPluginAssetRoutes } from './routes/plugins';
+import { PluginRouter } from './routes/PluginRouter';
 import { setupPluginSettingsRoutes } from './routes/plugin-settings';
-import { setupThemeRoutes, setupThemeAssetRoutes } from './routes/themes';
+import { ThemeRouter, setupThemeAssetRoutes } from './routes/ThemeRouter';
 import { setupMarketplaceRoutes } from './routes/marketplace';
-import { setupSystemRoutes } from './routes/system';
-import { setupMediaRoutes } from './routes/media';
+import { SystemRouter } from './routes/SystemRouter';
+import { MediaRouter } from './routes/MediaRouter';
 import { setupVersioningRoutes } from './routes/versioning';
-import { setupCollectionRoutes, setupBaseCollectionRoutes } from './routes/collections';
+import { CollectionRouter, BaseCollectionRouter } from './routes/CollectionRouter';
 import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
 import { generateOpenAPI } from './swagger';
-import { createCollectionMiddleware } from './middlewares/collection';
+import { CollectionMiddleware } from './middlewares/CollectionMiddleware';
 import { csrfMiddleware, xssMiddleware } from './middlewares/security';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from './services/graph-ql-service';
@@ -719,17 +720,17 @@ export class APIServer {
     
     const vApi = express.Router();
 
-    vApi.use('/auth', setupAuthRoutes(this.manager, this.auth));
-    vApi.use('/plugins', setupPluginRoutes(this.manager, this.auth));
+    vApi.use('/auth', new AuthRouter(this.manager, this.auth).router);
+    vApi.use('/plugins', new PluginRouter(this.manager, this.auth).router);
     vApi.use('/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
     
     // Keep custom plugin routes before plugin collection fallback routes.
     vApi.use('/plugins', this.pluginRouter);
 
     vApi.use('/marketplace', setupMarketplaceRoutes(this.manager, this.auth));
-    vApi.use('/themes', setupThemeRoutes(this.themeManager, this.auth));
-    vApi.use('/system', setupSystemRoutes(this.manager, this.themeManager, this.auth, this.restController));
-    vApi.use('/media', setupMediaRoutes(this.manager, this.auth, this.mediaManager));
+    vApi.use('/themes', new ThemeRouter(this.themeManager, this.auth).router);
+    vApi.use('/system', new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
+    vApi.use('/media', new MediaRouter(this.manager, this.auth, this.mediaManager).router);
     vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
     
     // Mount extension routes (registered by extensions through CoreExtensionManager)
@@ -758,7 +759,7 @@ export class APIServer {
         this.logger.error('Failed to get extension routes:', e);
       }
     }
-    vApi.use(setupCollectionRoutes(this.manager, this.restController));
+    vApi.use(new CollectionRouter(this.manager, this.restController).router);
     
     // Mount versioned API
     this.app.use(vPrefix, vApi);
@@ -770,8 +771,10 @@ export class APIServer {
     this.app.use('/plugins', setupPluginAssetRoutes(this.manager));
     this.app.use('/themes', setupThemeAssetRoutes(this.themeManager));
 
-    this.app.use(API_ROUTES.COLLECTIONS.BASE, setupBaseCollectionRoutes(this.manager, this.restController));
-    this.app.use(LEGACY_API_ROUTES.COLLECTIONS.BASE, setupBaseCollectionRoutes(this.manager, this.restController));
+    // Mount base collection routes at root (mainly for legacy integrations)
+    const baseCollectionRouter = new BaseCollectionRouter(this.manager, this.restController).router;
+    this.app.use(API_ROUTES.COLLECTIONS.BASE, baseCollectionRouter);
+    this.app.use(LEGACY_API_ROUTES.COLLECTIONS.BASE, baseCollectionRouter);
   }
 
   private async registerCoreCollection(slug: string, collection: any) {
@@ -788,7 +791,7 @@ export class APIServer {
 
   public setupPluginCollectionProxy() {
     this.logger.info('Setting up automated Plugin Collection Proxy routes...');
-    const middleware = createCollectionMiddleware(this.manager);
+    const middleware = new CollectionMiddleware(this.manager).middleware();
 
     // Standard CRUD Fallbacks for plugins
     // Note: These will only be reached if the plugin didn't register a custom route for the same path
@@ -864,18 +867,37 @@ export async function bootstrap() {
 
   const projectRoot = findProjectRoot();
 
-  // Load a single .env file only.
-  // Prefer the resolved project root; fall back to cwd for standalone runs.
-  const projectEnvPath = path.join(projectRoot, '.env');
-  const cwdEnvPath = path.join(process.cwd(), '.env');
-  const envPath = fs.existsSync(projectEnvPath)
-    ? projectEnvPath
-    : fs.existsSync(cwdEnvPath)
-      ? cwdEnvPath
-      : null;
+  // Env loading strategy:
+  //   1) FROMCODE_ENV_FILE (explicit file name or absolute path) -> load only that file
+  //   2) Otherwise load defaults from .env, then apply .env.local overrides
+  const requestedEnvFile = String(process.env.FROMCODE_ENV_FILE || '').trim();
+  const requestedEnvPath = requestedEnvFile
+    ? (path.isAbsolute(requestedEnvFile)
+        ? requestedEnvFile
+        : path.join(projectRoot, requestedEnvFile))
+    : '';
 
-  if (envPath) {
-    dotenv.config({ path: envPath, override: true });
+  if (requestedEnvPath && fs.existsSync(path.resolve(requestedEnvPath))) {
+    dotenv.config({ path: path.resolve(requestedEnvPath), override: true });
+  } else {
+    const baseEnvCandidates = [
+      path.join(projectRoot, '.env'),
+      path.join(process.cwd(), '.env')
+    ];
+    const localEnvCandidates = [
+      path.join(projectRoot, '.env.local'),
+      path.join(process.cwd(), '.env.local')
+    ];
+
+    const baseEnvPath = baseEnvCandidates.find((envPath) => fs.existsSync(path.resolve(envPath)));
+    const localEnvPath = localEnvCandidates.find((envPath) => fs.existsSync(path.resolve(envPath)));
+
+    if (baseEnvPath) {
+      dotenv.config({ path: path.resolve(baseEnvPath), override: true });
+    }
+    if (localEnvPath) {
+      dotenv.config({ path: path.resolve(localEnvPath), override: true });
+    }
   }
 
   process.on('uncaughtException', (err) => {

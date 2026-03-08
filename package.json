@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/framework",
-  "version": "0.1.31",
+  "version": "2.0.0",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -11,6 +11,14 @@
     "build:admin": "npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run build --workspace=@fromcode119/frontend",
     "audit:core-boundary": "node scripts/audit-core-boundary.mjs",
+    "check:plugin-architecture": "node scripts/check-plugin-architecture.mjs",
+    "check:plugin-architecture:warn": "ARCH_LEGACY_MODE=warn ARCH_LAYER_MODE=warn ARCH_SIZE_MODE=warn node scripts/check-plugin-architecture.mjs",
+    "check:plugin-architecture:strict": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=ecommerce,finance,cms node scripts/check-plugin-architecture.mjs",
+    "check:plugin-architecture:phase:finance": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance node scripts/check-plugin-architecture.mjs",
+    "check:plugin-architecture:phase:cms": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance,cms node scripts/check-plugin-architecture.mjs",
+    "check:plugin-architecture:phase:logistics": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance,cms,logistics node scripts/check-plugin-architecture.mjs",
+    "check:plugin-architecture:phase:mlm": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance,cms,logistics,mlm node scripts/check-plugin-architecture.mjs",
+    "check:plugin-architecture:phase:all": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error node scripts/check-plugin-architecture.mjs",
     "dev": "npm run dev --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:plugins": "npm run test --workspace=@fromcode119/admin -- --config ../../vitest.plugins.config.ts",

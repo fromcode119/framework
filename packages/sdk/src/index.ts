@@ -7,6 +7,7 @@ export * from './localization';
 export * from './shortcodes';
 export * from './hook-events';
 export * from './runtime-bridge';
+export * from './utils';
 
 export * from './api-version';
 import { FromcodePlugin } from './types';

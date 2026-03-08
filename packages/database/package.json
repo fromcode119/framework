@@ -32,6 +32,7 @@
     "dev": "tsc -w"
   },
   "dependencies": {
+    "@fromcode119/sdk": "*",
     "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.45.1",
     "mysql2": "^3.16.1",

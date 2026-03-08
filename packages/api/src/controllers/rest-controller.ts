@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { Collection, Logger, RecordVersions, HookManager, parseBoolean } from '@fromcode119/core';
+import { toSafeIsoDate } from '@fromcode119/sdk';
 import { AuthManager } from '@fromcode119/auth';
 import { COLLECTION_HOOK_PHASES, CollectionHookPhase, collectionHookEvent } from '@fromcode119/sdk';
 import { normalizePath } from '../utils/url';
@@ -52,7 +53,8 @@ export class RESTController {
     try {
       const {
         limit = 10,
-        offset = 0,
+        page,
+        offset,
         sort,
         search,
         locale_mode,
@@ -80,8 +82,19 @@ export class RESTController {
       const whereClause = QueryHelper.buildWhereClause(this.db, collection, table, filters, search);
       const orderBy = QueryHelper.buildOrderBy(this.db, collection, table, sort);
       
-      const limitVal = Math.min(parseInt(limit as string) || 10, 100);
-      const offsetVal = parseInt(offset as string) || 0;
+      const parsedLimit = parseInt(String(limit), 10);
+      const limitVal = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 10;
+
+      const hasOffsetInput =
+        offset !== undefined &&
+        offset !== null &&
+        String(offset).trim() !== '';
+      const parsedOffset = parseInt(String(offset), 10);
+      const parsedPage = parseInt(String(page), 10);
+      const safePage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+      const offsetVal = hasOffsetInput && Number.isFinite(parsedOffset) && parsedOffset >= 0
+        ? parsedOffset
+        : (safePage - 1) * limitVal;
 
       let rowsResult = await this.db.find(table, {
         where: whereClause,
@@ -576,7 +589,7 @@ export class RESTController {
 
   private normalizeComparableValue(value: any): any {
     if (value === undefined || value === null || value === '') return null;
-    if (value instanceof Date) return value.toISOString();
+    if (value instanceof Date) return toSafeIsoDate(value);
 
     if (typeof value === 'string') {
       const trimmed = value.trim();

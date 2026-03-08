@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode, useEffect } from 'react';
-import { PluginsProvider, Override, usePlugins, Slot } from '@fromcode119/react';
+import { PluginsProvider, Override } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import { useSystemStatus } from '@/lib/use-system-status';
 import MaintenanceScreen from '@/components/maintenance-screen';
@@ -10,30 +10,13 @@ import { resolveFrontendApiBaseUrl } from '@/lib/api-base-url';
 
 function SystemGate({ children }: { children: ReactNode }) {
   const status = useSystemStatus();
-  const { themeLayouts } = usePlugins();
-
-  // Use one canonical base layout for page chrome.
-  const BaseLayout = themeLayouts?.DefaultLayout;
-  const content = BaseLayout ? (
-    <BaseLayout>{children}</BaseLayout>
-  ) : (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] text-[var(--foreground)] p-4 text-center">
-      <div className="max-w-7xl mx-auto w-full">
-        {/* Default Slot placement if no theme layout exists */}
-        <Slot name="frontend.home.hero" />
-        <div className="mt-8">
-          {children}
-        </div>
-      </div>
-    </main>
-  );
 
   if (status === 'MAINTENANCE') {
     return <MaintenanceScreen />;
   }
 
   return (
-    <Override name="frontend.layout.main" fallback={content}>
+    <Override name="frontend.layout.main" fallback={children}>
       {children}
     </Override>
   );

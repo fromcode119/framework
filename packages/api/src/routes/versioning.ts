@@ -2,11 +2,11 @@ import express from 'express';
 import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { RESTController } from '../controllers/rest-controller';
-import { createCollectionMiddleware } from '../middlewares/collection';
+import { CollectionMiddleware } from '../middlewares/CollectionMiddleware';
 
 export function setupVersioningRoutes(manager: PluginManager, auth: AuthManager, restController: RESTController) {
   const router = express.Router();
-  const collectionMiddleware = createCollectionMiddleware(manager);
+  const collectionMiddleware = new CollectionMiddleware(manager).middleware();
   const isAdmin = auth.guard(['admin']);
 
   router.get('/:slug/:id', isAdmin, collectionMiddleware, (req: any, res) => restController.getVersions(req.collection, req, res));

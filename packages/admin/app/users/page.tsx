@@ -205,12 +205,14 @@ export default function UsersPage() {
                 Create User
               </Button>
             </Link>
-            <Button 
-              className="h-11 px-6 rounded-xl font-bold tracking-tight text-xs shadow-lg shadow-indigo-600/10 text-white" 
-              icon={<FrameworkIcons.More size={16} strokeWidth={2} />}
-            >
-              Invite User
-            </Button>
+            <Link href={ROUTES.USERS.ROLE_LIST}>
+              <Button 
+                className="h-11 px-6 rounded-xl font-bold tracking-tight text-xs shadow-lg shadow-indigo-600/10 text-white" 
+                icon={<FrameworkIcons.Shield size={16} strokeWidth={2} />}
+              >
+                Manage Roles
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

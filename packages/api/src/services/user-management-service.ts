@@ -8,6 +8,17 @@ import { PluginManager, Logger, SystemTable } from '@fromcode119/core';
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });
 
+  private toIsoUtc(date: Date): string {
+    const time = date?.getTime?.();
+    if (!Number.isFinite(Number(time))) return '';
+    const safe = new Date(Number(time));
+    const pad = (num: number, size: number = 2) => String(num).padStart(size, '0');
+    return [
+      `${safe.getUTCFullYear()}-${pad(safe.getUTCMonth() + 1)}-${pad(safe.getUTCDate())}`,
+      `${pad(safe.getUTCHours())}:${pad(safe.getUTCMinutes())}:${pad(safe.getUTCSeconds())}.${pad(safe.getUTCMilliseconds(), 3)}Z`,
+    ].join('T');
+  }
+
   constructor(
     private db: IDatabaseManager, 
     private auth: AuthManager,
@@ -69,12 +80,13 @@ export class UserManagementService {
   }
 
   async saveUser(id: number | null, data: any) {
+    const nowIso = this.toIsoUtc(new Date());
     const updateData: any = {
       email: data.email,
       username: data.username ?? null,
       firstName: data.firstName,
       lastName: data.lastName,
-      updatedAt: new Date()
+      updatedAt: nowIso || null,
     };
 
     if (data.password) {

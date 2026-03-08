@@ -16,7 +16,9 @@ import {
   resolveBestMatchPath, 
   isPathActive,
   normalizeGroupKey,
-  normalizeMenuPath
+  normalizeMenuPath,
+  getMenuGroupMeta,
+  sortMenuGroups
 } from '@/lib/nav-utils';
 
 const { 
@@ -278,17 +280,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
       return acc;
     }, {});
 
-  // Sort order: Core -> Management -> Plugins -> System (bottom)
-  const GROUP_PRIORITY = ['core', 'management'];
-  
-  const sortedGroups = Object.keys(groupedMenu).sort((a, b) => {
-    const ai = GROUP_PRIORITY.indexOf(a);
-    const bi = GROUP_PRIORITY.indexOf(b);
-    if (ai !== -1 && bi !== -1) return ai - bi;
-    if (ai !== -1) return -1;
-    if (bi !== -1) return 1;
-    return a.localeCompare(b);
-  }).filter(g => g !== 'settings' && g !== 'system'); // We handle Settings and System at the bottom manually
+  const sortedGroups = sortMenuGroups(Object.keys(groupedMenu))
+    .filter((groupKey) => !getMenuGroupMeta(groupKey).manual);
 
   return (
     <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-[72px]' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none overflow-hidden group/sidebar`}>
@@ -303,7 +296,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                 {APP_NAME}
               </span>
               <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
-                Quantum UI
+                Admin Panel
               </span>
             </div>
           )}
@@ -322,7 +315,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         </div>
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group] || [];
-          const displayGroup = group === 'core' ? 'Core' : (group.charAt(0).toUpperCase() + group.slice(1));
+          const displayGroup = getMenuGroupMeta(group).label;
           const isCollapsed = collapsedGroups.includes(group);
           
           // If a group has only one item and that item is a group wrapper (dropdown),

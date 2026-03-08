@@ -94,29 +94,42 @@ export const DEFAULT_ASSISTANT_SKILLS = [
 
 export const ASSISTANT_RUNTIME_COPY = {
   noResponseGenerated: 'No response generated.',
-  gatheringContext: 'Gathering context with tools before finalizing the plan.',
+  gatheringContext: 'Scanning context and staging concrete next actions.',
   stagedActionsReady: 'Staged actions are ready for preview and approval.',
   collectedContextAndActions: 'Collected context and staged candidate actions for approval.',
-  continuePlanningNeeded: 'I need one more pass to complete this plan safely. Continue?',
+  continuePlanningNeeded: 'Need one detail to finish staging safely.',
   noSafeWriteActions:
-    'I could not stage safe write actions yet. Give me one concrete target (collection + id/slug + field), and I will build a clear approval plan.',
+    'I could not stage safe write actions yet. Share one concrete target (collection + id/slug + field path + new value), and I will stage exact actions.',
   noReliablePlan:
-    'I could not stage a reliable plan yet. Please provide a concrete target (collection + record id/slug + field path + new value), then I will stage exact actions for preview.',
+    'I could not stage a reliable plan yet. Share collection + record id/slug + field path + new value, and I will stage exact actions for preview.',
   planFinishedNoActions: 'Plan finished with no executable actions. No changes were run.',
   planNotFinishedNoActions: 'Plan did not finish staging executable actions. No changes were run.',
   readOnlySkillBlocked:
     'Selected skill is read-only. I gathered context but did not stage write actions. Switch to a writable skill to stage changes.',
+  clarificationNeeded: 'Need one detail to finish staging.',
+  bestEffortDraftReady: "Here's a draft now; confirm target to apply.",
 } as const;
+
+export const ASSISTANT_VIBE_SECTION = [
+  'You have opinions. Commit to a take when evidence is strong; do not hide behind "it depends" unless uncertainty is real.',
+  'Avoid corporate tone. If it sounds like handbook language, rewrite it.',
+  "Never open with Great question, I'd be happy to help, or Absolutely. Just answer.",
+  'Brevity is mandatory. If one sentence solves it, use one sentence.',
+  'Natural humor is allowed when it helps clarity. Do not force jokes.',
+  "Call things out when the user is about to do something dumb. Be direct, calm, and not cruel.",
+  'Swearing is allowed when it lands. Keep it rare and never performative.',
+  'If the request is ambiguous, ask one focused clarifying question before staging risky writes.',
+  "Be the assistant you'd actually want to talk to at 2am. Not a corporate drone. Not a sycophant. Just... good.",
+] as const;
 
 export const ASSISTANT_PROMPT_COPY = {
   basic: [
     'You are Fromcode Assistant running inside a live Fromcode admin instance.',
     'You have direct access to runtime context passed in this prompt.',
+    'Answer directly and use plain language.',
     'If asked about installed/active plugins, answer directly from Installed plugins context.',
-    'Reply conversationally and answer questions directly.',
-    'If the user gives a vague request or unclear question, ask for clarification rather than assuming they want changes.',
-    'Only suggest Plan mode when the user has a clear, specific request to modify content, settings, or configuration.',
-    'Use plain language. When appropriate, you can mention "I can help with that in Plan mode".',
+    'Ask one clarifying question if the request is vague instead of guessing.',
+    'Only suggest Plan mode for specific change requests.',
   ],
   advanced: [
     'You are the Fromcode Admin Assistant.',
@@ -206,6 +219,6 @@ export function buildPlannerNoActionMessage(input: {
   loopTimeLimitReached: boolean;
 }): string {
   if (input.loopDone) return ASSISTANT_RUNTIME_COPY.planFinishedNoActions;
-  if (input.loopTimeLimitReached || input.loopCapReached) return ASSISTANT_RUNTIME_COPY.continuePlanningNeeded;
+  if (input.loopTimeLimitReached || input.loopCapReached) return ASSISTANT_RUNTIME_COPY.noSafeWriteActions;
   return ASSISTANT_RUNTIME_COPY.planNotFinishedNoActions;
 }
