@@ -301,7 +301,7 @@ export default function NewUserPage() {
                      <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Force Password Reset</label>
                      <div className="pt-2">
                        <Switch
-                         checked={formData.forcePasswordReset}
+                         checked={formData.forcePasswordReset ?? false}
                          onChange={(checked) => setFormData({ ...formData, forcePasswordReset: checked })}
                        />
                      </div>

@@ -3,7 +3,7 @@
 import React, { use, useEffect } from 'react';
 import { Slot, usePlugins } from '@fromcode119/react';
 import CollectionListPage from '@/components/collection/collection-list-page';
-import { resolveCollection } from '@/lib/collection-utils';
+import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { CollectionNotFound } from '@/components/collection/collection-not-found';
 import { PluginNotFound } from '@/components/plugins/plugin-not-found';
 import { Loader } from '@/components/ui/loader';
@@ -19,7 +19,7 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
   // Check if plugin is active
   const isActive = plugins.some((p: any) => p.slug === pluginSlug);
 
-  const collection = resolveCollection(collections as any, pluginSlug, slug);
+  const collection = AdminCollectionUtils.resolveCollection(collections as any, pluginSlug, slug);
   const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}`;
   const hasPageSlot = !!(slots?.[pageSlot] && slots[pageSlot].length > 0);
   const shouldRedirectToPluginSettings = !collection && slug === 'settings';
