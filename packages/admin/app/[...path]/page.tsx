@@ -4,14 +4,14 @@ import React, { use } from 'react';
 import { usePlugins, Slot } from '@fromcode119/react';
 import { useTheme } from '@/components/theme-context';
 import { FrameworkIcons } from '@/lib/icons';
-import { resolveCatchAllAdminPath } from '@/lib/admin-path';
+import { AdminPathUtils } from '@/lib/admin-path';
 import Link from 'next/link';
 
 const { Info = () => null, Package = () => null } = (FrameworkIcons || {}) as any;
 
 export default function DynamicPluginPage({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = use(params);
-  const { pathname, segments: effectivePath } = resolveCatchAllAdminPath(path);
+  const { pathname, segments: effectivePath } = AdminPathUtils.resolveCatchAll(path);
   const { menuItems } = usePlugins();
   const { theme } = useTheme();
 

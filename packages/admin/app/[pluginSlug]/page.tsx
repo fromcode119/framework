@@ -3,7 +3,7 @@
 import React, { use } from 'react';
 import { Slot, usePlugins } from '@fromcode119/react';
 import CollectionListPage from '@/components/collection/collection-list-page';
-import { resolveCollection } from '@/lib/collection-utils';
+import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { PluginNotFound } from '@/components/plugins/plugin-not-found';
 import { Loader } from '@/components/ui/loader';
 
@@ -18,7 +18,7 @@ export default function PluginRootRoute({ params }: { params: Promise<{ pluginSl
   // Check if plugin is active
   const isActive = plugins.some((p: any) => p.slug === pluginSlug);
 
-  const collection = resolveCollection(collections as any, pluginSlug, pluginSlug);
+  const collection = AdminCollectionUtils.resolveCollection(collections as any, pluginSlug, pluginSlug);
   const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}`;
   const hasPageSlot = !!(slots?.[pageSlot] && slots[pageSlot].length > 0);
 

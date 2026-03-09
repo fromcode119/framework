@@ -11,7 +11,7 @@ import { api } from '@/lib/api';
 import { ENDPOINTS, ROUTES } from '@/lib/constants';
 import { useNotify } from '@/components/notification-context';
 import { APP_NAME } from '@/lib/env';
-import { purgeAuth } from '@/lib/auth-utils';
+import { AuthUtils } from '@/lib/auth-utils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function LoginPage() {
   useEffect(() => {
     // SELF-HEALING: Purge any conflicting cookies on landing to the login page.
     // This resolves the "multiple fc_token" error without requiring user to clear cache.
-    purgeAuth();
+    AuthUtils.purgeAuth();
 
     async function checkStatus() {
       try {

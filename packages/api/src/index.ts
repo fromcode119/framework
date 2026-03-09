@@ -12,7 +12,7 @@ import {
   HotReloadService, 
   RecordVersions, 
   WebSocketManager, 
-  validateEnv,
+  EnvConfig,
   HookAdapterFactory,
   QueueAdapterFactory,
   SystemTable
@@ -25,29 +25,22 @@ import { systemSessions, eq, and, gt } from '@fromcode119/database';
 import * as path from 'path';
 import * as fs from 'fs';
 import { RESTController } from './controllers/rest-controller';
-import {
-  API_PREFIXES,
-  API_ROUTES,
-  LEGACY_API_ROUTES,
-  PUBLIC_ROUTE_PREFIXES,
-  STORAGE_CONFIG,
-  resolveStoragePublicPath,
-  resolveStoragePublicUrlBase
-} from './constants';
-import { AuthRouter } from './routes/AuthRouter';
-import { setupPluginAssetRoutes } from './routes/plugins';
-import { PluginRouter } from './routes/PluginRouter';
-import { setupPluginSettingsRoutes } from './routes/plugin-settings';
-import { ThemeRouter, setupThemeAssetRoutes } from './routes/ThemeRouter';
-import { setupMarketplaceRoutes } from './routes/marketplace';
-import { SystemRouter } from './routes/SystemRouter';
-import { MediaRouter } from './routes/MediaRouter';
-import { setupVersioningRoutes } from './routes/versioning';
-import { CollectionRouter, BaseCollectionRouter } from './routes/CollectionRouter';
+import { ApiConfig } from './config/api-config';
+import { ApiUrlUtils } from './utils/url';
+import { AuthRouter } from './routes/auth-router';
+import { PluginAssetRouter } from './routes/plugins';
+import { PluginRouter } from './routes/plugin-router';
+import { PluginSettingsRouter } from './routes/plugin-settings';
+import { ThemeRouter, ThemeAssetRouter } from './routes/theme-router';
+import { MarketplaceRouter } from './routes/marketplace';
+import { SystemRouter } from './routes/system-router';
+import { MediaRouter } from './routes/media-router';
+import { VersioningRouter } from './routes/versioning';
+import { CollectionRouter, BaseCollectionRouter } from './routes/collection-router';
 import { UserCollection, MediaCollection, SettingsCollection } from './collections/core';
-import { generateOpenAPI } from './swagger';
-import { CollectionMiddleware } from './middlewares/CollectionMiddleware';
-import { csrfMiddleware, xssMiddleware } from './middlewares/security';
+import { SwaggerGenerator } from './swagger';
+import { CollectionMiddleware } from './middlewares/collection-middleware';
+import { CSRFMiddleware, XSSMiddleware } from './middlewares/security-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from './services/graph-ql-service';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -89,8 +82,8 @@ export class APIServer {
 
   private resolveLocalUploadsConfig(mediaManager?: MediaManager): { uploadDir: string; publicUrlBase: string; publicPath: string } {
     const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
-    let uploadDir = process.env[STORAGE_CONFIG.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, STORAGE_CONFIG.DEFAULT_UPLOADS_SUBDIR);
-    let publicUrlBase = resolveStoragePublicUrlBase(process.env[STORAGE_CONFIG.PUBLIC_URL_ENV]);
+    let uploadDir = process.env[ApiConfig.getInstance().storage.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, ApiConfig.getInstance().storage.DEFAULT_UPLOADS_SUBDIR);
+    let publicUrlBase = ApiUrlUtils.resolveStoragePublicUrlBase(process.env[ApiConfig.getInstance().storage.PUBLIC_URL_ENV]);
 
     const driver: any = mediaManager?.driver;
     if (driver && String(driver.provider || '').trim().toLowerCase() === 'local') {
@@ -102,14 +95,14 @@ export class APIServer {
           : path.resolve(frameworkRoot, driverUploadDir);
       }
       if (driverPublicUrlBase) {
-        publicUrlBase = resolveStoragePublicUrlBase(driverPublicUrlBase);
+        publicUrlBase = ApiUrlUtils.resolveStoragePublicUrlBase(driverPublicUrlBase);
       }
     }
 
     return {
       uploadDir,
       publicUrlBase,
-      publicPath: resolveStoragePublicPath(publicUrlBase)
+      publicPath: ApiUrlUtils.resolveStoragePublicPath(publicUrlBase)
     };
   }
 
@@ -141,17 +134,17 @@ export class APIServer {
     const uploadsConfig = this.resolveLocalUploadsConfig(this.mediaManager);
     this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);
     this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir));
-    if (uploadsConfig.publicPath !== STORAGE_CONFIG.DEFAULT_PUBLIC_URL) {
-      this.app.use(STORAGE_CONFIG.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir));
+    if (uploadsConfig.publicPath !== ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL) {
+      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir));
     }
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';
     const formBodyLimit = process.env.API_FORM_BODY_LIMIT || jsonBodyLimit;
     this.app.use(express.json({ limit: jsonBodyLimit }));
     this.app.use(express.urlencoded({ extended: true, limit: formBodyLimit }));
-    this.app.use(xssMiddleware);
+    this.app.use(new XSSMiddleware().middleware());
     this.app.use(cookieParser());
-    this.app.use(csrfMiddleware);
+    this.app.use(new CSRFMiddleware().middleware());
 
     const limiter = rateLimit({
       windowMs: parseInt(this.settingsCache.get('rate_limit_window') || process.env.RATE_LIMIT_WINDOW_MS || '900000'),
@@ -169,7 +162,7 @@ export class APIServer {
       }
     } as any);
 
-    this.app.use(`${API_PREFIXES.BASE}/`, limiter);
+    this.app.use(`${ApiConfig.getInstance().prefixes.BASE}/`, limiter);
 
     this.setupAuthIntegration();
     await this.registerCoreCollection('users', UserCollection);
@@ -623,15 +616,15 @@ export class APIServer {
       // Public routes that are ALWAYS allowed (even in maintenance)
       // These are essential for the system to function or for admins to login.
       const isPublicSystemRoute = 
-        req.path === LEGACY_API_ROUTES.SYSTEM.HEALTH ||
-        req.path === API_ROUTES.SYSTEM.HEALTH ||
-        req.path === LEGACY_API_ROUTES.SYSTEM.OPENAPI ||
-        req.path === API_ROUTES.SYSTEM.OPENAPI ||
-        req.path.startsWith(`${API_PREFIXES.BASE}/auth`) ||
-        req.path.startsWith(`${API_PREFIXES.VERSIONED}/auth`) ||
-        req.path === API_ROUTES.SYSTEM.I18N ||
-        req.path === API_ROUTES.SYSTEM.EVENTS ||
-        req.path.startsWith(PUBLIC_ROUTE_PREFIXES.PLUGIN_ASSETS);
+        req.path === ApiConfig.getInstance().legacyRoutes.system.HEALTH ||
+        req.path === ApiConfig.getInstance().routes.system.HEALTH ||
+        req.path === ApiConfig.getInstance().legacyRoutes.system.OPENAPI ||
+        req.path === ApiConfig.getInstance().routes.system.OPENAPI ||
+        req.path.startsWith(`${ApiConfig.getInstance().prefixes.BASE}/auth`) ||
+        req.path.startsWith(`${ApiConfig.getInstance().prefixes.VERSIONED}/auth`) ||
+        req.path === ApiConfig.getInstance().routes.system.I18N ||
+        req.path === ApiConfig.getInstance().routes.system.EVENTS ||
+        req.path.startsWith(ApiConfig.getInstance().publicRoutePrefixes.PLUGIN_ASSETS);
 
       if (isAdmin) {
         this.logger.debug(`Maintenance: ADMIN BYPASS for ${req.path} (${req.user?.email})`);
@@ -690,20 +683,20 @@ export class APIServer {
       }
     } catch (e) {}
 
-    this.app.get(LEGACY_API_ROUTES.SYSTEM.HEALTH, async (req: any, res) => res.json({ 
+    this.app.get(ApiConfig.getInstance().legacyRoutes.system.HEALTH, async (req: any, res) => res.json({ 
       status: 'ok', 
       version: coreVersion,
       maintenance: await this.getMaintenanceStatus(),
       bypass: !!(req.user && req.user.roles && req.user.roles.includes('admin'))
     }));
-    this.app.get(API_ROUTES.SYSTEM.HEALTH, async (req: any, res) => res.json({ 
+    this.app.get(ApiConfig.getInstance().routes.system.HEALTH, async (req: any, res) => res.json({ 
       status: 'ok', 
       version: coreVersion,
       maintenance: await this.getMaintenanceStatus(),
       bypass: !!(req.user && req.user.roles && req.user.roles.includes('admin'))
     }));
 
-    const vPrefix = API_PREFIXES.VERSIONED;
+    const vPrefix = ApiConfig.getInstance().prefixes.VERSIONED;
     
     // GraphQL Endpoint
     this.app.all(`${vPrefix}/graphql`, (req, res, next) => {
@@ -714,24 +707,24 @@ export class APIServer {
     });
 
     // Mount OpenAPI at both the generic and versioned path
-    const openApiHandler = (req: any, res: any) => res.json(generateOpenAPI(this.manager.getCollections()));
-    this.app.get(LEGACY_API_ROUTES.SYSTEM.OPENAPI, openApiHandler);
-    this.app.get(API_ROUTES.SYSTEM.OPENAPI, openApiHandler);
+    const openApiHandler = (req: any, res: any) => res.json(SwaggerGenerator.generate(this.manager.getCollections()));
+    this.app.get(ApiConfig.getInstance().legacyRoutes.system.OPENAPI, openApiHandler);
+    this.app.get(ApiConfig.getInstance().routes.system.OPENAPI, openApiHandler);
     
     const vApi = express.Router();
 
     vApi.use('/auth', new AuthRouter(this.manager, this.auth).router);
     vApi.use('/plugins', new PluginRouter(this.manager, this.auth).router);
-    vApi.use('/plugins', setupPluginSettingsRoutes(this.manager, this.auth));
+    vApi.use('/plugins', new PluginSettingsRouter(this.manager, this.auth).router);
     
     // Keep custom plugin routes before plugin collection fallback routes.
     vApi.use('/plugins', this.pluginRouter);
 
-    vApi.use('/marketplace', setupMarketplaceRoutes(this.manager, this.auth));
+    vApi.use('/marketplace', new MarketplaceRouter(this.manager, this.auth).router);
     vApi.use('/themes', new ThemeRouter(this.themeManager, this.auth).router);
     vApi.use('/system', new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
     vApi.use('/media', new MediaRouter(this.manager, this.auth, this.mediaManager).router);
-    vApi.use('/versions', setupVersioningRoutes(this.manager, this.auth, this.restController));
+    vApi.use('/versions', new VersioningRouter(this.manager, this.auth, this.restController).router);
     
     // Mount extension routes (registered by extensions through CoreExtensionManager)
     if (this.manager.extensions && typeof (this.manager.extensions as any).getRegisteredApiRoutes === 'function') {
@@ -765,16 +758,16 @@ export class APIServer {
     this.app.use(vPrefix, vApi);
 
     // Mount unversioned API (default)
-    this.app.use(API_PREFIXES.BASE, vApi);
+    this.app.use(ApiConfig.getInstance().prefixes.BASE, vApi);
     
     // Mount assets at root
-    this.app.use('/plugins', setupPluginAssetRoutes(this.manager));
-    this.app.use('/themes', setupThemeAssetRoutes(this.themeManager));
+    this.app.use('/plugins', new PluginAssetRouter(this.manager).router);
+    this.app.use('/themes', new ThemeAssetRouter(this.themeManager).router);
 
     // Mount base collection routes at root (mainly for legacy integrations)
     const baseCollectionRouter = new BaseCollectionRouter(this.manager, this.restController).router;
-    this.app.use(API_ROUTES.COLLECTIONS.BASE, baseCollectionRouter);
-    this.app.use(LEGACY_API_ROUTES.COLLECTIONS.BASE, baseCollectionRouter);
+    this.app.use(ApiConfig.getInstance().routes.collections.BASE, baseCollectionRouter);
+    this.app.use(ApiConfig.getInstance().legacyRoutes.collections.BASE, baseCollectionRouter);
   }
 
   private async registerCoreCollection(slug: string, collection: any) {
@@ -825,208 +818,72 @@ export class APIServer {
       this.logger.info(`Running on http://${host}:${port}`);
     });
   }
-}
 
-export async function bootstrap() {
-  // Resolve project root for .env loading.
-  //
-  // Priority:
-  //  1. FROMCODE_PROJECT_ROOT env var — explicit override (used by starters and published packages)
-  //  2. Walk up from cwd looking for the framework workspace root (packages/core + packages/api siblings)
-  //  3. process.cwd() — fallback for standalone apps / published npm packages
-  //
-  // This means:
-  //  • Framework monorepo devs  : cwd = packages/api/ → walks up → finds framework/Source/ → loads .env there
-  //  • starters/local           : FROMCODE_PROJECT_ROOT=../../starters/local → loads starters/local/.env
-  //  • Published package users  : no workspace found → process.cwd() = their project root → loads .env there
-  function findProjectRoot(): string {
-    if (process.env.FROMCODE_PROJECT_ROOT) {
-      return path.resolve(process.env.FROMCODE_PROJECT_ROOT);
-    }
-    let current = process.cwd();
-    const fsRoot = path.parse(current).root;
-    while (current !== fsRoot) {
-      try {
-        const pkgPath = path.join(current, 'package.json');
-        if (fs.existsSync(pkgPath)) {
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-          if (
-            pkg?.name === '@fromcode119/framework' ||
-            (Array.isArray(pkg?.workspaces) &&
-              fs.existsSync(path.join(current, 'packages', 'core')) &&
-              fs.existsSync(path.join(current, 'packages', 'api')))
-          ) {
-            return current;
-          }
-        }
-      } catch {}
-      current = path.dirname(current);
-    }
-    return process.cwd();
-  }
-
-  const projectRoot = findProjectRoot();
-
-  // Env loading strategy:
-  //   1) FROMCODE_ENV_FILE (explicit file name or absolute path) -> load only that file
-  //   2) Otherwise load defaults from .env, then apply .env.local overrides
-  const requestedEnvFile = String(process.env.FROMCODE_ENV_FILE || '').trim();
-  const requestedEnvPath = requestedEnvFile
-    ? (path.isAbsolute(requestedEnvFile)
-        ? requestedEnvFile
-        : path.join(projectRoot, requestedEnvFile))
-    : '';
-
-  if (requestedEnvPath && fs.existsSync(path.resolve(requestedEnvPath))) {
-    dotenv.config({ path: path.resolve(requestedEnvPath), override: true });
-  } else {
-    const baseEnvCandidates = [
-      path.join(projectRoot, '.env'),
-      path.join(process.cwd(), '.env')
-    ];
-    const localEnvCandidates = [
-      path.join(projectRoot, '.env.local'),
-      path.join(process.cwd(), '.env.local')
-    ];
-
-    const baseEnvPath = baseEnvCandidates.find((envPath) => fs.existsSync(path.resolve(envPath)));
-    const localEnvPath = localEnvCandidates.find((envPath) => fs.existsSync(path.resolve(envPath)));
-
-    if (baseEnvPath) {
-      dotenv.config({ path: path.resolve(baseEnvPath), override: true });
-    }
-    if (localEnvPath) {
-      dotenv.config({ path: path.resolve(localEnvPath), override: true });
-    }
-  }
-
-  process.on('uncaughtException', (err) => {
-    console.error('CRITICAL: Uncaught Exception:', err);
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
-  });
-
-  try {
-    // Validate required environment variables early
-    validateEnv();
-
-    if (!process.env.DATABASE_URL) {
-      console.error('FATAL ERROR: DATABASE_URL is not defined in environment or .env file.');
-      console.error('Project root:', projectRoot);
-      process.exit(1);
-    }
-
-    console.log('--- Initializing Fromcode API Server ---');
-    
-    // Register Default Adapters (Lazy)
-    HookAdapterFactory.register('local', () => {
-      const { LocalHookAdapter } = require('@fromcode119/core/src/hooks/adapters/local-hook-adapter');
-      return new LocalHookAdapter();
-    });
-    HookAdapterFactory.register('redis', (opts) => {
-      const { RedisHookAdapter } = require('@fromcode119/core/src/hooks/adapters/redis-hook-adapter');
-      return new RedisHookAdapter(opts.redisUrl || process.env.REDIS_URL!, opts.namespace);
-    });
-    
-    QueueAdapterFactory.register('local', () => {
-      const { LocalQueueAdapter } = require('@fromcode119/core/src/queue/adapters/local-queue-adapter');
-      return new LocalQueueAdapter();
-    });
-    QueueAdapterFactory.register('bull', (opts) => {
-      const { BullQueueAdapter } = require('@fromcode119/core/src/queue/adapters/bull-queue-adapter');
-      return new BullQueueAdapter(opts.redisUrl || process.env.REDIS_URL!, opts.namespace);
-    });
-    QueueAdapterFactory.register('redis', (opts) => QueueAdapterFactory.create('bull', opts));
-
+  static async bootstrap(): Promise<void> {
+    dotenv.config();
     const manager = new PluginManager();
-    
-    // 1. Manager Initialization (DB/Migrations)
-    try {
-      console.log('Step 1: Initializing PluginManager (Database/Migrations)...');
-      await manager.init();
-    } catch (err) {
-      console.error('FATAL: PluginManager init failed. This is usually due to missing DATABASE_URL or DB unavailability.', err);
-      process.exit(1);
-    }
 
-    // 2. Theme Manager Initialization
-    const themeManager = new ThemeManager((manager as any).db, manager);
-    try {
-      console.log('Step 2: Initializing ThemeManager...');
-      await themeManager.init();
-    } catch (err) {
-      console.error('ERROR: ThemeManager init failed. System may continue but themes will be unavailable.', err);
-    }
+    // Create a dedicated Express Router BEFORE plugin discovery so that plugin onInit
+    // hooks can call context.api.get/post/... and have their routes registered
+    // immediately on this router.  The populated router is then mounted on
+    // server.pluginRouter BEFORE server.initialize() registers the generic
+    // /:pluginSlug/:slug catch-all routes, ensuring specific plugin routes win.
+    const pluginApiRouter = express.Router();
+    manager.setApiHost(pluginApiRouter);
 
-    // 3. API Server Infrastructure
-    const auth = new AuthManager();
-    const server = new APIServer(manager, themeManager, auth);
-    try {
-      console.log('Step 3: Initializing API Server Infrastructure...');
-      await server.initialize();
-    } catch (err) {
-      console.error('FATAL: API Server initialization failed.', err);
-      process.exit(1);
-    }
+    // Step 1: DB migrations, extensions, background workers (no plugin discovery).
+    await manager.init();
 
-    // 4. Plugin Discovery & Core Setup
+    const themeManager = new ThemeManager((manager as any).db);
+    await themeManager.init();
+    const auth = new AuthManager(process.env.JWT_SECRET);
     manager.setAuth(auth);
-    manager.setApiHost(server.pluginRouter);
-    
+
+    // Step 2: Discover and initialize plugins. Their onInit hooks register routes
+    // on pluginApiRouter (apiHost) right now, before any catch-alls exist.
     try {
-      console.log('Step 4: Discovering Plugins...');
       await manager.discoverPlugins();
       try {
         await themeManager.ensureActiveThemeDependencies();
-      } catch (err) {
+      } catch (err: any) {
         console.error('ERROR: Active theme dependency enforcement failed.', err);
       }
-      server.setupPluginCollectionProxy();
-    } catch (err) {
+    } catch (err: any) {
       console.error('ERROR: Initial plugin discovery failed. Check manifest files and permissions.', err);
     }
 
-    // 5. Development Services
+    const server = new APIServer(manager, themeManager, auth);
+
+    // Step 3: Mount the pre-populated plugin routes BEFORE server.initialize()
+    // so specific routes take precedence over catch-alls.
+    server.pluginRouter.use(pluginApiRouter);
+
+    await server.initialize();
+
+    // Step 4: Add collection catch-all routes AFTER specific plugin routes so they
+    // only match paths that no plugin registered explicitly.
+    server.setupPluginCollectionProxy();
+
+    // Step 5: Hot reload in development.
     if (process.env.NODE_ENV === 'development') {
       try {
-        console.log('Step 5: Starting Hot Reload Service (Development Mode)...');
-        const hotReload = new HotReloadService(manager, manager.pluginsRoot);
+        const hotReload = new HotReloadService(manager, (manager as any).pluginsRoot);
         hotReload.start();
-      } catch (err) {
+      } catch (err: any) {
         console.warn('WARNING: Hot Reload Service failed to start:', err);
       }
     }
 
-    // 6. Final Start
-    const port = Number(process.env.PORT) || 3000;
-    server.start(port);
-    console.log(`Step 6: API Server listening on port ${port}`);
-    
-    manager.emit('system:ready', { timestamp: Date.now() });
-
-    // Handle graceful shutdown
-    const shutdown = async (signal: string) => {
-      console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
-      try {
-        await manager.close();
-      } catch (e) {
-        console.error('Error during shutdown:', e);
-      }
-      process.exit(0);
-    };
-
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
-    process.on('SIGINT', () => shutdown('SIGINT'));
-  } catch (err) {
-    console.error('FATAL SYSTEM ERROR: API Server failed to bootstrap fundamentally.', err);
-    process.exit(1);
+    const port = parseInt(process.env.PORT || '3000', 10);
+    const host = process.env.HOST || '0.0.0.0';
+    server.start(port, host);
   }
 }
 
+
+
 if (require.main === module) {
-  bootstrap().catch(err => {
+  APIServer.bootstrap().catch(err => {
     console.error('Unhandled exception during bootstrap execution:', err);
     process.exit(1);
   });

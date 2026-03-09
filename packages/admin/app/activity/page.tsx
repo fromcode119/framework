@@ -360,7 +360,7 @@ export default function ActivityPage() {
                           </div>
                           <div className="flex flex-col">
                              <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Type</span>
-                             <Badge variant={mode === 'security' ? (selectedLog.status === 'violation' ? 'rose' : 'blue') : 'blue'}>
+                             <Badge variant={mode === 'security' ? (selectedLog.status === 'violation' ? 'danger' : 'blue') : 'blue'}>
                                 {mode === 'system' ? 'System Log' : `Audit: ${selectedLog.status}`}
                              </Badge>
                           </div>
