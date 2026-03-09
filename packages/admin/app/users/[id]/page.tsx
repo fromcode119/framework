@@ -169,7 +169,7 @@ export default function UserProfilePage() {
                  </div>
                  <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Status</span>
-                    <Badge variant={String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'rose' : 'success'} className="px-3 font-bold">
+                    <Badge variant={String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'danger' : 'success'} className="px-3 font-bold">
                       {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
                     </Badge>
                  </div>

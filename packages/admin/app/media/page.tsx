@@ -13,7 +13,7 @@ import { MoveDialog } from '@/components/ui/move-dialog';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
-import { formatSize, resolveMediaUrl } from '@/lib/utils';
+import { AdminServices } from '@/lib/admin-services';
 
 const { 
   File,
@@ -500,7 +500,7 @@ export default function MediaPage() {
 
             {items.map((item) => (
               (() => {
-                const mediaUrl = resolveMediaUrl(item.url);
+                const mediaUrl = AdminServices.getInstance().media.resolveMediaUrl(item.url);
                 return (
               viewMode === 'grid' ? (
                 <Card key={item.id} className="p-0 overflow-hidden group rounded-3xl bg-white dark:bg-slate-900/50 border-none shadow-xl shadow-slate-200/50 dark:shadow-none">
@@ -550,7 +550,7 @@ export default function MediaPage() {
                       {item.originalName}
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] text-slate-500 font-medium tracking-wide">{formatSize(item.fileSize)}</span>
+                      <span className="text-[10px] text-slate-500 font-medium tracking-wide">{AdminServices.getInstance().formatter.formatSize(item.fileSize)}</span>
                       <Badge variant="gray" className="text-[10px]">
                         {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
                       </Badge>
@@ -568,7 +568,7 @@ export default function MediaPage() {
                    </div>
                    <div className="flex-1 min-w-0">
                       <div className={`font-semibold text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{item.originalName}</div>
-                      <div className="text-[10px] text-slate-500 font-medium">{formatSize(item.fileSize)} • {item.mimeType}</div>
+                      <div className="text-[10px] text-slate-500 font-medium">{AdminServices.getInstance().formatter.formatSize(item.fileSize)} • {item.mimeType}</div>
                    </div>
                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <a href={mediaUrl} download className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500"><Download size={16} /></a>
