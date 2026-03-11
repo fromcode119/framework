@@ -7,6 +7,8 @@ export * from './gateways/gemini';
 export * from './gateways/integration-provider';
 export { AdminAssistantRuntime } from './admin-assistant-runtime';
 export { AdminAssistantRuntimeEngine } from './admin-assistant-runtime-engine';
+export { AdminExtensionRegistry } from './admin-extension';
+export type { AdminExtensionBridge } from './admin-extension.types';
 export type {
   AssistantAction as AssistantRuntimeAction,
   AssistantChatInput,
@@ -27,7 +29,3 @@ export type {
   AdminAssistantRuntimeOptions,
   AssistantSkillDefinition,
 } from './admin-assistant-runtime/types';
-
-// API routes registration (optional - loaded dynamically if AI extension is active)
-export { AssistantRouter } from './api/routes';
-export type { AssistantRoutesContext } from './api/routes.interfaces';

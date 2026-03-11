@@ -1,5 +1,4 @@
-import { ApiVersionUtils } from '@fromcode119/sdk';
-import { SystemConstants } from '@fromcode119/sdk';
+import { ApiVersionUtils, RouteConstants, SystemConstants } from '@fromcode119/sdk';
 
 /**
  * API Configuration Singleton.
@@ -55,6 +54,16 @@ export class ApiConfig {
   }
 
   /**
+   * Root-level probe routes for infrastructure health checks.
+   */
+  get probeRoutes() {
+    return {
+      HEALTH: RouteConstants.SEGMENTS.HEALTH,
+      READY: RouteConstants.SEGMENTS.READY,
+    } as const;
+  }
+
+  /**
    * Reserved permalink paths that cannot be used as content slugs.
    */
   get reservedPermalinks() {
@@ -74,7 +83,7 @@ export class ApiConfig {
         '_next',
         '_system',
         'socket',
-        'health',
+        this.probeRoutes.HEALTH.replace(/^\//, ''),
         'graphql',
         'favicon.ico',
         'robots.txt',
@@ -82,7 +91,7 @@ export class ApiConfig {
       ] as const,
       EXACT_PATHS: [
         '/',
-        '/health',
+        this.probeRoutes.HEALTH,
         '/openapi.json'
       ] as const
     } as const;

@@ -17,6 +17,8 @@ export class RouteConstants {
 
   // ── Admin ───────────────────────────────────────────────────────────────
   ADMIN_BASE: '/admin',
+  HEALTH: '/health',
+  READY: '/ready',
 
   // ── Core / Auth ───────────────────────────────────────────────────────────
   ACTIVE: '/active',

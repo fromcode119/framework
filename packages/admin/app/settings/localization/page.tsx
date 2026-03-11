@@ -61,7 +61,7 @@ export default function LocalizationSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
         const docs = response.docs || [];
         const map = new Map<string, string>();
         docs.forEach((doc: any) => map.set(String(doc.key), String(doc.value ?? '')));
@@ -184,22 +184,22 @@ export default function LocalizationSettingsPage() {
       const nextFrontendDefault = pickDefault(frontendDefaultLocale);
 
       await Promise.all([
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/localization_locales`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('localization_locales'), {
           value: JSON.stringify(cleaned.map(({ id, ...rest }) => rest))
         }),
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/enabled_locales`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('enabled_locales'), {
           value: enabledCodes.join(',')
         }),
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/default_locale`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('default_locale'), {
           value: nextDefaultLocale
         }),
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/admin_default_locale`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('admin_default_locale'), {
           value: nextAdminDefault
         }),
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/frontend_default_locale`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('frontend_default_locale'), {
           value: nextFrontendDefault
         }),
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/locale_url_strategy`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('locale_url_strategy'), {
           value: localeUrlStrategy
         })
       ]);

@@ -12,9 +12,9 @@ export function AssistantExecutionCard({ entry }: AssistantExecutionCardProps) {
   }
 
   const results = Array.isArray(entry.execution.results) ? entry.execution.results : [];
-  const okCount = results.filter((item) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'ok').length;
-  const skippedCount = results.filter((item) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'skipped').length;
-  const failedCount = results.filter((item) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'failed').length;
+  const okCount = results.filter((item: unknown) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'ok').length;
+  const skippedCount = results.filter((item: unknown) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'skipped').length;
+  const failedCount = results.filter((item: unknown) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'failed').length;
   const summary = AssistantPlanUtils.buildExecutionCardSummary(entry.execution);
 
   return (
@@ -35,7 +35,7 @@ export function AssistantExecutionCard({ entry }: AssistantExecutionCardProps) {
         <details className="rounded-lg border border-slate-200 bg-white/80 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-950/55">
           <summary className="cursor-pointer text-[11px] font-semibold text-slate-700 dark:text-slate-200">Details ({results.length})</summary>
           <div className="mt-2 space-y-2">
-            {results.map((item, resultIndex) => <AssistantExecutionResult key={`execution-${resultIndex}`} item={item} resultIndex={resultIndex} />)}
+            {results.map((item: unknown, resultIndex: number) => <AssistantExecutionResult key={`execution-${resultIndex}`} item={item} resultIndex={resultIndex} />)}
           </div>
         </details>
       ) : null}

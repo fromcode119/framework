@@ -57,7 +57,7 @@ export default function SecuritySettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
         const docs = response.docs || [];
         const newSettings = { ...settings };
         docs.forEach((s: any) => {
@@ -79,7 +79,7 @@ export default function SecuritySettingsPage() {
     setIsSaving(true);
     try {
       await Promise.all(Object.entries(settings).map(([key, value]) => {
-        return AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/${key}`, {
+        return AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS(key), {
           value: typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value)
         });
       }));

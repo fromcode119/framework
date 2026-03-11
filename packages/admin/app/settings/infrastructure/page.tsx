@@ -20,7 +20,7 @@ export default function InfrastructureSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
         const docs = response.docs || [];
         const found = docs.find((s: any) => s.key === 'maintenance_mode');
         if (found) setMaintenance(found.value === 'true');
@@ -34,7 +34,7 @@ export default function InfrastructureSettingsPage() {
   const toggleMaintenance = async (val: boolean) => {
     setMaintenance(val);
     try {
-      await AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/maintenance_mode`, {
+      await AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('maintenance_mode'), {
         value: val ? 'true' : 'false'
       });
       addNotification({ title: 'System Updated', message: `Maintenance mode is now ${val ? 'active' : 'inactive'}.`, type: 'info' });

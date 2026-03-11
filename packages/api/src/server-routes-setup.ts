@@ -48,6 +48,8 @@ export class ServerRoutesSetup {
     } catch (e) {}
 
     const healthHandler = async (req: any, res: any) => res.json({ status: 'ok', version: coreVersion, maintenance: await this.getMaintenanceStatus(), bypass: !!(req.user?.roles?.includes('admin')) });
+    this.app.get(ApiConfig.getInstance().probeRoutes.HEALTH, healthHandler);
+    this.app.get(ApiConfig.getInstance().probeRoutes.READY, healthHandler);
     this.app.get(ApiConfig.getInstance().legacyRoutes.system.HEALTH, healthHandler);
     this.app.get(ApiConfig.getInstance().routes.system.HEALTH, healthHandler);
 

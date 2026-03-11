@@ -2,8 +2,10 @@
 
 import React from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
-import { AdminPathUtils } from '@fromcode119/admin';
+import { RouteConstants } from '@fromcode119/sdk';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
+
+const ADMIN_BASE_PATH = RouteConstants.SEGMENTS.ADMIN_BASE;
 
 type HomeClientProps = {
   initialContent: any | null;
@@ -27,7 +29,7 @@ function renderContent(content: any) {
           Your frontend is running. Add/publish homepage content to replace this starter view.
         </p>
         <div className="flex gap-4 justify-center">
-          <a href={AdminPathUtils.basePath()} className="btn-primary">
+          <a href={ADMIN_BASE_PATH} className="btn-primary">
             Go to Admin
           </a>
         </div>
@@ -86,7 +88,7 @@ export default function HomeClient({ initialContent, forcedLayout }: HomeClientP
         The open-source platform for building scalable applications.
       </p>
       <div className="flex gap-4 justify-center">
-        <a href={AdminPathUtils.basePath()} className="btn-primary">
+        <a href={ADMIN_BASE_PATH} className="btn-primary">
           Go to Admin
         </a>
         <a href="https://docs.fromcode.com" className="btn-secondary">
