@@ -1,8 +1,8 @@
 "use client";
 
 import React, { use, useState, useEffect } from 'react';
-import { usePlugins } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -12,9 +12,11 @@ import { FrameworkIcons } from '@/lib/icons';
 import { Select } from '@/components/ui/select';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
-import { useNotify } from '@/components/notification-context';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { NotificationHooks } from '@/components/use-notification';
+import { AdminUrlUtils } from '@/lib/url-utils';
+import { ThemePreviewUtils } from '@/lib/theme-preview-utils';
 
 const CORE_LAYOUTS = [
     { id: 'core/layouts/Default', label: 'Default Page', description: 'Used for standard content pages.' },
@@ -73,8 +75,8 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   const { slug } = use(params);
   const router = useRouter();
   const pathname = usePathname();
-  const { notify } = useNotify();
-  const { triggerRefresh, refreshVersion } = usePlugins();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh, refreshVersion, settings } = ContextHooks.usePlugins();
   const searchParams = useSearchParams();
   const [themeDetail, setThemeDetail] = useState<Theme | null>(null);
   const [marketplaceVersion, setMarketplaceVersion] = useState<string | null>(null);
@@ -92,14 +94,14 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   const [tempVariables, setTempVariables] = useState<Record<string, string>>({});
   const [tempLayouts, setTempLayouts] = useState<Record<string, string>>({});
   const [tempSettings, setTempSettings] = useState<Record<string, any>>({});
-  const { theme: adminTheme } = useTheme();
+  const { theme: adminTheme } = ThemeHooks.useTheme();
 
   const fetchTheme = async () => {
     try {
       const [installedData, marketplaceData, configData] = await Promise.all([
-        api.get(ENDPOINTS.THEMES.LIST),
-        api.get(ENDPOINTS.THEMES.MARKETPLACE),
-        api.get(ENDPOINTS.THEMES.CONFIG(slug))
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST),
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE),
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.CONFIG(slug))
       ]);
       
       const found = installedData.find((t: any) => t.slug === slug);
@@ -152,7 +154,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   const handleActivate = async () => {
     if (!themeDetail) return;
     try {
-      await api.post(ENDPOINTS.THEMES.ACTIVATE(themeDetail.slug));
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.ACTIVATE(themeDetail.slug));
       notify('success', 'Theme Activated', `${themeDetail.name} is now active.`);
       triggerRefresh();
     } catch (err: any) {
@@ -165,7 +167,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     setIsUpdating(true);
     try {
       notify('info', 'Updating...', `Downloading latest version of ${themeDetail.slug}...`);
-      await api.post(ENDPOINTS.THEMES.INSTALL(themeDetail.slug));
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(themeDetail.slug));
       notify('success', 'Updated', `Theme ${themeDetail.name} has been updated.`);
       await fetchTheme();
       triggerRefresh();
@@ -180,7 +182,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     if (!themeDetail) return;
     setIsSaving(true);
     try {
-      await api.post(ENDPOINTS.THEMES.CONFIG(slug), {
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.CONFIG(slug), {
         ...dbConfig,
         variables: tempVariables,
         layouts: tempLayouts,
@@ -206,7 +208,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     setIsDeleting(true);
     setIsDeleteConfirmOpen(false);
     try {
-      await api.delete(ENDPOINTS.THEMES.DELETE(themeDetail.slug));
+      await AdminApi.delete(AdminConstants.ENDPOINTS.THEMES.DELETE(themeDetail.slug));
       notify('success', 'Theme Deleted', `${themeDetail.name} has been removed.`);
       router.push('/themes');
       triggerRefresh();
@@ -227,7 +229,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     setIsRunSeedsConfirmOpen(false);
     setIsReseeding(true);
     try {
-      await api.post(ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: false });
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: false });
       notify('success', 'Seeds Executed', `Seed script executed for ${themeDetail.name}.`);
       await fetchTheme();
       triggerRefresh();
@@ -248,7 +250,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
     setIsResetThemeConfirmOpen(false);
     setIsResettingTheme(true);
     try {
-      await api.post(ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: true });
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: true });
       notify('success', 'Theme Reset', `${themeDetail.name} config reset and seeds executed.`);
       await fetchTheme();
       triggerRefresh();
@@ -312,6 +314,23 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
   const integrationRequirements = Array.isArray(themeDetail.integrationRequirements)
     ? themeDetail.integrationRequirements
     : [];
+  const previewPalette = ThemePreviewUtils.resolvePreviewPalette({
+    adminTheme: adminTheme as 'dark' | 'light',
+    current: tempVariables || {},
+    defaults: themeDetail.variables || {},
+  });
+  const previewPrimary = previewPalette.primary;
+  const previewBackground = previewPalette.background;
+  const previewForeground = previewPalette.foreground;
+  const previewMuted = previewPalette.muted;
+  const previewCard = previewPalette.card;
+  const previewAccent = previewPalette.accent;
+  const livePreviewUrl = ThemePreviewUtils.normalizePreviewUrl(
+    tempSettings?.previewUrl || tempSettings?.siteUrl,
+    themeDetail.settingsDefaults?.previewUrl ||
+      themeDetail.settingsDefaults?.siteUrl,
+    settings as Record<string, unknown> | null | undefined
+  );
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-500">
@@ -695,7 +714,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                    </div>
                                    {schema?.integrationType && (
                                      <Link
-                                       href={ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)}
+                                       href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)}
                                        className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600"
                                      >
                                        Open Integration
@@ -808,29 +827,63 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
 
             <Card className={`border-0 p-8 rounded-[2rem] overflow-hidden relative ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-               <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-6 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                Visual Preview
-              </h3>
-              <div 
-                className="w-full aspect-video rounded-2xl border-2 border-dashed flex items-center justify-center flex-col gap-3 group overflow-hidden relative"
-                style={{ 
-                    borderColor: tempVariables.primary || '#6366f1',
-                    backgroundColor: (tempVariables.background || '#000') + '22'
-                }}
-              >
-                  <div 
-                    className="absolute inset-0 opacity-20 transition-transform group-hover:scale-110 duration-1000"
-                    style={{ backgroundColor: tempVariables.primary || '#6366f1' }}
-                  />
-                  <FrameworkIcons.Eye size={24} className="text-slate-500 relative z-10" />
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-slate-500/50 relative z-10">Real-time Simulation Node</p>
-                  
-                  <div className="mt-4 flex gap-2 relative z-10">
-                      <div className="h-4 w-4 rounded-full" style={{ backgroundColor: tempVariables.primary }} />
-                      <div className="h-4 w-4 rounded-full" style={{ backgroundColor: tempVariables.background }} />
-                      <div className="h-4 w-4 rounded-full" style={{ backgroundColor: tempVariables.foreground }} />
-                  </div>
-              </div>
+               <div className="mb-5 flex items-center justify-between gap-3">
+                 <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Visual Preview
+                 </h3>
+                 <a
+                   href={livePreviewUrl}
+                   target="_blank"
+                   rel="noreferrer"
+                   className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${
+                     adminTheme === 'dark'
+                       ? 'bg-white/10 text-slate-200 hover:bg-white/15'
+                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                   }`}
+                 >
+                   <FrameworkIcons.ExternalLink size={11} />
+                   Open Site
+                 </a>
+               </div>
+               <div className="w-full rounded-2xl border p-3" style={{ borderColor: previewPrimary, backgroundColor: `${previewBackground}dd` }}>
+                 <div className="mb-3 flex items-center justify-between rounded-xl border px-3 py-2" style={{ borderColor: `${previewPrimary}44`, backgroundColor: previewCard }}>
+                   <div className="flex items-center gap-2">
+                     <span className="inline-flex h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: previewPrimary }} />
+                     <p className="text-[9px] font-semibold uppercase tracking-[0.15em]" style={{ color: previewMuted }}>
+                       Real-time Simulation Node
+                     </p>
+                   </div>
+                   <FrameworkIcons.Eye size={12} style={{ color: previewMuted }} />
+                 </div>
+                 <div className="rounded-xl border p-4" style={{ borderColor: `${previewPrimary}33`, backgroundColor: previewBackground, color: previewForeground }}>
+                   <p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: previewMuted }}>Theme Hero Simulation</p>
+                   <h4 className="mt-2 text-base font-bold leading-tight">Build faster with {themeDetail.name}</h4>
+                   <p className="mt-2 text-[11px] leading-relaxed" style={{ color: previewMuted }}>
+                     Live palette + typography simulation from your current variable edits.
+                   </p>
+                   <div className="mt-3 flex items-center gap-2">
+                     <button
+                       type="button"
+                       className="rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide"
+                       style={{ backgroundColor: previewPrimary, color: previewBackground }}
+                     >
+                       Primary CTA
+                     </button>
+                     <button
+                       type="button"
+                       className="rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide"
+                       style={{ borderColor: `${previewAccent}55`, color: previewAccent }}
+                     >
+                       Secondary
+                     </button>
+                   </div>
+                 </div>
+                 <div className="mt-3 grid grid-cols-3 gap-2">
+                   <div className="h-6 rounded-lg" style={{ backgroundColor: previewPrimary }} />
+                   <div className="h-6 rounded-lg border" style={{ backgroundColor: previewBackground, borderColor: `${previewMuted}55` }} />
+                   <div className="h-6 rounded-lg" style={{ backgroundColor: previewForeground }} />
+                 </div>
+               </div>
             </Card>
 
             <Card className={`border-0 p-8 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
@@ -890,7 +943,7 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                       </div>
                       <div className="mt-3">
                         <Link
-                          href={ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(integration.type)}
+                          href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(integration.type)}
                           className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600"
                         >
                           Open Integration Settings

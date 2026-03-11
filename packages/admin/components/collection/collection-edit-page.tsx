@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, use, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Slot, usePlugins } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { Slot, ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -20,58 +20,34 @@ import { FieldRenderer } from '@/components/collection/field-renderer';
 import { FrameworkIcons } from '@/lib/icons';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { resolveCollection, generatePreviewUrl } from '@/lib/collection-utils';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { useCollectionForm } from '@/components/collection/hooks/use-collection-form';
 import { useSlugGeneration } from '@/components/collection/hooks/use-slug-generation';
 import { useSlugValidation } from '@/components/collection/hooks/use-slug-validation';
-import { normalizeLocaleCode, resolveLocalizedText, evaluateCondition } from '@/lib/utils';
+import { LocalizationUtils , Field } from '@fromcode119/sdk';
+import { AdminServices } from '@/lib/admin-services';
 import { RecordInfo } from '@/components/collection/record-info';
 import { EditHeader } from './edit/edit-header';
 import { RevisionModal } from './edit/revision-modal';
 import { EditFooter } from './edit/edit-footer';
 import { SidebarVersions } from './edit/sidebar-versions';
+import { CollectionEditUtils } from './collection-edit-utils';
 
-function reviveSerializedRevisionValue(value: any): any {
-  if (Array.isArray(value)) {
-    return value.map((item) => reviveSerializedRevisionValue(item));
-  }
 
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, nested]) => [key, reviveSerializedRevisionValue(nested)])
-    );
-  }
-
-  if (typeof value !== 'string') return value;
-
-  const trimmed = value.trim();
-  const isStructuredJson =
-    (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-    (trimmed.startsWith('[') && trimmed.endsWith(']'));
-
-  if (!isStructuredJson) return value;
-
-  try {
-    const parsed = JSON.parse(trimmed);
-    return reviveSerializedRevisionValue(parsed);
-  } catch {
-    return value;
-  }
-}
 
 export default function CollectionEditPage({ params }: { params: Promise<{ pluginSlug: string; slug: string; id: string }> }) {
   const { pluginSlug, slug, id } = use(params);
   const router = useRouter();
-  const { theme } = useTheme();
-  const { collections, settings } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { collections, settings } = ContextHooks.usePlugins();
 
   const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
   
   const isNew = id === 'new';
-  const collection = resolveCollection(collections, pluginSlug, slug);
+  const collection = AdminCollectionUtils.resolveCollection(collections, pluginSlug, slug);
   const resolvedSlug = collection?.slug || slug;
 
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -83,6 +59,13 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const [readOnlyOverrideTarget, setReadOnlyOverrideTarget] = useState<{ name: string; label: string } | null>(null);
   const [readOnlyOverridePasswordTarget, setReadOnlyOverridePasswordTarget] = useState<{ name: string; label: string } | null>(null);
   const [readOnlyOverrideVerifying, setReadOnlyOverrideVerifying] = useState(false);
+  const preferredLocaleFallback = LocalizationUtils.normalizeLocaleCode(
+    Cookies.get('fc_locale')
+      || settings?.default_locale
+      || settings?.defaultLocale
+      || settings?.system_default_locale
+      || ''
+  );
 
   const getReadOnlyOverrideSubmitMetadata = useCallback(() => {
     const fields = Object.keys(readOnlyOverrideFields || {}).filter(Boolean);
@@ -94,6 +77,14 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
       }
     };
   }, [readOnlyOverrideFields, readOnlyOverridePassword]);
+
+  const prepareSubmitPayload = useCallback((payload: Record<string, any>) => {
+    return CollectionEditUtils.normalizeCollectionSubmitPayload(
+      payload,
+      collection?.fields || [],
+      preferredLocaleFallback
+    );
+  }, [collection?.fields, preferredLocaleFallback]);
   
   const {
     formData,
@@ -112,26 +103,20 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
       if (isNew) router.push(`/${pluginSlug}/${slug}/${result.id}`);
     },
     onError: (err) => setStatus({ type: 'error', message: err.message || 'Operation failed' }),
-    getSubmitMetadata: getReadOnlyOverrideSubmitMetadata
+    getSubmitMetadata: getReadOnlyOverrideSubmitMetadata,
+    preparePayload: prepareSubmitPayload
   });
 
   const formDataRef = React.useRef(formData);
   formDataRef.current = formData;
 
-  const sourceField = collection?.admin?.useAsTitle || (collection?.fields.find(f => f.name === 'name' || f.name === 'title')?.name);
-  const preferredLocale = normalizeLocaleCode(
-    Cookies.get('fc_locale')
-      || formData?.locale
-      || settings?.default_locale
-      || settings?.defaultLocale
-      || settings?.system_default_locale
-      || ''
-  );
+  const sourceField = collection?.admin?.useAsTitle || (collection?.fields.find((f: Field) => f.name === 'name' || f.name === 'title')?.name);
+  const preferredLocale = LocalizationUtils.normalizeLocaleCode(formData?.locale || preferredLocaleFallback);
   const resolvedTitleValue = (collection?.admin?.useAsTitle
-    ? resolveLocalizedText(formData[collection.admin.useAsTitle], preferredLocale)
+    ? LocalizationUtils.resolveLabelText(formData[collection.admin.useAsTitle], preferredLocale)
     : '')
-    || resolveLocalizedText(formData.title, preferredLocale)
-    || resolveLocalizedText(formData.name, preferredLocale);
+    || LocalizationUtils.resolveLabelText(formData.title, preferredLocale)
+    || LocalizationUtils.resolveLabelText(formData.name, preferredLocale);
   
   const onSlugGenerate = useCallback((newSlugValue: string) => {
     setFieldValue('slug', newSlugValue);
@@ -141,7 +126,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   }, [setFieldValue]);
 
   const { manuallyEdited: slugManuallyEdited, setManuallyEdited: setSlugManuallyEdited } = useSlugGeneration({
-    sourceValue: sourceField ? resolveLocalizedText(formData[sourceField], preferredLocale) : '',
+    sourceValue: sourceField ? LocalizationUtils.resolveLabelText(formData[sourceField], preferredLocale) : '',
     isNew,
     manuallyEdited: false,
     onSlugGenerate
@@ -185,7 +170,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     setRevisionsLoading(true);
     try {
       // Use the new dedicated versioning API
-      const result = await api.get(`${ENDPOINTS.VERSIONS.BASE}/${resolvedSlug}/${id}?limit=20&page=${page}`);
+      const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.VERSIONS.BASE}/${resolvedSlug}/${id}?limit=20&page=${page}`);
       
       const mapped = (result.docs || []).map((v: any) => ({
         id: v.id,
@@ -193,7 +178,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         date: new Date(v.created_at || v.createdAt),
         user: v.updated_by || v.updatedBy || 'System',
         action: v.change_summary || 'Update',
-        changes: reviveSerializedRevisionValue(v.version_data || {})
+        changes: CollectionEditUtils.reviveSerializedRevisionValue(v.version_data || {})
       }));
 
       if (page === 1) {
@@ -221,7 +206,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     
     setRestoringPermanently(true);
     try {
-      const response = await api.post(ENDPOINTS.VERSIONS.RESTORE(resolvedSlug, id, version), {});
+      const response = await AdminApi.post(AdminConstants.ENDPOINTS.VERSIONS.RESTORE(resolvedSlug, id, version), {});
       setFormData(response.data);
       setStatus({ type: 'success', message: `Record permanently restored to version ${version}` });
       setSelectedRevision(null);
@@ -236,7 +221,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
 
   const getPreviewUrl = () => {
     if (!collection) return '#';
-    return generatePreviewUrl(
+    return AdminCollectionUtils.generatePreviewUrl(
       settings?.frontend_url || '', 
       formData, 
       collection, 
@@ -250,7 +235,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
 
     async function fetchData() {
       try {
-        const entryData = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}?locale_mode=raw`);
+        const entryData = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}?locale_mode=raw`);
 
         setFormData(entryData);
         if (entryData.slug) setSlugManuallyEdited(true);
@@ -279,7 +264,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   // Load plugin settings if the collection belongs to a plugin
   useEffect(() => {
     if (collection?.pluginSlug) {
-      api.get(`${ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
+      AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
         .then(res => {
           const normalized = res?.settings?.settings ?? res?.settings ?? res ?? {};
           setPluginSettings(normalized);
@@ -287,6 +272,85 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         .catch(err => console.error('Failed to load plugin settings:', err));
     }
   }, [collection?.pluginSlug]);
+
+  const sidebarFields = React.useMemo(
+    () =>
+      (collection?.fields || []).filter((f: Field) =>
+          f.admin?.position === 'sidebar' &&
+          !f.admin?.hidden &&
+          f.name !== 'customPermalink' &&
+          AdminServices.getInstance().validation.evaluateCondition(f.admin?.condition, formData, f.name)
+      ),
+    [collection?.fields, formData]
+  );
+
+  const sidebarFieldSections = React.useMemo(() => {
+    const orderedSections: Array<{ title: string; fields: any[] }> = [];
+    const sectionIndexByTitle = new Map<string, number>();
+
+    sidebarFields.forEach((field: any) => {
+      const sectionTitle = String(field?.admin?.section || 'Settings').trim() || 'Settings';
+      const existingIndex = sectionIndexByTitle.get(sectionTitle);
+      if (existingIndex === undefined) {
+        sectionIndexByTitle.set(sectionTitle, orderedSections.length);
+        orderedSections.push({ title: sectionTitle, fields: [field] });
+        return;
+      }
+
+      orderedSections[existingIndex].fields.push(field);
+    });
+
+    return orderedSections;
+  }, [sidebarFields]);
+
+  const mainFields = React.useMemo(() => {
+    return (collection?.fields || []).filter((field) => {
+      if (field.admin?.hidden || field.admin?.position === 'sidebar') return false;
+      if (!AdminServices.getInstance().validation.evaluateCondition(field.admin?.condition, formData, field.name)) return false;
+
+      if (collection?.admin?.tabs && collection.admin.tabs.length > 0) {
+        const fieldTab = field.admin?.tab || collection.admin.tabs[0].name;
+        return fieldTab === activeTab;
+      }
+
+      return true;
+    });
+  }, [activeTab, collection?.admin?.tabs, collection?.fields, formData]);
+
+  const mainFieldSections = React.useMemo(() => {
+    const orderedSections: Array<{ key: string; title?: string; fields: any[] }> = [];
+    const sectionIndexByKey = new Map<string, number>();
+
+    mainFields.forEach((field: any) => {
+      const sectionTitle = typeof field?.admin?.section === 'string' ? field.admin.section.trim() : '';
+      const key = sectionTitle || '__default__';
+      const existingIndex = sectionIndexByKey.get(key);
+
+      if (existingIndex === undefined) {
+        sectionIndexByKey.set(key, orderedSections.length);
+        orderedSections.push({
+          key,
+          title: sectionTitle || undefined,
+          fields: [field]
+        });
+        return;
+      }
+
+      orderedSections[existingIndex].fields.push(field);
+    });
+
+    return orderedSections;
+  }, [mainFields]);
+
+  const standardMainFieldSections = React.useMemo(
+    () => mainFieldSections.filter((section) => !section.fields.some((field: any) => field?.admin?.sectionLayout === 'full')),
+    [mainFieldSections]
+  );
+
+  const fullWidthMainFieldSections = React.useMemo(
+    () => mainFieldSections.filter((section) => section.fields.some((field: any) => field?.admin?.sectionLayout === 'full')),
+    [mainFieldSections]
+  );
 
   if (!collection) {
     return (
@@ -339,7 +403,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
+      await AdminApi.delete(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}`);
       router.push(`/${pluginSlug}/${slug}`);
     } catch (err: any) {
       setStatus({ type: 'error', message: err.message });
@@ -362,7 +426,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     if (!readOnlyOverridePasswordTarget) return;
     setReadOnlyOverrideVerifying(true);
     try {
-      await api.post(ENDPOINTS.AUTH.VERIFY_PASSWORD, {
+      await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.VERIFY_PASSWORD, {
         password,
         purpose: 'read_only_override',
         collectionSlug: resolvedSlug,
@@ -391,7 +455,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const showPreview = (collection?.admin as any)?.preview !== false && !isNew;
   const showPermalink = (collection?.admin as any)?.preview !== false && hasSlug;
   const isFullWidth = (collection?.admin as any)?.fullWidth === true;
-  const hasSidebarFields = collection?.fields.some(f => f.admin?.position === 'sidebar' && !f.admin?.hidden) || false;
+  const hasSidebarFields = sidebarFields.length > 0;
   const renderSidebar = !isFullWidth;
   const hasBuiltInSidebarContent = showPermalink || hasSidebarFields || !isNew;
   const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
@@ -467,22 +531,10 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
 
           <div className={`grid grid-cols-1 ${renderSidebar ? 'lg:grid-cols-3' : ''} gap-8 pb-32`}>
             <div className={`${renderSidebar ? 'lg:col-span-2' : 'lg:col-span-1'} space-y-6`}>
-              <Card>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-                  {collection.fields
-                    .filter(f => {
-                      if (f.admin?.hidden || f.admin?.position === 'sidebar') return false;
-                      if (!evaluateCondition(f.admin?.condition, formData, f.name)) return false;
-                      
-                      // Tab filtering
-                      if (collection.admin?.tabs && collection.admin.tabs.length > 0) {
-                         const fieldTab = f.admin?.tab || collection.admin.tabs[0].name;
-                         return fieldTab === activeTab;
-                      }
-                      
-                      return true;
-                    })
-                    .map((field) => (
+              {standardMainFieldSections.map((section) => (
+                <Card key={section.key} title={section.title}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                    {section.fields.map((field) => (
                       <FieldRenderer 
                         key={field.name}
                         field={field}
@@ -499,8 +551,9 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                         onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
                       />
                     ))}
-                </div>
-              </Card>
+                  </div>
+                </Card>
+              ))}
             </div>
 
             {renderSidebar && (
@@ -525,12 +578,11 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                   </Card>
                 )}
 
-                {hasSidebarFields && (
-                  <Card title="Settings">
-                    <div className="space-y-6">
-                      {collection.fields
-                        .filter(f => f.admin?.position === 'sidebar' && !f.admin?.hidden && f.name !== 'customPermalink' && evaluateCondition(f.admin?.condition, formData, f.name))
-                        .map((field) => (
+                {hasSidebarFields &&
+                  sidebarFieldSections.map((section) => (
+                    <Card key={`sidebar-section-${section.title}`} title={section.title}>
+                      <div className="space-y-6">
+                        {section.fields.map((field) => (
                           <FieldRenderer 
                             key={field.name}
                             field={field}
@@ -545,9 +597,9 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                             onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
                           />
                         ))}
-                    </div>
-                  </Card>
-                )}
+                      </div>
+                    </Card>
+                  ))}
 
                 {!isNew && (
                   <RecordInfo 
@@ -581,6 +633,34 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
               </div>
             )}
           </div>
+
+          {fullWidthMainFieldSections.length > 0 && (
+            <div className="pb-32 space-y-6">
+              {fullWidthMainFieldSections.map((section) => (
+                <Card key={`full-width-${section.key}`} title={section.title}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                    {section.fields.map((field) => (
+                      <FieldRenderer 
+                        key={field.name}
+                        field={field}
+                        value={formData[field.name]}
+                        onChange={(val) => handleInputChange(field.name, val)}
+                        theme={theme}
+                        collectionSlug={resolvedSlug}
+                        pluginSettings={pluginSettings}
+                        disabled={saving}
+                        isNew={isNew}
+                        slugWarning={field.name === 'slug' ? slugWarning : undefined}
+                        slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
+                        readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
+                        onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+                      />
+                    ))}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
           
           <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew }} />
         </div>

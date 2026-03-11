@@ -1,15 +1,7 @@
 import { LoadedPlugin, Collection } from '../../types';
 import { Logger } from '@fromcode119/sdk';
-import {
-  normalizeMenuPath,
-  getNestedMenuPaths,
-  deduplicateMenuItems
-} from '../../utils';
-import {
-  buildCollectionRouteKeySet,
-  isCollectionMenuPath,
-  expectedPageSlotFromPath
-} from './admin-route-utils';
+import { CoreServices } from '../../services';
+import { AdminRouteUtils } from './admin-route-utils';
 
 export class AdminMetadataService {
   private logger = new Logger({ namespace: 'admin-metadata-service' });
@@ -76,7 +68,7 @@ export class AdminMetadataService {
       const pluginCollections = Array.from(registeredCollections.values())
         .filter(c => String(c.pluginSlug).toLowerCase() === slug)
         .map(c => c.collection);
-      const collectionRouteKeys = buildCollectionRouteKeySet([
+      const collectionRouteKeys = AdminRouteUtils.buildCollectionRouteKeySet([
         ...(p.admin?.collections || []),
         ...pluginCollections
       ]);
@@ -105,8 +97,8 @@ export class AdminMetadataService {
           }
 
           // Validate plugin page routes early so broken paths never reach runtime.
-          if (effectivePath && effectivePath.startsWith(`/${slug}`) && !isCollectionMenuPath(effectivePath, slug, collectionRouteKeys)) {
-            const expectedSlot = expectedPageSlotFromPath(effectivePath, slug);
+          if (effectivePath && effectivePath.startsWith(`/${slug}`) && !AdminRouteUtils.isCollectionMenuPath(effectivePath, slug, collectionRouteKeys)) {
+            const expectedSlot = AdminRouteUtils.expectedPageSlotFromPath(effectivePath, slug);
             const hasExpectedSlot = expectedSlot ? declaredSlots.has(expectedSlot) : false;
             const hasContentFallback = declaredSlots.has(contentSlot);
             if (!hasExpectedSlot && !hasContentFallback) {
@@ -146,7 +138,7 @@ export class AdminMetadataService {
           
           const isExplicitlyHandled = rawMenuItems.some(m => {
              if (m.pluginSlug !== slug) return false;
-             const candidatePaths = getNestedMenuPaths(m);
+             const candidatePaths = CoreServices.getInstance().menu.getNestedPaths(m);
              return candidatePaths.some((candidatePath) => {
                if (candidatePath === path) return true;
                const normalizedPath = candidatePath?.toLowerCase().replace(/^\/[^/]+\//, '').replace(/^\//, '');
@@ -234,7 +226,7 @@ export class AdminMetadataService {
 
     const sorted = finalMenu.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
-    const dedupedMenu = deduplicateMenuItems(sorted);
+    const dedupedMenu = CoreServices.getInstance().menu.deduplicate(sorted);
 
     return {
       plugins: pluginMetadata,

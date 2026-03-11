@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { SystemTable, SystemMetaKey } from '@fromcode119/sdk/internal';
+import { SystemConstants } from '@fromcode119/sdk';
 import { AuthControllerInfrastructure } from './auth-controller-infrastructure';
+import type { AccountStatus } from './auth-controller.types';
 import type {
-  AccountStatus,
   PasswordPolicySettings,
   LoginThrottleSettings,
   LoginThrottleState
-} from './auth-controller-types';
+} from './auth-controller.interfaces';
 
 export class AuthControllerPolicy extends AuthControllerInfrastructure {
   protected async issueLoginSession(req: Request, res: Response, user: any) {
@@ -18,7 +18,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     const token = await this.auth.generateToken(userResponse, { expiresIn: `${sessionDurationMinutes}m` });
     const expiresAt = new Date(Date.now() + maxAgeMs);
 
-    await this.db.insert(SystemTable.SESSIONS, {
+    await this.db.insert(SystemConstants.TABLE.SESSIONS, {
       userId: user.id,
       tokenId: jti,
       expiresAt,
@@ -34,7 +34,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
 
   protected async getSessionDurationMinutes(): Promise<number> {
     try {
-      const row = await this.readMetaRow(SystemMetaKey.AUTH_SESSION_DURATION);
+      const row = await this.readMetaRow(SystemConstants.META_KEY.AUTH_SESSION_DURATION);
       const parsed = Number.parseInt(String(row?.value || this.defaultSessionDurationMinutes), 10);
       if (Number.isNaN(parsed)) return this.defaultSessionDurationMinutes;
       return Math.min(this.maxSessionDurationMinutes, Math.max(this.minSessionDurationMinutes, parsed));
@@ -57,13 +57,13 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
 
   protected async getPasswordPolicySettings(): Promise<PasswordPolicySettings> {
     return {
-      minLength: await this.getSettingNumber(SystemMetaKey.AUTH_PASSWORD_MIN_LENGTH, 8, 8, 128),
-      requireUppercase: await this.getSettingBoolean(SystemMetaKey.AUTH_PASSWORD_REQUIRE_UPPERCASE, true),
-      requireLowercase: await this.getSettingBoolean(SystemMetaKey.AUTH_PASSWORD_REQUIRE_LOWERCASE, true),
-      requireNumber: await this.getSettingBoolean(SystemMetaKey.AUTH_PASSWORD_REQUIRE_NUMBER, true),
-      requireSymbol: await this.getSettingBoolean(SystemMetaKey.AUTH_PASSWORD_REQUIRE_SYMBOL, false),
-      historyCount: await this.getSettingNumber(SystemMetaKey.AUTH_PASSWORD_HISTORY, 5, 0, 20),
-      breachCheck: await this.getSettingBoolean(SystemMetaKey.AUTH_PASSWORD_BREACH_CHECK, false)
+      minLength: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH, 8, 8, 128),
+      requireUppercase: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE, true),
+      requireLowercase: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_LOWERCASE, true),
+      requireNumber: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_NUMBER, true),
+      requireSymbol: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_SYMBOL, false),
+      historyCount: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY, 5, 0, 20),
+      breachCheck: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK, false)
     };
   }
 
@@ -128,18 +128,18 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
 
   protected async getLoginThrottleSettings(): Promise<LoginThrottleSettings> {
     return {
-      threshold: await this.getSettingNumber(SystemMetaKey.AUTH_LOCKOUT_THRESHOLD, 5, 1, 50),
-      windowMinutes: await this.getSettingNumber(SystemMetaKey.AUTH_LOCKOUT_WINDOW_MINUTES, 15, 1, 1440),
-      lockoutMinutes: await this.getSettingNumber(SystemMetaKey.AUTH_LOCKOUT_DURATION_MINUTES, 30, 1, 43200),
-      captchaEnabled: await this.getSettingBoolean(SystemMetaKey.AUTH_CAPTCHA_ENABLED, false),
-      captchaThreshold: await this.getSettingNumber(SystemMetaKey.AUTH_CAPTCHA_THRESHOLD, 3, 1, 50)
+      threshold: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD, 5, 1, 50),
+      windowMinutes: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_LOCKOUT_WINDOW_MINUTES, 15, 1, 1440),
+      lockoutMinutes: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_LOCKOUT_DURATION_MINUTES, 30, 1, 43200),
+      captchaEnabled: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED, false),
+      captchaThreshold: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_CAPTCHA_THRESHOLD, 3, 1, 50)
     };
   }
 
   protected getLoginThrottleKey(email: string, ip: string): string {
     const normalizedEmail = this.normalizeEmail(email);
     const normalizedIp = String(ip || '').trim() || 'unknown';
-    return `auth:login_throttle:${this.hashToken(`${normalizedEmail}|${normalizedIp}`)}`;
+    return `auth:login_throttle:${this.normalizeEmail(`${normalizedEmail}|${normalizedIp}`)}`;
   }
 
   protected async readLoginThrottleState(key: string): Promise<LoginThrottleState> {

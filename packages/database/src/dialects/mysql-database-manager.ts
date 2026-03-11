@@ -4,7 +4,7 @@ import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, count as drizzl
 import { mysqlTable, text } from 'drizzle-orm/mysql-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
-import { toSnakeCase } from '../naming-strategy';
+import { NamingStrategy } from '../naming-strategy';
 
 export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: mysql.Pool;
@@ -261,7 +261,7 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
   async createTable(collection: ISchemaCollection): Promise<void> {
     const tableName = collection.slug;
     const columnDefs: any[] = [];
-    const fieldSnakeNames = collection.fields.map(f => toSnakeCase(f.name));
+    const fieldSnakeNames = collection.fields.map(f => NamingStrategy.toSnakeCase(f.name));
 
     if (!fieldSnakeNames.includes('id')) {
       columnDefs.push(sql`id INT AUTO_INCREMENT PRIMARY KEY`);
@@ -329,7 +329,7 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
 
   private async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
     const jsonColumns = await this.getJsonColumns(tableName);
-    const normalizedColumn = toSnakeCase(column).toLowerCase();
+    const normalizedColumn = NamingStrategy.toSnakeCase(column).toLowerCase();
     if (jsonColumns.has(normalizedColumn)) {
       return this.normalizeJsonColumnValue(value);
     }
@@ -377,7 +377,7 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
   }
 
   private fieldToSqlFragment(field: ISchemaField): any {
-    const dbName = toSnakeCase(field.name);
+    const dbName = NamingStrategy.toSnakeCase(field.name);
     let type = sql`TEXT`;
     
     switch (field.type) {

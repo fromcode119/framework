@@ -1,20 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
 import { DataTable } from '@/components/ui/data-table';
 import { PageHeading } from '@/components/ui/page-heading';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { RootFramework } from '@fromcode119/react';
 import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 
 export default function ActivityPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [mode, setMode] = useState<'system' | 'security'>('system');
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,8 +44,8 @@ export default function ActivityPage() {
     async function loadLogs() {
       setLoading(true);
       try {
-        const endpoint = mode === 'system' ? ENDPOINTS.SYSTEM.LOGS : ENDPOINTS.SYSTEM.AUDIT;
-        const response = await api.get(`${endpoint}?page=${page}&limit=${limit}&search=${activeSearch}`);
+        const endpoint = mode === 'system' ? AdminConstants.ENDPOINTS.SYSTEM.LOGS : AdminConstants.ENDPOINTS.SYSTEM.AUDIT;
+        const response = await AdminApi.get(`${endpoint}?page=${page}&limit=${limit}&search=${activeSearch}`);
         setLogs(response.docs || []);
         setTotalDocs(response.totalDocs || 0);
       } catch (error) {
@@ -419,9 +419,9 @@ export default function ActivityPage() {
         description="Global ledger of administrative actions and system events."
         accent="emerald"
         links={[
-          { label: 'Users', href: ROUTES.USERS.LIST },
-          { label: 'Roles', href: ROUTES.USERS.ROLE_LIST },
-          { label: 'Permissions', href: ROUTES.USERS.PERMISSIONS },
+          { label: 'Users', href: AdminConstants.ROUTES.USERS.LIST },
+          { label: 'Roles', href: AdminConstants.ROUTES.USERS.ROLE_LIST },
+          { label: 'Permissions', href: AdminConstants.ROUTES.USERS.PERMISSIONS },
         ]}
       />
     </div>

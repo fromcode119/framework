@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { RootFramework } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
-import { getFieldClasses, UI_TEXT } from '@/lib/ui';
+import { UiFieldUtils } from '@/lib/ui';
 
 interface Option {
   label: string;
@@ -128,13 +128,13 @@ export const Select = ({
 
   return (
     <div className={`flex flex-col gap-1 w-full ${className}`}>
-      {label && <label className={UI_TEXT.LABEL}>{label}</label>}
+      {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
       <div className="relative w-full" ref={triggerRef}>
         <button
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`${getFieldClasses(size, `flex items-center justify-between text-left group overflow-hidden relative ${triggerClassName}`)} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`${UiFieldUtils.getFieldClasses(size, `flex items-center justify-between text-left group overflow-hidden relative ${triggerClassName}`)} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <span className={`truncate relative z-10 ${!selectedOption ? 'text-slate-400 font-medium' : ''}`}>
              <div className="flex flex-col leading-none">
@@ -186,7 +186,7 @@ export const Select = ({
                         setSearchValue(nextValue);
                         onSearchChange?.(nextValue);
                       }}
-                      className={getFieldClasses('sm', 'pl-8')}
+                      className={UiFieldUtils.getFieldClasses('sm', 'pl-8')}
                     />
                   </div>
                 </div>

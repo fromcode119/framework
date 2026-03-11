@@ -154,8 +154,16 @@ export class ThemeController {
       : path.resolve((this.manager as any).themesRoot, slug);
     const absolutePath = path.resolve(themeDir, 'ui', filePath);
     
-    if (fs.existsSync(absolutePath)) res.sendFile(absolutePath);
-    else res.status(404).end();
+    if (fs.existsSync(absolutePath)) {
+      if (process.env.NODE_ENV !== 'production') {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+      res.sendFile(absolutePath);
+    } else {
+      res.status(404).end();
+    }
   }
 
   private inspectThemeArchive(filePath: string) {

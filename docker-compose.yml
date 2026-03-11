@@ -41,7 +41,7 @@ services:
       target: base
     command: npm run dev --workspace=@fromcode119/admin
     environment:
-      - API_URL=${INTERNAL_API_URL}
+      - API_URL=${API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - NODE_ENV=${NODE_ENV}
@@ -68,7 +68,7 @@ services:
       target: base
     command: npm run dev --workspace=@fromcode119/frontend
     environment:
-      - API_URL=${INTERNAL_API_URL}
+      - API_URL=${API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - NODE_ENV=${NODE_ENV}

@@ -1,22 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { useNotification } from '@/components/notification-context';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { NotificationHooks } from '@/components/use-notification';
+import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { Badge } from '@/components/ui/badge';
-
-const bytesToMB = (value?: number | null): string => {
-  if (value === undefined || value === null || Number.isNaN(value)) return '-';
-  return (value / (1024 * 1024)).toFixed(2);
-};
+import { SecuritySettingsPageUtils } from './security-settings-page-utils';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
   <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
@@ -36,8 +32,8 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
 );
 
 export default function SecuritySettingsPage() {
-  const { theme } = useTheme();
-  const { addNotification } = useNotification();
+  const { theme } = ThemeHooks.useTheme();
+  const { addNotification } = NotificationHooks.useNotification();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
@@ -51,7 +47,7 @@ export default function SecuritySettingsPage() {
 
   const fetchStats = async () => {
     try {
-      const data = await api.get(ENDPOINTS.SYSTEM.STATS.SECURITY);
+      const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.SECURITY);
       setStats(data);
     } catch (e) {
       console.error("Failed to fetch security stats", e);
@@ -61,7 +57,7 @@ export default function SecuritySettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
         const docs = response.docs || [];
         const newSettings = { ...settings };
         docs.forEach((s: any) => {
@@ -83,7 +79,7 @@ export default function SecuritySettingsPage() {
     setIsSaving(true);
     try {
       await Promise.all(Object.entries(settings).map(([key, value]) => {
-        return api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/${key}`, {
+        return AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/${key}`, {
           value: typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value)
         });
       }));
@@ -98,9 +94,9 @@ export default function SecuritySettingsPage() {
   if (isLoading) return <div className="p-12"><Loader label="Hardening Protocols..." /></div>;
 
   const sandboxHeap = stats?.sandbox?.heap;
-  const sandboxUsedMB = bytesToMB(sandboxHeap?.used_heap_size);
-  const sandboxTotalMB = bytesToMB(sandboxHeap?.total_heap_size);
-  const sandboxLimitMB = bytesToMB(sandboxHeap?.heap_size_limit);
+  const sandboxUsedMB = SecuritySettingsPageUtils.bytesToMB(sandboxHeap?.used_heap_size);
+  const sandboxTotalMB = SecuritySettingsPageUtils.bytesToMB(sandboxHeap?.total_heap_size);
+  const sandboxLimitMB = SecuritySettingsPageUtils.bytesToMB(sandboxHeap?.heap_size_limit);
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">

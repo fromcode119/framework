@@ -21,8 +21,23 @@ export type AdminExtensionModule = {
 async function loadAiExtension(): Promise<AdminExtensionModule> {
   try {
     // Try to dynamically import the AI admin module
-    const aiAdmin = await import('@fromcode119/ai/admin');
-    return aiAdmin;
+    const aiAdmin = (await import('@fromcode119/ai/admin')) as {
+      registerAdminExtension?: unknown;
+      AdminExtensionRegistry?: {
+        registerAdminExtension?: unknown;
+      };
+    };
+    const directRegister =
+      typeof aiAdmin.registerAdminExtension === 'function'
+        ? (aiAdmin.registerAdminExtension as (bridge: AdminExtensionBridge) => void)
+        : undefined;
+    const registryRegister =
+      aiAdmin.AdminExtensionRegistry && typeof aiAdmin.AdminExtensionRegistry.registerAdminExtension === 'function'
+        ? (aiAdmin.AdminExtensionRegistry.registerAdminExtension as (bridge: AdminExtensionBridge) => void)
+        : undefined;
+    const registerAdminExtension: AdminExtensionModule['registerAdminExtension'] = directRegister || registryRegister;
+
+    return { registerAdminExtension };
   } catch (error: any) {
     // AI package not available or disabled - return empty module
     if (error.code === 'MODULE_NOT_FOUND' || error.code === 'ERR_MODULE_NOT_FOUND') {

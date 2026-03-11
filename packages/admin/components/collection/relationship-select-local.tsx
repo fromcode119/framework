@@ -1,10 +1,9 @@
 "use client";
 
 import React from 'react';
-import { queryCollectionDocByField, queryCollectionDocById, queryCollectionDocs, usePlugins } from '@fromcode119/react';
+import { CollectionQueryUtils, ContextHooks } from '@fromcode119/react';
 import { Select } from '@/components/ui/select';
-import { api } from '@/lib/api';
-import { resolveLabelText } from '@/lib/utils';
+import { AdminServices } from '@/lib/admin-services';
 
 interface RelationshipSelectLocalProps {
   field: any;
@@ -18,26 +17,23 @@ interface SelectOption {
   value: string;
 }
 
-const toScalar = (input: any): string => {
-  if (input === null || input === undefined) return '';
-  if (typeof input === 'string' || typeof input === 'number') return String(input);
-  if (typeof input === 'object') {
-    const fromObject = input.id ?? input._id ?? input.value ?? input.slug ?? '';
-    return String(fromObject || '');
-  }
-  return String(input);
-};
+import { CollectionKeyUtils } from './collection-key-utils';
+import { RelationshipSelectLocalUtils } from './relationship-select-local-utils';
 
 export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = ({ field, value, onChange, theme }) => {
-  const { collections } = usePlugins();
-  const sourceCollectionSlug = field.admin?.sourceCollection || field.relationTo;
+  const { collections, api } = ContextHooks.usePlugins();
+  const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
+  const sourceCollectionSlug = React.useMemo(
+    () => CollectionKeyUtils.resolveSourceSlug(requestedSourceCollection, collections || []),
+    [collections, requestedSourceCollection]
+  );
   const sourceCollection = collections.find((c: any) => c.slug === sourceCollectionSlug);
   const preferredLabelField =
     sourceCollection?.admin?.useAsTitle ||
     (sourceCollectionSlug === 'users' ? 'username' : sourceCollectionSlug === 'media' ? 'filename' : 'name');
   const lookupField = field.admin?.sourceField || preferredLabelField;
 
-  const currentValue = React.useMemo(() => toScalar(value), [value]);
+  const currentValue = React.useMemo(() => RelationshipSelectLocalUtils.toScalar(value), [value]);
   const [search, setSearch] = React.useState('');
   const [options, setOptions] = React.useState<SelectOption[]>([]);
   const rawValueMapRef = React.useRef<Record<string, any>>({});
@@ -59,14 +55,14 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
       const mapped: SelectOption[] = [];
       for (const doc of docs) {
         const rawValue = doc?.id ?? doc?._id ?? doc?.value ?? doc?.slug;
-        const optionValue = toScalar(rawValue);
+        const optionValue = RelationshipSelectLocalUtils.toScalar(rawValue);
         if (!optionValue || seen.has(optionValue)) continue;
         seen.add(optionValue);
         rawValueMapRef.current[optionValue] = rawValue ?? optionValue;
         const preferredLabel =
-          resolveLabelText(doc?.[preferredLabelField]) ||
-          resolveLabelText(doc?.[lookupField]) ||
-          resolveLabelText(doc);
+          AdminServices.getInstance().localization.resolveLabelText(doc?.[preferredLabelField]) ||
+          AdminServices.getInstance().localization.resolveLabelText(doc?.[lookupField]) ||
+          AdminServices.getInstance().localization.resolveLabelText(doc);
         mapped.push({
           value: optionValue,
           label: preferredLabel || optionValue
@@ -77,7 +73,7 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
 
     const fetchOptions = async () => {
       try {
-        const docs = await queryCollectionDocs(api, sourceCollectionSlug, {
+        const docs = await CollectionQueryUtils.queryCollectionDocs(api, sourceCollectionSlug, {
           limit: 30,
           search: search.trim() || undefined
         });
@@ -91,12 +87,12 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
 
         // Ensure the currently selected value resolves to a label.
         try {
-          const byId = await queryCollectionDocById(api, sourceCollectionSlug, currentValue);
+          const byId = await CollectionQueryUtils.queryCollectionDocById(api, sourceCollectionSlug, currentValue);
           const resolved = mapDocsToOptions([byId])[0];
           if (resolved && !disposed) upsertOption(resolved);
         } catch {
           try {
-            const byFieldDoc = await queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
+            const byFieldDoc = await CollectionQueryUtils.queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
             const resolved = byFieldDoc ? mapDocsToOptions([byFieldDoc])[0] : undefined;
             if (resolved && !disposed) upsertOption(resolved);
           } catch {

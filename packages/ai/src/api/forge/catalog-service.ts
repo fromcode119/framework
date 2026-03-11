@@ -1,7 +1,7 @@
 import { PluginManager, ThemeManager } from '@fromcode119/core';
-import { AssistantCollectionContext } from '../../admin-assistant-runtime';
+import type { AssistantCollectionContext } from '../../admin-assistant-runtime/types';
 import { Request } from 'express';
-import { RESTController } from '../controller';
+import type { RESTController } from '../controller.types';
 
 export class AssistantCatalogService {
   constructor(

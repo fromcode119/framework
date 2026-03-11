@@ -1,11 +1,11 @@
 import { SystemMigration } from '../../types';
-import { executeForDialect } from '../helpers/dialect';
+import { DialectHelper } from '../helpers/dialect';
 
 export const InitialFrameworkMigration: SystemMigration = {
   version: 1,
   name: 'Initial core framework schema',
   up: async (db, sql) => {
-    await executeForDialect(db.dialect, {
+    await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         // 1. Plugins Table
         await db.execute(sql`
@@ -348,7 +348,7 @@ export const InitialFrameworkMigration: SystemMigration = {
     });
 
     // 13. System Seeding (Seed with agnostic insert if possible, or per-dialect)
-    await executeForDialect(db.dialect, {
+    await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`
           INSERT INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
@@ -416,7 +416,7 @@ export const InitialFrameworkMigration: SystemMigration = {
     ];
     for (const table of tables) {
       // CASCADE is pg specific, SQLite doesn't need it if we drop in order
-      await executeForDialect(db.dialect, {
+      await DialectHelper.executeForDialect(db.dialect, {
         postgres: async () => await db.execute(sql`DROP TABLE IF EXISTS "${sql.raw(table)}" CASCADE`),
         default: async () => await db.execute(sql`DROP TABLE IF EXISTS "${sql.raw(table)}"`)
       });

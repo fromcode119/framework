@@ -1,7 +1,6 @@
 import { QueueAdapter } from './types';
 import { LocalQueueAdapter } from './adapters/local-queue-adapter';
-
-export type QueueAdapterCreator = (options: any) => QueueAdapter;
+import type { QueueAdapterCreator } from './factory.types';
 
 export class QueueAdapterFactory {
   private static registry: Map<string, QueueAdapterCreator> = new Map();

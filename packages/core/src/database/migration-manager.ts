@@ -1,8 +1,8 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
 import { Logger } from '@fromcode119/sdk';
 import { SystemMigration } from '../types';
-import { loadMigrations } from './migrations';
-import { SystemTable } from '@fromcode119/sdk/internal';
+import { MigrationLoader } from './migrations';
+import { SystemConstants } from '@fromcode119/sdk';
 
 export class MigrationManager {
   private logger = new Logger({ namespace: 'migration-manager' });
@@ -10,15 +10,15 @@ export class MigrationManager {
   constructor(private db: IDatabaseManager) {}
 
   async init() {
-    await this.db.ensureMigrationTable(SystemTable.MIGRATIONS);
+    await this.db.ensureMigrationTable(SystemConstants.TABLE.MIGRATIONS);
   }
 
   async migrate(pluginMigrations: SystemMigration[] = []) {
     await this.init();
-    const systemMigrations = loadMigrations();
+    const systemMigrations = MigrationLoader.load();
     const allMigrations = [...systemMigrations, ...pluginMigrations];
     
-    const executed = await this.db.find(SystemTable.MIGRATIONS, { columns: { version: true } });
+    const executed = await this.db.find(SystemConstants.TABLE.MIGRATIONS, { columns: { version: true } });
     const executedVersions = new Set(executed.map((m: any) => m.version));
 
     const pending = allMigrations
@@ -35,7 +35,7 @@ export class MigrationManager {
     for (const migration of pending) {
       this.logger.info(`Running migration: ${migration.name} (v${migration.version})...`);
       await migration.up(this.db, sql);
-      await this.db.insert(SystemTable.MIGRATIONS, {
+      await this.db.insert(SystemConstants.TABLE.MIGRATIONS, {
         name: migration.name,
         version: migration.version,
         batch
@@ -53,22 +53,22 @@ export class MigrationManager {
       return;
     }
 
-    const toRollback = await this.db.find(SystemTable.MIGRATIONS, { 
+    const toRollback = await this.db.find(SystemConstants.TABLE.MIGRATIONS, { 
       where: { batch },
       orderBy: { version: 'desc' }
     });
 
-    const systemMigrations = loadMigrations();
+    const systemMigrations = MigrationLoader.load();
     // For now, we only rollback system migrations that we have loaded.
     // In a full implementation, we'd need to collect plugin migrations too.
 
     for (const record of toRollback) {
-      const migration = systemMigrations.find(m => m.version === record.version);
+      const migration = systemMigrations.find((m: any) => m.version === record.version);
       if (migration && migration.down) {
         this.logger.info(`Rolling back: ${migration.name} (v${migration.version})...`);
         await migration.down(this.db, sql);
       }
-      await this.db.delete(SystemTable.MIGRATIONS, { id: record.id });
+      await this.db.delete(SystemConstants.TABLE.MIGRATIONS, { id: record.id });
     }
 
     this.logger.info('Rollback completed successfully.');

@@ -1,7 +1,8 @@
-import { BaseRouter } from '../routers/BaseRouter';
+import { BaseRouter } from '../routers/base-router';
 import { PluginManager } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
-import { CollectionMiddleware } from '../middlewares/CollectionMiddleware';
+import { CollectionMiddleware } from '../middlewares/collection-middleware';
+import { RouteConstants } from '@fromcode119/sdk';
 
 /**
  * Collection router for CRUD operations on collections.
@@ -28,87 +29,33 @@ export class CollectionRouter extends BaseRouter {
 
   protected registerRoutes(): void {
     // List and export
-    this.get('/collections/:slug', this.collectionMiddleware, 
+    this.get(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG, this.collectionMiddleware, 
       (req: any, res) => this.restController.find(req.collection, req, res));
-    this.get('/collections/:slug/export', this.collectionMiddleware, 
+    this.get(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_EXPORT, this.collectionMiddleware, 
       (req: any, res) => this.restController.export(req.collection, req, res));
     
     // Import and bulk operations
-    this.post('/collections/:slug/import', this.collectionMiddleware, 
+    this.post(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_IMPORT, this.collectionMiddleware, 
       (req: any, res) => this.restController.import(req.collection, req, res));
-    this.post('/collections/:slug/bulk', this.collectionMiddleware, 
+    this.post(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_BULK, this.collectionMiddleware, 
       (req: any, res) => this.restController.bulkCreate(req.collection, req, res));
-    this.post('/collections/:slug/bulk-update', this.collectionMiddleware, 
+    this.post(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_BULK_UPDATE, this.collectionMiddleware, 
       (req: any, res) => this.restController.bulkUpdate(req.collection, req, res));
-    this.post('/collections/:slug/bulk-delete', this.collectionMiddleware, 
+    this.post(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_BULK_DELETE, this.collectionMiddleware, 
       (req: any, res) => this.restController.bulkDelete(req.collection, req, res));
     
     // Field suggestions
-    this.get('/collections/:slug/suggestions/:field', this.collectionMiddleware, 
+    this.get(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_SUGGESTIONS_FIELD, this.collectionMiddleware, 
       (req: any, res) => this.restController.getSuggestions(req.collection, req, res));
     
     // CRUD operations
-    this.get('/collections/:slug/:id', this.collectionMiddleware, 
+    this.get(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_ID, this.collectionMiddleware, 
       (req: any, res) => this.restController.findOne(req.collection, req, res));
-    this.post('/collections/:slug', this.collectionMiddleware, 
+    this.post(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG, this.collectionMiddleware, 
       (req: any, res) => this.restController.create(req.collection, req, res));
-    this.put('/collections/:slug/:id', this.collectionMiddleware, 
+    this.put(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_ID, this.collectionMiddleware, 
       (req: any, res) => this.restController.update(req.collection, req, res));
-    this.delete('/collections/:slug/:id', this.collectionMiddleware, 
-      (req: any, res) => this.restController.delete(req.collection, req, res));
-  }
-}
-
-/**
- * Base collection router without /collections prefix.
- * Used for plugin-specific collection routes.
- * 
- * @example
- * ```typescript
- * const baseRouter = new BaseCollectionRouter(pluginManager, restController);
- * app.use('/api/v1/ecommerce', baseRouter.router);
- * ```
- */
-export class BaseCollectionRouter extends BaseRouter {
-  private collectionMiddleware: any;
-
-  constructor(
-    private manager: PluginManager,
-    private restController: RESTController
-  ) {
-    super();
-    this.collectionMiddleware = new CollectionMiddleware(manager).middleware();
-  }
-
-  protected registerRoutes(): void {
-    // List and export
-    this.get('/:slug', this.collectionMiddleware, 
-      (req: any, res) => this.restController.find(req.collection, req, res));
-    this.get('/:slug/export', this.collectionMiddleware, 
-      (req: any, res) => this.restController.export(req.collection, req, res));
-    
-    // Import and bulk operations
-    this.post('/:slug/import', this.collectionMiddleware, 
-      (req: any, res) => this.restController.import(req.collection, req, res));
-    this.post('/:slug/bulk', this.collectionMiddleware, 
-      (req: any, res) => this.restController.bulkCreate(req.collection, req, res));
-    this.post('/:slug/bulk-update', this.collectionMiddleware, 
-      (req: any, res) => this.restController.bulkUpdate(req.collection, req, res));
-    this.post('/:slug/bulk-delete', this.collectionMiddleware, 
-      (req: any, res) => this.restController.bulkDelete(req.collection, req, res));
-    
-    // Field suggestions
-    this.get('/:slug/suggestions/:field', this.collectionMiddleware, 
-      (req: any, res) => this.restController.getSuggestions(req.collection, req, res));
-    
-    // CRUD operations
-    this.get('/:slug/:id', this.collectionMiddleware, 
-      (req: any, res) => this.restController.findOne(req.collection, req, res));
-    this.post('/:slug', this.collectionMiddleware, 
-      (req: any, res) => this.restController.create(req.collection, req, res));
-    this.put('/:slug/:id', this.collectionMiddleware, 
-      (req: any, res) => this.restController.update(req.collection, req, res));
-    this.delete('/:slug/:id', this.collectionMiddleware, 
+    this.delete(RouteConstants.SEGMENTS.GLOBAL_COLLECTIONS_SLUG_ID, this.collectionMiddleware, 
       (req: any, res) => this.restController.delete(req.collection, req, res));
   }
 }

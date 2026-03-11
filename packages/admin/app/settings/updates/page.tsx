@@ -5,24 +5,24 @@ import { Card } from '@/components/ui/card';
 import { Loader } from '@/components/ui/loader';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { useNotify } from '@/components/notification-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { NotificationHooks } from '@/components/use-notification';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 
 export default function UpdatesPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const { notify } = useNotify();
+  const { notify } = NotificationHooks.useNotify();
 
   const fetchStatus = async () => {
     setLoading(true);
     try {
-      const data = await api.get(ENDPOINTS.SYSTEM.UPDATE_CHECK);
+      const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_CHECK);
       setStatus(data);
     } catch (err: any) {
       notify('error', 'Update Check Failed', err.message);
@@ -39,7 +39,7 @@ export default function UpdatesPage() {
     setUpdating(true);
     try {
       notify('info', 'Update Started', 'Creating system backup and applying updates. This may take a minute.');
-      const data = await api.post(ENDPOINTS.SYSTEM.UPDATE_APPLY);
+      const data = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_APPLY);
       notify('success', 'Update Complete', `System updated to v${data.version}. The page will now refresh.`);
       setShowConfirm(false);
       

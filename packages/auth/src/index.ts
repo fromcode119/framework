@@ -4,17 +4,9 @@ import { randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
 import { Logger } from '@fromcode119/sdk';
 import { UserPermissionChecker } from './permission-checker';
+import type { User, IAuthService } from './index.interfaces';
+import type { SessionValidator, ApiKeyValidator } from './index.types';
 
-export interface User {
-  id: string;
-  email: string;
-  roles: string[];
-  jti?: string; 
-  isApiKey?: boolean;
-}
-
-export type SessionValidator = (jti: string) => Promise<boolean>;
-export type ApiKeyValidator = (apiKey: string) => Promise<User | null>;
 
 export class AuthManager {
   private secret: string;
@@ -280,13 +272,3 @@ export class AuthManager {
     };
   }
 }
-
-export interface IAuthService {
-  hashPassword(password: string): Promise<string>;
-  comparePassword(password: string, hash: string): Promise<boolean>;
-  generateToken(user: User, options?: { expiresIn?: SignOptions['expiresIn'] }): Promise<string>;
-  verifyToken(token: string): Promise<User>;
-}
-
-export { UserPermissionChecker } from './permission-checker';
-

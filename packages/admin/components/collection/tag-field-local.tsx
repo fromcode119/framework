@@ -1,8 +1,9 @@
 "use client";
 
 import React from 'react';
-import { usePlugins } from '@fromcode119/react';
+import { ContextHooks } from '@fromcode119/react';
 import { TagField } from '@/components/ui/tag-field';
+import { CollectionKeyUtils } from './collection-key-utils';
 
 interface TagFieldLocalProps {
   field: any;
@@ -13,9 +14,14 @@ interface TagFieldLocalProps {
 }
 
 export const TagFieldLocal: React.FC<TagFieldLocalProps> = ({ field, value, onChange, theme, collectionSlug }) => {
-  const { collections } = usePlugins();
-  const sourceCollectionSlug = field.admin?.sourceCollection || field.relationTo;
-  const sourceCollection = collections.find(c => c.slug === sourceCollectionSlug);
+  const { collections } = ContextHooks.usePlugins();
+  const isRelationshipField = field.type === 'relationship';
+  const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
+  const sourceCollectionSlug = React.useMemo(
+    () => CollectionKeyUtils.resolveSourceSlug(requestedSourceCollection, collections || []),
+    [collections, requestedSourceCollection]
+  );
+  const sourceCollection = collections.find((c: any) => c.slug === sourceCollectionSlug);
   
   const targetField = sourceCollectionSlug
     ? (
@@ -64,7 +70,8 @@ export const TagFieldLocal: React.FC<TagFieldLocalProps> = ({ field, value, onCh
       sourceCollection={sourceCollectionSlug}
       sourceField={targetField}
       hasMany={field.hasMany !== undefined ? field.hasMany : (field.admin?.component === 'TagField' || field.admin?.component === 'Tags')}
-      allowCreate={sourceCollectionSlug !== 'users' && sourceCollectionSlug !== 'media'}
+      // Relationship fields should only reference existing docs; avoid accidental auto-create.
+      allowCreate={!isRelationshipField && sourceCollectionSlug !== 'users' && sourceCollectionSlug !== 'media'}
       placeholder={field.admin?.placeholder || undefined}
       suggestionsLabel={field.admin?.suggestionsLabel || undefined}
     />

@@ -6,19 +6,6 @@ const DEFAULT_FETCH_TIMEOUT_MS = 3000;
 
 export { MarketplacePlugin, MarketplaceData };
 
-function isMarketplaceDisabled(value: string): boolean {
-  const normalized = String(value || '').trim().toLowerCase();
-  return ['off', 'false', 'disabled', 'no', '0'].includes(normalized);
-}
-
-function parseFetchTimeoutMs(value: unknown): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return DEFAULT_FETCH_TIMEOUT_MS;
-  }
-  return Math.floor(parsed);
-}
-
 export class MarketplaceClient {
   private marketplaceUrl: string;
   private readonly fetchTimeoutMs: number;
@@ -26,11 +13,11 @@ export class MarketplaceClient {
 
   constructor(url?: string) {
     const raw = String(url ?? process.env.MARKETPLACE_URL ?? '').trim();
-    this.disabled = isMarketplaceDisabled(raw);
+    this.disabled = MarketplaceClient.isMarketplaceDisabled(raw);
     this.marketplaceUrl = this.disabled
       ? ''
       : (raw || DEFAULT_MARKETPLACE_URL);
-    this.fetchTimeoutMs = parseFetchTimeoutMs(process.env.MARKETPLACE_FETCH_TIMEOUT_MS);
+    this.fetchTimeoutMs = MarketplaceClient.parseFetchTimeoutMs(process.env.MARKETPLACE_FETCH_TIMEOUT_MS);
   }
 
   /**
@@ -155,5 +142,22 @@ export class MarketplaceClient {
 
     const baseUrl = this.marketplaceUrl.substring(0, this.marketplaceUrl.lastIndexOf('/'));
     return new URL(url, baseUrl + '/').toString();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private static helpers (implementation details — not part of public API)
+  // ---------------------------------------------------------------------------
+
+  private static isMarketplaceDisabled(value: string): boolean {
+    const normalized = String(value || '').trim().toLowerCase();
+    return ['off', 'false', 'disabled', 'no', '0'].includes(normalized);
+  }
+
+  private static parseFetchTimeoutMs(value: unknown): number {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return DEFAULT_FETCH_TIMEOUT_MS;
+    }
+    return Math.floor(parsed);
   }
 }

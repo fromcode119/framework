@@ -4,13 +4,9 @@ import React, { useEffect } from 'react';
 import { Button } from './button';
 import { FrameworkIcons } from '@/lib/icons';
 import { RootFramework } from '@fromcode119/react';
+import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
 
 const { Warning: AlertTriangle, Close: X } = FrameworkIcons;
-
-export interface UploadPreviewSection {
-  title: string;
-  items: string[];
-}
 
 interface UploadPreviewDialogProps {
   isOpen: boolean;
@@ -24,7 +20,7 @@ interface UploadPreviewDialogProps {
   onConfirm: () => void;
 }
 
-export const UploadPreviewDialog = ({
+export function UploadPreviewDialog({
   isOpen,
   title,
   description,
@@ -34,7 +30,7 @@ export const UploadPreviewDialog = ({
   isLoading = false,
   onClose,
   onConfirm,
-}: UploadPreviewDialogProps) => {
+}: UploadPreviewDialogProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -122,4 +118,4 @@ export const UploadPreviewDialog = ({
       </div>
     </RootFramework>
   );
-};
+}

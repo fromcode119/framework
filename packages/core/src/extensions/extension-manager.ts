@@ -1,9 +1,9 @@
 import { Logger } from '@fromcode119/sdk';
-import { SystemTable } from '@fromcode119/sdk/internal';
+import { SystemConstants } from '@fromcode119/sdk';
 import { IDatabaseManager } from '@fromcode119/database';
 import * as path from 'path';
 import * as fs from 'fs';
-import { capabilities } from '../capabilities';
+import { CapabilityRegistry } from '../capabilities';
 import {
   CoreExtensionManifest,
   LoadedCoreExtension,
@@ -69,9 +69,9 @@ export class CoreExtensionManager {
       // Verify packages directory exists, if not try to fix it
       if (!fs.existsSync(this.packagesRoot)) {
         this.logger.warn(`Packages directory not found at ${this.packagesRoot}, attempting to locate...`);
-        // Re-import getPackagesDir to get fresh path resolution
-        const { getPackagesDir } = await import('../config/paths');
-        this.packagesRoot = getPackagesDir();
+        // Re-import ProjectPaths to get fresh path resolution
+        const { ProjectPaths } = await import('../config/paths');
+        this.packagesRoot = ProjectPaths.getPackagesDir();
         this.logger.info(`Using packages directory: ${this.packagesRoot}`);
       }
       
@@ -158,8 +158,15 @@ export class CoreExtensionManager {
         throw new Error(`Extension entry point not found: ${modulePath}`);
       }
       
-      // Dynamic import of the extension module
-      const module: CoreExtensionModule = await import(modulePath);
+      // Dynamic import of the extension module.
+      // Supports both named-function exports and class-based extensions (single class with static lifecycle methods).
+      const rawModule = await import(modulePath);
+      const rawExports = Object.values(rawModule);
+      const module: CoreExtensionModule = (
+        rawExports.length === 1 &&
+        typeof rawExports[0] === 'function' &&
+        ('onInit' in rawExports[0] || 'onEnable' in rawExports[0] || 'onDisable' in rawExports[0])
+      ) ? (rawExports[0] as CoreExtensionModule) : rawModule;
       extension.module = module;
       extension.state = 'loaded';
       
@@ -318,7 +325,7 @@ export class CoreExtensionManager {
         this.capabilities.add(capability);
         extensionCapabilities.push(capability);
         // Also register in global capability registry
-        capabilities.register(capability, {
+        CapabilityRegistry.getInstance().register(capability, {
           provider: extension.manifest.slug,
           version: extension.manifest.version,
           description: extension.manifest.description,
@@ -332,7 +339,7 @@ export class CoreExtensionManager {
           extensionCapabilities.splice(index, 1);
         }
         // Also unregister from global capability registry
-        capabilities.unregister(capability);
+        CapabilityRegistry.getInstance().unregister(capability);
         logger.info(`Unregistered capability: ${capability}`);
       },
       getRegisteredCapabilities: () => [...extensionCapabilities],
@@ -361,7 +368,7 @@ export class CoreExtensionManager {
   private async loadStates(): Promise<void> {
     try {
       const rows = await this.db.find(
-        SystemTable.META,
+        SystemConstants.TABLE.META,
         { where: { group: 'core-extension-state' } }
       );
       
@@ -402,7 +409,7 @@ export class CoreExtensionManager {
     
     try {
       await this.db.upsert(
-        SystemTable.META,
+        SystemConstants.TABLE.META,
         {
           group: 'core-extension-state',
           key: `extension.${slug}`,

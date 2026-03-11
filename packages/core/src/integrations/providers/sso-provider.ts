@@ -1,59 +1,64 @@
-import { IntegrationTypeDefinition } from '../integration-registry';
+import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
 
 type SsoProviderConfig = Record<string, any>;
 
-function normalizeSsoConfig(input: Record<string, any>): SsoProviderConfig {
-  return {
-    clientId: String(input?.clientId || '').trim(),
-    clientSecret: String(input?.clientSecret || '').trim(),
-    scopes: String(input?.scopes || '').trim(),
-    issuer: String(input?.issuer || '').trim(),
-    authorizeUrl: String(input?.authorizeUrl || '').trim(),
-    tokenUrl: String(input?.tokenUrl || '').trim(),
-    userInfoUrl: String(input?.userInfoUrl || '').trim()
-  };
-}
-
-function resolveSsoFromEnv() {
-  const configured = String(process.env.SSO_PROVIDER || '').trim().toLowerCase();
-  if (configured) {
-    return { provider: configured, config: {} };
-  }
-
-  if (process.env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_SECRET) {
+/**
+ * Utility helpers for SSO provider configuration.
+ */
+class SsoProviderUtils {
+  static normalizeSsoConfig(input: Record<string, any>): SsoProviderConfig {
     return {
-      provider: 'google',
-      config: {
-        clientId: process.env.GOOGLE_CLIENT_ID || '',
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-        scopes: process.env.GOOGLE_SCOPES || 'openid email profile'
-      }
+      clientId: String(input?.clientId || '').trim(),
+      clientSecret: String(input?.clientSecret || '').trim(),
+      scopes: String(input?.scopes || '').trim(),
+      issuer: String(input?.issuer || '').trim(),
+      authorizeUrl: String(input?.authorizeUrl || '').trim(),
+      tokenUrl: String(input?.tokenUrl || '').trim(),
+      userInfoUrl: String(input?.userInfoUrl || '').trim()
     };
   }
 
-  if (process.env.MICROSOFT_CLIENT_ID || process.env.MICROSOFT_CLIENT_SECRET) {
-    return {
-      provider: 'microsoft',
-      config: {
-        clientId: process.env.MICROSOFT_CLIENT_ID || '',
-        clientSecret: process.env.MICROSOFT_CLIENT_SECRET || '',
-        scopes: process.env.MICROSOFT_SCOPES || 'openid email profile'
-      }
-    };
-  }
+  static resolveSsoFromEnv() {
+    const configured = String(process.env.SSO_PROVIDER || '').trim().toLowerCase();
+    if (configured) {
+      return { provider: configured, config: {} };
+    }
 
-  if (process.env.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_SECRET) {
-    return {
-      provider: 'github',
-      config: {
-        clientId: process.env.GITHUB_CLIENT_ID || '',
-        clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-        scopes: process.env.GITHUB_SCOPES || 'read:user user:email'
-      }
-    };
-  }
+    if (process.env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_SECRET) {
+      return {
+        provider: 'google',
+        config: {
+          clientId: process.env.GOOGLE_CLIENT_ID || '',
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+          scopes: process.env.GOOGLE_SCOPES || 'openid email profile'
+        }
+      };
+    }
 
-  return null;
+    if (process.env.MICROSOFT_CLIENT_ID || process.env.MICROSOFT_CLIENT_SECRET) {
+      return {
+        provider: 'microsoft',
+        config: {
+          clientId: process.env.MICROSOFT_CLIENT_ID || '',
+          clientSecret: process.env.MICROSOFT_CLIENT_SECRET || '',
+          scopes: process.env.MICROSOFT_SCOPES || 'openid email profile'
+        }
+      };
+    }
+
+    if (process.env.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_SECRET) {
+      return {
+        provider: 'github',
+        config: {
+          clientId: process.env.GITHUB_CLIENT_ID || '',
+          clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+          scopes: process.env.GITHUB_SCOPES || 'read:user user:email'
+        }
+      };
+    }
+
+    return null;
+  }
 }
 
 const commonOauthFields = [
@@ -82,31 +87,31 @@ export const SsoIntegrationDefinition: IntegrationTypeDefinition<any> = {
   label: 'Federated Login (SSO)',
   description: 'OAuth/OpenID provider credentials used for customer/admin single sign-on.',
   defaultProvider: 'google',
-  resolveFromEnv: resolveSsoFromEnv,
+  resolveFromEnv: SsoProviderUtils.resolveSsoFromEnv,
   providers: [
     {
       key: 'google',
       label: 'Google OAuth',
       description: 'Sign in with Google accounts.',
       fields: commonOauthFields,
-      normalizeConfig: normalizeSsoConfig,
-      create: (config) => ({ provider: 'google', ...normalizeSsoConfig(config) })
+      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
+      create: (config) => ({ provider: 'google', ...SsoProviderUtils.normalizeSsoConfig(config) })
     },
     {
       key: 'microsoft',
       label: 'Microsoft OAuth',
       description: 'Sign in with Microsoft/Azure AD accounts.',
       fields: commonOauthFields,
-      normalizeConfig: normalizeSsoConfig,
-      create: (config) => ({ provider: 'microsoft', ...normalizeSsoConfig(config) })
+      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
+      create: (config) => ({ provider: 'microsoft', ...SsoProviderUtils.normalizeSsoConfig(config) })
     },
     {
       key: 'github',
       label: 'GitHub OAuth',
       description: 'Sign in with GitHub accounts.',
       fields: commonOauthFields,
-      normalizeConfig: normalizeSsoConfig,
-      create: (config) => ({ provider: 'github', ...normalizeSsoConfig(config) })
+      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
+      create: (config) => ({ provider: 'github', ...SsoProviderUtils.normalizeSsoConfig(config) })
     },
     {
       key: 'openid',
@@ -139,8 +144,8 @@ export const SsoIntegrationDefinition: IntegrationTypeDefinition<any> = {
           required: false
         }
       ],
-      normalizeConfig: normalizeSsoConfig,
-      create: (config) => ({ provider: 'openid', ...normalizeSsoConfig(config) })
+      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
+      create: (config) => ({ provider: 'openid', ...SsoProviderUtils.normalizeSsoConfig(config) })
     }
   ]
 };

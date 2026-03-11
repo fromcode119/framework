@@ -1,0 +1,141 @@
+/**
+ * Centralized route segment constants for core framework routes.
+ * Use these instead of hardcoding strings in routers.
+ * 
+ * Plugin-specific routes should be defined in their respective plugin directories.
+ */
+export class RouteConstants {
+  static readonly SEGMENTS = {
+  // ── Top-level mount points ───────────────────────────────────────────────
+  AUTH: '/auth',
+  PLUGINS: '/plugins',
+  MARKETPLACE: '/marketplace',
+  THEMES: '/themes',
+  SYSTEM: '/system',
+  MEDIA: '/media',
+  VERSIONS: '/versions',
+
+  // ── Admin ───────────────────────────────────────────────────────────────
+  ADMIN_BASE: '/admin',
+
+  // ── Core / Auth ───────────────────────────────────────────────────────────
+  ACTIVE: '/active',
+  ME: '/me',
+  STATUS: '/status',
+  ENABLE: '/enable',
+  DISABLE: '/disable',
+  SESSIONS: '/sessions',
+  SESSIONS_ME: '/sessions/me',
+  API_TOKENS: '/api-tokens',
+  KILL: '/kill',
+  SETUP: '/setup',
+  REGISTER: '/register',
+  VERIFY_EMAIL: '/verify-email',
+  RESEND_VERIFICATION: '/resend-verification',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
+  LOGIN: '/login',
+  LOGOUT: '/logout',
+  SSO_PROVIDERS: '/sso/providers',
+  SSO_LOGIN: '/sso/login',
+  SECURITY: '/security',
+  VERIFY_PASSWORD: '/verify-password',
+  CHANGE_PASSWORD: '/change-password',
+  EMAIL_CHANGE_REQUEST: '/email-change/request',
+  EMAIL_CHANGE_CONFIRM: '/email-change/confirm',
+  SESSIONS_ID_REVOKE: '/sessions/:id/revoke',
+  SESSIONS_REVOKE_OTHERS: '/sessions/revoke-others',
+  API_TOKENS_ID: '/api-tokens/:id',
+  SESSIONS_ID_KILL: '/sessions/:id/kill',
+  ADMIN_METADATA: '/admin/metadata',
+  ADMIN_STATS_COLLECTIONS: '/admin/stats/collections',
+  ADMIN_STATS_SECURITY: '/admin/stats/security',
+  ADMIN_INTEGRATIONS: '/admin/integrations',
+  ADMIN_INTEGRATIONS_TYPE: '/admin/integrations/:type',
+  ADMIN_INTEGRATIONS_PROVIDER: '/admin/integrations/:type/providers/:providerId',
+  ADMIN_INTEGRATIONS_PROFILE_ACTIVATE: '/admin/integrations/:type/profiles/:profileId/activate',
+  ADMIN_INTEGRATIONS_PROFILE: '/admin/integrations/:type/profiles/:profileId',
+  ADMIN_TELEMETRY_EMAIL_TEST: '/admin/telemetry/email-test',
+  ADMIN_ACTIVITY: '/admin/activity',
+  ADMIN_LOGS: '/admin/logs',
+  ADMIN_AUDIT: '/admin/audit',
+  ADMIN_ROLES: '/admin/roles',
+  ADMIN_ROLES_SLUG: '/admin/roles/:slug',
+  ADMIN_PERMISSIONS: '/admin/permissions',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_USERS_ID: '/admin/users/:id',
+  ADMIN_USERS_ROLES: '/admin/users/roles',
+  ADMIN_USERS_2FA_STATUS: '/admin/users/:id/2fa/status',
+  ADMIN_USERS_2FA_SETUP: '/admin/users/:id/2fa/setup',
+  ADMIN_USERS_2FA_VERIFY: '/admin/users/:id/2fa/verify',
+  ADMIN_USERS_2FA_RECOVERY: '/admin/users/:id/2fa/recovery-codes/regenerate',
+  ADMIN_USERS_2FA_DISABLE: '/admin/users/:id/2fa',
+  UPDATE_CHECK: '/update/check',
+  UPDATE_APPLY: '/update/apply',
+  EVENTS: '/events',
+  FRONTEND: '/frontend',
+  I18N: '/i18n',
+  SHORTCODES: '/shortcodes',
+  SHORTCODES_RENDER: '/shortcodes/render',
+  DATA_SOURCES: '/data-sources',
+  DATA_SOURCE_QUERY: '/data-source/query',
+  RESOLVE: '/resolve',
+
+  // ── Plugins ──────────────────────────────────────────────────────────────
+  PLUGINS_MARKETPLACE: '/marketplace',
+  PLUGINS_INSTALL: '/install/:slug',
+  PLUGINS_UPLOAD_INSPECT: '/upload/inspect',
+  PLUGINS_UPLOAD: '/upload',
+  PLUGINS_SLUG_TOGGLE: '/:slug/toggle',
+  PLUGINS_SLUG_CONFIG: '/:slug/config',
+  PLUGINS_SLUG_SANDBOX: '/:slug/sandbox',
+  PLUGINS_SLUG_LOGS: '/:slug/logs',
+  PLUGINS_SLUG_SETTINGS: '/:slug/settings',
+  PLUGINS_SLUG_SETTINGS_SCHEMA: '/:slug/settings/schema',
+  PLUGINS_SLUG_SETTINGS_RESET: '/:slug/settings/reset',
+  PLUGINS_SLUG_SETTINGS_EXPORT: '/:slug/settings/export',
+  PLUGINS_SLUG_SETTINGS_IMPORT: '/:slug/settings/import',
+  PLUGINS_SLUG_UI_WILDCARD: '/:slug/ui/*',
+  PLUGINS_SLUG: '/:slug',
+
+  // ── Collections ──────────────────────────────────────────────────────────
+  COLLECTIONS_SLUG: '/:slug',
+  COLLECTIONS_SLUG_ID: '/:slug/:id',
+  COLLECTIONS_SLUG_EXPORT: '/:slug/export',
+  COLLECTIONS_SLUG_IMPORT: '/:slug/import',
+  COLLECTIONS_SLUG_BULK: '/:slug/bulk',
+  COLLECTIONS_SLUG_BULK_UPDATE: '/:slug/bulk-update',
+  COLLECTIONS_SLUG_BULK_DELETE: '/:slug/bulk-delete',
+  COLLECTIONS_SLUG_SUGGESTIONS_FIELD: '/:slug/suggestions/:field',
+  COLLECTIONS_SLUG_ID_VERSION: '/:slug/:id/:version',
+  COLLECTIONS_SLUG_ID_VERSION_RESTORE: '/:slug/:id/:version/restore',
+
+  // ── Global Collections (prefixed with /collections) ──────────────────────
+  GLOBAL_COLLECTIONS_SLUG: '/collections/:slug',
+  GLOBAL_COLLECTIONS_SLUG_ID: '/collections/:slug/:id',
+  GLOBAL_COLLECTIONS_SLUG_EXPORT: '/collections/:slug/export',
+  GLOBAL_COLLECTIONS_SLUG_IMPORT: '/collections/:slug/import',
+  GLOBAL_COLLECTIONS_SLUG_BULK: '/collections/:slug/bulk',
+  GLOBAL_COLLECTIONS_SLUG_BULK_UPDATE: '/collections/:slug/bulk-update',
+  GLOBAL_COLLECTIONS_SLUG_BULK_DELETE: '/collections/:slug/bulk-delete',
+  GLOBAL_COLLECTIONS_SLUG_SUGGESTIONS_FIELD: '/collections/:slug/suggestions/:field',
+
+  // ── Themes ──────────────────────────────────────────────────────────────
+  THEMES_SLUG_ACTIVATE: '/:slug/activate',
+  THEMES_SLUG_RESET: '/:slug/reset',
+  THEMES_SLUG_INSTALL: '/:slug/install',
+  THEMES_SLUG_CONFIG: '/:slug/config',
+  THEMES_SLUG_CHECK_UPDATE: '/:slug/check-update',
+  THEMES_SLUG_UI_WILDCARD: '/:slug/ui/*',
+  THEMES_SLUG: '/:slug',
+
+  // ── Media ───────────────────────────────────────────────────────────────
+  MEDIA_UPLOAD: '/upload',
+  MEDIA_FOLDERS: '/folders',
+  MEDIA_FOLDERS_ID: '/folders/:id',
+  MEDIA_FOLDERS_ID_PATH: '/folders/:id/path',
+  MEDIA_ID: '/:id',
+  // MEDIA_BASE: '/' is implicitly handled by the router mount point or just ''
+  } as const;
+}
+

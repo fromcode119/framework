@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use } from 'react';
-import { Slot, usePlugins } from '@fromcode119/react';
+import { Slot, ContextHooks } from '@fromcode119/react';
 import CollectionListPage from '@/components/collection/collection-list-page';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { PluginNotFound } from '@/components/plugins/plugin-not-found';
@@ -13,7 +13,7 @@ import { Loader } from '@/components/ui/loader';
  */
 export default function PluginRootRoute({ params }: { params: Promise<{ pluginSlug: string }> }) {
   const { pluginSlug } = use(params);
-  const { collections, slots, plugins, isReady } = usePlugins();
+  const { collections, slots, plugins, isReady } = ContextHooks.usePlugins();
   
   // Check if plugin is active
   const isActive = plugins.some((p: any) => p.slug === pluginSlug);

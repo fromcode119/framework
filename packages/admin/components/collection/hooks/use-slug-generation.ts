@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { slugify } from '@/lib/utils';
+import { StringUtils } from '@fromcode119/sdk';
 
 interface UseSlugGenerationOptions {
   sourceValue: string;
@@ -18,7 +18,7 @@ export function useSlugGeneration({
 
   useEffect(() => {
     if (isNew && !internalManuallyEdited && sourceValue) {
-      const newSlug = slugify(sourceValue);
+      const newSlug = StringUtils.slugify(sourceValue);
       onSlugGenerate(newSlug);
     }
   }, [sourceValue, isNew, internalManuallyEdited, onSlugGenerate]);

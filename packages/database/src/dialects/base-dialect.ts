@@ -1,5 +1,5 @@
 import { sql, eq, and, desc, asc } from 'drizzle-orm';
-import { normalizeParamValue, toSnakeCase } from '../naming-strategy';
+import { NamingStrategy } from '../naming-strategy';
 import type { JoinClause } from '../types';
 
 /**
@@ -14,7 +14,7 @@ export abstract class BaseDialect {
    * Handles undefined, null, Date, Buffer, and objects (JSON stringify)
    */
   protected normalizeParamValue(value: any): any {
-    return normalizeParamValue(value);
+    return NamingStrategy.normalizeParamValue(value);
   }
 
   /**
@@ -53,7 +53,7 @@ export abstract class BaseDialect {
     if (typeof orderBy === 'object' && Object.getPrototypeOf(orderBy) === Object.prototype) {
       return Object.entries(orderBy).map(([column, direction]) => {
         const orderFn = String(direction).toLowerCase() === 'desc' ? desc : asc;
-        return orderFn(sql.identifier(toSnakeCase(column)));
+        return orderFn(sql.identifier(NamingStrategy.toSnakeCase(column)));
       });
     }
 
@@ -75,7 +75,7 @@ export abstract class BaseDialect {
       return { sql: '', values: [] };
     }
 
-    const conditions = whereColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`);
+    const conditions = whereColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`);
     const values = whereColumns.map((column) => this.normalizeParamValue(where[column]));
 
     return {
@@ -96,7 +96,7 @@ export abstract class BaseDialect {
 
     if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
       const clauses = Object.entries(orderBy)
-        .map(([k, v]) => `"${toSnakeCase(k)}" ${String(v).toUpperCase()}`)
+        .map(([k, v]) => `"${NamingStrategy.toSnakeCase(k)}" ${String(v).toUpperCase()}`)
         .join(', ');
       return ` ORDER BY ${clauses}`;
     }
@@ -127,7 +127,7 @@ export abstract class BaseDialect {
     if (where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
       for (const [column, value] of Object.entries(where)) {
         values.push(this.normalizeParamValue(value as any));
-        conditions.push(`"${toSnakeCase(column)}" = ${this.getParamPlaceholder(values.length)}`);
+        conditions.push(`"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(values.length)}`);
       }
     }
 
@@ -179,7 +179,7 @@ export abstract class BaseDialect {
     const selectParts: string[] = [];
     if (columns && Object.keys(columns).length > 0) {
       for (const [k, v] of Object.entries(columns)) {
-        if (v) selectParts.push(`"t0"."${toSnakeCase(k)}"`);
+        if (v) selectParts.push(`"t0"."${NamingStrategy.toSnakeCase(k)}"`);
       }
     } else {
       selectParts.push('"t0".*');
@@ -187,7 +187,7 @@ export abstract class BaseDialect {
     for (let i = 0; i < joins.length; i++) {
       const alias = `t${i + 1}`;
       for (const col of joins[i].columns) {
-        selectParts.push(`"${alias}"."${toSnakeCase(col)}" AS "j${i}__${col}"`);
+        selectParts.push(`"${alias}"."${NamingStrategy.toSnakeCase(col)}" AS "j${i}__${col}"`);
       }
     }
 
@@ -198,7 +198,7 @@ export abstract class BaseDialect {
       const join = joins[i];
       const alias = `t${i + 1}`;
       const joinType = join.type === 'left' ? 'LEFT JOIN' : 'INNER JOIN';
-      sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0"."${toSnakeCase(join.on.from)}" = "${alias}"."${toSnakeCase(join.on.to)}"`;
+      sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0"."${NamingStrategy.toSnakeCase(join.on.from)}" = "${alias}"."${NamingStrategy.toSnakeCase(join.on.to)}"`;
     }
 
     // WHERE clause (main table columns only)
@@ -208,7 +208,7 @@ export abstract class BaseDialect {
       if (entries.length > 0) {
         const conditions = entries.map(([k, v]) => {
           values.push(this.normalizeParamValue(v));
-          return `"t0"."${toSnakeCase(k)}" = ${this.getParamPlaceholder(values.length)}`;
+          return `"t0"."${NamingStrategy.toSnakeCase(k)}" = ${this.getParamPlaceholder(values.length)}`;
         });
         sqlStr += ` WHERE ${conditions.join(' AND ')}`;
       }

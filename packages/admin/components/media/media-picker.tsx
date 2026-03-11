@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, Upload, X, Check, Image as ImageIcon, File, Loader2 } from 'lucide-react';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { RootFramework } from '@fromcode119/react';
-import { TYPOGRAPHY } from '@/lib/typography';
-import { UI_TEXT } from '@/lib/ui';
+import { AdminTypography } from '@/lib/typography';
+import { UiFieldUtils } from '@/lib/ui';
 
 interface MediaItem {
   id: string;
@@ -49,7 +49,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
     setLoading(true);
     try {
       const query = search ? `?q=${encodeURIComponent(search)}` : '';
-      const result = await api.get(`${ENDPOINTS.MEDIA.BASE}${query}`);
+      const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}${query}`);
       setItems(Array.isArray(result) ? result : result.docs || []);
     } catch (error) {
       console.error('Failed to fetch media:', error);
@@ -69,7 +69,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
       
       // First upload file (assuming specialized endpoint or generic collection upload)
       // If no specialized endpoint, we'd use the general collection create with multipart
-      const result = await api.upload(`${ENDPOINTS.MEDIA.UPLOAD}`, formData);
+      const result = await AdminApi.upload(`${AdminConstants.ENDPOINTS.MEDIA.UPLOAD}`, formData);
       
       // Refresh list and select the new item
       await fetchMedia();
@@ -99,8 +99,8 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
           {/* Header */}
           <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <div>
-              <h2 className={`${TYPOGRAPHY.HEADING.SUBTLE} text-slate-900 dark:text-white`}>Media Library</h2>
-              <p className={TYPOGRAPHY.SUBTEXT}>Select or upload an asset to your project</p>
+              <h2 className={`${AdminTypography.TYPOGRAPHY.HEADING.SUBTLE} text-slate-900 dark:text-white`}>Media Library</h2>
+              <p className={AdminTypography.TYPOGRAPHY.SUBTEXT}>Select or upload an asset to your project</p>
             </div>
             <button 
               onClick={onClose}
@@ -119,7 +119,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                 placeholder="Search media..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className={`w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${TYPOGRAPHY.LABEL}`}
+                className={`w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${AdminTypography.TYPOGRAPHY.LABEL}`}
               />
             </div>
             <input 
@@ -150,7 +150,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
               ) : items.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400">
                   <ImageIcon size={48} className="mb-4 opacity-20" />
-                  <p className={TYPOGRAPHY.LABEL}>No media found</p>
+                  <p className={AdminTypography.TYPOGRAPHY.LABEL}>No media found</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -214,22 +214,22 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                   </div>
 
                   <div>
-                    <h4 className={UI_TEXT.LABEL}>Filename</h4>
+                    <h4 className={UiFieldUtils.TEXT.LABEL}>Filename</h4>
                     <p className="text-[11px] font-semibold text-slate-900 dark:text-white truncate">{selectedItem.filename}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h4 className={UI_TEXT.LABEL}>Format</h4>
+                      <h4 className={UiFieldUtils.TEXT.LABEL}>Format</h4>
                       <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{selectedItem.mimeType.split('/')[1]}</p>
                     </div>
                     <div>
-                      <h4 className={UI_TEXT.LABEL}>Size</h4>
+                      <h4 className={UiFieldUtils.TEXT.LABEL}>Size</h4>
                       <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{(selectedItem.filesize / 1024).toFixed(1)} KB</p>
                     </div>
                     {selectedItem.width && (
                       <div className="col-span-2">
-                        <h4 className={UI_TEXT.LABEL}>Dimensions</h4>
+                        <h4 className={UiFieldUtils.TEXT.LABEL}>Dimensions</h4>
                         <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{selectedItem.width} × {selectedItem.height} px</p>
                       </div>
                     )}
@@ -250,7 +250,7 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 px-4">
                   <ImageIcon size={40} className="mb-4 opacity-10" />
-                  <p className={UI_TEXT.SUBTEXT}>Select an item to view details</p>
+                  <p className={UiFieldUtils.TEXT.SUBTEXT}>Select an item to view details</p>
                 </div>
               )}
             </div>

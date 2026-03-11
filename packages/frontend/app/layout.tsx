@@ -3,6 +3,7 @@ import "./globals.css";
 import GlobalInitializer from "./global-initializer";
 import RootProvider from "./root-provider";
 import PluginLoader from "./plugin-loader";
+import ThemeAssets from "@/components/theme-assets";
 
 export const metadata: Metadata = {
   title: "Fromcode Frontend",
@@ -17,6 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <ThemeAssets />
       </head>
       <body>
         <GlobalInitializer />

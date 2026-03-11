@@ -5,15 +5,9 @@ import { DayPicker } from 'react-day-picker';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from './button';
 import { RootFramework } from '@fromcode119/react';
-import { useTheme } from '../theme-context';
-import { getFieldClasses } from '@/lib/ui';
-import {
-  formatSystemDate,
-  getZonedDateParts,
-  parseDateValue,
-  resolveSystemTimezone,
-  zonedPartsToUtcDate
-} from '@/lib/timezone';
+import { ThemeHooks } from '../use-theme';
+import { UiFieldUtils } from '@/lib/ui';
+import { TimezoneUtils } from '@/lib/timezone';
 
 interface DateTimePickerProps {
   value?: string;
@@ -37,11 +31,11 @@ export const DateTimePicker = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
-  const timezone = resolveSystemTimezone();
-  const utcDate = parseDateValue(value);
-  const zonedParts = getZonedDateParts(utcDate, timezone);
+  const timezone = TimezoneUtils.resolveSystemTimezone();
+  const utcDate = TimezoneUtils.parseDateValue(value);
+  const zonedParts = TimezoneUtils.getZonedDateParts(utcDate, timezone);
   const pickerDate = zonedParts
     ? new Date(zonedParts.year, zonedParts.month - 1, zonedParts.day)
     : undefined;
@@ -88,8 +82,8 @@ export const DateTimePicker = ({
         return;
     }
 
-    const baseTime = zonedParts || getZonedDateParts(new Date(), timezone);
-    const finalUtcDate = zonedPartsToUtcDate({
+    const baseTime = zonedParts || TimezoneUtils.getZonedDateParts(new Date(), timezone);
+    const finalUtcDate = TimezoneUtils.zonedPartsToUtcDate({
       year: selectedDate.getFullYear(),
       month: selectedDate.getMonth() + 1,
       day: selectedDate.getDate(),
@@ -103,7 +97,7 @@ export const DateTimePicker = ({
   };
 
   const handleTimeChange = (type: 'hours' | 'minutes', val: string) => {
-    const base = zonedParts || getZonedDateParts(new Date(), timezone);
+    const base = zonedParts || TimezoneUtils.getZonedDateParts(new Date(), timezone);
     if (!base) return;
 
     const parsed = Number.parseInt(val, 10);
@@ -118,20 +112,20 @@ export const DateTimePicker = ({
       minute: type === 'minutes' ? clamped : base.minute,
       second: 0
     };
-    onChange(zonedPartsToUtcDate(next, timezone).toISOString());
+    onChange(TimezoneUtils.zonedPartsToUtcDate(next, timezone).toISOString());
   };
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`${getFieldClasses(size, `cursor-pointer flex items-center justify-between ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`${UiFieldUtils.getFieldClasses(size, `cursor-pointer flex items-center justify-between ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div className="flex items-center gap-2">
            <FrameworkIcons.Calendar size={16} className="text-slate-400" />
            <span className={!value ? 'text-slate-400 font-normal' : ''}>
              {value && utcDate
-               ? formatSystemDate(
+               ? TimezoneUtils.formatSystemDate(
                    utcDate,
                    showTime
                      ? { dateStyle: 'medium', timeStyle: 'short' }
@@ -192,8 +186,8 @@ export const DateTimePicker = ({
                 day_hidden: "invisible",
               }}
               components={{
-                IconLeft: () => <FrameworkIcons.Left size={16} />,
-                IconRight: () => <FrameworkIcons.Right size={16} />,
+                Chevron: ({ orientation }: { orientation?: string }) => 
+                  orientation === 'right' ? <FrameworkIcons.Right size={16} /> : <FrameworkIcons.Left size={16} />,
               }}
             />
 

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ApiPath } from '@fromcode119/sdk';
-import { buildFrontendApiUrl } from '@/lib/api-routes';
+import { SystemConstants } from '@fromcode119/sdk';
+import { FrontendApiRoutes } from '@/lib/api-routes';
 export const dynamic = 'force-dynamic';
 
 export default function VerifyEmailChangePage() {
@@ -21,7 +21,7 @@ export default function VerifyEmailChangePage() {
     setStatus('verifying');
     setMessage('');
     try {
-      const response = await fetch(buildFrontendApiUrl(ApiPath.AUTH.EMAIL_CHANGE_CONFIRM), {
+      const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.EMAIL_CHANGE_CONFIRM), {
         method: 'POST',
         credentials: 'include',
         headers: {

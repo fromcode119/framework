@@ -1,7 +1,7 @@
 import { HookManager } from '../hooks/hook-manager';
 import { Logger } from '@fromcode119/sdk';
-import { signPayload } from '../security/plugin-signature-service';
-import WebhooksCollection from '../collections/webhooks';
+import { PluginSignatureService } from '../security/plugin-signature-service';
+import { WebhooksCollection } from '../collections/webhooks';
 
 export class WebhookService {
     private logger = new Logger({ namespace: 'webhook-service' });
@@ -51,7 +51,7 @@ export class WebhookService {
 
         for (const webhook of this.webhooksCache) {
             const events = Array.isArray(webhook.events) ? webhook.events : [];
-            const isMatch = events.some(pattern => this.matchEvent(pattern, event));
+            const isMatch = events.some((pattern: string) => this.matchEvent(pattern, event));
 
             if (isMatch) {
                 // Execute in background
@@ -87,7 +87,7 @@ export class WebhookService {
         };
 
         if (webhook.secret) {
-            headers['X-Fromcode-Signature'] = signPayload(body, webhook.secret);
+            headers['X-Fromcode-Signature'] = PluginSignatureService.sign(body, webhook.secret);
         }
 
         try {

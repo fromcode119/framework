@@ -11,9 +11,16 @@
       "types": "./dist/index.d.ts"
     },
     "./internal": {
+      "development": "./src/internal.ts",
       "import": "./dist/internal.js",
       "require": "./dist/internal.js",
       "types": "./dist/internal.d.ts"
+    },
+    "./constants": {
+      "development": "./src/constants.ts",
+      "import": "./dist/constants.js",
+      "require": "./dist/constants.js",
+      "types": "./dist/constants.d.ts"
     }
   },
   "files": [

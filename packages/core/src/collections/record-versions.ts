@@ -1,48 +1,53 @@
-import { Collection } from '../types';
-import { SystemTable } from '@fromcode119/sdk/internal';
+import type { Collection } from '../types';
+import { SystemConstants } from '@fromcode119/sdk';
 
-export const RecordVersions: Collection = {
-  slug: SystemTable.RECORD_VERSIONS,
-  shortSlug: 'versions',
-  name: 'Record Versions',
-  system: true,
-  admin: {
-    useAsTitle: 'id',
-    group: 'Governance',
-    hidden: true,
-  },
-  fields: [
-    {
-      name: 'ref_id',
-      type: 'text',
-      required: true,
+export class RecordVersions {
+  static readonly collection: Collection = {
+    slug: SystemConstants.TABLE.RECORD_VERSIONS,
+    shortSlug: 'versions',
+    name: 'Record Versions',
+    system: true,
+    admin: {
+      useAsTitle: 'id',
+      group: 'Governance',
+      hidden: true,
     },
-    {
-      name: 'ref_collection',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'version',
-      type: 'number',
-      required: true,
-      defaultValue: 1,
-    },
-    {
-      name: 'version_data',
-      type: 'json',
-      required: true,
-    },
-    {
-      name: 'updated_by',
-      type: 'relationship',
-      relationTo: 'users',
-    },
-    {
-      name: 'change_summary',
-      type: 'text',
-    }
-  ],
-};
+    fields: [
+      {
+        name: 'ref_id',
+        type: 'text',
+        required: true,
+      },
+      {
+        name: 'ref_collection',
+        type: 'text',
+        required: true,
+      },
+      {
+        name: 'version',
+        type: 'number',
+        required: true,
+        defaultValue: 1,
+      },
+      {
+        name: 'version_data',
+        type: 'json',
+        required: true,
+      },
+      {
+        name: 'updated_by',
+        type: 'relationship',
+        relationTo: 'users',
+      },
+      {
+        name: 'change_summary',
+        type: 'text',
+      }
+    ],
+  };
 
-export default RecordVersions;
+  // Backward compat accessor
+  static get slug(): string {
+    return this.collection.slug;
+  }
+}

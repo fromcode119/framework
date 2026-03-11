@@ -2,30 +2,31 @@
  * System-reserved database tables.
  * Plugins should use these names instead of hardcoded strings.
  */
-export const SystemTable = {
-  USERS: 'users',
-  ROLES: '_system_roles',
-  PERMISSIONS: '_system_permissions',
-  PLUGINS: '_system_plugins',
-  PLUGIN_SETTINGS: '_system_plugin_settings',
-  THEMES: '_system_themes',
-  SESSIONS: '_system_sessions',
-  LOGS: '_system_logs',
-  AUDIT_LOGS: '_system_audit_logs',
-  META: '_system_meta',
-  MEDIA: 'media',
-  MEDIA_FOLDERS: 'media_folders',
-  RECORD_VERSIONS: '_system_record_versions',
-  WEBHOOKS: '_system_webhooks',
-  SCHEDULER_TASKS: '_system_scheduler_tasks',
-  USERS_ROLES: '_system_users_roles',
-  MIGRATIONS: '_system_migrations'
-} as const;
+export class SystemConstants {
+  static readonly TABLE = {
+    USERS: 'users',
+    ROLES: '_system_roles',
+    PERMISSIONS: '_system_permissions',
+    PLUGINS: '_system_plugins',
+    PLUGIN_SETTINGS: '_system_plugin_settings',
+    THEMES: '_system_themes',
+    SESSIONS: '_system_sessions',
+    LOGS: '_system_logs',
+    AUDIT_LOGS: '_system_audit_logs',
+    META: '_system_meta',
+    MEDIA: 'media',
+    MEDIA_FOLDERS: 'media_folders',
+    RECORD_VERSIONS: '_system_record_versions',
+    WEBHOOKS: '_system_webhooks',
+    SCHEDULER_TASKS: '_system_scheduler_tasks',
+    USERS_ROLES: '_system_users_roles',
+    MIGRATIONS: '_system_migrations'
+  } as const;
 
-/**
- * Well-known keys in the system meta table.
- */
-export const SystemMetaKey = {
+  /**
+   * Well-known keys in the system meta table.
+   */
+  static readonly META_KEY = {
   EMAIL_PROFILES: 'integration_email_profiles',
   EMAIL_PROVIDER: 'integration_email_provider',
 
@@ -76,9 +77,9 @@ export const SystemMetaKey = {
   FRONTEND_AUTH_ENABLED: 'frontend_auth_enabled',
   FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
   EMAIL_NOTIFICATIONS: 'email_notifications'
-} as const;
+  } as const;
 
-export const ApiPath = {
+  static readonly API_PATH = {
   AUTH: {
     STATUS: '/auth/status',
     SETUP: '/auth/setup',
@@ -106,6 +107,7 @@ export const ApiPath = {
   },
   SYSTEM: {
     HEALTH: '/health',
+    STATUS: '/status',
     FRONTEND: '/system/frontend',
     RESOLVE: '/system/resolve',
     I18N: '/system/i18n',
@@ -140,12 +142,12 @@ export const ApiPath = {
     BASE: '/media',
     UPLOAD: '/media/upload'
   }
-} as const;
+  } as const;
 
-/**
- * Frontend app routes (non-API page paths).
- */
-export const AppPath = {
+  /**
+   * Frontend app routes (non-API page paths).
+   */
+  static readonly APP_PATH = {
   AUTH: {
     LOGIN: '/login',
     SETUP: '/setup',
@@ -155,21 +157,35 @@ export const AppPath = {
     VERIFY_EMAIL: '/verify-email',
     VERIFY_EMAIL_CHANGE: '/verify-email-change'
   }
-} as const;
+  } as const;
 
-/**
- * Storage / upload infrastructure configuration keys.
- */
-export const StorageConfig = {
+  /**
+   * Storage / upload infrastructure configuration keys.
+   */
+  static readonly STORAGE = {
   UPLOAD_DIR_ENV: 'STORAGE_UPLOAD_DIR',
   PUBLIC_URL_ENV: 'STORAGE_PUBLIC_URL',
   DEFAULT_UPLOADS_SUBDIR: 'public/uploads',
   DEFAULT_PUBLIC_URL: '/uploads'
-} as const;
+  } as const;
 
-/**
- * Route prefix strings used for internal permission checks.
- */
-export const PublicRoutePrefixes = {
+  /**
+   * Route prefix strings used for internal permission checks.
+   */
+  static readonly PUBLIC_ROUTE_PREFIXES = {
   PLUGIN_ASSETS: '/plugins/'
-} as const;
+  } as const;
+
+  /**
+   * Platform-level database table name prefix.
+   * The framework adds this prefix when creating SQLite tables from collection slugs.
+   * Use this constant instead of hardcoding 'fcp_' in migrations or seed files.
+   *
+   * @example
+   * const rawTable = `${SystemConstants.TABLE_PREFIX.PLATFORM}ecommerce_products`;
+   */
+  static readonly TABLE_PREFIX = {
+    PLATFORM: 'fcp_',
+  } as const;
+}
+

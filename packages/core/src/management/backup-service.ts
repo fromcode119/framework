@@ -4,7 +4,7 @@ import * as tar from 'tar';
 import AdmZip from 'adm-zip';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { getProjectRoot } from '../config/paths';
+import { ProjectPaths } from '../config/paths';
 
 const execAsync = promisify(exec);
 
@@ -15,7 +15,7 @@ const execAsync = promisify(exec);
  */
 export class BackupService {
   private static getBackupsDir(): string {
-    return path.resolve(getProjectRoot(), 'backups');
+    return path.resolve(ProjectPaths.getProjectRoot(), 'backups');
   }
 
   /**
@@ -166,7 +166,7 @@ export class BackupService {
     } else if (dbUrl.includes('.db') || dbUrl.startsWith('sqlite')) {
       // Handle SQLite
       const sqlitePath = dbUrl.startsWith('sqlite://') ? dbUrl.replace('sqlite://', '') : dbUrl;
-      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(getProjectRoot(), sqlitePath);
+      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(ProjectPaths.getProjectRoot(), sqlitePath);
       
       if (fs.existsSync(absPath)) {
         const dumpPath = path.join(backupsPath, `db-copy-${timestamp}.db`);
@@ -184,7 +184,7 @@ export class BackupService {
    */
   static async createSystemBackup(): Promise<string> {
     const backupsPath = this.ensureBackupsDir('system');
-    const rootDir = getProjectRoot();
+    const rootDir = ProjectPaths.getProjectRoot();
     
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFileName = `system-${timestamp}.tar.gz`;

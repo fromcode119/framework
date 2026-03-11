@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import VerifyEmailChangeClient from './verify-email-change-client';
-import { isFrontendAuthEnabled } from '@/lib/frontend-auth-settings';
+import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
 
 export const dynamic = 'force-dynamic';
 
 export default async function VerifyEmailChangePage() {
-  const authEnabled = await isFrontendAuthEnabled();
+  const authEnabled = await FrontendAuthUtils.isFrontendAuthEnabled();
   if (!authEnabled) {
     notFound();
   }

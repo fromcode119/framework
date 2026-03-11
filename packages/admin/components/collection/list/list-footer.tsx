@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 
 interface ListFooterProps {
   theme: string;
@@ -57,7 +57,7 @@ export const ListFooter: React.FC<ListFooterProps> = ({
             </label>
             <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             <a 
-              href={`${api.getBaseUrl()}${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}`} 
+              href={`${AdminApi.getBaseUrl()}${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}`} 
               target="_blank" 
               className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
             >

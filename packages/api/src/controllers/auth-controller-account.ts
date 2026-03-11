@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { SystemTable } from '@fromcode119/sdk/internal';
+import { SystemConstants } from '@fromcode119/sdk';
 import { AuthControllerLifecycle } from './auth-controller-lifecycle';
 
 export class AuthControllerAccount extends AuthControllerLifecycle {
   async logout(req: any, res: Response) {
     if (req.user && req.user.jti) {
       try {
-        await this.db.update(SystemTable.SESSIONS, { tokenId: req.user.jti }, { isRevoked: true, updatedAt: new Date() });
+        await this.db.update(SystemConstants.TABLE.SESSIONS, { tokenId: req.user.jti }, { isRevoked: true, updatedAt: new Date() });
 
         await this.manager.writeLog(
           'INFO',
@@ -23,11 +23,11 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
 
   async getSessions(req: Request, res: Response) {
     try {
-      const sessions = await this.db.find(SystemTable.SESSIONS, {
+      const sessions = await this.db.find(SystemConstants.TABLE.SESSIONS, {
         where: { isRevoked: false },
         orderBy: { createdAt: 'desc' },
         joins: [{
-          table: SystemTable.USERS,
+          table: SystemConstants.TABLE.USERS,
           on: { from: 'userId', to: 'id' },
           columns: ['email']
         }]
@@ -43,7 +43,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
   async killSession(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      await this.db.update(SystemTable.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });
+      await this.db.update(SystemConstants.TABLE.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });
       res.json({ success: true });
     } catch {
       res.status(500).json({ error: 'Failed to kill session' });
@@ -57,7 +57,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     const password = String(req.body?.password || '');
     if (!password) return res.status(400).json({ error: 'Password is required' });
 
-    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
+    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -76,7 +76,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       return res.status(400).json({ error: 'Current password and new password are required' });
     }
 
-    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
+    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const currentMatches = await this.auth.comparePassword(String(currentPassword), String(user.password || ''));
@@ -94,7 +94,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     }
 
     const hashed = await this.auth.hashPassword(String(newPassword));
-    await this.db.update(SystemTable.USERS, { id: userId }, { password: hashed, updatedAt: new Date() });
+    await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, { password: hashed, updatedAt: new Date() });
     await this.pushPasswordHistory(userId, hashed);
     await this.upsertMeta(this.getPasswordChangedAtKey(userId), new Date().toISOString());
     await this.setForcePasswordReset(userId, false);
@@ -126,7 +126,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-      const sessions = await this.db.find(SystemTable.SESSIONS, { where: { userId, isRevoked: false } });
+      const sessions = await this.db.find(SystemConstants.TABLE.SESSIONS, { where: { userId, isRevoked: false } });
       const now = new Date();
       const currentJti = String(req.user?.jti || '');
 
@@ -148,11 +148,11 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     if (!sessionId) return res.status(400).json({ error: 'Session id is required' });
 
     try {
-      const match = await this.db.find(SystemTable.SESSIONS, { where: { id: sessionId, userId }, limit: 1 });
+      const match = await this.db.find(SystemConstants.TABLE.SESSIONS, { where: { id: sessionId, userId }, limit: 1 });
       const session = match?.[0];
       if (!session) return res.status(404).json({ error: 'Session not found' });
 
-      await this.db.update(SystemTable.SESSIONS, { id: sessionId, userId }, { isRevoked: true, updatedAt: new Date() });
+      await this.db.update(SystemConstants.TABLE.SESSIONS, { id: sessionId, userId }, { isRevoked: true, updatedAt: new Date() });
 
       const currentJti = String(req.user?.jti || '');
       const revokedCurrent = String(session.tokenId || '') === currentJti;
@@ -193,7 +193,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       return res.status(400).json({ error: 'Current password is required' });
     }
 
-    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
+    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const oldEmail = this.normalizeEmail(user.email);
@@ -206,7 +206,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       return res.status(400).json({ error: 'Current password is invalid' });
     }
 
-    const existing = await this.db.findOne(SystemTable.USERS, { email: newEmail });
+    const existing = await this.db.findOne(SystemConstants.TABLE.USERS, { email: newEmail });
     if (existing) {
       return res.status(409).json({ error: 'This email is already used by another account' });
     }
@@ -266,12 +266,12 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
       });
     }
 
-    const emailOwner = await this.db.findOne(SystemTable.USERS, { email: result.newEmail });
+    const emailOwner = await this.db.findOne(SystemConstants.TABLE.USERS, { email: result.newEmail });
     if (emailOwner && Number(emailOwner.id) !== result.userId) {
       return res.status(409).json({ error: 'This email is already used by another account' });
     }
 
-    await this.db.update(SystemTable.USERS, { id: result.userId }, { email: result.newEmail, updatedAt: new Date() });
+    await this.db.update(SystemConstants.TABLE.USERS, { id: result.userId }, { email: result.newEmail, updatedAt: new Date() });
     await this.setEmailVerified(result.userId, true);
     await this.revokeAllSessionsForUser(result.userId);
 

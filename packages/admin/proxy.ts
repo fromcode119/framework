@@ -1,72 +1,13 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { ROUTES } from '@/lib/constants';
+import type { NextRequest, NextResponse } from 'next/server';
+import { AdminProxy } from '@/lib/admin-proxy';
 
-function normalizeBasePath(value: string): string {
-  if (!value || value === '/') return '';
-  const withLeadingSlash = value.startsWith('/') ? value : `/${value}`;
-  return withLeadingSlash.replace(/\/+$|\/+$/g, '').replace(/\/+/g, '/');
-}
-
-function resolveAdminBasePath(request: NextRequest): string {
-  const envBasePath = normalizeBasePath(process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
-  if (envBasePath) return envBasePath;
-
-  const configuredBasePath = normalizeBasePath(request.nextUrl.basePath || '');
-  if (configuredBasePath) return configuredBasePath;
-
-  const rawPathname = request.nextUrl.pathname || '';
-  if (rawPathname === '/admin' || rawPathname.startsWith('/admin/')) {
-    return '/admin';
-  }
-
-  return '';
-}
-
-function stripBasePath(pathname: string, basePath: string): string {
-  if (!basePath) return pathname || '/';
-  if (pathname === basePath) return '/';
-  if (pathname.startsWith(`${basePath}/`)) {
-    return pathname.slice(basePath.length) || '/';
-  }
-  return pathname || '/';
-}
-
-export function proxy(request: NextRequest) {
-  const token = request.cookies.get('fc_token')?.value;
-  const basePath = resolveAdminBasePath(request);
-  const pathname = stripBasePath(request.nextUrl.pathname, basePath);
-  const publicAuthRoutes = new Set<string>(ROUTES.AUTH.PUBLIC as readonly string[]);
-  const isLoginPage = pathname === ROUTES.AUTH.LOGIN;
-  const isSetupPage = pathname === ROUTES.AUTH.SETUP;
-  const isPublicAuthPage = publicAuthRoutes.has(pathname);
-
-  const redirectTo = (route: string) => {
-    const url = request.nextUrl.clone();
-    // In Next middleware, pathname should be basePath-relative.
-    // Setting "/admin/..." here when basePath="/admin" causes "/admin/admin/...".
-    url.pathname = route.startsWith('/') ? route : `/${route}`;
-    url.search = '';
-    return NextResponse.redirect(url);
-  };
-
-  // Allow setup page always to prevent loops during fresh installs
-  if (isSetupPage) {
-    return NextResponse.next();
-  }
-
-  // If no token and not on auth pages, redirect to login
-  if (!token && !isPublicAuthPage) {
-    return redirectTo(ROUTES.AUTH.LOGIN);
-  }
-
-  // Keep login reachable even when a stale/invalid token cookie exists.
-  // The client auth flow will decide whether to continue to dashboard or prompt re-auth.
-  if (isLoginPage) {
-    return NextResponse.next();
-  }
-
-  return NextResponse.next();
+/**
+ * Next.js middleware entry point for admin authentication.
+ * All business logic is in AdminProxy class (see lib/admin-proxy.ts).
+ * This file contains only the framework-required exports.
+ */
+export function proxy(request: NextRequest): NextResponse {
+  return AdminProxy.handle(request);
 }
 
 export const config = {

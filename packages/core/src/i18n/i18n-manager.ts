@@ -1,5 +1,5 @@
 import { TranslationMap } from '../types';
-import { getLocale } from '../context/request-context';
+import { RequestContextUtils } from '../context/request-context';
 
 export class I18nManager {
   public translations: Map<string, TranslationMap> = new Map();
@@ -22,7 +22,7 @@ export class I18nManager {
   }
 
   translate(key: string, params: Record<string, any> = {}, locale?: string): string {
-    const targetLocale = locale || getLocale() || this.currentLocale;
+    const targetLocale = locale || RequestContextUtils.getLocale() || this.currentLocale;
     const localeMap = this.translations.get(targetLocale) || this.translations.get('en');
     
     if (!localeMap) return key;

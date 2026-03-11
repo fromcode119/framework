@@ -4,16 +4,10 @@ import React, { useEffect } from 'react';
 import { Button } from './button';
 import { FrameworkIcons } from '@/lib/icons';
 import { RootFramework } from './root-framework';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
+import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';
 
 const { Warning: AlertTriangle, Close: X, Box } = FrameworkIcons;
-
-export interface DependencyIssue {
-  slug: string;
-  expected: string;
-  actual?: string;
-  type: 'missing' | 'incompatible' | 'inactive';
-}
 
 interface DependencyDialogProps {
   isOpen: boolean;
@@ -24,15 +18,15 @@ interface DependencyDialogProps {
   isLoading?: boolean;
 }
 
-export const DependencyDialog = ({
+export function DependencyDialog({
   isOpen,
   onClose,
   onConfirm,
   issues,
   pluginSlug,
   isLoading = false
-}: DependencyDialogProps) => {
-  const { theme } = useTheme();
+}: DependencyDialogProps) {
+  const { theme } = ThemeHooks.useTheme();
   
   useEffect(() => {
     if (isOpen) {
@@ -153,4 +147,4 @@ export const DependencyDialog = ({
       </div>
     </RootFramework>
   );
-};
+}

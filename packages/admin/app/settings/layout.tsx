@@ -1,25 +1,25 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { FrameworkIcons } from '@/lib/icons';
-import { ROUTES } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const pathname = usePathname();
 
   const navItems = [
-    { label: 'General', href: ROUTES.SETTINGS.GENERAL, icon: FrameworkIcons.Settings },
-    { label: 'Framework', href: ROUTES.SETTINGS.FRAMEWORK, icon: FrameworkIcons.System },
-    { label: 'Localization', href: ROUTES.SETTINGS.LOCALIZATION, icon: FrameworkIcons.Globe },
-    { label: 'Routing', href: ROUTES.SETTINGS.ROUTING, icon: FrameworkIcons.Link },
-    { label: 'Integrations', href: ROUTES.SETTINGS.INTEGRATIONS, icon: FrameworkIcons.Orbit },
-    { label: 'Security', href: ROUTES.SETTINGS.SECURITY, icon: FrameworkIcons.Shield },
-    { label: 'Infrastructure', href: ROUTES.SETTINGS.INFRASTRUCTURE, icon: FrameworkIcons.Activity },
-    { label: 'Updates', href: ROUTES.SETTINGS.UPDATES, icon: FrameworkIcons.Refresh },
+    { label: 'General', href: AdminConstants.ROUTES.SETTINGS.GENERAL, icon: FrameworkIcons.Settings },
+    { label: 'Framework', href: AdminConstants.ROUTES.SETTINGS.FRAMEWORK, icon: FrameworkIcons.System },
+    { label: 'Localization', href: AdminConstants.ROUTES.SETTINGS.LOCALIZATION, icon: FrameworkIcons.Globe },
+    { label: 'Routing', href: AdminConstants.ROUTES.SETTINGS.ROUTING, icon: FrameworkIcons.Link },
+    { label: 'Integrations', href: AdminConstants.ROUTES.SETTINGS.INTEGRATIONS, icon: FrameworkIcons.Orbit },
+    { label: 'Security', href: AdminConstants.ROUTES.SETTINGS.SECURITY, icon: FrameworkIcons.Shield },
+    { label: 'Infrastructure', href: AdminConstants.ROUTES.SETTINGS.INFRASTRUCTURE, icon: FrameworkIcons.Activity },
+    { label: 'Updates', href: AdminConstants.ROUTES.SETTINGS.UPDATES, icon: FrameworkIcons.Refresh },
   ];
 
   return (

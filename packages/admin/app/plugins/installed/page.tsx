@@ -1,25 +1,27 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { usePlugins, Plugin } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { Plugin, ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { DependencyDialog, DependencyIssue } from '@/components/ui/dependency-dialog';
-import { useNotify } from '@/components/notification-context';
+import { DependencyDialog } from '@/components/ui/dependency-dialog';
+import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';
+import { NotificationHooks } from '@/components/use-notification';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { Loader } from '@/components/ui/loader';
-import { UploadPreviewDialog, UploadPreviewSection } from '@/components/ui/upload-preview-dialog';
+import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
+import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
 
 export default function InstalledPluginsPage() {
-  const { theme } = useTheme();
-  const { notify } = useNotify();
-  const { triggerRefresh, refreshVersion } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh, refreshVersion } = ContextHooks.usePlugins();
   const [plugins, setPlugins] = useState<Plugin[]>([]);
   const [marketplaceData, setMarketplaceData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ export default function InstalledPluginsPage() {
     try {
       // Always prioritize installed plugins first so this page is responsive
       // even when marketplace sync is slow/unavailable.
-      const pluginsResult = await api.get(`${ENDPOINTS.PLUGINS.LIST}?refresh=1`);
+      const pluginsResult = await AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.LIST}?refresh=1`);
       setPlugins(Array.isArray(pluginsResult) ? pluginsResult : []);
     } catch (err) {
       console.error('Failed to fetch installed plugins', err);
@@ -60,7 +62,7 @@ export default function InstalledPluginsPage() {
     try {
       const marketplaceTimeoutMs = 3000;
       const marketplaceResult = await Promise.race([
-        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error(`Marketplace timeout after ${marketplaceTimeoutMs}ms`)), marketplaceTimeoutMs)
         )
@@ -90,7 +92,7 @@ export default function InstalledPluginsPage() {
     formData.append('plugin', file);
 
     try {
-      await api.upload(ENDPOINTS.PLUGINS.UPLOAD, formData);
+      await AdminApi.upload(AdminConstants.ENDPOINTS.PLUGINS.UPLOAD, formData);
       notify('success', 'Upload Successful', 'Plugin uploaded successfully.');
       fetchPlugins();
     } catch (err: any) {
@@ -112,7 +114,7 @@ export default function InstalledPluginsPage() {
     formData.append('plugin', file);
 
     try {
-      const response = await api.upload(ENDPOINTS.PLUGINS.UPLOAD_INSPECT, formData);
+      const response = await AdminApi.upload(AdminConstants.ENDPOINTS.PLUGINS.UPLOAD_INSPECT, formData);
       const info = (response as any)?.info || {};
       const dependencies = Array.isArray(info.dependencies) ? info.dependencies : [];
       const peerDependencies = Array.isArray(info.peerDependencies) ? info.peerDependencies : [];
@@ -197,13 +199,13 @@ export default function InstalledPluginsPage() {
     try {
       if (!currentEnabled) setIsActivating(true);
       
-      await api.post(ENDPOINTS.PLUGINS.TOGGLE(slug), { 
+      await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { 
         enabled: !currentEnabled,
         ...options 
       });
       
       notify('success', 'Plugin Updated', `${slug} is now ${!currentEnabled ? 'active' : 'inactive'}.`);
-      setPlugins(prev => prev.map(p => p.slug === slug ? { ...p, state: !currentEnabled ? 'active' : 'inactive' } : p));
+      setPlugins(prev => prev.map(p => p.manifest.slug === slug ? { ...p, state: !currentEnabled ? 'active' : 'inactive' } : p));
       
       if (options.recursive || options.force) {
         setShowDependencyConfirm(false);
@@ -228,15 +230,15 @@ export default function InstalledPluginsPage() {
     if (!pluginToDelete) return;
     setIsDeleting(true);
     try {
-      const plugin = plugins.find(p => p.slug === pluginToDelete);
+      const plugin = plugins.find(p => p.manifest.slug === pluginToDelete);
       
       if (plugin && plugin.state === 'active') {
-        await api.post(ENDPOINTS.PLUGINS.TOGGLE(pluginToDelete), { enabled: false });
+        await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(pluginToDelete), { enabled: false });
       }
 
-      await api.delete(ENDPOINTS.PLUGINS.DELETE(pluginToDelete));
+      await AdminApi.delete(AdminConstants.ENDPOINTS.PLUGINS.DELETE(pluginToDelete));
       notify('success', 'Deleted', `Plugin ${pluginToDelete} removed.`);
-      setPlugins(prev => prev.filter(p => p.slug !== pluginToDelete));
+      setPlugins(prev => prev.filter(p => p.manifest.slug !== pluginToDelete));
       setShowDeleteConfirm(false);
       triggerRefresh();
     } catch (err: any) {
@@ -248,8 +250,10 @@ export default function InstalledPluginsPage() {
   };
 
   const filteredPlugins = plugins.filter(p => 
-    (p.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
-    (p.slug?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+    p.manifest && (
+      (p.manifest.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+      (p.manifest.slug?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+    )
   );
 
   return (
@@ -311,13 +315,13 @@ export default function InstalledPluginsPage() {
           </div>
         ) : (
           filteredPlugins.map(plugin => {
-            const marketEntry = marketplaceData.find(r => r.slug === plugin.slug);
-            const hasUpdate = marketEntry && marketEntry.version !== plugin.version;
-            const hasImageError = imageErrors[plugin.slug];
+            const marketEntry = marketplaceData.find(r => r.slug === plugin.manifest.slug);
+            const hasUpdate = marketEntry && marketEntry.version !== plugin.manifest.version;
+            const hasImageError = imageErrors[plugin.manifest.slug];
 
             return (
               <Card 
-                key={plugin.slug}
+                key={plugin.manifest.slug}
                 className={`group flex flex-col md:flex-row border-0 relative transition-all duration-700 overflow-hidden rounded-3xl ${theme === 'dark' ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-xl shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
               >
                  <div className="p-6 flex flex-col md:flex-row flex-1 items-center gap-8 relative">
@@ -325,9 +329,9 @@ export default function InstalledPluginsPage() {
                       {(plugin as any).iconUrl && !hasImageError ? (
                         <img 
                           src={(plugin as any).iconUrl} 
-                          alt={plugin.name} 
+                          alt={plugin.manifest.name} 
                           className="w-10 h-10 object-contain" 
-                          onError={() => setImageErrors(prev => ({ ...prev, [plugin.slug]: true }))}
+                          onError={() => setImageErrors(prev => ({ ...prev, [plugin.manifest.slug]: true }))}
                         />
                       ) : (
                         <FrameworkIcons.Box size={36} strokeWidth={1.5} />
@@ -341,7 +345,7 @@ export default function InstalledPluginsPage() {
                           </Badge>
                           
                           {plugin.healthStatus && plugin.healthStatus !== 'healthy' && (
-                             <Badge variant={plugin.healthStatus === 'error' ? 'rose' : 'amber'} className="animate-pulse flex items-center gap-1.5">
+                             <Badge variant={plugin.healthStatus === 'error' ? 'danger' : 'amber'} className="animate-pulse flex items-center gap-1.5">
                                 <FrameworkIcons.Zap size={10} />
                                 {plugin.healthStatus === 'error' ? 'Security Alert' : 'Heuristic Warning'}
                              </Badge>
@@ -349,7 +353,7 @@ export default function InstalledPluginsPage() {
 
                           {hasUpdate && (
                              <Link 
-                               href={`/plugins/marketplace/${plugin.slug}`}
+                               href={`/plugins/marketplace/${plugin.manifest.slug}`}
                                className="flex items-center gap-2 px-2 py-0.5 bg-amber-500 text-white rounded-lg animate-pulse no-underline shadow-md shadow-amber-500/20"
                              >
                                 <FrameworkIcons.Loader size={8} className="animate-spin" />
@@ -359,13 +363,13 @@ export default function InstalledPluginsPage() {
                        </div>
                        
                        <div className="space-y-1">
-                          <Link href={`/plugins/${plugin.slug}`}>
+                          <Link href={`/plugins/${plugin.manifest.slug}`}>
                              <h3 className={`text-2xl font-semibold tracking-tighter transition-colors duration-300 group-hover:text-indigo-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                {plugin.name}
+                                {plugin.manifest.name}
                              </h3>
                           </Link>
                           <p className={`text-[13px] leading-snug font-medium line-clamp-1 transition-colors duration-300 ${theme === 'dark' ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>
-                            {plugin.description || `Manage and configure your ${plugin.name} tools.`}
+                            {plugin.manifest.description || `Manage and configure your ${plugin.manifest.name} tools.`}
                           </p>
                        </div>
 
@@ -374,14 +378,14 @@ export default function InstalledPluginsPage() {
                           theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-100 text-slate-600'
                         }`}>
                           <FrameworkIcons.Shield size={10} className="text-indigo-500" />
-                          v{plugin.version}
+                          v{plugin.manifest.version}
                         </div>
                         <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border shadow-sm transition-colors ${
                           theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-100 text-slate-600'
                         }`}>
                           <FrameworkIcons.User size={10} className="text-indigo-500" />
                           <span className="truncate">
-                            {typeof plugin.author === 'object' ? (plugin.author as any).name : (plugin.author || 'Official')}
+                            {typeof plugin.manifest.author === 'object' ? (plugin.manifest.author as any).name : (plugin.manifest.author || 'Official')}
                           </span>
                         </div>
                       </div>
@@ -400,14 +404,14 @@ export default function InstalledPluginsPage() {
                           </div>
                           <Switch 
                             checked={plugin.state === 'active'} 
-                            onChange={() => handleToggle(plugin.slug, plugin.state === 'active')}
+                            onChange={(_: boolean) => handleToggle(plugin.manifest.slug!, plugin.state === 'active')}
                             className="scale-75 origin-right"
                           />
                       </div>
                       
                       <div className="grid grid-cols-4 gap-2">
                         <Link 
-                          href={`/plugins/${plugin.slug}`} 
+                          href={`/plugins/${plugin.manifest.slug}`} 
                           className={`col-span-4 sm:col-span-2 flex items-center justify-center gap-2 h-9 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all shadow-md active:scale-[0.97] ${
                             theme === 'dark' ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
                           }`}
@@ -417,7 +421,7 @@ export default function InstalledPluginsPage() {
                         </Link>
                         
                         <Link 
-                          href={`/plugins/${plugin.slug}?tab=settings`} 
+                          href={`/plugins/${plugin.manifest.slug}?tab=settings`} 
                           className={`col-span-2 sm:col-span-1 h-9 rounded-lg flex items-center justify-center transition-all border ${
                             theme === 'dark' 
                               ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-indigo-400 hover:bg-slate-700' 
@@ -429,7 +433,7 @@ export default function InstalledPluginsPage() {
 
                         {plugin.healthStatus && plugin.healthStatus !== 'healthy' && (
                           <button 
-                            onClick={() => handleToggle(plugin.slug, true)}
+                            onClick={() => handleToggle(plugin.manifest.slug, true)}
                             className={`col-span-2 sm:col-span-1 h-9 rounded-lg flex items-center justify-center transition-all border group/kill ${
                               theme === 'dark' 
                                 ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white' 
@@ -442,7 +446,7 @@ export default function InstalledPluginsPage() {
                         )}
 
                         <button 
-                          onClick={() => { setPluginToDelete(plugin.slug); setShowDeleteConfirm(true); }}
+                          onClick={() => { setPluginToDelete(plugin.manifest.slug); setShowDeleteConfirm(true); }}
                           className={`col-span-2 sm:col-span-1 h-9 rounded-lg flex items-center justify-center transition-all border ${
                             theme === 'dark' 
                               ? 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400' 
@@ -472,7 +476,7 @@ export default function InstalledPluginsPage() {
         isLoading={isDeleting}
         title="Destroy Plugin"
         description={`This will permanently remove ${pluginToDelete} and all its data. ${
-          plugins.find(p => p.slug === pluginToDelete)?.state === 'active' 
+          plugins.find(p => p.manifest.slug === pluginToDelete)?.state === 'active' 
             ? "Since it's currently active, we'll deactivate it first." 
             : ""
         }`}
@@ -494,7 +498,7 @@ export default function InstalledPluginsPage() {
               for (const issue of missing) {
                 notify('info', 'Dependency Install', `Downloading ${issue.slug} from marketplace...`);
                 try {
-                  await api.post(ENDPOINTS.PLUGINS.INSTALL(issue.slug), {});
+                  await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(issue.slug), {});
                 } catch (e: any) {
                   notify('error', 'Auto-Install Failed', `Could not install ${issue.slug}: ${e.message}`);
                   return;

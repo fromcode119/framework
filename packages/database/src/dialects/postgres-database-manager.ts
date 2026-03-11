@@ -4,7 +4,7 @@ import { sql, eq, and, or, ne, isNull, isNotNull, inArray, count as drizzleCount
 import { pgTable, text } from 'drizzle-orm/pg-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
-import { toSnakeCase } from '../naming-strategy';
+import { NamingStrategy } from '../naming-strategy';
 
 export class PostgresDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: Pool;
@@ -72,7 +72,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       if (columns && Object.keys(columns).length > 0) {
         sqlQuery += Object.entries(columns)
           .filter(([_, v]) => v)
-          .map(([k, _]) => `"${toSnakeCase(k)}"`)
+          .map(([k, _]) => `"${NamingStrategy.toSnakeCase(k)}"`)
           .join(', ');
       } else {
         sqlQuery += `*`;
@@ -153,7 +153,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
         const result = await this.pool.query(`INSERT INTO "${tableName}" DEFAULT VALUES RETURNING *`);
         return result.rows[0] || null;
       }
-      const identifiers = columns.map((column) => `"${toSnakeCase(column)}"`).join(', ');
+      const identifiers = columns.map((column) => `"${NamingStrategy.toSnakeCase(column)}"`).join(', ');
       const placeholders = columns.map((_, index) => this.getParamPlaceholder(index + 1)).join(', ');
       const values = await Promise.all(
         columns.map((column) => this.normalizeColumnValueForWrite(tableName, column, data[column]))
@@ -176,8 +176,8 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       if (!setColumns.length) throw new Error(`No update fields provided for table "${tableName}"`);
       if (!whereColumns.length) throw new Error(`Unsafe update blocked: missing where clause for table "${tableName}"`);
       
-      const setClause = setColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
-      const whereClause = whereColumns.map((column, index) => `"${toSnakeCase(column)}" = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
+      const setClause = setColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
+      const whereClause = whereColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
 
       const setValues = await Promise.all(
         setColumns.map((column) => this.normalizeColumnValueForWrite(tableName, column, data[column]))
@@ -276,7 +276,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
 
   private async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
     const jsonColumns = await this.getJsonColumns(tableName);
-    const normalizedColumn = toSnakeCase(column).toLowerCase();
+    const normalizedColumn = NamingStrategy.toSnakeCase(column).toLowerCase();
     if (jsonColumns.has(normalizedColumn)) {
       return this.normalizeJsonColumnValue(value);
     }
@@ -342,7 +342,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   async createTable(collection: ISchemaCollection): Promise<void> {
     const tableName = collection.slug;
     const columnDefs: any[] = [];
-    const fieldSnakeNames = collection.fields.map(f => toSnakeCase(f.name));
+    const fieldSnakeNames = collection.fields.map(f => NamingStrategy.toSnakeCase(f.name));
 
     if (!fieldSnakeNames.includes('id')) {
       columnDefs.push(sql`id SERIAL PRIMARY KEY`);
@@ -373,7 +373,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   }
 
   private fieldToSqlFragment(field: ISchemaField): any {
-    const dbName = toSnakeCase(field.name);
+    const dbName = NamingStrategy.toSnakeCase(field.name);
     let type = sql`TEXT`;
     
     switch (field.type) {

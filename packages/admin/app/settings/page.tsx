@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
-import { ROUTES } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants';
 
 export default function SettingsPage() {
-  redirect(ROUTES.SETTINGS.GENERAL);
+  redirect(AdminConstants.ROUTES.SETTINGS.GENERAL);
   return null;
 }

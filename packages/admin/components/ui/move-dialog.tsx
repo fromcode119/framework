@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Button } from './button';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { RootFramework } from '@fromcode119/react';
 
@@ -31,7 +31,7 @@ export function MoveDialog({
   title = "Move to Folder",
   isLoading = false 
 }: MoveDialogProps) {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [folders, setFolders] = useState<MediaFolder[]>([]);
   const [currentParentId, setCurrentParentId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,11 +41,11 @@ export function MoveDialog({
     setLoading(true);
     try {
       const pId = parentId === null ? 'null' : parentId;
-      const data = await api.get(`${ENDPOINTS.MEDIA.BASE}/folders?parentId=${pId}`);
+      const data = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders?parentId=${pId}`);
       setFolders(data);
       
       if (parentId) {
-        const pathData = await api.get(`${ENDPOINTS.MEDIA.BASE}/folders/${parentId}/path`);
+        const pathData = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${parentId}/path`);
         setPath(pathData);
       } else {
         setPath([]);

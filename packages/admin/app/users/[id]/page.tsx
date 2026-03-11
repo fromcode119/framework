@@ -1,19 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { Loader } from '@/components/ui/loader';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
 export default function UserProfilePage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const { id } = useParams();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -22,7 +22,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const data = await api.get(ENDPOINTS.SYSTEM.USER(id as string));
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(id as string));
         setUser(data);
       } catch (err) {
         console.error('Failed to fetch user:', err);

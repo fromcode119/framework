@@ -1,96 +1,71 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { useState, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import { FrameworkIcons } from '@/lib/icons';
+import type { Notification, NotificationPayload } from './notification-context.interfaces';
+import { NotificationContextStore } from './notification-context-store';
 
-const { 
-  Check = () => null, 
-  Alert = () => null, 
-  Info = () => null, 
-  Close = () => null 
+const {
+  Check = () => null,
+  Alert = () => null,
+  Info = () => null,
+  Close = () => null,
 } = (FrameworkIcons || {}) as any;
 
-type NotificationType = 'success' | 'error' | 'info';
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-}
-
-interface NotificationContextType {
-  notify: (type: NotificationType, title: string, message: string) => void;
-  addNotification: (notification: { type: NotificationType; title: string; message: string }) => void;
-  remove: (id: string) => void;
-}
-
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
-
-export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const notify = useCallback((type: NotificationType, title: string, message: string) => {
+  const notify = useCallback((type: NotificationPayload['type'], title: string, message: string) => {
     const id = Math.random().toString(36).substr(2, 9);
-    setNotifications(prev => [...prev, { id, type, title, message }]);
-    
-    // Auto remove after 5 seconds
+    setNotifications((prev) => [...prev, { id, type, title, message }]);
     setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      setNotifications((prev) => prev.filter((notification) => notification.id !== id));
     }, 5000);
   }, []);
 
-  const addNotification = useCallback((n: { type: NotificationType; title: string; message: string }) => {
-    notify(n.type, n.title, n.message);
+  const addNotification = useCallback((notification: NotificationPayload) => {
+    notify(notification.type, notification.title, notification.message);
   }, [notify]);
 
   const remove = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev) => prev.filter((notification) => notification.id !== id));
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ notify, addNotification, remove }}>
+    <NotificationContextStore.context.Provider value={{ notify, addNotification, remove }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 min-w-[320px] max-w-[420px]">
-        {notifications.map(n => (
-          <div 
-            key={n.id}
-            className={`flex items-start gap-4 p-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right-10 duration-300 ${
-              n.type === 'success' ? 'bg-emerald-500 text-white border-emerald-400' :
-              n.type === 'error' ? 'bg-rose-500 text-white border-rose-400' :
-              'bg-slate-900 text-white border-slate-700'
+      <div className="fixed bottom-6 right-6 z-[9999] flex min-w-[320px] max-w-[420px] flex-col gap-3">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`animate-in slide-in-from-right-10 flex items-start gap-4 rounded-2xl border p-4 shadow-2xl duration-300 ${
+              notification.type === 'success'
+                ? 'border-emerald-400 bg-emerald-500 text-white'
+                : notification.type === 'error'
+                  ? 'border-rose-400 bg-rose-500 text-white'
+                  : 'border-slate-700 bg-slate-900 text-white'
             }`}
           >
             <div className="mt-0.5">
-              {n.type === 'success' && <Check size={20} />}
-              {n.type === 'error' && <Alert size={20} />}
-              {n.type === 'info' && <Info size={20} />}
+              {notification.type === 'success' ? <Check size={20} /> : null}
+              {notification.type === 'error' ? <Alert size={20} /> : null}
+              {notification.type === 'info' ? <Info size={20} /> : null}
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-bold tracking-tight">{n.title}</h4>
-              <p className="text-xs mt-1 text-white/80 leading-relaxed font-medium">{n.message}</p>
+              <h4 className="text-sm font-bold tracking-tight">{notification.title}</h4>
+              <p className="mt-1 text-xs font-medium leading-relaxed text-white/80">{notification.message}</p>
             </div>
-            <button 
-              onClick={() => remove(n.id)}
-              className="hover:bg-white/10 p-1 rounded-lg transition-colors"
+            <button
+              type="button"
+              onClick={() => remove(notification.id)}
+              className="rounded-lg p-1 transition-colors hover:bg-white/10"
             >
               <Close size={16} />
             </button>
           </div>
         ))}
       </div>
-    </NotificationContext.Provider>
+    </NotificationContextStore.context.Provider>
   );
-};
-
-export const useNotify = () => {
-  const context = useContext(NotificationContext);
-  if (!context) throw new Error('useNotify must be used within NotificationProvider');
-  return context;
-};
-
-export const useNotification = () => {
-  const context = useContext(NotificationContext);
-  if (!context) throw new Error('useNotification must be used within NotificationProvider');
-  return context;
-};
+}

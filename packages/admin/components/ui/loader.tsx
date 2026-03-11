@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 
 interface LoaderProps {
   label?: string;
@@ -14,7 +14,7 @@ export const Loader = ({
   className = "", 
   fullPage = false 
 }: LoaderProps) => {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   
   const content = (
     <div className={`flex flex-col items-center justify-center gap-6 ${className}`}>

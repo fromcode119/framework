@@ -1,13 +1,6 @@
-import { Collection, HookManager, PluginManager, sanitizeKey, parseAttributes, resolveCollection } from '@fromcode119/core';
+import { Collection, HookManager, PluginManager, CoreServices } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
-
-export interface ShortcodeDefinition {
-  name: string;
-  provider: string;
-  description: string;
-  aliases?: string[];
-  attributes: string[];
-}
+import type { ShortcodeDefinition } from './shortcode-service.interfaces';
 
 export class ShortcodeService {
   constructor(
@@ -29,10 +22,10 @@ export class ShortcodeService {
 
       return registered
         .map((item: any) => {
-          const name = sanitizeKey(item?.name);
+          const name = CoreServices.getInstance().content.sanitizeKey(item?.name);
           if (!name) return null;
           const aliases = Array.isArray(item?.aliases)
-            ? item.aliases.map((alias: any) => sanitizeKey(alias)).filter(Boolean)
+            ? item.aliases.map((alias: any) => CoreServices.getInstance().content.sanitizeKey(alias)).filter(Boolean)
             : [];
 
           return {
@@ -101,13 +94,13 @@ export class ShortcodeService {
 
       const [shortcode, rawTag, rawAttrs] = token;
       rendered += content.slice(lastIndex, token.index);
-      const tag = sanitizeKey(rawTag);
+      const tag = CoreServices.getInstance().content.sanitizeKey(rawTag);
       const definition = shortcodeMap.get(tag);
 
       if (!definition) {
         rendered += shortcode;
       } else {
-        const attrs = parseAttributes(rawAttrs);
+        const attrs = CoreServices.getInstance().content.parseAttributes(rawAttrs);
         try {
           let replacement = '';
           if (definition.name === 'inject') {
@@ -166,7 +159,7 @@ export class ShortcodeService {
 
     if (!collectionSlug) return '';
 
-    const collection = resolveCollection(this.manager.getCollections(), pluginSlug, collectionSlug);
+    const collection = CoreServices.getInstance().collection.resolveBySlug(this.manager.getCollections(), pluginSlug, collectionSlug);
 
     if (!collection || collection.system || collection.slug.startsWith('_')) return '';
 

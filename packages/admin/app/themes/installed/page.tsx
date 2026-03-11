@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePlugins } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useNotify } from '@/components/notification-context';
+import { NotificationHooks } from '@/components/use-notification';
 import { FrameworkIcons } from '@/lib/icons';
-import { UploadPreviewDialog, UploadPreviewSection } from '@/components/ui/upload-preview-dialog';
+import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
+import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
 
 interface ThemeManifest {
   slug: string;
@@ -27,9 +28,9 @@ interface ThemeManifest {
 }
 
 export default function InstalledThemesPage() {
-  const { theme } = useTheme();
-  const { notify } = useNotify();
-  const { triggerRefresh } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh } = ContextHooks.usePlugins();
   const [themes, setThemes] = useState<ThemeManifest[]>([]);
   const [marketplaceThemes, setMarketplaceThemes] = useState<ThemeManifest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,8 +48,8 @@ export default function InstalledThemesPage() {
     setLoading(true);
     try {
       const [installedData, marketplaceData] = await Promise.all([
-        api.get(ENDPOINTS.THEMES.LIST),
-        api.get(ENDPOINTS.THEMES.MARKETPLACE)
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST),
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE)
       ]);
       
       const installed = Array.isArray(installedData) ? installedData : (installedData.themes || []);
@@ -85,7 +86,7 @@ export default function InstalledThemesPage() {
     formData.append('theme', file);
 
     try {
-      await api.upload(ENDPOINTS.THEMES.UPLOAD, formData);
+      await AdminApi.upload(AdminConstants.ENDPOINTS.THEMES.UPLOAD, formData);
       notify('success', 'Upload Successful', 'Theme uploaded successfully.');
       await fetchThemes();
       triggerRefresh();
@@ -108,7 +109,7 @@ export default function InstalledThemesPage() {
     formData.append('theme', file);
 
     try {
-      const response = await api.upload(ENDPOINTS.THEMES.UPLOAD_INSPECT, formData);
+      const response = await AdminApi.upload(AdminConstants.ENDPOINTS.THEMES.UPLOAD_INSPECT, formData);
       const info = (response as any)?.info || {};
       const dependencies = Array.isArray(info.dependencies) ? info.dependencies : [];
       const bundled = Array.isArray(info.bundledPlugins) ? info.bundledPlugins : [];
@@ -197,7 +198,7 @@ export default function InstalledThemesPage() {
 
   const handleActivate = async (slug: string) => {
     try {
-      await api.post(ENDPOINTS.THEMES.ACTIVATE(slug));
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.ACTIVATE(slug));
       notify('success', 'Theme Activated', `${slug} is now the active theme.`);
       setThemes(prev => prev.map(t => ({
         ...t,
@@ -212,7 +213,7 @@ export default function InstalledThemesPage() {
   const handleUpdate = async (slug: string) => {
     try {
       notify('info', 'Updating...', `Downloading latest version of ${slug}...`);
-      await api.post(ENDPOINTS.THEMES.INSTALL(slug));
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(slug));
       notify('success', 'Updated', `Theme ${slug} has been updated.`);
       fetchThemes();
       triggerRefresh();
@@ -227,7 +228,7 @@ export default function InstalledThemesPage() {
       : `Are you sure you want to delete theme "${slug}"? This cannot be undone.`;
     if (!confirm(confirmationMessage)) return;
     try {
-      await api.delete(ENDPOINTS.THEMES.DELETE(slug));
+      await AdminApi.delete(AdminConstants.ENDPOINTS.THEMES.DELETE(slug));
       notify('success', 'Theme Deleted', `${slug} has been removed.`);
       fetchThemes();
     } catch (err: any) {

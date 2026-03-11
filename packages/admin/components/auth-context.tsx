@@ -1,26 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
-import { purgeAuth, getCookieDomain } from '@/lib/auth-utils';
-
-interface User {
-  id: string;
-  email: string;
-  roles: string[];
-}
-
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { AuthUtils } from '@/lib/auth-utils';
+import type { User } from './auth-context.interfaces';
+import { AuthStore } from './auth-store';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -52,36 +39,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // We only store the user profile for UI hydration.
     // We set it on the widest possible domain to match the auth token scope.
-    const domain = getCookieDomain();
+    const domain = AuthUtils.getCookieDomain();
     const cookieOptions: any = { expires: 7, path: '/' };
     if (domain) cookieOptions.domain = domain;
 
     Cookies.set('fc_user', JSON.stringify(userData), cookieOptions);
     setUser(userData);
-    router.push(ROUTES.ROOT);
+    router.push(AdminConstants.ROUTES.ROOT);
   };
 
   const logout = async () => {
     try {
-      await api.post(ENDPOINTS.AUTH.LOGOUT);
+      await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.LOGOUT);
     } catch (e) {
       console.error("Logout request failed", e);
     }
 
-    purgeAuth();
+    AuthUtils.purgeAuth();
     setUser(null);
-    router.push(ROUTES.AUTH.LOGIN);
+    router.push(AdminConstants.ROUTES.AUTH.LOGIN);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthStore.context.Provider value={{ user, isLoading, login, logout }}>
       {children}
-    </AuthContext.Provider>
+    </AuthStore.context.Provider>
   );
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
-};

@@ -2,17 +2,9 @@
 
 import React, { useState } from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
-import { GLASS_CARD } from '../ui/glass-morphism';
+import { GlassMorphism } from '../ui/glass-morphism';
 
-export interface AssistantMessageBubbleProps {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp?: Date;
-  status?: 'sending' | 'sent' | 'error';
-  onCopy?: () => void;
-  onRegenerate?: () => void;
-  onEdit?: () => void;
-}
+import type { AssistantMessageBubbleProps } from './assistant-message-bubble.interfaces';
 
 export function AssistantMessageBubble({
   role,
@@ -58,7 +50,7 @@ export function AssistantMessageBubble({
       <div className={`flex max-w-[92%] gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar */}
         {isAssistant && (
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-200/60 bg-gradient-to-br from-cyan-50 to-sky-100/80 text-cyan-700 shadow-[0_4px_14px_rgba(6,182,212,0.15)] dark:border-cyan-400/20 dark:from-cyan-900/40 dark:to-sky-900/30 dark:text-cyan-300">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-sub)] shadow-[0_4px_14px_rgba(15,23,42,0.14)]">
             <FrameworkIcons.Activity size={16} />
           </div>
         )}

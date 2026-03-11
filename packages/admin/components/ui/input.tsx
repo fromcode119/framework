@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { getFieldClasses, UI_TEXT } from '@/lib/ui';
+import { UiFieldUtils } from '@/lib/ui';
 
 interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
@@ -11,7 +11,7 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   size?: 'sm' | 'md' | 'lg';
 }
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ 
+function InputComponent({ 
   label, 
   error, 
   className = '', 
@@ -19,7 +19,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   value, 
   size = 'md', 
   ...props 
-}, ref) => {
+}: InputProps, ref: React.ForwardedRef<HTMLInputElement>) {
   // Normalize the value to a string/number, handling objects if they slip through
   const normalizedValue = React.useMemo(() => {
     if (value === null || value === undefined) return '';
@@ -31,17 +31,17 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
 
   return (
     <div className={`flex flex-col gap-1 w-full ${className}`}>
-      {label && <label className={UI_TEXT.LABEL}>{label}</label>}
+      {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
       <input
         {...props}
         ref={ref}
         value={normalizedValue}
-        className={`${getFieldClasses(size, inputClassName)} 
+        className={`${UiFieldUtils.getFieldClasses(size, inputClassName)} 
           ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
       />
       {error && (
         <div className="flex items-center gap-2 px-1 animate-fade-in-up">
-          <span className={UI_TEXT.ERROR}>
+          <span className={UiFieldUtils.TEXT.ERROR}>
             {error}
           </span>
           <div className="h-px flex-1 bg-gradient-to-r from-rose-500/20 to-transparent" />
@@ -49,6 +49,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
       )}
     </div>
   );
-});
+}
 
+const Input = React.forwardRef<HTMLInputElement, InputProps>(InputComponent);
 Input.displayName = 'Input';
+
+export { Input };

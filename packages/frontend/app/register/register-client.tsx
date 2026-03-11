@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ApiPath } from '@fromcode119/sdk';
-import { buildFrontendApiUrl } from '@/lib/api-routes';
+import { SystemConstants } from '@fromcode119/sdk';
+import { FrontendApiRoutes } from '@/lib/api-routes';
 export const dynamic = 'force-dynamic';
 
 export default function RegisterPage() {
@@ -52,7 +52,7 @@ export default function RegisterPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(buildFrontendApiUrl(ApiPath.AUTH.REGISTER), {
+      const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.REGISTER), {
         method: 'POST',
         credentials: 'include',
         headers: {

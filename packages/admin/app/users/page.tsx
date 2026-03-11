@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Slot } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 
@@ -31,7 +31,7 @@ import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 import { useRouter } from 'next/navigation';
 
 export default function UsersPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<User[]>([]);
@@ -43,7 +43,7 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get(ENDPOINTS.SYSTEM.USERS);
+      const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS);
       const userData = response.docs || [];
       setUsers(userData);
       
@@ -69,7 +69,7 @@ export default function UsersPage() {
     if (!deleteConfirm) return;
     setIsDeleting(true);
     try {
-      await api.delete(ENDPOINTS.SYSTEM.USER(deleteConfirm.id));
+      await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.USER(deleteConfirm.id));
       await fetchUsers();
       setDeleteConfirm(null);
     } finally {
@@ -196,7 +196,7 @@ export default function UsersPage() {
           
           <div className="flex items-center gap-4">
             <Slot name="admin.users.list.header.actions" />
-            <Link href={ROUTES.USERS.NEW}>
+            <Link href={AdminConstants.ROUTES.USERS.NEW}>
               <Button 
                 variant="secondary"
                 className="h-11 px-6 rounded-xl font-bold tracking-tight text-xs border-slate-200 dark:border-slate-800" 
@@ -205,7 +205,7 @@ export default function UsersPage() {
                 Create User
               </Button>
             </Link>
-            <Link href={ROUTES.USERS.ROLE_LIST}>
+            <Link href={AdminConstants.ROUTES.USERS.ROLE_LIST}>
               <Button 
                 className="h-11 px-6 rounded-xl font-bold tracking-tight text-xs shadow-lg shadow-indigo-600/10 text-white" 
                 icon={<FrameworkIcons.Shield size={16} strokeWidth={2} />}
@@ -280,27 +280,27 @@ export default function UsersPage() {
                     { 
                       label: 'View Profile', 
                       icon: <FrameworkIcons.Users size={16} />,
-                      onClick: () => router.push(ROUTES.USERS.DETAIL(user.id))
+                      onClick: () => router.push(AdminConstants.ROUTES.USERS.DETAIL(user.id))
                     },
                     { 
                       label: 'Edit Account', 
                       icon: <FrameworkIcons.Settings size={16} />,
-                      onClick: () => router.push(ROUTES.USERS.EDIT(user.id))
+                      onClick: () => router.push(AdminConstants.ROUTES.USERS.EDIT(user.id))
                     },
                     { 
                       label: 'Manage Roles', 
                       icon: <FrameworkIcons.Shield size={16} />,
-                      onClick: () => router.push(ROUTES.USERS.ROLES(user.id))
+                      onClick: () => router.push(AdminConstants.ROUTES.USERS.ROLES(user.id))
                     },
                     { 
                       label: 'Security & 2FA', 
                       icon: <FrameworkIcons.ShieldCheck size={16} />,
-                      onClick: () => router.push(ROUTES.USERS.SECURITY(user.id))
+                      onClick: () => router.push(AdminConstants.ROUTES.USERS.SECURITY(user.id))
                     },
                     { 
                       label: 'Login History', 
                       icon: <FrameworkIcons.Activity size={16} />,
-                      onClick: () => router.push(ROUTES.USERS.AUTH_ACTIVITY(user.id))
+                      onClick: () => router.push(AdminConstants.ROUTES.USERS.AUTH_ACTIVITY(user.id))
                     },
                     { 
                       label: 'Remove User', 
@@ -332,9 +332,9 @@ export default function UsersPage() {
         label="User Management Infrastructure"
         description="Manage user accounts and security roles."
         links={[
-          { label: 'Roles', href: ROUTES.USERS.ROLE_LIST },
-          { label: 'Permissions', href: ROUTES.USERS.PERMISSIONS },
-          { label: 'Activity Log', href: ROUTES.ACTIVITY },
+          { label: 'Roles', href: AdminConstants.ROUTES.USERS.ROLE_LIST },
+          { label: 'Permissions', href: AdminConstants.ROUTES.USERS.PERMISSIONS },
+          { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY },
         ]}
       />
     </div>

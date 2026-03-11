@@ -1,49 +1,47 @@
 "use client";
 
 import React from 'react';
-import { usePlugins } from './context';
+import { PluginsProvider } from './context';
+import type { PluginContextValue, SlotComponent } from './context.interfaces';
+import type { SlotProps } from './slot.interfaces';
 
-interface SlotProps {
-  name: string;
-  props?: Record<string, any>;
-  fallback?: React.ReactNode;
-}
+export class Slot extends React.Component<SlotProps> {
+  static contextType = PluginsProvider.PluginContext;
 
-export const Slot = ({ name, props, fallback }: SlotProps) => {
-  const { slots } = usePlugins();
-  const components = slots[name] || [];
+  declare context: PluginContextValue | null;
 
-  if (components.length === 0) {
-    return <>{fallback}</>;
+  render(): React.ReactNode {
+    const components = this.context?.slots[this.props.name] || [];
+    if (components.length === 0) {
+      return <>{this.props.fallback}</>;
+    }
+
+    return <>{components.map(this.renderSlotComponent.bind(this))}</>;
   }
 
-  return (
-    <>
-      {components.map((item, index) => {
-        if (!item || !item.component) {
-          console.warn(`[Slot] Requested component for slot "${name}" is undefined. Plugin: ${item?.pluginSlug || 'unknown'}`);
-          return null;
-        }
-        
-        const Component = item.component;
-        
-        // Final safety check for React component validity
-        // Valid types are strings (built-ins) or functions/classes/objects with $$typeof
-        if (typeof Component !== 'function' && typeof Component !== 'string' && !(Component as any)?.$$typeof) {
-          console.warn(`[Slot] Component for slot "${name}" is of invalid type: ${typeof Component}. Skipping.`);
-          return null;
-        }
+  private renderSlotComponent(item: SlotComponent, index: number): React.ReactNode {
+    if (!item?.component) {
+      console.warn(`[Slot] Requested component for slot "${this.props.name}" is undefined. Plugin: ${item?.pluginSlug || 'unknown'}`);
+      return null;
+    }
 
-        try {
-          return React.createElement(Component, { 
-            key: `${item.pluginSlug}-${index}`,
-            ...props 
-          });
-        } catch (err) {
-          console.error(`[Slot] Runtime error in slot component "${name}":`, err);
-          return null;
-        }
-      })}
-    </>
-  );
-};
+    if (!Slot.isValidComponent(item.component)) {
+      console.warn(`[Slot] Component for slot "${this.props.name}" is of invalid type: ${typeof item.component}. Skipping.`);
+      return null;
+    }
+
+    try {
+      return React.createElement(item.component, {
+        key: `${item.pluginSlug}-${index}`,
+        ...this.props.props,
+      });
+    } catch (error) {
+      console.error(`[Slot] Runtime error in slot component "${this.props.name}":`, error);
+      return null;
+    }
+  }
+
+  private static isValidComponent(component: any): boolean {
+    return typeof component === 'function' || typeof component === 'string' || Boolean(component?.$$typeof);
+  }
+}

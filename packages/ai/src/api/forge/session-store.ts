@@ -1,7 +1,6 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { SystemTable } from '@fromcode119/core';
-
-export type AssistantHistoryEntry = { role: 'system' | 'user' | 'assistant'; content: string };
+import { SystemConstants } from '@fromcode119/sdk';
+import type { AssistantHistoryEntry } from './session-store.types';
 
 export class AssistantSessionStore {
   constructor(
@@ -73,7 +72,7 @@ export class AssistantSessionStore {
   async load(sessionId: string): Promise<any | null> {
     const normalized = this.normalizeSessionId(sessionId);
     if (!normalized) return null;
-    const row = await this.db.findOne(SystemTable.META, { key: this.sessionMetaKey(normalized) }).catch(() => null);
+    const row = await this.db.findOne(SystemConstants.TABLE.META, { key: this.sessionMetaKey(normalized) }).catch(() => null);
     if (!row?.value) return null;
     try {
       const parsed = JSON.parse(String(row.value || '{}'));
@@ -88,16 +87,16 @@ export class AssistantSessionStore {
     if (!normalized) return;
     const key = this.sessionMetaKey(normalized);
     const value = JSON.stringify(payload || {});
-    const existing = await this.db.findOne(SystemTable.META, { key }).catch(() => null);
+    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key }).catch(() => null);
     if (existing) {
-      await this.db.update(SystemTable.META, { key }, { value, group: existing.group || this.group });
+      await this.db.update(SystemConstants.TABLE.META, { key }, { value, group: existing.group || this.group });
       return;
     }
-    await this.db.insert(SystemTable.META, { key, value, group: this.group });
+    await this.db.insert(SystemConstants.TABLE.META, { key, value, group: this.group });
   }
 
   async list(limit: number = 60): Promise<any[]> {
-    const rows = await this.db.find(SystemTable.META, {
+    const rows = await this.db.find(SystemConstants.TABLE.META, {
       where: { group: this.group },
       limit: Math.max(1, Math.min(200, Number(limit) || 60)),
     }).catch(() => []);
@@ -128,6 +127,6 @@ export class AssistantSessionStore {
   async remove(sessionId: string): Promise<void> {
     const normalized = this.normalizeSessionId(sessionId);
     if (!normalized) return;
-    await this.db.delete(SystemTable.META, { key: this.sessionMetaKey(normalized) });
+    await this.db.delete(SystemConstants.TABLE.META, { key: this.sessionMetaKey(normalized) });
   }
 }

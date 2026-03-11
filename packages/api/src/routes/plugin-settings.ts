@@ -1,40 +1,33 @@
-import express from 'express';
+import { BaseRouter } from '../routers/base-router';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { PluginSettingsController } from '../controllers/plugin-settings-controller';
+import { RouteConstants } from '@fromcode119/sdk';
 
-export function setupPluginSettingsRoutes(manager: PluginManager, auth: AuthManager) {
-  const router = express.Router();
-  const controller = new PluginSettingsController(manager);
+/**
+ * Plugin settings routes (get/update/reset/export/import settings).
+ */
+export class PluginSettingsRouter extends BaseRouter {
+  private controller: PluginSettingsController;
 
-  // All settings routes require admin guards
-  router.get('/:slug/settings', auth.guard(['admin']), (req, res) =>
-    controller.getSettings(req, res)
-  );
-  
-  router.put('/:slug/settings', auth.guard(['admin']), (req, res) =>
-    controller.updateSettings(req, res)
-  );
+  constructor(
+    private manager: PluginManager,
+    private auth: AuthManager
+  ) {
+    super();
+    this.controller = new PluginSettingsController(manager);
+  }
 
-  router.post('/:slug/settings', auth.guard(['admin']), (req, res) =>
-    controller.updateSettings(req, res)
-  );
-  
-  router.get('/:slug/settings/schema', auth.guard(['admin']), (req, res) =>
-    controller.getSchema(req, res)
-  );
-  
-  router.post('/:slug/settings/reset', auth.guard(['admin']), (req, res) =>
-    controller.resetSettings(req, res)
-  );
-  
-  router.get('/:slug/settings/export', auth.guard(['admin']), (req, res) =>
-    controller.exportSettings(req, res)
-  );
-  
-  router.post('/:slug/settings/import', auth.guard(['admin']), (req, res) =>
-    controller.importSettings(req, res)
-  );
+  protected registerRoutes(): void {
+    const isAdmin = this.auth.guard(['admin']);
+    const c = this.controller;
 
-  return router;
+    this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS, isAdmin, (req, res) => c.getSettings(req, res));
+    this.put(RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS, isAdmin, (req, res) => c.updateSettings(req, res));
+    this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS, isAdmin, (req, res) => c.updateSettings(req, res));
+    this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_SCHEMA, isAdmin, (req, res) => c.getSchema(req, res));
+    this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_RESET, isAdmin, (req, res) => c.resetSettings(req, res));
+    this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_EXPORT, isAdmin, (req, res) => c.exportSettings(req, res));
+    this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_IMPORT, isAdmin, (req, res) => c.importSettings(req, res));
+  }
 }

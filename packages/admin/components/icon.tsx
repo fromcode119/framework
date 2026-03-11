@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons, getIcon } from '@fromcode119/react';
+import { FrameworkIcons } from '@fromcode119/react';
 
 interface IconProps {
   name: string;
@@ -27,7 +27,7 @@ export const Icon = ({ name, ...props }: IconProps) => {
   }
 
   // 2. Fallback to dynamic lookup from the registry (Lucide, etc)
-  const DynamicIcon = getIcon(name);
+  const DynamicIcon = FrameworkIcons.getIcon(name);
   if (DynamicIcon) {
     return <DynamicIcon {...props} />;
   }

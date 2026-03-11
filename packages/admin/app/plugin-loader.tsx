@@ -1,73 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { usePlugins } from '@fromcode119/react';
-import { api } from '@/lib/api';
-import { ENDPOINTS, API_BASE_URL } from '@/lib/constants';
-import { useAuth } from '@/components/auth-context';
+import { ContextHooks } from '@fromcode119/react';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { AuthHooks } from '@/components/use-auth';
 import { usePathname } from 'next/navigation';
-import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES } from '@fromcode119/sdk';
-
-interface AdminPluginMetadata {
-  slug: string;
-  name: string;
-  admin?: {
-    slots?: Array<{
-      slot: string;
-      component: string;
-      file: string;
-      priority: number;
-    }>;
-    menu?: Array<{
-      label: string;
-      path: string;
-      icon: string;
-    }>;
-    collections?: Array<{
-      slug: string;
-      name?: string;
-      fields: any[];
-      admin?: any;
-    }>;
-  };
-  ui?: {
-    entry?: string;
-    entryUrl?: string;
-    css?: string[];
-    cssUrls?: string[];
-  };
-}
-
-function toBool(value: any): boolean | undefined {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return value !== 0;
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (['true', '1', 'yes', 'on', 'enabled', 'active'].includes(normalized)) return true;
-    if (['false', '0', 'no', 'off', 'disabled', 'inactive'].includes(normalized)) return false;
-  }
-  return undefined;
-}
-
-function matchesCondition(actualValue: any, expectedValue: any): boolean {
-  if (typeof expectedValue === 'boolean') {
-    const actualBool = toBool(actualValue);
-    return actualBool === undefined ? false : actualBool === expectedValue;
-  }
-  if (typeof expectedValue === 'number') {
-    const actualNumber = Number(actualValue);
-    return Number.isFinite(actualNumber) && actualNumber === expectedValue;
-  }
-  if (typeof expectedValue === 'string') {
-    return String(actualValue ?? '').trim().toLowerCase() === expectedValue.trim().toLowerCase();
-  }
-  return actualValue === expectedValue;
-}
+import { RuntimeConstants } from '@fromcode119/sdk';
+import { PluginConditionUtils } from './plugin-condition-utils';
+import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 
 export default function PluginLoader() {
-  const pluginsContext = usePlugins();
+  const pluginsContext = ContextHooks.usePlugins();
   const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion, triggerRefresh, isReady } = pluginsContext;
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = AuthHooks.useAuth();
   const pathname = usePathname();
   const [loaded, setLoaded] = useState(false);
 
@@ -76,7 +22,7 @@ export default function PluginLoader() {
     if (typeof window === 'undefined' || !user || process.env.NODE_ENV !== 'development') return;
 
     console.log("[HMR] Initializing EventSource connection...");
-    const eventSource = new EventSource(`${API_BASE_URL}${ENDPOINTS.SYSTEM.EVENTS}`, {
+    const eventSource = new EventSource(`${AdminConstants.API_BASE_URL}${AdminConstants.ENDPOINTS.SYSTEM.EVENTS}`, {
         withCredentials: true
     });
 
@@ -115,8 +61,8 @@ export default function PluginLoader() {
 
     async function loadPlugins() {
       const resolveAdminComponentsModule = () => {
-        const runtimeRegistry = (window as any)?.[RUNTIME_GLOBALS.MODULES] || {};
-        return runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS] || runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN] || null;
+        const runtimeRegistry = (window as any)?.[RuntimeConstants.GLOBALS.MODULES] || {};
+        return runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] || runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN] || null;
       };
 
       // Small delay to ensure GlobalInitializer has run
@@ -159,7 +105,7 @@ export default function PluginLoader() {
       }
 
       try {
-        const responseData = await api.get(ENDPOINTS.PLUGINS.STAGED);
+        const responseData = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.STAGED);
         const plugins: AdminPluginMetadata[] = responseData.plugins || [];
         const remoteMenu: any[] = responseData.menu || [];
         const settings: Record<string, any> = responseData.settings || {};
@@ -196,7 +142,7 @@ export default function PluginLoader() {
 
             // If setting exists and doesn't match expected value, hide item.
             // If setting is undefined, default to visible (opt-out behavior).
-            if (actualValue !== undefined && !matchesCondition(actualValue, expectedValue)) {
+            if (actualValue !== undefined && !PluginConditionUtils.matchesCondition(actualValue, expectedValue)) {
               return false;
             }
           }
@@ -218,7 +164,7 @@ export default function PluginLoader() {
               const cacheBreaker = process.env.NODE_ENV === 'development'
                 ? `?v=${devCacheToken}`
                 : (refreshVersion > 0 ? `?v=${refreshVersion}` : '');
-              const src = `${API_BASE_URL}${entryUrl}${cacheBreaker}`;
+              const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
               console.debug(`[Admin] Loading plugin UI from: ${src}`);
               
               // 1. Module Preload (only if it doesn't exist)
@@ -275,7 +221,7 @@ export default function PluginLoader() {
                 const cacheBreaker = process.env.NODE_ENV === 'development'
                   ? `?v=${devCacheToken}`
                   : (refreshVersion > 0 ? `?v=${refreshVersion}` : '');
-                const href = `${API_BASE_URL}${cssUrl}${cacheBreaker}`;
+                const href = `${AdminConstants.API_BASE_URL}${cssUrl}${cacheBreaker}`;
                 console.debug(`[Admin] Loading plugin CSS from: ${href}`);
                 
                 if (!document.querySelector(`link[href="${href}"]`)) {

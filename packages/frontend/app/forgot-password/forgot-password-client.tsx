@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ApiPath } from '@fromcode119/sdk';
-import { buildFrontendApiUrl } from '@/lib/api-routes';
+import { SystemConstants } from '@fromcode119/sdk';
+import { FrontendApiRoutes } from '@/lib/api-routes';
 export const dynamic = 'force-dynamic';
 
 export default function ForgotPasswordPage() {
@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
     setMessage('');
 
     try {
-      const response = await fetch(buildFrontendApiUrl(ApiPath.AUTH.FORGOT_PASSWORD, { context: 'frontend' }), {
+      const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.FORGOT_PASSWORD, { context: 'frontend' }), {
         method: 'POST',
         credentials: 'include',
         headers: {

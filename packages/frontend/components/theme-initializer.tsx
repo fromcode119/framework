@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { usePlugins } from '@fromcode119/react';
+import { SystemConstants } from '@fromcode119/sdk';
+import { ContextHooks } from '@fromcode119/react';
 
 export default function ThemeInitializer() {
-  const { loadConfig, themeVariables } = usePlugins();
+  const { loadConfig, themeVariables } = ContextHooks.usePlugins();
 
   useEffect(() => {
-    loadConfig();
+    loadConfig(SystemConstants.API_PATH.SYSTEM.FRONTEND);
   }, [loadConfig]);
 
   useEffect(() => {

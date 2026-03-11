@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Editor from '@monaco-editor/react';
-import { useTheme } from '../theme-context';
+import { ThemeHooks } from '../use-theme';
 
 interface CodeEditorProps {
   value?: string;
@@ -21,7 +21,7 @@ export const CodeEditor = ({
   disabled = false,
   className = "" 
 }: CodeEditorProps) => {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
 
   return (
     <div className={`rounded-lg border overflow-hidden transition-all ${

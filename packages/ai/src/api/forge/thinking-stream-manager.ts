@@ -1,36 +1,11 @@
 /**
  * Thinking Stream Manager
- * 
+ *
  * Captures and streams AI thinking/reasoning content to the frontend for transparent visibility
  * into the AI decision-making process. Handles real-time thinking display during planning and execution.
  */
 
-export interface ThinkingSegment {
-  id: string;
-  timestamp: number;
-  phase: 'planning' | 'analysis' | 'decision' | 'action' | 'verification';
-  content: string;
-  metadata?: {
-    confidence?: number;
-    alternatives?: string[];
-    riskLevel?: 'low' | 'medium' | 'high';
-  };
-}
-
-export interface ThinkingStream {
-  sessionId: string;
-  startTime: number;
-  segments: ThinkingSegment[];
-  isComplete: boolean;
-  totalDurationMs?: number;
-  phaseProgress: {
-    planning: number; // 0-100
-    analysis: number;
-    decision: number;
-    action: number;
-    verification: number;
-  };
-}
+import type { ThinkingSegment, ThinkingStream } from './thinking-stream-manager.interfaces';
 
 export class ThinkingStreamManager {
   private streams: Map<string, ThinkingStream> = new Map();
@@ -80,7 +55,7 @@ export class ThinkingStreamManager {
     };
 
     stream.segments.push(segment);
-    
+
     // Update phase progress
     const phaseSegments = stream.segments.filter(s => s.phase === phase).length;
     const totalPhaseSegments = Math.max(1, stream.segments.filter(s => s.phase === phase).length);
@@ -186,9 +161,10 @@ export class ThinkingStreamManager {
       .filter(s => s.metadata?.confidence)
       .map(s => s.metadata!.confidence!);
 
-    const avgConfidence = confidences.length > 0
-      ? confidences.reduce((a, b) => a + b) / confidences.length
-      : 0;
+    const avgConfidence =
+      confidences.length > 0
+        ? confidences.reduce((a, b) => a + b) / confidences.length
+        : 0;
 
     return {
       totalSegments: stream.segments.length,
@@ -221,30 +197,4 @@ export class ThinkingStreamManager {
       });
     }
   }
-}
-
-/**
- * Helper to extract thinking content from AI response
- */
-export function extractThinkingContent(response: string): {
-  thinking: string;
-  response: string;
-} {
-  // Common patterns for thinking tags in AI responses
-  const thinkingPatterns = [
-    /<think>([\s\S]*?)<\/think>/i,
-    /\*\*thinking\*\*\n([\s\S]*?)\n\*\*response\*\*\n/i,
-    /🤔 thoughts?:?\n([\s\S]*?)\n\n/i,
-  ];
-
-  for (const pattern of thinkingPatterns) {
-    const match = response.match(pattern);
-    if (match) {
-      const thinking = match[1];
-      const responseWithoutThinking = response.replace(match[0], '').trim();
-      return { thinking, response: responseWithoutThinking };
-    }
-  }
-
-  return { thinking: '', response };
 }

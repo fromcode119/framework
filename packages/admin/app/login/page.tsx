@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth } from '@/components/auth-context';
+import { AuthHooks } from '@/components/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
-import { useNotify } from '@/components/notification-context';
-import { APP_NAME } from '@/lib/env';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { NotificationHooks } from '@/components/use-notification';
+import { AppEnv } from '@/lib/env';
 import { AuthUtils } from '@/lib/auth-utils';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { notify } = useNotify();
-  const { login } = useAuth();
+  const { notify } = NotificationHooks.useNotify();
+  const { login } = AuthHooks.useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   const [email, setEmail] = useState('');
@@ -35,9 +35,9 @@ export default function LoginPage() {
 
     async function checkStatus() {
       try {
-        const data = await api.get(ENDPOINTS.AUTH.STATUS);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS);
         if (data.initialized === false) {
-          router.push(ROUTES.AUTH.SETUP);
+          router.push(AdminConstants.ROUTES.AUTH.SETUP);
         }
       } catch (err) {
         console.warn("API health check failed. Defaulting to manual login.", err);
@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(ROUTES.AUTH.FORGOT_PASSWORD);
+    router.push(AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD);
   };
 
   const handleContactSupport = (e: React.FormEvent) => {
@@ -85,7 +85,7 @@ export default function LoginPage() {
         payload.recoveryCode = recoveryCode.trim();
       }
 
-      const data = await api.post(ENDPOINTS.AUTH.LOGIN, payload);
+      const data = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.LOGIN, payload);
 
       if (data?.requiresTwoFactor) {
         setRequiresTwoFactor(true);
@@ -130,7 +130,7 @@ export default function LoginPage() {
             <FrameworkIcons.Zap size={32} className="text-white" fill="currentColor" />
           </div>
           <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-            Welcome to {APP_NAME}
+            Welcome to {AppEnv.APP_NAME}
           </h1>
           <p className="text-slate-500 font-medium">Please enter your credentials to continue</p>
         </div>

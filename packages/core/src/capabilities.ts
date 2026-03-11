@@ -5,10 +5,19 @@
  * Extensions register their capabilities during initialization.
  * Code can check capabilities before using extension-specific features.
  */
+import type { CapabilityMetadata } from './capabilities.interfaces';
 
 export class CapabilityRegistry {
+  private static _instance: CapabilityRegistry;
   private capabilities = new Set<string>();
   private metadata = new Map<string, CapabilityMetadata>();
+
+  static getInstance(): CapabilityRegistry {
+    if (!CapabilityRegistry._instance) {
+      CapabilityRegistry._instance = new CapabilityRegistry();
+    }
+    return CapabilityRegistry._instance;
+  }
 
   /**
    * Register a capability as available
@@ -76,20 +85,3 @@ export class CapabilityRegistry {
     this.metadata.clear();
   }
 }
-
-export interface CapabilityMetadata {
-  /** Extension or package that provides this capability */
-  provider: string;
-  
-  /** Version of the capability provider */
-  version?: string;
-  
-  /** Human-readable description */
-  description?: string;
-}
-
-/**
- * Global capability registry instance
- * Used by extensions to register capabilities and by code to check availability
- */
-export const capabilities = new CapabilityRegistry();

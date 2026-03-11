@@ -2,12 +2,7 @@ import { WebSocket } from 'ws';
 import type { WebSocketServer } from 'ws';
 import { Logger } from '@fromcode119/sdk';
 import { HookManager } from '../hooks/hook-manager';
-
-export interface Message {
-  type: string;
-  payload: any;
-  plugin?: string;
-}
+import type { Message } from './web-socket-manager.interfaces';
 
 export class WebSocketManager {
   private wss: WebSocketServer | null = null;
