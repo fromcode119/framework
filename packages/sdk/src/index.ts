@@ -31,3 +31,7 @@ export { RouteConstants } from './route-constants';
 
 // Plugin utilities
 export { PluginDefinitionUtils } from './plugin-definition-utils';
+
+// ── Base classes for plugin/theme extension ──────────────────────────────
+export { BaseRouter } from '@fromcode119/api/routers';
+export { BaseService, BaseRepository } from '@fromcode119/core';
