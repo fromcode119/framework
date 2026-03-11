@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerLifecycle } from './auth-controller-lifecycle';
 
 export class AuthControllerAccount extends AuthControllerLifecycle {

@@ -2,7 +2,7 @@ import {
   PluginContext, 
   LoadedPlugin, 
 } from '../types';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import type { PluginManagerInterface } from './context/utils.interfaces';
 import { ContextSecurityProxy } from './context/utils';
 import { ApiContextProxy } from './context/api';

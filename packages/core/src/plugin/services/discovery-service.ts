@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import semver from 'semver';
 import AdmZip from 'adm-zip';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
 import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
 import { BackupService } from '../../management/backup-service';
 import { z } from 'zod';

@@ -5,7 +5,7 @@ import path from 'path';
 import archiver from 'archiver';
 import { spawn } from 'child_process';
 import * as esbuild from 'esbuild';
-import { PluginManifest } from '@fromcode119/sdk';
+import { PluginManifest } from '@fromcode119/core';
 import { CliUtils } from '../utils';
 
 export class PluginCommands {

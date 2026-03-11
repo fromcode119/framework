@@ -1,8 +1,8 @@
 import { ThemeManifest, IDatabaseManager } from '../types';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../constants';
 import path from 'path';
 import fs from 'fs';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { Seeder } from '../database/seeder';
 import { ProjectPaths } from '../config/paths';

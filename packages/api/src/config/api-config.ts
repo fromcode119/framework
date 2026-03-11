@@ -1,4 +1,4 @@
-import { ApiVersionUtils, RouteConstants, SystemConstants } from '@fromcode119/sdk';
+import { ApiVersionUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 
 /**
  * API Configuration Singleton.

@@ -25,7 +25,6 @@
     "@fromcode119/database": "*",
     "@fromcode119/media": "*",
     "@fromcode119/scheduler": "*",
-    "@fromcode119/sdk": "*",
     "@fromcode119/admin": "*",
     "@fromcode119/frontend": "*",
     "@types/ws": "^8.18.1",

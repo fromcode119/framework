@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerInfrastructure } from './auth-controller-infrastructure';
 import type { AccountStatus } from './auth-controller.types';
 import type {

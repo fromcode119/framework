@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws';
 import type { WebSocketServer } from 'ws';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { HookManager } from '../hooks/hook-manager';
 import type { Message } from './web-socket-manager.interfaces';
 

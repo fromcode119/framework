@@ -1,6 +1,6 @@
 import { IDatabaseManager, users } from '@fromcode119/database';
 import { Logger, RecordVersions } from '@fromcode119/core';
-import { type Collection, SystemConstants } from '@fromcode119/sdk';
+import { type Collection, SystemConstants } from '@fromcode119/core';
 
 export class VersioningService {
   private logger = new Logger({ namespace: 'versioning' });

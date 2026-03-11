@@ -1,5 +1,5 @@
-import { Logger } from '@fromcode119/sdk';
-import { SystemConstants } from '@fromcode119/sdk';
+import { Logger } from '../logging';
+import { SystemConstants } from '../constants';
 import { IDatabaseManager } from '@fromcode119/database';
 import * as path from 'path';
 import * as fs from 'fs';

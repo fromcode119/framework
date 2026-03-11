@@ -1,4 +1,4 @@
-import { Collection } from '@fromcode119/sdk';
+import { Collection } from '@fromcode119/core';
 import { DynamicSchema, IDatabaseManager, timestamp, sql } from '@fromcode119/database';
 
 export class QueryHelper {

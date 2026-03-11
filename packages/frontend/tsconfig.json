@@ -26,19 +26,32 @@
       "@/*": [
         "./*"
       ],
-      "@fromcode119/core": ["../core/src"],
-      "@fromcode119/core/*": ["../core/src/*"],
-      "@fromcode119/react": ["../react/src"],
-      "@fromcode119/react/*": ["../react/src/*"],
-      "@fromcode119/sdk": ["../sdk/src"],
-      "@fromcode119/sdk/*": ["../sdk/src/*"]
+      "@fromcode119/core": [
+        "../core/src"
+      ],
+      "@fromcode119/core/*": [
+        "../core/src/*"
+      ],
+      "@fromcode119/react": [
+        "../react/src"
+      ],
+      "@fromcode119/react/*": [
+        "../react/src/*"
+      ],
+      "@fromcode119/sdk": [
+        "../sdk/src"
+      ],
+      "@fromcode119/sdk/*": [
+        "../sdk/src/*"
+      ]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

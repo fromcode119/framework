@@ -70,7 +70,6 @@
     "@fromcode119/media": "*",
     "@fromcode119/mcp": "*",
     "@fromcode119/scheduler": "*",
-    "@fromcode119/sdk": "*",
     "@types/ws": "^8.18.1",
     "adm-zip": "^0.5.10",
     "bull": "^4.16.5",
@@ -83,6 +82,9 @@
     "uuid": "^9.0.1",
     "ws": "^8.19.0",
     "zod": "^3.22.4"
+  },
+  "peerDependencies": {
+    "express": ">=4.0.0"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",

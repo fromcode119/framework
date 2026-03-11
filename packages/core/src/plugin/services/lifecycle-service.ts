@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
 import { LoadedPlugin, FromcodePlugin } from '../../types';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../../constants';
 import type { PluginManagerInterface } from '../context/utils.interfaces';
 import { PluginPermissionsService } from '../../security/plugin-permissions-service';
 import { PluginSignatureService } from '../../security/plugin-signature-service';

@@ -1,5 +1,5 @@
-import type { Collection } from '@fromcode119/sdk';
-import { SystemConstants } from '@fromcode119/sdk';
+import type { Collection } from '../types';
+import { SystemConstants } from '../constants';
 
 export class WebhooksCollection {
   static readonly collection: Collection = {

@@ -1,5 +1,5 @@
-import { ApiVersionUtils } from '@fromcode119/sdk';
-import { SystemConstants } from '@fromcode119/sdk';
+import { ApiVersionUtils } from '@fromcode119/core';
+import { SystemConstants } from '@fromcode119/core';
 
 /**
  * API Configuration Singleton.
