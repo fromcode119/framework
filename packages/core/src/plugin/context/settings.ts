@@ -1,6 +1,6 @@
 import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from './utils.interfaces';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../../constants';
 
 
 export class SettingsContextProxy {

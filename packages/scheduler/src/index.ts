@@ -1,12 +1,18 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
-import { Logger } from '@fromcode119/sdk';
-import { SystemConstants } from '@fromcode119/sdk';
 import cron, { ScheduledTask } from 'node-cron';
 import type { SchedulerTaskHandler } from './index.types';
 import type { IQueueManager, SchedulerTask, SchedulerOptions } from './index.interfaces';
 
+/** Inline scheduler table name — avoids importing from @fromcode119/sdk (circular tsconfig dep). */
+const SCHEDULER_TASKS_TABLE = '_system_scheduler_tasks';
 
-const logger = new Logger({ namespace: 'scheduler' });
+/** Minimal inline logger — avoids importing Logger from @fromcode119/sdk. */
+const logger = {
+  debug: (msg: string) => console.debug('[scheduler]', msg),
+  info:  (msg: string) => console.info('[scheduler]', msg),
+  warn:  (msg: string) => console.warn('[scheduler]', msg),
+  error: (msg: string) => console.error('[scheduler]', msg),
+};
 
 export class SchedulerService {
   private db: IDatabaseManager;
@@ -46,7 +52,7 @@ export class SchedulerService {
    * Register or update a task schedule in the database
    */
   async scheduleTask(task: Omit<SchedulerTask, 'handler' | 'is_active'> & { is_active?: boolean }) {
-    const existing = await this.db.find(SystemConstants.TABLE.SCHEDULER_TASKS, {
+    const existing = await this.db.find(SCHEDULER_TASKS_TABLE, {
       where: { name: task.name },
       limit: 1
     });
@@ -62,10 +68,10 @@ export class SchedulerService {
     };
 
     if (existing.length > 0) {
-      await this.db.update(SystemConstants.TABLE.SCHEDULER_TASKS, { name: task.name }, data);
+      await this.db.update(SCHEDULER_TASKS_TABLE, { name: task.name }, data);
       logger.debug(`Updated scheduler task schedule: ${task.name}`);
     } else {
-      await this.db.insert(SystemConstants.TABLE.SCHEDULER_TASKS, {
+      await this.db.insert(SCHEDULER_TASKS_TABLE, {
         ...data,
         created_at: new Date(),
         next_run: task.type === 'interval' ? this.calculateNextRun(task.schedule) : null
@@ -135,7 +141,7 @@ export class SchedulerService {
    * Sync active cron tasks from database to memory
    */
   private async syncFromDatabase() {
-    const activeTasks = await this.db.find(SystemConstants.TABLE.SCHEDULER_TASKS, {
+    const activeTasks = await this.db.find(SCHEDULER_TASKS_TABLE, {
       where: { is_active: true }
     });
 
@@ -172,7 +178,7 @@ export class SchedulerService {
    */
   private async pulse() {
     const now = new Date();
-    const tasks = await this.db.find(SystemConstants.TABLE.SCHEDULER_TASKS, {
+    const tasks = await this.db.find(SCHEDULER_TASKS_TABLE, {
       where: { type: 'interval', is_active: true }
     });
 
@@ -184,14 +190,14 @@ export class SchedulerService {
         
         // Calculate next run
         const nextRun = this.calculateNextRun(task.schedule);
-        await this.db.update(SystemConstants.TABLE.SCHEDULER_TASKS, { name: task.name }, {
+        await this.db.update(SCHEDULER_TASKS_TABLE, { name: task.name }, {
           last_run: now,
           next_run: nextRun
         });
       } else if (!task.next_run) {
         // First run initialization
         const nextRun = this.calculateNextRun(task.schedule);
-        await this.db.update(SystemConstants.TABLE.SCHEDULER_TASKS, { name: task.name }, { next_run: nextRun });
+        await this.db.update(SCHEDULER_TASKS_TABLE, { name: task.name }, { next_run: nextRun });
       }
     }
   }
@@ -219,7 +225,7 @@ export class SchedulerService {
       }
 
       // Update last run in DB
-      await this.db.update(SystemConstants.TABLE.SCHEDULER_TASKS, { name }, {
+      await this.db.update(SCHEDULER_TASKS_TABLE, { name }, {
         last_run: new Date()
       });
 

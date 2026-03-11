@@ -1,7 +1,7 @@
 /** ServerAuthSetup — configures auth validators and permission checker. Extracted from APIServer (ARC-007). */
 
 import { Logger } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { AuthManager, UserPermissionChecker } from '@fromcode119/auth';
 import { systemSessions } from '@fromcode119/database';
 import { createHash } from 'crypto';

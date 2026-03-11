@@ -5,7 +5,7 @@
  */
 
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerTokenSupport } from './auth-controller-token-support';
 
 export abstract class AuthControllerRegistration extends AuthControllerTokenSupport {

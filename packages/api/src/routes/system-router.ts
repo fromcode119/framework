@@ -1,7 +1,7 @@
 import { BaseRouter } from '../routers/base-router';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager } from '@fromcode119/core';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 import { SystemController } from '../controllers/system-controller';
 

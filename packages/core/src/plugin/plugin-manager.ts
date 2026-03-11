@@ -1,10 +1,10 @@
 import { FromcodePlugin, LoadedPlugin, PluginContext, PluginManifest, Collection } from '../types';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../constants';
 import { HookManager } from '../hooks/hook-manager';
 import { QueueManager } from '../queue/queue-manager';
 import { SchemaManager } from '../database/schema-manager';
 import { MigrationManager } from '../database/migration-manager';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { I18nManager } from '../i18n/i18n-manager';
 import { DatabaseFactory, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';

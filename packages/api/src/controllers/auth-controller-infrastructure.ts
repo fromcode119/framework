@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { ApiConfig } from '../config/api-config';
 import { ApiUrlUtils } from '../utils/url';

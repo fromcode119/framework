@@ -1,7 +1,7 @@
 /** CollectionFieldGuard — enforces read-only and permalink constraints. Extracted from RESTController (ARC-007). */
 
 import { Collection } from '@fromcode119/core';
-import { CoercionUtils } from '@fromcode119/sdk';
+import { CoercionUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { IDatabaseManager } from '@fromcode119/database';
 import { ApiUrlUtils } from '../utils/url';

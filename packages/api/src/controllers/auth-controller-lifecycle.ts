@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PluginManager } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from './auth-controller-registration';
 

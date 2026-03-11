@@ -2,7 +2,7 @@
 
 import path from 'path';
 import fs from 'fs';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import type { ScaffoldThemeInput, ScaffoldThemeResult } from './theme-scaffold-service.interfaces';
 
 export class ThemeScaffoldService {

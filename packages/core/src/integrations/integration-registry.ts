@@ -5,8 +5,8 @@
  * Profile/provider storage management is delegated to IntegrationProfileService.
  */
 
-import { Logger } from '@fromcode119/sdk';
-import { SystemConstants } from '@fromcode119/sdk';
+import { Logger } from '../logging';
+import { SystemConstants } from '../constants';
 import { CoreServices } from '../services';
 import { IntegrationProfileService } from './integration-profile-service';
 import {

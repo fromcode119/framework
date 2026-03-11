@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { Logger, RuntimeBridge, RuntimeConstants } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
+import { RuntimeBridge } from '../../runtime-bridge';
+import { RuntimeConstants } from '../../runtime-constants';
 import { LoadedPlugin } from '../../types';
 import type { RuntimeModuleConfig } from './runtime-service.interfaces';
 

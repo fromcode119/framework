@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { PluginManager, Logger } from '@fromcode119/core';
-import { CoercionUtils } from '@fromcode119/sdk';
+import { CoercionUtils } from '@fromcode119/core';
 import AdmZip from 'adm-zip';
 
 export class PluginController {

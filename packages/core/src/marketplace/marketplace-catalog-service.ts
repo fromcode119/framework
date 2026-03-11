@@ -1,5 +1,5 @@
-import { Logger } from '@fromcode119/sdk';
-import { PluginManifest } from '@fromcode119/sdk';
+import { Logger } from '../logging';
+import { PluginManifest } from '../types';
 import { DiscoveryService } from '../plugin/services/discovery-service';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
 import path from 'path';

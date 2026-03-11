@@ -1,4 +1,4 @@
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../../constants';
 import { sql, eq, and, or } from 'drizzle-orm';
 import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from './utils.interfaces';

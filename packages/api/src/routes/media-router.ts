@@ -4,7 +4,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { MediaController } from '../controllers/media-controller';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 
 /**
  * Media management router.

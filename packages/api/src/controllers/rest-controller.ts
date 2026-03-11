@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { Collection, Logger, RecordVersions, HookManager, TypeUtils } from '@fromcode119/core';
-import { CoercionUtils, HookEventUtils, CollectionHookPhase } from '@fromcode119/sdk';
+import { CoercionUtils, HookEventUtils, CollectionHookPhase } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { ApiUrlUtils } from '../utils/url';
 import { 

@@ -1,6 +1,6 @@
-import { Collection, SystemConstants } from '@fromcode119/sdk';
+import { Collection, SystemConstants } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { LocalizationUtils } from '@fromcode119/core';
 
 export class LocalizationService {
   constructor(private db: any) {}

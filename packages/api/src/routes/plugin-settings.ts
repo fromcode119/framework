@@ -2,7 +2,7 @@ import { BaseRouter } from '../routers/base-router';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { PluginSettingsController } from '../controllers/plugin-settings-controller';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 
 /**
  * Plugin settings routes (get/update/reset/export/import settings).

@@ -1,5 +1,5 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';

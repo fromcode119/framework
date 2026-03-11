@@ -1,5 +1,5 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { PluginManifest } from '../types';
 
 /**

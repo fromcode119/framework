@@ -1,4 +1,4 @@
-import { Collection } from '@fromcode119/sdk';
+import { Collection } from '@fromcode119/core';
 import { LocalizationService } from './localization-service';
 
 export class DataProcessorService {

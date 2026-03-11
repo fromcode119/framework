@@ -8,7 +8,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { RESTController } from './controllers/rest-controller';
 import { ApiConfig } from './config/api-config';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 import { AuthRouter } from './routes/auth-router';
 import { PluginAssetRouter } from './routes/plugin-asset-router';
 import { PluginRouter } from './routes/plugin-router-class';

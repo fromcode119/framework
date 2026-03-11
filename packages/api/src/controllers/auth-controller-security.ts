@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { randomBytes } from 'crypto';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerAccount } from './auth-controller-account';
 import type { ApiTokenRecord } from './auth-controller.interfaces';
 

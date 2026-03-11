@@ -2,10 +2,10 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { CoercionUtils } from '@fromcode119/sdk';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
 import { NamingStrategy } from '../naming-strategy';
+import { SqliteDateUtils } from './sqlite-date-utils';
 
 export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManager {
   private sqlite: Database.Database;
@@ -221,7 +221,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       if (value === undefined) {
         normalized[key] = null;
       } else if (value instanceof Date) {
-        normalized[key] = CoercionUtils.toSafeIsoDate(value);
+        normalized[key] = SqliteDateUtils.toSafeIsoDate(value);
       } else if (typeof value === 'boolean') {
         normalized[key] = value ? 1 : 0;
       } else if (value !== null && typeof value === 'object') {
@@ -235,7 +235,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   protected override normalizeParamValue(value: any): any {
     if (value === undefined || value === null) return null;
-    if (value instanceof Date) return CoercionUtils.toSafeIsoDate(value);
+    if (value instanceof Date) return SqliteDateUtils.toSafeIsoDate(value);
     if (typeof value === 'boolean') return value ? 1 : 0;
     if (Buffer.isBuffer(value)) return value;
     if (typeof value === 'object') return JSON.stringify(value);
