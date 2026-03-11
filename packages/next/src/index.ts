@@ -1,5 +1,5 @@
 import { LoadedPlugin } from '@fromcode119/core';
-import type { HeadInjection, SSRContext } from './index.types';
+import type { HeadInjection, SSRContext } from './index.interfaces';
 
 
 export class SSRRegistry {
