@@ -1,25 +1,16 @@
 "use client";
 
 import React from 'react';
-import { Slot, usePlugins } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
-import { useAuth } from '@/components/auth-context';
+import { Slot, ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
+import { AuthHooks } from '@/components/use-auth';
 import { Icon } from '@/components/icon';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { APP_NAME } from '@/lib/env';
-import { ROUTES } from '@/lib/constants';
-import { 
-  normalizeNavPath, 
-  isPathMatch, 
-  resolveBestMatchPath, 
-  isPathActive,
-  normalizeGroupKey,
-  normalizeMenuPath,
-  getMenuGroupMeta,
-  sortMenuGroups
-} from '@/lib/nav-utils';
+import { AppEnv } from '@/lib/env';
+import { AdminConstants } from '@/lib/constants';
+import { NavUtils } from '@/lib/nav-utils';
 
 const { 
   Close = () => null, 
@@ -44,17 +35,17 @@ interface NavItemProps {
 }
 
 const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroupHeader, version }: NavItemProps) => {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
   const hasChildren = children && children.length > 0;
   
   const childPaths = React.useMemo(
-    () => (children || []).map((child) => normalizeNavPath(child.path)).filter(Boolean),
+    () => (children || []).map((child) => NavUtils.normalizePath(child.path)).filter(Boolean),
     [children]
   );
   const activeChildPath = React.useMemo(
-    () => resolveBestMatchPath(pathname, childPaths as string[]) || '',
+    () => NavUtils.resolveBestMatchPath(pathname, childPaths as string[]) || '',
     [pathname, childPaths]
   );
   const isChildActive = !!activeChildPath;
@@ -159,7 +150,7 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
           <div className="absolute left-[21px] top-0 bottom-6 w-px bg-slate-100 dark:bg-slate-800/80" />
 
           {children.map((child) => {
-            const isSubActive = normalizeNavPath(child.path) === activeChildPath;
+            const isSubActive = NavUtils.normalizePath(child.path) === activeChildPath;
             const subIcon = child.icon || 'Circle';
             
             return (
@@ -209,9 +200,9 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   isMini?: boolean,
   onMiniToggle?: () => void
 }) {
-  const { menuItems, plugins } = usePlugins();
-  const { theme } = useTheme();
-  const { user } = useAuth();
+  const { menuItems, plugins } = ContextHooks.usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { user } = AuthHooks.useAuth();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
 
@@ -263,7 +254,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   // Group menu items by their group property
   const groupedMenu = authorizedMenuItems
     .reduce((acc: Record<string, any[]>, item) => {
-    const rawGroup = normalizeGroupKey(item.group);
+    const rawGroup = NavUtils.normalizeGroupKey(item.group);
     
     // Manual mapping for core items if they don't have a group
     let groupKey = rawGroup;
@@ -280,8 +271,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
       return acc;
     }, {});
 
-  const sortedGroups = sortMenuGroups(Object.keys(groupedMenu))
-    .filter((groupKey) => !getMenuGroupMeta(groupKey).manual);
+  const sortedGroups = NavUtils.sortMenuGroups(Object.keys(groupedMenu))
+    .filter((groupKey) => !NavUtils.getMenuGroupMeta(groupKey).manual);
 
   return (
     <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-[72px]' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none overflow-hidden group/sidebar`}>
@@ -293,7 +284,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
           {!isMini && (
             <div className={`flex flex-col`}>
               <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
-                {APP_NAME}
+                {AppEnv.APP_NAME}
               </span>
               <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
                 Admin Panel
@@ -315,7 +306,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         </div>
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group] || [];
-          const displayGroup = getMenuGroupMeta(group).label;
+          const displayGroup = NavUtils.getMenuGroupMeta(group).label;
           const isCollapsed = collapsedGroups.includes(group);
           
           // If a group has only one item and that item is a group wrapper (dropdown),
@@ -350,7 +341,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     icon={<Icon name={item.icon || 'Package'} size={18} />}
                     label={item.label}
                     href={item.path}
-                    active={isPathActive(pathname, item.path, items.map((entry) => entry.path))}
+                    active={NavUtils.isPathActive(pathname, item.path, items.map((entry) => entry.path))}
                     onClick={onClose}
                     children={item.children}
                     isMini={isMini}
@@ -410,19 +401,19 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
               <NavItem 
                 icon={<Settings size={18}/>} 
                 label="Settings" 
-                href={ROUTES.SETTINGS.GENERAL}
+                href={AdminConstants.ROUTES.SETTINGS.GENERAL}
                 active={pathname.startsWith('/settings')} 
                 onClick={onClose} 
                 isMini={isMini} 
                 children={[
-                  { label: 'General', path: ROUTES.SETTINGS.GENERAL, icon: 'Settings' },
-                  { label: 'Framework', path: ROUTES.SETTINGS.FRAMEWORK, icon: 'System' },
-                  { label: 'Integrations', path: ROUTES.SETTINGS.INTEGRATIONS, icon: 'Orbit' },
-                  { label: 'Localization', path: ROUTES.SETTINGS.LOCALIZATION, icon: 'Globe' },
-                  { label: 'Routing', path: ROUTES.SETTINGS.ROUTING, icon: 'Link' },
-                  { label: 'Security', path: ROUTES.SETTINGS.SECURITY, icon: 'Shield' },
-                  { label: 'Infrastructure', path: ROUTES.SETTINGS.INFRASTRUCTURE, icon: 'Activity' },
-                  { label: 'Updates', path: ROUTES.SETTINGS.UPDATES, icon: 'Refresh' },
+                  { label: 'General', path: AdminConstants.ROUTES.SETTINGS.GENERAL, icon: 'Settings' },
+                  { label: 'Framework', path: AdminConstants.ROUTES.SETTINGS.FRAMEWORK, icon: 'System' },
+                  { label: 'Integrations', path: AdminConstants.ROUTES.SETTINGS.INTEGRATIONS, icon: 'Orbit' },
+                  { label: 'Localization', path: AdminConstants.ROUTES.SETTINGS.LOCALIZATION, icon: 'Globe' },
+                  { label: 'Routing', path: AdminConstants.ROUTES.SETTINGS.ROUTING, icon: 'Link' },
+                  { label: 'Security', path: AdminConstants.ROUTES.SETTINGS.SECURITY, icon: 'Shield' },
+                  { label: 'Infrastructure', path: AdminConstants.ROUTES.SETTINGS.INFRASTRUCTURE, icon: 'Activity' },
+                  { label: 'Updates', path: AdminConstants.ROUTES.SETTINGS.UPDATES, icon: 'Refresh' },
                 ]}
               />
             </>

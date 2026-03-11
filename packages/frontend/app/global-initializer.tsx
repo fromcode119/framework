@@ -3,7 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { FrameworkIcons } from '@/lib/icons';
-import { getIcon, useTranslation } from '@fromcode119/react';
+import { ContextHooks } from '@fromcode119/react';
 
 export default function GlobalInitializer() {
     if (typeof window !== 'undefined') {
@@ -15,12 +15,12 @@ export default function GlobalInitializer() {
         (window as any).React = React;
         (window as any).ReactDOM = ReactDOM;
         (window as any).FrameworkIcons = FrameworkIcons;
-        (window as any).getIcon = getIcon;
+        (window as any).getIcon = FrameworkIcons.getIcon.bind(FrameworkIcons);
 
         // Bridge for plugins/themes
         (window as any).Fromcode = {
-            useTranslation,
-            getIcon,
+            useTranslation: ContextHooks.useTranslation,
+            getIcon: FrameworkIcons.getIcon.bind(FrameworkIcons),
         };
     }
     return null;

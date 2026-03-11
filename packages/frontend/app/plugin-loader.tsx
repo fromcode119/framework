@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { usePlugins } from '@fromcode119/react';
-import { resolveFrontendApiBaseUrl } from '@/lib/api-base-url';
+import { ContextHooks } from '@fromcode119/react';
+import { FrontendApiBaseUrl } from '@/lib/api-base-url';
 
 export default function PluginLoader() {
-  const { plugins, activeTheme, api, isReady } = usePlugins();
+  const { plugins, activeTheme, api, isReady } = ContextHooks.usePlugins();
   const apiUrl =
     (typeof api?.getBaseUrl === 'function' && api.getBaseUrl()) ||
-    resolveFrontendApiBaseUrl();
+    FrontendApiBaseUrl.resolveFrontendApiBaseUrl();
   const theme = activeTheme;
   const pluginList = Array.isArray(plugins) ? plugins : [];
   const loadedModulesRef = useRef<Set<string>>(new Set());

@@ -1,58 +1,58 @@
 "use client";
 
 import React from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
-import { FRAMEWORK_RESOURCES } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants';
 
 const resources = [
   {
     title: 'Documentation',
     description: 'Platform docs, setup, architecture and deployment guides.',
-    href: FRAMEWORK_RESOURCES.DOCUMENTATION,
+    href: AdminConstants.FRAMEWORK_RESOURCES.DOCUMENTATION,
     external: true,
     icon: FrameworkIcons.Globe,
   },
   {
     title: 'Developer Guide',
     description: 'Developer workflows, plugin patterns and implementation standards.',
-    href: FRAMEWORK_RESOURCES.DEVELOPER_GUIDE,
+    href: AdminConstants.FRAMEWORK_RESOURCES.DEVELOPER_GUIDE,
     external: true,
     icon: FrameworkIcons.Terminal,
   },
   {
     title: 'OpenAPI Spec',
     description: 'Live API contract exposed by the running framework instance.',
-    href: FRAMEWORK_RESOURCES.OPENAPI,
+    href: AdminConstants.FRAMEWORK_RESOURCES.OPENAPI,
     external: false,
     icon: FrameworkIcons.Link,
   },
   {
     title: 'Framework Roadmap',
     description: 'Track upcoming framework capabilities and milestones.',
-    href: FRAMEWORK_RESOURCES.FRAMEWORK_ROADMAP,
+    href: AdminConstants.FRAMEWORK_RESOURCES.FRAMEWORK_ROADMAP,
     external: true,
     icon: FrameworkIcons.Activity,
   },
   {
     title: 'Support',
     description: 'Support channels and troubleshooting documentation.',
-    href: FRAMEWORK_RESOURCES.SUPPORT,
+    href: AdminConstants.FRAMEWORK_RESOURCES.SUPPORT,
     external: true,
     icon: FrameworkIcons.Help,
   },
 ];
 
 const communities = [
-  { label: 'Github', href: FRAMEWORK_RESOURCES.GITHUB },
-  { label: 'Discord', href: FRAMEWORK_RESOURCES.DISCORD },
-  { label: 'Twitter', href: FRAMEWORK_RESOURCES.TWITTER },
+  { label: 'Github', href: AdminConstants.FRAMEWORK_RESOURCES.GITHUB },
+  { label: 'Discord', href: AdminConstants.FRAMEWORK_RESOURCES.DISCORD },
+  { label: 'Twitter', href: AdminConstants.FRAMEWORK_RESOURCES.TWITTER },
 ];
 
 export default function FrameworkSettingsPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">

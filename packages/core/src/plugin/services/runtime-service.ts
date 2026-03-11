@@ -1,13 +1,50 @@
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '@fromcode119/sdk';
+import { Logger, RuntimeBridge, RuntimeConstants } from '@fromcode119/sdk';
 import { LoadedPlugin } from '../../types';
-import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES, ADMIN_RUNTIME_EXPORT_KEYS } from '@fromcode119/sdk';
+import type { RuntimeModuleConfig } from './runtime-service.interfaces';
 
-export interface RuntimeModuleConfig {
-  keys: string[];
-  type: 'icon' | 'lib';
-}
+// React runtime bridge exports — framework integration API only.
+// Utility access is via SDK class names in RuntimeConstants.SDK_UTIL_CLASS_NAMES (CoercionUtils, etc.)
+const REACT_RUNTIME_EXPORT_KEYS = [
+  'Slot',
+  'Override',
+  'usePlugins',
+  'useTranslation',
+  'usePluginAPI',
+  'PluginsProvider',
+  'getIcon',
+  'createProxyIcon',
+  'FrameworkIcons',
+  'FrameworkIconRegistry',
+  'IconNames',
+  'registerSlotComponent',
+  'registerFieldComponent',
+  'registerOverride',
+  'registerMenuItem',
+  'registerCollection',
+  'registerPlugins',
+  'registerTheme',
+  'registerSettings',
+  'registerAPI',
+  'getAPI',
+  'emit',
+  'on',
+  't',
+  'RuntimeBridge.getMetadata',
+  'resolveRelationValue',
+] as const;
+
+// SDK constants and utility classes available to plugin sandboxes.
+// Plugin code uses class methods: CoercionUtils.toNumber(), StringUtils.slugify(), etc.
+const SDK_RUNTIME_EXPORT_KEYS = [
+  'SystemConstants',
+  'resolveRelationValue',
+  ...RuntimeConstants.SDK_UTIL_CLASS_NAMES,
+] as const;
+
+const mergeModuleKeys = (discovered: string[], required: readonly string[]): string[] =>
+  Array.from(new Set([...(Array.isArray(discovered) ? discovered : []), ...required]));
 
 export class RuntimeService {
   private registry: Map<string, RuntimeModuleConfig> = new Map();
@@ -59,11 +96,13 @@ export class RuntimeService {
     // Framework modules - We trust @fromcode119/sdk and @fromcode119/react to be available
     this.registry.set('@fromcode119/react', {
       type: 'lib',
-      keys: this.discoverModuleKeys('@fromcode119/react')
+      // Keep core bridge exports stable even if local package discovery misses some names.
+      keys: mergeModuleKeys(this.discoverModuleKeys('@fromcode119/react'), REACT_RUNTIME_EXPORT_KEYS)
     });
     this.registry.set('@fromcode119/sdk', {
        type: 'lib',
-       keys: this.discoverModuleKeys('@fromcode119/sdk')
+       // Prevent runtime import failures for plugin bundles that import canonical SDK coercers.
+       keys: mergeModuleKeys(this.discoverModuleKeys('@fromcode119/sdk'), SDK_RUNTIME_EXPORT_KEYS)
     });
 
     // JSX Runtimes (Internal React usage)
@@ -72,13 +111,13 @@ export class RuntimeService {
     this.registry.set('react/jsx-dev-runtime', { type: 'lib', keys: ['jsxDEV', 'Fragment'] });
 
     // Core Admin Modules (Driven by SDK constants)
-    this.registry.set(RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS, {
+    this.registry.set(RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS, {
       type: 'lib',
-      keys: [...ADMIN_RUNTIME_EXPORT_KEYS]
+      keys: [...RuntimeConstants.ADMIN_RUNTIME_EXPORT_KEYS]
     });
-    this.registry.set(RUNTIME_MODULE_NAMES.ADMIN, {
+    this.registry.set(RuntimeConstants.MODULE_NAMES.ADMIN, {
       type: 'lib',
-      keys: [...ADMIN_RUNTIME_EXPORT_KEYS]
+      keys: [...RuntimeConstants.ADMIN_RUNTIME_EXPORT_KEYS]
     });
 
     // Icons
@@ -135,11 +174,11 @@ export class RuntimeService {
         globalObject = 'window.ReactDOM || window.ReactDom';
       } else if (name.startsWith('@fromcode119/')) {
         // Use the centralized runtime module registry if available
-        globalObject = `(window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}['${name}']) || window.Fromcode`;
+        globalObject = `(window.${RuntimeConstants.GLOBALS.MODULES} && window.${RuntimeConstants.GLOBALS.MODULES}['${name}']) || window.Fromcode`;
         
         // Special case for admin components which might be bundled together
-        if (name === RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS || name === RUNTIME_MODULE_NAMES.ADMIN) {
-          globalObject = `(window.${RUNTIME_GLOBALS.MODULES} && (window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS}'] || window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN}'] || window.Fromcode))`;
+        if (name === RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS || name === RuntimeConstants.MODULE_NAMES.ADMIN) {
+          globalObject = `(window.${RuntimeConstants.GLOBALS.MODULES} && (window.${RuntimeConstants.GLOBALS.MODULES}['${RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS}'] || window.${RuntimeConstants.GLOBALS.MODULES}['${RuntimeConstants.MODULE_NAMES.ADMIN}'] || window.Fromcode))`;
         }
       }
 

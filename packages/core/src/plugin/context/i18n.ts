@@ -1,25 +1,30 @@
 import { TranslationMap, LoadedPlugin } from '../../types';
-import { PluginManagerInterface, createSecurityHelpers } from './utils';
+import type { PluginManagerInterface } from './utils.interfaces';
+import { ContextSecurityProxy } from './utils';
 
-export function createI18nProxy(
+
+export class I18nContextProxy {
+  static createI18nProxy(
   plugin: LoadedPlugin,
   manager: PluginManagerInterface,
-  security: ReturnType<typeof createSecurityHelpers>
+  security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
 ) {
-  const { hasCapability, handleViolation } = security;
+      const { hasCapability, handleViolation } = security;
 
-  return {
-    translate: (key: string, params: any, locale: any) => {
-      if (!hasCapability('i18n')) handleViolation('i18n');
-      return manager.i18n.translate(key, params, locale);
-    },
-    t: (key: string, params?: Record<string, any>) => {
-      if (!hasCapability('i18n')) handleViolation('i18n');
-      return manager.i18n.translate(`${plugin.manifest.slug}.${key}`, params);
-    },
-    registerTranslations: (locale: string, translations: any) => {
-      if (!hasCapability('i18n')) handleViolation('i18n');
-      manager.i18n.registerTranslations(locale, plugin.manifest.slug, translations as TranslationMap);
-    }
-  };
+      return {
+        translate: (key: string, params: any, locale: any) => {
+          if (!hasCapability('i18n')) handleViolation('i18n');
+          return manager.i18n.translate(key, params, locale);
+        },
+        t: (key: string, params?: Record<string, any>) => {
+          if (!hasCapability('i18n')) handleViolation('i18n');
+          return manager.i18n.translate(`${plugin.manifest.slug}.${key}`, params);
+        },
+        registerTranslations: (locale: string, translations: any) => {
+          if (!hasCapability('i18n')) handleViolation('i18n');
+          manager.i18n.registerTranslations(locale, plugin.manifest.slug, translations as TranslationMap);
+        }
+      };
+
+  }
 }

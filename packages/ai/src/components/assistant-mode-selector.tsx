@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
-import { GLASS_BUTTON } from '../ui/glass-morphism';
+import { GlassMorphism } from '../ui/glass-morphism';
 
-export type ConversationMode = 'chat' | 'build' | 'quickfix';
+import type { ConversationMode } from './assistant-mode-selector.types';
 
 interface AssistantModeSelectorProps {
   mode: ConversationMode;

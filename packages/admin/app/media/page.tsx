@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Slot } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,8 @@ import { PageHeading } from '@/components/ui/page-heading';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PromptDialog } from '@/components/ui/prompt-dialog';
 import { MoveDialog } from '@/components/ui/move-dialog';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminServices } from '@/lib/admin-services';
 
@@ -52,7 +52,7 @@ interface MediaItem {
 }
 
 export default function MediaPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [folders, setFolders] = useState<MediaFolder[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
@@ -86,15 +86,15 @@ export default function MediaPage() {
       const f = currentFolderId !== null ? `&folderId=${currentFolderId}` : (searchQuery ? '' : '&folderId=null');
       
       const [mediaData, folderData] = await Promise.all([
-        api.get(`${ENDPOINTS.MEDIA.BASE}?${q}${f}`),
-        api.get(`${ENDPOINTS.MEDIA.BASE}/folders?parentId=${currentFolderId || 'null'}`)
+        AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?${q}${f}`),
+        AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders?parentId=${currentFolderId || 'null'}`)
       ]);
       
       setItems(mediaData);
       setFolders(folderData);
 
       if (currentFolderId) {
-        const pathData = await api.get(`${ENDPOINTS.MEDIA.BASE}/folders/${currentFolderId}/path`);
+        const pathData = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${currentFolderId}/path`);
         setFolderPath(pathData);
       } else {
         setFolderPath([]);
@@ -117,7 +117,7 @@ export default function MediaPage() {
     setIsActionLoading(true);
     setError(null);
     try {
-      await api.post(`${ENDPOINTS.MEDIA.BASE}/folders`, {
+      await AdminApi.post(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders`, {
         name,
         parentId: currentFolderId
       });
@@ -136,7 +136,7 @@ export default function MediaPage() {
     setIsActionLoading(true);
     setError(null);
     try {
-      await api.patch(`${ENDPOINTS.MEDIA.BASE}/folders/${editingFolder.id}`, {
+      await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${editingFolder.id}`, {
         name
       });
       setIsRenamePromptOpen(false);
@@ -154,7 +154,7 @@ export default function MediaPage() {
     if (!editingFolder) return;
     setIsActionLoading(true);
     try {
-      await api.delete(`${ENDPOINTS.MEDIA.BASE}/folders/${editingFolder.id}`);
+      await AdminApi.delete(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${editingFolder.id}`);
       setIsFolderDeleteDialogOpen(false);
       setEditingFolder(null);
       fetchMedia();
@@ -171,11 +171,11 @@ export default function MediaPage() {
     setIsActionLoading(true);
     try {
       if (movingItem.type === 'file') {
-        await api.patch(`${ENDPOINTS.MEDIA.BASE}/${movingItem.id}`, {
+        await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${movingItem.id}`, {
           folderId: targetFolderId === null ? 'null' : targetFolderId
         });
       } else {
-        await api.patch(`${ENDPOINTS.MEDIA.BASE}/folders/${movingItem.id}`, {
+        await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${movingItem.id}`, {
           parentId: targetFolderId === null ? 'null' : targetFolderId
         });
       }
@@ -200,7 +200,7 @@ export default function MediaPage() {
         const formData = new FormData();
         formData.append('file', file);
         if (currentFolderId) formData.append('folderId', currentFolderId.toString());
-        await api.upload(ENDPOINTS.MEDIA.UPLOAD, formData);
+        await AdminApi.upload(AdminConstants.ENDPOINTS.MEDIA.UPLOAD, formData);
       }
 
       fetchMedia();
@@ -262,7 +262,7 @@ export default function MediaPage() {
     if (!deletingId) return;
     setIsActionLoading(true);
     try {
-      await api.delete(`${ENDPOINTS.MEDIA.BASE}/${deletingId}`);
+      await AdminApi.delete(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${deletingId}`);
       setItems(items.filter(i => i.id !== deletingId));
       setIsDeleteDialogOpen(false);
       setDeletingId(null);

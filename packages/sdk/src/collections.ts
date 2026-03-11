@@ -1,64 +1,55 @@
-import { buildApiVersionPrefix } from './api-version';
-import { ApiPath } from './constants';
+import { ApiVersionUtils } from './api-version';
+import { SystemConstants } from './constants';
+import type { CollectionListPathOptions } from './collections.interfaces';
 
-function collectionsBasePath(): string {
-  return `${buildApiVersionPrefix()}${ApiPath.COLLECTIONS.BASE}`;
-}
-
-export type CollectionQueryPrimitive = string | number | boolean | null | undefined;
-
-export interface CollectionListPathOptions {
-  limit?: number;
-  search?: string;
-  filters?: Record<string, CollectionQueryPrimitive>;
-}
-
-const normalizeCollectionSlug = (value: string): string => String(value || '').trim();
-
-const encodePath = (value: string): string => encodeURIComponent(String(value || '').trim());
-
-const appendParam = (params: URLSearchParams, key: string, value: CollectionQueryPrimitive) => {
-  if (value === undefined || value === null) return;
-  const text = String(value).trim();
-  if (!text) return;
-  params.set(key, text);
-};
-
-export function buildCollectionListPath(collectionSlug: string, options: CollectionListPathOptions = {}): string {
-  const slug = normalizeCollectionSlug(collectionSlug);
-  if (!slug) return collectionsBasePath();
-
-  const params = new URLSearchParams();
-
-  const limit = Number(options.limit);
-  if (Number.isFinite(limit) && limit > 0) {
-    params.set('limit', String(limit));
+/**
+ * Collection path and data utilities.
+ *
+ * @example
+ * CollectionUtils.listPath('products')          // "/api/v1/collections/products"
+ * CollectionUtils.docPath('products', '123')    // "/api/v1/collections/products/123"
+ * CollectionUtils.extractDocs(response)         // []
+ */
+export class CollectionUtils {
+  private static basePath(): string {
+    return `${ApiVersionUtils.prefix()}${SystemConstants.API_PATH.COLLECTIONS.BASE}`;
   }
 
-  appendParam(params, 'search', options.search);
+  static listPath(slug: string, options: CollectionListPathOptions = {}): string {
+    const s = String(slug || '').trim();
+    if (!s) return CollectionUtils.basePath();
 
-  const filters = options.filters || {};
-  for (const [key, value] of Object.entries(filters)) {
-    const normalizedKey = String(key || '').trim();
-    if (!normalizedKey) continue;
-    appendParam(params, normalizedKey, value);
+    const params = new URLSearchParams();
+    const limit = Number(options.limit);
+    if (Number.isFinite(limit) && limit > 0) params.set('limit', String(limit));
+
+    if (options.search) {
+      const search = String(options.search).trim();
+      if (search) params.set('search', search);
+    }
+
+    for (const [key, value] of Object.entries(options.filters || {})) {
+      const k = String(key || '').trim();
+      if (!k || value === undefined || value === null) continue;
+      const v = String(value).trim();
+      if (v) params.set(k, v);
+    }
+
+    const query = params.toString();
+    const base = `${CollectionUtils.basePath()}/${encodeURIComponent(s)}`;
+    return query ? `${base}?${query}` : base;
   }
 
-  const query = params.toString();
-  const basePath = `${collectionsBasePath()}/${encodePath(slug)}`;
-  return query ? `${basePath}?${query}` : basePath;
-}
+  static docPath(slug: string, id: string | number): string {
+    const s = String(slug || '').trim();
+    const i = String(id || '').trim();
+    if (!s || !i) return CollectionUtils.basePath();
+    return `${CollectionUtils.basePath()}/${encodeURIComponent(s)}/${encodeURIComponent(i)}`;
+  }
 
-export function buildCollectionDocPath(collectionSlug: string, recordId: string | number): string {
-  const slug = normalizeCollectionSlug(collectionSlug);
-  const id = String(recordId || '').trim();
-  if (!slug || !id) return collectionsBasePath();
-  return `${collectionsBasePath()}/${encodePath(slug)}/${encodePath(id)}`;
+  static extractDocs(response: unknown): unknown[] {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray((response as any)?.docs)) return (response as any).docs;
+    return [];
+  }
 }
-
-export function extractCollectionDocs(response: any): any[] {
-  if (Array.isArray(response)) return response;
-  if (Array.isArray(response?.docs)) return response.docs;
-  return [];
-}
-

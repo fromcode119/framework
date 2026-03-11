@@ -4,10 +4,11 @@ import React from 'react';
 
 interface SwitchProps {
   checked: boolean;
-  onChange: (checked: boolean) => void;
+  onChange: (checked: boolean) => void | Promise<void>;
   label?: string;
   description?: string;
   disabled?: boolean;
+  className?: string;
 }
 
 export const Switch = ({ checked, onChange, label, description, disabled }: SwitchProps) => {

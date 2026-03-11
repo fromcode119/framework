@@ -1,11 +1,11 @@
 import { SystemMigration } from '../../types';
-import { executeForDialect } from '../helpers/dialect';
+import { DialectHelper } from '../helpers/dialect';
 
 export const AddSandboxConfigMigration: SystemMigration = {
   version: 4,
   name: 'Add sandbox configuration to plugins table',
   up: async (db, sql) => {
-    await executeForDialect(db.dialect, {
+    await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`
           ALTER TABLE "_system_plugins" 
@@ -28,7 +28,7 @@ export const AddSandboxConfigMigration: SystemMigration = {
     });
   },
   down: async (db, sql) => {
-    await executeForDialect(db.dialect, {
+    await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN IF EXISTS "sandbox_config"`);
       },

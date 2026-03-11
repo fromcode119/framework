@@ -1,37 +1,34 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ApiPath } from '@fromcode119/sdk';
-import { buildFrontendApiUrl } from './api-routes';
+import { SystemConstants } from '@fromcode119/sdk';
+import { FrontendApiRoutes } from './api-routes';
+import type { SystemStatus } from './use-system-status.types';
+import { SystemStatusUtils } from './system-status-utils';
 
-export type SystemStatus = 'LOADING' | 'OK' | 'MAINTENANCE';
-const REQUEST_TIMEOUT_MS = 5000;
-
-async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(input, { ...init, signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
+/**
+ * React hook to check system status and maintenance mode.
+ * 
+ * @returns Current system status: 'LOADING' | 'OK' | 'MAINTENANCE'
+ */
 export function useSystemStatus() {
   const [status, setStatus] = useState<SystemStatus>('LOADING');
 
   useEffect(() => {
     async function initializeSystem() {
       try {
-        const healthPath = (ApiPath as any)?.SYSTEM?.HEALTH;
+        const healthPath = SystemConstants.API_PATH.SYSTEM.HEALTH;
 
         // 1. Check system health and maintenance status (Whitelisted)
         let maintenance = false;
         try {
-          const healthRes = await fetchWithTimeout(buildFrontendApiUrl(healthPath), {
-            cache: 'no-store',
-            credentials: 'include'
-          });
+          const healthRes = await SystemStatusUtils.fetchWithTimeout(
+            FrontendApiRoutes.buildFrontendApiUrl(healthPath),
+            {
+              cache: 'no-store',
+              credentials: 'include'
+            }
+          );
           if (healthRes.ok) {
             const health = await healthRes.json();
             maintenance = Boolean(health?.maintenance && !health?.bypass);

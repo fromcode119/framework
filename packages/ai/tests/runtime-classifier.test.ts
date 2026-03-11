@@ -1,8 +1,8 @@
-import { createMcpBridge } from '@fromcode119/mcp';
-import { classifyIntent } from '../src/admin-assistant-runtime/runtime/classifier';
-import { runOrchestrator } from '../src/admin-assistant-runtime/runtime/orchestrator';
+import { McpBridgeFactory } from '@fromcode119/mcp';
+import { IntentClassifier } from '../src/admin-assistant-runtime/runtime/intent-classifier';
+import { OrchestratorRunner } from '../src/admin-assistant-runtime/runtime/orchestrator';
 import type { AdminAssistantRuntimeOptions, AssistantChatInput, AssistantSkillDefinition } from '../src/admin-assistant-runtime/types';
-import { resolveProviderCapabilities } from '../src/gateways/integration-provider';
+import { ProviderCapabilitiesUtils } from '../src/gateways/integration-provider';
 
 function createOptions(overrides?: Partial<AdminAssistantRuntimeOptions>): AdminAssistantRuntimeOptions {
   return {
@@ -28,7 +28,7 @@ function createDeps(options?: Partial<AdminAssistantRuntimeOptions>) {
   return {
     options: runtimeOptions,
     resolveSkills: async () => [generalSkill],
-    createBridge: async () => createMcpBridge({ tools: [] }),
+    createBridge: async () => McpBridgeFactory.create({ tools: [] }),
     listTools: async () => [],
     sanitizeMessage: (message: string) => message,
     toRunMode: () => 'chat' as const,
@@ -52,13 +52,13 @@ function createDeps(options?: Partial<AdminAssistantRuntimeOptions>) {
     }),
     resolveAgentMode: () => 'basic' as const,
     resolveSkillForInput: () => generalSkill,
-    resolveProviderCapabilities,
+    resolveProviderCapabilities: ProviderCapabilitiesUtils.resolveProviderCapabilities,
   };
 }
 
 describe('runtime classifier and fallback behavior', () => {
   it('classifies greetings as smalltalk', () => {
-    const intent = classifyIntent({
+    const intent = IntentClassifier.classifyIntent({
       message: 'hey',
       history: [],
     });
@@ -67,7 +67,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('classifies simple arithmetic as factual_qa with quick answer', () => {
-    const intent = classifyIntent({
+    const intent = IntentClassifier.classifyIntent({
       message: 'what is 5+5',
       history: [],
     });
@@ -77,7 +77,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('parses typo variant "chanege ... to ..." as replace_text intent', () => {
-    const intent = classifyIntent({
+    const intent = IntentClassifier.classifyIntent({
       message: 'chanege "07000 000001" to "07000 000002"',
       history: [],
     });
@@ -88,7 +88,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('continues replace intent from clarification context on short follow-up', () => {
-    const intent = classifyIntent({
+    const intent = IntentClassifier.classifyIntent({
       message: "it's a phone",
       history: [
         { role: 'user', content: 'change "07000 000001" to "07000 000002"' },
@@ -102,8 +102,8 @@ describe('runtime classifier and fallback behavior', () => {
     expect(intent.replace?.to).toBe('07000 000002');
   });
 
-  it('continues replace intent when user asks for match details from prior replace', () => {
-    const intent = classifyIntent({
+  it('continues replace intent when user CliUtils.asks for match details from prior replace', () => {
+    const intent = IntentClassifier.classifyIntent({
       message: 'what are the matches',
       history: [
         { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
@@ -117,7 +117,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('continues replace intent on "where are they" follow-up from prior replace', () => {
-    const intent = classifyIntent({
+    const intent = IntentClassifier.classifyIntent({
       message: 'where are they?',
       history: [
         { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
@@ -131,7 +131,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('answers clarification follow-up for CMS/content scope without generic fallback', () => {
-    const intent = classifyIntent({
+    const intent = IntentClassifier.classifyIntent({
       message: 'what do you mean by cms content ?',
       history: [
         { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
@@ -155,7 +155,7 @@ describe('runtime classifier and fallback behavior', () => {
       agentMode: 'basic',
     };
 
-    const result = await runOrchestrator(input, createDeps());
+    const result = await OrchestratorRunner.runOrchestrator(input, createDeps());
 
     expect(result).toBeTruthy();
     expect(String(result?.message || '').trim()).toBe('10');
@@ -163,7 +163,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('returns contextual clarification answer instead of generic factual fallback', async () => {
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what do you mean by cms content ?',
         history: [
@@ -192,7 +192,7 @@ describe('runtime classifier and fallback behavior', () => {
       agentMode: 'basic',
     };
 
-    const result = await runOrchestrator(input, createDeps());
+    const result = await OrchestratorRunner.runOrchestrator(input, createDeps());
 
     expect(result).toBeTruthy();
     expect((result?.message || '').toLowerCase()).not.toContain('stage exact changes');
@@ -213,7 +213,7 @@ describe('runtime classifier and fallback behavior', () => {
         },
       ],
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'users',
         agentMode: 'basic',
@@ -237,7 +237,7 @@ describe('runtime classifier and fallback behavior', () => {
         },
       ],
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what users we have',
         history: [
@@ -274,7 +274,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 2,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what users we have',
         history: [
@@ -308,7 +308,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 1,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what is his name ?',
         history: [
@@ -344,7 +344,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 2,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'so do you know the name of estows@gmail.com ?',
         history: [
@@ -378,7 +378,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 1,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'so do you know the name of estows@gmail.com ?',
         history: [
@@ -410,7 +410,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 1,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'cual es el nombre de estows@gmail.com?',
         history: [
@@ -442,7 +442,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 1,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what is his name ?',
         history: [
@@ -474,7 +474,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 1,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what is site title?',
         history: [
@@ -509,7 +509,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 2,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what is second one email?',
         history: [
@@ -556,7 +556,7 @@ describe('runtime classifier and fallback behavior', () => {
         totalDocs: 2,
       }),
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'what about that one?',
         history: [
@@ -596,7 +596,7 @@ describe('runtime classifier and fallback behavior', () => {
         { slug: 'snapbilt-bundle-demo', name: 'SnapBilt Bundle Demo', version: '1.0.0', state: 'active' },
       ] as any,
     });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'List installed plugins, active theme, and editable collections.',
         agentMode: 'basic',
@@ -618,7 +618,7 @@ describe('runtime classifier and fallback behavior', () => {
       }),
     };
     const deps = createDeps({ aiClient: aiClient as any });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: "let's chat",
         agentMode: 'basic',
@@ -639,7 +639,7 @@ describe('runtime classifier and fallback behavior', () => {
       }),
     };
     const deps = createDeps({ aiClient: aiClient as any });
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'hey',
         agentMode: 'basic',
@@ -653,7 +653,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('continues replace flow from clarification with url hint and stages deterministic action', async () => {
-    const bridge = createMcpBridge({
+    const bridge = McpBridgeFactory.create({
       tools: [
         {
           tool: 'content.search_text',
@@ -681,7 +681,7 @@ describe('runtime classifier and fallback behavior', () => {
       listTools: async () => [{ tool: 'content.search_text', readOnly: true }],
     };
 
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'http://localhost:3000/examples/roofing',
         history: [
@@ -698,8 +698,8 @@ describe('runtime classifier and fallback behavior', () => {
     expect(String(result?.message || '').toLowerCase()).toContain('staged');
   });
 
-  it('shows file match locations when user asks "where are they" after file-scope clarification', async () => {
-    const bridge = createMcpBridge({
+  it('shows file match locations when user CliUtils.asks "where are they" after file-scope clarification', async () => {
+    const bridge = McpBridgeFactory.create({
       tools: [
         {
           tool: 'themes.files.search_text',
@@ -731,7 +731,7 @@ describe('runtime classifier and fallback behavior', () => {
       listTools: async () => [{ tool: 'themes.files.search_text', readOnly: true }],
     };
 
-    const result = await runOrchestrator(
+    const result = await OrchestratorRunner.runOrchestrator(
       {
         message: 'where are they?',
         history: [

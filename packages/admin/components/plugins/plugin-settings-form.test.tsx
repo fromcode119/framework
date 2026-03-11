@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PluginSettingsForm } from './plugin-settings-form';
 import { vi } from 'vitest';
-import { api } from '@/lib/api';
+import { AdminApi } from '@/lib/api';
 
 // Mock dependecies
 vi.mock('@fromcode119/react', async (importOriginal) => {
@@ -72,7 +72,7 @@ describe('./plugin-settings-form', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (api.get as any).mockImplementation((url: string) => {
+    (AdminApi.get as any).mockImplementation((url: string) => {
       if (url.includes('schema')) return Promise.resolve(mockSchema);
       return Promise.resolve(mockSettings);
     });
@@ -116,8 +116,8 @@ describe('./plugin-settings-form', () => {
     expect(screen.getByText(/Unsaved changes/i)).toBeDefined();
   });
 
-  it('calls api.put when saving', async () => {
-    (api.put as any).mockResolvedValue({ success: true });
+  it('calls AdminApi.put when saving', async () => {
+    (AdminApi.put as any).mockResolvedValue({ success: true });
     window.alert = vi.fn();
 
     render(<PluginSettingsForm pluginSlug={pluginSlug} />);
@@ -131,14 +131,14 @@ describe('./plugin-settings-form', () => {
     fireEvent.click(saveButton);
     
     await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings`), expect.objectContaining({
+      expect(AdminApi.put).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings`), expect.objectContaining({
         siteName: 'New Name'
       }));
     });
   });
 
-  it('calls api.post when resetting', async () => {
-    (api.post as any).mockResolvedValue({ settings: { siteName: 'default' } });
+  it('calls AdminApi.post when resetting', async () => {
+    (AdminApi.post as any).mockResolvedValue({ settings: { siteName: 'default' } });
     window.confirm = vi.fn().mockReturnValue(true);
 
     render(<PluginSettingsForm pluginSlug={pluginSlug} />);
@@ -149,7 +149,7 @@ describe('./plugin-settings-form', () => {
     fireEvent.click(resetButton);
     
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/reset`));
+      expect(AdminApi.post).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/reset`));
     });
   });
 

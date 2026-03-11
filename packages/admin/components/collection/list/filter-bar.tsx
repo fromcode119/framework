@@ -15,7 +15,7 @@ interface FilterBarProps {
   setPage: (val: number) => void;
   showColumnsMenu: boolean;
   setShowColumnsMenu: (val: boolean | ((prev: boolean) => boolean)) => void;
-  columnsMenuRef: React.RefObject<HTMLDivElement>;
+  columnsMenuRef: React.RefObject<HTMLDivElement | null>;
   allColumns: any[];
   visibleColumnIds: string[];
   toggleColumn: (id: string) => void;

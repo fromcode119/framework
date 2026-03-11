@@ -1,20 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { Loader } from '@/components/ui/loader';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
 export default function EditUserPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const { id } = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ export default function EditUserPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const data = await api.get(ENDPOINTS.SYSTEM.USER(id as string));
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(id as string));
         setFormData({
           email: data.email || '',
           username: data.username || '',
@@ -67,7 +67,7 @@ export default function EditUserPage() {
     }
 
     try {
-      await api.put(ENDPOINTS.SYSTEM.USER(id as string), formData);
+      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.USER(id as string), formData);
       router.push(`/users/${id}`);
     } catch (err: any) {
       console.error('Failed to update user:', err);

@@ -1,5 +1,8 @@
-import { IntegrationRegistry, IntegrationTypeDefinition, IntegrationProviderDefinition } from './integration-registry';
+import { IntegrationRegistry } from './integration-registry';
+import type { IntegrationTypeDefinition, IntegrationProviderDefinition } from './integration-registry.interfaces';
 import { EmailManager, EmailFactory, EmailOptions } from '@fromcode119/email';
+
+type EmailSender = Pick<EmailManager, 'send'>;
 import { MediaManager, StorageFactory } from '@fromcode119/media';
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
 import { Logger } from '@fromcode119/sdk';
@@ -7,53 +10,10 @@ import { EmailIntegrationDefinition } from './providers/email-provider';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';
 import { SsoIntegrationDefinition } from './providers/sso-provider';
-import { sanitizeKey } from '../utils';
+import { CoreServices } from '../services';
 import path from 'path';
+import { MultiProviderEmailSender } from './multi-provider-email-sender';
 
-type EmailSender = Pick<EmailManager, 'send'>;
-
-class MultiProviderEmailSender implements EmailSender {
-  constructor(
-    private readonly providers: Array<{ key: string; sender: EmailSender }>,
-    private readonly logger: Logger
-  ) {}
-
-  async send(options: EmailOptions): Promise<any> {
-    const settled = await Promise.allSettled(
-      this.providers.map(async (entry) => {
-        const result = await entry.sender.send(options);
-        return { key: entry.key, result };
-      })
-    );
-
-    const failed = settled
-      .filter((item): item is PromiseRejectedResult => item.status === 'rejected')
-      .map((item) => String(item.reason?.message || item.reason || 'unknown error'));
-    const succeeded = settled.filter((item) => item.status === 'fulfilled').length;
-
-    if (!succeeded) {
-      throw new Error(`All enabled email providers failed: ${failed.join(' | ')}`);
-    }
-
-    if (failed.length) {
-      this.logger.warn(
-        `Email delivered with partial provider failures (${succeeded}/${this.providers.length} succeeded): ${failed.join(' | ')}`
-      );
-    }
-
-    const firstSuccess = settled.find((item): item is PromiseFulfilledResult<{ key: string; result: any }> => item.status === 'fulfilled');
-    return firstSuccess?.value?.result;
-  }
-}
-
-/**
- * IntegrationManager
- * 
- * Manages all system integrations (email, storage, cache) and provides
- * a unified interface for configuration and instantiation.
- * 
- * Separates integration concerns from PluginManager to improve code organization.
- */
 export class IntegrationManager {
   private registry: IntegrationRegistry;
   private logger: Logger;
@@ -403,6 +363,6 @@ export class IntegrationManager {
    * Normalize integration type key
    */
   private normalizeKey(type: string) {
-    return sanitizeKey(type);
+    return CoreServices.getInstance().content.sanitizeKey(type);
   }
 }

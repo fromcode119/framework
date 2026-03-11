@@ -3,15 +3,15 @@ import fs from 'fs';
 import path from 'path';
 import { Logger } from '@fromcode119/sdk';
 import { LoadedPlugin, FromcodePlugin } from '../../types';
-import { SystemTable } from '@fromcode119/sdk/internal';
-import { PluginManagerInterface } from '../context';
+import { SystemConstants } from '@fromcode119/sdk';
+import type { PluginManagerInterface } from '../context/utils.interfaces';
 import { PluginPermissionsService } from '../../security/plugin-permissions-service';
 import { PluginSignatureService } from '../../security/plugin-signature-service';
 import { PluginStateService } from './plugin-state-service';
 import { DiscoveryService } from './discovery-service';
 import { SchemaManager } from '../../database/schema-manager';
 
-import { validatePluginManifest as validateManifest } from '../../management/manifest';
+import { ManifestValidator } from '../../management/manifest';
 import { SandboxManager } from '../../security/sandbox-manager';
 import { IntegrityService } from '../../security/integrity-service';
 import { Seeder } from '../../database/seeder';
@@ -50,7 +50,7 @@ export class LifecycleService {
     }
 
     try {
-      validateManifest(plugin.manifest);
+      ManifestValidator.validate(plugin.manifest);
     } catch (err) {
       throw new Error(`Invalid manifest for "${slug}": ${err}`);
     }
@@ -256,7 +256,7 @@ export class LifecycleService {
       if (plugin.state === 'active') await this.disable(slug);
     }
 
-    await this.manager.db.delete(SystemTable.PLUGINS, { slug });
+    await this.manager.db.delete(SystemConstants.TABLE.PLUGINS, { slug });
     const pluginPath = plugin?.path;
     this.manager.plugins.delete(slug);
 

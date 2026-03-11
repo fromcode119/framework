@@ -1,10 +1,14 @@
-import { Collection } from '@fromcode119/core';
+import { type Collection } from '@fromcode119/core';
+import { ApiConfig } from './config/api-config';
 
-export function generateOpenAPI(collections: Collection[]) {
+export class SwaggerGenerator {
+  static generate(collections: Collection[]) {
   const paths: any = {};
   const components: any = {
     schemas: {}
   };
+
+  const collectionsBase = ApiConfig.getInstance().legacyRoutes.collections.BASE;
 
   for (const collection of collections) {
     const slug = collection.slug;
@@ -20,7 +24,7 @@ export function generateOpenAPI(collections: Collection[]) {
       if (field.admin?.hidden) continue;
 
       properties[field.name] = {
-        type: mapTypeToOpenAPI(field.type),
+        type: SwaggerGenerator.mapTypeToOpenAPI(field.type),
         description: field.label
       };
     }
@@ -31,7 +35,7 @@ export function generateOpenAPI(collections: Collection[]) {
       required: required.length > 0 ? required : undefined
     };
 
-    paths[`/api/collections/${slug}`] = {
+    paths[`${collectionsBase}/${slug}`] = {
       get: {
         summary: `List ${slug}`,
         responses: {
@@ -75,7 +79,7 @@ export function generateOpenAPI(collections: Collection[]) {
       }
     };
 
-    paths[`/api/collections/${slug}/{id}`] = {
+    paths[`${collectionsBase}/${slug}/{id}`] = {
       get: {
         summary: `Get ${slug} by ID`,
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
@@ -120,12 +124,13 @@ export function generateOpenAPI(collections: Collection[]) {
   };
 }
 
-function mapTypeToOpenAPI(type: string): string {
-  switch (type) {
-    case 'number': return 'integer';
-    case 'boolean': return 'boolean';
-    case 'date': return 'string';
-    case 'json': return 'object';
-    default: return 'string';
+  private static mapTypeToOpenAPI(type: string): string {
+    switch (type) {
+      case 'number': return 'integer';
+      case 'boolean': return 'boolean';
+      case 'date': return 'string';
+      case 'json': return 'object';
+      default: return 'string';
+    }
   }
 }

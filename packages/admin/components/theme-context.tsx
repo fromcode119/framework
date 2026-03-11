@@ -1,22 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-
-type Theme = "dark" | "light";
-
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+import React, { useState, useEffect } from "react";
+import type { ThemeContextType } from './theme-context.interfaces';
+import { ThemeContext } from './theme-context-store';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<ThemeContextType['theme']>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as Theme;
+    const saved = localStorage.getItem("theme") as ThemeContextType['theme'];
     if (saved) {
       setTheme(saved);
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -43,18 +36,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.context.Provider value={{ theme, toggleTheme }}>
       <div className="min-h-screen transition-colors duration-300">
         {children}
       </div>
-    </ThemeContext.Provider>
+    </ThemeContext.context.Provider>
   );
-}
-
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
 }

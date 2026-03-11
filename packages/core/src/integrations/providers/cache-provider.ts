@@ -1,5 +1,5 @@
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
-import { IntegrationTypeDefinition } from '../integration-registry';
+import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
 
 export const CacheIntegrationDefinition: IntegrationTypeDefinition<CacheManager> = {
   key: 'cache',

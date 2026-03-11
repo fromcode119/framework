@@ -79,35 +79,37 @@ const SYSTEM_ICON_NAMES = [
   'UserPlus'
 ];
 
-function toExportIdentifier(name: string): string | null {
-  const sanitized = String(name || '').replace(/[^A-Za-z0-9_$]/g, '');
-  if (!sanitized) return null;
-  if (/^[0-9]/.test(sanitized)) return `I${sanitized}`;
-  return sanitized;
-}
-
-export function generateAdminRegistryContent(): string {
-  const uniqueNames = Array.from(
-    new Set(
-      [...SYSTEM_ICON_NAMES, ...Object.keys(Lucide)]
-        .map((name) => String(name || '').trim())
+export class AdminRuntimeRegistry {
+  static generateAdminRegistryContent(): string {
+      const uniqueNames = Array.from(
+        new Set(
+          [...SYSTEM_ICON_NAMES, ...Object.keys(Lucide)]
+            .map((name) => String(name || '').trim())
+            .filter(Boolean)
+        )
+      );
+      const exports = uniqueNames
+        .map((name) => {
+          const identifier = AdminRuntimeRegistry.toExportIdentifier(name);
+          if (!identifier) return null;
+          return `export const ${identifier} = __icons["${name}"];`;
+        })
         .filter(Boolean)
-    )
-  );
-  const exports = uniqueNames
-    .map((name) => {
-      const identifier = toExportIdentifier(name);
-      if (!identifier) return null;
-      return `export const ${identifier} = __icons["${name}"];`;
-    })
-    .filter(Boolean)
-    .join('\n');
+        .join('\n');
 
-  return [
-    'const __icons = (globalThis.FrameworkIcons || globalThis.Lucide || {});',
-    exports,
-    'export default __icons;'
-  ]
-    .filter(Boolean)
-    .join('\n');
+      return [
+        'const __icons = (globalThis.FrameworkIcons || globalThis.Lucide || {});',
+        exports,
+        'export default __icons;'
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+  }
+  private static toExportIdentifier(name: string): string | null {
+    const sanitized = String(name || '').replace(/[^A-Za-z0-9_$]/g, '');
+    if (!sanitized) return null;
+    if (/^[0-9]/.test(sanitized)) return `I${sanitized}`;
+    return sanitized;
+  }
 }

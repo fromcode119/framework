@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/theme-context';
-import { useNotify } from '@/components/notification-context';
-import { usePlugins } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
+import { NotificationHooks } from '@/components/use-notification';
+import { ContextHooks } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import type { PluginEntry } from '@fromcode119/core/shared';
 
 export default function MarketplacePage() {
   const router = useRouter();
-  const { theme } = useTheme();
-  const { notify } = useNotify();
-  const { triggerRefresh } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh } = ContextHooks.usePlugins();
   const [plugins, setPlugins] = useState<PluginEntry[]>([]);
   const [installedPlugins, setInstalledPlugins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,8 +28,8 @@ export default function MarketplacePage() {
     setLoading(true);
     try {
       const [marketData, instData] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
-        api.get(ENDPOINTS.PLUGINS.LIST)
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE),
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LIST)
       ]);
       const rawPlugins = marketData.plugins || [];
       
@@ -62,7 +62,7 @@ export default function MarketplacePage() {
     try {
       setInstalling(slug);
       notify('info', 'Installation Started', `Downloading and staging ${slug}...`);
-      const response = await api.post(ENDPOINTS.PLUGINS.INSTALL(slug), {});
+      const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug), {});
       console.log('[Marketplace] Install response:', response);
       notify('success', 'Installation Complete', `Plugin "${slug}" installed successfully.`);
       
@@ -110,8 +110,8 @@ export default function MarketplacePage() {
           </div>
         ) : (
           filtered.map(plugin => {
-            const installed = installedPlugins.find(p => p.slug === plugin.slug);
-            const hasUpdate = installed && plugin.version !== installed.version;
+            const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);
+            const hasUpdate = installed && plugin.version !== (installed.manifest?.version || installed.version);
             const hasImageError = imageErrors[plugin.slug];
 
             return (

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { use } from 'react';
-import { usePlugins, Slot } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { Slot, ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminPathUtils } from '@/lib/admin-path';
 import Link from 'next/link';
@@ -12,8 +12,8 @@ const { Info = () => null, Package = () => null } = (FrameworkIcons || {}) as an
 export default function DynamicPluginPage({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = use(params);
   const { pathname, segments: effectivePath } = AdminPathUtils.resolveCatchAll(path);
-  const { menuItems } = usePlugins();
-  const { theme } = useTheme();
+  const { menuItems } = ContextHooks.usePlugins();
+  const { theme } = ThemeHooks.useTheme();
 
   // Find the most specific matching menu item
   let activeItem = menuItems.find(item => item.path === pathname);

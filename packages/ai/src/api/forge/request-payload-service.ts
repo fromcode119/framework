@@ -1,4 +1,4 @@
-export type AssistantHistoryEntry = { role: 'system' | 'user' | 'assistant'; content: string };
+import type { AssistantHistoryEntry } from './request-payload-service.types';
 
 export class AssistantRequestPayloadService {
   constructor(private normalizeHistory: (input: any) => AssistantHistoryEntry[]) {}

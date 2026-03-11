@@ -1,4 +1,4 @@
-import { generatePreviewUrl } from '../../admin/lib/collection-utils';
+import { AdminCollectionUtils } from '../../admin/lib/collection-utils';
 
 // Mock getPluginSettings is no longer needed as it's not exported/used like that
 // We'll just pass the settings object directly to the function in the tests
@@ -26,7 +26,7 @@ describe('URL Generation Logic', () => {
         const settings = { postUrlPrefix: '/blog' };
         
         const record = { slug: 'hello-world' };
-        const url = generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
+        const url = AdminCollectionUtils.generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
         
         expect(url).toContain('/blog/hello-world');
     });
@@ -35,7 +35,7 @@ describe('URL Generation Logic', () => {
         const settings = { postUrlPrefix: '/blog' };
         
         const record = { customPermalink: 'my-special-post' };
-        const url = generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
+        const url = AdminCollectionUtils.generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
         
         expect(url).toContain('/blog/my-special-post');
     });
@@ -44,7 +44,7 @@ describe('URL Generation Logic', () => {
         const settings = { postUrlPrefix: '/blog' };
         
         const record = { customPermalink: '/my-special-post' };
-        const url = generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
+        const url = AdminCollectionUtils.generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
         
         expect(url).toContain('/my-special-post');
         expect(url).not.toContain('/blog/my-special-post');
@@ -54,7 +54,7 @@ describe('URL Generation Logic', () => {
         const settings = { postUrlPrefix: '/blog' };
         
         const record = { customPermalink: '/blog/my-special-post' };
-        const url = generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
+        const url = AdminCollectionUtils.generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
         
         expect(url).toContain('/blog/my-special-post');
     });
@@ -63,7 +63,7 @@ describe('URL Generation Logic', () => {
         const settings = { postUrlPrefix: '' };
         
         const record = { slug: 'hello-world' };
-        const url = generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
+        const url = AdminCollectionUtils.generatePreviewUrl(frontendUrl, record, mockPostCollection, '/:slug', settings);
         
         expect(url).toContain('/hello-world');
     });
@@ -72,7 +72,7 @@ describe('URL Generation Logic', () => {
         const settings = { pageUrlPrefix: '' };
         
         const record = { slug: 'about-us', customPermalink: '' };
-        const url = generatePreviewUrl(frontendUrl, record, mockPageCollection, '/:slug', settings);
+        const url = AdminCollectionUtils.generatePreviewUrl(frontendUrl, record, mockPageCollection, '/:slug', settings);
         
         expect(url).toContain('/about-us');
     });

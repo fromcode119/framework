@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { Slot, PluginsProvider, useTranslation, usePlugins } from '@fromcode119/react';
-import { ThemeProvider, useTheme } from '@/components/theme-context';
+import { Slot, PluginsProvider, ContextHooks } from '@fromcode119/react';
+import { ThemeProvider } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import * as SharedComponents from '@/components';
 import Sidebar from './sidebar';
 import PluginLoader from './plugin-loader';
@@ -11,14 +12,14 @@ import AdminExtensionLoader from './admin-extension-loader';
 import { FrameworkIcons } from '@/lib/icons';
 import { Dropdown } from '@/components/ui/dropdown';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth-context';
-import { api } from '@/lib/api';
-import { API_BASE_URL, ENDPOINTS, ROUTES } from '@/lib/constants';
-import { stripAdminBasePath } from '@/lib/admin-path';
+import { AuthHooks } from '@/components/use-auth';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { AdminPathUtils } from '@/lib/admin-path';
 import { Loader } from '@/components/ui/loader';
-import { purgeAuth } from '@/lib/auth-utils';
-import { applyDateLocaleTimezonePatch } from '@/lib/timezone';
-import { RUNTIME_GLOBALS, RUNTIME_MODULE_NAMES } from '@fromcode119/sdk';
+import { AuthUtils } from '@/lib/auth-utils';
+import { TimezoneUtils } from '@/lib/timezone';
+import { RuntimeConstants } from '@fromcode119/sdk';
 
 const { 
   Menu = () => null, 
@@ -32,8 +33,8 @@ const {
 } = (FrameworkIcons || {}) as any;
 
 function Header({ onMenuClick }: { onMenuClick: () => void }) {
-  const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { theme, toggleTheme } = ThemeHooks.useTheme();
+  const { user, logout } = AuthHooks.useAuth();
   const router = useRouter();
   const [apiStatus, setApiStatus] = useState<'loading' | 'online' | 'offline'>('loading');
   const [isMaintenance, setIsMaintenance] = useState(false);
@@ -41,7 +42,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const data = await api.get(ENDPOINTS.SYSTEM.HEALTH);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.HEALTH);
         setApiStatus('online');
         setIsMaintenance(data.maintenance === true);
       } catch (e) {
@@ -91,7 +92,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
       <div className="flex items-center gap-4">
         <Slot name="admin.layout.header.right" />
         <button
-          onClick={() => router.push(ROUTES.MINIMAL)}
+          onClick={() => router.push(AdminConstants.ROUTES.MINIMAL)}
           className="h-9 w-9 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-cyan-500 hover:border-cyan-400/60 transition-colors inline-flex items-center justify-center"
           aria-label="Open Forge"
           title="Open Forge"
@@ -145,9 +146,9 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { theme } = useTheme();
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const { loadConfig, settings } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { user, isLoading: isAuthLoading } = AuthHooks.useAuth();
+  const { loadConfig, settings } = ContextHooks.usePlugins();
   const [, setTimezoneRenderVersion] = useState(0);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarInitialized, setIsSidebarInitialized] = useState(false);
@@ -168,8 +169,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   }, [isSidebarOpen, isSidebarInitialized]);
 
   const pathname = usePathname();
-  const normalizedPathname = React.useMemo(() => stripAdminBasePath(pathname || '/'), [pathname]);
-  const isMinimalPath = normalizedPathname?.startsWith(ROUTES.MINIMAL) || normalizedPathname?.startsWith('/minimal');
+  const normalizedPathname = React.useMemo(() => AdminPathUtils.stripBase(pathname || '/'), [pathname]);
+  const isMinimalPath = normalizedPathname?.startsWith(AdminConstants.ROUTES.MINIMAL) || normalizedPathname?.startsWith('/minimal');
   const [isAdvancedMode, setIsAdvancedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('fc_admin_advanced_mode') === 'true';
@@ -192,12 +193,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   // Load dynamic framework configuration (import maps, etc)
   useEffect(() => {
     if (!isAuthPage && user) {
-      loadConfig(ENDPOINTS.SYSTEM.METADATA);
+      loadConfig(AdminConstants.ENDPOINTS.SYSTEM.METADATA);
     }
   }, [loadConfig, user, isAuthPage]);
 
   useLayoutEffect(() => {
-    applyDateLocaleTimezonePatch(String(settings?.timezone || ''));
+    TimezoneUtils.applyDateLocaleTimezonePatch(String(settings?.timezone || ''));
     setTimezoneRenderVersion((value) => value + 1);
   }, [settings?.timezone]);
 
@@ -230,18 +231,18 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkInitialization = async () => {
       try {
-        const data = await api.get(ENDPOINTS.AUTH.STATUS);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS);
         const initialized = data.initialized;
         
         setIsInitialized(initialized);
         
         if (initialized === false && !isSetupPath) {
           console.log("[ClientLayout] System uninitialized -> setup");
-          purgeAuth();
-          router.push(ROUTES.AUTH.SETUP);
+          AuthUtils.purgeAuth();
+          router.push(AdminConstants.ROUTES.AUTH.SETUP);
         } else if (initialized === true && isSetupPath) {
           console.log("[ClientLayout] System initialized -> login");
-          router.push(ROUTES.AUTH.LOGIN);
+          router.push(AdminConstants.ROUTES.AUTH.LOGIN);
         }
       } catch (e) {
         console.error("Initialization check failed", e);
@@ -255,7 +256,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isInitialized === true && !user && !isAuthPage && !isAuthLoading) {
       console.log("[ClientLayout] Guard: Moving to login");
-      router.push(ROUTES.AUTH.LOGIN);
+      router.push(AdminConstants.ROUTES.AUTH.LOGIN);
     }
   }, [user, isInitialized, isAuthPage, isAuthLoading]);
 
@@ -263,7 +264,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     if (isAuthPage || !user || isInitialized !== true) return;
     if (isAdvancedMode) return;
     if (!isMinimalPath) {
-      router.replace(ROUTES.MINIMAL);
+      router.replace(AdminConstants.ROUTES.MINIMAL);
     }
   }, [isAuthPage, user, isInitialized, isAdvancedMode, isMinimalPath, router]);
 
@@ -283,8 +284,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           </div>
           <button 
             onClick={() => {
-               purgeAuth();
-               router.push(ROUTES.AUTH.LOGIN);
+               AuthUtils.purgeAuth();
+               router.push(AdminConstants.ROUTES.AUTH.LOGIN);
             }}
             className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-semibold tracking-wide text-[11px] shadow-2xl hover:scale-[1.02] transition-transform"
           >
@@ -397,7 +398,8 @@ export default function ClientLayout({
       'Icon',
       'ThemeProvider',
       'ThemeContext',
-      'NotificationContext'
+      'NotificationContext',
+      'AdminServices'
     ];
 
     const bridge: Record<string, any> = {};
@@ -421,14 +423,14 @@ export default function ClientLayout({
 
   // Pre-seed runtime module registry for deterministic bridge readiness.
   if (typeof window !== 'undefined') {
-    const runtimeRegistry = ((window as any)[RUNTIME_GLOBALS.MODULES] ||= {});
-    runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN] = adminRuntimeModule;
-    runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS] = adminRuntimeModule;
+    const runtimeRegistry = ((window as any)[RuntimeConstants.GLOBALS.MODULES] ||= {});
+    runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN] = adminRuntimeModule;
+    runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] = adminRuntimeModule;
   }
 
   return (
     <PluginsProvider 
-      apiUrl={API_BASE_URL} 
+      apiUrl={AdminConstants.API_BASE_URL} 
       runtimeModules={runtimeModules}
     >
       <ThemeProvider>

@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { EmailDriver, EmailOptions } from '../index';
+import type { EmailDriver, EmailOptions } from '../email-factory.interfaces';
 
 export class SMTPDriver implements EmailDriver {
   private transporter: nodemailer.Transporter;

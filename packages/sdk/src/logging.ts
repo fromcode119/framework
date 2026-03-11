@@ -1,14 +1,5 @@
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-}
-
-export interface LoggerOptions {
-  namespace?: string;
-  minLevel?: LogLevel;
-}
+import { LogLevel } from './logging.enums';
+import type { LoggerOptions } from './logging.interfaces';
 
 const envLogLevel = process.env.LOG_LEVEL?.toUpperCase();
 const defaultLogLevel = envLogLevel && envLogLevel in LogLevel ? (LogLevel as any)[envLogLevel] : LogLevel.DEBUG;
@@ -58,5 +49,3 @@ export class Logger {
     });
   }
 }
-
-export const logger = new Logger();

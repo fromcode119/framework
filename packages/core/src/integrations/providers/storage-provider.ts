@@ -1,5 +1,5 @@
 import { MediaManager, StorageFactory } from '@fromcode119/media';
-import { IntegrationTypeDefinition } from '../integration-registry';
+import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
 import path from 'path';
 
 export const StorageIntegrationDefinition: IntegrationTypeDefinition<MediaManager> = {

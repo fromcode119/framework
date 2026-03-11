@@ -7,9 +7,10 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   noPadding?: boolean;
   title?: string;
+  icon?: React.ReactNode;
 }
 
-export const Card = ({ children, className = "", noPadding = false, title, ...props }: CardProps) => {
+export function Card({ children, className = "", noPadding = false, title, ...props }: CardProps) {
   return (
     <div 
       {...props}
@@ -19,18 +20,4 @@ export const Card = ({ children, className = "", noPadding = false, title, ...pr
       {children}
     </div>
   );
-};
-
-export const CardHeader = ({ title, subtitle, description, badge }: { title: string, subtitle?: string, description?: string, badge?: React.ReactNode }) => {
-  const desc = description || subtitle;
-  
-  return (
-    <div className="flex items-center justify-between mb-4">
-      <div>
-        <h3 className="font-semibold text-base text-slate-900 dark:text-white">{title}</h3>
-        {desc && <p className="text-xs text-slate-500 mt-1">{desc}</p>}
-      </div>
-      {badge}
-    </div>
-  );
-};
+}

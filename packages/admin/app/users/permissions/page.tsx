@@ -1,21 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
 import { FrameworkIcons } from '@/lib/icons';
 import { DataTable } from '@/components/ui/data-table';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 import Link from 'next/link';
 
 export default function PermissionsPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [permissions, setPermissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -23,7 +23,7 @@ export default function PermissionsPage() {
   useEffect(() => {
     async function loadPermissions() {
       try {
-        const data = await api.get(ENDPOINTS.SYSTEM.PERMISSIONS);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS);
         setPermissions(data || []);
       } catch (error) {
         console.error('Failed to fetch permissions:', error);
@@ -156,7 +156,7 @@ export default function PermissionsPage() {
                 onClick={async () => {
                    setIsRefreshing(true);
                    try {
-                     const data = await api.get(ENDPOINTS.SYSTEM.PERMISSIONS);
+                     const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS);
                      setPermissions(data || []);
                    } finally {
                      setIsRefreshing(false);
@@ -204,9 +204,9 @@ export default function PermissionsPage() {
         label="Permissions Registry"
         description="Manage system capabilities and plugin permissions."
         links={[
-          { label: 'Users', href: ROUTES.USERS.LIST },
-          { label: 'Roles', href: ROUTES.USERS.ROLE_LIST },
-          { label: 'Activity Log', href: ROUTES.ACTIVITY },
+          { label: 'Users', href: AdminConstants.ROUTES.USERS.LIST },
+          { label: 'Roles', href: AdminConstants.ROUTES.USERS.ROLE_LIST },
+          { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY },
         ]}
       />
     </div>

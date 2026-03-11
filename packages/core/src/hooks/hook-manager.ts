@@ -1,7 +1,6 @@
 import { HookMessagingAdapter } from './types';
 import { HookAdapterFactory } from './hook-adapter-factory';
-
-export type HookHandler = (payload: any, event: string) => any | Promise<any>;
+import type { HookHandler } from './hook-manager.types';
 
 export class HookManager {
   private handlers: Map<string, Set<HookHandler>> = new Map();

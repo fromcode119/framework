@@ -8,7 +8,7 @@ import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
 import { BackupService } from '../../management/backup-service';
 import { z } from 'zod';
 import Module from 'module';
-import { getThemesDir } from '../../config/paths';
+import { ProjectPaths } from '../../config/paths';
 
 const manifestSchema = z.object({
   name: z.string(),
@@ -24,12 +24,7 @@ const manifestSchema = z.object({
   dependencies: z.record(z.string()).optional(),
 }).passthrough();
 
-export interface DependencyIssue {
-  slug: string;
-  expected: string;
-  actual?: string;
-  type: 'missing' | 'incompatible' | 'inactive';
-}
+import type { DependencyIssue } from './discovery-service.interfaces';
 
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
@@ -70,7 +65,7 @@ export class DiscoveryService {
     this.logger.info(`Scanning for plugins in ${this.pluginsRoot}...`);
     const roots = [this.pluginsRoot];
     
-    const themesDir = getThemesDir();
+    const themesDir = ProjectPaths.getThemesDir();
     if (fs.existsSync(themesDir)) {
       const themes = fs.readdirSync(themesDir);
       for (const themeSlug of themes) {

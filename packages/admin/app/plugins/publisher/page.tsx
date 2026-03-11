@@ -3,16 +3,16 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/theme-context';
-import { useNotify } from '@/components/notification-context';
-import { useAuth } from '@/components/auth-context';
-import { api } from '@/lib/api';
-import { slugify } from '@/lib/utils';
+import { ThemeHooks } from '@/components/use-theme';
+import { NotificationHooks } from '@/components/use-notification';
+import { AuthHooks } from '@/components/use-auth';
+import { AdminApi } from '@/lib/api';
+import { StringUtils } from '@fromcode119/sdk';
 
 const PublisherPortal = () => {
-    const { theme } = useTheme();
-    const { notify } = useNotify();
-    const { user } = useAuth();
+    const { theme } = ThemeHooks.useTheme();
+    const { notify } = NotificationHooks.useNotify();
+    const { user } = AuthHooks.useAuth();
     const [loading, setLoading] = useState(false);
     const [submissionType, setSubmissionType] = useState<'plugin' | 'theme'>('plugin');
     const [formData, setFormData] = useState({
@@ -120,7 +120,7 @@ const PublisherPortal = () => {
                                 type="text" 
                                 required
                                 value={formData.slug}
-                                onChange={e => setFormData({ ...formData, slug: slugify(e.target.value) })}
+                                onChange={e => setFormData({ ...formData, slug: StringUtils.slugify(e.target.value) })}
                                 className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
                                 placeholder="my-awesome-plugin"
                             />

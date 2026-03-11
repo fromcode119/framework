@@ -33,8 +33,8 @@ export function Switch({
         className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition ${
           disabled
             ? 'cursor-not-allowed opacity-50'
-            : 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2'
-        } ${checked ? 'bg-cyan-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+            : 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2'
+        } ${checked ? 'bg-slate-900 dark:bg-slate-100' : 'bg-slate-300 dark:bg-slate-700'}`}
       >
         <span
           aria-hidden

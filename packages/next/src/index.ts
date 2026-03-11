@@ -1,14 +1,6 @@
 import { LoadedPlugin } from '@fromcode119/core';
+import type { HeadInjection, SSRContext } from './index.types';
 
-export interface HeadInjection {
-  tag: string;
-  props: Record<string, any>;
-  content?: string;
-}
-
-export interface SSRContext {
-  headInjections: HeadInjection[];
-}
 
 export class SSRRegistry {
   private injections: Map<string, HeadInjection[]> = new Map();
@@ -22,5 +14,6 @@ export class SSRRegistry {
     return Array.from(this.injections.values()).flat();
   }
 }
+
 
 // Next.js specific components like a HeadInjector could go here

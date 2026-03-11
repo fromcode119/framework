@@ -1,26 +1,26 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { useNotification } from '@/components/notification-context';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { NotificationHooks } from '@/components/use-notification';
+import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 
 export default function InfrastructureSettingsPage() {
-  const { theme } = useTheme();
-  const { addNotification } = useNotification();
+  const { theme } = ThemeHooks.useTheme();
+  const { addNotification } = NotificationHooks.useNotification();
   const [isLoading, setIsLoading] = useState(true);
   const [maintenance, setMaintenance] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
         const docs = response.docs || [];
         const found = docs.find((s: any) => s.key === 'maintenance_mode');
         if (found) setMaintenance(found.value === 'true');
@@ -34,7 +34,7 @@ export default function InfrastructureSettingsPage() {
   const toggleMaintenance = async (val: boolean) => {
     setMaintenance(val);
     try {
-      await api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/maintenance_mode`, {
+      await AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/maintenance_mode`, {
         value: val ? 'true' : 'false'
       });
       addNotification({ title: 'System Updated', message: `Maintenance mode is now ${val ? 'active' : 'inactive'}.`, type: 'info' });

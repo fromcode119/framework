@@ -1,16 +1,16 @@
 "use client";
 
 import React, { use, useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { useNotify } from '@/components/notification-context';
-import { usePlugins } from '@fromcode119/react';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { NotificationHooks } from '@/components/use-notification';
+import { ContextHooks } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
 import type { MarketplaceTheme } from '@fromcode119/core/shared';
@@ -18,9 +18,9 @@ import type { MarketplaceTheme } from '@fromcode119/core/shared';
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
-  const { theme: adminTheme } = useTheme();
-  const { notify } = useNotify();
-  const { triggerRefresh } = usePlugins();
+  const { theme: adminTheme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh } = ContextHooks.usePlugins();
   
   const [theme, setTheme] = useState<MarketplaceTheme | null>(null);
   const [allVersions, setAllVersions] = useState<MarketplaceTheme[]>([]);
@@ -36,8 +36,8 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
     const fetchMarketplaceTheme = async () => {
       try {
         const [regResponse, instResponse] = await Promise.all([
-          api.get(ENDPOINTS.THEMES.MARKETPLACE),
-          api.get(ENDPOINTS.THEMES.LIST)
+          AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE),
+          AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST)
         ]);
         
         const themes = Array.isArray(regResponse) ? regResponse : (regResponse.themes || []);
@@ -75,12 +75,12 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
     setInstalling(true);
     try {
       notify('info', 'Installation Started', `Downloading and setting up ${theme.name} v${theme.version}...`);
-      await api.post(`${ENDPOINTS.THEMES.INSTALL(theme.slug)}?version=${theme.version}`);
+      await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.INSTALL(theme.slug)}?version=${theme.version}`);
       notify('success', 'Installation Success', `${theme.name} v${theme.version} has been installed.`);
       triggerRefresh();
       
       // Refresh local state
-      const instResponse = await api.get(ENDPOINTS.THEMES.LIST);
+      const instResponse = await AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST);
       const installed = (instResponse || []).find((t: any) => t.slug === slug);
       setInstalledTheme(installed);
       

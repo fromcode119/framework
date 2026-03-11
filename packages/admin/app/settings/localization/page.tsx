@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { useNotification } from '@/components/notification-context';
-import { usePlugins } from '@fromcode119/react';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { NotificationHooks } from '@/components/use-notification';
+import { ContextHooks } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
+import { LocalizationPageUtils } from './localization-page-utils';
 
 type LocaleItem = {
   id: string;
@@ -42,53 +43,12 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
   </div>
 );
 
-function normalizeLocaleCode(code: string) {
-  return String(code || '').trim().toLowerCase().replace(/_/g, '-');
-}
 
-function languageNameFromCode(code: string) {
-  const normalized = normalizeLocaleCode(code);
-  if (!normalized) return '';
-  const base = normalized.split('-')[0];
-  try {
-    const displayNames = new Intl.DisplayNames(['en'], { type: 'language' });
-    return displayNames.of(base) || normalized.toUpperCase();
-  } catch {
-    return normalized.toUpperCase();
-  }
-}
-
-function parseLocales(value: any): LocaleItem[] {
-  if (typeof value === 'string' && value.trim()) {
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) {
-        const normalized = parsed
-          .map((item: any, index: number) => {
-            const code = normalizeLocaleCode(item?.code || item?.isoCode || item?.locale);
-            if (!code) return null;
-            return {
-              id: `${code}-${index}`,
-              code,
-              name: String(item?.name || item?.label || languageNameFromCode(code)),
-              enabled: item?.enabled !== false
-            } as LocaleItem;
-          })
-          .filter(Boolean) as LocaleItem[];
-        if (normalized.length) return normalized;
-      }
-    } catch {
-      // no-op, handled by fallback path
-    }
-  }
-
-  return [];
-}
 
 export default function LocalizationSettingsPage() {
-  const { theme } = useTheme();
-  const { addNotification } = useNotification();
-  const { registerSettings } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { addNotification } = NotificationHooks.useNotification();
+  const { registerSettings } = ContextHooks.usePlugins();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -101,21 +61,21 @@ export default function LocalizationSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
         const docs = response.docs || [];
         const map = new Map<string, string>();
         docs.forEach((doc: any) => map.set(String(doc.key), String(doc.value ?? '')));
 
-        let parsedLocales = parseLocales(map.get('localization_locales'));
+        let parsedLocales = LocalizationPageUtils.parseLocales(map.get('localization_locales'));
         if (!parsedLocales.length) {
           const enabledCodes = String(map.get('enabled_locales') || 'en')
             .split(',')
-            .map((value) => normalizeLocaleCode(value))
+            .map((value) => LocalizationPageUtils.normalizeLocaleCode(value))
             .filter(Boolean);
           parsedLocales = (enabledCodes.length ? enabledCodes : ['en']).map((code, index) => ({
             id: `${code}-${index}`,
             code,
-            name: languageNameFromCode(code),
+            name: LocalizationPageUtils.languageNameFromCode(code),
             enabled: true
           }));
         }
@@ -124,9 +84,9 @@ export default function LocalizationSettingsPage() {
         const firstEnabled = enabledCodes[0] || parsedLocales[0]?.code || 'en';
 
         setLocales(parsedLocales);
-        setDefaultLocale(normalizeLocaleCode(map.get('default_locale') || firstEnabled));
-        setAdminDefaultLocale(normalizeLocaleCode(map.get('admin_default_locale') || firstEnabled));
-        setFrontendDefaultLocale(normalizeLocaleCode(map.get('frontend_default_locale') || firstEnabled));
+        setDefaultLocale(LocalizationPageUtils.normalizeLocaleCode(map.get('default_locale') || firstEnabled));
+        setAdminDefaultLocale(LocalizationPageUtils.normalizeLocaleCode(map.get('admin_default_locale') || firstEnabled));
+        setFrontendDefaultLocale(LocalizationPageUtils.normalizeLocaleCode(map.get('frontend_default_locale') || firstEnabled));
         const savedStrategy = String(map.get('locale_url_strategy') || 'query').trim().toLowerCase();
         setLocaleUrlStrategy(savedStrategy === 'path' || savedStrategy === 'none' ? savedStrategy : 'query');
       } finally {
@@ -141,7 +101,7 @@ export default function LocalizationSettingsPage() {
     const list = locales
       .map((locale) => ({
         ...locale,
-        code: normalizeLocaleCode(locale.code),
+        code: LocalizationPageUtils.normalizeLocaleCode(locale.code),
         name: String(locale.name || '').trim()
       }))
       .filter((locale) => locale.code && locale.enabled);
@@ -188,8 +148,8 @@ export default function LocalizationSettingsPage() {
       const dedupe = new Set<string>();
       const cleaned = locales
         .map((locale) => {
-          const code = normalizeLocaleCode(locale.code);
-          const name = String(locale.name || '').trim() || languageNameFromCode(code);
+          const code = LocalizationPageUtils.normalizeLocaleCode(locale.code);
+          const name = String(locale.name || '').trim() || LocalizationPageUtils.languageNameFromCode(code);
           return { ...locale, code, name };
         })
         .filter((locale) => locale.code)
@@ -215,7 +175,7 @@ export default function LocalizationSettingsPage() {
       const enabledCodes = cleaned.filter((locale) => locale.enabled).map((locale) => locale.code);
       const firstEnabled = enabledCodes[0];
       const pickDefault = (value: string) => {
-        const normalized = normalizeLocaleCode(value);
+        const normalized = LocalizationPageUtils.normalizeLocaleCode(value);
         return enabledCodes.includes(normalized) ? normalized : firstEnabled;
       };
 
@@ -224,22 +184,22 @@ export default function LocalizationSettingsPage() {
       const nextFrontendDefault = pickDefault(frontendDefaultLocale);
 
       await Promise.all([
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/localization_locales`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/localization_locales`, {
           value: JSON.stringify(cleaned.map(({ id, ...rest }) => rest))
         }),
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/enabled_locales`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/enabled_locales`, {
           value: enabledCodes.join(',')
         }),
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/default_locale`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/default_locale`, {
           value: nextDefaultLocale
         }),
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/admin_default_locale`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/admin_default_locale`, {
           value: nextAdminDefault
         }),
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/frontend_default_locale`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/frontend_default_locale`, {
           value: nextFrontendDefault
         }),
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/locale_url_strategy`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/locale_url_strategy`, {
           value: localeUrlStrategy
         })
       ]);

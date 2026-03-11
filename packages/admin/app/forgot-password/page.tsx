@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
-import { APP_NAME } from '@/lib/env';
+import { AppEnv } from '@/lib/env';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -23,8 +23,8 @@ export default function ForgotPasswordPage() {
     setMessage('');
 
     try {
-      const data = await api.post(
-        `${ENDPOINTS.AUTH.FORGOT_PASSWORD}?context=admin`,
+      const data = await AdminApi.post(
+        `${AdminConstants.ENDPOINTS.AUTH.FORGOT_PASSWORD}?context=admin`,
         { email, context: 'admin' },
         { headers: { 'X-Reset-Context': 'admin' } }
       );
@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
           <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
             Reset Access
           </h1>
-          <p className="text-slate-500 font-medium">Recover your {APP_NAME} admin account</p>
+          <p className="text-slate-500 font-medium">Recover your {AppEnv.APP_NAME} admin account</p>
         </div>
 
         <div className="p-8 rounded-3xl border shadow-2xl bg-white border-slate-200 dark:bg-[#0f172a] dark:border-slate-800 dark:shadow-black/40">
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="mt-5 flex items-center justify-between text-xs font-semibold">
-          <button onClick={() => router.push(ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
+          <button onClick={() => router.push(AdminConstants.ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
             Back to Login
           </button>
         </div>

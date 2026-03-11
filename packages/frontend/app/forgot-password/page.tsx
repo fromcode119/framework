@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import ForgotPasswordClient from './forgot-password-client';
-import { isFrontendAuthEnabled } from '@/lib/frontend-auth-settings';
+import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ForgotPasswordPage() {
-  const authEnabled = await isFrontendAuthEnabled();
+  const authEnabled = await FrontendAuthUtils.isFrontendAuthEnabled();
   if (!authEnabled) {
     notFound();
   }

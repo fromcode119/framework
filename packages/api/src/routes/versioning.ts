@@ -1,17 +1,35 @@
-import express from 'express';
+import { BaseRouter } from '../routers/base-router';
 import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { RESTController } from '../controllers/rest-controller';
-import { CollectionMiddleware } from '../middlewares/CollectionMiddleware';
+import { CollectionMiddleware } from '../middlewares/collection-middleware';
+import { RouteConstants } from '@fromcode119/sdk';
 
-export function setupVersioningRoutes(manager: PluginManager, auth: AuthManager, restController: RESTController) {
-  const router = express.Router();
-  const collectionMiddleware = new CollectionMiddleware(manager).middleware();
-  const isAdmin = auth.guard(['admin']);
+/**
+ * Collection versioning routes (history / restore).
+ */
+export class VersioningRouter extends BaseRouter {
+  private collectionMiddleware: ReturnType<CollectionMiddleware['middleware']>;
 
-  router.get('/:slug/:id', isAdmin, collectionMiddleware, (req: any, res) => restController.getVersions(req.collection, req, res));
-  router.get('/:slug/:id/:version', isAdmin, collectionMiddleware, (req: any, res) => restController.getVersion(req.collection, req, res));
-  router.post('/:slug/:id/:version/restore', isAdmin, collectionMiddleware, (req: any, res) => restController.restoreVersion(req.collection, req, res));
+  constructor(
+    private manager: PluginManager,
+    private auth: AuthManager,
+    private restController: RESTController
+  ) {
+    super();
+    this.collectionMiddleware = new CollectionMiddleware(manager).middleware();
+  }
 
-  return router;
+  protected registerRoutes(): void {
+    const isAdmin = this.auth.guard(['admin']);
+
+    this.get(RouteConstants.SEGMENTS.COLLECTIONS_SLUG_ID, isAdmin, this.collectionMiddleware, (req: any, res) =>
+      this.restController.getVersions(req.collection, req, res));
+
+    this.get(RouteConstants.SEGMENTS.COLLECTIONS_SLUG_ID_VERSION, isAdmin, this.collectionMiddleware, (req: any, res) =>
+      this.restController.getVersion(req.collection, req, res));
+
+    this.post(RouteConstants.SEGMENTS.COLLECTIONS_SLUG_ID_VERSION_RESTORE, isAdmin, this.collectionMiddleware, (req: any, res) =>
+      this.restController.restoreVersion(req.collection, req, res));
+  }
 }

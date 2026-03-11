@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 
 interface Version {
@@ -38,7 +38,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
   const fetchRevisions = async (p: number) => {
     setLoading(true);
     try {
-      const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/versions?ref_id=${recordId}&ref_collection=${collectionSlug}&sort=-id&limit=10&page=${p}`);
+      const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/versions?ref_id=${recordId}&ref_collection=${collectionSlug}&sort=-id&limit=10&page=${p}`);
       
       const mapped: Version[] = (result.docs || []).map((v: any) => ({
         id: v.id,

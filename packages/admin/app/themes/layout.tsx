@@ -3,30 +3,30 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { FrameworkIcons } from '@/lib/icons';
-import { FRAMEWORK_RESOURCES, ROUTES } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants';
 
 export default function ThemesLayout({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const pathname = usePathname() || '';
 
   const tabs = [
-    { label: 'Installed', href: ROUTES.THEMES.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
-    { label: 'Marketplace', href: ROUTES.THEMES.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
+    { label: 'Installed', href: AdminConstants.ROUTES.THEMES.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
+    { label: 'Marketplace', href: AdminConstants.ROUTES.THEMES.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
   ];
 
-  const isMarketplace = pathname.startsWith(ROUTES.THEMES.MARKETPLACE);
+  const isMarketplace = pathname.startsWith(AdminConstants.ROUTES.THEMES.MARKETPLACE);
   const isInstalled =
-    pathname === ROUTES.THEMES.INSTALLED ||
-    (pathname.startsWith(`${ROUTES.THEMES.ROOT}/`) &&
-      !pathname.startsWith(ROUTES.THEMES.MARKETPLACE) &&
-      pathname !== ROUTES.THEMES.INSTALLED);
+    pathname === AdminConstants.ROUTES.THEMES.INSTALLED ||
+    (pathname.startsWith(`${AdminConstants.ROUTES.THEMES.ROOT}/`) &&
+      !pathname.startsWith(AdminConstants.ROUTES.THEMES.MARKETPLACE) &&
+      pathname !== AdminConstants.ROUTES.THEMES.INSTALLED);
   const isDetailPage =
-    pathname.startsWith(`${ROUTES.THEMES.ROOT}/`) &&
-    !pathname.startsWith(ROUTES.THEMES.MARKETPLACE) &&
-    pathname !== ROUTES.THEMES.INSTALLED &&
-    pathname !== ROUTES.THEMES.ROOT;
+    pathname.startsWith(`${AdminConstants.ROUTES.THEMES.ROOT}/`) &&
+    !pathname.startsWith(AdminConstants.ROUTES.THEMES.MARKETPLACE) &&
+    pathname !== AdminConstants.ROUTES.THEMES.INSTALLED &&
+    pathname !== AdminConstants.ROUTES.THEMES.ROOT;
 
   // Logic to determine active tab strictly
   const activeTab = isMarketplace ? tabs[1] : tabs[0];
@@ -58,7 +58,7 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
                 : 'bg-slate-100/80 border-slate-200/60 shadow-sm'
             }`}>
               {tabs.map(tab => {
-                const isActive = tab.href === ROUTES.THEMES.INSTALLED ? isInstalled : isMarketplace;
+                const isActive = tab.href === AdminConstants.ROUTES.THEMES.INSTALLED ? isInstalled : isMarketplace;
                 
                 return (
                   <Link 
@@ -74,7 +74,7 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
                             : 'text-slate-500 hover:text-slate-900 hover:bg-white/50')
                     }`}
                   >
-                    {React.cloneElement(tab.icon as React.ReactElement, { size: 18, strokeWidth: 3 })}
+                    {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 18, strokeWidth: 3 })}
                     <span className="uppercase tracking-wide text-[11px]">{tab.label}</span>
                   </Link>
                 );
@@ -107,9 +107,9 @@ export default function ThemesLayout({ children }: { children: React.ReactNode }
             </div>
             
             <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-               <a href={FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Theme Documentation</a>
+               <a href={AdminConstants.FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Theme Documentation</a>
                <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
-               <Link href={ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">Marketplace Health</Link>
+               <Link href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">Marketplace Health</Link>
             </div>
           </div>
         </div>

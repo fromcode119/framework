@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { PluginManager, Logger, parseBoolean } from '@fromcode119/core';
+import { PluginManager, Logger } from '@fromcode119/core';
+import { CoercionUtils } from '@fromcode119/sdk';
 import AdmZip from 'adm-zip';
 
 export class PluginController {
@@ -10,7 +11,7 @@ export class PluginController {
   constructor(private manager: PluginManager) {}
 
   async list(req: Request, res: Response) {
-    const shouldRefresh = parseBoolean(req.query.refresh);
+    const shouldRefresh = CoercionUtils.toBoolean(req.query.refresh);
 
     if (shouldRefresh) {
       try {
@@ -21,7 +22,7 @@ export class PluginController {
     }
 
     res.json(this.manager.getSortedPlugins().map(p => ({
-      ...p.manifest,
+      manifest: p.manifest,
       state: p.state,
       path: p.path,
       error: p.error,
@@ -52,8 +53,8 @@ export class PluginController {
     try {
       if (enabled) {
         await this.manager.enable(slug, { 
-          force: parseBoolean(force), 
-          recursive: parseBoolean(recursive) 
+          force: CoercionUtils.toBoolean(force), 
+          recursive: CoercionUtils.toBoolean(recursive) 
         });
       } else {
         await this.manager.disable(slug);

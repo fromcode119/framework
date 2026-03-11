@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 
 export default function NewPermissionPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ export default function NewPermissionPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post(ENDPOINTS.SYSTEM.PERMISSIONS, formData);
+      await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS, formData);
       router.push('/users/permissions');
     } catch (e) {
       console.error("Failed to save permission", e);

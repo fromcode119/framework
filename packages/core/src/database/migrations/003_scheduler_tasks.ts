@@ -1,11 +1,11 @@
 import { SystemMigration } from '../../types';
-import { executeForDialect } from '../helpers/dialect';
+import { DialectHelper } from '../helpers/dialect';
 
 export const SchedulerTasksMigration: SystemMigration = {
   version: 3,
   name: 'Scheduler tasks schema',
   up: async (db, sql) => {
-    await executeForDialect(db.dialect, {
+    await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`
           CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (

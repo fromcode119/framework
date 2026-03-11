@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { ROUTES } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants';
 
 export default async function ThemeSettingsAliasPage({
   params,
@@ -7,5 +7,5 @@ export default async function ThemeSettingsAliasPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  redirect(ROUTES.THEMES.SETTINGS_TAB(slug));
+  redirect(AdminConstants.ROUTES.THEMES.SETTINGS_TAB(slug));
 }

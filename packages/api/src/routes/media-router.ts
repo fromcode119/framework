@@ -1,9 +1,10 @@
-import { BaseRouter } from '../routers/BaseRouter';
+import { BaseRouter } from '../routers/base-router';
 import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { MediaController } from '../controllers/media-controller';
+import { RouteConstants } from '@fromcode119/sdk';
 
 /**
  * Media management router.
@@ -35,19 +36,19 @@ export class MediaRouter extends BaseRouter {
 
   protected registerRoutes(): void {
     // File upload
-    this.post('/upload', this.auth.guard(['admin']), this.upload.single('file'), 
-      this.bind(this.controller.upload));
+    this.post(RouteConstants.SEGMENTS.MEDIA_UPLOAD, this.auth.guard(['admin']), this.upload.single('file'), 
+      this.bind(this.controller.upload.bind(this.controller)));
     
     // File listing and management
-    this.get('/', this.auth.guard(['admin', 'user']), this.bind(this.controller.listFiles));
-    this.patch('/:id', this.auth.guard(['admin']), this.bind(this.controller.updateFile));
-    this.delete('/:id', this.auth.guard(['admin']), this.bind(this.controller.deleteFile));
+    this.get('/', this.auth.guard(['admin', 'user']), this.bind(this.controller.listFiles.bind(this.controller)));
+    this.patch(RouteConstants.SEGMENTS.MEDIA_ID, this.auth.guard(['admin']), this.bind(this.controller.updateFile.bind(this.controller)));
+    this.delete(RouteConstants.SEGMENTS.MEDIA_ID, this.auth.guard(['admin']), this.bind(this.controller.deleteFile.bind(this.controller)));
     
     // Folder management
-    this.get('/folders', this.auth.guard(['admin', 'user']), this.bind(this.controller.listFolders));
-    this.get('/folders/:id/path', this.auth.guard(['admin', 'user']), this.bind(this.controller.getFolderPath));
-    this.post('/folders', this.auth.guard(['admin']), this.bind(this.controller.createFolder));
-    this.patch('/folders/:id', this.auth.guard(['admin']), this.bind(this.controller.updateFolder));
-    this.delete('/folders/:id', this.auth.guard(['admin']), this.bind(this.controller.deleteFolder));
+    this.get(RouteConstants.SEGMENTS.MEDIA_FOLDERS, this.auth.guard(['admin', 'user']), this.bind(this.controller.listFolders.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.MEDIA_FOLDERS_ID_PATH, this.auth.guard(['admin', 'user']), this.bind(this.controller.getFolderPath.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.MEDIA_FOLDERS, this.auth.guard(['admin']), this.bind(this.controller.createFolder.bind(this.controller)));
+    this.patch(RouteConstants.SEGMENTS.MEDIA_FOLDERS_ID, this.auth.guard(['admin']), this.bind(this.controller.updateFolder.bind(this.controller)));
+    this.delete(RouteConstants.SEGMENTS.MEDIA_FOLDERS_ID, this.auth.guard(['admin']), this.bind(this.controller.deleteFolder.bind(this.controller)));
   }
 }

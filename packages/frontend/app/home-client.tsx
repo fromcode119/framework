@@ -1,7 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Slot, usePlugins } from '@fromcode119/react';
+import { Slot, ContextHooks } from '@fromcode119/react';
+import { AdminPathUtils } from '@fromcode119/admin';
+import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 
 type HomeClientProps = {
   initialContent: any | null;
@@ -9,7 +11,7 @@ type HomeClientProps = {
 };
 
 function renderContent(content: any) {
-  const rawContent = content?.content;
+  const rawContent = ContentRenderingUtils.buildRenderableContent(content);
   const hasStringContent = typeof rawContent === 'string' && rawContent.trim().length > 0;
   const hasStructuredContent = Array.isArray(rawContent)
     ? rawContent.length > 0
@@ -25,7 +27,7 @@ function renderContent(content: any) {
           Your frontend is running. Add/publish homepage content to replace this starter view.
         </p>
         <div className="flex gap-4 justify-center">
-          <a href="/admin" className="btn-primary">
+          <a href={AdminPathUtils.basePath()} className="btn-primary">
             Go to Admin
           </a>
         </div>
@@ -39,7 +41,7 @@ function renderContent(content: any) {
 
       {(typeof rawContent === 'string') && (
         <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
-          <h1 className="text-4xl font-black mb-8">{content.title}</h1>
+          <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(content, 'Fromcode Framework')}</h1>
           <div dangerouslySetInnerHTML={{ __html: rawContent || '' }} />
         </div>
       )}
@@ -50,10 +52,14 @@ function renderContent(content: any) {
 }
 
 export default function HomeClient({ initialContent, forcedLayout }: HomeClientProps) {
-  const { themeLayouts } = usePlugins();
+  const { themeLayouts } = ContextHooks.usePlugins();
 
   if (initialContent) {
-    const selectedLayoutName = initialContent.themeLayout || 'DefaultLayout';
+    const selectedLayoutName =
+      initialContent?.themeLayout ||
+      initialContent?.pageTemplate ||
+      initialContent?.page_template ||
+      'DefaultLayout';
     const LayoutComponent =
       themeLayouts?.[selectedLayoutName] ||
       themeLayouts?.DefaultLayout ||
@@ -80,7 +86,7 @@ export default function HomeClient({ initialContent, forcedLayout }: HomeClientP
         The open-source platform for building scalable applications.
       </p>
       <div className="flex gap-4 justify-center">
-        <a href="/admin" className="btn-primary">
+        <a href={AdminPathUtils.basePath()} className="btn-primary">
           Go to Admin
         </a>
         <a href="https://docs.fromcode.com" className="btn-secondary">

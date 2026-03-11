@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useTheme } from '@/components/theme-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ThemeHooks } from '@/components/use-theme';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,7 +15,7 @@ import { Loader } from '@/components/ui/loader';
 export default function UserRolesPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [user, setUser] = useState<any>(null);
   const [roles, setRoles] = useState<any[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -26,8 +26,8 @@ export default function UserRolesPage() {
     const fetchData = async () => {
       try {
         const [usersRes, rolesRes] = await Promise.all([
-          api.get(ENDPOINTS.SYSTEM.USERS),
-          api.get(ENDPOINTS.SYSTEM.ROLES)
+          AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS),
+          AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.ROLES)
         ]);
         
         const foundUser = (usersRes.docs || []).find((u: any) => String(u.id) === String(id));
@@ -50,7 +50,7 @@ export default function UserRolesPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.post(ENDPOINTS.SYSTEM.USER_ROLES, {
+      await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_ROLES, {
         userId: id,
         roles: selectedRoles
       });

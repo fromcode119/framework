@@ -1,43 +1,28 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { FrameworkIcons, usePlugins } from '@fromcode119/react';
-import { GatewayPanel, HistoryPanel, ToolsOverlay } from './admin-assistant-panels';
+import { FrameworkIcons, ContextHooks } from '@fromcode119/react';
+import { ApiVersionUtils } from '@fromcode119/sdk';
+import { HistoryPanel, ToolsOverlay } from './admin-assistant-panels';
 import {
   AssistantComposer,
   AssistantConversation,
-  AssistantTopBar,
+  AssistantActionCard,
   AssistantSimpleTopBar,
   AssistantSettingsDrawer,
 } from './components';
 import {
-  SURFACE_NAME,
-  AI_INTEGRATION_ENDPOINT,
-  AI_CHAT_ENDPOINT,
-  AI_MODELS_ENDPOINT,
-  AI_TOOLS_ENDPOINT,
-  AI_SKILLS_ENDPOINT,
-  AI_SESSIONS_ENDPOINT,
-  AI_EXECUTE_ENDPOINT,
-  AI_CONTINUE_ENDPOINT_PREFIX,
-  MAX_PROMPT_LENGTH,
-  FORGE_HISTORY_STORAGE_KEY,
-  FORGE_ACTIVE_SESSION_KEY,
-  FORGE_UI_PREFS_STORAGE_KEY,
-  PROVIDER_PRESETS,
-  PROVIDER_OPTIONS,
-  sanitizeTraceToolCalls,
-  getToolHelp,
-  serializeAttachmentsForModel,
-  stripReadyMessage,
-  summarizeSessionTitle,
-  isApprovalPrompt,
-  hasPlanningIntent,
-  normalizeAssistantBodyText,
-  resolveExecutionKind,
+  AssistantConstants,
 } from './admin-assistant-core';
+import { GlassMorphism } from './ui/glass-morphism';
+import { AssistantFormatUtils } from './assistant-format-utils';
+import { AssistantIntentUtils } from './assistant-intent-utils';
+import { AssistantProviderUtils } from './assistant-provider-utils';
+import { AssistantSurfaceUtils } from './assistant-surface-utils';
+import { AssistantTextUtils } from './assistant-text-utils';
 import type {
   AssistantAction,
+  AssistantLayoutState,
   AssistantMessage,
   AssistantSkill,
   AssistantToolOption,
@@ -46,8 +31,64 @@ import type {
   ForgeHistorySession,
 } from './admin-assistant-core';
 
+/**
+ * Admin base path - matches ROUTES.ADMIN.BASE from @fromcode119/admin/lib/constants
+ */
+const DEFAULT_ADMIN_BASE_PATH = '/admin';
+
+const OLLAMA_DOCKER_BASE_URL = 'http://host.docker.internal:11434';
+
+const tryParseHostname = (value: string): string => {
+  try {
+    return String(new URL(String(value || '').trim()).hostname || '').trim().toLowerCase();
+  } catch {
+    return '';
+  }
+};
+
+const sanitizeBaseUrlForProvider = (providerKey: string, candidate: string): string => {
+  const normalizedProvider = String(providerKey || '').trim().toLowerCase();
+  const raw = String(candidate || '').trim();
+  if (!raw) return '';
+  const host = tryParseHostname(raw);
+  if (!host) return '';
+
+  if (normalizedProvider === 'ollama') {
+    if (host.includes('openai.com') || host.includes('anthropic.com') || host.includes('googleapis.com')) return '';
+  }
+  if (normalizedProvider === 'openai' && (host === '127.0.0.1' || host === 'localhost' || host.endsWith('.local'))) {
+    // Avoid accidentally carrying local Ollama/app URLs into OpenAI.
+    return '';
+  }
+  return raw;
+};
+
+const parseModeSwitchCommand = (input: string): 'chat' | 'build' | 'quickfix' | null => {
+  const normalized = String(input || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+  if (!normalized) return null;
+  const match = normalized.match(/^(switch|change|set|use)\s+(to\s+)?(chat|build|quick\s*fix)(\s+mode)?[.!?]*$/i);
+  if (!match) return null;
+  const target = String(match[3] || '').replace(/\s+/g, '').toLowerCase();
+  if (target === 'chat') return 'chat';
+  if (target === 'build') return 'build';
+  if (target === 'quickfix') return 'quickfix';
+  return null;
+};
+
+const E = AssistantConstants.ENDPOINTS;
+const SURFACE_NAME = AssistantConstants.SURFACE_NAME;
+const MAX_PROMPT_LENGTH = AssistantConstants.MAX_PROMPT_LENGTH;
+const PROVIDER_PRESETS = AssistantConstants.PROVIDER_PRESETS;
+const PROVIDER_OPTIONS = AssistantConstants.PROVIDER_OPTIONS;
+const FORGE_UI_PREFS_STORAGE_KEY = AssistantConstants.STORAGE_KEYS.UI_PREFS;
+const FORGE_HISTORY_STORAGE_KEY = AssistantConstants.STORAGE_KEYS.HISTORY;
+const FORGE_ACTIVE_SESSION_KEY = AssistantConstants.STORAGE_KEYS.ACTIVE_SESSION;
+
 export function AdminAssistantPage() {
-  const { api } = usePlugins();
+  const { api } = ContextHooks.usePlugins();
   const [messages, setMessages] = useState<AssistantMessage[]>([
     { role: 'system', content: `${SURFACE_NAME} ready. Ask for changes and approve actions.` },
   ]);
@@ -57,7 +98,40 @@ export function AdminAssistantPage() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
-  const [showGateway, setShowGateway] = useState(false);
+  const [layoutState, setLayoutState] = useState<AssistantLayoutState>(() => {
+    let leftOpen = true;
+    let rightOpen = true;
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(FORGE_UI_PREFS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw || '{}');
+          const parsedLeft =
+            typeof parsed?.leftSidebarOpen === 'boolean'
+              ? parsed.leftSidebarOpen
+              : typeof parsed?.leftOpen === 'boolean'
+              ? parsed.leftOpen
+              : undefined;
+          const parsedRight =
+            typeof parsed?.rightSidebarOpen === 'boolean'
+              ? parsed.rightSidebarOpen
+              : typeof parsed?.rightOpen === 'boolean'
+              ? parsed.rightOpen
+              : undefined;
+          if (typeof parsedLeft === 'boolean') leftOpen = parsedLeft;
+          if (typeof parsedRight === 'boolean') rightOpen = parsedRight;
+        }
+      } catch {
+        // ignore invalid local storage payload
+      }
+    }
+    return {
+      viewport: 'desktop',
+      leftOpen,
+      rightOpen,
+      overlay: 'none',
+    };
+  });
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return 'light';
     const saved = String(localStorage.getItem('theme') || '').trim().toLowerCase();
@@ -67,7 +141,9 @@ export function AdminAssistantPage() {
   });
   const [chatMode, setChatMode] = useState<'auto' | 'plan' | 'agent'>('auto');
   const [sandboxMode, setSandboxMode] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
+  const [batchExecutionSummaries, setBatchExecutionSummaries] = useState<
+    Record<string, { ok: number; unchanged: number; failed: number }>
+  >({});
   const [historySessions, setHistorySessions] = useState<ForgeHistorySession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string>('');
   const [historyHydrated, setHistoryHydrated] = useState(false);
@@ -109,7 +185,31 @@ export function AdminAssistantPage() {
     }
     return PROVIDER_PRESETS.openai[0].value;
   });
-  const [baseUrl, setBaseUrl] = useState('');
+  const [baseUrl, setBaseUrl] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    try {
+      const raw = localStorage.getItem(FORGE_UI_PREFS_STORAGE_KEY);
+      if (!raw) return '';
+      const parsed = JSON.parse(raw || '{}');
+      const baseUrls =
+        parsed?.baseUrls && typeof parsed.baseUrls === 'object' && !Array.isArray(parsed.baseUrls)
+          ? parsed.baseUrls
+          : null;
+      const byProvider = baseUrls ? String((baseUrls as Record<string, any>)[provider] || '').trim() : '';
+      const sanitizedByProvider = sanitizeBaseUrlForProvider(provider, byProvider);
+      if (sanitizedByProvider) return sanitizedByProvider;
+      if (byProvider) return byProvider;
+      const prefProvider = String(parsed?.provider || '').trim().toLowerCase();
+      if (prefProvider === provider) {
+        const fromLegacy = String(parsed?.baseUrl || '').trim();
+        const sanitizedLegacy = sanitizeBaseUrlForProvider(provider, fromLegacy);
+        if (sanitizedLegacy) return sanitizedLegacy;
+      }
+    } catch {
+      // ignore invalid local storage payload
+    }
+    return '';
+  });
   const [skills, setSkills] = useState<AssistantSkill[]>([{ id: 'general', label: 'General' }]);
   const [skillId, setSkillId] = useState('general');
   const [checkingIntegration, setCheckingIntegration] = useState(true);
@@ -122,12 +222,11 @@ export function AdminAssistantPage() {
   const [availableTools, setAvailableTools] = useState<AssistantToolOption[]>([]);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
   const [showTools, setShowTools] = useState(false);
-  const [showComposerControls, setShowComposerControls] = useState(false);
   const [selectedActionIndexes, setSelectedActionIndexes] = useState<number[]>([]);
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
-  const [composerHeight, setComposerHeight] = useState(260);
   const [loadingPhaseIndex, setLoadingPhaseIndex] = useState(0);
+  const [uiPrefsHydrated, setUiPrefsHydrated] = useState(false);
   
   // Settings drawer preferences
   const [autoApprove, setAutoApprove] = useState(false);
@@ -154,28 +253,86 @@ export function AdminAssistantPage() {
     () => skills.map((entry) => ({ value: entry.id, label: entry.label || entry.id })),
     [skills],
   );
+  const conversationMode = useMemo(() => AssistantProviderUtils.chatModeToConversationMode(chatMode), [chatMode]);
+  const isMobileViewport = layoutState.viewport === 'mobile';
+  const showHistory = isMobileViewport ? layoutState.overlay === 'left' : layoutState.leftOpen;
+  const showGateway = isMobileViewport ? layoutState.overlay === 'right' : layoutState.rightOpen;
 
-  const promptUsage = `${prompt.length}/${MAX_PROMPT_LENGTH}`;
+  const toggleHistoryPanel = React.useCallback(() => {
+    setLayoutState((prev) => {
+      if (prev.viewport === 'mobile') {
+        return {
+          ...prev,
+          overlay: prev.overlay === 'left' ? 'none' : 'left',
+        };
+      }
+      return { ...prev, leftOpen: !prev.leftOpen };
+    });
+  }, []);
+
+  const toggleSettingsPanel = React.useCallback(() => {
+    setLayoutState((prev) => {
+      if (prev.viewport === 'mobile') {
+        return {
+          ...prev,
+          overlay: prev.overlay === 'right' ? 'none' : 'right',
+        };
+      }
+      return { ...prev, rightOpen: !prev.rightOpen };
+    });
+  }, []);
+
+  const closeHistoryPanel = React.useCallback(() => {
+    setLayoutState((prev) => {
+      if (prev.viewport === 'mobile') return { ...prev, overlay: prev.overlay === 'left' ? 'none' : prev.overlay };
+      return { ...prev, leftOpen: false };
+    });
+  }, []);
+
+  const closeSettingsPanel = React.useCallback(() => {
+    setLayoutState((prev) => {
+      if (prev.viewport === 'mobile') return { ...prev, overlay: prev.overlay === 'right' ? 'none' : prev.overlay };
+      return { ...prev, rightOpen: false };
+    });
+  }, []);
+
+  const promptUsage = `${prompt.length}/${AssistantConstants.MAX_PROMPT_LENGTH}`;
   const totalTools = availableTools.length;
   const activeTools = selectedTools.length;
-  const loadingPhases =
-    chatMode === 'agent'
-      ? ['Analyzing your request...', 'Selecting tools...', 'Running diagnostic checks...', 'Preparing response...']
-      : chatMode === 'plan'
-        ? ['Analyzing your request...', 'Scanning workspace...', 'Planning safe changes...', 'Preparing action plan...']
-        : ['Processing your request...', 'Analyzing context...', 'Preparing response...'];
-  const loadingPhaseLabel = loadingPhases[loadingPhaseIndex % loadingPhases.length];
+  const activeBatchEntry = useMemo(() => {
+    const candidates = messages
+      .map((entry, index) => {
+        const actions = Array.isArray(entry.actions) ? entry.actions : [];
+        if (!actions.length || !entry.actionBatch) return null;
+        return {
+          index,
+          actions,
+          actionBatch: entry.actionBatch,
+          ui: entry.ui,
+        };
+      })
+      .filter(Boolean) as Array<{
+      index: number;
+      actions: AssistantAction[];
+      actionBatch: NonNullable<AssistantMessage['actionBatch']>;
+      ui?: AssistantMessage['ui'];
+    }>;
 
-  const lastActions = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i -= 1) {
-      if (Array.isArray(messages[i].actions) && messages[i].actions!.length > 0) {
-        return messages[i].actions!;
-      }
-    }
-    return [] as AssistantAction[];
+    if (!candidates.length) return null;
+    const source = candidates.some((item) => item.actionBatch.state !== 'stale')
+      ? candidates.filter((item) => item.actionBatch.state !== 'stale')
+      : candidates;
+
+    return source.sort((a, b) => {
+      const byTime = Number(b.actionBatch.createdAt || 0) - Number(a.actionBatch.createdAt || 0);
+      if (byTime !== 0) return byTime;
+      return b.index - a.index;
+    })[0];
   }, [messages]);
+  const lastActions = activeBatchEntry?.actions || ([] as AssistantAction[]);
+  const activeBatchId = String(activeBatchEntry?.actionBatch?.id || '').trim();
   const selectedActionCount = selectedActionIndexes.filter((index) => index >= 0 && index < lastActions.length).length;
-  const followDistanceThreshold = Math.max(140, composerHeight + 80);
+  const followDistanceThreshold = 220;
 
   const scrollToBottom = React.useCallback((behavior: ScrollBehavior = 'auto', force: boolean = false) => {
     const viewport = viewportRef.current;
@@ -228,6 +385,35 @@ export function AdminAssistantPage() {
   }, [prompt, autoResizeTextArea]);
 
   React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const syncViewport = () => {
+      const nextViewport = window.innerWidth <= 900 ? 'mobile' : 'desktop';
+      setLayoutState((prev) => {
+        if (prev.viewport === nextViewport) return prev;
+        return {
+          ...prev,
+          viewport: nextViewport,
+          overlay: 'none',
+        };
+      });
+    };
+    syncViewport();
+    window.addEventListener('resize', syncViewport);
+    return () => window.removeEventListener('resize', syncViewport);
+  }, []);
+
+  React.useEffect(() => {
+    if (layoutState.viewport !== 'mobile') return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setLayoutState((prev) => ({ ...prev, overlay: 'none' }));
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [layoutState.viewport]);
+
+  React.useEffect(() => {
     const cleanup = pinToBottom(messages.length > 1 ? 'smooth' : 'auto');
     return cleanup;
   }, [messages.length, loading, pinToBottom]);
@@ -261,7 +447,7 @@ export function AdminAssistantPage() {
     const run = async () => {
       setCheckingIntegration(true);
       try {
-        const integration = await api.get(AI_INTEGRATION_ENDPOINT);
+        const integration = await api.get(E.INTEGRATION);
         if (cancelled) return;
 
         const storedProviders = Array.isArray(integration?.storedProviders) ? integration.storedProviders : [];
@@ -276,10 +462,8 @@ export function AdminAssistantPage() {
 
         const modelValue = String(providerConfig?.model || '').trim();
         const baseUrlValue = String(providerConfig?.baseUrl || '').trim();
-        const hasSecret =
-          providerKey === 'openai'
-            ? String(providerConfig?.apiKey || '').trim().length > 0
-            : true;
+        const providerNeedsApiKey = providerKey === 'openai' || providerKey === 'anthropic' || providerKey === 'gemini';
+        const hasSecret = providerNeedsApiKey ? String(providerConfig?.apiKey || '').trim().length > 0 : true;
 
         // Only update provider/model from server if user hasn't set preferences in localStorage
         // This prevents the integration check from overriding user's last selection on page refresh
@@ -299,8 +483,8 @@ export function AdminAssistantPage() {
         if (!hasLocalPrefs) {
           setProvider(providerKey || 'openai');
           setModel(modelValue || (PROVIDER_PRESETS[providerKey]?.[0]?.value || PROVIDER_PRESETS.openai[0].value));
+          setBaseUrl(baseUrlValue);
         }
-        setBaseUrl(baseUrlValue);
         setIntegrationConfigured(!!firstEnabled || !!integration?.active);
         setHasSavedSecret(hasSecret);
       } catch {
@@ -319,23 +503,67 @@ export function AdminAssistantPage() {
   }, [api]);
 
   const fetchProviderModels = React.useCallback(async () => {
-    if (provider === 'openai' && !apiKey.trim() && !hasSavedSecret) {
+    if ((provider === 'openai' || provider === 'anthropic' || provider === 'gemini') && !apiKey.trim() && !hasSavedSecret) {
+      const providerLabel = provider === 'openai' ? 'OpenAI' : provider === 'anthropic' ? 'Anthropic' : 'Gemini';
       setProviderModels([]);
-      setProviderModelsError('Add an OpenAI API key to load models.');
+      setProviderModelsError(`Add a ${providerLabel} API key to load models.`);
       return;
+    }
+
+    let trimmedBaseUrl = baseUrl.trim();
+    if (provider === 'ollama' && /(^|:\/\/)(api\.)?openai\.com$/i.test((() => {
+      try {
+        return new URL(trimmedBaseUrl).hostname || '';
+      } catch {
+        return '';
+      }
+    })())) {
+      // Ignore stale OpenAI URL when querying Ollama models.
+      trimmedBaseUrl = '';
+    }
+    if (trimmedBaseUrl) {
+      try {
+        const parsed = new URL(trimmedBaseUrl);
+        const currentHost =
+          typeof window !== 'undefined' ? String(window.location.hostname || '').trim().toLowerCase() : '';
+        const candidateHost = String(parsed.hostname || '').trim().toLowerCase();
+        const candidatePath = String(parsed.pathname || '').trim().toLowerCase();
+        const apiPrefix = ApiVersionUtils.prefix().toLowerCase();
+        const apiBasePrefix = `${apiPrefix.split('/v')[0]}/`.toLowerCase();
+        const pointsToForgeApi =
+          candidatePath.includes('/forge/admin/assistant') ||
+          candidatePath.startsWith(apiPrefix) ||
+          candidatePath.startsWith(apiBasePrefix);
+
+        if (pointsToForgeApi && (!currentHost || candidateHost === currentHost)) {
+          setProviderModels([]);
+          setProviderModelsError(
+            `Base URL points to this app API (${trimmedBaseUrl}). Set the provider endpoint instead (for example Ollama: http://host.docker.internal:11434).`,
+          );
+          return;
+        }
+      } catch {
+        setProviderModels([]);
+        setProviderModelsError('Base URL must be a full URL (for example: http://host.docker.internal:11434).');
+        return;
+      }
     }
 
     setLoadingProviderModels(true);
     setProviderModelsError('');
     try {
       const config: Record<string, any> = {};
-      const trimmedBaseUrl = baseUrl.trim();
-      if (trimmedBaseUrl) config.baseUrl = trimmedBaseUrl;
-      if (provider === 'openai' && apiKey.trim()) {
+      if (provider === 'ollama') {
+        // Always send a provider-scoped baseUrl override so stale stored OpenAI values are not reused.
+        config.baseUrl = trimmedBaseUrl;
+      } else if (trimmedBaseUrl) {
+        config.baseUrl = trimmedBaseUrl;
+      }
+      if ((provider === 'openai' || provider === 'anthropic' || provider === 'gemini') && apiKey.trim()) {
         config.apiKey = apiKey.trim();
       }
 
-      const response = await api.post(AI_MODELS_ENDPOINT, {
+      const response = await api.post(E.MODELS, {
         provider,
         config,
       });
@@ -351,7 +579,7 @@ export function AdminAssistantPage() {
 
       setProviderModels(models);
 
-      if (models.length > 0 && !models.some((item) => item.value === model)) {
+      if (models.length > 0 && !models.some((item: any) => item.value === model)) {
         setModel(models[0].value);
       }
       if (models.length === 0) {
@@ -359,25 +587,33 @@ export function AdminAssistantPage() {
       }
     } catch (e: any) {
       setProviderModels([]);
-      setProviderModelsError(String(e?.message || 'Failed to fetch models.'));
+      const rawError = String(e?.message || 'Failed to fetch models.').trim();
+      const normalizedError = rawError.toLowerCase();
+      if (provider === 'ollama' && (normalizedError.includes('fetch failed') || normalizedError.includes('failed to fetch'))) {
+        setProviderModelsError(
+          'Could not reach Ollama. If API runs in Docker and Ollama runs on your host, set Base URL to http://host.docker.internal:11434.',
+        );
+      } else {
+        setProviderModelsError(rawError);
+      }
     } finally {
       setLoadingProviderModels(false);
     }
   }, [api, apiKey, baseUrl, hasSavedSecret, model, provider]);
 
   React.useEffect(() => {
-    if (checkingIntegration) return;
+    if (checkingIntegration || !uiPrefsHydrated) return;
     const timer = window.setTimeout(() => {
       void fetchProviderModels();
     }, 320);
     return () => window.clearTimeout(timer);
-  }, [checkingIntegration, fetchProviderModels]);
+  }, [checkingIntegration, uiPrefsHydrated, fetchProviderModels]);
 
   React.useEffect(() => {
     let cancelled = false;
     const loadTools = async () => {
       try {
-        const response = await api.get(AI_TOOLS_ENDPOINT);
+        const response = await api.get(E.TOOLS);
         if (cancelled) return;
         const tools = Array.isArray(response?.tools)
           ? response.tools
@@ -390,8 +626,8 @@ export function AdminAssistantPage() {
           : [];
         setAvailableTools(tools);
         setSelectedTools((prev) => {
-          const next = prev.filter((tool) => tools.some((entry) => entry.tool === tool));
-          return next.length > 0 ? next : tools.map((entry) => entry.tool);
+          const next = prev.filter((tool) => tools.some((entry: any) => entry.tool === tool));
+          return next.length > 0 ? next : tools.map((entry: any) => entry.tool);
         });
       } catch {
         if (!cancelled) {
@@ -410,7 +646,7 @@ export function AdminAssistantPage() {
     let cancelled = false;
     const loadSkills = async () => {
       try {
-        const response = await api.get(AI_SKILLS_ENDPOINT);
+        const response = await api.get(E.SKILLS);
         if (cancelled) return;
         const list = Array.isArray(response?.skills)
           ? response.skills
@@ -469,7 +705,7 @@ export function AdminAssistantPage() {
 
     return {
       id,
-      title: String(item?.title || summarizeSessionTitle(messages)).trim() || 'Untitled session',
+      title: String(item?.title || AssistantTextUtils.summarizeSessionTitle(messages)).trim() || 'Untitled session',
       updatedAt: Number(item?.updatedAt || Date.now()) || Date.now(),
       provider: providerValue,
       model: String(item?.model || '').trim(),
@@ -484,7 +720,7 @@ export function AdminAssistantPage() {
   const loadHistoryFromLocal = React.useCallback((): ForgeHistorySession[] => {
     if (typeof window === 'undefined') return [];
     try {
-      const raw = localStorage.getItem(FORGE_HISTORY_STORAGE_KEY);
+      const raw = localStorage.getItem(AssistantConstants.STORAGE_KEYS.HISTORY);
       const parsed = raw ? JSON.parse(raw) : [];
       const sessions = Array.isArray(parsed)
         ? parsed
@@ -502,7 +738,7 @@ export function AdminAssistantPage() {
       try {
         if (!options?.silent) setHistoryLoading(true);
         const response = await api.get(
-          `${AI_SESSIONS_ENDPOINT}?limit=60${options?.includeMessages ? '&includeMessages=true' : ''}`,
+          `${E.SESSIONS}?limit=60${options?.includeMessages ? '&includeMessages=true' : ''}`,
         );
         const sessions = Array.isArray(response?.sessions)
           ? response.sessions
@@ -525,7 +761,7 @@ export function AdminAssistantPage() {
     async (sessionId: string): Promise<ForgeHistorySession | null> => {
       const normalized = String(sessionId || '').trim();
       if (!normalized) return null;
-      const response = await api.get(`${AI_SESSIONS_ENDPOINT}/${encodeURIComponent(normalized)}`);
+      const response = await api.get(`${E.SESSIONS}/${encodeURIComponent(normalized)}`);
       const session = mapHistorySession(response?.session);
       return session;
     },
@@ -591,8 +827,18 @@ export function AdminAssistantPage() {
   }, [showTools]);
 
   React.useEffect(() => {
+    if (!showTechnicalDetails && showTools) {
+      setShowTools(false);
+    }
+  }, [showTechnicalDetails, showTools]);
+
+  React.useEffect(() => {
+    if (!activeBatchId) {
+      setSelectedActionIndexes([]);
+      return;
+    }
     setSelectedActionIndexes(lastActions.map((_, index) => index));
-  }, [lastActions]);
+  }, [activeBatchId, lastActions.length]);
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -607,7 +853,7 @@ export function AdminAssistantPage() {
   React.useEffect(() => {
     let cancelled = false;
     const hydrate = async () => {
-      const savedActive = typeof window !== 'undefined' ? String(localStorage.getItem(FORGE_ACTIVE_SESSION_KEY) || '').trim() : '';
+      const savedActive = typeof window !== 'undefined' ? String(localStorage.getItem(AssistantConstants.STORAGE_KEYS.ACTIVE_SESSION) || '').trim() : '';
       let serverLoaded = await refreshServerHistory({ silent: true });
       let localSessions: ForgeHistorySession[] = [];
 
@@ -685,42 +931,115 @@ export function AdminAssistantPage() {
       const parsed = JSON.parse(raw || '{}');
       const prefProvider = String(parsed?.provider || '').trim().toLowerCase();
       const prefModel = String(parsed?.model || '').trim();
-      const prefBaseUrl = String(parsed?.baseUrl || '').trim();
+      const baseUrls =
+        parsed?.baseUrls && typeof parsed.baseUrls === 'object' && !Array.isArray(parsed.baseUrls)
+          ? parsed.baseUrls
+          : null;
+      const providerForBaseUrl = prefProvider || provider;
+      const prefBaseUrlRaw = String(
+        (baseUrls && providerForBaseUrl ? baseUrls[providerForBaseUrl] : undefined) || parsed?.baseUrl || '',
+      ).trim();
+      const prefBaseUrl = sanitizeBaseUrlForProvider(providerForBaseUrl, prefBaseUrlRaw);
       const prefSkillId = String(parsed?.skillId || '').trim().toLowerCase();
       const prefMode = parsed?.chatMode === 'plan' || parsed?.chatMode === 'agent' || parsed?.chatMode === 'auto' ? parsed.chatMode : null;
+      const prefLeftOpen =
+        typeof parsed?.leftSidebarOpen === 'boolean'
+          ? parsed.leftSidebarOpen
+          : typeof parsed?.leftOpen === 'boolean'
+          ? parsed.leftOpen
+          : null;
+      const prefRightOpen =
+        typeof parsed?.rightSidebarOpen === 'boolean'
+          ? parsed.rightSidebarOpen
+          : typeof parsed?.rightOpen === 'boolean'
+          ? parsed.rightOpen
+          : null;
       if (prefProvider && PROVIDER_OPTIONS.some((item) => item.value === prefProvider)) setProvider(prefProvider);
       if (prefModel) setModel(prefModel);
       if (prefBaseUrl) setBaseUrl(prefBaseUrl);
+      else if (providerForBaseUrl === 'ollama') setBaseUrl(OLLAMA_DOCKER_BASE_URL);
       if (prefSkillId) setSkillId(prefSkillId);
       if (prefMode) setChatMode(prefMode);
       if (typeof parsed?.sandboxMode === 'boolean') setSandboxMode(parsed.sandboxMode);
+      if (prefLeftOpen !== null || prefRightOpen !== null) {
+        setLayoutState((prev) => ({
+          ...prev,
+          leftOpen: prefLeftOpen !== null ? prefLeftOpen : prev.leftOpen,
+          rightOpen: prefRightOpen !== null ? prefRightOpen : prev.rightOpen,
+        }));
+      }
     } catch {
       // ignore invalid local storage payload
+    } finally {
+      setUiPrefsHydrated(true);
     }
-  }, [checkingIntegration]);
+  }, [checkingIntegration, provider]);
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
+      let persistedBaseUrls: Record<string, string> = {};
+      try {
+        const raw = localStorage.getItem(FORGE_UI_PREFS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw || '{}');
+          if (parsed?.baseUrls && typeof parsed.baseUrls === 'object' && !Array.isArray(parsed.baseUrls)) {
+            persistedBaseUrls = Object.entries(parsed.baseUrls as Record<string, any>).reduce(
+              (acc, [key, value]) => {
+                const k = String(key || '').trim().toLowerCase();
+                const v = String(value || '').trim();
+                if (k && v) acc[k] = v;
+                return acc;
+              },
+              {} as Record<string, string>,
+            );
+          }
+        }
+      } catch {
+        // ignore invalid local storage payload
+      }
+
+      const normalizedProvider = String(provider || '').trim().toLowerCase();
+      const normalizedBaseUrl = String(baseUrl || '').trim();
+      if (normalizedProvider) {
+        if (normalizedBaseUrl) persistedBaseUrls[normalizedProvider] = normalizedBaseUrl;
+        else delete persistedBaseUrls[normalizedProvider];
+      }
+
       localStorage.setItem(
         FORGE_UI_PREFS_STORAGE_KEY,
         JSON.stringify({
           provider,
           model,
           skillId,
-          baseUrl,
+          baseUrl: normalizedBaseUrl,
+          baseUrls: persistedBaseUrls,
           chatMode,
           sandboxMode,
+          leftSidebarOpen: layoutState.leftOpen,
+          rightSidebarOpen: layoutState.rightOpen,
         }),
       );
     } catch {
       // ignore storage quota errors
     }
-  }, [provider, model, skillId, baseUrl, chatMode, sandboxMode]);
+  }, [provider, model, skillId, baseUrl, chatMode, sandboxMode, layoutState.leftOpen, layoutState.rightOpen]);
+
+  React.useEffect(() => {
+    const normalizedProvider = String(provider || '').trim().toLowerCase();
+    const raw = String(baseUrl || '').trim();
+    const sanitized = sanitizeBaseUrlForProvider(normalizedProvider, raw);
+    if (sanitized === raw) return;
+    if (normalizedProvider === 'ollama') {
+      setBaseUrl(OLLAMA_DOCKER_BASE_URL);
+      return;
+    }
+    setBaseUrl(sanitized);
+  }, [provider, baseUrl]);
 
   React.useEffect(() => {
     if (historySource !== 'local') return;
-    const normalizedMessages = stripReadyMessage(messages);
+    const normalizedMessages = AssistantTextUtils.stripReadyMessage(messages);
     if (!normalizedMessages.length) return;
 
     let sessionId = activeSessionId;
@@ -731,7 +1050,7 @@ export function AdminAssistantPage() {
 
     const session: ForgeHistorySession = {
       id: sessionId,
-      title: summarizeSessionTitle(normalizedMessages),
+      title: AssistantTextUtils.summarizeSessionTitle(normalizedMessages),
       updatedAt: Date.now(),
       provider,
       model,
@@ -752,8 +1071,30 @@ export function AdminAssistantPage() {
     const normalized = String(nextProvider || '').trim().toLowerCase();
     if (!normalized || normalized === provider) return;
     const fallbackModel = PROVIDER_PRESETS[normalized]?.[0]?.value || '';
+    let nextBaseUrl = '';
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(FORGE_UI_PREFS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw || '{}');
+          const baseUrls =
+            parsed?.baseUrls && typeof parsed.baseUrls === 'object' && !Array.isArray(parsed.baseUrls)
+              ? parsed.baseUrls
+              : null;
+          nextBaseUrl = String((baseUrls && normalized ? baseUrls[normalized] : undefined) || '').trim();
+          if (!nextBaseUrl && String(parsed?.provider || '').trim().toLowerCase() === normalized) {
+            nextBaseUrl = String(parsed?.baseUrl || '').trim();
+          }
+        }
+      } catch {
+        // ignore invalid local storage payload
+      }
+    }
+    nextBaseUrl = sanitizeBaseUrlForProvider(normalized, nextBaseUrl);
+    if (!nextBaseUrl && normalized === 'ollama') nextBaseUrl = OLLAMA_DOCKER_BASE_URL;
     setProvider(normalized);
     setModel(fallbackModel);
+    setBaseUrl(nextBaseUrl);
     setProviderModels([]);
     setProviderModelsError('');
     setApiKey('');
@@ -763,9 +1104,16 @@ export function AdminAssistantPage() {
 
   const openAdvancedWorkspace = () => {
     if (typeof window === 'undefined') return;
-    const isAdminScoped = window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/');
-    const prefix = isAdminScoped ? '/admin' : '';
-    window.location.assign(prefix || '/');
+    const adminBase = DEFAULT_ADMIN_BASE_PATH;
+    const isAdminScoped = window.location.pathname === adminBase || window.location.pathname.startsWith(`${adminBase}/`);
+    const prefix = isAdminScoped ? adminBase : '';
+    try {
+      localStorage.setItem('fc_admin_advanced_mode', 'true');
+      window.dispatchEvent(new Event('fc:admin-mode-change'));
+    } catch {
+      // ignore storage errors and continue navigation
+    }
+    window.location.assign(`${prefix || ''}/`);
   };
 
   const toggleThemeMode = () => {
@@ -774,8 +1122,9 @@ export function AdminAssistantPage() {
 
   const openAdvancedAiSettings = () => {
     if (typeof window === 'undefined') return;
-    const isAdminScoped = window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/');
-    const prefix = isAdminScoped ? '/admin' : '';
+    const adminBase = DEFAULT_ADMIN_BASE_PATH;
+    const isAdminScoped = window.location.pathname === adminBase || window.location.pathname.startsWith(`${adminBase}/`);
+    const prefix = isAdminScoped ? adminBase : '';
     window.location.assign(`${prefix}/settings/integrations?type=ai`);
   };
 
@@ -786,7 +1135,7 @@ export function AdminAssistantPage() {
     setAttachments([]);
     setSelectedActionIndexes([]);
     setActiveSessionId(`session-${Date.now()}`);
-    setShowHistory(false);
+    setLayoutState((prev) => (prev.viewport === 'mobile' ? { ...prev, overlay: 'none' } : prev));
     setNotice('');
     setError('');
   };
@@ -810,7 +1159,7 @@ export function AdminAssistantPage() {
           if (remoteSession.skillId) setSkillId(remoteSession.skillId);
           setChatMode(remoteSession.chatMode || 'auto');
           setSandboxMode(remoteSession.sandboxMode !== false);
-          setShowHistory(false);
+          setLayoutState((prev) => (prev.viewport === 'mobile' ? { ...prev, overlay: 'none' } : prev));
           followLatestRef.current = true;
           return;
         }
@@ -826,7 +1175,7 @@ export function AdminAssistantPage() {
     if (localSession.skillId) setSkillId(localSession.skillId);
     setChatMode(localSession.chatMode || 'auto');
     setSandboxMode(localSession.sandboxMode !== false);
-    setShowHistory(false);
+    setLayoutState((prev) => (prev.viewport === 'mobile' ? { ...prev, overlay: 'none' } : prev));
     followLatestRef.current = true;
   };
 
@@ -836,7 +1185,7 @@ export function AdminAssistantPage() {
     if (historySource === 'server') {
       void (async () => {
         try {
-          await api.delete(`${AI_SESSIONS_ENDPOINT}/${encodeURIComponent(normalized)}`);
+          await api.delete(`${E.SESSIONS}/${encodeURIComponent(normalized)}`);
         } catch {
           // ignore delete errors and still update local list state
         } finally {
@@ -867,7 +1216,7 @@ export function AdminAssistantPage() {
       ];
       setActiveSessionId(nextSessionId);
       setMessages(forkedMessages);
-      setShowHistory(false);
+      setLayoutState((prev) => (prev.viewport === 'mobile' ? { ...prev, overlay: 'none' } : prev));
       setNotice('Forked to a new session from this message.');
       setError('');
     };
@@ -879,7 +1228,7 @@ export function AdminAssistantPage() {
 
     void (async () => {
       try {
-        const response = await api.post(`${AI_SESSIONS_ENDPOINT}/${encodeURIComponent(sourceSessionId)}/fork`, {
+        const response = await api.post(`${E.SESSIONS}/${encodeURIComponent(sourceSessionId)}/fork`, {
           fromMessageIndex: Math.max(0, visibleIndex),
         });
         const forked = mapHistorySession(response?.session);
@@ -895,7 +1244,7 @@ export function AdminAssistantPage() {
         if (forked.skillId) setSkillId(forked.skillId);
         setChatMode(forked.chatMode || 'auto');
         setSandboxMode(forked.sandboxMode !== false);
-        setShowHistory(false);
+        setLayoutState((prev) => (prev.viewport === 'mobile' ? { ...prev, overlay: 'none' } : prev));
         setNotice('Forked to a new session from this message.');
         setError('');
       } catch {
@@ -910,10 +1259,15 @@ export function AdminAssistantPage() {
 
     const trimmedApiKey = apiKey.trim();
     const trimmedModel = model.trim();
-    const trimmedBaseUrl = baseUrl.trim();
+    const rawBaseUrl = baseUrl.trim();
+    let trimmedBaseUrl = sanitizeBaseUrlForProvider(provider, rawBaseUrl);
+    if (provider === 'ollama' && !trimmedBaseUrl) {
+      trimmedBaseUrl = OLLAMA_DOCKER_BASE_URL;
+    }
 
-    if (provider === 'openai' && !trimmedApiKey && !hasSavedSecret) {
-      setError('OpenAI API key is required.');
+    const providerNeedsApiKey = provider === 'openai' || provider === 'anthropic' || provider === 'gemini';
+    if (providerNeedsApiKey && !trimmedApiKey && !hasSavedSecret) {
+      setError(`${provider.charAt(0).toUpperCase()}${provider.slice(1)} API key is required.`);
       return;
     }
 
@@ -922,13 +1276,13 @@ export function AdminAssistantPage() {
       baseUrl: trimmedBaseUrl || undefined,
     };
 
-    if (provider === 'openai') {
+    if (providerNeedsApiKey) {
       if (trimmedApiKey) config.apiKey = trimmedApiKey;
     }
 
     setIntegrationSaving(true);
     try {
-      await api.put(AI_INTEGRATION_ENDPOINT, {
+      await api.put(E.INTEGRATION, {
         provider,
         config,
         enabled: true,
@@ -953,6 +1307,16 @@ export function AdminAssistantPage() {
       const plan = result?.plan && typeof result.plan === 'object' ? result.plan : undefined;
       const ui = result?.ui && typeof result.ui === 'object' ? result.ui : undefined;
       const actions = Array.isArray(result?.actions) ? result.actions : [];
+      const actionBatch =
+        result?.actionBatch && typeof result.actionBatch === 'object'
+          ? {
+              id: String(result.actionBatch.id || '').trim() || `batch-${Date.now()}`,
+              state: (String(result.actionBatch.state || 'staged').trim().toLowerCase() as 'staged' | 'previewed' | 'applied' | 'stale'),
+              createdAt: Number(result.actionBatch.createdAt || Date.now()) || Date.now(),
+            }
+          : actions.length > 0
+            ? { id: `batch-${Date.now()}`, state: 'staged' as const, createdAt: Date.now() }
+            : undefined;
       const reasoningReport =
         typeof result?.reasoningReport === 'string' && result.reasoningReport.trim()
           ? result.reasoningReport.trim()
@@ -964,18 +1328,19 @@ export function AdminAssistantPage() {
           ui?.canContinue ||
           ui?.requiresApproval ||
           ['searching', 'staged', 'paused', 'ready_for_preview', 'ready_for_apply', 'failed'].includes(planStatus));
-      const normalizedMessage = normalizeAssistantBodyText(String(result?.message || '').trim());
+      const normalizedMessage = AssistantTextUtils.normalizeAssistantBodyText(String(result?.message || '').trim());
       const fallbackMessage =
         suppressPrimaryText ? '' : normalizedMessage || 'I finished this step. Tell me what you want to do next.';
       return {
         role: 'assistant',
         content: fallbackMessage,
         actions,
+        actionBatch,
         traces: Array.isArray(result?.traces)
           ? result.traces.map((trace: any, index: number) => ({
               iteration: Number(trace?.iteration || index + 1),
               message: trace?.message ? String(trace.message) : undefined,
-              toolCalls: sanitizeTraceToolCalls(trace?.toolCalls),
+              toolCalls: AssistantFormatUtils.sanitizeTraceToolCalls(trace?.toolCalls),
             }))
           : undefined,
         plan,
@@ -994,54 +1359,61 @@ export function AdminAssistantPage() {
     [model, provider],
   );
 
-  const continuePlanning = React.useCallback(async () => {
-    const sessionId = String(activeSessionId || '').trim();
-    if (!sessionId) {
-      setNotice('Start a request first, then continue planning from that session.');
-      return;
-    }
-    setError('');
-    setNotice('');
-    followLatestRef.current = true;
-    setLoading(true);
-    try {
-      const response = await api.post(`${AI_CONTINUE_ENDPOINT_PREFIX}/${encodeURIComponent(sessionId)}/continue`, {
-        provider,
-        config: {
-          model: model.trim() || undefined,
-          baseUrl: baseUrl.trim() || undefined,
-        },
-        tools: availableTools.length > 0 ? selectedTools : undefined,
-        skillId,
-        agentMode: 'advanced',
-      });
-      const assistantMessage = buildAssistantMessageFromResult(response);
-      setMessages((prev) => [...prev, assistantMessage]);
-      if (assistantMessage.actions && assistantMessage.actions.length > 0) {
-        setNotice('Plan updated with staged actions.');
-      }
-      refreshHistoryIfServer();
-    } catch (e: any) {
-      const requestError = String(e?.message || 'Continue planning failed');
-      setError(requestError);
-      setMessages((prev) => [...prev, { role: 'system', content: `Continue failed: ${requestError}` }]);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeSessionId, api, availableTools, baseUrl, buildAssistantMessageFromResult, model, provider, refreshHistoryIfServer, selectedTools, skillId]);
+  const appendAssistantMessage = React.useCallback((assistantMessage: AssistantMessage) => {
+    setMessages((prev) => {
+      const hasFreshBatch =
+        Array.isArray(assistantMessage.actions) &&
+        assistantMessage.actions.length > 0 &&
+        !!assistantMessage.actionBatch;
+      const normalizedPrev = hasFreshBatch
+        ? prev.map((entry) => {
+            if (!entry.actionBatch) return entry;
+            if (entry.actionBatch.state !== 'staged' && entry.actionBatch.state !== 'previewed') return entry;
+            return {
+              ...entry,
+              actionBatch: { ...entry.actionBatch, state: 'stale' as const },
+              ui: entry.ui
+                ? {
+                    ...entry.ui,
+                    nextStep: 'none' as const,
+                    workflowState: 'stale' as const,
+                    primaryAction: 'none' as const,
+                    userSummary: 'This batch is stale. Request a fresh batch.',
+                    summaryMode: entry.ui.summaryMode || 'concise',
+                  }
+                : entry.ui,
+            };
+          })
+        : prev;
+      return [...normalizedPrev, assistantMessage];
+    });
+  }, []);
 
   const sendPrompt = async (forcedPrompt?: string) => {
     const content = String(forcedPrompt ?? prompt).trim();
     if (!content || loading) return;
+
+    const modeSwitchTarget = parseModeSwitchCommand(content);
+    if (modeSwitchTarget) {
+      const label = modeSwitchTarget === 'quickfix' ? 'Quick Fix' : modeSwitchTarget === 'build' ? 'Build' : 'Chat';
+      setError('');
+      setNotice(`${label} mode enabled.`);
+      setChatMode(AssistantProviderUtils.conversationModeToChatMode(modeSwitchTarget));
+      if (!forcedPrompt) setPrompt('');
+      requestAnimationFrame(() => textareaRef.current?.focus());
+      return;
+    }
+
     if (!integrationConfigured) {
       setError('Configure gateway first.');
       return;
     }
 
-    if (isApprovalPrompt(content) && lastActions.length > 0 && selectedActionCount > 0 && !executing) {
+    if (AssistantIntentUtils.isApprovalPrompt(content) && lastActions.length > 0 && selectedActionCount > 0 && !executing) {
       setMessages((prev) => [...prev, { role: 'user', content }]);
       if (!forcedPrompt) setPrompt('');
-      await runActions({ dryRun: sandboxMode, invokedByApproval: true });
+      const dryRunByState = activeBatchEntry?.actionBatch?.state === 'previewed' ? false : true;
+      await runActions({ dryRun: dryRunByState, invokedByApproval: true });
       return;
     }
 
@@ -1050,7 +1422,7 @@ export function AdminAssistantPage() {
     followLatestRef.current = true;
 
     const currentAttachments = attachments.map((item) => ({ ...item }));
-    const attachmentContext = serializeAttachmentsForModel(currentAttachments);
+    const attachmentContext = AssistantTextUtils.serializeAttachmentsForModel(currentAttachments);
     const contentForModel = attachmentContext ? `${content}\n\n${attachmentContext}` : content;
     const userMessage: AssistantMessage = {
       role: 'user',
@@ -1068,7 +1440,7 @@ export function AdminAssistantPage() {
         .filter((entry) => entry.role !== 'system')
         .map((entry) => {
           if (entry.role === 'user' && Array.isArray(entry.attachments) && entry.attachments.length > 0) {
-            const serialized = serializeAttachmentsForModel(entry.attachments);
+            const serialized = AssistantTextUtils.serializeAttachmentsForModel(entry.attachments);
             return {
               role: entry.role,
               content: serialized ? `${entry.content}\n\n${serialized}` : entry.content,
@@ -1086,13 +1458,13 @@ export function AdminAssistantPage() {
       const requestedAgentMode =
         chatMode === 'plan' || chatMode === 'agent'
           ? 'advanced'
-          : hasPlanningIntent(contentForModel)
+          : AssistantIntentUtils.hasPlanningIntent(contentForModel)
             ? 'advanced'
             : 'basic';
       const requestedMaxIterations = requestedAgentMode === 'advanced' ? (chatMode === 'agent' ? 12 : 8) : 1;
       const requestedMaxDurationMs = requestedAgentMode === 'advanced' ? (chatMode === 'agent' ? 35000 : 26000) : 12000;
 
-      const result = await api.post(AI_CHAT_ENDPOINT, {
+      const result = await api.post(E.CHAT, {
         message: contentForModel,
         history,
         sessionId,
@@ -1114,7 +1486,7 @@ export function AdminAssistantPage() {
         setActiveSessionId(String(assistantMessage.sessionId));
       }
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      appendAssistantMessage(assistantMessage);
       setAttachments([]);
       refreshHistoryIfServer();
       if (chatMode === 'auto' && assistantMessage.ui?.suggestedMode === 'agent') {
@@ -1123,7 +1495,7 @@ export function AdminAssistantPage() {
         setNotice('Auto mode used planning for this request.');
       }
       if (assistantMessage.actions && assistantMessage.actions.length > 0) {
-        setNotice(sandboxMode ? 'Plan staged. Review actions, then run Preview Changes.' : 'Plan staged. Review actions, then run Apply Changes.');
+        setNotice('Changes ready for review.');
       } else if (assistantMessage.ui?.needsClarification) {
         const question = String(assistantMessage.ui?.clarifyingQuestion || '').trim();
         setNotice(question || 'Need one detail to finish staging safely.');
@@ -1145,6 +1517,7 @@ export function AdminAssistantPage() {
 
   const runActions = async (options?: { dryRun?: boolean; invokedByApproval?: boolean }) => {
     if (!lastActions.length || executing) return;
+    const targetBatchId = activeBatchId || undefined;
     const actionsToRun =
       selectedActionCount > 0
         ? selectedActionIndexes
@@ -1160,37 +1533,113 @@ export function AdminAssistantPage() {
     setNotice('');
     followLatestRef.current = true;
     try {
-      const dryRun = options?.dryRun ?? sandboxMode;
-      const result = await api.post(AI_EXECUTE_ENDPOINT, {
+      const dryRun = typeof options?.dryRun === 'boolean' ? options.dryRun : true;
+      const result = await api.post(E.EXECUTE, {
         actions: actionsToRun,
         dryRun,
         sessionId: activeSessionId || undefined,
+        batchId: targetBatchId,
       });
       const executionItems = Array.isArray(result?.results) ? result.results : [];
-      const okCount = executionItems.filter((item: any) => resolveExecutionKind(item) === 'ok').length;
-      const skippedCount = executionItems.filter((item: any) => resolveExecutionKind(item) === 'skipped').length;
-      const failedCount = executionItems.filter((item: any) => resolveExecutionKind(item) === 'failed').length;
+      const serverSummary =
+        result?.executionSummary && typeof result.executionSummary === 'object'
+          ? {
+              ok: Number(result.executionSummary.ok || 0) || 0,
+              unchanged: Number(result.executionSummary.unchanged || 0) || 0,
+              failed: Number(result.executionSummary.failed || 0) || 0,
+            }
+          : null;
+      const okCount = serverSummary?.ok ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'ok').length;
+      const skippedCount = serverSummary?.unchanged ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'skipped').length;
+      const failedCount = serverSummary?.failed ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'failed').length;
+      const resolvedBatchId = String(result?.executedBatchId || targetBatchId || '').trim();
+      const resolvedBatchState =
+        String(result?.batchState || (dryRun ? 'previewed' : 'applied')).trim().toLowerCase() === 'previewed'
+          ? ('previewed' as const)
+          : ('applied' as const);
+      if (resolvedBatchId) {
+        setBatchExecutionSummaries((prev) => ({
+          ...prev,
+          [resolvedBatchId]: { ok: okCount, unchanged: skippedCount, failed: failedCount },
+        }));
+      }
       const executionSummary = dryRun
         ? `Preview completed: ${okCount} ready, ${skippedCount} unchanged, ${failedCount} failed.`
         : `Execution completed: ${okCount} applied, ${skippedCount} unchanged, ${failedCount} failed.`;
       setMessages((prev) => {
-        const nextMessages = dryRun
-          ? prev
-          : prev.map((entry) => {
-              if (!Array.isArray(entry.actions) || entry.actions.length === 0) return entry;
-              return {
-                ...entry,
-                actions: [],
-                ui: entry.ui ? { ...entry.ui, requiresApproval: false, canContinue: false } : entry.ui,
-                plan: entry.plan ? { ...entry.plan, status: 'completed' as const } : entry.plan,
-              };
-            });
+        const fallbackIndex = resolvedBatchId
+          ? -1
+          : [...prev]
+              .map((entry, index) => ({ entry, index }))
+              .reverse()
+              .find((entry) => entry.entry.actionBatch && entry.entry.actionBatch.state !== 'stale')?.index ?? -1;
+        const nextMessages = prev.map((entry, index) => {
+          const isCurrentBatch = resolvedBatchId
+            ? String(entry.actionBatch?.id || '').trim() === resolvedBatchId
+            : index === fallbackIndex;
+          if (!isCurrentBatch) return entry;
+          if (dryRun) {
+            return {
+              ...entry,
+              actionBatch: entry.actionBatch
+                ? { ...entry.actionBatch, state: resolvedBatchState }
+                : {
+                    id: resolvedBatchId || `batch-${Date.now()}`,
+                    state: resolvedBatchState,
+                    createdAt: Date.now(),
+                  },
+              ui: entry.ui
+                ? {
+                    ...entry.ui,
+                    nextStep: 'apply' as const,
+                    workflowState: 'previewed' as const,
+                    primaryAction: 'apply' as const,
+                    userSummary: 'Preview complete. Review and apply when ready.',
+                    summaryMode: entry.ui.summaryMode || 'concise',
+                  }
+                : entry.ui,
+            };
+          }
+          return {
+            ...entry,
+            actionBatch: entry.actionBatch
+              ? { ...entry.actionBatch, state: resolvedBatchState }
+              : {
+                  id: resolvedBatchId || `batch-${Date.now()}`,
+                  state: resolvedBatchState,
+                  createdAt: Date.now(),
+                },
+            ui: entry.ui
+              ? {
+                  ...entry.ui,
+                  requiresApproval: false,
+                  canContinue: false,
+                  nextStep: 'none' as const,
+                  workflowState: 'applied' as const,
+                  primaryAction: 'none' as const,
+                  userSummary: 'Changes applied.',
+                  summaryMode: entry.ui.summaryMode || 'concise',
+                }
+              : entry.ui,
+            plan: entry.plan ? { ...entry.plan, status: 'completed' as const } : entry.plan,
+          };
+        });
         return [
           ...nextMessages,
           {
             role: 'system',
             content: executionSummary,
             execution: result,
+            actionBatch: resolvedBatchId
+              ? {
+                  id: resolvedBatchId,
+                  state: resolvedBatchState,
+                  createdAt: Date.now(),
+                }
+              : nextMessages
+                  .slice()
+                  .reverse()
+                  .find((entry) => entry.actionBatch)?.actionBatch || undefined,
           },
         ];
       });
@@ -1198,7 +1647,7 @@ export function AdminAssistantPage() {
         setSelectedActionIndexes([]);
       }
       if (options?.invokedByApproval) {
-        setNotice(dryRun ? 'Approved and previewed selected actions.' : 'Approved and applied selected actions.');
+        setNotice(dryRun ? 'Approved and previewed selected changes.' : 'Approved and applied selected changes.');
       }
       refreshHistoryIfServer();
     } catch (e: any) {
@@ -1209,11 +1658,18 @@ export function AdminAssistantPage() {
   };
 
   const onComposerKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      void sendPrompt();
-    }
+    if (event.key !== 'Enter') return;
+    if (event.shiftKey || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    void sendPrompt();
   };
+
+  const onQuickFix = React.useCallback(() => {
+    setError('');
+    setChatMode('agent');
+    setNotice('Quick Fix enabled.');
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, []);
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
@@ -1271,15 +1727,13 @@ export function AdminAssistantPage() {
   };
 
   const visibleMessages = useMemo(() => {
-    return stripReadyMessage(messages);
+    return AssistantTextUtils.stripReadyMessage(messages);
   }, [messages]);
+  const activeBatchSummary = activeBatchId ? batchExecutionSummaries[activeBatchId] : undefined;
+  const actionDockOffset = 16;
 
   const hasConversation = visibleMessages.length > 0;
-  const dockWidth = 'min(360px, 92vw)';
-  const leftDockOffset = showHistory ? dockWidth : '0px';
-  const rightDockOffset = showGateway ? dockWidth : '0px';
-  const viewportBottomPadding = Math.max(composerHeight + (hasConversation ? 44 : 110), 280);
-  const controlsVisible = showComposerControls || !hasConversation;
+  const viewportBottomPadding = activeBatchEntry ? 220 : hasConversation ? 48 : 140;
   const quickPrompts = [
     'Find and replace "Slow Websites" with "Better Sites" everywhere.',
     'List installed plugins, active theme, and editable collections.',
@@ -1295,7 +1749,6 @@ export function AdminAssistantPage() {
     hasConversation,
     pinToBottom,
     loading,
-    composerHeight,
     showHistory,
     showGateway,
     viewportBottomPadding,
@@ -1303,180 +1756,169 @@ export function AdminAssistantPage() {
   ]);
 
   React.useEffect(() => {
-    const composer = composerRef.current;
-    if (!composer || typeof window === 'undefined') return;
-    const update = () => {
-      const nextHeight = Math.ceil(composer.getBoundingClientRect().height);
-      if (nextHeight > 0) setComposerHeight(nextHeight);
-    };
-    update();
-    const observer = new ResizeObserver(() => update());
-    observer.observe(composer);
-    window.addEventListener('resize', update);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', update);
-    };
-  }, [hasConversation]);
-
-  React.useEffect(() => {
-    if (!hasConversation) return;
-    const cleanup = pinToBottom('auto');
-    return cleanup;
-  }, [composerHeight, hasConversation, pinToBottom]);
-
-  React.useEffect(() => {
     if (!historyHydrated || !hasConversation) return;
     const cleanup = pinToBottom('auto');
     return cleanup;
   }, [historyHydrated, activeSessionId, hasConversation, pinToBottom]);
 
-  React.useEffect(() => {
-    setShowComposerControls(!hasConversation);
-  }, [hasConversation]);
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-100 text-slate-900 dark:bg-[#22252f] dark:text-slate-100">
+    <div
+      className={GlassMorphism.GLASS_APP_BG}
+      style={{
+        fontFamily:
+          "'Plus Jakarta Sans', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif",
+      }}
+    >
       <style>{`
+        ${GlassMorphism.GLASS_FONT_IMPORT}
         @keyframes forge-think-sweep {
           0% { transform: translateX(-120%); }
           100% { transform: translateX(130%); }
         }
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
       `}</style>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(88,112,169,0.16),transparent_46%)] dark:bg-[radial-gradient(circle_at_50%_18%,rgba(88,112,169,0.32),transparent_46%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_85%,rgba(15,23,42,0.08),transparent_56%)] dark:bg-[radial-gradient(circle_at_50%_85%,rgba(15,23,42,0.45),transparent_56%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_4%,rgba(255,255,255,0.05),transparent_45%)] dark:bg-[radial-gradient(circle_at_50%_4%,rgba(255,255,255,0.03),transparent_45%)]" />
 
-      <div className="relative flex h-screen min-h-screen w-full flex-col">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.26),rgba(255,255,255,0.06)_24%,rgba(255,255,255,0)_50%)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01)_20%,rgba(255,255,255,0)_42%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(99,102,241,0.07),transparent_44%)] dark:bg-[radial-gradient(circle_at_50%_16%,rgba(99,102,241,0.14),transparent_44%)]" />
-
-        <AssistantSimpleTopBar
-          sessionTitle="Forge AI"
-          historyCount={historySessions.length}
-          onHistoryToggle={() => setShowHistory(!showHistory)}
-          onSettingsOpen={() => setShowGateway(!showGateway)}
-          onThemeToggle={toggleThemeMode}
-          themeMode={themeMode}
+      <div className="relative flex h-screen min-h-screen w-full">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.03))] dark:bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.2))]" />
+        <HistoryPanel
+          presentation={isMobileViewport ? 'overlay' : 'docked'}
+          showHistory={showHistory}
+          historySource={historySource}
+          historyLoading={historyLoading}
+          historySessions={historySessions}
+          activeSessionId={activeSessionId}
+          onRequestClose={closeHistoryPanel}
+          startNewSession={startNewSession}
+          openHistorySession={openHistorySession}
+          removeHistorySession={removeHistorySession}
         />
 
-        <div className="relative z-10 flex min-h-0 flex-1 overflow-hidden">
-            <section className="relative min-h-0 flex-1 overflow-hidden">
+        <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
+          <AssistantSimpleTopBar
+            sessionTitle="Forge AI"
+            historyCount={historySessions.length}
+            onBackToAdmin={openAdvancedWorkspace}
+            onHistoryToggle={toggleHistoryPanel}
+            onSettingsOpen={toggleSettingsPanel}
+            onThemeToggle={toggleThemeMode}
+            themeMode={themeMode}
+          />
+
+          <section className="relative min-h-0 flex-1 overflow-hidden">
+              <AssistantActionCard
+                batch={activeBatchEntry?.actionBatch}
+                actions={lastActions}
+                selectedIndexes={selectedActionIndexes}
+                onToggleAction={toggleActionIndex}
+                onSelectAll={() => setSelectedActionIndexes(lastActions.map((_, index) => index))}
+                onDeselectAll={() => setSelectedActionIndexes([])}
+                onPreview={() => runActions({ dryRun: true })}
+                onApply={() => runActions({ dryRun: false })}
+                isRunning={executing}
+                executionSummary={activeBatchSummary}
+                mode={conversationMode}
+                placement="bottom"
+                bottomOffset={actionDockOffset}
+              />
               <AssistantConversation
                 viewportRef={viewportRef}
                 viewportBottomPadding={viewportBottomPadding}
                 hasConversation={hasConversation}
                 visibleMessages={visibleMessages}
-                lastActions={lastActions}
                 forkFromVisibleMessage={forkFromVisibleMessage}
                 setChatMode={setChatMode}
-                continuePlanning={continuePlanning}
-                runActions={runActions}
-                sandboxMode={sandboxMode}
-                executing={executing}
-                selectedActionCount={selectedActionCount}
-                selectedActionIndexes={selectedActionIndexes}
-                setSelectedActionIndexes={setSelectedActionIndexes}
-                toggleActionIndex={toggleActionIndex}
                 loading={loading}
-                loadingPhaseLabel={loadingPhaseLabel}
                 scrollAnchorRef={scrollAnchorRef}
                 chatMode={chatMode}
                 loadingPhaseIndex={loadingPhaseIndex}
                 showTechnicalDetails={showTechnicalDetails}
               />
-
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-slate-100 via-slate-100/88 to-transparent dark:from-[#060b14] dark:via-[#060b14]/88" />
-
-              <AssistantComposer
-                composerRef={composerRef}
-                hasConversation={hasConversation}
-                chatMode={chatMode}
-                setChatMode={setChatMode}
-                sandboxMode={sandboxMode}
-                setSandboxMode={setSandboxMode}
-                runActions={runActions}
-                lastActions={lastActions}
-                selectedActionCount={selectedActionCount}
-                setSelectedActionIndexes={setSelectedActionIndexes}
-                executing={executing}
-                promptUsage={promptUsage}
-                fileInputRef={fileInputRef}
-                onFilesSelected={onFilesSelected}
-                attachments={attachments}
-                removeAttachment={removeAttachment}
-                openFilePicker={openFilePicker}
-                uploadingAttachments={uploadingAttachments}
-                textareaRef={textareaRef}
-                prompt={prompt}
-                setPrompt={setPrompt}
-                onComposerKeyDown={onComposerKeyDown}
-                sendPrompt={sendPrompt}
-                loading={loading}
-                checkingIntegration={checkingIntegration}
-                integrationConfigured={integrationConfigured}
-                quickPrompts={quickPrompts}
-                toolsButtonRef={toolsButtonRef}
-                showTools={showTools}
-                setShowTools={setShowTools}
-                activeTools={activeTools}
-                totalTools={totalTools}
-              />
-            </section>
-            <HistoryPanel
-              showHistory={showHistory}
-              historySource={historySource}
-              historyLoading={historyLoading}
-              historySessions={historySessions}
-              activeSessionId={activeSessionId}
-              setShowHistory={setShowHistory}
-              startNewSession={startNewSession}
-              openHistorySession={openHistorySession}
-              removeHistorySession={removeHistorySession}
+          </section>
+          <footer className="relative z-20">
+            <AssistantComposer
+              composerRef={composerRef}
+              hasConversation={hasConversation}
+              mode={conversationMode}
+              setMode={(mode) => setChatMode(AssistantProviderUtils.conversationModeToChatMode(mode))}
+              promptUsage={promptUsage}
+              fileInputRef={fileInputRef}
+              onFilesSelected={onFilesSelected}
+              attachments={attachments}
+              removeAttachment={removeAttachment}
+              openFilePicker={openFilePicker}
+              uploadingAttachments={uploadingAttachments}
+              textareaRef={textareaRef}
+              prompt={prompt}
+              setPrompt={setPrompt}
+              onComposerKeyDown={onComposerKeyDown}
+              onQuickFix={onQuickFix}
+              sendPrompt={sendPrompt}
+              loading={loading}
+              checkingIntegration={checkingIntegration}
+              integrationConfigured={integrationConfigured}
+              quickPrompts={quickPrompts}
+              toolsButtonRef={toolsButtonRef}
+              showTools={showTools}
+              setShowTools={setShowTools}
+              activeTools={activeTools}
+              totalTools={totalTools}
+              developerMode={showTechnicalDetails}
             />
+          </footer>
+        </main>
 
-            <AssistantSettingsDrawer
-              isOpen={showGateway}
-              onClose={() => setShowGateway(false)}
-              provider={provider}
-              onProviderChange={switchProvider}
-              providerOptions={PROVIDER_OPTIONS}
-              model={model}
-              onModelChange={setModel}
-              modelOptions={modelOptions}
-              loadingModels={loadingProviderModels}
-              modelsError={providerModelsError}
-              skillId={skillId}
-              onSkillIdChange={setSkillId}
-              skillOptions={skillOptions}
-              apiKey={apiKey}
-              onApiKeyChange={setApiKey}
-              hasSavedSecret={hasSavedSecret}
-              baseUrl={baseUrl}
-              onBaseUrlChange={setBaseUrl}
-              onSave={saveIntegration}
-              isSaving={integrationSaving}
-              autoApprove={autoApprove}
-              onAutoApproveChange={setAutoApprove}
-              showTechnicalDetails={showTechnicalDetails}
-              onShowTechnicalDetailsChange={setShowTechnicalDetails}
-              verboseLogging={verboseLogging}
-              onVerboseLoggingChange={setVerboseLogging}
-            />
-        </div>
+        <AssistantSettingsDrawer
+          presentation={isMobileViewport ? 'overlay' : 'docked'}
+          isOpen={showGateway}
+          onClose={closeSettingsPanel}
+          onRequestClose={closeSettingsPanel}
+          provider={provider}
+          onProviderChange={switchProvider}
+          providerOptions={PROVIDER_OPTIONS}
+          model={model}
+          onModelChange={setModel}
+          modelOptions={modelOptions}
+          loadingModels={loadingProviderModels}
+          modelsError={providerModelsError}
+          skillId={skillId}
+          onSkillIdChange={setSkillId}
+          skillOptions={skillOptions}
+          apiKey={apiKey}
+          onApiKeyChange={setApiKey}
+          hasSavedSecret={hasSavedSecret}
+          baseUrl={baseUrl}
+          onBaseUrlChange={setBaseUrl}
+          onSave={saveIntegration}
+          isSaving={integrationSaving}
+          autoApprove={autoApprove}
+          onAutoApproveChange={setAutoApprove}
+          showTechnicalDetails={showTechnicalDetails}
+          onShowTechnicalDetailsChange={setShowTechnicalDetails}
+          verboseLogging={verboseLogging}
+          onVerboseLoggingChange={setVerboseLogging}
+        />
       </div>
       <ToolsOverlay
-        showTools={showTools}
+        showTools={showTechnicalDetails && showTools}
         toolsMenuStyle={toolsMenuStyle}
         toolsDropdownRef={toolsDropdownRef}
         availableTools={availableTools}
         selectedTools={selectedTools}
         setSelectedTools={setSelectedTools}
         toggleTool={toggleTool}
-        getToolHelp={getToolHelp}
+        getToolHelp={AssistantFormatUtils.getToolHelp}
       />
 
       {notice ? (
-        <div className="fixed left-1/2 top-5 z-[90] flex -translate-x-1/2 items-center gap-2 rounded-xl border border-emerald-300/60 bg-emerald-100 px-3 py-2 text-xs font-semibold text-emerald-900 shadow-lg backdrop-blur dark:border-emerald-300/45 dark:bg-emerald-300/14 dark:text-emerald-100">
+        <div className="fixed left-1/2 top-5 z-[90] flex -translate-x-1/2 items-center gap-2 rounded-xl border border-emerald-300/60 bg-emerald-100/92 px-3 py-2 text-xs font-semibold text-emerald-900 shadow-lg backdrop-blur-xl dark:border-emerald-300/45 dark:bg-emerald-300/16 dark:text-emerald-100">
           <span>{notice}</span>
           <button
             type="button"
@@ -1490,7 +1932,7 @@ export function AdminAssistantPage() {
       ) : null}
 
       {error ? (
-        <div className="fixed left-1/2 top-5 z-[95] flex max-w-[92vw] -translate-x-1/2 items-center gap-2 rounded-xl border border-rose-300/70 bg-rose-100 px-3 py-2 text-xs font-semibold text-rose-900 shadow-lg backdrop-blur dark:border-rose-300/45 dark:bg-rose-300/16 dark:text-rose-100">
+        <div className="fixed left-1/2 top-5 z-[95] flex max-w-[92vw] -translate-x-1/2 items-center gap-2 rounded-xl border border-rose-300/70 bg-rose-100/92 px-3 py-2 text-xs font-semibold text-rose-900 shadow-lg backdrop-blur-xl dark:border-rose-300/45 dark:bg-rose-300/18 dark:text-rose-100">
           <span className="break-all">{error}</span>
           <button
             type="button"

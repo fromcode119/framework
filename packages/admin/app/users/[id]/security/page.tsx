@@ -1,25 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { Loader } from '@/components/ui/loader';
-import { useNotification } from '@/components/notification-context';
+import { NotificationHooks } from '@/components/use-notification';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth-context';
+import { AuthHooks } from '@/components/use-auth';
 
 export default function UserSecurityPage() {
   const router = useRouter();
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const { id } = useParams();
-  const { user: authUser } = useAuth();
-  const { addNotification } = useNotification();
+  const { user: authUser } = AuthHooks.useAuth();
+  const { addNotification } = NotificationHooks.useNotification();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
@@ -63,8 +63,8 @@ export default function UserSecurityPage() {
 
     setAuthActivityLoading(true);
     try {
-      const response = await api.get(
-        `${ENDPOINTS.SYSTEM.LOGS}?page=1&limit=25&search=${encodeURIComponent(normalizedEmail)}`
+      const response = await AdminApi.get(
+        `${AdminConstants.ENDPOINTS.SYSTEM.LOGS}?page=1&limit=25&search=${encodeURIComponent(normalizedEmail)}`
       );
       const docs = Array.isArray(response?.docs)
         ? response.docs
@@ -99,11 +99,11 @@ export default function UserSecurityPage() {
 
   const fetchUserSecurity = async () => {
     try {
-      const userData = await api.get(ENDPOINTS.SYSTEM.USER(id as string));
+      const userData = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(id as string));
       setUser(userData);
 
       const [twoFactorStatus] = await Promise.all([
-        api.get(ENDPOINTS.SYSTEM.USER_2FA_STATUS(id as string)),
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_STATUS(id as string)),
         fetchAuthActivity(userData?.email || '')
       ]);
 
@@ -121,7 +121,7 @@ export default function UserSecurityPage() {
     if (!isSelf) return;
     setSessionsLoading(true);
     try {
-      const response = await api.get(ENDPOINTS.AUTH.MY_SESSIONS);
+      const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.MY_SESSIONS);
       const docs = Array.isArray(response?.docs) ? response.docs : [];
       setMySessions(docs);
     } catch (err) {
@@ -134,10 +134,10 @@ export default function UserSecurityPage() {
 
   const revokeSession = async (sessionId: string) => {
     try {
-      const result = await api.post(ENDPOINTS.AUTH.REVOKE_MY_SESSION(sessionId), {});
+      const result = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.REVOKE_MY_SESSION(sessionId), {});
       addNotification({ title: 'Session Revoked', message: 'Device session revoked successfully.', type: 'success' });
       if (result?.revokedCurrent) {
-        router.push(ROUTES.AUTH.LOGIN);
+        router.push(AdminConstants.ROUTES.AUTH.LOGIN);
         return;
       }
       await fetchMySessions();
@@ -148,7 +148,7 @@ export default function UserSecurityPage() {
 
   const revokeOtherSessions = async () => {
     try {
-      await api.post(ENDPOINTS.AUTH.REVOKE_OTHER_SESSIONS, {});
+      await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.REVOKE_OTHER_SESSIONS, {});
       addNotification({ title: 'Done', message: 'Other sessions revoked.', type: 'success' });
       await fetchMySessions();
     } catch (err: any) {
@@ -160,7 +160,7 @@ export default function UserSecurityPage() {
     if (!isSelf) return;
     setTokensLoading(true);
     try {
-      const response = await api.get(ENDPOINTS.AUTH.API_TOKENS);
+      const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.API_TOKENS);
       const docs = Array.isArray(response?.docs) ? response.docs : [];
       setMyApiTokens(docs);
     } catch (err) {
@@ -180,7 +180,7 @@ export default function UserSecurityPage() {
       const expiresInDays = Number.parseInt(String(tokenDays || '').trim(), 10);
       const payload: any = { name: tokenName.trim() };
       if (!Number.isNaN(expiresInDays)) payload.expiresInDays = expiresInDays;
-      const response = await api.post(ENDPOINTS.AUTH.API_TOKENS, payload);
+      const response = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.API_TOKENS, payload);
       const rawToken = String(response?.token || '');
       setCreatedToken(rawToken);
       setTokenName('');
@@ -193,7 +193,7 @@ export default function UserSecurityPage() {
 
   const revokeApiToken = async (tokenId: string) => {
     try {
-      await api.delete(ENDPOINTS.AUTH.API_TOKEN(tokenId));
+      await AdminApi.delete(AdminConstants.ENDPOINTS.AUTH.API_TOKEN(tokenId));
       addNotification({ title: 'Token Revoked', message: 'API token revoked successfully.', type: 'success' });
       await fetchMyApiTokens();
     } catch (err: any) {
@@ -204,7 +204,7 @@ export default function UserSecurityPage() {
   const handleEnable2FA = async () => {
     setIsEnabling(true);
     try {
-      const response = await api.post(ENDPOINTS.SYSTEM.USER_2FA_SETUP(id as string), {});
+      const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_SETUP(id as string), {});
       setQrCode(response.qrCode);
       setSecret(response.secret);
       addNotification({ title: 'Setup Started', message: 'Scan the QR code with your authenticator app', type: 'info' });
@@ -223,7 +223,7 @@ export default function UserSecurityPage() {
 
     setIsVerifying(true);
     try {
-      const verifyResponse = await api.post(ENDPOINTS.SYSTEM.USER_2FA_VERIFY(id as string), { token: verificationCode });
+      const verifyResponse = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_VERIFY(id as string), { token: verificationCode });
       setTwoFactorEnabled(true);
       setQrCode(null);
       setSecret(null);
@@ -245,7 +245,7 @@ export default function UserSecurityPage() {
     }
 
     try {
-      await api.delete(ENDPOINTS.SYSTEM.USER_2FA(id as string));
+      await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA(id as string));
       setTwoFactorEnabled(false);
       setQrCode(null);
       setSecret(null);
@@ -273,7 +273,7 @@ export default function UserSecurityPage() {
     }
     setIsRegeneratingCodes(true);
     try {
-      const response = await api.post(ENDPOINTS.SYSTEM.USER_2FA_RECOVERY_REGENERATE(id as string), {});
+      const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_RECOVERY_REGENERATE(id as string), {});
       const codes = Array.isArray(response?.recoveryCodes) ? response.recoveryCodes : [];
       setGeneratedRecoveryCodes(codes);
       setRecoveryCodesRemaining(codes.length);

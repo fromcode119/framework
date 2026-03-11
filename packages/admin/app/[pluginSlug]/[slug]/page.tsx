@@ -1,26 +1,27 @@
 "use client";
 
 import React, { use, useEffect } from 'react';
-import { Slot, usePlugins } from '@fromcode119/react';
+import { Slot, ContextHooks } from '@fromcode119/react';
 import CollectionListPage from '@/components/collection/collection-list-page';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { CollectionNotFound } from '@/components/collection/collection-not-found';
 import { PluginNotFound } from '@/components/plugins/plugin-not-found';
 import { Loader } from '@/components/ui/loader';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { useRouter } from 'next/navigation';
 
 export default function CollectionListRoute({ params }: { params: Promise<{ pluginSlug: string; slug: string }> }) {
   const { pluginSlug, slug } = use(params);
-  const { collections, slots, plugins, isReady } = usePlugins();
-  const { theme } = useTheme();
+  const { collections, slots, plugins, isReady } = ContextHooks.usePlugins();
+  const { theme } = ThemeHooks.useTheme();
   const router = useRouter();
 
   // Check if plugin is active
   const isActive = plugins.some((p: any) => p.slug === pluginSlug);
 
   const collection = AdminCollectionUtils.resolveCollection(collections as any, pluginSlug, slug);
-  const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}`;
+  // Slot name uses hyphen separator to match UI registrations like 'admin.plugin.ecommerce.page.ecommerce-orders'
+  const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}-${slug}`;
   const hasPageSlot = !!(slots?.[pageSlot] && slots[pageSlot].length > 0);
   const shouldRedirectToPluginSettings = !collection && slug === 'settings';
 

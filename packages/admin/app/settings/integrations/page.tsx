@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTheme } from '@/components/theme-context';
-import { useNotification } from '@/components/notification-context';
+import { ThemeHooks } from '@/components/use-theme';
+import { NotificationHooks } from '@/components/use-notification';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,8 +13,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Loader } from '@/components/ui/loader';
 import { FrameworkIcons } from '@/lib/icons';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
-import { api } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { IntegrationsPageUtils } from './IntegrationsPageUtils';
 
 type IntegrationFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';
 
@@ -65,20 +66,12 @@ interface ProviderEditorState {
   config: Record<string, any>;
 }
 
-const normalizeKey = (value: string): string => value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
-
-const isBlank = (value: unknown): boolean => {
-  if (value === undefined || value === null) return true;
-  if (typeof value === 'string') return value.trim() === '';
-  return false;
-};
-
 export default function IntegrationsSettingsPage() {
-  const { theme } = useTheme();
-  const { addNotification } = useNotification();
+  const { theme } = ThemeHooks.useTheme();
+  const { addNotification } = NotificationHooks.useNotification();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryType = normalizeKey(String(searchParams.get('type') || ''));
+  const queryType = IntegrationsPageUtils.normalizeKey(String(searchParams.get('type') || ''));
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -134,18 +127,18 @@ export default function IntegrationsSettingsPage() {
   };
 
   const activateType = (typeKey: string) => {
-    const normalized = normalizeKey(typeKey);
+    const normalized = IntegrationsPageUtils.normalizeKey(typeKey);
     if (!normalized || normalized === activeType) return;
     setSelectedProviderId('');
     setEditor(null);
     setRemoveCandidateId(null);
-    router.replace(ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(normalized));
+    router.replace(AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(normalized));
   };
 
   const loadIntegrations = async () => {
     setLoading(true);
     try {
-      const response = await api.get(ENDPOINTS.SYSTEM.INTEGRATIONS);
+      const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.INTEGRATIONS);
       const docs = Array.isArray(response?.docs) ? response.docs : [];
       const sorted = docs
         .filter((doc: any) => doc && typeof doc.key === 'string')
@@ -193,7 +186,7 @@ export default function IntegrationsSettingsPage() {
     }
 
     if (!hasQueryType && nextType) {
-      router.replace(ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(nextType));
+      router.replace(AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(nextType));
     }
   }, [integrations, queryType, activeType, router]);
 
@@ -288,10 +281,10 @@ export default function IntegrationsSettingsPage() {
     const validationErrors: string[] = [];
     for (const field of providerDefinition.fields || []) {
       const value = editor.config?.[field.name];
-      if (field.required && isBlank(value)) {
+      if (field.required && IntegrationsPageUtils.isBlank(value)) {
         validationErrors.push(`${field.label} is required.`);
       }
-      if (field.type === 'number' && !isBlank(value) && Number.isNaN(Number(value))) {
+      if (field.type === 'number' && !IntegrationsPageUtils.isBlank(value) && Number.isNaN(Number(value))) {
         validationErrors.push(`${field.label} must be a valid number.`);
       }
     }
@@ -315,7 +308,7 @@ export default function IntegrationsSettingsPage() {
       if (!editor.isNew && editor.providerId) payload.providerId = editor.providerId;
       if (editor.providerName.trim()) payload.providerName = editor.providerName.trim();
 
-      const response = await api.put(ENDPOINTS.SYSTEM.INTEGRATION(activeIntegration.key), payload);
+      const response = await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.INTEGRATION(activeIntegration.key), payload);
       const updatedIntegration = response?.integration as IntegrationRecord;
       if (!updatedIntegration?.key) {
         throw new Error('Integration update returned an invalid response.');
@@ -370,8 +363,8 @@ export default function IntegrationsSettingsPage() {
     if (!activeIntegration) return;
     setChangingProviderId(provider.id);
     try {
-      const response = await api.patch(
-        ENDPOINTS.SYSTEM.INTEGRATION_PROVIDER(activeIntegration.key, provider.id),
+      const response = await AdminApi.patch(
+        AdminConstants.ENDPOINTS.SYSTEM.INTEGRATION_PROVIDER(activeIntegration.key, provider.id),
         { enabled: provider.enabled === false }
       );
       const updatedIntegration = response?.integration as IntegrationRecord;
@@ -399,7 +392,7 @@ export default function IntegrationsSettingsPage() {
     if (!activeIntegration) return;
     setChangingProviderId(provider.id);
     try {
-      const response = await api.delete(ENDPOINTS.SYSTEM.INTEGRATION_PROVIDER(activeIntegration.key, provider.id));
+      const response = await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.INTEGRATION_PROVIDER(activeIntegration.key, provider.id));
       const updatedIntegration = response?.integration as IntegrationRecord;
       if (!updatedIntegration?.key) {
         throw new Error('Integration update returned an invalid response.');
@@ -670,7 +663,7 @@ export default function IntegrationsSettingsPage() {
                         previous
                           ? {
                               ...previous,
-                              enabled: value
+                              enabled: value ?? false
                             }
                           : previous
                       )

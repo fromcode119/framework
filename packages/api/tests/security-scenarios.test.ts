@@ -1,4 +1,4 @@
-import { csrfMiddleware } from '../src/middlewares/security';
+import { SecurityMiddleware } from '../src/middlewares/security';
 import { Request, Response, NextFunction } from 'express';
 
 describe('CSRF Middleware Security Scenarios', () => {
@@ -26,14 +26,14 @@ describe('CSRF Middleware Security Scenarios', () => {
 
     it('should allow GET requests without CSRF check', () => {
         req.method = 'GET';
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
     });
 
     it('should block POST requests without CSRF header', () => {
         req.headers.cookie = 'fc_csrf=valid-token';
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(res.status).toHaveBeenCalledWith(403);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
             message: 'Invalid CSRF token'
@@ -43,14 +43,14 @@ describe('CSRF Middleware Security Scenarios', () => {
     it('should block POST requests with mismatched CSRF header', () => {
         req.headers.cookie = 'fc_csrf=valid-token';
         req.headers['x-csrf-token'] = 'invalid-token';
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(res.status).toHaveBeenCalledWith(403);
     });
 
     it('should allow POST requests with matching CSRF header', () => {
         req.headers.cookie = 'fc_csrf=valid-token';
         req.headers['x-csrf-token'] = 'valid-token';
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(next).toHaveBeenCalled();
     });
 
@@ -62,7 +62,7 @@ describe('CSRF Middleware Security Scenarios', () => {
         req.headers.cookie = `fc_csrf=${otherToken}; fc_csrf=${matchingToken}`;
         req.headers['x-csrf-token'] = matchingToken;
         
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
@@ -75,14 +75,14 @@ describe('CSRF Middleware Security Scenarios', () => {
         req.headers.cookie = `fc_csrf=${matchingToken}; fc_csrf=${otherToken}`;
         req.headers['x-csrf-token'] = matchingToken;
         
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         
         expect(next).toHaveBeenCalled();
     });
 
     it('should generate a new CSRF cookie if none exists', () => {
         req.method = 'GET';
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         
         expect(res.cookie).toHaveBeenCalledWith('fc_csrf', expect.any(String), expect.objectContaining({
             httpOnly: false,
@@ -94,7 +94,7 @@ describe('CSRF Middleware Security Scenarios', () => {
     it('should set the domain correctly on the fresh CSRF cookie if hostname is a subdomain', () => {
         req.method = 'GET';
         req.hostname = 'admin.framework.local';
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         
         expect(res.cookie).toHaveBeenCalledWith('fc_csrf', expect.any(String), expect.objectContaining({
             domain: '.framework.local'
@@ -104,13 +104,13 @@ describe('CSRF Middleware Security Scenarios', () => {
     it('should skip CSRF check for Authorization header (stateless/safe from CSRF)', () => {
         req.headers.authorization = 'Bearer some-token';
         // No cookie, no header
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(next).toHaveBeenCalled();
     });
     
     it('should skip CSRF check for API Key header', () => {
         req.headers['x-api-key'] = 'some-key';
-        csrfMiddleware(req, res, next);
+        SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(next).toHaveBeenCalled();
     });
 });

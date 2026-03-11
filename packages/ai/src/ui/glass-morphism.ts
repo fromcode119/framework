@@ -1,100 +1,129 @@
 /**
- * Glass Morphism / Frost Design Utility Classes
- * Shared Tailwind CSS classes for consistent glass/frost aesthetic
+ * Matte mono utility classes used across the assistant UI.
  */
+export class GlassMorphism {
+  static readonly GLASS_FONT_IMPORT =
+    "@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');";
 
-export const GLASS_CARD = `
-  group relative
-  flex-1 overflow-hidden rounded-2xl
-  border border-slate-200/70
-  bg-gradient-to-br from-white/95 via-white/92 to-slate-50/95
-  shadow-[0_20px_50px_rgba(2,6,23,0.12)]
-  backdrop-blur-xl
-  transition-shadow duration-500
-  hover:shadow-[0_20px_50px_rgba(2,6,23,0.18)]
-  dark:border-slate-700/60
-  dark:from-slate-900/80 dark:via-slate-900/75 dark:to-slate-800/80
-  dark:shadow-[0_20px_50px_rgba(2,6,23,0.3)]
-  dark:hover:shadow-[0_20px_50px_rgba(2,6,23,0.4)]
+  static readonly GLASS_APP_BG = `
+  relative min-h-screen overflow-hidden
+  [--bg:#ffffff]
+  [--surface:rgba(0,0,0,0.04)]
+  [--surface-strong:rgba(0,0,0,0.07)]
+  [--border:rgba(0,0,0,0.08)]
+  [--text-main:#09090b]
+  [--text-sub:#71717a]
+  [--accent:#09090b]
+  [--input-bg:#f4f4f5]
+  [--sidebar-bg:#fafafa]
+  [--code-bg:#f1f1f1]
+  bg-[var(--bg)] text-[var(--text-main)]
+  dark:[--bg:#0d0d0d]
+  dark:[--surface:rgba(255,255,255,0.03)]
+  dark:[--surface-strong:rgba(255,255,255,0.06)]
+  dark:[--border:rgba(255,255,255,0.08)]
+  dark:[--text-main:#ffffff]
+  dark:[--text-sub:#a1a1aa]
+  dark:[--accent:#ffffff]
+  dark:[--input-bg:rgba(255,255,255,0.02)]
+  dark:[--sidebar-bg:#0d0d0d]
+  dark:[--code-bg:#1a1a1a]
 `;
 
-export const GLASS_PANEL = `
-  rounded-xl
-  border border-slate-200/50
-  bg-white/70 backdrop-blur-md
-  p-4
-  dark:border-slate-700/50
-  dark:bg-slate-900/50
+  static readonly GLASS_CARD = `
+  rounded-2xl border border-[var(--border)]
+  bg-[var(--surface)] backdrop-blur-lg
+  shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+  dark:shadow-[0_14px_34px_rgba(0,0,0,0.35)]
 `;
 
-export const GLASS_INPUT = `
-  rounded-lg
-  border border-slate-200/60
-  bg-white/80 backdrop-blur-sm
-  px-3 py-2
-  text-slate-900
-  placeholder-slate-400
+  static readonly GLASS_FLOAT_CHROME = `
+  rounded-xl border border-[var(--border)]
+  bg-[var(--surface)] backdrop-blur-lg
+  shadow-[0_8px_24px_rgba(0,0,0,0.07)]
+  dark:shadow-[0_10px_26px_rgba(0,0,0,0.35)]
+`;
+
+  static readonly GLASS_PANEL = `
+  rounded-xl border border-[var(--border)]
+  bg-[var(--surface)] p-4 backdrop-blur-md
+`;
+
+  static readonly GLASS_SUB_PANEL = `
+  rounded-lg border border-[var(--border)]
+  bg-[color-mix(in_oklab,var(--surface)_85%,transparent)]
+  backdrop-blur-sm
+`;
+
+  static readonly GLASS_MESSAGE_ASSISTANT = `
+  border-[var(--border)] bg-[var(--surface)] text-[var(--text-main)]
+  shadow-[0_4px_14px_rgba(0,0,0,0.05)]
+`;
+
+  static readonly GLASS_MESSAGE_USER = `
+  border border-[var(--text-main)] bg-[var(--text-main)] text-[var(--bg)]
+  shadow-[0_10px_22px_rgba(0,0,0,0.2)]
+`;
+
+  static readonly GLASS_MESSAGE_SYSTEM = `
+  border-[var(--border)] bg-[color-mix(in_oklab,var(--surface-strong)_88%,transparent)] text-[var(--text-sub)]
+`;
+
+  static readonly GLASS_INPUT = `
+  rounded-xl border border-[var(--border)]
+  bg-[var(--input-bg)] px-3 py-2 text-[var(--text-main)]
+  placeholder-[var(--text-sub)] backdrop-blur-sm
   transition-all duration-200
-  focus:border-cyan-400 focus:shadow-[0_0_0_3px_rgba(34,211,238,0.1)] focus:outline-none
-  dark:border-slate-700/60
-  dark:bg-slate-800/60
-  dark:text-slate-100
-  dark:placeholder-slate-500
-  dark:focus:border-cyan-500 dark:focus:shadow-[0_0_0_3px_rgba(34,211,238,0.15)]
+  focus:border-[color-mix(in_oklab,var(--text-main)_26%,var(--border))]
+  focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklab,var(--text-main)_12%,transparent)]
 `;
 
-export const GLASS_BUTTON = `
-  inline-flex items-center justify-center
-  rounded-lg
-  border border-slate-200/70
-  bg-gradient-to-br from-white/90 to-slate-50/90
-  px-4 py-2.5
-  font-medium text-slate-700
-  shadow-[0_4px_12px_rgba(2,6,23,0.08)]
+  static readonly GLASS_BUTTON = `
+  inline-flex items-center justify-center rounded-xl
+  border border-[var(--border)] px-4 py-2 font-medium
+  bg-[var(--surface)] text-[var(--text-main)]
+  shadow-[0_6px_16px_rgba(0,0,0,0.08)]
   transition-all duration-200
-  hover:shadow-[0_8px_24px_rgba(2,6,23,0.12)]
-  hover:border-slate-300/70
-  active:scale-95
-  dark:border-slate-700/70
-  dark:from-slate-800/90 dark:to-slate-900/90
-  dark:text-slate-200
-  dark:shadow-[0_4px_12px_rgba(2,6,23,0.3)]
-  dark:hover:shadow-[0_8px_24px_rgba(2,6,23,0.4)]
+  hover:bg-[var(--surface-strong)] hover:translate-y-[-1px]
+  hover:shadow-[0_10px_22px_rgba(0,0,0,0.12)]
+  disabled:cursor-not-allowed disabled:opacity-50
 `;
 
-export const GLASS_BUTTON_PRIMARY = `
-  inline-flex items-center justify-center
-  rounded-lg
-  border border-cyan-400/50
-  bg-gradient-to-br from-cyan-500/90 to-cyan-600/90
-  px-4 py-2.5
-  font-medium text-white
-  shadow-[0_4px_12px_rgba(6,182,212,0.3)]
+  static readonly GLASS_BUTTON_PRIMARY = `
+  inline-flex items-center justify-center rounded-xl
+  border border-[var(--text-main)] px-4 py-2 font-semibold
+  bg-[var(--text-main)] text-[var(--bg)]
+  shadow-[0_10px_22px_rgba(0,0,0,0.22)]
   transition-all duration-200
-  hover:shadow-[0_8px_24px_rgba(6,182,212,0.4)]
-  hover:border-cyan-300/70
-  active:scale-95
-  dark:border-cyan-400/60
-  dark:from-cyan-500/95 dark:to-cyan-600/95
-  dark:shadow-[0_4px_12px_rgba(6,182,212,0.4)]
-  dark:hover:shadow-[0_8px_24px_rgba(6,182,212,0.5)]
+  hover:translate-y-[-1px] hover:opacity-95
+  disabled:cursor-not-allowed disabled:opacity-50
 `;
 
-export const GLASS_GRADIENT_TEXT = `
-  bg-gradient-to-r from-cyan-600 to-sky-600
-  bg-clip-text text-transparent
-  dark:from-cyan-400 dark:to-sky-400
+  static readonly GLASS_ICON_BUTTON = `
+  inline-flex h-9 w-9 items-center justify-center rounded-xl border
+  border-[var(--border)] bg-[var(--surface)] text-[var(--text-sub)] backdrop-blur-sm
+  shadow-[0_6px_16px_rgba(0,0,0,0.08)]
+  transition-all duration-200
+  hover:translate-y-[-1px] hover:bg-[var(--surface-strong)] hover:text-[var(--text-main)]
 `;
 
-export const GLASS_PROGRESS_BAR = `
+  static readonly GLASS_BADGE = `
+  inline-flex items-center rounded-full border border-[var(--border)]
+  bg-[var(--surface)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-sub)]
+`;
+
+  static readonly GLASS_GRADIENT_TEXT = `
+  text-[var(--text-main)]
+`;
+
+  static readonly GLASS_PROGRESS_BAR = `
   h-1 overflow-hidden rounded-full
+  bg-[var(--surface-strong)]
   transition-all duration-500
-  bg-gradient-to-r from-emerald-500 to-emerald-600
-  dark:from-emerald-400 dark:to-emerald-500
 `;
 
-export const GLASS_PROGRESS_ACTIVE = `
-  h-full w-full
-  animate-pulse
-  bg-white/40
+  static readonly GLASS_PROGRESS_ACTIVE = `
+  h-full w-full animate-pulse bg-[var(--text-main)]
 `;
+}
+

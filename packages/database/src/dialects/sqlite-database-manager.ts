@@ -2,10 +2,10 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, count as drizzleCount, desc, asc } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { toSafeIsoDate } from '@fromcode119/sdk';
+import { CoercionUtils } from '@fromcode119/sdk';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
-import { toSnakeCase } from '../naming-strategy';
+import { NamingStrategy } from '../naming-strategy';
 
 export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManager {
   private sqlite: Database.Database;
@@ -50,7 +50,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   private getDynamicTable(tableName: string, columns: string[]) {
     const tableColumns: Record<string, any> = {};
     for (const col of columns) {
-      tableColumns[col] = text(toSnakeCase(col));
+      tableColumns[col] = text(NamingStrategy.toSnakeCase(col));
     }
     return sqliteTable(tableName, tableColumns);
   }
@@ -159,7 +159,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       // Use raw SQL so RETURNING * returns ALL columns (including auto-generated id)
       // and so camelCase keys are mapped to snake_case column names
       const cols = Object.keys(normalizedData);
-      const colsSql = cols.map((k) => `"${toSnakeCase(k)}"`).join(', ');
+      const colsSql = cols.map((k) => `"${NamingStrategy.toSnakeCase(k)}"`).join(', ');
       const placeholders = cols.map(() => '?').join(', ');
       const values = cols.map((k) => normalizedData[k]);
       const rawSql = `INSERT INTO "${tableOrName}" (${colsSql}) VALUES (${placeholders}) RETURNING *`;
@@ -183,7 +183,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       const setClauses: string[] = [];
       const setValues: any[] = [];
       for (const [k, v] of Object.entries(normalizedData)) {
-        setClauses.push(`"${toSnakeCase(k)}" = ?`);
+        setClauses.push(`"${NamingStrategy.toSnakeCase(k)}" = ?`);
         setValues.push(v);
       }
       if (setClauses.length === 0) return null;
@@ -221,7 +221,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       if (value === undefined) {
         normalized[key] = null;
       } else if (value instanceof Date) {
-        normalized[key] = toSafeIsoDate(value);
+        normalized[key] = CoercionUtils.toSafeIsoDate(value);
       } else if (typeof value === 'boolean') {
         normalized[key] = value ? 1 : 0;
       } else if (value !== null && typeof value === 'object') {
@@ -235,7 +235,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   protected override normalizeParamValue(value: any): any {
     if (value === undefined || value === null) return null;
-    if (value instanceof Date) return toSafeIsoDate(value);
+    if (value instanceof Date) return CoercionUtils.toSafeIsoDate(value);
     if (typeof value === 'boolean') return value ? 1 : 0;
     if (Buffer.isBuffer(value)) return value;
     if (typeof value === 'object') return JSON.stringify(value);
@@ -325,7 +325,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   async createTable(collection: ISchemaCollection): Promise<void> {
     const tableName = collection.slug;
     const columnDefs: any[] = [];
-    const fieldSnakeNames = collection.fields.map(f => toSnakeCase(f.name));
+    const fieldSnakeNames = collection.fields.map(f => NamingStrategy.toSnakeCase(f.name));
 
     if (!fieldSnakeNames.includes('id')) {
       columnDefs.push(sql`id INTEGER PRIMARY KEY AUTOINCREMENT`);
@@ -386,7 +386,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   private async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
     const jsonColumns = await this.getJsonColumns(tableName);
-    const normalizedColumn = toSnakeCase(column).toLowerCase();
+    const normalizedColumn = NamingStrategy.toSnakeCase(column).toLowerCase();
     if (jsonColumns.has(normalizedColumn)) {
       return this.normalizeJsonColumnValue(value);
     }
@@ -432,7 +432,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   private fieldToSqlFragment(field: ISchemaField): any {
-    const dbName = toSnakeCase(field.name);
+    const dbName = NamingStrategy.toSnakeCase(field.name);
     let type = sql`TEXT`;
     
     switch (field.type) {
