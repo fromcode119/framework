@@ -2,7 +2,7 @@ import { BaseRouter } from '../routers/base-router';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { AuthController } from '../controllers/auth-controller';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 
 /**
  * Authentication router (class-based implementation).

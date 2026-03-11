@@ -1,5 +1,5 @@
 import type { Collection } from '../types';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../constants';
 
 export class RecordVersions {
   static readonly collection: Collection = {

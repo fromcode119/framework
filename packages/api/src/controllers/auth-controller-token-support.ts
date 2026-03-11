@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerPolicy } from './auth-controller-policy';
 import type { ApiTokenRecord } from './auth-controller.interfaces';
 

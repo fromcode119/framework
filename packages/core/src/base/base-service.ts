@@ -1,4 +1,4 @@
-import type { PluginContext } from '@fromcode119/sdk';
+import type { PluginContext } from '../types';
 
 /**
  * Abstract base class for all plugin services.

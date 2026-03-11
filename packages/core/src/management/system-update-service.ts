@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BackupService } from './backup-service';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';

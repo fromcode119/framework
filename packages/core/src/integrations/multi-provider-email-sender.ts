@@ -1,5 +1,5 @@
 import { EmailManager, EmailOptions } from '@fromcode119/email';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 
 type EmailSender = Pick<EmailManager, 'send'>;
 

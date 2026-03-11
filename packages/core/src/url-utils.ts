@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { UrlUtils } from '@fromcode119/sdk';
+import { UrlUtils } from './url-utils';
  *
  * UrlUtils.build('/products', { page: 2, limit: 20 }); // '/products?page=2&limit=20'
  * UrlUtils.isExternal('https://cdn.example.com');       // true

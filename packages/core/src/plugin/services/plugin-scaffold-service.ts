@@ -2,7 +2,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
 import { ProjectPaths } from '../../config/paths';
 import type { ScaffoldPluginInput, ScaffoldPluginResult } from './plugin-scaffold-service.interfaces';
 

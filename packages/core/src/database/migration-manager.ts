@@ -1,8 +1,8 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { SystemMigration } from '../types';
 import { MigrationLoader } from './migrations';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../constants';
 
 export class MigrationManager {
   private logger = new Logger({ namespace: 'migration-manager' });

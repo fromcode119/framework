@@ -3,7 +3,7 @@ import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { PluginController } from '../controllers/plugin-controller';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 
 export class PluginRouter extends BaseRouter {
   private controller: PluginController;

@@ -1,5 +1,6 @@
 import { Collection, LoadedPlugin , Field } from '../../types';
-import { Logger, SystemConstants } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
+import { SystemConstants } from '../../constants';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { ContextSecurityProxy } from './utils';
 import { PluginRegistry } from '@fromcode119/plugins';

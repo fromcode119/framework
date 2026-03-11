@@ -1,4 +1,4 @@
-import type { CollectionQueryPrimitive } from './collections.types';
+import type { CollectionQueryPrimitive } from './collection-utils.types';
 
 export interface CollectionListPathOptions {
   limit?: number;

@@ -1,4 +1,4 @@
-// Types
+// Types (includes all plugin/schema types moved from @fromcode119/sdk)
 export * from './types';
 export { RecordVersions } from './collections/record-versions';
 
@@ -28,18 +28,48 @@ export { WebSocketManager } from './realtime/web-socket-manager';
 export { CapabilityRegistry } from './capabilities';
 export type { CapabilityMetadata } from './capabilities.interfaces';
 
-// Shared Utilities
-export { Logger } from '@fromcode119/sdk';
-export type { LoggerOptions } from '@fromcode119/sdk';
+// ── Logging ─────────────────────────────────────────────────────────────────
+export { Logger } from './logging';
+export { LogLevel } from './logging.enums';
+export type { LoggerOptions } from './logging.interfaces';
+
+// ── Constants ────────────────────────────────────────────────────────────────
+export { SystemConstants } from './constants';
+export { RuntimeConstants } from './runtime-constants';
+export { RouteConstants } from './route-constants';
+
+// ── Utility Classes ───────────────────────────────────────────────────────────
+export { CoercionUtils } from './coercion-utils';
+export { StringUtils } from './string-utils';
+export { NumberUtils } from './number-utils';
+export { FormatUtils } from './format-utils';
+export { RouteUtils } from './route-utils';
+export { UrlUtils } from './url-utils';
+export { ApiVersionUtils } from './api-version';
+export { LocalizationUtils } from './localization';
+export type { NormalizeLocaleOptions, ResolveAnyStringOptions } from './localization.interfaces';
+export { CollectionUtils } from './collection-utils';
+export type { CollectionListPathOptions } from './collection-utils.interfaces';
+export { HookEventUtils } from './hook-events';
+export type { CollectionHookPhase, CollectionHookEvents } from './hook-events.types';
+export { PaginationUtils } from './pagination';
+export type { PaginationInput, PaginationMeta } from './pagination.interfaces';
+export { RelationUtils } from './relations';
+export { ShortcodeUtils } from './shortcodes';
+export type { RenderShortcodesPayload, RenderShortcodesResponse, ShortcodeCatalogItem, ShortcodeCatalogResponse } from './shortcodes.types';
+export { RuntimeBridge } from './runtime-bridge';
+export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
+export { PluginDefinitionUtils } from './plugin-definition-utils';
+
+// ── Shared Utilities ──────────────────────────────────────────────────────────
 export * from './utils';
-// Re-export SystemConstants for external plugins
-export { SystemConstants } from '@fromcode119/sdk';
 export { EnvConfig } from './config/env';
 export { ProjectPaths } from './config/paths';
 
 // Integrations
 export { IntegrationManager } from './integrations/integration-manager';
 export { IntegrationRegistry } from './integrations/integration-registry';
+export type { IntegrationTypeDefinition } from './integrations/integration-registry.interfaces';
 
 // Context
 export { RequestContextUtils } from './context/request-context';
@@ -75,3 +105,4 @@ export { SystemUpdateService } from './management/system-update-service';
 
 // Base Classes for Plugin Development
 export { BaseRepository, BaseService, BaseController } from './base';
+export { BaseRouter } from './base/base-router';

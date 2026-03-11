@@ -30,7 +30,12 @@
     "build": "tsc",
     "dev": "tsc -w"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@fromcode119/core": "*"
+  },
+  "peerDependencies": {
+    "express": ">=4.0.0"
+  },
   "devDependencies": {
     "typescript": "^5.3.3"
   },

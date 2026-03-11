@@ -2,7 +2,7 @@ import { BaseRouter } from '../routers/base-router';
 import { PluginManager } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 import { CollectionMiddleware } from '../middlewares/collection-middleware';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 
 /**
  * Collection router for CRUD operations on collections.

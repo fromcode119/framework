@@ -1,6 +1,6 @@
 import { ApiVersionUtils } from './api-version';
 import { SystemConstants } from './constants';
-import type { CollectionListPathOptions } from './collections.interfaces';
+import type { CollectionListPathOptions } from './collection-utils.interfaces';
 
 /**
  * Collection path and data utilities.

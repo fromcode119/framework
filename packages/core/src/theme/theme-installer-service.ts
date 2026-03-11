@@ -3,7 +3,7 @@
 import path from 'path';
 import fs from 'fs';
 import AdmZip from 'adm-zip';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { ThemeManifest } from '../types';
 import { BackupService } from '../management/backup-service';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';

@@ -1,5 +1,5 @@
 import { PluginManager } from '@fromcode119/core';
-import { type Collection, SystemConstants } from '@fromcode119/sdk';
+import { type Collection, SystemConstants } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 
 export class ResolutionService {

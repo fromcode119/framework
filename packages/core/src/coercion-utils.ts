@@ -70,4 +70,26 @@ export class CoercionUtils {
   static toArray<T = unknown>(value: unknown): T[] {
     return Array.isArray(value) ? (value as T[]) : [];
   }
+
+  /**
+   * Extracts a positive integer relation ID from a raw value.
+   * Handles nested objects (looks for .id, .value, .userId), strings, and numbers.
+   * Returns null for missing, zero, negative, or non-numeric values.
+   *
+   * @example
+   * CoercionUtils.toRelationId({ id: 5 })  // 5
+   * CoercionUtils.toRelationId('42')        // 42
+   * CoercionUtils.toRelationId(null)        // null
+   */
+  static toRelationId(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    if (typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      const nested = obj?.id ?? obj?.value ?? obj?.userId ?? null;
+      return CoercionUtils.toRelationId(nested);
+    }
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+    return Math.trunc(parsed);
+  }
 }

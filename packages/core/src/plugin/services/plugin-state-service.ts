@@ -1,6 +1,6 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '@fromcode119/sdk';
-import { SystemConstants } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
+import { SystemConstants } from '../../constants';
 
 export class PluginStateService {
   private logger = new Logger({ namespace: 'PluginState' });

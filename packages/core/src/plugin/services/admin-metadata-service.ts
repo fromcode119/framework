@@ -1,5 +1,5 @@
 import { LoadedPlugin, Collection } from '../../types';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
 import { CoreServices } from '../../services';
 import { AdminRouteUtils } from './admin-route-utils';
 

@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { 
   PluginManager, 
   ThemeManager, 
   SystemUpdateService
 } from '@fromcode119/core';
-import { CoercionUtils } from '@fromcode119/sdk';
+import { CoercionUtils } from '@fromcode119/core';
 import { RESTController } from './rest-controller';
 import { ShortcodeService } from '../services/shortcode-service';
 import { SystemService } from '../services/system-service';

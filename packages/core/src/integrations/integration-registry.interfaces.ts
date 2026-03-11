@@ -1,5 +1,5 @@
 import type { IntegrationConfigFieldType } from './integration-registry.types';
-import type { Logger } from '@fromcode119/sdk';
+import type { Logger } from '../logging';
 
 export interface IntegrationConfigField {
   name: string;

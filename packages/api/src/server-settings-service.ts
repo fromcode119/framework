@@ -1,7 +1,7 @@
 /** ServerSettingsService — settings cache management. Extracted from APIServer (ARC-007). */
 
 import { Logger } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 import { CacheManager } from '@fromcode119/cache';
 
 export class ServerSettingsService {

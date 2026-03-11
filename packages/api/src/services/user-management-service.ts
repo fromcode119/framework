@@ -4,7 +4,7 @@ import {
 } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core';
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });

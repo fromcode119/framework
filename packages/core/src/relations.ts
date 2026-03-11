@@ -7,7 +7,7 @@
  * - null / undefined           → empty string
  *
  * This logic is also available via LocalizationUtils.resolveRelationValue()
- * but is kept here for direct import from '@fromcode119/sdk'.
+ * but is kept here for direct import from '@fromcode119/core'.
  *
  * @example
  * resolveRelationValue('about-us')           // 'about-us'

@@ -1,5 +1,5 @@
-import type { PluginContext } from '@fromcode119/sdk';
-import { NumberUtils } from '@fromcode119/sdk';
+import type { PluginContext } from '../types';
+import { NumberUtils } from '../number-utils';
 
 /**
  * Abstract base class for all plugin data repositories.

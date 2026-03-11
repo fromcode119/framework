@@ -1,7 +1,7 @@
 import { BaseRouter } from '../routers/base-router';
 import { ThemeManager } from '@fromcode119/core';
 import { ThemeController } from '../controllers/theme-controller';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core';
 
 export class ThemeAssetRouter extends BaseRouter {
   private controller: ThemeController;

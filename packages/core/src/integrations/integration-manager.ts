@@ -5,7 +5,7 @@ import { EmailManager, EmailFactory, EmailOptions } from '@fromcode119/email';
 type EmailSender = Pick<EmailManager, 'send'>;
 import { MediaManager, StorageFactory } from '@fromcode119/media';
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { EmailIntegrationDefinition } from './providers/email-provider';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';

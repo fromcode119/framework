@@ -1,6 +1,6 @@
 import { EmailManager, EmailFactory } from '@fromcode119/email';
 import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../../logging';
 
 const logger = new Logger({ namespace: 'EmailGateway' });
 

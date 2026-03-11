@@ -1,4 +1,4 @@
-import { type Collection, SystemConstants } from '@fromcode119/sdk';
+import { type Collection, SystemConstants } from '@fromcode119/core';
 import { MediaCollection } from '@fromcode119/media';
 
 export class CoreCollections {
@@ -25,7 +25,10 @@ export class CoreCollections {
     }
   };
 
-  static readonly media: Collection = MediaCollection;
+  // Cast needed: MediaCollection is typed as a plain object literal in @fromcode119/media
+  // (media cannot import core's Collection type due to tsconfig reference direction).
+  // The shape is structurally valid — this cast is safe.
+  static readonly media: Collection = MediaCollection as unknown as Collection;
 
   static readonly settings: Collection = {
     slug: 'settings',

@@ -1,7 +1,7 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '@fromcode119/sdk';
+import { Logger } from '../logging';
 import { PluginManager } from '../plugin/plugin-manager';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '../constants';
 import type { SecurityEvent } from './security-monitor.interfaces';
 
 /**
