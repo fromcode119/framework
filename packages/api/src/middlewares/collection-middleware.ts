@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PluginManager } from '@fromcode119/core';
-import { BaseMiddleware } from './BaseMiddleware';
+import { BaseMiddleware } from './base-middleware';
 
 /**
  * Middleware for collection lookup and validation.

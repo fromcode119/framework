@@ -1,19 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function NewUserPage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [loadingRoles, setLoadingRoles] = useState(true);
@@ -36,7 +36,7 @@ export default function NewUserPage() {
 
     async function loadRoles() {
       try {
-        const response = await api.get(ENDPOINTS.SYSTEM.ROLES);
+        const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.ROLES);
         if (!active) return;
         setRoles(Array.isArray(response) ? response : []);
       } catch (err) {
@@ -84,7 +84,7 @@ export default function NewUserPage() {
     }
 
     try {
-      await api.post(ENDPOINTS.SYSTEM.USERS, formData);
+      await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USERS, formData);
       router.push('/users');
     } catch (err: any) {
       console.error('Failed to create user:', err);

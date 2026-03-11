@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, SystemTable, Logger } from '@fromcode119/core';
-import { SystemMetaKey } from '@fromcode119/sdk/internal';
+import { PluginManager, Logger } from '@fromcode119/core';
+import { SystemConstants } from '@fromcode119/sdk';
 import type { IDatabaseManager } from '@fromcode119/database';
-import { APP_ROUTES } from '../constants';
-import { getRequestHostAndProto, getRequestOrigin, getCookieDomain, isHttps } from '../utils/url';
-import { normalizeEmail, isValidEmail, hashToken, hashRecoveryCode, parseRoles, parseUserId } from '../utils/auth';
+import { ApiConfig } from '../config/api-config';
+import { ApiUrlUtils } from '../utils/url';
+import { AuthUtils } from '../utils/auth';
 
 export class AuthControllerInfrastructure {
   protected db: IDatabaseManager;
@@ -21,31 +21,31 @@ export class AuthControllerInfrastructure {
   }
 
   protected readRoles(user: any): string[] {
-    return parseRoles(user?.roles);
+    return AuthUtils.parseRoles(user?.roles);
   }
 
   protected parseUserId(raw: any): number {
-    return parseUserId(raw);
+    return AuthUtils.parseUserId(raw);
   }
 
   protected normalizeEmail(email: any): string {
-    return normalizeEmail(email);
+    return AuthUtils.normalizeEmail(email);
   }
 
   protected isValidEmail(email: string): boolean {
-    return isValidEmail(email);
+    return AuthUtils.isValidEmail(email);
   }
 
   protected hashToken(token: string): string {
-    return hashToken(token);
+    return AuthUtils.hashToken(token);
   }
 
   protected hashRecoveryCode(code: string): string {
-    return hashRecoveryCode(code);
+    return AuthUtils.hashRecoveryCode(code);
   }
 
   protected async readMetaRow(key: string): Promise<any | null> {
-    return this.db.findOne(SystemTable.META, { key });
+    return this.db.findOne(SystemConstants.TABLE.META, { key });
   }
 
   protected async getMetaValue(key: string): Promise<string | null> {
@@ -55,28 +55,28 @@ export class AuthControllerInfrastructure {
   }
 
   protected async upsertMeta(key: string, value: string) {
-    const existing = await this.db.findOne(SystemTable.META, { key });
+    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
     if (existing) {
-      await this.db.update(SystemTable.META, { key }, { value });
+      await this.db.update(SystemConstants.TABLE.META, { key }, { value });
       return;
     }
-    await this.db.insert(SystemTable.META, { key, value });
+    await this.db.insert(SystemConstants.TABLE.META, { key, value });
   }
 
   protected async deleteMeta(key: string) {
-    await this.db.delete(SystemTable.META, { key });
+    await this.db.delete(SystemConstants.TABLE.META, { key });
   }
 
   protected getRequestHostAndProto(req: Request): { host: string; proto: string } {
-    return getRequestHostAndProto(req);
+    return ApiUrlUtils.getRequestHostAndProto(req);
   }
 
   protected getRequestOriginBaseUrl(req: Request): string {
-    return getRequestOrigin(req);
+    return ApiUrlUtils.getRequestOrigin(req);
   }
 
   protected async getFrontendBaseUrl(req: Request): Promise<string> {
-    const configuredInDb = String((await this.getMetaValue(SystemMetaKey.FRONTEND_URL)) || '').trim();
+    const configuredInDb = String((await this.getMetaValue(SystemConstants.META_KEY.FRONTEND_URL)) || '').trim();
     if (configuredInDb) return configuredInDb.replace(/\/+$/, '');
 
     const configured =
@@ -87,7 +87,7 @@ export class AuthControllerInfrastructure {
 
     if (configured) return configured.replace(/\/+$/, '');
 
-    const { host, proto } = getRequestHostAndProto(req);
+    const { host, proto } = ApiUrlUtils.getRequestHostAndProto(req);
     if (host) {
       if (host.startsWith('api.')) {
         return `${proto}://${host.replace(/^api\./, 'frontend.')}`;
@@ -96,11 +96,11 @@ export class AuthControllerInfrastructure {
     }
 
     // Attempt to use general SITE_URL as last determined resort
-    return String((await this.getMetaValue(SystemMetaKey.SITE_URL)) || 'http://localhost:3000').replace(/\/+$/, '');
+    return String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || 'http://localhost:3000').replace(/\/+$/, '');
   }
 
   protected async getAdminBaseUrl(req: Request): Promise<string> {
-    const configuredInDb = String((await this.getMetaValue(SystemMetaKey.ADMIN_URL)) || '').trim();
+    const configuredInDb = String((await this.getMetaValue(SystemConstants.META_KEY.ADMIN_URL)) || '').trim();
     if (configuredInDb) return configuredInDb.replace(/\/+$/, '');
 
     const configured =
@@ -108,7 +108,7 @@ export class AuthControllerInfrastructure {
       process.env.NEXT_PUBLIC_ADMIN_URL;
     if (configured) return configured.replace(/\/+$/, '');
 
-    const originBase = getRequestOrigin(req);
+    const originBase = ApiUrlUtils.getRequestOrigin(req);
     if (originBase) {
       try {
         const parsed = new URL(originBase);
@@ -118,7 +118,7 @@ export class AuthControllerInfrastructure {
       } catch {}
     }
 
-    const { host, proto } = getRequestHostAndProto(req);
+    const { host, proto } = ApiUrlUtils.getRequestHostAndProto(req);
     if (host) {
       if (host.startsWith('api.')) {
         return `${proto}://${host.replace(/^api\./, 'admin.')}`;
@@ -130,14 +130,14 @@ export class AuthControllerInfrastructure {
     }
 
     // Attempt to use general SITE_URL as last determined resort
-    return String((await this.getMetaValue(SystemMetaKey.SITE_URL)) || 'http://localhost:3001').replace(/\/+$/, '');
+    return String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || 'http://localhost:3001').replace(/\/+$/, '');
   }
 
   protected isAdminRequestContext(req: Request): boolean {
     const clientHeader = String(req.get('x-framework-client') || '').toLowerCase();
     if (clientHeader.includes('admin')) return true;
 
-    const originBase = getRequestOrigin(req);
+    const originBase = ApiUrlUtils.getRequestOrigin(req);
     if (originBase) {
       try {
         return new URL(originBase).hostname.startsWith('admin.');
@@ -151,7 +151,7 @@ export class AuthControllerInfrastructure {
 
   protected async buildEmailVerificationUrl(req: Request, token: string): Promise<string> {
     const baseUrl = await this.getFrontendBaseUrl(req);
-    return `${baseUrl}${APP_ROUTES.AUTH.VERIFY_EMAIL}?token=${encodeURIComponent(token)}`;
+    return `${baseUrl}${ApiConfig.getInstance().appRoutes.auth.VERIFY_EMAIL}?token=${encodeURIComponent(token)}`;
   }
 
   protected async buildPasswordResetUrl(req: Request, token: string, contextHint?: string): Promise<string> {
@@ -168,12 +168,12 @@ export class AuthControllerInfrastructure {
     } else {
       baseUrl = await this.getFrontendBaseUrl(req);
     }
-    return `${baseUrl}${APP_ROUTES.AUTH.RESET_PASSWORD}?token=${encodeURIComponent(token)}`;
+    return `${baseUrl}${ApiConfig.getInstance().appRoutes.auth.RESET_PASSWORD}?token=${encodeURIComponent(token)}`;
   }
 
   protected async buildEmailChangeUrl(req: Request, token: string): Promise<string> {
     const baseUrl = await this.getFrontendBaseUrl(req);
-    return `${baseUrl}${APP_ROUTES.AUTH.VERIFY_EMAIL_CHANGE}?token=${encodeURIComponent(token)}`;
+    return `${baseUrl}${ApiConfig.getInstance().appRoutes.auth.VERIFY_EMAIL_CHANGE}?token=${encodeURIComponent(token)}`;
   }
 
   protected async sendVerificationEmail(options: { to: string; verificationUrl: string; firstName?: string }): Promise<boolean> {
@@ -220,7 +220,7 @@ export class AuthControllerInfrastructure {
     details?: string[];
     allowSilentFailure?: boolean;
   }) {
-    const enabled = await this.getSettingBoolean(SystemMetaKey.AUTH_SECURITY_NOTIFICATIONS, true);
+    const enabled = await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS, true);
     if (!enabled) return;
 
     const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@fromcode.com';
@@ -268,7 +268,7 @@ export class AuthControllerInfrastructure {
 
   protected getCookieOptions(req: Request, isLogout = false, maxAgeMs?: number) {
     const isProd = process.env.NODE_ENV === 'production';
-    const secure = isProd && isHttps(req);
+    const secure = isProd && ApiUrlUtils.isHttps(req);
 
     const options: any = {
       httpOnly: true,
@@ -281,7 +281,7 @@ export class AuthControllerInfrastructure {
       options.maxAge = maxAgeMs || this.defaultSessionDurationMinutes * 60 * 1000;
     }
 
-    let domain = process.env.COOKIE_DOMAIN || getCookieDomain(req);
+    let domain = process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req);
 
     if (domain) {
       options.domain = domain;

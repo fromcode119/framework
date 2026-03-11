@@ -1,135 +1,43 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import React, { createContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import { buildApiVersionPrefix, normalizeApiVersion } from '@fromcode119/sdk';
+import { SystemConstants, ApiVersionUtils } from '@fromcode119/sdk';
 import { Slot } from './slot';
 import { Override } from './override';
-import { getIcon, FrameworkIconRegistry, createProxyIcon, FrameworkIcons, IconNames } from './icons';
+import { FrameworkIcons } from './framework-icons';
+import { FrameworkIconRegistry } from './framework-icon-registry';
 import { RootFramework } from './root-framework';
-import { useSystemShortcodes } from './system-shortcodes';
-import { queryCollectionDocs, queryCollectionDocById, queryCollectionDocByField } from './collection-queries';
-import { getPreferredBrowserLocale } from './browser-localization';
-import {
-  ADMIN_RUNTIME_EXPORT_KEYS,
-  RUNTIME_GLOBALS,
-  RUNTIME_MODULE_NAMES,
-  getFrameworkRuntimeBridge,
-  normalizeLocaleCode,
-  resolveLocalizedLabel,
-  resolveRelationValue
-} from '@fromcode119/sdk';
+import { ContextHooks } from './context-hooks';
+import { SystemShortcodes } from './system-shortcodes';
+import { CollectionQueryUtils } from './collection-queries';
+import { BrowserLocalization } from './browser-localization';
+import { RuntimeConstants, RelationUtils, CoercionUtils, StringUtils, NumberUtils, FormatUtils, LocalizationUtils, CollectionUtils, PaginationUtils, HookEventUtils } from '@fromcode119/sdk';
+import type { SlotComponent, MenuItem, CollectionMetadata, PluginContextValue } from './context.interfaces';
+import { ContextRuntimeBridge } from './context-runtime-bridge';
 
-export interface SlotComponent {
-  component: React.ComponentType<any>;
-  priority: number;
-  pluginSlug: string;
-}
-
-export interface MenuItem {
-  label: string;
-  path: string;
-  icon?: string;
-  priority?: number;
-  pluginSlug: string;
-  group?: string;
-  children?: MenuItem[];
-}
-
-export interface CollectionMetadata {
-  slug: string;
-  shortSlug?: string;
-  unprefixedSlug?: string;
-  pluginSlug?: string;
-  name?: string;
-  fields: any[];
-  admin?: any;
-}
-
-interface PluginContextValue {
-  slots: Record<string, SlotComponent[]>;
-  overrides: Record<string, SlotComponent>;
-  themeVariables: Record<string, string>;
-  themeLayouts: Record<string, any>;
-  activeTheme: any;
-  menuItems: MenuItem[];
-  collections: CollectionMetadata[];
-  fieldComponents: Record<string, React.ComponentType<any>>;
-  plugins: any[];
-  settings: Record<string, any>;
-  pluginState: Record<string, Record<string, any>>;
-  translations: Record<string, any>;
-  locale: string;
-  refreshVersion: number;
-  isReady: boolean;
-  triggerRefresh: () => void;
-  setLocale: (locale: string) => void;
-  t: (key: string, params?: Record<string, any>, defaultValue?: string) => string;
-  emit: (event: string, data: any) => void;
-  on: (event: string, handler: (data: any) => void) => () => void;
-  registerAPI: (slug: string, api: any) => void;
-  getAPI: (slug: string) => any;
-  setPluginState: (pluginSlug: string, key: string, value: any) => void;
-  registerSlotComponent: (slotName: string, component: SlotComponent) => void;
-  registerFieldComponent: (name: string, component: any) => void;
-  registerOverride: (name: string, component: SlotComponent) => void;
-  registerMenuItem: (item: MenuItem) => void;
-  registerCollection: (collection: CollectionMetadata) => void;
-  registerPlugins: (plugins: any[]) => void;
-  registerTheme: (slug: string, config: any) => void;
-  registerSettings: (settings: Record<string, any>) => void;
-  loadConfig: (path?: string) => Promise<void>;
-  resolveContent: (slug: string) => Promise<{ type: string, doc: any, plugin: string } | null>;
-  api: {
-    get: (path: string, options?: any) => Promise<any>;
-    post: (path: string, body?: any, options?: any) => Promise<any>;
-    put: (path: string, body?: any, options?: any) => Promise<any>;
-    patch: (path: string, body?: any, options?: any) => Promise<any>;
-    delete: (path: string, options?: any) => Promise<any>;
-  };
-}
+type PluginsProviderProps = {
+  children: ReactNode;
+  apiUrl?: string;
+  runtimeModules?: Record<string, any>;
+};
 
 const PluginContext = createContext<PluginContextValue | null>(null);
 const inFlightGetRequests = new Map<string, Promise<any>>();
 
-// --- Standalone Bridge Exports ---
-// These allow plugins to import { registerX } from '@fromcode119/react' 
-// when running inside the framework's dynamic bridge environment.
-
-/**
- * Helper to get the current bridge for standalone (non-hook) access.
- * This is primarily used by plugins loaded via ESM/CJS that need to talk back
- * to the framework core.
- */
-const getBridge = () => getFrameworkRuntimeBridge();
-
-export const registerSlotComponent = (...args: any[]) => getBridge().registerSlotComponent?.(...args);
-export const registerFieldComponent = (...args: any[]) => getBridge().registerFieldComponent?.(...args);
-export const registerOverride = (...args: any[]) => getBridge().registerOverride?.(...args);
-export const registerMenuItem = (...args: any[]) => getBridge().registerMenuItem?.(...args);
-export const registerCollection = (...args: any[]) => getBridge().registerCollection?.(...args);
-export const registerPlugins = (...args: any[]) => getBridge().registerPlugins?.(...args);
-export const registerTheme = (...args: any[]) => getBridge().registerTheme?.(...args);
-export const registerSettings = (...args: any[]) => getBridge().registerSettings?.(...args);
-export const registerAPI = (...args: any[]) => getBridge().registerAPI?.(...args);
-export const getAPI = (...args: any[]) => getBridge().getAPI?.(...args);
-export const setPluginState = (...args: any[]) => getBridge().setPluginState?.(...args);
-export const loadConfig = (...args: any[]) => getBridge().loadConfig?.(...args);
-export const resolveContent = (...args: any[]) => getBridge().resolveContent?.(...args);
-export const emit = (...args: any[]) => getBridge().emit?.(...args);
-export const on = (...args: any[]) => getBridge().on?.(...args);
-export const t = (...args: any[]) => getBridge().t?.(...args);
-export const locale = () => getBridge().locale?.() as string | undefined;
-export const setLocale = (...args: any[]) => getBridge().setLocale?.(...args);
-
-export const api = new Proxy({}, {
-  get: (_, prop) => {
-    const bridge = getBridge();
-    return bridge.api?.[prop];
+const getFrontendConfigPath = (): string => {
+  const path = SystemConstants?.API_PATH?.SYSTEM?.FRONTEND;
+  if (!path) {
+    throw new Error('[Fromcode API] Missing SYSTEM.FRONTEND path constant');
   }
-}) as any;
+  return path;
+};
 
-export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children: ReactNode, apiUrl?: string, runtimeModules?: Record<string, any> }) => {
+const getIcon = FrameworkIcons.getIcon.bind(FrameworkIcons);
+const createProxyIcon = FrameworkIcons.createProxyIcon.bind(FrameworkIcons);
+const iconNames = FrameworkIcons.iconNames();
+
+const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsProviderProps) => {
   const [slots, setSlots] = useState<Record<string, SlotComponent[]>>({});
   const [overrides, setOverrides] = useState<Record<string, SlotComponent>>({});
   const [themeVariables, setThemeVariables] = useState<Record<string, string>>({});
@@ -178,14 +86,18 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
 
   const apiFetch = useCallback(async (path: string, options: (RequestInit & { silent?: boolean; noDedupe?: boolean }) = {}) => {
     const { silent, noDedupe, ...fetchOptions } = options as any;
+    if (typeof path !== 'string' || !path.trim()) {
+      throw new Error('[Fromcode API] Missing request path');
+    }
     const base = getBaseURL();
-    const version = normalizeApiVersion();
+    const version = ApiVersionUtils.normalize();
     
-    let url = path;
-    if (!path.startsWith('http')) {
-      const vPrefix = buildApiVersionPrefix(version);
+    const normalizedPath = path.trim();
+    let url = normalizedPath;
+    if (!normalizedPath.startsWith('http')) {
+      const vPrefix = ApiVersionUtils.prefix(version);
       // Prevent double prefixing if path already starts with API version prefix
-      const relativePath = path.startsWith(vPrefix) ? path.slice(vPrefix.length) : path;
+      const relativePath = normalizedPath.startsWith(vPrefix) ? normalizedPath.slice(vPrefix.length) : normalizedPath;
       url = `${base}${vPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
     }
     
@@ -208,7 +120,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
         }
       });
       if (!res.ok) {
-          if (res.status === 404 && url.includes('/system/resolve')) {
+          if (res.status === 404 && url.includes(SystemConstants.API_PATH.SYSTEM.RESOLVE)) {
             return null;
           }
           const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -306,17 +218,18 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
              query += '&preview=1';
           }
         }
-        const result = await api.get(`/system/resolve${query}`, { silent: true });
+        const result = await api.get(`${SystemConstants.API_PATH.SYSTEM.RESOLVE}${query}`, { silent: true });
         return result;
     } catch (e) {
         return null;
     }
   }, [api, locale, settings?.default_locale, settings?.frontend_default_locale, settings?.fallback_locale]);
 
-  const loadConfig = useCallback(async (path: string = '/system/frontend') => {
+  const loadConfig = useCallback(async (path?: string) => {
     try {
+      const resolvedPath = (typeof path === 'string' && path.trim()) ? path.trim() : getFrontendConfigPath();
       const base = getBaseURL();
-      const data = await apiFetch(path, { method: 'GET', silent: true });
+      const data = await apiFetch(resolvedPath, { method: 'GET', silent: true });
       
       // Store server runtime modules for the consolidated import map logic in useEffect
       if (data.runtimeModules) {
@@ -382,7 +295,8 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
           if (!document.querySelector(`script[src="${entryUrl}"]`)) {
             const script = document.createElement('script');
             script.src = entryUrl;
-            script.type = 'module';
+            // Don't set type='module' for IIFE bundles - they need to run as regular scripts
+            // script.type = 'module';
             script.async = false;
             document.head.appendChild(script);
           }
@@ -394,6 +308,25 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       setIsReady(true);
     }
   }, [getBaseURL, apiFetch]);
+
+  const getFrontendMetadata = useCallback(async (options?: { ensureLoaded?: boolean }) => {
+    const ensureLoaded = options?.ensureLoaded !== false;
+
+    if (ensureLoaded && !stabilityRef.current.activeTheme) {
+      await stabilityRef.current.loadConfig(getFrontendConfigPath());
+    }
+
+    const state = stabilityRef.current;
+    return {
+      activeTheme: state.activeTheme ?? null,
+      themeLayouts: state.themeLayouts ?? {},
+      themeVariables: state.themeVariables ?? {},
+      settings: state.settings ?? {},
+      menuItems: Array.isArray(state.menuItems) ? state.menuItems : [],
+      collections: Array.isArray(state.collections) ? state.collections : [],
+      plugins: Array.isArray(state.plugins) ? state.plugins : []
+    };
+  }, []);
 
   const registerAPI = useCallback((slug: string, api: any) => {
     pluginAPIs[slug] = api;
@@ -434,7 +367,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   const loadTranslations = useCallback(async (newLocale: string) => {
     try {
       const encodedLocale = encodeURIComponent(String(newLocale || '').trim() || 'en');
-      const data = await (stabilityRef.current.api as any).get(`/system/i18n?locale=${encodedLocale}`, { silent: true });
+      const data = await (stabilityRef.current.api as any).get(`${SystemConstants.API_PATH.SYSTEM.I18N}?locale=${encodedLocale}`, { silent: true });
       setTranslations(data);
     } catch (err) {
       console.warn("[I18n] Failed to load translations from:", err);
@@ -482,7 +415,7 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
     fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
     triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
-    loadConfig, serverRuntimeModules, runtimeModules, apiUrl
+    loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl
   });
 
   React.useEffect(() => {
@@ -490,13 +423,17 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
       slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
       fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
       triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
-      loadConfig, serverRuntimeModules, runtimeModules, apiUrl
+      loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl
     };
-  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, serverRuntimeModules, runtimeModules, apiUrl]);
+  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl]);
 
   // NEW: Stable bridge wrappers to prevent re-injection loops for functions with volatile dependencies
   const stableT = useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
-  const stableLoadConfig = useCallback((...args: any[]) => (stabilityRef.current.loadConfig as any)(...args), []);
+  const stableLoadConfig = useCallback((path?: string) => {
+    const resolvedPath = (typeof path === 'string' && path.trim()) ? path.trim() : getFrontendConfigPath();
+    return (stabilityRef.current.loadConfig as any)(resolvedPath);
+  }, []);
+  const stableGetFrontendMetadata = useCallback((...args: any[]) => (stabilityRef.current.getFrontendMetadata as any)(...args), []);
 
   const stableApiBridge = useMemo(() => ({
     getBaseUrl: (...args: any[]) => (stabilityRef.current.api as any).getBaseUrl(...args),
@@ -701,254 +638,71 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     }
   }, [registerOverride]);
 
-  // Set up global bridge for dynamic plugins
-  if (typeof window !== 'undefined') {
-    if (!(window as any).Fromcode) {
-      (window as any).Fromcode = {};
-    }
-
-    const fc = (window as any).Fromcode;
-    fc.React = React;
-    fc.ReactDOM = ReactDOM;
-    fc.ReactDom = ReactDOM; // Compatibility
-
-    (window as any).React = React;
-    (window as any).ReactDOM = ReactDOM;
-    (window as any).ReactDom = ReactDOM;
-    (window as any).FrameworkIcons = FrameworkIcons;
-    (window as any).FrameworkIconRegistry = FrameworkIconRegistry;
-
-    const queueMethod = (type: string) => (...args: any[]) => {
-      console.log(`[Fromcode] Queuing method: ${type}`, args);
-      if (!(window as any)._fromcodeQueue) (window as any)._fromcodeQueue = [];
-      (window as any)._fromcodeQueue.push({ type, args });
-    };
-
-    if (!fc.registerSlotComponent) fc.registerSlotComponent = queueMethod('slot');
-    if (!fc.registerFieldComponent) fc.registerFieldComponent = queueMethod('field');
-    if (!fc.registerOverride) fc.registerOverride = queueMethod('override');
-    if (!fc.registerMenuItem) fc.registerMenuItem = queueMethod('menuItem');
-    if (!fc.registerCollection) fc.registerCollection = queueMethod('collection');
-    if (!fc.registerTheme) fc.registerTheme = queueMethod('theme');
-    if (!fc.registerSettings) fc.registerSettings = queueMethod('settings');
-    
-    if (!fc.t) fc.t = (key: string, _params?: any, defaultValue?: string) => defaultValue || key;
-    if (!fc.locale) fc.locale = 'en';
-
-    // Immediate population of icon symbols to prevent import race conditions
-    fc.getIcon = getIcon;
-    fc.FrameworkIcons = FrameworkIcons;
-    (window as any).FrameworkIcons = FrameworkIcons;
-    fc.FrameworkIconRegistry = FrameworkIconRegistry;
-    fc.IconNames = IconNames;
-    fc.createProxyIcon = createProxyIcon;
-  }
+  ContextRuntimeBridge.setupGlobalStubs({
+    ReactRef: React,
+    ReactDOMRef: ReactDOM,
+    FrameworkIcons,
+    FrameworkIconRegistry,
+    getIcon,
+    IconNames: iconNames,
+    createProxyIcon,
+  });
 
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (apiUrl) (window as any).FROMCODE_API_URL = apiUrl;
-      
-      const bridge = {
-        React: React,
-        ReactDOM: ReactDOM,
-        ReactDom: ReactDOM,
-        Slot,
-        Override,
-        getIcon,
-        IconRegistry: FrameworkIconRegistry,
-        FrameworkIconRegistry,
-        FrameworkIcons,
-        IconNames,
-        createProxyIcon,
-        RootFramework,
-        // Map Lucide names to their framework equivalents or direct proxies
-        Loader2: getIcon('Loader2'),
-        Search: getIcon('Search'),
-        Plus: getIcon('Plus'),
-        Trash2: getIcon('Trash'),
-        Pencil: getIcon('Edit'),
-        Save: getIcon('Save'),
-        Download: getIcon('Download'),
-        Upload: getIcon('Upload'),
-        RefreshCw: getIcon('Refresh'),
-        ExternalLink: getIcon('External'),
-        MoreHorizontal: getIcon('More'),
-        Filter: getIcon('Filter'),
-        FileText: getIcon('FileText'),
-        Tag: getIcon('Tag'),
-        Layers: getIcon('Layers'),
-        ChevronDown: getIcon('Down'),
-        ChevronRight: getIcon('Right'),
-        Home: getIcon('Home'),
-        Info: getIcon('Info'),
-        AlertCircle: getIcon('Alert'),
-        CheckCircle2: getIcon('Check'),
-        MoreVertical: getIcon('MoreVertical'),
-        Layout: getIcon('Layout'),
-        Columns: getIcon('Columns'),
-        Copy: getIcon('Copy'),
-        Settings: getIcon('settings'),
-        BarChart3: getIcon('BarChart3'),
-        PlusCircle: getIcon('PlusCircle'),
-        File: getIcon('File'),
-        Film: getIcon('Film'),
-        registerSlotComponent,
-        registerFieldComponent,
-        registerOverride,
-        registerMenuItem,
-        registerCollection,
-        registerPlugins,
-        registerTheme,
-        registerSettings,
-        registerAPI,
-        getAPI,
-        setPluginState,
-        loadConfig: stableLoadConfig,
-        emit,
-        on,
-        t: stableT,
-        api: stableApiBridge,
-        locale: () => stabilityRef.current.locale,
-        setLocale,
-        usePlugins,
-        useTranslation,
-        usePluginAPI,
-        usePluginState,
-        useSystemShortcodes,
-        queryCollectionDocs,
-        queryCollectionDocById,
-        queryCollectionDocByField,
-        getPreferredBrowserLocale,
-        normalizeLocaleCode,
-        resolveLocalizedLabel,
-        resolveRelationValue,
-        isReady,
-        // Non-hook versions for direct access from CJS/ESM bridge
-        getState: () => stabilityRef.current,
-        PluginsProvider
-      };
-
-      // Centralized runtime module registry
-      const runtimeRegistry = ((window as any)[RUNTIME_GLOBALS.MODULES] ||= {});
-      runtimeRegistry['@fromcode119/react'] = bridge;
-      runtimeRegistry['@fromcode119/sdk'] = bridge; // Most SDK exports are available on the bridge
-
-      (window as any).Fromcode = bridge;
-      (window as any).getIcon = getIcon;
-      (window as any).FrameworkIcons = FrameworkIcons;
-      (window as any).FrameworkIconRegistry = FrameworkIconRegistry;
-      (window as any).React = React;
-      (window as any).ReactDOM = ReactDOM;
-      (window as any).ReactDom = ReactDOM;
-
-      // --- Consolidated Runtime Import Map Generation ---
-      const adminModule =
-        runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS] ||
-        runtimeRegistry[RUNTIME_MODULE_NAMES.ADMIN] ||
-        {};
-      const adminExportKeys = Array.from(
-        new Set<string>([
-          ...ADMIN_RUNTIME_EXPORT_KEYS,
-          ...Object.keys(adminModule)
-        ])
-      ).filter((key) => {
-        if (!key || key === 'default' || key === '__esModule') return false;
-        if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) return false;
-        return true;
-      });
-      const adminModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && (window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS}'] || window.${RUNTIME_GLOBALS.MODULES}['${RUNTIME_MODULE_NAMES.ADMIN}'])`;
-      const adminExportSource =
-        adminExportKeys.map((key) => `export const ${key} = ${adminModuleAccessor} ? ${adminModuleAccessor}.${key} : undefined;`).join('\n') +
-        `\nexport default ${adminModuleAccessor};`;
-
-      const reactModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}['@fromcode119/react']`;
-      const reactExportSource = Object.keys(bridge)
-        .filter(k => typeof (bridge as any)[k] === 'function' || k === 'api' || ((bridge as any)[k] && (bridge as any)[k].$$typeof))
-        .map(key => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : window.Fromcode.${key};`)
-        .join('\n') + `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
-
-      const imports: Record<string, string> = {
-          "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = window.React;",
-          "react-dom": "data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = window.ReactDOM;",
-          "react/jsx-runtime": "data:application/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsx, jsxs, Fragment };",
-          "react/jsx-dev-runtime": "data:application/javascript,export const jsxDEV = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsxDEV, Fragment };",
-          "lucide-react": "data:application/javascript," + encodeURIComponent(
-            Object.keys((window as any).Lucide || (window as any).FrameworkIcons || {}).map(key => `export const ${key} = (window.Lucide || window.FrameworkIcons).${key};`).join('\n') + `\nexport default (window.Lucide || window.FrameworkIcons);`
-          ),
-          "@fromcode119/react": "data:application/javascript," + encodeURIComponent(reactExportSource),
-          "@fromcode119/sdk": "data:application/javascript," + encodeURIComponent(reactExportSource),
-          "@fromcode119/admin/components": "data:application/javascript," + encodeURIComponent(adminExportSource),
-          "@fromcode119/admin": "data:application/javascript," + encodeURIComponent(adminExportSource)
-      };
-
-      // Merge server-side and client-side modules from stabilityRef
-      const currentServerModules = stabilityRef.current.serverRuntimeModules;
-      const currentClientModules = stabilityRef.current.runtimeModules;
-
-      if (currentServerModules) {
-        const base = (stabilityRef.current as any).apiUrl || (window as any).FROMCODE_API_URL || '';
-        Object.entries(currentServerModules).forEach(([name, config]: [string, any]) => {
-          if (config.url) {
-            imports[name] = config.url.startsWith('/') ? `${base}${config.url}` : config.url;
-          } else if (config.source) {
-            imports[name] = `data:application/javascript;base64,${config.source}`;
-          }
-        });
-      }
-
-      if (currentClientModules) {
-          Object.entries(currentClientModules).forEach(([name, mod]) => {
-              runtimeRegistry[name] = mod;
-              const runtimeModuleAccessor = `window.${RUNTIME_GLOBALS.MODULES} && window.${RUNTIME_GLOBALS.MODULES}[${JSON.stringify(name)}]`;
-              const keys = (
-                name === RUNTIME_MODULE_NAMES.ADMIN || name === RUNTIME_MODULE_NAMES.ADMIN_COMPONENTS
-                  ? Array.from(new Set<string>([
-                      ...ADMIN_RUNTIME_EXPORT_KEYS,
-                      ...Object.keys(mod || {})
-                    ]))
-                  : Object.keys(mod || {})
-              );
-              imports[name] = "data:application/javascript," + encodeURIComponent(
-                  keys.map(key => `export const ${key} = ${runtimeModuleAccessor} ? ${runtimeModuleAccessor}.${key} : undefined;`).join('\n') + `\nexport default ${runtimeModuleAccessor};`
-              );
-          });
-      }
-
-      let script = document.getElementById('fc-runtime-import-map') as HTMLScriptElement;
-      if (!script) {
-        script = document.createElement('script');
-        script.id = 'fc-runtime-import-map';
-        script.type = 'importmap';
-        document.head.appendChild(script);
-      }
-      script.textContent = JSON.stringify({ imports });
-      // --------------------------------------------------
-
-      // Flush queue
-      if ((window as any)._fromcodeQueue) {
-        console.log(`[Fromcode] Flushing queue with ${(window as any)._fromcodeQueue.length} items`);
-        const queue = (window as any)._fromcodeQueue;
-        delete (window as any)._fromcodeQueue;
-
-        queue.forEach((item: any) => {
-          try {
-            console.log(`[Fromcode] Processing queued item: ${item.type}`, item.args);
-            switch (item.type) {
-              case 'slot': (registerSlotComponent as any)(...(item.args || [item.name, item.comp])); break;
-              case 'field': (registerFieldComponent as any)(...(item.args || [item.name, item.component])); break;
-              case 'override': (registerOverride as any)(...(item.args || [item.name, item.component])); break;
-              case 'menuItem': (registerMenuItem as any)(...(item.args || [item.item])); break;
-              case 'collection': (registerCollection as any)(...(item.args || [item.collection])); break;
-              case 'theme': (registerTheme as any)(...(item.args || [item.slug, item.config])); break;
-              case 'settings': (registerSettings as any)(...(item.args || [item.settings])); break;
-            }
-          } catch (e) {
-            console.error(`[Fromcode] Failed to flush queued item of type ${item.type}:`, e);
-          }
-        });
-      }
-    }
-  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, setPluginState, stableLoadConfig, emit, on, stableT, locale, setLocale, triggerRefresh, stableApiBridge]);
+    ContextRuntimeBridge.installRuntimeBridge({
+      apiUrl,
+      registerSlotComponent,
+      registerFieldComponent,
+      registerOverride,
+      registerMenuItem,
+      registerCollection,
+      registerPlugins,
+      registerTheme,
+      registerSettings,
+      registerAPI,
+      getAPI,
+      setPluginState,
+      stableLoadConfig,
+      stableGetFrontendMetadata,
+      emit,
+      on,
+      stableT,
+      stableApiBridge,
+      setLocale,
+      usePlugins: ContextHooks.usePlugins,
+      useTranslation: ContextHooks.useTranslation,
+      usePluginAPI: ContextHooks.usePluginAPI,
+      usePluginState: ContextHooks.usePluginState,
+      useSystemShortcodes: SystemShortcodes.useSystemShortcodes,
+      CollectionQueryUtils,
+      BrowserLocalization,
+      LocalizationUtils,
+      RelationUtils,
+      CoercionUtils,
+      StringUtils,
+      NumberUtils,
+      FormatUtils,
+      ApiVersionUtils,
+      CollectionUtils,
+      PaginationUtils,
+      HookEventUtils,
+      isReady,
+      PluginsProvider,
+      RuntimeConstants,
+      getIcon,
+      FrameworkIconRegistry,
+      FrameworkIcons,
+      IconNames: iconNames,
+      createProxyIcon,
+      RootFramework,
+      Slot,
+      Override,
+      ReactRef: React,
+      ReactDOMRef: ReactDOM,
+      runtimeModules,
+      stabilityRef,
+    });
+  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, setPluginState, stableLoadConfig, stableGetFrontendMetadata, emit, on, stableT, setLocale, stableApiBridge, isReady, runtimeModules, apiUrl]);
 
   const value = React.useMemo(() => ({
     slots,
@@ -983,9 +737,10 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
     registerTheme,
     registerSettings,
     loadConfig,
+    getFrontendMetadata,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
 
   return (
     <PluginContext.Provider value={value}>
@@ -994,55 +749,11 @@ export const PluginsProvider = ({ children, apiUrl, runtimeModules }: { children
   );
 };
 
-export const usePlugins = () => {
-  const context = useContext(PluginContext);
-  if (!context) {
-    throw new Error('usePlugins must be used within a PluginsProvider');
+export class PluginsProvider extends React.Component<PluginsProviderProps> {
+  static readonly PluginContext = PluginContext;
+
+  render(): React.ReactNode {
+    return <PluginsProviderInternal {...this.props} />;
   }
-  return context;
-};
+}
 
-export const useTranslation = () => {
-  const { t, locale, setLocale } = usePlugins();
-  return { t, locale, setLocale };
-};
-
-export const usePluginAPI = (slug: string) => {
-  const { api } = usePlugins();
-  const pluginPrefix = `/plugins/${slug}`;
-  
-  return useMemo(() => ({
-    get: (path: string, options?: any) => 
-      api.get(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, options),
-    post: (path: string, body?: any, options?: any) => 
-      api.post(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
-    put: (path: string, body?: any, options?: any) => 
-      api.put(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
-    delete: (path: string, options?: any) => 
-      api.delete(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, options),
-    patch: (path: string, body?: any, options?: any) => 
-      api.patch(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
-  }), [api, pluginPrefix]);
-};
-
-export const usePluginState = (pluginSlug: string, key?: string) => {
-  const { pluginState, setPluginState } = usePlugins();
-  const state = pluginState[pluginSlug] || {};
-  
-  const setter = useCallback((value: any) => {
-    if (key) {
-      setPluginState(pluginSlug, key, value);
-    } else {
-      // If no key, assume we are setting the whole namespaced object
-      Object.entries(value).forEach(([k, v]) => {
-        setPluginState(pluginSlug, k, v);
-      });
-    }
-  }, [pluginSlug, key, setPluginState]);
-
-  if (key) {
-    return [state[key], setter] as const;
-  }
-
-  return [state, setter] as const;
-};

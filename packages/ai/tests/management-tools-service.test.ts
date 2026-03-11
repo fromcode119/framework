@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { getProjectRoot } from '@fromcode119/core';
+import { CliUtils } from '@fromcode119/core';
 import { AssistantManagementToolsService } from '../src/api/forge/management-tools-service';
 
 describe('assistant management file tools', () => {
@@ -16,7 +16,7 @@ describe('assistant management file tools', () => {
     const replaceTool: any = service.buildTools().find((tool) => tool.tool === 'plugins.files.replace_text');
     expect(replaceTool).toBeTruthy();
 
-    const projectRoot = getProjectRoot();
+    const projectRoot = CliUtils();
     const slug = `zz-assistant-backup-test-${Date.now()}`;
     const pluginRoot = path.resolve(projectRoot, 'plugins', slug, 'src');
     const filePath = path.resolve(pluginRoot, 'contact.ts');

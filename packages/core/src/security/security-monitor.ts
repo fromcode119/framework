@@ -1,15 +1,8 @@
 import { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '@fromcode119/sdk';
 import { PluginManager } from '../plugin/plugin-manager';
-import { SystemTable } from '@fromcode119/sdk/internal';
-
-export interface SecurityEvent {
-  type: 'anomaly' | 'violation' | 'denial_spike';
-  pluginSlug: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  details: string;
-  metadata?: any;
-}
+import { SystemConstants } from '@fromcode119/sdk';
+import type { SecurityEvent } from './security-monitor.interfaces';
 
 /**
  * SecurityMonitor analyzes audit logs for suspicious patterns
@@ -40,8 +33,8 @@ export class SecurityMonitor {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const [recentViolations, recentDenials] = await Promise.all([
-      this.db.find(SystemTable.AUDIT_LOGS, { where: { status: 'violation' }, orderBy: { created_at: 'desc' }, limit: 2000 }),
-      this.db.find(SystemTable.AUDIT_LOGS, { where: { status: 'denied' }, orderBy: { created_at: 'desc' }, limit: 2000 })
+      this.db.find(SystemConstants.TABLE.AUDIT_LOGS, { where: { status: 'violation' }, orderBy: { created_at: 'desc' }, limit: 2000 }),
+      this.db.find(SystemConstants.TABLE.AUDIT_LOGS, { where: { status: 'denied' }, orderBy: { created_at: 'desc' }, limit: 2000 })
     ]);
 
     const violations24h = recentViolations.filter(r => new Date(r.created_at) >= twentyFourHoursAgo);
@@ -82,7 +75,7 @@ export class SecurityMonitor {
   private async checkDenialSpikes() {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
-    const recentDenials = await this.db.find(SystemTable.AUDIT_LOGS, {
+    const recentDenials = await this.db.find(SystemConstants.TABLE.AUDIT_LOGS, {
       where: { status: 'denied' },
       orderBy: { created_at: 'desc' },
       limit: 1000
@@ -101,7 +94,7 @@ export class SecurityMonitor {
 
       this.logger.warn(`SECURITY ALERT: Denial spike detected for plugin "${pluginSlug}" (${denialCount} denials in 5m)`);
 
-      await this.db.update(SystemTable.PLUGINS, { slug: pluginSlug }, {
+      await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: pluginSlug }, {
         health_status: 'warning',
         updated_at: new Date()
       });
@@ -122,7 +115,7 @@ export class SecurityMonitor {
   private async checkViolations() {
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
 
-    const recentViolations = await this.db.find(SystemTable.AUDIT_LOGS, {
+    const recentViolations = await this.db.find(SystemConstants.TABLE.AUDIT_LOGS, {
       where: { status: 'violation' },
       orderBy: { created_at: 'desc' },
       limit: 200
@@ -133,7 +126,7 @@ export class SecurityMonitor {
     for (const violation of violations) {
       this.logger.error(`SECURITY VIOLATION: Plugin "${violation.plugin_slug}" attempted ${violation.action} on ${violation.resource}`);
 
-      await this.db.update(SystemTable.PLUGINS, { slug: violation.plugin_slug }, {
+      await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: violation.plugin_slug }, {
         health_status: 'error',
         updated_at: new Date()
       });
@@ -155,7 +148,7 @@ export class SecurityMonitor {
 
   private async logSecurityEvent(event: SecurityEvent) {
     // Write a system log about the security event itself
-    await this.db.insert(SystemTable.LOGS, {
+    await this.db.insert(SystemConstants.TABLE.LOGS, {
       plugin_slug: 'security-monitor',
       level: event.severity === 'critical' ? 'ERROR' : 'WARN',
       message: `[SECURITY ${event.type.toUpperCase()}] Plugin "${event.pluginSlug}": ${event.details}`,

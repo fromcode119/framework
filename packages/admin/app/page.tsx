@@ -1,23 +1,24 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Slot, usePlugins } from '@fromcode119/react';
+import { Slot, ContextHooks } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth-context';
+import { AuthHooks } from '@/components/use-auth';
 import { StatCard } from '@/components/ui/stat-card';
-import { Card, CardHeader } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card-header';
 import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
 import { Icon as DynamicIcon } from '@/components/icon';
-import { api } from '@/lib/api';
-import { ENDPOINTS, FRAMEWORK_RESOURCES, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
-import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
+import { AppEnv } from '@/lib/env';
 
 export default function AdminPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const { slots, refreshVersion } = usePlugins();
+  const { user, isLoading: isAuthLoading } = AuthHooks.useAuth();
+  const { slots, refreshVersion } = ContextHooks.usePlugins();
   const [stats, setStats] = useState<any[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
   const [activePluginsCount, setActivePluginsCount] = useState<number>(0);
@@ -36,7 +37,7 @@ export default function AdminPage() {
 
     async function fetchStats() {
       try {
-        const data = await api.get(ENDPOINTS.SYSTEM.STATS.COLLECTIONS);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.COLLECTIONS);
         if (Array.isArray(data)) {
           // Dynamic sorting based on API-provided priority
           const sorted = [...data].sort((a, b) => {
@@ -54,7 +55,7 @@ export default function AdminPage() {
 
     async function fetchPlugins() {
       try {
-        const data = await api.get(ENDPOINTS.PLUGINS.ACTIVE);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.ACTIVE);
         if (Array.isArray(data)) {
           setActivePluginsCount(data.length);
         }
@@ -66,7 +67,7 @@ export default function AdminPage() {
     async function fetchActivity() {
       try {
         // Pull from system logs instead of collection audit for "Plugin Activity"
-        const response = await api.get(ENDPOINTS.SYSTEM.LOGS);
+        const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.LOGS);
         const data = response.docs || response;
         if (Array.isArray(data)) {
           // Map system logs to the UI format
@@ -87,7 +88,7 @@ export default function AdminPage() {
 
     async function fetchUpdate() {
       try {
-        const data = await api.get(ENDPOINTS.SYSTEM.UPDATE_CHECK);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_CHECK);
         if (data && data.hasUpdate) {
           setUpdateAvailable(data);
         }
@@ -169,7 +170,7 @@ export default function AdminPage() {
                   variant="primary" 
                   size="sm" 
                   className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold tracking-tight px-8 h-11 rounded-xl shadow-lg shadow-amber-600/30 uppercase"
-                  onClick={() => router.push(ROUTES.SETTINGS.UPDATES)}
+                  onClick={() => router.push(AdminConstants.ROUTES.SETTINGS.UPDATES)}
                 >
                   View Update Details
                 </Button>
@@ -370,17 +371,17 @@ export default function AdminPage() {
                     variant="secondary"
                     className="w-full justify-between group"
                     as="a"
-                    href={ROUTES.SETTINGS.FRAMEWORK}
+                    href={AdminConstants.ROUTES.SETTINGS.FRAMEWORK}
                   >
                      Developer Guide
                      <FrameworkIcons.ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <div className="pt-2 flex items-center justify-center gap-4 text-[10px] font-semibold tracking-wide text-slate-400">
-                     <a href={FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Github</a>
+                     <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Github</a>
                      <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                     <a href={FRAMEWORK_RESOURCES.DISCORD} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Discord</a>
+                     <a href={AdminConstants.FRAMEWORK_RESOURCES.DISCORD} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Discord</a>
                      <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                     <a href={FRAMEWORK_RESOURCES.TWITTER} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Twitter</a>
+                     <a href={AdminConstants.FRAMEWORK_RESOURCES.TWITTER} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Twitter</a>
                   </div>
                </div>
             </Card>
@@ -396,18 +397,18 @@ export default function AdminPage() {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                 <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400 uppercase">
-                  {APP_NAME} Infrastructure // v{APP_VERSION} {APP_CHANNEL}
+                  {AppEnv.APP_NAME} Infrastructure // v{AppEnv.APP_VERSION} {AppEnv.APP_CHANNEL}
                 </span>
               </div>
               <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-tight">Connected to distributed cluster node. All systems operational.</p>
             </div>
             
             <div className="flex items-center gap-4 text-[10px] font-bold tracking-tight text-slate-400 uppercase">
-              <a href={FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Documentation</a>
+              <a href={AdminConstants.FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Documentation</a>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <a href={FRAMEWORK_RESOURCES.FRAMEWORK_ROADMAP} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Framework Roadmap</a>
+              <a href={AdminConstants.FRAMEWORK_RESOURCES.FRAMEWORK_ROADMAP} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Framework Roadmap</a>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <a href={FRAMEWORK_RESOURCES.SUPPORT} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Support</a>
+              <a href={AdminConstants.FRAMEWORK_RESOURCES.SUPPORT} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Support</a>
             </div>
           </div>
         </div>

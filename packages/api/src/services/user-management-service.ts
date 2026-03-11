@@ -3,7 +3,8 @@ import {
   systemRolesToPermissions
 } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger, SystemTable } from '@fromcode119/core';
+import { PluginManager, Logger } from '@fromcode119/core';
+import { SystemConstants } from '@fromcode119/sdk';
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });
@@ -201,7 +202,7 @@ export class UserManagementService {
     }
 
     const now = new Date();
-    const existing = await this.db.findOne(SystemTable.PERMISSIONS, { name: data.name });
+    const existing = await this.db.findOne(SystemConstants.TABLE.PERMISSIONS, { name: data.name });
     const payload = {
       name: data.name,
       description: data.description || null,
@@ -212,11 +213,11 @@ export class UserManagementService {
     };
 
     if (existing) {
-      await this.db.update(SystemTable.PERMISSIONS, { name: data.name }, payload);
+      await this.db.update(SystemConstants.TABLE.PERMISSIONS, { name: data.name }, payload);
       return;
     }
 
-    await this.db.insert(SystemTable.PERMISSIONS, {
+    await this.db.insert(SystemConstants.TABLE.PERMISSIONS, {
       ...payload,
       createdAt: now
     });
@@ -238,7 +239,7 @@ export class UserManagementService {
 
   async getPermissions() {
     const plugins = this.manager.getPlugins().filter(p => p.state === 'active');
-    const dbPermissions = await this.db.find(SystemTable.PERMISSIONS);
+    const dbPermissions = await this.db.find(SystemConstants.TABLE.PERMISSIONS);
     
     for (const p of plugins) {
       const caps: any[] = Array.isArray(p.manifest.capabilities) ? p.manifest.capabilities : [];
@@ -255,30 +256,30 @@ export class UserManagementService {
             createdAt: now,
             updatedAt: now
           };
-          await this.db.insert(SystemTable.PERMISSIONS, perm);
+          await this.db.insert(SystemConstants.TABLE.PERMISSIONS, perm);
         }
       }
     }
-    return this.db.find(SystemTable.PERMISSIONS);
+    return this.db.find(SystemConstants.TABLE.PERMISSIONS);
   }
 
   private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {
-    const row = await this.db.findOne(SystemTable.META, { key: `user:${userId}:account_status` });
+    const row = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:account_status` });
     const value = String(row?.value || '').trim().toLowerCase();
     return value === 'suspended' ? 'suspended' : 'active';
   }
 
   private async readForcePasswordReset(userId: number): Promise<boolean> {
-    const row = await this.db.findOne(SystemTable.META, { key: `user:${userId}:force_password_reset` });
+    const row = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:force_password_reset` });
     return String(row?.value || '').trim().toLowerCase() === 'true';
   }
 
   private async upsertMeta(key: string, value: string) {
-    const existing = await this.db.findOne(SystemTable.META, { key });
+    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
     if (existing) {
-      await this.db.update(SystemTable.META, { key }, { value });
+      await this.db.update(SystemConstants.TABLE.META, { key }, { value });
       return;
     }
-    await this.db.insert(SystemTable.META, { key, value });
+    await this.db.insert(SystemConstants.TABLE.META, { key, value });
   }
 }

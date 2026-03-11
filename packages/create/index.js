@@ -183,7 +183,6 @@ const envContent = [
   'NEXT_PUBLIC_API_URL=http://localhost:3000',
   'NEXT_PUBLIC_ADMIN_BASE_PATH=/admin',
   'API_URL=http://localhost:4000',
-  'INTERNAL_API_URL=http://localhost:4000',
   '',
   'PROXY_PORT=3000',
   'API_PORT=4000',

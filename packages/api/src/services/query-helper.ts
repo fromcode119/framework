@@ -1,5 +1,5 @@
 import { Collection } from '@fromcode119/sdk';
-import { createDynamicTable, IDatabaseManager, timestamp, sql } from '@fromcode119/database';
+import { DynamicSchema, IDatabaseManager, timestamp, sql } from '@fromcode119/database';
 
 export class QueryHelper {
   private static virtualTables: Map<string, any> = new Map();
@@ -15,7 +15,7 @@ export class QueryHelper {
     const useTimestamps = collection.timestamps !== undefined ? collection.timestamps : true;
     const hasWorkflow = !!collection.workflow;
 
-    const table = createDynamicTable({
+    const table = DynamicSchema.createDynamicTable({
       slug: collection.tableName || collection.slug,
       fields: collection.fields.map(f => ({ 
         name: f.name, 

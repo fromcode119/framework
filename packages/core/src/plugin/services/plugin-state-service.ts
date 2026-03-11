@@ -1,6 +1,6 @@
 import { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '@fromcode119/sdk';
-import { SystemTable } from '@fromcode119/sdk/internal';
+import { SystemConstants } from '@fromcode119/sdk';
 
 export class PluginStateService {
   private logger = new Logger({ namespace: 'PluginState' });
@@ -9,7 +9,7 @@ export class PluginStateService {
 
   async loadInstalledPluginsState(): Promise<Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any }>> {
     try {
-      const result = await this.db.find(SystemTable.PLUGINS, {
+      const result = await this.db.find(SystemConstants.TABLE.PLUGINS, {
         columns: {
           slug: true,
           state: true,
@@ -57,13 +57,13 @@ export class PluginStateService {
 
       // Check for existing entry using both manifest slug and potential existing DB casing
       // We use lowercase normalization for the query if possible, or try exact match
-      const existing = await this.db.findOne(SystemTable.PLUGINS, { slug: normSlug });
+      const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
       if (existing) {
-        await this.db.update(SystemTable.PLUGINS, { slug: normSlug }, values);
+        await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, values);
       } else {
         // Fallback: search case-insensitively if exact lowercase match fails
         // some adapters might support ILIKE or we can just hope findOne handles it if configured
-        await this.db.insert(SystemTable.PLUGINS, values);
+        await this.db.insert(SystemConstants.TABLE.PLUGINS, values);
       }
     } catch (err) {
       this.logger.error(`Failed to save plugin state for ${normSlug} to DB`, err);
@@ -72,7 +72,7 @@ export class PluginStateService {
 
   async getPluginConfig(slug: string): Promise<any> {
     try {
-      const row = await this.db.findOne(SystemTable.PLUGIN_SETTINGS, { plugin_slug: slug });
+      const row = await this.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: slug });
       return row?.settings || {};
     } catch (err) {
       return {};
@@ -81,14 +81,14 @@ export class PluginStateService {
 
   async savePluginConfig(slug: string, config: any): Promise<void> {
     try {
-      const existing = await this.db.findOne(SystemTable.PLUGIN_SETTINGS, { plugin_slug: slug });
+      const existing = await this.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: slug });
       if (existing) {
-        await this.db.update(SystemTable.PLUGIN_SETTINGS, { plugin_slug: slug }, {
+        await this.db.update(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: slug }, {
           settings: config,
           updated_at: new Date()
         });
       } else {
-        await this.db.insert(SystemTable.PLUGIN_SETTINGS, {
+        await this.db.insert(SystemConstants.TABLE.PLUGIN_SETTINGS, {
           plugin_slug: slug,
           settings: config,
           updated_at: new Date()
@@ -102,7 +102,7 @@ export class PluginStateService {
 
   async writeLog(level: string, message: string, pluginSlug?: string, context?: any) {
     try {
-      await this.db.insert(SystemTable.LOGS, {
+      await this.db.insert(SystemConstants.TABLE.LOGS, {
         level,
         message,
         plugin_slug: pluginSlug,

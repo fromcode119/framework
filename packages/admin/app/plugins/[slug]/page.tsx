@@ -1,8 +1,8 @@
 "use client";
 
 import React, { use, useState, useEffect, useRef } from 'react';
-import { Slot, usePlugins, Plugin } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { Slot, Plugin, ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,19 +12,20 @@ import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { useNotify } from '@/components/notification-context';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { NotificationHooks } from '@/components/use-notification';
 import { Loader } from '@/components/ui/loader';
 import { Select } from '@/components/ui/select';
-import { PluginSettingsForm, PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form';
+import PluginSettingsForm from '@/components/plugins/plugin-settings-form';
+import type { PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form.interfaces';
 
 export default function PluginDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
   const pathname = usePathname();
-  const { notify } = useNotify();
-  const { triggerRefresh, refreshVersion, collections } = usePlugins();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh, refreshVersion, collections } = ContextHooks.usePlugins();
   const searchParams = useSearchParams();
   const [plugin, setPlugin] = useState<Plugin | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +48,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     timeout: 1000,
     allowNative: false
   });
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
 
   const settingsCollections = collections.filter(c => 
     c.pluginSlug === slug && 
@@ -56,14 +57,15 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
 
   const fetchPlugin = async () => {
     try {
-      const data = await api.get(ENDPOINTS.PLUGINS.LIST);
-      const found = data.find((p: any) => p.slug === slug);
+      const data = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LIST);
+      const found = data.find((p: any) => (p.manifest?.slug || p.slug) === slug);
       if (found) {
         setPlugin(found);
         
         // Initialize config values
+        const manifest = found.manifest || found;
         const defaults: Record<string, any> = {};
-        found.admin?.management?.settings?.forEach((s: any) => {
+        manifest.admin?.management?.settings?.forEach((s: any) => {
           defaults[s.name] = s.defaultValue;
         });
         setConfigValues({ ...defaults, ...(found.config || {}) });
@@ -108,7 +110,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
   useEffect(() => {
     async function checkUpdates() {
       try {
-        const data = await api.get(ENDPOINTS.PLUGINS.MARKETPLACE);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE);
         const pkg = data.plugins?.find((p: any) => p.slug === slug);
         if (pkg) setMarketplaceItem(pkg);
       } catch (e) {}
@@ -127,7 +129,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     if (activeTab !== 'overview' || !slug) return;
     setLoadingLogs(true);
     try {
-        const data = await api.get(ENDPOINTS.PLUGINS.LOGS(slug));
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LOGS(slug));
         setLogs(data);
     } catch (e) {
         console.error("Failed to fetch logs", e);
@@ -144,8 +146,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     if (!plugin) return;
     setIsUpdating(true);
     try {
-      await api.post(ENDPOINTS.PLUGINS.INSTALL(plugin.slug));
-      notify('success', 'Update Complete', `${plugin.name} has been updated to the latest version.`);
+      await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(plugin.manifest.slug));
+      notify('success', 'Update Complete', `${plugin.manifest.name} has been updated to the latest version.`);
       // Trigger global refresh to update state across the app
       triggerRefresh();
     } catch (err: any) {
@@ -160,17 +162,17 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     if (!plugin) return;
     try {
       const newState = plugin.state === 'active' ? false : true;
-      const res = await api.post(ENDPOINTS.PLUGINS.TOGGLE(plugin.slug), { enabled: newState });
+      const res = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(plugin.manifest.slug), { enabled: newState });
 
       const status = newState ? 'active' : 'inactive';
       setPlugin({ 
         ...plugin, 
         state: status,
         // If we just enabled it, we implicitly approved all current capabilities
-        approvedCapabilities: status === 'active' ? [...(plugin.capabilities || [])] : plugin.approvedCapabilities
+        approvedCapabilities: status === 'active' ? [...(plugin.manifest.capabilities || [])] : plugin.approvedCapabilities
       });
       
-      notify('success', 'Status Updated', `${plugin.name} is now ${status}.`);
+      notify('success', 'Status Updated', `${plugin.manifest.name} is now ${status}.`);
       
       // Refresh plugins state without full reload
       triggerRefresh();
@@ -184,9 +186,9 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     if (!plugin) return;
     setIsSaving(true);
     try {
-      await api.post(ENDPOINTS.PLUGINS.CONFIG(plugin.slug), configValues);
+      await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.CONFIG(plugin.manifest.slug), configValues);
       setPlugin({ ...plugin, config: configValues });
-      notify('success', 'Settings Saved', `Configuration for ${plugin.name} updated.`);
+      notify('success', 'Settings Saved', `Configuration for ${plugin.manifest.name} updated.`);
     } catch (err: any) {
       console.error("Save config error:", err);
       notify('error', 'Save Failed', err.message || "Failed to save configuration.");
@@ -206,14 +208,14 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             allowNative: sandboxSettings.allowNative
           }
         : { enabled: false };
-      await api.post(`${ENDPOINTS.PLUGINS.BASE}/${plugin.slug}/sandbox`, payload);
+      await AdminApi.post(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${plugin.manifest.slug}/sandbox`, payload);
       setPlugin({ ...plugin, sandbox: sandboxSettings.enabled ? payload : false });
       notify(
         'success',
         'Resources Updated',
         sandboxSettings.enabled
-          ? `Sandbox limits for ${plugin.name} updated.`
-          : `Sandbox disabled for ${plugin.name}.`
+          ? `Sandbox limits for ${plugin.manifest.name} updated.`
+          : `Sandbox disabled for ${plugin.manifest.name}.`
       );
       triggerRefresh();
     } catch (err: any) {
@@ -229,8 +231,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
     setIsDeleting(true);
     
     try {
-      await api.delete(ENDPOINTS.PLUGINS.DELETE(plugin.slug));
-      notify('success', 'Uninstalled', `${plugin.name} removed from system.`);
+      await AdminApi.delete(AdminConstants.ENDPOINTS.PLUGINS.DELETE(plugin.manifest.slug));
+      notify('success', 'Uninstalled', `${plugin.manifest.name} removed from system.`);
       triggerRefresh();
       router.push('/plugins');
     } catch (err: any) {
@@ -270,19 +272,19 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3">
              <h1 className={`text-3xl font-semibold tracking-tighter truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-               {plugin.name}
+               {plugin.manifest.name}
              </h1>
              <Badge variant={plugin.state === 'active' ? 'success' : 'gray'}>
                 {plugin.state}
              </Badge>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.slug}</span>
+            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.manifest.slug}</span>
             <span className="text-slate-500 opacity-30">•</span>
-            <span className={`text-[11px] font-semibold uppercase tracking-wider ${marketplaceItem?.version && marketplaceItem.version !== plugin.version ? 'text-amber-500' : 'text-slate-400'}`}>
-              Version {plugin.version}
+            <span className={`text-[11px] font-semibold uppercase tracking-wider ${marketplaceItem?.version && marketplaceItem.version !== plugin.manifest.version ? 'text-amber-500' : 'text-slate-400'}`}>
+              Version {plugin.manifest.version}
             </span>
-            {marketplaceItem?.version && marketplaceItem.version !== plugin.version && (
+            {marketplaceItem?.version && marketplaceItem.version !== plugin.manifest.version && (
               <button 
                 onClick={handleUpdate}
                 disabled={isUpdating}
@@ -345,15 +347,15 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                 </div>
                 <div className="flex-1 space-y-4">
                   <Badge variant="blue" className="px-3 py-1 font-semibold uppercase tracking-wider text-[10px] rounded-lg">
-                    {plugin.category || 'Core Plugin'}
+                    {plugin.manifest.category || 'Core Plugin'}
                   </Badge>
                   <p className={`text-xl leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
-                    {plugin.description || "No description provided for this plugin."}
+                    {plugin.manifest.description || "No description provided for this plugin."}
                   </p>
                 </div>
               </div>
 
-              {marketplaceItem?.version && marketplaceItem.version !== plugin.version && marketplaceItem.changelog && (
+              {marketplaceItem?.version && marketplaceItem.version !== plugin.manifest.version && marketplaceItem.changelog && (
                 <div className={`mt-10 p-6 rounded-3xl border-2 border-dashed ${theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-100'}`}>
                   <h4 className="text-[11px] font-semibold uppercase tracking-wider text-indigo-500 mb-4 flex items-center gap-2">
                     <FrameworkIcons.Zap size={14} /> New in v{marketplaceItem.version}
@@ -387,7 +389,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                   <span className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
                     {plugin.state === 'active' ? 'Active' : 'Disabled'}
                   </span>
-                  <Switch checked={plugin.state === 'active'} onChange={handleToggle} className="scale-110" />
+                  <Switch checked={plugin.state === 'active'} onChange={(_: boolean) => handleToggle()} className="scale-110" />
                 </div>
               </div>
             </Card>
@@ -413,8 +415,8 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                  Security & Capabilities
                </h3>
                <div className="space-y-6">
-                  {plugin.capabilities && plugin.capabilities.length > 0 ? (
-                    plugin.capabilities.map(cap => {
+                  {plugin.manifest.capabilities && plugin.manifest.capabilities.length > 0 ? (
+                    plugin.manifest.capabilities.map(cap => {
                       const isUnapproved = !plugin.approvedCapabilities?.includes(cap);
                       return (
                         <div key={cap} className={`flex items-center gap-6 p-6 rounded-[2rem] transition-all duration-300 border ${
@@ -474,7 +476,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                         </div>
                         <Switch 
                           checked={sandboxSettings.enabled}
-                          onChange={(val) => setSandboxSettings(prev => ({ ...prev, enabled: val }))}
+                          onChange={(val) => setSandboxSettings(prev => ({ ...prev, enabled: val ?? false }))}
                         />
                       </div>
 
@@ -529,7 +531,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                         <Switch 
                           disabled={!sandboxSettings.enabled}
                           checked={sandboxSettings.allowNative}
-                          onChange={(val) => setSandboxSettings(prev => ({ ...prev, allowNative: val }))}
+                          onChange={(val) => setSandboxSettings(prev => ({ ...prev, allowNative: val ?? false }))}
                         />
                       </div>
                    </div>
@@ -676,7 +678,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
             <div className="space-y-8">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-semibold tracking-wider text-slate-500">Capabilities</span>
-                {plugin.capabilities && plugin.capabilities.length > 0 ? (
+                {plugin.manifest.capabilities && plugin.manifest.capabilities.length > 0 ? (
                   <button
                     onClick={() => handleTabChange('permissions')}
                     className={`flex items-center gap-1.5 text-[11px] font-bold transition-colors ${
@@ -684,7 +686,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
                     }`}
                   >
                     <FrameworkIcons.Shield size={12} />
-                    {plugin.capabilities.length} declared
+                    {plugin.manifest.capabilities.length} declared
                   </button>
                 ) : (
                   <span className="text-[10px] font-semibold text-slate-400">None</span>
@@ -694,7 +696,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
               <div className="flex justify-between items-center">
                  <span className="text-xs font-semibold tracking-wider text-slate-500">Author</span>
                  <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                    {typeof plugin.author === 'object' ? (plugin.author as any).name : (plugin.author || 'Official Core')}
+                    {typeof plugin.manifest.author === 'object' ? (plugin.manifest.author as any).name : (plugin.manifest.author || 'Official Core')}
                  </span>
               </div>
             </div>
@@ -737,7 +739,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
         onConfirm={handleDelete}
         isLoading={isDeleting}
         title="Confirm Uninstallation"
-        description={`Are you sure you want to delete ${plugin.name}? This will remove all associated files and data from the system. This action cannot be undone.`}
+        description={`Are you sure you want to delete ${plugin.manifest.name}? This will remove all associated files and data from the system. This action cannot be undone.`}
         confirmLabel="Uninstall Plugin"
       />
 
@@ -758,7 +760,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
               <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${
                 theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
               }`}>
-                Plugin Manifest — {plugin.slug}
+                Plugin Manifest — {plugin.manifest.slug}
               </h3>
               <button
                 onClick={() => setShowDefinition(false)}

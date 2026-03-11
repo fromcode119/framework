@@ -1,7 +1,6 @@
 import { HookMessagingAdapter } from './types';
 import { LocalHookAdapter } from './adapters/local-hook-adapter';
-
-export type HookAdapterCreator = (options: any) => HookMessagingAdapter;
+import type { HookAdapterCreator } from './hook-adapter-factory.types';
 
 export class HookAdapterFactory {
   private static registry: Map<string, HookAdapterCreator> = new Map();

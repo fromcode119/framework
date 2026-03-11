@@ -1,15 +1,25 @@
-export * from './icons';
+export { FrameworkIcons } from './framework-icons';
+export { FrameworkIconRegistry } from './framework-icon-registry';
+export type { IconName } from './framework-icons.types';
 export { 
-  PluginsProvider, usePlugins, useTranslation, usePluginAPI,
-  registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem,
-  registerCollection, registerPlugins, registerTheme, registerSettings,
-  registerAPI, getAPI, loadConfig, resolveContent, emit, on, t, locale, setLocale, api
+  PluginsProvider
 } from './context';
+export { ContextHooks } from './context-hooks';
+export {
+  ContextBridge,
+} from './context-bridge';
+export type {
+  SlotComponent,
+  MenuItem,
+  CollectionMetadata,
+  PluginContextValue,
+} from './context.interfaces';
 export * from '@fromcode119/sdk';
 export type { LoadedPlugin as Plugin } from '@fromcode119/sdk';
+export * from 'lucide-react';
 export { Slot } from './slot';
 export { Override } from './override';
 export { RootFramework } from './root-framework';
-export { useSystemShortcodes } from './system-shortcodes';
-export { queryCollectionDocs, queryCollectionDocById, queryCollectionDocByField } from './collection-queries';
-export { getPreferredBrowserLocale } from './browser-localization';
+export { SystemShortcodes } from './system-shortcodes';
+export { CollectionQueryUtils } from './collection-queries';
+export { BrowserLocalization } from './browser-localization';

@@ -1,52 +1,40 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePlugins } from '@fromcode119/react';
+import { ContextHooks } from '@fromcode119/react';
 import { adminExtensionLoaders } from '@/lib/admin-extensions';
+import type { AdminExtensionBridge, AdminExtensionModule } from '@/lib/admin-extensions';
 
-// Dynamic AI extension loader (optional dependency)
-async function loadAiAdminExtension() {
-  try {
-    const aiModule = await import('@fromcode119/ai/admin');
-    return aiModule.registerAdminExtension;
-  } catch (error: any) {
-    if (error?.code === 'MODULE_NOT_FOUND') {
-      console.log('[Admin] AI extension not available (optional dependency)');
-      return null;
-    }
-    throw error;
+type AdminExtensionDynamicModule = AdminExtensionModule & {
+  default?: AdminExtensionModule;
+};
+
+function resolveRegisterAdminExtension(
+  module: AdminExtensionDynamicModule,
+): AdminExtensionModule['registerAdminExtension'] {
+  if (typeof module?.registerAdminExtension === 'function') {
+    return module.registerAdminExtension;
   }
+  if (typeof module?.default?.registerAdminExtension === 'function') {
+    return module.default.registerAdminExtension;
+  }
+  return undefined;
 }
 
 export default function AdminExtensionLoader() {
-  const { registerSlotComponent, registerMenuItem, refreshVersion } = usePlugins();
+  const { registerSlotComponent, registerMenuItem, refreshVersion } = ContextHooks.usePlugins();
 
   useEffect(() => {
     let cancelled = false;
-    const bridge = { registerSlotComponent, registerMenuItem };
+    const bridge: AdminExtensionBridge = { registerSlotComponent, registerMenuItem };
 
     const loadExtensions = async () => {
-      // Load built-in AI extension if available
-      try {
-        const registerAiAdminExtension = await loadAiAdminExtension();
-        if (registerAiAdminExtension && !cancelled) {
-          registerAiAdminExtension(bridge);
-        }
-      } catch (error) {
-        console.warn('[Admin] Failed to register built-in AI extension', error);
-      }
-
       // Load extension modules from admin-extensions.ts
       for (const load of adminExtensionLoaders) {
         try {
-          const module = await load();
+          const module = (await load()) as AdminExtensionDynamicModule;
           if (cancelled) return;
-          const register =
-            typeof module?.registerAdminExtension === 'function'
-              ? module.registerAdminExtension
-              : typeof (module as any)?.default?.registerAdminExtension === 'function'
-                ? (module as any).default.registerAdminExtension
-                : null;
+          const register = resolveRegisterAdminExtension(module);
 
           if (register) {
             register(bridge);

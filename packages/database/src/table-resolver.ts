@@ -1,5 +1,5 @@
 import { TableNameResolver } from './types';
-import { toSnakeIdentifier } from './naming-strategy';
+import { NamingStrategy } from './naming-strategy';
 
 /**
  * Manages the resolution of semantic table names (e.g., @content/pages)
@@ -13,8 +13,8 @@ export class TableResolver {
     if (name.startsWith('@')) {
       const parts = name.slice(1).split('/');
       if (parts.length >= 2) {
-        const plugin = toSnakeIdentifier(parts[0]);
-        const table = toSnakeIdentifier(parts.slice(1).join('_'));
+        const plugin = NamingStrategy.toSnakeIdentifier(parts[0]);
+        const table = NamingStrategy.toSnakeIdentifier(parts.slice(1).join('_'));
         return `fcp_${plugin}_${table}`;
       }
     }

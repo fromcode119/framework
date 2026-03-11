@@ -1,37 +1,64 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
+import type { RootFrameworkProps } from './root-framework.interfaces';
 
-interface RootFrameworkProps {
-  children: ReactNode;
-  containerId?: string;
-}
+type RootFrameworkState = {
+  container: HTMLElement | null;
+};
 
-export function RootFramework({ children, containerId = 'portal-root' }: RootFrameworkProps) {
-  const [container, setContainer] = useState<HTMLElement | null>(null);
+export class RootFramework extends React.Component<RootFrameworkProps, RootFrameworkState> {
+  private createdContainer = false;
 
-  useEffect(() => {
+  constructor(props: RootFrameworkProps) {
+    super(props);
+    this.state = { container: null };
+  }
+
+  componentDidMount(): void {
+    this.attachContainer(this.props.containerId || 'portal-root');
+  }
+
+  componentDidUpdate(prevProps: RootFrameworkProps): void {
+    const nextContainerId = this.props.containerId || 'portal-root';
+    const previousContainerId = prevProps.containerId || 'portal-root';
+    if (nextContainerId !== previousContainerId) {
+      this.detachContainer();
+      this.attachContainer(nextContainerId);
+    }
+  }
+
+  componentWillUnmount(): void {
+    this.detachContainer();
+  }
+
+  render(): React.ReactNode {
+    if (!this.state.container) {
+      return null;
+    }
+
+    return createPortal(this.props.children, this.state.container);
+  }
+
+  private attachContainer(containerId: string): void {
     let element = document.getElementById(containerId);
-    let created = false;
-
     if (!element) {
       element = document.createElement('div');
       element.id = containerId;
       document.body.appendChild(element);
-      created = true;
+      this.createdContainer = true;
     }
 
-    setContainer(element);
+    this.setState({ container: element });
+  }
 
-    return () => {
-      if (created && element && element.parentNode) {
-        element.parentNode.removeChild(element);
-      }
-    };
-  }, [containerId]);
+  private detachContainer(): void {
+    if (this.createdContainer && this.state.container?.parentNode) {
+      this.state.container.parentNode.removeChild(this.state.container);
+    }
 
-  if (!container) return null;
-
-  return createPortal(children, container);
+    this.createdContainer = false;
+    this.setState({ container: null });
+  }
 }

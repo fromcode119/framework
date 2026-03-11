@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from './input';
 import { Button } from './button';
-import { usePlugins } from '@fromcode119/react';
+import { ContextHooks } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
 import type { Collection } from '@fromcode119/core/shared';
-import { getCollectionPrefix } from '@/lib/collection-utils';
-import { getFieldClasses, UI_TEXT } from '@/lib/ui';
+import { AdminCollectionUtils } from '@/lib/collection-utils';
+import { UiFieldUtils } from '@/lib/ui';
+import { AdminUrlUtils } from '@/lib/url-utils';
 
 interface PermalinkInputProps {
   value: string;
@@ -21,21 +22,21 @@ interface PermalinkInputProps {
 }
 
 export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slug, collection, pluginSettings }: PermalinkInputProps) => {
-  const { settings } = usePlugins();
+  const { settings } = ContextHooks.usePlugins();
   const [isEditing, setIsEditing] = useState(false);
+  const [useAbsolutePath, setUseAbsolutePath] = useState(false);
 
-  const frontendUrl = settings?.frontend_url || 
-                      settings?.site_url || 
-                      'http://frontend.framework.local';
-  const baseUrl = frontendUrl.endsWith('/') ? frontendUrl.slice(0, -1) : frontendUrl;
+  const baseUrl = AdminUrlUtils.resolveFrontendBaseUrl(settings as Record<string, unknown> | null | undefined);
   const structure = settings?.permalink_structure || '/:slug';
+  const normalizedValue = String(value || '');
+  const isAbsoluteOverride = normalizedValue.startsWith('/');
 
   // Get collection-specific prefix (e.g. /posts or /blog)
-  const collectionPrefix = collection ? getCollectionPrefix(collection, pluginSettings) : '';
+  const collectionPrefix = collection ? AdminCollectionUtils.getCollectionPrefix(collection, pluginSettings) : '';
 
   const isNumericOnly = structure.includes(':id') && !structure.includes(':slug');
-  const isCustomMode = !!value;
-  const displayValue = value || (isNumericOnly ? (id || '') : (slug || 'unnamed-resource'));
+  const isCustomMode = !!normalizedValue;
+  const displayValue = (isCustomMode ? normalizedValue.replace(/^\/+/, '') : '') || (isNumericOnly ? (id || '') : (slug || 'unnamed-resource'));
 
   // Calculate the path based on structure
   const now = new Date();
@@ -84,33 +85,45 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
   // Inject the collection prefix between the domain and the structure-based prefix
   // e.g. domain.com + /posts + /2026/slug -> domain.com/posts/2026/slug
   let finalPrefix = prefix;
-  if (collectionPrefix) {
+  if (!isAbsoluteOverride && collectionPrefix) {
     finalPrefix = `/${collectionPrefix}${prefix}`.replace(/\/+/g, '/');
   }
 
   const fullDisplayPrefix = `${baseUrl}${finalPrefix}`;
 
+  useEffect(() => {
+    if (!isEditing) {
+      setUseAbsolutePath(isAbsoluteOverride);
+    }
+  }, [isEditing, isAbsoluteOverride]);
+
+  const handleValueChange = (nextValue: string) => {
+    const normalizedNext = String(nextValue || '').replace(/^\/+/, '');
+    onChange(useAbsolutePath ? `/${normalizedNext}` : normalizedNext);
+  };
+
   if (!isEditing) {
     return (
       <div 
         onClick={() => !disabled && setIsEditing(true)}
-        className={`group relative h-10 px-3.5 rounded-lg border transition-all overflow-hidden flex items-center ${
+        title={`${fullDisplayPrefix}${displayValue}${suffix}`}
+        className={`group relative min-h-[56px] px-3.5 py-2 rounded-lg border transition-all overflow-hidden ${
           disabled 
             ? 'opacity-50 cursor-not-allowed' 
             : 'cursor-pointer hover:border-indigo-500/50 bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800'
         }`}
       >
-        <div className="flex items-center justify-between gap-4 w-full">
-           <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[11px] text-slate-400 font-medium truncate opacity-60 shrink-0">{fullDisplayPrefix}</span>
-              <span className={`text-[13px] font-semibold truncate ${isCustomMode ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
+        <div className="flex items-start justify-between gap-3 w-full">
+           <div className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[10px] leading-tight text-slate-400 font-medium break-all opacity-70">{fullDisplayPrefix}</span>
+              <span className={`text-[13px] leading-tight font-semibold break-all ${isCustomMode ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
                 {displayValue}{suffix}
               </span>
            </div>
-           <div className="flex items-center gap-2 shrink-0">
+           <div className="flex items-start gap-2 shrink-0 pt-0.5">
               {isCustomMode && (
                  <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-600 text-[10px] font-bold rounded-md border border-indigo-500/20">
-                    Custom Path
+                    {isAbsoluteOverride ? 'Absolute Path' : 'Custom Path'}
                  </div>
               )}
               <div className="text-slate-400 group-hover:text-indigo-500 transition-colors">
@@ -125,7 +138,7 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
   return (
     <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
       <div className="flex justify-between items-end px-1">
-        <label className={UI_TEXT.LABEL}>Edit Path Override</label>
+        <label className={UiFieldUtils.TEXT.LABEL}>Edit Path Override</label>
         {isCustomMode && (
           <button 
             type="button"
@@ -138,16 +151,36 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
         )}
       </div>
 
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          const nextAbsolute = !useAbsolutePath;
+          setUseAbsolutePath(nextAbsolute);
+          const normalizedCurrent = String(displayValue || '').replace(/^\/+/, '');
+          onChange(nextAbsolute ? `/${normalizedCurrent}` : normalizedCurrent);
+        }}
+        className={`w-full rounded-lg border px-3 py-2 text-left text-[11px] font-semibold transition-colors ${
+          useAbsolutePath
+            ? 'border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+            : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+        }`}
+      >
+        {useAbsolutePath
+          ? 'Absolute path override enabled: this record bypasses the global prefix.'
+          : 'Relative path mode: this record inherits the global collection prefix.'}
+      </button>
+
       <div className="flex flex-col gap-2">
-        <div className={`${getFieldClasses('md', 'border-indigo-500 ring-4 ring-indigo-500/10 shadow-2xl bg-white dark:bg-slate-950 px-3.5 py-0 flex flex-col justify-center', false)}`}>
+        <div className={`${UiFieldUtils.getFieldClasses('md', 'border-indigo-500 ring-4 ring-indigo-500/10 shadow-2xl bg-white dark:bg-slate-950 px-3.5 py-0 flex flex-col justify-center', false)}`}>
            <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 opacity-60 leading-none mb-1">
               <FrameworkIcons.Layout size={10} />
-              <span className="truncate">{baseUrl}{finalPrefix}</span>
+              <span className="truncate">{baseUrl}{useAbsolutePath ? '/' : finalPrefix}</span>
            </div>
            <input 
               autoFocus
               value={displayValue ?? ''}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => handleValueChange(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') setIsEditing(false);
                 if (e.key === 'Escape') setIsEditing(false);
@@ -173,8 +206,8 @@ export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slu
            </Button>
         </div>
       </div>
-      <p className={UI_TEXT.SUBTEXT}>
-        Changes made here override the global schema. For pattern-based slugs, use the title field.
+      <p className={UiFieldUtils.TEXT.SUBTEXT}>
+        Relative overrides inherit the collection prefix. Enable absolute mode to bypass prefixes like `/shop`.
       </p>
     </div>
   );

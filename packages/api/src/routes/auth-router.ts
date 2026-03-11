@@ -1,7 +1,8 @@
-import { BaseRouter } from '../routers/BaseRouter';
+import { BaseRouter } from '../routers/base-router';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { AuthController } from '../controllers/auth-controller';
+import { RouteConstants } from '@fromcode119/sdk';
 
 /**
  * Authentication router (class-based implementation).
@@ -33,41 +34,41 @@ export class AuthRouter extends BaseRouter {
 
   protected registerRoutes(): void {
     // Public authentication endpoints
-    this.get('/status', this.bind(this.controller.getStatus));
-    this.post('/setup', this.bind(this.controller.setup));
-    this.post('/register', this.bind(this.controller.register));
-    this.post('/verify-email', this.bind(this.controller.verifyEmail));
-    this.post('/resend-verification', this.bind(this.controller.resendVerification));
-    this.post('/forgot-password', this.bind(this.controller.forgotPassword));
-    this.post('/reset-password', this.bind(this.controller.resetPassword));
+    this.get(RouteConstants.SEGMENTS.STATUS, this.bind(this.controller.getStatus.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.SETUP, this.bind(this.controller.setup.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.REGISTER, this.bind(this.controller.register.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.VERIFY_EMAIL, this.bind(this.controller.verifyEmail.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.RESEND_VERIFICATION, this.bind(this.controller.resendVerification.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.FORGOT_PASSWORD, this.bind(this.controller.forgotPassword.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.RESET_PASSWORD, this.bind(this.controller.resetPassword.bind(this.controller)));
     
     // SSO endpoints
-    this.get('/sso/providers', this.bind(this.controller.getSsoProviders));
-    this.post('/sso/login', this.bind(this.controller.ssoLogin));
+    this.get(RouteConstants.SEGMENTS.SSO_PROVIDERS, this.bind(this.controller.getSsoProviders.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.SSO_LOGIN, this.bind(this.controller.ssoLogin.bind(this.controller)));
     
     // Login/logout
-    this.post('/login', this.bind(this.controller.login));
-    this.post('/logout', this.bind(this.controller.logout));
+    this.post(RouteConstants.SEGMENTS.LOGIN, this.bind(this.controller.login.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.LOGOUT, this.bind(this.controller.logout.bind(this.controller)));
 
     // User security (requires authentication)
-    this.get('/security', this.auth.guard(), this.bind(this.controller.getMySecurityState));
-    this.post('/verify-password', this.auth.guard(), this.bind(this.controller.verifyPassword));
-    this.post('/change-password', this.auth.guard(), this.bind(this.controller.changePassword));
-    this.post('/email-change/request', this.auth.guard(), this.bind(this.controller.requestEmailChange));
-    this.post('/email-change/confirm', this.bind(this.controller.confirmEmailChange));
+    this.get(RouteConstants.SEGMENTS.SECURITY, this.auth.guard(), this.bind(this.controller.getMySecurityState.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.VERIFY_PASSWORD, this.auth.guard(), this.bind(this.controller.verifyPassword.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.CHANGE_PASSWORD, this.auth.guard(), this.bind(this.controller.changePassword.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.EMAIL_CHANGE_REQUEST, this.auth.guard(), this.bind(this.controller.requestEmailChange.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.EMAIL_CHANGE_CONFIRM, this.bind(this.controller.confirmEmailChange.bind(this.controller)));
 
     // Session management (user)
-    this.get('/sessions/me', this.auth.guard(), this.bind(this.controller.getMySessions));
-    this.post('/sessions/:id/revoke', this.auth.guard(), this.bind(this.controller.revokeMySession));
-    this.post('/sessions/revoke-others', this.auth.guard(), this.bind(this.controller.revokeOtherSessions));
+    this.get(RouteConstants.SEGMENTS.SESSIONS_ME, this.auth.guard(), this.bind(this.controller.getMySessions.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.SESSIONS_ID_REVOKE, this.auth.guard(), this.bind(this.controller.revokeMySession.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.SESSIONS_REVOKE_OTHERS, this.auth.guard(), this.bind(this.controller.revokeOtherSessions.bind(this.controller)));
 
     // API token management (user)
-    this.get('/api-tokens', this.auth.guard(), this.bind(this.controller.listMyApiTokens));
-    this.post('/api-tokens', this.auth.guard(), this.bind(this.controller.createMyApiToken));
-    this.delete('/api-tokens/:id', this.auth.guard(), this.bind(this.controller.revokeMyApiToken));
+    this.get(RouteConstants.SEGMENTS.API_TOKENS, this.auth.guard(), this.bind(this.controller.listMyApiTokens.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.API_TOKENS, this.auth.guard(), this.bind(this.controller.createMyApiToken.bind(this.controller)));
+    this.delete(RouteConstants.SEGMENTS.API_TOKENS_ID, this.auth.guard(), this.bind(this.controller.revokeMyApiToken.bind(this.controller)));
 
     // Admin-only endpoints
-    this.get('/sessions', this.auth.guard(['admin']), this.bind(this.controller.getSessions));
-    this.post('/sessions/:id/kill', this.auth.guard(['admin']), this.bind(this.controller.killSession));
+    this.get(RouteConstants.SEGMENTS.SESSIONS, this.auth.guard(['admin']), this.bind(this.controller.getSessions.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.SESSIONS_ID_KILL, this.auth.guard(['admin']), this.bind(this.controller.killSession.bind(this.controller)));
   }
 }

@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useState, useEffect, use } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { useNotify } from '@/components/notification-context';
+import { NotificationHooks } from '@/components/use-notification';
 import { Loader } from '@/components/ui/loader';
 
 export default function EditRolePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug: roleSlug } = use(params);
-  const { theme } = useTheme();
-  const { notify } = useNotify();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -34,8 +34,8 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
       try {
         setFetching(true);
         const [permsData, roleData] = await Promise.all([
-          api.get(ENDPOINTS.SYSTEM.PERMISSIONS),
-          api.get(`${ENDPOINTS.SYSTEM.ROLES}/${roleSlug}`)
+          AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS),
+          AdminApi.get(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${roleSlug}`)
         ]);
         
         setPermissions(permsData || []);
@@ -72,7 +72,7 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
     e.preventDefault();
     setLoading(true);
     try {
-      await api.put(`${ENDPOINTS.SYSTEM.ROLES}/${roleSlug}`, formData);
+      await AdminApi.put(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${roleSlug}`, formData);
       notify('success', 'Role Updated', `${formData.name} has been synchronized.`);
       router.push('/users/roles');
     } catch (e: any) {

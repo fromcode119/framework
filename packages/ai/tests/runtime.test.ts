@@ -1,4 +1,5 @@
-import { AdminAssistantRuntime, AssistantCollectionContext } from '../src/admin-assistant-runtime';
+import { AdminAssistantRuntime } from '../src/admin-assistant-runtime';
+import type { AssistantCollectionContext } from '../src/admin-assistant-runtime/types';
 
 function createRuntimeHarness(input?: {
   collections?: AssistantCollectionContext[];
@@ -446,7 +447,7 @@ Property Equity to +20%`,
     expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
   });
 
-  it('asks for target scope when only multiple file replacements are found', async () => {
+  it('CliUtils.asks for target scope when only multiple file replacements are found', async () => {
     const { runtime, aiClient } = createRuntimeHarness({
       resolveAdditionalTools: async () => [
         {

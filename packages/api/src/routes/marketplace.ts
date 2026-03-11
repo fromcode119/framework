@@ -1,55 +1,37 @@
-import express from 'express';
+import { BaseRouter } from '../routers/base-router';
 import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 
-export const setupMarketplaceRoutes = (manager: PluginManager, auth: AuthManager) => {
-  const router = express.Router();
+/**
+ * Marketplace routes for browsing and installing plugins.
+ */
+export class MarketplaceRouter extends BaseRouter {
+  constructor(
+    private manager: PluginManager,
+    private auth: AuthManager
+  ) {
+    super();
+  }
 
-  // Middleware to ensure user is admin
-  const adminOnly = (req: any, res: any, next: any) => {
-    if (!req.user || !req.user.roles || !req.user.roles.includes('admin')) {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-    next();
-  };
+  protected registerRoutes(): void {
+    this.use(this.auth.middleware());
+    this.use(this.auth.guard(['admin']));
 
-  router.use(auth.middleware());
-  router.use(adminOnly);
-
-  // GET /api/v1/marketplace/plugins
-  router.get('/plugins', async (req, res) => {
-    try {
-      const plugins = await manager.marketplace.fetchCatalog();
+    this.get('/plugins', this.asyncHandler(async (_req, res) => {
+      const plugins = await this.manager.marketplace.fetchCatalog();
       res.json({ plugins });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+    }));
 
-  // GET /api/v1/marketplace/plugins/:slug
-  router.get('/plugins/:slug', async (req, res) => {
-    try {
-      const plugin = await manager.marketplace.getPluginInfo(req.params.slug);
-      if (!plugin) return res.status(404).json({ error: 'Plugin not found' });
+    this.get('/plugins/:slug', this.asyncHandler(async (req, res) => {
+      const plugin = await this.manager.marketplace.getPluginInfo(req.params.slug);
+      if (!plugin) { res.status(404).json({ error: 'Plugin not found' }); return; }
       res.json(plugin);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+    }));
 
-  // POST /api/v1/marketplace/install/:slug
-  router.post('/install/:slug', async (req, res) => {
-    try {
-      const manifest = await manager.marketplace.downloadAndInstall(req.params.slug);
-      
-      // Perform discovery to load the new plugin
-      await manager.discoverPlugins();
-      
+    this.post('/install/:slug', this.asyncHandler(async (req, res) => {
+      const manifest = await this.manager.marketplace.downloadAndInstall(req.params.slug);
+      await this.manager.discoverPlugins();
       res.json({ success: true, manifest });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  return router;
-};
+    }));
+  }
+}

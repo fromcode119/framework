@@ -4,8 +4,9 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { FrameworkIcons } from '@/lib/icons';
 import { RootFramework } from '@fromcode119/react';
-import { useTheme } from '../theme-context';
-import { getFieldClasses } from '@/lib/ui';
+import { ThemeHooks } from '../use-theme';
+import { UiFieldUtils } from '@/lib/ui';
+import { ColorPickerUtils } from './color-picker-utils';
 
 interface ColorPickerProps {
   value?: string;
@@ -15,28 +16,7 @@ interface ColorPickerProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const HEX_COLOR_PATTERN = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
-function coerceColorValue(value: unknown): string {
-  if (typeof value === 'string') return value.trim();
-  if (value && typeof value === 'object') {
-    const localized = value as Record<string, unknown>;
-    for (const key of Object.keys(localized)) {
-      const candidate = localized[key];
-      if (typeof candidate === 'string' && candidate.trim()) {
-        return candidate.trim();
-      }
-    }
-  }
-  return '';
-}
-
-function normalizeHexColor(value: string): string {
-  if (!value) return '';
-  const match = value.match(HEX_COLOR_PATTERN);
-  if (!match) return '';
-  return value.startsWith('#') ? value : `#${value}`;
-}
 
 export const ColorPicker = ({ 
   value = "#000000", 
@@ -48,10 +28,10 @@ export const ColorPicker = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const rawValue = coerceColorValue(value);
-  const normalizedValue = normalizeHexColor(rawValue);
+  const rawValue = ColorPickerUtils.coerceColorValue(value);
+  const normalizedValue = ColorPickerUtils.normalizeHexColor(rawValue);
   const pickerValue = normalizedValue || '#000000';
 
   const updatePosition = () => {
@@ -93,7 +73,7 @@ export const ColorPicker = ({
     <div className={`relative ${className}`} ref={containerRef}>
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`${getFieldClasses(size, `flex items-center gap-3 cursor-pointer ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`${UiFieldUtils.getFieldClasses(size, `flex items-center gap-3 cursor-pointer ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div 
           className="w-8 h-5 rounded border border-white/10 dark:border-white/20 shadow-sm"

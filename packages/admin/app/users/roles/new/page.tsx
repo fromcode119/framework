@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 
 export default function NewRolePage() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [permissions, setPermissions] = useState<any[]>([]);
@@ -27,7 +27,7 @@ export default function NewRolePage() {
   useEffect(() => {
     async function loadPermissions() {
       try {
-        const data = await api.get(ENDPOINTS.SYSTEM.PERMISSIONS);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS);
         setPermissions(data || []);
       } catch (e) {
         console.error("Failed to load permissions", e);
@@ -49,7 +49,7 @@ export default function NewRolePage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post(ENDPOINTS.SYSTEM.ROLES, formData);
+      await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.ROLES, formData);
       router.push('/users/roles');
     } catch (e) {
       console.error("Failed to save role", e);

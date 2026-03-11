@@ -3,11 +3,14 @@
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Select } from '../ui/select';
-import { GLASS_CARD, GLASS_INPUT, GLASS_BUTTON } from '../ui/glass-morphism';
+import { GlassMorphism } from '../ui/glass-morphism';
+import { AssistantProviderUtils } from '../assistant-provider-utils';
 
 interface AssistantSettingsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  presentation?: 'docked' | 'overlay';
+  onRequestClose?: () => void;
   
   // Provider & Model
   provider: string;
@@ -49,6 +52,8 @@ interface AssistantSettingsDrawerProps {
 export function AssistantSettingsDrawer({
   isOpen,
   onClose,
+  presentation = 'overlay',
+  onRequestClose,
   provider,
   onProviderChange,
   providerOptions,
@@ -77,6 +82,11 @@ export function AssistantSettingsDrawer({
   const [showApiKey, setShowApiKey] = React.useState(false);
   const [localApiKey, setLocalApiKey] = React.useState(apiKey);
   const [localBaseUrl, setLocalBaseUrl] = React.useState(baseUrl);
+  const providerNeedsApiKey = AssistantProviderUtils.providerRequiresApiKey(provider);
+  const apiKeyPlaceholder = AssistantProviderUtils.providerApiKeyPlaceholder(provider);
+  const baseUrlPlaceholder = AssistantProviderUtils.providerBaseUrlPlaceholder(provider);
+  const matteSelectClass =
+    "w-full [&_button]:!h-11 [&_button]:!rounded-xl [&_button]:!border-[var(--border)] [&_button]:!bg-[var(--surface)] [&_button]:!text-[var(--text-main)] [&_button]:hover:!bg-[var(--surface-strong)]";
 
   React.useEffect(() => {
     setLocalApiKey(apiKey);
@@ -91,6 +101,10 @@ export function AssistantSettingsDrawer({
     onBaseUrlChange(localBaseUrl);
     await onSave();
   };
+  const handleRequestClose = React.useCallback(() => {
+    if (onRequestClose) onRequestClose();
+    else onClose();
+  }, [onClose, onRequestClose]);
 
   return (
     <>
@@ -109,43 +123,42 @@ export function AssistantSettingsDrawer({
         }
       `}</style>
 
-      {/* Backdrop */}
-      <div
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-md transition-opacity duration-300 ${
-          isOpen ? 'animate-[fade-in_0.3s_ease-out]' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      {presentation === 'overlay' ? (
+        <div
+          className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
+            isOpen ? 'animate-[fade-in_0.3s_ease-out]' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={handleRequestClose}
+          aria-hidden="true"
+        />
+      ) : null}
 
       {/* Drawer */}
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col overflow-hidden border-l border-slate-200/80 bg-white/95 shadow-[0_0_80px_rgba(2,6,23,0.3)] backdrop-blur-xl transition-transform duration-300 ease-out dark:border-slate-700/70 dark:bg-slate-900/95 dark:shadow-[0_0_80px_rgba(2,6,23,0.6)] ${
-          isOpen ? 'animate-[slide-in-right_0.3s_ease-out]' : 'translate-x-full'
+        className={`flex h-full flex-col overflow-hidden bg-[var(--sidebar-bg)] ${
+          presentation === 'overlay'
+            ? `fixed right-0 top-0 z-50 w-full max-w-md border-l border-[var(--border)] transition-transform duration-300 ease-out ${
+                isOpen ? 'animate-[slide-in-right_0.3s_ease-out]' : 'pointer-events-none translate-x-full'
+              } shadow-[0_18px_56px_rgba(0,0,0,0.3)]`
+            : `relative z-[60] order-last max-w-[92vw] transition-[width,opacity] duration-200 ${
+                isOpen
+                  ? 'w-[300px] border-l border-[var(--border)] opacity-100'
+                  : 'pointer-events-none w-0 border-transparent opacity-0'
+              }`
         }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              <FrameworkIcons.Settings size={20} />
-            </div>
-            <div>
-              <h2 id="settings-title" className="text-lg font-bold text-slate-900 dark:text-white">
-                Settings
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Configure AI provider and preferences
-              </p>
-            </div>
-          </div>
+        <div className="flex h-16 items-center justify-between border-b border-[var(--border)] px-6">
+          <span id="settings-title" className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--text-sub)] opacity-70">
+            Parameters
+          </span>
           <button
             type="button"
-            onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            onClick={handleRequestClose}
+            className={GlassMorphism.GLASS_ICON_BUTTON}
             aria-label="Close settings"
           >
             <FrameworkIcons.X size={16} />
@@ -156,26 +169,24 @@ export function AssistantSettingsDrawer({
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="space-y-8">
             {/* AI Provider Section */}
-            <section>
-              <div className="mb-3 flex items-center gap-2">
-                <FrameworkIcons.Activity size={16} className="text-slate-500" />
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">AI Provider</h3>
-              </div>
+            <section className={`${GlassMorphism.GLASS_SUB_PANEL} p-4`}>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-sub)]">Inference Engine</p>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-sub)]">
                     Provider
                   </label>
                   <Select
                     value={provider}
                     onChange={(value) => onProviderChange(value)}
                     options={providerOptions}
-                    className="w-full"
+                    className={matteSelectClass}
+                    searchable={false}
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-sub)]">
                     Model
                   </label>
                   <Select
@@ -183,12 +194,13 @@ export function AssistantSettingsDrawer({
                     onChange={(value) => onModelChange(value)}
                     options={modelOptions}
                     disabled={loadingModels}
-                    className="w-full"
+                    className={matteSelectClass}
+                    searchable={false}
                   />
                   {loadingModels && (
-                    <div className="mt-1.5 flex items-center gap-2 rounded-lg bg-cyan-50/50 px-2.5 py-1.5 dark:bg-cyan-900/20">
-                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-cyan-200 border-t-cyan-600 dark:border-cyan-800 dark:border-t-cyan-400" />
-                      <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">Loading models</span>
+                    <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5">
+                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--text-main)]" />
+                      <span className="text-xs font-medium text-[var(--text-sub)]">Loading models</span>
                     </div>
                   )}
                   {modelsError && (
@@ -197,48 +209,52 @@ export function AssistantSettingsDrawer({
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-sub)]">
                     Role / Skill
                   </label>
                   <Select
                     value={skillId}
                     onChange={(value) => onSkillIdChange(value)}
                     options={skillOptions}
-                    className="w-full"
+                    className={matteSelectClass}
+                    searchable={false}
                   />
-                  <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <p className="mt-1.5 text-xs text-[var(--text-sub)]">
                     Select the AI role for specialized responses
                   </p>
                 </div>
               </div>
             </section>
 
-            {/* API Configuration Section */}
-            {provider === 'openai' && (
-              <section>
-                <div className="mb-3 flex items-center gap-2">
-                  <FrameworkIcons.Key size={16} className="text-slate-500" />
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                    API Configuration
-                  </h3>
-                </div>
-                <div className="space-y-4">
+            {/* Connection Section */}
+            <section className={`${GlassMorphism.GLASS_SUB_PANEL} p-4`}>
+              <div className="mb-3 flex items-center gap-2">
+                <FrameworkIcons.Key size={16} className="text-slate-500" />
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                  Connection
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {providerNeedsApiKey ? (
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-sub)]">
                       API Key {hasSavedSecret && '(encrypted)'}
                     </label>
                     <div className="relative">
                       <input
                         type={showApiKey ? 'text' : 'password'}
                         value={localApiKey}
-                        onChange={(e) => setLocalApiKey(e.target.value)}
-                        placeholder={hasSavedSecret ? '••••••••••••••••' : 'sk-...'}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pr-10 text-sm text-slate-900 placeholder-slate-400 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
+                        onChange={(e) => {
+                          setLocalApiKey(e.target.value);
+                          onApiKeyChange(e.target.value);
+                        }}
+                        placeholder={hasSavedSecret ? '••••••••••••••••' : apiKeyPlaceholder}
+                      className={`${GlassMorphism.GLASS_INPUT} w-full pr-10 text-sm`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowApiKey(!showApiKey)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[var(--text-sub)] hover:text-[var(--text-main)]"
                         aria-label={showApiKey ? 'Hide API key' : 'Show API key'}
                       >
                         {showApiKey ? (
@@ -249,124 +265,112 @@ export function AssistantSettingsDrawer({
                       </button>
                     </div>
                     {hasSavedSecret && !localApiKey && (
-                      <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                      <p className="mt-1.5 text-xs text-[var(--text-sub)]">
                         Leave empty to keep existing key
                       </p>
                     )}
                   </div>
+                ) : null}
 
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Base URL (optional)
-                    </label>
-                    <input
-                      type="url"
-                      value={localBaseUrl}
-                      onChange={(e) => setLocalBaseUrl(e.target.value)}
-                      placeholder="https://api.openai.com/v1"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
-                    />
-                    <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-                      For OpenAI-compatible endpoints
-                    </p>
-                  </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-sub)]">
+                    Base URL (optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={localBaseUrl}
+                    onChange={(e) => {
+                      setLocalBaseUrl(e.target.value);
+                      onBaseUrlChange(e.target.value);
+                    }}
+                    placeholder={baseUrlPlaceholder}
+                    className={`${GlassMorphism.GLASS_INPUT} w-full text-sm`}
+                  />
+                  <p className="mt-1.5 text-xs text-[var(--text-sub)]">
+                    Override provider endpoint when needed
+                  </p>
                 </div>
-              </section>
-            )}
+              </div>
+            </section>
 
             {/* Behavior Preferences Section */}
-            <section>
-              <div className="mb-3 flex items-center gap-2">
-                <FrameworkIcons.Settings size={16} className="text-slate-500" />
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Behavior</h3>
-              </div>
-              <div className="space-y-3">
-                <label className="flex cursor-pointer items-start gap-3 group">
-                  <div className="relative mt-0.5 flex h-4 w-4 items-center justify-center">
+            <section className={`${GlassMorphism.GLASS_SUB_PANEL} p-4`}>
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-[var(--text-main)]">Developer Mode</span>
+                    <span className="text-[10px] text-[var(--text-sub)]">Show traces and tool payloads</span>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={showTechnicalDetails}
+                    onClick={() => onShowTechnicalDetailsChange(!showTechnicalDetails)}
+                    className={`relative h-5 w-9 rounded-full border transition ${
+                      showTechnicalDetails
+                        ? 'border-[var(--text-main)] bg-[var(--text-main)]'
+                        : 'border-[var(--border)] bg-[var(--surface)]'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-[2px] h-3.5 w-3.5 rounded-full transition ${
+                        showTechnicalDetails ? 'left-[18px] bg-[var(--bg)]' : 'left-[2px] bg-[var(--text-main)]'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-sub)]">Capabilities</label>
+                  <label className="flex cursor-pointer items-center gap-3">
                     <input
                       type="checkbox"
                       checked={autoApprove}
                       onChange={(e) => onAutoApproveChange(e.target.checked)}
-                      className="peer sr-only"
+                      className="sr-only"
                     />
-                    <div className="h-4 w-4 rounded border-2 border-slate-300 bg-white/60 shadow-sm backdrop-blur-sm transition peer-checked:border-cyan-500 peer-checked:bg-cyan-500 peer-checked:shadow-md peer-focus:ring-2 peer-focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-800/60 dark:peer-checked:border-cyan-400 dark:peer-checked:bg-cyan-400" />
-                    <FrameworkIcons.Check 
-                      size={12} 
-                      className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100" 
-                      strokeWidth={3}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-slate-900 dark:text-white">
-                      Auto-approve safe changes
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      Automatically apply low-risk updates without confirmation
-                    </div>
-                  </div>
-                </label>
-
-                <label className="flex cursor-pointer items-start gap-3 group">
-                  <div className="relative mt-0.5 flex h-4 w-4 items-center justify-center">
-                    <input
-                      type="checkbox"
-                      checked={showTechnicalDetails}
-                      onChange={(e) => onShowTechnicalDetailsChange(e.target.checked)}
-                      className="peer sr-only"
-                    />
-                    <div className="h-4 w-4 rounded border-2 border-slate-300 bg-white/60 shadow-sm backdrop-blur-sm transition peer-checked:border-cyan-500 peer-checked:bg-cyan-500 peer-checked:shadow-md peer-focus:ring-2 peer-focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-800/60 dark:peer-checked:border-cyan-400 dark:peer-checked:bg-cyan-400" />
-                    <FrameworkIcons.Check 
-                      size={12} 
-                      className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100" 
-                      strokeWidth={3}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-slate-900 dark:text-white">
-                      Show technical details
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      Display tool calls, traces, and debug information
-                    </div>
-                  </div>
-                </label>
-
-                <label className="flex cursor-pointer items-start gap-3 group">
-                  <div className="relative mt-0.5 flex h-4 w-4 items-center justify-center">
+                    <span
+                      className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] font-black ${
+                        autoApprove
+                          ? 'border-[var(--text-main)] bg-[var(--text-main)] text-[var(--bg)]'
+                          : 'border-[var(--border)] bg-[var(--surface)] text-transparent'
+                      }`}
+                    >
+                      ✓
+                    </span>
+                    <span className="text-sm text-[var(--text-main)]">Auto Approve Safe Changes</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-3">
                     <input
                       type="checkbox"
                       checked={verboseLogging}
                       onChange={(e) => onVerboseLoggingChange(e.target.checked)}
-                      className="peer sr-only"
+                      className="sr-only"
                     />
-                    <div className="h-4 w-4 rounded border-2 border-slate-300 bg-white/60 shadow-sm backdrop-blur-sm transition peer-checked:border-cyan-500 peer-checked:bg-cyan-500 peer-checked:shadow-md peer-focus:ring-2 peer-focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-800/60 dark:peer-checked:border-cyan-400 dark:peer-checked:bg-cyan-400" />
-                    <FrameworkIcons.Check 
-                      size={12} 
-                      className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100" 
-                      strokeWidth={3}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-slate-900 dark:text-white">
-                      Verbose logging
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      Log detailed AI interactions to browser console
-                    </div>
-                  </div>
-                </label>
+                    <span
+                      className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] font-black ${
+                        verboseLogging
+                          ? 'border-[var(--text-main)] bg-[var(--text-main)] text-[var(--bg)]'
+                          : 'border-[var(--border)] bg-[var(--surface)] text-transparent'
+                      }`}
+                    >
+                      ✓
+                    </span>
+                    <span className="text-sm text-[var(--text-main)]">Verbose Logging</span>
+                  </label>
+                </div>
               </div>
             </section>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-700">
+        <div className="border-t border-[var(--border)] px-6 py-4">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={onClose}
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              onClick={handleRequestClose}
+              className={`${GlassMorphism.GLASS_BUTTON} px-4 py-2 text-sm font-medium`}
             >
               Cancel
             </button>
@@ -374,7 +378,7 @@ export function AssistantSettingsDrawer({
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-r from-cyan-600 to-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(6,182,212,0.4)] transition-all hover:shadow-[0_6px_20px_rgba(6,182,212,0.5)] disabled:cursor-not-allowed disabled:opacity-60 dark:from-cyan-500 dark:to-sky-500"
+              className={`${GlassMorphism.GLASS_BUTTON} group relative overflow-hidden px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60`}
             >
               {isSaving ? (
                 <>

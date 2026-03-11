@@ -1,12 +1,7 @@
 import { Logger } from '@fromcode119/sdk';
 import { QueueAdapter } from './types';
 import { QueueAdapterFactory } from './queue-adapter-factory';
-
-export interface QueueOptions {
-  type?: string;
-  redisUrl?: string;
-  namespace?: string;
-}
+import type { QueueOptions } from './queue-manager.interfaces';
 
 export class QueueManager {
   private adapter: QueueAdapter;

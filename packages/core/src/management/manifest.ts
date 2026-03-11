@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PluginManifest, PluginCapability } from '../types';
+import type { RegistryPlugin, RegistryManifest } from './manifest.types';
 
 /**
  * Plugin Manifest Schema (Zod)
@@ -13,7 +14,7 @@ export const PluginManifestSchema = z.object({
     /^\d+\.\d+\.\d+(-[\w.]+)?$/,
     'Version must be valid semver format (e.g., 1.2.3 or 1.2.3-beta.1)'
   ),
-  
+
   // Metadata
   description: z.string().optional(),
   author: z.union([
@@ -27,22 +28,22 @@ export const PluginManifestSchema = z.object({
   license: z.string().optional(),
   homepage: z.string().url().optional(),
   repository: z.string().url().optional(),
-  
+
   // Configuration & State
   enabled: z.boolean().default(true),
   category: z.string().optional().default('other'),
   tags: z.array(z.string()).optional().default([]),
-  
+
   // Dependencies
   dependencies: z.record(z.string(), z.string()).optional().default({}),
   peerDependencies: z.record(z.string(), z.string()).optional().default({}),
-  
+
   // Security & Capabilities
   capabilities: z.array(z.string()).optional().default([]),
   permissions: z.array(z.string()).optional().default([]),
   signature: z.string().optional(),
   checksum: z.string().optional(),
-  
+
   // Custom Config
   config: z.record(z.any()).optional().default({}),
 
@@ -78,7 +79,7 @@ export const PluginManifestSchema = z.object({
   // Entry points
   entryPoint: z.string().optional(),
   frontendEntryPoint: z.string().optional(),
-  
+
   // Database
   migrations: z.string().optional(),
   seeds: z.string().optional(),
@@ -86,33 +87,11 @@ export const PluginManifestSchema = z.object({
 }).passthrough();
 
 /**
- * Validates a plugin manifest object
- */
-export function validatePluginManifest(manifest: unknown): PluginManifest {
-  return PluginManifestSchema.parse(manifest) as unknown as PluginManifest;
-}
-
-/**
- * Safely validates a plugin manifest
- */
-export function safeValidatePluginManifest(manifest: unknown): 
-  { success: true; data: PluginManifest } | 
-  { success: false; errors: z.ZodIssue[] } {
-  const result = PluginManifestSchema.safeParse(manifest);
-  
-  if (result.success) {
-    return { success: true, data: result.data as unknown as PluginManifest };
-  } else {
-    return { success: false, errors: result.error.issues };
-  }
-}
-
-/**
  * Registry Plugin Manifest Schema
  * Extended schema for plugins listed in the registry
  */
 export const RegistryPluginSchema = PluginManifestSchema.extend({
-  downloadUrl: z.string(), // Supporting both relative and absolute URLs
+  downloadUrl: z.string(),
   publicKey: z.string().optional(),
   screenshots: z.array(z.string().url()).optional().default([]),
   changelog: z.string().optional(),
@@ -122,7 +101,6 @@ export const RegistryPluginSchema = PluginManifestSchema.extend({
   rating: z.number().min(0).max(5).optional(),
 });
 
-export type RegistryPlugin = z.infer<typeof RegistryPluginSchema>;
 
 /**
  * Registry Manifest Schema
@@ -134,13 +112,21 @@ export const RegistryManifestSchema = z.object({
   plugins: z.array(RegistryPluginSchema),
 });
 
-export type RegistryManifest = z.infer<typeof RegistryManifestSchema>;
 
-/**
- * Validates a registry manifest
- * @param manifest - The registry manifest to validate
- * @returns Validated registry manifest
- */
-export function validateRegistryManifest(manifest: unknown): RegistryManifest {
-  return RegistryManifestSchema.parse(manifest);
+export class ManifestValidator {
+  static validate(manifest: unknown): PluginManifest {
+    return PluginManifestSchema.parse(manifest) as unknown as PluginManifest;
+  }
+
+  static safeValidate(manifest: unknown): { success: true; data: PluginManifest } | { success: false; errors: z.ZodIssue[] } {
+    const result = PluginManifestSchema.safeParse(manifest);
+    if (result.success) {
+      return { success: true, data: result.data as unknown as PluginManifest };
+    }
+    return { success: false, errors: result.error.issues };
+  }
+
+  static validateRegistry(manifest: unknown): RegistryManifest {
+    return RegistryManifestSchema.parse(manifest);
+  }
 }

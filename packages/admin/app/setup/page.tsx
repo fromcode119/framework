@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/components/auth-context';
+import { AuthHooks } from '@/components/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
-import { APP_VERSION, APP_NAME, APP_CHANNEL } from '@/lib/env';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { AppEnv } from '@/lib/env';
 
 const { Zap, Mail, Lock, ArrowRight, Shield: ShieldCheck, UserPlus, Orbit } = FrameworkIcons;
 
@@ -16,7 +16,7 @@ const ICON_SIZE = 42;
 
 export default function SetupPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login } = AuthHooks.useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [email, setEmail] = useState('');
@@ -28,9 +28,9 @@ export default function SetupPage() {
   useEffect(() => {
     async function checkStatus() {
       try {
-        const data = await api.get(ENDPOINTS.AUTH.STATUS);
+        const data = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS);
         if (data.initialized === true) {
-          router.push(ROUTES.AUTH.LOGIN);
+          router.push(AdminConstants.ROUTES.AUTH.LOGIN);
         }
       } catch (err) {
         console.warn("API check failed in setup:", err);
@@ -67,7 +67,7 @@ export default function SetupPage() {
     setIsLoading(true);
     
     try {
-      const data = await api.post(ENDPOINTS.AUTH.SETUP, { email, password });
+      const data = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.SETUP, { email, password });
       login(data.token, data.user);
     } catch (err: any) {
       setError(err.message || 'Setup failed. Please try again.');
@@ -180,7 +180,7 @@ export default function SetupPage() {
         <div className="text-center mt-5 flex items-center justify-center gap-4 opacity-40 text-slate-500">
            <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
            <span className="text-[10px] font-semibold tracking-wide">
-             v{APP_VERSION} {APP_NAME} {APP_CHANNEL}
+             v{AppEnv.APP_VERSION} {AppEnv.APP_NAME} {AppEnv.APP_CHANNEL}
            </span>
            <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
         </div>

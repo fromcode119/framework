@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 
 interface UseSlugValidationOptions {
   slug: string;
@@ -28,7 +28,7 @@ export function useSlugValidation({
       setIsValidating(true);
       try {
         const query = `?slug=${encodeURIComponent(slug)}&limit=10`;
-        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}${query}`);
+        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}${query}`);
         
         const results = response.docs || [];
         

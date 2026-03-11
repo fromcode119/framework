@@ -304,7 +304,7 @@ describe('assistant-controller modernization', () => {
     );
   });
 
-  it('does not auto-continue when runtime asks for clarification', async () => {
+  it('does not auto-continue when runtime CliUtils.asks for clarification', async () => {
     const { controller } = createControllerHarness();
     const runtime = {
       chat: jest.fn().mockResolvedValue({

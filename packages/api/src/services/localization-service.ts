@@ -1,5 +1,6 @@
-import { Collection } from '@fromcode119/sdk';
-import { normalizeLocaleCode, isLocaleLikeKey, isMeaningfulLocalizedValue, SystemTable } from '@fromcode119/core';
+import { Collection, SystemConstants } from '@fromcode119/sdk';
+import { CoreServices } from '@fromcode119/core';
+import { LocalizationUtils } from '@fromcode119/sdk';
 
 export class LocalizationService {
   constructor(private db: any) {}
@@ -20,11 +21,11 @@ export class LocalizationService {
 
     const entries = Object.entries(candidate);
     if (!entries.length) return null;
-    if (!entries.every(([key]) => isLocaleLikeKey(key))) return null;
+    if (!entries.every(([key]) => LocalizationUtils.isLocaleMap(key))) return null;
 
     const normalized: Record<string, any> = {};
     entries.forEach(([rawKey, rawValue]) => {
-      const locale = normalizeLocaleCode(rawKey);
+      const locale = LocalizationUtils.normalizeLocaleCode(rawKey);
       if (locale) normalized[locale] = rawValue;
     });
 
@@ -52,7 +53,7 @@ export class LocalizationService {
 
     let settingsMap: Record<string, any> = {};
     try {
-      const settingsRows = await this.db.find(SystemTable.META);
+      const settingsRows = await this.db.find(SystemConstants.TABLE.META);
       if (Array.isArray(settingsRows)) {
         settingsRows.forEach((row: any) => {
           if (row.key) settingsMap[row.key] = row.value;
@@ -62,18 +63,18 @@ export class LocalizationService {
       // Fall back to defaults if metadata fetch fails.
     }
 
-    const requestedLocale = normalizeLocaleCode(
+    const requestedLocale = LocalizationUtils.normalizeLocaleCode(
       req?.query?.locale || req?.locale || req?.headers?.['x-locale'] || ''
     );
 
-    const defaultLocale = normalizeLocaleCode(
+    const defaultLocale = LocalizationUtils.normalizeLocaleCode(
       settingsMap.default_locale ||
       settingsMap.frontend_default_locale ||
       settingsMap.admin_default_locale ||
       'en'
     ) || 'en';
 
-    const fallbackLocale = normalizeLocaleCode(
+    const fallbackLocale = LocalizationUtils.normalizeLocaleCode(
       req?.query?.fallback_locale ||
       settingsMap.fallback_locale ||
       defaultLocale
@@ -81,7 +82,7 @@ export class LocalizationService {
 
     const enabledLocales = String(settingsMap.enabled_locales || '')
       .split(',')
-      .map((value) => normalizeLocaleCode(value))
+      .map((value) => LocalizationUtils.normalizeLocaleCode(value))
       .filter(Boolean);
 
     const chain = Array.from(new Set([requestedLocale, defaultLocale, fallbackLocale, ...enabledLocales].filter(Boolean)));
@@ -136,7 +137,7 @@ export class LocalizationService {
           // Resolve best fit from chain
           let foundValue = null;
           for (const locale of options.localeContext.chain) {
-            if (isMeaningfulLocalizedValue(localeMap[locale])) {
+            if (CoreServices.getInstance().localization.isMeaningful(localeMap[locale])) {
               foundValue = localeMap[locale];
               break;
             }

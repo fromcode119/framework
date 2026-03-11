@@ -1,11 +1,11 @@
 import { SystemMigration } from '../../types';
-import { executeForDialect } from '../helpers/dialect';
+import { DialectHelper } from '../helpers/dialect';
 
 export const MediaColumnsBackfill: SystemMigration = {
   version: 5,
   name: 'Ensure media table has extended columns',
   up: async (db, sql) => {
-    await executeForDialect(db.dialect, {
+    await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         // Add missing columns if they are not present
         await db.execute(sql`

@@ -2,11 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { FrameworkIcons } from '@/lib/icons';
 
 export default function NotFound() {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6 animate-in fade-in duration-500">

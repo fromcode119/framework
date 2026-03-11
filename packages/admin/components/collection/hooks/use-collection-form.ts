@@ -1,6 +1,6 @@
 import { useState, useCallback, FormEvent } from 'react';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 
 interface UseCollectionFormOptions {
   collectionSlug: string;
@@ -45,15 +45,15 @@ export function useCollectionForm({
 
     try {
       const url = isNew 
-        ? `${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}` 
-        : `${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}/${formData.id || initialData.id}`;
+        ? `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}` 
+        : `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}/${formData.id || initialData.id}`;
 
       const submitMetadata = getSubmitMetadata ? getSubmitMetadata() : {};
       const payloadBase = { ...formData, ...(submitMetadata || {}) };
       const normalizedPayloadBase = preparePayload ? preparePayload(payloadBase) : payloadBase;
       const payload = summary ? { ...normalizedPayloadBase, _change_summary: summary } : normalizedPayloadBase;
 
-      const result = await (isNew ? api.post(url, payload) : api.put(url, payload));
+      const result = await (isNew ? AdminApi.post(url, payload) : AdminApi.put(url, payload));
       
       setIsDirty(false);
       if (onSuccess) onSuccess(result);

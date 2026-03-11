@@ -1,18 +1,32 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { usePlugins } from './context';
+import React from 'react';
+import { PluginsProvider } from './context';
+import type { PluginContextValue } from './context.interfaces';
+import type { ThemeManagerProps } from './theme-manager.interfaces';
 
-export const ThemeManager = ({ apiUrl }: { apiUrl: string }) => {
-  const { themeVariables, refreshVersion } = usePlugins();
+export class ThemeManager extends React.Component<ThemeManagerProps> {
+  static contextType = PluginsProvider.PluginContext;
 
-  useEffect(() => {
-    // Apply variables to :root
+  declare context: PluginContextValue | null;
+
+  componentDidMount(): void {
+    this.applyThemeVariables();
+  }
+
+  componentDidUpdate(): void {
+    this.applyThemeVariables();
+  }
+
+  render(): React.ReactNode {
+    return null;
+  }
+
+  private applyThemeVariables(): void {
     const root = document.documentElement;
+    const themeVariables = this.context?.themeVariables || {};
     Object.entries(themeVariables).forEach(([key, value]) => {
       root.style.setProperty(`--theme-${key}`, value);
     });
-  }, [themeVariables]);
-
-  return null;
-};
+  }
+}

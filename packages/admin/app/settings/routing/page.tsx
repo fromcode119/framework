@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { useNotification } from '@/components/notification-context';
-import { usePlugins } from '@fromcode119/react';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { NotificationHooks } from '@/components/use-notification';
+import { ContextHooks } from '@fromcode119/react';
+import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
+import { RoutingPageUtils } from './routing-page-utils';
 
 const PLACEHOLDERS = [
   { label: ':slug', description: 'The sanitized post title (recommended)', example: 'hello-world' },
@@ -30,63 +31,12 @@ const PRESETS = [
   { label: 'Category and name', value: '/:category/:slug' },
 ];
 
-const PRIMARY_TITLE_KEYS = ['title', 'name', 'label', 'slug', 'path', 'customPermalink', 'permalink'];
-const SKIP_STRING_KEYS = new Set([
-  'id', 'createdAt', 'updatedAt', '_status', '_locale', '_meta', '__v'
-]);
 
-function getRecordDisplayTitle(doc: any, collectionLabel: string) {
-  for (const key of PRIMARY_TITLE_KEYS) {
-    const value = doc?.[key];
-    if (typeof value === 'string' && value.trim()) return value.trim();
-  }
-
-  for (const [key, value] of Object.entries(doc || {})) {
-    if (SKIP_STRING_KEYS.has(key)) continue;
-    if (typeof value === 'string' && value.trim()) return value.trim();
-  }
-
-  return `${collectionLabel} #${doc?.id ?? 'unknown'}`;
-}
-
-function getCollectionSourceTag(pluginLabel: string, collectionLabel: string) {
-  const plugin = (pluginLabel || 'System').trim();
-  const section = (collectionLabel || 'record').trim();
-  return `${plugin}/${section}`;
-}
-
-function getFieldNames(collection: any): Set<string> {
-  const fields = Array.isArray(collection?.fields) ? collection.fields : [];
-  return new Set(fields.map((f: any) => String(f?.name || '').trim()).filter(Boolean));
-}
-
-function getAutoCollectionPriority(collection: any): number {
-  const fields = getFieldNames(collection);
-  let score = 100;
-
-  if (fields.has('content')) score -= 30;
-  if (fields.has('themeLayout')) score -= 20;
-  if (fields.has('customPermalink') || fields.has('path')) score -= 20;
-  if (fields.has('title') || fields.has('name')) score -= 10;
-
-  return score;
-}
-
-function detectAutoFallbackLayout(frontendMeta: any): string | null {
-  const rawLayouts = frontendMeta?.activeTheme?.layouts;
-  const layoutKeys = Array.isArray(rawLayouts)
-    ? rawLayouts.map((layout: any) => String(layout?.slug || layout?.name || layout?.key || layout?.id || '')).filter(Boolean)
-    : Object.keys(rawLayouts || {});
-
-  const fallbackPriority = ['DefaultLayout', 'Home', 'Main'];
-  const matched = fallbackPriority.find((name) => layoutKeys.includes(name));
-  return matched || null;
-}
 
 export default function RoutingPage() {
-  const { theme } = useTheme();
-  const { addNotification } = useNotification();
-  const { registerSettings, collections } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { addNotification } = NotificationHooks.useNotification();
+  const { registerSettings, collections } = ContextHooks.usePlugins();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [structure, setStructure] = useState('/:slug');
@@ -104,9 +54,9 @@ export default function RoutingPage() {
     const fetchSettings = async () => {
       try {
         const [settingsResponse, frontendMeta, collectionStats] = await Promise.all([
-          api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`),
-          api.get(ENDPOINTS.SYSTEM.FRONTEND).catch(() => null),
-          api.get(ENDPOINTS.SYSTEM.STATS.COLLECTIONS).catch(() => [])
+          AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`),
+          AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.FRONTEND).catch(() => null),
+          AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.COLLECTIONS).catch(() => [])
         ]);
 
         const docs = settingsResponse.docs || [];
@@ -184,7 +134,7 @@ export default function RoutingPage() {
           const collectionSlug = c.shortSlug || c.slug;
           const limit = query ? 150 : 50;
           try {
-            const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}?limit=${limit}&sort=title`);
+            const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}?limit=${limit}&sort=title`);
             return { collection: c, collectionSlug, docs: response?.docs || [] };
           } catch {
             return { collection: c, collectionSlug, docs: [] };
@@ -199,7 +149,7 @@ export default function RoutingPage() {
           if (optionSet.has(value)) return;
 
           const collectionLabel = collection.label || collection.name || collection.shortSlug || collectionSlug;
-          const title = getRecordDisplayTitle(doc, collectionLabel);
+          const title = RoutingPageUtils.getRecordDisplayTitle(doc, collectionLabel);
           const permalink = doc.customPermalink || doc.slug || '';
           const permalinkLabel = permalink ? `/${String(permalink).replace(/^\/+/, '')}` : '/';
           const searchableText = `${title} ${permalinkLabel} ${collectionLabel}`.toLowerCase();
@@ -208,7 +158,7 @@ export default function RoutingPage() {
           const pluginSlug = collection.pluginSlug || 'System';
           const pluginLabel = pluginSlug.charAt(0).toUpperCase() + pluginSlug.slice(1);
           const groupLabel = `Collection Records · ${pluginLabel}`;
-          const sourceTag = getCollectionSourceTag(pluginSlug, collectionLabel);
+          const sourceTag = RoutingPageUtils.getCollectionSourceTag(pluginSlug, collectionLabel);
 
           optionSet.add(value);
           options.push({
@@ -269,12 +219,12 @@ export default function RoutingPage() {
             // Skip probing collections when admin stats endpoint is unavailable.
             return false;
           }
-          return getFieldNames(c).has('slug');
+          return RoutingPageUtils.getFieldNames(c).has('slug');
         })
         .map((c: any) => ({
           collectionSlug: c.shortSlug || c.slug,
           collectionLabel: c.label || c.name || c.shortSlug || c.slug,
-          priority: getAutoCollectionPriority(c)
+          priority: RoutingPageUtils.getAutoCollectionPriority(c)
         }))
         .sort((a: any, b: any) => a.priority - b.priority || a.collectionSlug.localeCompare(b.collectionSlug));
 
@@ -287,10 +237,10 @@ export default function RoutingPage() {
       for (const { label, query } of queries) {
         for (const candidate of candidateCollections) {
           try {
-            const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(candidate.collectionSlug)}?${query}&limit=1`);
+            const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(candidate.collectionSlug)}?${query}&limit=1`);
             const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
             if (doc) {
-              const title = getRecordDisplayTitle(doc, candidate.collectionLabel);
+              const title = RoutingPageUtils.getRecordDisplayTitle(doc, candidate.collectionLabel);
               if (!cancelled) {
                 setAutoResolvedSource(`Matched ${label} -> ${title} (${candidate.collectionLabel})`);
               }
@@ -316,10 +266,10 @@ export default function RoutingPage() {
     setIsSaving(true);
     try {
       await Promise.all([
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/permalink_structure`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/permalink_structure`, {
           value: structure
         }),
-        api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/routing_home_target`, {
+        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/routing_home_target`, {
           value: homeTarget
         })
       ]);

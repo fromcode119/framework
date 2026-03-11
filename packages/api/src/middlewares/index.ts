@@ -7,31 +7,25 @@
  */
 
 // Base classes
-export { BaseMiddleware, FunctionalMiddleware, createMiddleware } from './BaseMiddleware';
+export { BaseMiddleware } from './base-middleware';
+export { FunctionalMiddleware } from './functional-middleware';
 
 // Collection middleware
-export { CollectionMiddleware } from './CollectionMiddleware';
+export { CollectionMiddleware } from './collection-middleware';
 
 // Security middlewares
-export { 
-  CSRFMiddleware, 
-  XSSMiddleware, 
-  SecurityHeadersMiddleware,
-  csrfMiddleware,
-  xssMiddleware
-} from './SecurityMiddleware';
+export { CSRFMiddleware } from './csrf-middleware';
+export { XSSMiddleware } from './xss-middleware';
+export { SecurityHeadersMiddleware } from './security-headers-middleware';
 
 // Rate limiting
 export { 
   RateLimitMiddleware, 
-  createDynamicRateLimiter,
-  type RateLimitOptions 
-} from './RateLimitMiddleware';
+} from './rate-limit-middleware';
 
 // Validation
 export { 
   ValidationMiddleware, 
-  Validators,
-  type ValidatorFunction,
-  type ValidationOptions 
-} from './ValidationMiddleware';
+} from './validation-middleware';
+
+export { Validators } from './validators';

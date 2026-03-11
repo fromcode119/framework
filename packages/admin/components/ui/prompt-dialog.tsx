@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Button } from './button';
 import { Input } from './input';
 import { FrameworkIcons } from '@/lib/icons';
@@ -38,7 +38,7 @@ export const PromptDialog = ({
   icon,
   inputType = 'text'
 }: PromptDialogProps) => {
-  const { theme } = useTheme();
+  const { theme } = ThemeHooks.useTheme();
   const [value, setValue] = useState(defaultValue);
   const inputRef = useRef<HTMLInputElement>(null);
 

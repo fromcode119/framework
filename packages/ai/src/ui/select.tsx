@@ -1,11 +1,9 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { FrameworkIcons } from '@fromcode119/react';
+import { GlassMorphism } from './glass-morphism';
 
-export type SelectOption = {
-  label: string;
-  value: string;
-};
+import type { SelectOption } from './select.types';
 
 type SelectProps = {
   value: string;
@@ -110,24 +108,24 @@ export function Select({
       <div
         ref={menuRef}
         style={menuStyle ? { left: menuStyle.left, top: menuStyle.top, width: menuStyle.width } : undefined}
-        className={`fixed z-[9999] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900 ${
+        className={`fixed z-[9999] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--input-bg)] shadow-[0_16px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl ${
           menuStyle ? '' : 'opacity-0 pointer-events-none'
         }`}
       >
         {searchable ? (
-          <div className="border-b border-slate-200 p-2 dark:border-slate-700">
+          <div className="border-b border-[var(--border)] p-2">
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search..."
-              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-300/25 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-300/70"
+              className={`${GlassMorphism.GLASS_INPUT} h-9 w-full px-2.5 text-xs`}
             />
           </div>
         ) : null}
 
         <div className="max-h-56 overflow-y-auto p-1">
           {filtered.length === 0 ? (
-            <div className="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">No options.</div>
+            <div className="px-2 py-2 text-xs text-[var(--text-sub)]">No options.</div>
           ) : (
             filtered.map((option) => (
               <button
@@ -139,8 +137,8 @@ export function Select({
                 }}
                 className={`mb-1 w-full rounded-lg px-2.5 py-2 text-left text-xs transition last:mb-0 ${
                   option.value === value
-                    ? 'bg-cyan-100 text-cyan-900 dark:bg-cyan-300/18 dark:text-cyan-100'
-                    : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+                    ? 'bg-[var(--surface-strong)] font-semibold text-[var(--text-main)]'
+                    : 'text-[var(--text-main)]/90 hover:bg-[var(--surface)] hover:text-[var(--text-main)]'
                 }`}
               >
                 {option.label}
@@ -168,14 +166,14 @@ export function Select({
         className={`${compact ? 'h-8 rounded-xl px-2.5 text-[11px]' : 'h-11 rounded-xl px-3 text-sm'} w-full border text-left transition inline-flex items-center justify-between gap-2 ${
           disabled
             ? compact
-              ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-600'
-              : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600'
+              ? 'cursor-not-allowed border-[var(--border)] bg-[var(--surface)] text-[var(--text-sub)] opacity-65'
+              : 'cursor-not-allowed border-[var(--border)] bg-[var(--surface)] text-[var(--text-sub)] opacity-65'
             : compact
-              ? 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white'
-              : 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500'
+              ? 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-main)] hover:bg-[var(--surface-strong)]'
+              : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-main)] hover:bg-[var(--surface-strong)]'
         }`}
       >
-        <span className={`truncate ${selected ? '' : 'text-slate-400 dark:text-slate-500'}`}>
+        <span className={`truncate ${selected ? '' : 'text-[var(--text-sub)] opacity-80'}`}>
           {selected ? selected.label : placeholder}
         </span>
         <span className={`shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>

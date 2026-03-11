@@ -1,23 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import Link from 'next/link';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { useNotify } from '@/components/notification-context';
+import { NotificationHooks } from '@/components/use-notification';
 import { Loader } from '@/components/ui/loader';
 import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 
 export default function RolesPage() {
-  const { theme } = useTheme();
-  const { notify } = useNotify();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
   const [roles, setRoles] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [health, setHealth] = useState<any>(null);
@@ -30,9 +30,9 @@ export default function RolesPage() {
     try {
       setLoading(true);
       const [rolesRes, logsRes, healthRes] = await Promise.all([
-        api.get(ENDPOINTS.SYSTEM.ROLES),
-        api.get(ENDPOINTS.SYSTEM.LOGS),
-        api.get(ENDPOINTS.SYSTEM.HEALTH)
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.ROLES),
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.LOGS),
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.HEALTH)
       ]);
 
       const normalizedLogs = Array.isArray(logsRes?.docs)
@@ -67,7 +67,7 @@ export default function RolesPage() {
     if (!roleToDelete) return;
     setIsDeleting(true);
     try {
-      await api.delete(`${ENDPOINTS.SYSTEM.ROLES}/${roleToDelete.slug}`);
+      await AdminApi.delete(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${roleToDelete.slug}`);
       notify('success', 'Role Deleted', `${roleToDelete.name} has been removed.`);
       fetchData();
       setShowDeleteConfirm(false);
@@ -328,9 +328,9 @@ export default function RolesPage() {
         label="Roles Management"
         description="Manage and customize system access roles."
         links={[
-          { label: 'Users', href: ROUTES.USERS.LIST },
-          { label: 'Permissions', href: ROUTES.USERS.PERMISSIONS },
-          { label: 'Activity Log', href: ROUTES.ACTIVITY },
+          { label: 'Users', href: AdminConstants.ROUTES.USERS.LIST },
+          { label: 'Permissions', href: AdminConstants.ROUTES.USERS.PERMISSIONS },
+          { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY },
         ]}
       />
 

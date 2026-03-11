@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateAdminRegistryContent } from '@/lib/runtime-registry';
+import { AdminRuntimeRegistry } from '@/lib/runtime-registry';
 
 /**
  * Framework Icon Registry Proxy (Client-side)
@@ -7,14 +7,15 @@ import { generateAdminRegistryContent } from '@/lib/runtime-registry';
  * to the centralized framework icon registry (window.FrameworkIcons).
  */
 
-const cachedContent = generateAdminRegistryContent();
-
 export async function GET() {
-  return new NextResponse(cachedContent, {
-    headers: {
-      'Content-Type': 'application/javascript; charset=utf-8',
-      'Cache-Control': 'no-store, must-revalidate',
-      'X-Content-Type-Options': 'nosniff'
+  return new NextResponse(
+    AdminRuntimeRegistry.generateAdminRegistryContent(),
+    {
+      headers: {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'no-store, must-revalidate',
+        'X-Content-Type-Options': 'nosniff'
+      }
     }
-  });
+  );
 }

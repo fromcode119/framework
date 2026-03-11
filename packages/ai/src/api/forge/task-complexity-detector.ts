@@ -5,13 +5,7 @@
  * Reduces AI overhead and improves response time for basic operations.
  */
 
-export interface TaskComplexity {
-  level: 'simple' | 'moderate' | 'complex';
-  reason: string;
-  skipPlanning: boolean;
-  estimatedIterations: number;
-  confidence: number; // 0-1
-}
+import type { TaskComplexity } from './task-complexity-detector.interfaces';
 
 export class TaskComplexityDetector {
   /**

@@ -1,23 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '../theme-context';
-import { useNotify } from '../notification-context';
-import { usePlugins } from '@fromcode119/react';
+import { ThemeHooks } from '../use-theme';
+import { NotificationHooks } from '../use-notification';
+import { ContextHooks } from '@fromcode119/react';
 
 import { useRouter } from 'next/navigation';
 import type { PluginEntry } from '@fromcode119/core/shared';
 
 const Marketplace: React.FC = () => {
   const router = useRouter();
-  const { theme } = useTheme();
-  const { notify } = useNotify();
-  const { triggerRefresh } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh } = ContextHooks.usePlugins();
   const [marketplacePlugins, setMarketplacePlugins] = useState<PluginEntry[]>([]);
   const [installedPlugins, setInstalledPlugins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,8 +29,8 @@ const Marketplace: React.FC = () => {
     setError(null);
     try {
       const [marketData, instData] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
-        api.get(ENDPOINTS.PLUGINS.LIST)
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE),
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LIST)
       ]);
       
       setMarketplacePlugins(marketData.plugins || []);
@@ -50,7 +50,7 @@ const Marketplace: React.FC = () => {
   const handleInstall = async (slug: string) => {
     try {
       notify('info', 'Installation Started', `Downloading and staging ${slug}...`);
-      await api.post(ENDPOINTS.PLUGINS.INSTALL(slug), {});
+      await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug), {});
       notify('success', 'Installation Complete', `Plugin "${slug}" installed successfully.`);
       triggerRefresh();
       fetchData();
@@ -100,7 +100,7 @@ const Marketplace: React.FC = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {marketplacePlugins.map(plugin => {
-          const installed = installedPlugins.find(p => p.slug === plugin.slug);
+          const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);
           const hasUpdate = installed && plugin.version !== installed.version;
           const hasImageError = imageErrors[plugin.slug];
 

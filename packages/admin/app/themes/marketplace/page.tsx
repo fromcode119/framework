@@ -2,21 +2,21 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePlugins } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useNotify } from '@/components/notification-context';
+import { NotificationHooks } from '@/components/use-notification';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
 import type { MarketplaceTheme } from '@fromcode119/core/shared';
 
 export default function ThemesMarketplacePage() {
-  const { theme } = useTheme();
-  const { notify } = useNotify();
-  const { triggerRefresh } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh } = ContextHooks.usePlugins();
   const router = useRouter();
   const [themes, setThemes] = useState<MarketplaceTheme[]>([]);
   const [installedThemes, setInstalledThemes] = useState<any[]>([]);
@@ -26,8 +26,8 @@ export default function ThemesMarketplacePage() {
     setLoading(true);
     try {
       const [marketData, installedRes] = await Promise.all([
-        api.get(ENDPOINTS.THEMES.MARKETPLACE),
-        api.get(ENDPOINTS.THEMES.LIST)
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE),
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST)
       ]);
       
       const marketplace = Array.isArray(marketData) ? marketData : (marketData.themes || []);
@@ -58,7 +58,7 @@ export default function ThemesMarketplacePage() {
   const handleInstall = async (slug: string) => {
     try {
       notify('info', 'Installing...', `Downloading theme ${slug}...`);
-      await api.post(ENDPOINTS.THEMES.INSTALL(slug));
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(slug));
       notify('success', 'Installed', `Theme ${slug} is now available.`);
       triggerRefresh();
       fetchData(); // Refresh list to show installed state

@@ -2,16 +2,16 @@
 
 import React, { useEffect, useMemo, useState, use, useRef, useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Slot, usePlugins } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { Slot, ContextHooks } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { resolveCollection, generatePreviewUrl } from '@/lib/collection-utils';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { FieldRenderer } from '@/components/collection/field-renderer';
 import { CollectionNotFound } from '@/components/collection/collection-not-found';
 import { CollectionQuickEditCard } from '@/components/collection/collection-quick-edit-card';
@@ -20,6 +20,7 @@ import { CollectionListHeader } from './list/list-header';
 import { FilterBar } from './list/filter-bar';
 import { BulkActions } from './list/bulk-actions';
 import { ListFooter } from './list/list-footer';
+import { CollectionListUtils } from './collection-list-utils';
 
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -27,30 +28,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const RELATIONSHIP_LABEL_CACHE = new Map<string, string>();
 
-const parsePageQueryValue = (value: string | null): number => {
-  const parsed = Number.parseInt(String(value || '').trim(), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
-};
 
-function resolveRelationDisplayLabel(value: any): string {
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
-  if (Array.isArray(value)) return '';
-  if (typeof value === 'object') {
-    return String(value.title || value.name || value.label || value.slug || value.email || value.username || value.id || '').trim();
-  }
-  return '';
-}
-
-function resolveRelationScalar(value: any): string {
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'string' || typeof value === 'number') return String(value).trim();
-  if (typeof value === 'boolean') return '';
-  if (typeof value === 'object') {
-    return String(value.id ?? value._id ?? value.value ?? value.slug ?? '').trim();
-  }
-  return String(value).trim();
-}
 
 const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ relationTo, raw }) => {
   const [resolved, setResolved] = useState<Record<string, string>>({});
@@ -59,8 +37,8 @@ const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ re
     const entries = Array.isArray(raw) ? raw : [raw];
     return entries
       .map((entry) => {
-        const value = resolveRelationScalar(entry);
-        const directLabel = resolveRelationDisplayLabel(entry);
+        const value = CollectionListUtils.resolveRelationScalar(entry);
+        const directLabel = CollectionListUtils.resolveRelationDisplayLabel(entry);
         return { value, directLabel };
       })
       .filter((entry) => entry.value || entry.directLabel);
@@ -88,18 +66,18 @@ const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ re
         pending.map(async (entry) => {
           const key = `${relationTo}:${entry.value}`;
           try {
-            const byId = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}/${encodeURIComponent(entry.value)}`);
-            const label = resolveRelationDisplayLabel(byId) || entry.value;
+            const byId = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}/${encodeURIComponent(entry.value)}`);
+            const label = CollectionListUtils.resolveRelationDisplayLabel(byId) || entry.value;
             updates[key] = label;
             RELATIONSHIP_LABEL_CACHE.set(key, label);
             return;
           } catch {
             try {
-              const bySlug = await api.get(
-                `${ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}?slug=${encodeURIComponent(entry.value)}&limit=1`
+              const bySlug = await AdminApi.get(
+                `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}?slug=${encodeURIComponent(entry.value)}&limit=1`
               );
               const doc = Array.isArray(bySlug) ? bySlug[0] : bySlug?.docs?.[0];
-              const label = resolveRelationDisplayLabel(doc) || entry.value;
+              const label = CollectionListUtils.resolveRelationDisplayLabel(doc) || entry.value;
               updates[key] = label;
               RELATIONSHIP_LABEL_CACHE.set(key, label);
             } catch {
@@ -138,15 +116,15 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { collections, settings } = usePlugins();
-  const { theme } = useTheme();
+  const { collections, settings } = ContextHooks.usePlugins();
+  const { theme } = ThemeHooks.useTheme();
   const [data, setData] = useState<any[]>([]);
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
 
   const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   
   // Find the collection by matching the short slug and the explicit pluginSlug
-  const collection = resolveCollection(collections, pluginSlug, slug);
+  const collection = AdminCollectionUtils.resolveCollection(collections, pluginSlug, slug);
 
   // Redirect if it's a global/singleton collection
   useEffect(() => {
@@ -162,7 +140,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState<number>(() => {
     if (typeof window === 'undefined') return 1;
-    return parsePageQueryValue(new URLSearchParams(window.location.search).get('page'));
+    return CollectionListUtils.parsePageQueryValue(new URLSearchParams(window.location.search).get('page'));
   });
   const [sort, setSort] = useState('-createdAt');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -184,7 +162,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const pageSize = 10;
 
   useEffect(() => {
-    const pageFromUrl = parsePageQueryValue(searchParams.get('page'));
+    const pageFromUrl = CollectionListUtils.parsePageQueryValue(searchParams.get('page'));
     setPage((prev) => (prev === pageFromUrl ? prev : pageFromUrl));
   }, [searchParams]);
 
@@ -215,34 +193,6 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
       .filter((option: any) => option.value);
   }, [statusField]);
 
-  const prettifyColumnName = (value: string) =>
-    value
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/_/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .replace(/^./, (str) => str.toUpperCase());
-
-  const formatCellValue = (raw: any): React.ReactNode => {
-    if (raw === null || raw === undefined || raw === '') return '-';
-    if (typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean') return String(raw);
-    if (Array.isArray(raw)) {
-      if (!raw.length) return '-';
-      const sample = raw.slice(0, 3).map((item) => {
-        if (typeof item === 'string' || typeof item === 'number') return String(item);
-        if (item && typeof item === 'object') {
-          return String(item.title || item.name || item.label || item.slug || item.id || '[item]');
-        }
-        return String(item);
-      });
-      return sample.join(', ') + (raw.length > 3 ? '…' : '');
-    }
-    if (typeof raw === 'object') {
-      return String(raw.title || raw.name || raw.label || raw.slug || raw.id || '[Object]');
-    }
-    return String(raw);
-  };
-
   const allColumns = useMemo(() => {
     if (!collection) return [];
     const hiddenFieldNames = new Set(
@@ -259,7 +209,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
 
     return columnNames.map((columnName) => {
       const field = collection.fields.find((item: any) => item.name === columnName);
-      const header = field?.label || prettifyColumnName(columnName);
+      const header = field?.label || CollectionListUtils.prettifyColumnName(columnName);
 
       return {
         id: columnName,
@@ -292,7 +242,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             return date.toLocaleString();
           }
 
-          return formatCellValue(raw);
+          return CollectionListUtils.formatCellValue(raw);
         }
       };
     });
@@ -420,7 +370,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   // Load plugin settings if the collection belongs to a plugin
   useEffect(() => {
     if (collection?.pluginSlug) {
-      api.get(`${ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
+      AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
         .then(res => setPluginSettings(res || {}))
         .catch(err => console.error('Failed to load plugin settings:', err));
     }
@@ -447,7 +397,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
         if (value && value !== 'all') queryParams.append(key, value);
       });
 
-      const result = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
+      const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
 
       if (result.docs) {
         setData(result.docs);
@@ -475,7 +425,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
       if (ids && ids.length > 0) {
         queryParams.append('ids', ids.join(','));
       }
-      window.open(`${api.getBaseUrl()}${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/export?${queryParams.toString()}`, '_blank');
+      window.open(`${AdminApi.getBaseUrl()}${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/export?${queryParams.toString()}`, '_blank');
     } catch (error) {
       console.error('Export failed:', error);
     }
@@ -490,7 +440,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
       try {
         const content = event.target?.result as string;
         const data = JSON.parse(content);
-        const result = await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/import`, data);
+        const result = await AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/import`, data);
         alert(`Imported ${result.success} records successfully. ${result.errors.length} errors.`);
         window.location.reload();
       } catch (error: any) {
@@ -509,7 +459,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     if (selectedIds.length === 0) return;
     setLoading(true);
     try {
-      await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-update`, { 
+      await AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-update`, { 
         ids: selectedIds, 
         data: { status: newStatus } 
       });
@@ -538,7 +488,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
       let removedCount = 0;
 
       if (deleteDialogState.mode === 'single') {
-        await api.delete(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${deleteDialogState.id}`);
+        await AdminApi.delete(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${deleteDialogState.id}`);
         removedCount = 1;
         setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== deleteDialogState.id));
         if (quickEditExpandedId === deleteDialogState.id) {
@@ -551,7 +501,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
           setDeleteDialogState(null);
           return;
         }
-        await api.post(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-delete`, { ids });
+        await AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-delete`, { ids });
         removedCount = ids.length;
         setSelectedIds([]);
       }
@@ -583,7 +533,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     setQuickEditExpandedId(rowId);
     setQuickEditLoadingId(rowId);
     try {
-      const record = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${row.id}?locale_mode=raw`);
+      const record = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${row.id}?locale_mode=raw`);
       setQuickEditData(record || {});
       setQuickEditInitialData(record || {});
     } catch (error: any) {
@@ -610,7 +560,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
         return;
       }
 
-      await api.put(`${ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${quickEditExpandedId}`, payload);
+      await AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${quickEditExpandedId}`, payload);
       setQuickEditStatus({ type: 'success', message: 'Record updated successfully.' });
       setQuickEditInitialData({ ...quickEditData });
       await fetchData(page);
@@ -650,7 +600,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             selectFilterFields={selectFilterFields}
             fieldFilters={fieldFilters}
             setFieldFilters={setFieldFilters}
-            prettifyColumnName={prettifyColumnName}
+            prettifyColumnName={CollectionListUtils.prettifyColumnName}
           />
 
           <BulkActions 
@@ -687,7 +637,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             actions={(row) => {
               const getRowPreviewUrl = () => {
                 if (!collection) return '#';
-                return generatePreviewUrl(
+                return AdminCollectionUtils.generatePreviewUrl(
                   settings?.frontend_url || '', 
                   row, 
                   collection, 

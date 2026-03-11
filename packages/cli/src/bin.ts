@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { registerPluginCommands } from './commands/plugin';
-import { registerThemeCommands } from './commands/theme';
-import { registerDatabaseCommands } from './commands/database';
-import { registerSystemCommands } from './commands/system';
-import { registerQualityCommands } from './commands/quality';
+import { PluginCommands } from './commands/plugin';
+import { ThemeCommands } from './commands/theme';
+import { DatabaseCommands } from './commands/database';
+import { SystemCommands } from './commands/system';
+import { QualityCommands } from './commands/quality';
 
 const program = new Command();
 
@@ -15,11 +15,11 @@ program
   .version('1.0.0');
 
 // Register modular commands
-registerPluginCommands(program);
-registerThemeCommands(program);
-registerDatabaseCommands(program);
-registerSystemCommands(program);
-registerQualityCommands(program);
+PluginCommands.registerPluginCommands(program);
+ThemeCommands.registerThemeCommands(program);
+DatabaseCommands.registerDatabaseCommands(program);
+SystemCommands.registerSystemCommands(program);
+QualityCommands.registerQualityCommands(program);
 
 // Handle unknown commands
 program.on('command:*', () => {

@@ -1,5 +1,6 @@
 import { IDatabaseManager, users } from '@fromcode119/database';
-import { Collection, RecordVersions, Logger, SystemTable } from '@fromcode119/core';
+import { Logger, RecordVersions } from '@fromcode119/core';
+import { type Collection, SystemConstants } from '@fromcode119/sdk';
 
 export class VersioningService {
   private logger = new Logger({ namespace: 'versioning' });
@@ -8,7 +9,7 @@ export class VersioningService {
 
   async createSnapshot(collection: Collection, refId: any, data: any, user: any, summary: string) {
     try {
-      if (collection.slug === SystemTable.RECORD_VERSIONS || collection.slug === SystemTable.LOGS) return;
+      if (collection.slug === SystemConstants.TABLE.RECORD_VERSIONS || collection.slug === SystemConstants.TABLE.LOGS) return;
       
       // Get latest version number for this specific record
       const lastVersions = await this.db.find(RecordVersions.slug, {

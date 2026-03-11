@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { media, mediaFolders, IDatabaseManager } from '@fromcode119/database';
-import { resolvePublicUrl } from '../utils/url';
+import { ApiUrlUtils } from '../utils/url';
 
 export class MediaController {
   private db: IDatabaseManager;
@@ -70,7 +70,7 @@ export class MediaController {
         updatedAt: insertedRaw?.updated_at ?? insertedRaw?.updatedAt
       };
 
-      res.json({ ...inserted, url: resolvePublicUrl(req as Request, result.url) });
+      res.json({ ...inserted, url: ApiUrlUtils.resolvePublicUrl(req as Request, result.url) });
     } catch (err: any) {
       this.logger.error(`Upload error: ${err.message}`);
       res.status(500).json({ error: err.message });
@@ -138,7 +138,7 @@ export class MediaController {
       res.json(
         files.map((f: any) => ({
           ...f,
-          url: resolvePublicUrl(req, this.mediaManager.driver.getUrl(f.path))
+          url: ApiUrlUtils.resolvePublicUrl(req, this.mediaManager.driver.getUrl(f.path))
         }))
       );
     } catch (err: any) {

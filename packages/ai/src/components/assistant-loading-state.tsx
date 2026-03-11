@@ -41,13 +41,13 @@ export function AssistantLoadingState({ mode, phase, totalPhases }: AssistantLoa
       <div className="flex max-w-[92%] gap-3 items-start">
         {/* Simple Avatar */}
         <div className="relative flex h-8 w-8 shrink-0 items-center justify-center mt-1">
-          <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-cyan-400/30 to-cyan-400/10 animate-pulse dark:from-cyan-400/25 dark:to-cyan-400/5 shadow-[0_0_16px_rgba(6,182,212,0.3)]" style={{ animationDuration: '2s' }} />
-          <div className="relative flex items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/30 to-cyan-600/20 dark:from-cyan-500/25 dark:to-cyan-600/15 shadow-[0_0_12px_rgba(6,182,212,0.4)]">
-            <Icon size={14} className="text-cyan-600 dark:text-cyan-300" />
+          <div className="absolute inset-0 rounded-lg bg-[var(--surface-strong)] animate-pulse shadow-[0_0_14px_rgba(15,23,42,0.24)]" style={{ animationDuration: '2s' }} />
+          <div className="relative flex items-center justify-center rounded-lg bg-[var(--surface)] shadow-[0_0_10px_rgba(15,23,42,0.2)]">
+            <Icon size={14} className="text-[var(--text-sub)]" />
           </div>
         </div>
         
-        <div className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex-1 rounded-xl border border-white/62 bg-white/72 px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/12 dark:bg-slate-900/52 dark:shadow-[0_12px_28px_rgba(2,6,23,0.48)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -60,7 +60,7 @@ export function AssistantLoadingState({ mode, phase, totalPhases }: AssistantLoa
                     key={idx}
                     className={`h-0.5 w-1.5 rounded-full transition-all duration-300 ${
                       idx <= currentStepIndex
-                        ? 'bg-gradient-to-r from-cyan-500 to-cyan-400 dark:from-cyan-400 dark:to-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.6)]'
+                        ? 'bg-[var(--text-main)] shadow-[0_0_8px_rgba(15,23,42,0.32)]'
                         : 'bg-slate-300/30 dark:bg-slate-700/40'
                     }`}
                   />

@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
-import { useTheme } from '@/components/theme-context';
-import { useNotify } from '@/components/notification-context';
-import { usePlugins } from '@fromcode119/react';
+import { ThemeHooks } from '@/components/use-theme';
+import { NotificationHooks } from '@/components/use-notification';
+import { ContextHooks } from '@fromcode119/react';
 import type { PluginEntry } from '@fromcode119/core/shared';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
@@ -17,9 +17,9 @@ import { Lightbox } from '@/components/ui/lightbox';
 export default function MarketplaceDetailPage() {
   const { slug } = useParams();
   const router = useRouter();
-  const { theme } = useTheme();
-  const { notify } = useNotify();
-  const { triggerRefresh } = usePlugins();
+  const { theme } = ThemeHooks.useTheme();
+  const { notify } = NotificationHooks.useNotify();
+  const { triggerRefresh } = ContextHooks.usePlugins();
   const [plugin, setPlugin] = useState<PluginEntry | null>(null);
   const [allVersions, setAllVersions] = useState<PluginEntry[]>([]);
   const [selectedVersion, setSelectedVersion] = useState<string>('');
@@ -36,8 +36,8 @@ export default function MarketplaceDetailPage() {
     setError(null);
     try {
       const [marketData, instData] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.MARKETPLACE),
-        api.get(ENDPOINTS.PLUGINS.LIST)
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE),
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LIST)
       ]);
       
       const versions = (marketData.plugins || []).filter((p: any) => p.slug === slug);
@@ -55,7 +55,7 @@ export default function MarketplaceDetailPage() {
         // Reset active image when plugin changes
         setActiveImageIndex(0);
 
-        setInstalledPlugin((instData || []).find((p: any) => p.slug === slug));
+        setInstalledPlugin((instData || []).find((p: any) => (p.manifest?.slug || p.slug) === slug));
       }
     } catch (err) {
       console.error('Failed to load plugin details', err);
@@ -74,7 +74,7 @@ export default function MarketplaceDetailPage() {
     try {
       setInstalling(true);
       notify('info', 'Installation Started', `Downloading and staging ${pluginSlug} v${plugin.version}...`);
-      await api.post(`${ENDPOINTS.PLUGINS.INSTALL(pluginSlug)}?version=${plugin.version}`, {});
+      await AdminApi.post(`${AdminConstants.ENDPOINTS.PLUGINS.INSTALL(pluginSlug)}?version=${plugin.version}`, {});
       // Optimistically reflect the newly installed version so users do not need a manual refresh.
       setInstalledPlugin((current: any) => ({
         ...(current || {}),

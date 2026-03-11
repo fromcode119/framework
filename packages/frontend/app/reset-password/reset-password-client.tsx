@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ApiPath } from '@fromcode119/sdk';
-import { buildFrontendApiUrl } from '@/lib/api-routes';
+import { SystemConstants } from '@fromcode119/sdk';
+import { FrontendApiRoutes } from '@/lib/api-routes';
 export const dynamic = 'force-dynamic';
 
 export default function ResetPasswordPage() {
@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      const response = await fetch(buildFrontendApiUrl(ApiPath.AUTH.RESET_PASSWORD), {
+      const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.RESET_PASSWORD), {
         method: 'POST',
         credentials: 'include',
         headers: {

@@ -1,12 +1,11 @@
 import { AsyncLocalStorage } from 'async_hooks';
+import type { RequestStore } from './request-context.interfaces';
 
-export interface RequestStore {
-  locale: string;
-  [key: string]: any;
-}
+export class RequestContextUtils {
+  static readonly storage = new AsyncLocalStorage<RequestStore>();
 
-export const requestContext = new AsyncLocalStorage<RequestStore>();
-
-export function getLocale(): string | undefined {
-  return requestContext.getStore()?.locale;
+  /** Returns the locale stored in the current async request context. */
+  static getLocale(): string | undefined {
+    return RequestContextUtils.storage.getStore()?.locale;
+  }
 }

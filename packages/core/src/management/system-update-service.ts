@@ -5,7 +5,7 @@ import { Logger } from '@fromcode119/sdk';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';
-import { getProjectRoot } from '../config/paths';
+import { ProjectPaths } from '../config/paths';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
@@ -28,7 +28,7 @@ export class SystemUpdateService {
       if (!marketplaceData.core) return null;
 
       let currentVersion = '0.0.0';
-      const rootDir = getProjectRoot();
+      const rootDir = ProjectPaths.getProjectRoot();
       const pkgPath = path.resolve(rootDir, 'package.json');
       if (fs.existsSync(pkgPath)) {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
@@ -67,7 +67,7 @@ export class SystemUpdateService {
       throw new Error(`Pre-update backup failed: ${err.message}`);
     }
 
-    const rootDir = getProjectRoot();
+    const rootDir = ProjectPaths.getProjectRoot();
     const tempDir = path.resolve(rootDir, `.tmp-system-update-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
 

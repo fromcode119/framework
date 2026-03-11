@@ -7,6 +7,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./naming-strategy": {
+      "import": "./dist/naming-strategy.js",
+      "require": "./dist/naming-strategy.js",
+      "types": "./dist/naming-strategy.d.ts"
     }
   },
   "browser": {

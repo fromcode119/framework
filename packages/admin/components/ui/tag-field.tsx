@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
-import { UI_FIELD, UI_COMMON, getFieldClasses } from '@/lib/ui';
-import { resolveLabelText, slugify } from '@/lib/utils';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { UiFieldUtils } from '@/lib/ui';
+import { StringUtils } from '@fromcode119/sdk';
+import { AdminServices } from '@/lib/admin-services';
+import { TagFieldUtils } from './tag-field-utils';
 
 interface TagFieldProps {
   value: string[] | string;
@@ -32,20 +34,7 @@ interface TagOption {
   value: string;
 }
 
-function toTitleCase(input: string): string {
-  return input
-    .replace(/[_-]+/g, ' ')
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
-function inferFieldLabel(fieldName?: string): string {
-  const normalized = String(fieldName || '').trim();
-  if (!normalized) return 'Value';
-  return toTitleCase(normalized);
-}
 
 export const TagField = ({ 
   value, 
@@ -68,7 +57,11 @@ export const TagField = ({
   const [sourceUnavailableMessage, setSourceUnavailableMessage] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const [labels, setLabels] = useState<Record<string, string>>({});
-  const inferredFieldLabel = inferFieldLabel(fieldName);
+  const inferredFieldLabel = TagFieldUtils.inferFieldLabel(fieldName);
+  const sourceCollectionCandidates = React.useMemo(
+    () => TagFieldUtils.resolveCollectionCandidates(String(sourceCollection || '')),
+    [sourceCollection]
+  );
   const effectivePlaceholder = placeholder || (sourceCollection ? `Search ${inferredFieldLabel}...` : `Add ${inferredFieldLabel} and press Enter...`);
   const effectiveSuggestionsLabel =
     suggestionsLabel ||
@@ -108,29 +101,47 @@ export const TagField = ({
         const newLabels = { ...labels };
         await Promise.all(missing.map(async (t) => {
            try {
-             const url = apiOverrides?.search 
-               ? `${apiOverrides.search}?q=${encodeURIComponent(t)}`
-               : `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}?${searchKey}=${encodeURIComponent(t)}&limit=1`;
-             
-             const res = await api.get(url);
-             let doc = apiOverrides?.search ? res : res.docs?.[0];
-             
-             // Fallback: If no document found by the source field (e.g. slug/username),
-             // and the tag value is a number, try fetching by ID directly
-             if (!doc && !apiOverrides?.search && !isNaN(Number(t)) && sourceCollection) {
-                try {
-                    const fallbackUrl = `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}/${t}`;
-                    const fallbackRes = await api.get(fallbackUrl);
-                    if (fallbackRes && (fallbackRes.id || fallbackRes._id)) {
-                        doc = fallbackRes;
-                    }
-                } catch (fallbackErr) {
-                    // Ignore fallback error
-                }
+             let doc: any = null;
+
+             const collectionsToTry = sourceCollectionCandidates.length
+               ? sourceCollectionCandidates
+               : [String(sourceCollection || '').trim()];
+
+             for (const candidateCollection of collectionsToTry) {
+               if (!candidateCollection || doc) break;
+
+               // First try direct ID lookup for numeric values (relationship chips usually store ids).
+               if (!apiOverrides?.search && !isNaN(Number(t))) {
+                 try {
+                   const byIdUrl = `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${candidateCollection}/${t}`;
+                   const byId = await AdminApi.get(byIdUrl);
+                   if (byId && (byId.id || byId._id || byId.slug)) {
+                     doc = byId;
+                     break;
+                   }
+                 } catch {
+                   // ignore and continue with field lookup fallback
+                 }
+               }
+
+               try {
+                 const url = apiOverrides?.search
+                   ? `${apiOverrides.search}?q=${encodeURIComponent(t)}`
+                   : `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${candidateCollection}?${searchKey}=${encodeURIComponent(t)}&limit=1`;
+
+                 const res = await AdminApi.get(url);
+                 const maybeDoc = apiOverrides?.search ? res : res.docs?.[0];
+                 if (maybeDoc) {
+                   doc = maybeDoc;
+                   break;
+                 }
+               } catch {
+                 // try next collection candidate
+               }
              }
 
              if (doc) {
-               newLabels[t] = resolveLabelText(doc) || t;
+               newLabels[t] = AdminServices.getInstance().localization.resolveLabelText(doc) || t;
              } else {
                 newLabels[t] = t;
              }
@@ -141,11 +152,11 @@ export const TagField = ({
              }
            }
         }));
-        setLabels(newLabels);
+        setLabels((prev) => ({ ...prev, ...newLabels }));
       } catch (err) {}
     };
     fetchLabels();
-  }, [tags, sourceCollection, sourceUnavailableMessage]);
+  }, [tags, sourceCollection, sourceCollectionCandidates, sourceUnavailableMessage]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -168,43 +179,65 @@ export const TagField = ({
 
         // Use source collection search for relationships, or suggestions for flat tags
         const isRelationship = !!sourceCollection;
+        const collectionsToTry = sourceCollection
+          ? sourceCollectionCandidates
+          : [String(targetCollection || '').trim()];
         const q = encodeURIComponent(inputValue);
 
-        const url = apiOverrides?.suggest
-          ? `${apiOverrides.suggest}?q=${q}`
-          : isRelationship
-            ? `${ENDPOINTS.COLLECTIONS.BASE}/${targetCollection}?limit=10${inputValue ? `&search=${q}` : ''}`
-            : `${ENDPOINTS.COLLECTIONS.BASE}/${targetCollection}/suggestions/${targetField}?q=${q}&limit=10`;
+        let result: any = null;
+        let lastError: any = null;
+        if (apiOverrides?.suggest) {
+          result = await AdminApi.get(`${apiOverrides.suggest}?q=${q}`);
+        } else {
+          for (const candidateCollection of collectionsToTry) {
+            if (!candidateCollection) continue;
+            const url = isRelationship
+              ? `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${candidateCollection}?limit=10${inputValue ? `&search=${q}` : ''}`
+              : `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${candidateCollection}/suggestions/${targetField}?q=${q}&limit=10`;
+            try {
+              result = await AdminApi.get(url);
+              lastError = null;
+              break;
+            } catch (error) {
+              lastError = error;
+            }
+          }
 
-        const result = await api.get(url);
+          if (!result && lastError) {
+            throw lastError;
+          }
+        }
         setSourceUnavailableMessage('');
         
         // Handle both array responses and paginated responses
         const docs = Array.isArray(result) ? result : (result.docs || []);
         
         if (docs.length > 0) {
-          const mapped: TagOption[] = docs.map(item => {
+          const mapped: TagOption[] = docs.map((item: any) => {
             if (typeof item === 'string') return { label: item, value: item };
             if (typeof item === 'object' && item !== null) {
-              const sourceValue =
-                sourceField && item[sourceField] !== undefined && item[sourceField] !== null
-                  ? item[sourceField]
-                  : undefined;
-
+              // For relationships, keep stable identifiers (id/slug) as value.
+              // sourceField should affect label/search, not stored relation key.
               let rawValue =
-                sourceValue ??
-                item.value ??
-                item.slug ??
-                item.id ??
-                item.name ??
-                item.label;
+                sourceCollection
+                  ? (item.id ?? item._id ?? item.value ?? item.slug)
+                  : (
+                      (sourceField && item[sourceField] !== undefined && item[sourceField] !== null
+                        ? item[sourceField]
+                        : undefined) ??
+                      item.value ??
+                      item.slug ??
+                      item.id ??
+                      item.name ??
+                      item.label
+                    );
 
               if (typeof rawValue === 'object' && rawValue !== null) {
-                rawValue = resolveLabelText(rawValue);
+                rawValue = AdminServices.getInstance().localization.resolveLabelText(rawValue);
               }
 
               const value = String(rawValue || '').trim();
-              const label = String(resolveLabelText(item) || value || 'Unknown').trim();
+              const label = String(AdminServices.getInstance().localization.resolveLabelText(item) || value || 'Unknown').trim();
 
               return { label, value: value || label };
             }
@@ -217,9 +250,9 @@ export const TagField = ({
           );
           
           // Update labels map with suggestion info
-          const newLabels = { ...labels };
+          const newLabels: Record<string, string> = {};
           mapped.forEach(m => { if (m.value) newLabels[m.value] = m.label; });
-          setLabels(newLabels);
+          setLabels((prev) => ({ ...prev, ...newLabels }));
         }
       } catch (err) {
         const message = String((err as any)?.message || '');
@@ -235,7 +268,7 @@ export const TagField = ({
 
     const timer = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timer);
-  }, [inputValue, collectionSlug, fieldName, tags, sourceCollection, sourceField, showSuggestions]);
+  }, [inputValue, collectionSlug, fieldName, tags, sourceCollection, sourceCollectionCandidates, sourceField, showSuggestions]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -280,18 +313,18 @@ export const TagField = ({
           const searchKey = sourceField || 'slug';
           const searchUrl = apiOverrides?.search
             ? `${apiOverrides.search}?q=${encodeURIComponent(strValue)}`
-            : `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}?${searchKey}=${encodeURIComponent(strValue)}&limit=1`;
+            : `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}?${searchKey}=${encodeURIComponent(strValue)}&limit=1`;
 
-          const existing = await api.get(searchUrl);
+          const existing = await AdminApi.get(searchUrl);
           const hasExisting = apiOverrides?.search ? !!existing : (existing.docs && existing.docs.length > 0);
           
           if (!hasExisting) {
             const payload: Record<string, any> = {
               name: strValue,
-              slug: slugify(strValue)
+              slug: StringUtils.slugify(strValue)
             };
-            const createUrl = apiOverrides?.create || `${ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}`;
-            await api.post(createUrl, payload);
+            const createUrl = apiOverrides?.create || `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}`;
+            await AdminApi.post(createUrl, payload);
           }
         } catch (err) {
           console.error("Tag auto-creation failed:", err);
@@ -304,8 +337,8 @@ export const TagField = ({
 
   const inputTextSizeClass = size === 'sm' ? 'text-[12px]' : size === 'lg' ? 'text-sm' : 'text-[13px]';
   const wrapperClasses = hasMany
-    ? getFieldClasses(size, 'flex flex-wrap gap-2', true)
-    : getFieldClasses(size, 'flex items-center gap-2', false);
+    ? UiFieldUtils.getFieldClasses(size, 'flex flex-wrap gap-2', true)
+    : UiFieldUtils.getFieldClasses(size, 'flex items-center gap-2', false);
 
   const handleAddClick = (tag: any) => {
       // Direct synchronous call to ensure state transitions happen immediately

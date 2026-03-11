@@ -1,8 +1,8 @@
 import { randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
-import { SystemTable, SystemMetaKey } from '@fromcode119/sdk/internal';
+import { SystemConstants } from '@fromcode119/sdk';
 import { AuthControllerPolicy } from './auth-controller-policy';
-import type { ApiTokenRecord } from './auth-controller-types';
+import type { ApiTokenRecord } from './auth-controller.interfaces';
 
 export class AuthControllerTokenSupport extends AuthControllerPolicy {
   protected getPasswordResetTokenHashKey(userId: number) {
@@ -16,7 +16,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   protected async issuePasswordResetToken(userId: number, email: string): Promise<{ token: string; expiresAt: Date }> {
     const token = randomBytes(32).toString('hex');
     const tokenHash = this.hashToken(token);
-    const ttlMinutes = await this.getSettingNumber(SystemMetaKey.AUTH_PASSWORD_RESET_TOKEN_MINUTES, this.defaultPasswordResetExpiryMinutes, 5, 1440);
+    const ttlMinutes = await this.getSettingNumber(SystemConstants.META_KEY.AUTH_PASSWORD_RESET_TOKEN_MINUTES, this.defaultPasswordResetExpiryMinutes, 5, 1440);
     const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 
     const previousHash = String((await this.getMetaValue(this.getPasswordResetTokenHashKey(userId))) || '').trim();
@@ -76,7 +76,7 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   protected async issueEmailChangeToken(userId: number, oldEmail: string, newEmail: string): Promise<{ token: string; expiresAt: Date }> {
     const token = randomBytes(32).toString('hex');
     const tokenHash = this.hashToken(token);
-    const ttlMinutes = await this.getSettingNumber(SystemMetaKey.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, this.defaultEmailChangeExpiryMinutes, 10, 1440);
+    const ttlMinutes = await this.getSettingNumber(SystemConstants.META_KEY.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, this.defaultEmailChangeExpiryMinutes, 10, 1440);
     const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 
     const previousHash = String((await this.getMetaValue(this.getEmailChangeTokenHashKey(userId))) || '').trim();
@@ -164,18 +164,18 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   }
 
   protected async revokeAllSessionsForUser(userId: number) {
-    await this.db.update(SystemTable.SESSIONS, { userId, isRevoked: false }, { isRevoked: true, updatedAt: new Date() });
+    await this.db.update(SystemConstants.TABLE.SESSIONS, { userId, isRevoked: false }, { isRevoked: true, updatedAt: new Date() });
   }
 
   protected async revokeOtherSessionsForUser(userId: number, currentJti: string): Promise<number> {
-    const activeSessions = await this.db.find(SystemTable.SESSIONS, { where: { userId, isRevoked: false } });
+    const activeSessions = await this.db.find(SystemConstants.TABLE.SESSIONS, { where: { userId, isRevoked: false } });
 
     const targetIds = activeSessions
       .filter((row: any) => String(row?.tokenId || '') !== String(currentJti || ''))
       .map((row: any) => String(row.id));
 
     for (const id of targetIds) {
-      await this.db.update(SystemTable.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });
+      await this.db.update(SystemConstants.TABLE.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });
     }
 
     return targetIds.length;
@@ -360,4 +360,4 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
   }
 }
 
-export type { ApiTokenRecord };
+

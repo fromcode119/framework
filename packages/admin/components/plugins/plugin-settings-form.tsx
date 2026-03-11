@@ -1,33 +1,22 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
-import { usePlugins } from '@fromcode119/react';
+import { ContextHooks } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
 import { FieldRenderer } from '@/components/collection/field-renderer';
-import { useTheme } from '@/components/theme-context';
-import { api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { ThemeHooks } from '@/components/use-theme';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import type { PluginSettingsFormHandle, PluginSettingsFormProps } from './plugin-settings-form.interfaces';
 
-interface PluginSettingsFormProps {
-  pluginSlug: string;
-  formId?: string;
-  onStateChange?: (isDirty: boolean, saving: boolean) => void;
-}
-
-export interface PluginSettingsFormHandle {
-  exportSettings: () => void;
-  importSettings: () => void;
-  resetSettings: () => void;
-}
-
-export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSettingsFormProps>(function PluginSettingsForm({
+function PluginSettingsFormComponent({
   pluginSlug,
   formId,
   onStateChange,
-}, ref) {
-  const { triggerRefresh } = usePlugins() as any;
-  const { theme } = useTheme();
+}: PluginSettingsFormProps, ref: React.ForwardedRef<PluginSettingsFormHandle>) {
+  const { triggerRefresh } = ContextHooks.usePlugins() as any;
+  const { theme } = ThemeHooks.useTheme();
   const importInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,8 +47,8 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
     setStatus(null);
     try {
       const [schemaRes, settingsRes] = await Promise.all([
-        api.get(ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(pluginSlug)),
-        api.get(ENDPOINTS.PLUGINS.SETTINGS(pluginSlug)),
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(pluginSlug)),
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(pluginSlug)),
       ]);
 
       const nextSchema = schemaRes;
@@ -90,7 +79,7 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
     setStatus(null);
     
     try {
-      await api.put(ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settings);
+      await AdminApi.put(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settings);
       setIsDirty(false);
       setStatus({ type: 'success', message: 'Settings saved successfully!' });
       triggerRefresh();
@@ -113,7 +102,7 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
     }
     
     try {
-      const res = await api.post(ENDPOINTS.PLUGINS.SETTINGS_RESET(pluginSlug));
+      const res = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_RESET(pluginSlug));
       const nextSettings = res.settings || {};
       setSettings(nextSettings);
       setIsDirty(false);
@@ -125,7 +114,7 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
   };
 
   const handleExport = () => {
-    window.open(api.getURL(ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug)), '_blank');
+    window.open(AdminApi.getURL(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_EXPORT(pluginSlug)), '_blank');
   };
 
   useImperativeHandle(ref, () => ({
@@ -144,7 +133,7 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
         const content = event.target?.result as string;
         const importedSettings = JSON.parse(content);
         
-        await api.post(ENDPOINTS.PLUGINS.SETTINGS_IMPORT(pluginSlug), importedSettings);
+        await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_IMPORT(pluginSlug), importedSettings);
         await loadSettings();
         setIsDirty(false);
         triggerRefresh();
@@ -310,4 +299,10 @@ export const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSet
 
     </form>
   );
-});
+}
+
+const PluginSettingsForm = forwardRef<PluginSettingsFormHandle, PluginSettingsFormProps>(PluginSettingsFormComponent);
+
+PluginSettingsForm.displayName = 'PluginSettingsForm';
+
+export default PluginSettingsForm;

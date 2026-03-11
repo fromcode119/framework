@@ -1,15 +1,15 @@
 import { Response } from 'express';
 import { randomBytes } from 'crypto';
-import { SystemTable } from '@fromcode119/sdk/internal';
+import { SystemConstants } from '@fromcode119/sdk';
 import { AuthControllerAccount } from './auth-controller-account';
-import type { ApiTokenRecord } from './auth-controller-types';
+import type { ApiTokenRecord } from './auth-controller.interfaces';
 
 export class AuthControllerSecurity extends AuthControllerAccount {
   async getMySecurityState(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const user = await this.db.findOne(SystemTable.USERS, { id: userId });
+    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const status = await this.getUserAccountStatus(userId);

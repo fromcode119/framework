@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { Slot } from '@fromcode119/react';
-import { useTheme } from '@/components/theme-context';
+import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
-import { api } from '@/lib/api';
-import { useNotification } from '@/components/notification-context';
-import { usePlugins } from '@fromcode119/react';
-import { ENDPOINTS } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { NotificationHooks } from '@/components/use-notification';
+import { ContextHooks } from '@fromcode119/react';
+import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
@@ -32,9 +32,9 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
 );
 
 export default function GeneralSettingsPage() {
-  const { theme, toggleTheme } = useTheme();
-  const { addNotification } = useNotification();
-  const { registerSettings } = usePlugins();
+  const { theme, toggleTheme } = ThemeHooks.useTheme();
+  const { addNotification } = NotificationHooks.useNotification();
+  const { registerSettings } = ContextHooks.usePlugins();
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingTelemetryTest, setIsSendingTelemetryTest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +51,7 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await api.get(`${ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
         const docs = response.docs || [];
         const newSettings = { ...settings };
         docs.forEach((s: any) => {
@@ -83,9 +83,9 @@ export default function GeneralSettingsPage() {
         .map(({ key, serialized }) => {
           const payload = { value: serialized };
           if (existingSettingKeys.has(key)) {
-            return api.put(`${ENDPOINTS.COLLECTIONS.BASE}/settings/${encodeURIComponent(key)}`, payload);
+            return AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/${encodeURIComponent(key)}`, payload);
           }
-          return api.post(`${ENDPOINTS.COLLECTIONS.BASE}/settings`, { key, ...payload });
+          return AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`, { key, ...payload });
         });
 
       await Promise.all(upserts);
@@ -119,7 +119,7 @@ export default function GeneralSettingsPage() {
   const handleSendTelemetryTest = async () => {
     setIsSendingTelemetryTest(true);
     try {
-      const result = await api.post(ENDPOINTS.SYSTEM.EMAIL_TELEMETRY_TEST, {});
+      const result = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.EMAIL_TELEMETRY_TEST, {});
       const recipientsCount = Number(result?.recipientsCount || 0);
       addNotification({
         title: 'Telemetry Test Sent',

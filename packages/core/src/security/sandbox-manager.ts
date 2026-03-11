@@ -1,5 +1,5 @@
 // TypeScript namespace import correctly handles isolated-vm's CommonJS export pattern
-import ivm = require('isolated-vm');
+import * as ivm from 'isolated-vm';
 import { PluginManifest, PluginContext } from '@fromcode119/sdk';
 import { Logger } from '@fromcode119/sdk';
 

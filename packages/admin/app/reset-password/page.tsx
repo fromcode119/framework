@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { api } from '@/lib/api';
-import { ENDPOINTS, ROUTES } from '@/lib/constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
-import { APP_NAME } from '@/lib/env';
+import { AppEnv } from '@/lib/env';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      const data = await api.post(ENDPOINTS.AUTH.RESET_PASSWORD, { token, newPassword });
+      const data = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.RESET_PASSWORD, { token, newPassword });
       setMessage(data?.message || 'Password reset successful. You can sign in now.');
       setNewPassword('');
       setConfirmPassword('');
@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
           <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
             Set New Password
           </h1>
-          <p className="text-slate-500 font-medium">Update your {APP_NAME} credentials</p>
+          <p className="text-slate-500 font-medium">Update your {AppEnv.APP_NAME} credentials</p>
         </div>
 
         <div className="p-8 rounded-3xl border shadow-2xl bg-white border-slate-200 dark:bg-[#0f172a] dark:border-slate-800 dark:shadow-black/40">
@@ -117,10 +117,10 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="mt-5 flex items-center justify-between text-xs font-semibold">
-          <button onClick={() => router.push(ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
+          <button onClick={() => router.push(AdminConstants.ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
             Back to Login
           </button>
-          <Link href={ROUTES.AUTH.FORGOT_PASSWORD} className="text-slate-400 hover:text-slate-300">
+          <Link href={AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD} className="text-slate-400 hover:text-slate-300">
             Need new link?
           </Link>
         </div>

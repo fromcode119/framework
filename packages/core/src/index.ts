@@ -3,7 +3,8 @@ export * from './types';
 export { RecordVersions } from './collections/record-versions';
 
 // Core Classes (Server-only)
-export { PluginManager, type PluginManagerInterface } from './plugin/plugin-manager';
+export { PluginManager } from './plugin/plugin-manager';
+export type { PluginManagerInterface } from './plugin/context/utils.interfaces';
 export { ThemeManager } from './theme/theme-manager';
 export { CoreExtensionManager } from './extensions/extension-manager';
 export type {
@@ -24,23 +25,25 @@ export { I18nManager } from './i18n/i18n-manager';
 export { WebSocketManager } from './realtime/web-socket-manager';
 
 // Capability Registry
-export { capabilities, CapabilityRegistry, type CapabilityMetadata } from './capabilities';
+export { CapabilityRegistry } from './capabilities';
+export type { CapabilityMetadata } from './capabilities.interfaces';
 
 // Shared Utilities
 export { Logger } from '@fromcode119/sdk';
 export type { LoggerOptions } from '@fromcode119/sdk';
 export * from './utils';
-export { ApiPath, SystemTable } from '@fromcode119/sdk/internal';
-export { env, validateEnv } from './config/env';
-export { getProjectRoot, getPluginsDir, getThemesDir, getPackagesDir } from './config/paths';
+// Re-export SystemConstants for external plugins
+export { SystemConstants } from '@fromcode119/sdk';
+export { EnvConfig } from './config/env';
+export { ProjectPaths } from './config/paths';
 
 // Integrations
 export { IntegrationManager } from './integrations/integration-manager';
 export { IntegrationRegistry } from './integrations/integration-registry';
 
 // Context
-export { requestContext, getLocale } from './context/request-context';
-export type { RequestStore } from './context/request-context';
+export { RequestContextUtils } from './context/request-context';
+export type { RequestStore } from './context/request-context.interfaces';
 
 // Plugin Services (Server-only)
 export { DiscoveryService } from './plugin/services/discovery-service';
@@ -54,20 +57,21 @@ export { AdminMetadataService } from './plugin/services/admin-metadata-service';
 export { AuditManager } from './security/audit-manager';
 export { SecurityMonitor } from './security/security-monitor';
 export { PluginPermissionsService } from './security/plugin-permissions-service';
-export type { PluginPermission } from './security/plugin-permissions-service';
-export { PluginSignatureService, signPayload } from './security/plugin-signature-service';
+export type { PluginPermission } from './security/plugin-permissions-service.types';
+export { PluginSignatureService } from './security/plugin-signature-service';
 
 // Management (Server-only)
 export { BackupService } from './management/backup-service';
 export {
+  ManifestValidator,
   PluginManifestSchema,
-  validatePluginManifest,
-  safeValidatePluginManifest,
   RegistryPluginSchema,
-  RegistryManifestSchema,
-  validateRegistryManifest
+  RegistryManifestSchema
 } from './management/manifest';
-export type { RegistryPlugin, RegistryManifest } from './management/manifest';
+export type { RegistryPlugin, RegistryManifest } from './management/manifest.types';
 export { MigrationCoordinator } from './management/migration-coordinator';
 export { HotReloadService } from './management/hot-reload-service';
 export { SystemUpdateService } from './management/system-update-service';
+
+// Base Classes for Plugin Development
+export { BaseRepository, BaseService, BaseController } from './base';

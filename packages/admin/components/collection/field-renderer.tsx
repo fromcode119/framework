@@ -1,5 +1,5 @@
 import React from 'react';
-import { Slot, usePlugins } from '@fromcode119/react';
+import { Slot, ContextHooks } from '@fromcode119/react';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { TextArea } from '@/components/ui/text-area';
@@ -8,12 +8,13 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import { CodeEditor } from '@/components/ui/code-editor';
 import { ArrayField } from '@/components/ui/array-field';
 import { FrameworkIcons } from '@/lib/icons';
-import { normalizeLocaleCode, isLocaleLikeKey } from '@/lib/utils';
-import { parseLocaleRegistry } from '@/lib/locale-utils';
+import { LocalizationUtils } from '@fromcode119/sdk';
+import { LocaleRegistryUtils } from '@/lib/locale-utils';
 import { TagFieldLocal } from './tag-field-local';
 import { RelationshipSelectLocal } from './relationship-select-local';
 import { MediaRelationField } from './media-relation-field';
-import { UI_TEXT } from '@/lib/ui';
+import { UiFieldUtils } from '@/lib/ui';
+import { FieldRendererUtils } from './field-renderer-utils';
 
 interface CollectionField {
   name: string;
@@ -55,6 +56,8 @@ interface FieldRendererProps {
   onReadOnlyOverrideRequest?: (field: { name: string; label: string }) => void;
 }
 
+
+
 export const FieldRenderer: React.FC<FieldRendererProps> = ({
   field,
   value,
@@ -70,7 +73,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   readOnlyOverrideGranted = false,
   onReadOnlyOverrideRequest
 }) => {
-  const plugins = usePlugins();
+  const plugins = ContextHooks.usePlugins();
   const fieldComponents = (plugins as any).fieldComponents || {};
   const settings = (plugins as any)?.settings || {};
   const fieldMarkedReadOnly = Boolean(field.admin?.readOnly);
@@ -83,9 +86,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   const componentHandlesLocalization = isLocalizedField && Boolean(field.admin?.handlesLocalization);
 
   const label = field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
-  const localeRegistry = React.useMemo(() => parseLocaleRegistry(settings), [settings]);
+  const localeRegistry = React.useMemo(() => LocaleRegistryUtils.parseLocaleRegistry(settings), [settings]);
   const defaultLocale = React.useMemo(
-    () => normalizeLocaleCode(settings?.default_locale || settings?.admin_default_locale || localeRegistry[0]?.code || 'en') || 'en',
+    () => LocalizationUtils.normalizeLocaleCode(settings?.default_locale || settings?.admin_default_locale || localeRegistry[0]?.code || 'en') || 'en',
     [localeRegistry, settings]
   );
   const [activeLocale, setActiveLocale] = React.useState(defaultLocale);
@@ -114,10 +117,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
     if (!isLocalizedField) return null;
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       const entries = Object.entries(value);
-      if (entries.every(([key]) => isLocaleLikeKey(key))) {
+      if (entries.every(([key]) => LocalizationUtils.isLocaleMap(key))) {
         const normalized: Record<string, any> = {};
         entries.forEach(([localeKey, localeValue]) => {
-          const code = normalizeLocaleCode(localeKey);
+          const code = LocalizationUtils.normalizeLocaleCode(localeKey);
           if (code) normalized[code] = localeValue;
         });
         return normalized;
@@ -172,6 +175,14 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   };
   
   const activeLocaleMeta = localeRegistry.find((item) => item.code === activeLocale) || localeRegistry[0];
+  const resolvedCurrentText = React.useMemo(
+    () => FieldRendererUtils.resolveRenderableText(currentValue, activeLocale || defaultLocale),
+    [activeLocale, currentValue, defaultLocale]
+  );
+  const resolvedFieldDescription = React.useMemo(
+    () => FieldRendererUtils.resolveRenderableText(field.admin?.description, activeLocale || defaultLocale),
+    [activeLocale, defaultLocale, field.admin?.description]
+  );
   const shouldInlineLocaleSwitcher =
     isLocalizedField &&
     !componentHandlesLocalization &&
@@ -247,6 +258,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       field.type === 'textarea' || 
       field.type === 'richText' || 
       field.type === 'array' ||
+      (field.type === 'relationship' && field.hasMany) ||
       field.type === 'json' ||
       field.admin?.width === 'full' ||
       field.admin?.component === 'TagField' || 
@@ -260,7 +272,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         : ''
     }`}>
       <div className="flex items-center justify-between gap-3 mb-1 min-h-[22px]">
-        <label className={UI_TEXT.LABEL}>
+        <label className={UiFieldUtils.TEXT.LABEL}>
           {label}
           {field.required && <span className="text-rose-500 ml-1 font-semibold font-sans">*</span>}
         </label>
@@ -351,7 +363,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         wrapWithReadOnlyOverride(
           <div className="relative">
             <TextArea 
-              value={currentValue || ''}
+              value={resolvedCurrentText}
               onChange={(e) => updateValue(e.target.value)}
               disabled={isFieldReadOnly}
               placeholder={`Enter ${label}...`}
@@ -400,7 +412,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           <div className="relative">
             <Input 
               type="password"
-              value={currentValue || ''}
+              value={resolvedCurrentText}
               onChange={(e) => updateValue(e.target.value)}
               placeholder="••••••••"
               disabled={isFieldReadOnly}
@@ -530,7 +542,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         <div className="relative">
           <Input 
             type={field.type === 'number' ? 'number' : 'text'}
-            value={currentValue ?? ''}
+            value={field.type === 'number' ? (typeof currentValue === 'number' || typeof currentValue === 'string' ? currentValue : '') : resolvedCurrentText}
             onChange={(e) => {
               if (field.type === 'number') {
                 const raw = e.target.value;
@@ -566,11 +578,11 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         </div>
       )
     )}
-    {field.admin?.description && (
-      <p className={UI_TEXT.SUBTEXT}>{field.admin.description}</p>
+    {resolvedFieldDescription && (
+      <p className={UiFieldUtils.TEXT.SUBTEXT}>{resolvedFieldDescription}</p>
     )}
     {errors && errors.length > 0 && (
-      <p className={UI_TEXT.ERROR}>{errors[0]}</p>
+      <p className={UiFieldUtils.TEXT.ERROR}>{errors[0]}</p>
     )}
   </div>
   );
