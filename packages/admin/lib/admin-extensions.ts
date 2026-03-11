@@ -20,8 +20,8 @@ export type AdminExtensionModule = {
  */
 async function loadAiExtension(): Promise<AdminExtensionModule> {
   try {
-    // Try to dynamically import the AI admin module
-    const aiAdmin = (await import('@fromcode119/ai/admin')) as {
+    // Try to dynamically import the AI package root exports
+    const aiAdmin = (await import('@fromcode119/ai')) as {
       registerAdminExtension?: unknown;
       AdminExtensionRegistry?: {
         registerAdminExtension?: unknown;

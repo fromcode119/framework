@@ -130,8 +130,9 @@ export class AssistantFormatUtils {
   const explicit = String(providedDescription || '').trim();
   if (explicit) return explicit;
   const key = String(toolName || '').trim();
+  const fallbackMap = TOOL_DESCRIPTION_FALLBACKS as Record<string, string>;
   if (!key) return 'No description available.';
-  if (TOOL_DESCRIPTION_FALLBACKS[key]) return TOOL_DESCRIPTION_FALLBACKS[key];
+  if (fallbackMap[key]) return fallbackMap[key];
   if (key.startsWith('content.')) return 'Content operation tool.';
   if (key.startsWith('collections.')) return 'Collection discovery tool.';
   if (key.startsWith('plugins.')) return 'Plugin management tool.';

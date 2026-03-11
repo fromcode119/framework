@@ -54,7 +54,7 @@ export default function RoutingPage() {
     const fetchSettings = async () => {
       try {
         const [settingsResponse, frontendMeta, collectionStats] = await Promise.all([
-          AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`),
+          AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE),
           AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.FRONTEND).catch(() => null),
           AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.COLLECTIONS).catch(() => [])
         ]);
@@ -73,7 +73,7 @@ export default function RoutingPage() {
     };
 
     fetchSettings();
-  }, [api]);
+  }, []);
 
   useEffect(() => {
     if (!frontendMeta) return;
@@ -194,7 +194,7 @@ export default function RoutingPage() {
     }, 250);
 
     return () => clearTimeout(timeout);
-  }, [api, availableCollections, collections, frontendMeta, searchTerm]);
+  }, [availableCollections, collections, frontendMeta, searchTerm]);
 
   useEffect(() => {
     let cancelled = false;
@@ -260,16 +260,16 @@ export default function RoutingPage() {
     return () => {
       cancelled = true;
     };
-  }, [api, availableCollections, collections, homeTarget]);
+  }, [availableCollections, collections, homeTarget]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       await Promise.all([
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/permalink_structure`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('permalink_structure'), {
           value: structure
         }),
-        AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/routing_home_target`, {
+        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('routing_home_target'), {
           value: homeTarget
         })
       ]);
@@ -304,7 +304,7 @@ export default function RoutingPage() {
   }
 
   const selectedHomeOption = homeOptions.find((opt) => opt.value === homeTarget);
-  const autoFallbackLayout = detectAutoFallbackLayout(frontendMeta);
+  const autoFallbackLayout = RoutingPageUtils.detectAutoFallbackLayout(frontendMeta);
   const resolvedSourceLabel = homeTarget === 'auto'
     ? `${autoResolvedSource || 'Auto mode: checking "/" and "home"...'}${autoFallbackLayout ? ` Theme fallback: ${autoFallbackLayout}.` : ''}`
     : selectedHomeOption

@@ -29,16 +29,10 @@ export class ProjectPaths {
       }
 
       // Fallback for runtime contexts where cwd is nested inside workspace packages.
-      try {
-        const pkgPath = require.resolve('@fromcode119/core/package.json');
-        // core is in /packages/core, so its parent's parent is the root.
-        const fromPkg = path.resolve(path.dirname(pkgPath), '../../');
-        if (ProjectPaths.isFrameworkRoot(fromPkg)) {
-          ProjectPaths.cachedRoot = fromPkg;
-          return fromPkg;
-        }
-      } catch {
-        // Ignore resolution errors and fallback to cwd
+      const fromLocalCorePath = path.resolve(__dirname, '../../../../');
+      if (ProjectPaths.isFrameworkRoot(fromLocalCorePath)) {
+        ProjectPaths.cachedRoot = fromLocalCorePath;
+        return fromLocalCorePath;
       }
 
       // Last resort: current working directory.

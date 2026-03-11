@@ -3,12 +3,9 @@
 import React, { createContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { SystemConstants, ApiVersionUtils } from '@fromcode119/sdk';
-import { Slot } from './slot';
-import { Override } from './override';
 import { FrameworkIcons } from './framework-icons';
 import { FrameworkIconRegistry } from './framework-icon-registry';
 import { RootFramework } from './root-framework';
-import { ContextHooks } from './context-hooks';
 import { SystemShortcodes } from './system-shortcodes';
 import { CollectionQueryUtils } from './collection-queries';
 import { BrowserLocalization } from './browser-localization';
@@ -36,6 +33,65 @@ const getFrontendConfigPath = (): string => {
 const getIcon = FrameworkIcons.getIcon.bind(FrameworkIcons);
 const createProxyIcon = FrameworkIcons.createProxyIcon.bind(FrameworkIcons);
 const iconNames = FrameworkIcons.iconNames();
+
+const usePluginsBridgeHook = (): PluginContextValue => {
+  const context = React.useContext(PluginContext);
+  if (!context) {
+    throw new Error('usePlugins must be used within a PluginsProvider');
+  }
+
+  return context;
+};
+
+const useTranslationBridgeHook = () => {
+  const { t, locale, setLocale } = usePluginsBridgeHook();
+  return { t, locale, setLocale };
+};
+
+const usePluginApiBridgeHook = (slug: string) => {
+  const { api } = usePluginsBridgeHook();
+  const pluginPrefix = `${SystemConstants.API_PATH.PLUGINS.BASE}/${slug}`;
+
+  return React.useMemo(
+    () => ({
+      get: (path: string, options?: any) =>
+        api.get(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, options),
+      post: (path: string, body?: any, options?: any) =>
+        api.post(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+      put: (path: string, body?: any, options?: any) =>
+        api.put(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+      delete: (path: string, options?: any) =>
+        api.delete(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, options),
+      patch: (path: string, body?: any, options?: any) =>
+        api.patch(`${pluginPrefix}${path.startsWith('/') ? '' : '/'}${path}`, body, options),
+    }),
+    [api, pluginPrefix],
+  );
+};
+
+const usePluginStateBridgeHook = (pluginSlug: string, key?: string) => {
+  const { pluginState, setPluginState } = usePluginsBridgeHook();
+  const state = pluginState[pluginSlug] || {};
+
+  const setter = React.useCallback(
+    (value: any) => {
+      if (key) {
+        setPluginState(pluginSlug, key, value);
+        return;
+      }
+      Object.entries(value).forEach(([entryKey, entryValue]) => {
+        setPluginState(pluginSlug, entryKey, entryValue);
+      });
+    },
+    [pluginSlug, key, setPluginState],
+  );
+
+  if (key) {
+    return [state[key], setter] as const;
+  }
+
+  return [state, setter] as const;
+};
 
 const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsProviderProps) => {
   const [slots, setSlots] = useState<Record<string, SlotComponent[]>>({});
@@ -649,6 +705,9 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
   });
 
   React.useEffect(() => {
+    const Slot = require('./slot').Slot;
+    const Override = require('./override').Override;
+
     ContextRuntimeBridge.installRuntimeBridge({
       apiUrl,
       registerSlotComponent,
@@ -669,10 +728,10 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       stableT,
       stableApiBridge,
       setLocale,
-      usePlugins: ContextHooks.usePlugins,
-      useTranslation: ContextHooks.useTranslation,
-      usePluginAPI: ContextHooks.usePluginAPI,
-      usePluginState: ContextHooks.usePluginState,
+      usePlugins: usePluginsBridgeHook,
+      useTranslation: useTranslationBridgeHook,
+      usePluginAPI: usePluginApiBridgeHook,
+      usePluginState: usePluginStateBridgeHook,
       useSystemShortcodes: SystemShortcodes.useSystemShortcodes,
       CollectionQueryUtils,
       BrowserLocalization,

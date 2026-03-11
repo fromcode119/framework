@@ -164,6 +164,8 @@ export class AdminConstants {
   },
   COLLECTIONS: {
     BASE: AdminConstants.v('/collections'),
+    SETTINGS_BASE: AdminConstants.v('/collections/settings'),
+    SETTINGS: (key: string) => AdminConstants.v(`/collections/settings/${encodeURIComponent(key)}`),
   },
   MEDIA: {
     BASE: AdminConstants.v('/media'),

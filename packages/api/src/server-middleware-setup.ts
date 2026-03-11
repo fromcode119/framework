@@ -31,6 +31,7 @@ export class ServerMiddlewareSetup {
 
     // Maintenance mode check
     this.app.use(async (req: any, res, next) => {
+      const probeRoutes = ApiConfig.getInstance().probeRoutes;
       if (req.method === 'OPTIONS') return next();
       const isMaintenance = await this.getMaintenanceStatus();
       if (!isMaintenance) return next();
@@ -41,6 +42,8 @@ export class ServerMiddlewareSetup {
 
       const isAdmin = req.user && req.user.roles && req.user.roles.includes('admin');
       const isPublicSystemRoute =
+        req.path === probeRoutes.HEALTH ||
+        req.path === probeRoutes.READY ||
         req.path === ApiConfig.getInstance().legacyRoutes.system.HEALTH ||
         req.path === ApiConfig.getInstance().routes.system.HEALTH ||
         req.path === ApiConfig.getInstance().legacyRoutes.system.OPENAPI ||
@@ -68,8 +71,13 @@ export class ServerMiddlewareSetup {
     this.app.use((req, res, next) => this.manager.middlewares.dispatch('pre_routing' as any, req, res, next));
 
     this.app.use((req: any, res, next) => {
+      const probeRoutes = ApiConfig.getInstance().probeRoutes;
       const hasToken = !!(req.cookies?.fc_token || req.headers.authorization);
-      const isNoise = req.url.includes(ApiConfig.getInstance().routes.system.HEALTH) || req.url.includes(ApiConfig.getInstance().routes.system.STATUS);
+      const isNoise =
+        req.url.includes(probeRoutes.HEALTH) ||
+        req.url.includes(probeRoutes.READY) ||
+        req.url.includes(ApiConfig.getInstance().routes.system.HEALTH) ||
+        req.url.includes(ApiConfig.getInstance().routes.system.STATUS);
       if (!isNoise) this.logger.debug(`${req.method} ${req.url} - User: ${req.user ? req.user.email : 'None'} - HasToken: ${hasToken} - Cookies: ${JSON.stringify(req.cookies || {})}`);
       if (!req.user && hasToken && !isNoise) this.logger.warn(`Token present but user not authenticated for ${req.url}. Possibly expired or invalid format.`);
       next();

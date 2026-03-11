@@ -1,6 +1,6 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { PluginSettingsForm } from './plugin-settings-form';
+import PluginSettingsForm from './plugin-settings-form';
 import { vi } from 'vitest';
 import { AdminApi } from '@/lib/api';
 
