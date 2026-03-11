@@ -2,8 +2,7 @@
 
 import { Logger } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/sdk';
-import { AuthManager } from '@fromcode119/auth';
-import { UserPermissionChecker } from '@fromcode119/auth/permission-checker';
+import { AuthManager, UserPermissionChecker } from '@fromcode119/auth';
 import { systemSessions } from '@fromcode119/database';
 import { createHash } from 'crypto';
 

@@ -6,8 +6,6 @@ module.exports = {
   testMatch: ['**/tests/**/*.test.ts'],
   moduleNameMapper: {
     '^@fromcode119/core$': '<rootDir>/../core/src',
-    '^@fromcode119/core/shared$': '<rootDir>/../core/src/shared',
-    '^@fromcode119/core/utils$': '<rootDir>/../core/src/utils',
     '^@fromcode119/auth$': '<rootDir>/../auth/src',
     '^@fromcode119/database$': '<rootDir>/../database/src',
     '^@fromcode119/media$': '<rootDir>/../media/src',

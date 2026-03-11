@@ -11,7 +11,7 @@ import { NotificationHooks } from '../use-notification';
 import { ContextHooks } from '@fromcode119/react';
 
 import { useRouter } from 'next/navigation';
-import type { PluginEntry } from '@fromcode119/core/shared';
+import type { PluginEntry } from '@fromcode119/core';
 
 const Marketplace: React.FC = () => {
   const router = useRouter();

@@ -5,7 +5,7 @@ import {
   TypeUtils,
 } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/sdk';
-import { AdminAssistantRuntime } from '@fromcode119/ai/runtime';
+import { AdminAssistantRuntime } from '@fromcode119/ai';
 import type { AssistantSkillDefinition, AssistantCollectionContext } from '../admin-assistant-runtime/types';
 import type { RESTController } from './controller.types';
 import { IDatabaseManager } from '@fromcode119/database';
