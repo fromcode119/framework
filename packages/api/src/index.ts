@@ -187,7 +187,7 @@ export class APIServer {
     await this.registerCoreCollection('users', CoreCollections.user);
     await this.registerCoreCollection('media', CoreCollections.media);
     await this.registerCoreCollection('settings', CoreCollections.settings);
-    await this.registerCoreCollection('_system_record_versions', RecordVersions);
+    await this.registerCoreCollection('_system_record_versions', RecordVersions.collection);
     this.setupMiddleware();
     await this.setupRoutes();
 
