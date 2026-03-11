@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { PermalinkInput } from '@/components/ui/permalink-input';
-import type { Collection } from '@fromcode119/core/shared';
+import type { Collection } from '@fromcode119/core';
 
 interface PermalinkSectionProps {
   value: string;

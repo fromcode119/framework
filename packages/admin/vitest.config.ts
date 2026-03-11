@@ -12,7 +12,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
-      '@fromcode119/core/shared': path.resolve(__dirname, '../core/src/shared'),
       '@fromcode119/react': path.resolve(__dirname, '../react/src'),
       '@fromcode119/sdk': path.resolve(__dirname, '../sdk/src'),
     },

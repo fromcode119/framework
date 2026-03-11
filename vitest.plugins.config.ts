@@ -9,6 +9,8 @@ export default defineConfig({
     include: [
       'plugins/**/tests/**/*.test.ts',
       'plugins/**/tests/**/*.test.tsx',
+      'packages/core/src/services/__tests__/**/*.test.ts',
+      'packages/admin/lib/services/__tests__/**/*.test.ts',
     ],
   },
 });

@@ -10,7 +10,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { ContextHooks } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
-import type { PluginEntry } from '@fromcode119/core/shared';
+import type { PluginEntry } from '@fromcode119/core';
 
 export default function MarketplacePage() {
   const router = useRouter();

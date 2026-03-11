@@ -3,7 +3,7 @@ import { Logger, SystemConstants } from '@fromcode119/sdk';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { ContextSecurityProxy } from './utils';
 import { PluginRegistry } from '@fromcode119/plugins';
-import { NamingStrategy } from '@fromcode119/database/naming-strategy';
+import { NamingStrategy } from '@fromcode119/database';
 
 
 export class CollectionsContextProxy {
