@@ -17,10 +17,10 @@
       "types": "./dist/admin-assistant-runtime.d.ts"
     },
     "./admin": {
-      "development": "./src/admin.ts",
-      "import": "./dist/admin.js",
-      "require": "./dist/admin.js",
-      "types": "./dist/admin.d.ts"
+      "development": "./src/admin-extension.ts",
+      "import": "./dist/admin-extension.js",
+      "require": "./dist/admin-extension.js",
+      "types": "./dist/admin-extension.d.ts"
     }
   },
   "files": [
