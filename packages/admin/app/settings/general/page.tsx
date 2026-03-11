@@ -51,7 +51,7 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`);
+        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
         const docs = response.docs || [];
         const newSettings = { ...settings };
         docs.forEach((s: any) => {
@@ -83,9 +83,9 @@ export default function GeneralSettingsPage() {
         .map(({ key, serialized }) => {
           const payload = { value: serialized };
           if (existingSettingKeys.has(key)) {
-            return AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings/${encodeURIComponent(key)}`, payload);
+            return AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS(key), payload);
           }
-          return AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/settings`, { key, ...payload });
+          return AdminApi.post(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE, { key, ...payload });
         });
 
       await Promise.all(upserts);
