@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import type { PluginManager, ThemeManager } from '@fromcode119/core';
 import type { IDatabaseManager } from '@fromcode119/database';
-import type { AdminAssistantRuntime } from '@fromcode119/ai/runtime';
+import type { AdminAssistantRuntime } from '@fromcode119/ai';
 import type { AssistantManagementToolsService } from '../forge/management-tools-service';
 import type { AssistantSessionStore } from '../forge/session-store';
 import type { AssistantCatalogService } from '../forge/catalog-service';

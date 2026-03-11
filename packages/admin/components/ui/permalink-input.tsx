@@ -5,7 +5,7 @@ import { Input } from './input';
 import { Button } from './button';
 import { ContextHooks } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
-import type { Collection } from '@fromcode119/core/shared';
+import type { Collection } from '@fromcode119/core';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { UiFieldUtils } from '@/lib/ui';
 import { AdminUrlUtils } from '@/lib/url-utils';
