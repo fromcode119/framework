@@ -7,6 +7,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./permission-checker": {
+      "import": "./dist/permission-checker.js",
+      "require": "./dist/permission-checker.js",
+      "types": "./dist/permission-checker.d.ts"
     }
   },
   "types": "dist/index.d.ts",
