@@ -1,7 +1,8 @@
 {
   "name": "@fromcode119/admin",
   "version": "0.1.31",
-  "main": "dist/index.js",
+  "main": "lib/index.ts",
+  "types": "lib/index.ts",
   "bin": {
     "fromcode-admin": "scripts/admin.js"
   },
