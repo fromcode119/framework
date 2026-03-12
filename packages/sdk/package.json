@@ -27,6 +27,12 @@
       "import": "./dist/server.js",
       "require": "./dist/server.js",
       "types": "./dist/server.d.ts"
+    },
+    "./react": {
+      "development": "./src/react/index.ts",
+      "import": "./dist/react/index.js",
+      "require": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
     }
   },
   "files": [
@@ -40,7 +46,9 @@
     "@fromcode119/core": "*"
   },
   "peerDependencies": {
-    "express": ">=4.0.0"
+    "express": ">=4.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "lucide-react": ">=0.400.0"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
