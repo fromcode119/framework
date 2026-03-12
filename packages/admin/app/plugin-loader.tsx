@@ -6,7 +6,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AuthHooks } from '@/components/use-auth';
 import { usePathname } from 'next/navigation';
-import { RuntimeConstants } from '@fromcode119/sdk';
+import { RuntimeConstants } from '@fromcode119/core/client';
 import { PluginConditionUtils } from './plugin-condition-utils';
 import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 

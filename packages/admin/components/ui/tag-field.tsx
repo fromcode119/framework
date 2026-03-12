@@ -5,7 +5,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { UiFieldUtils } from '@/lib/ui';
-import { StringUtils } from '@fromcode119/sdk';
+import { StringUtils } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
 import { TagFieldUtils } from './tag-field-utils';
 

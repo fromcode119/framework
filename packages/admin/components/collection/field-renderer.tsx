@@ -8,7 +8,7 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import { CodeEditor } from '@/components/ui/code-editor';
 import { ArrayField } from '@/components/ui/array-field';
 import { FrameworkIcons } from '@/lib/icons';
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { AdminServices } from '@/lib/admin-services';
 import { LocaleRegistryUtils } from '@/lib/locale-utils';
 import { TagFieldLocal } from './tag-field-local';
 import { RelationshipSelectLocal } from './relationship-select-local';
@@ -88,7 +88,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   const label = field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
   const localeRegistry = React.useMemo(() => LocaleRegistryUtils.parseLocaleRegistry(settings), [settings]);
   const defaultLocale = React.useMemo(
-    () => LocalizationUtils.normalizeLocaleCode(settings?.default_locale || settings?.admin_default_locale || localeRegistry[0]?.code || 'en') || 'en',
+    () => AdminServices.getInstance().localization.normalizeLocaleCode(settings?.default_locale || settings?.admin_default_locale || localeRegistry[0]?.code || 'en') || 'en',
     [localeRegistry, settings]
   );
   const [activeLocale, setActiveLocale] = React.useState(defaultLocale);
@@ -114,13 +114,23 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   }, [isLocalizedField, isLocaleMenuOpen]);
 
   const localizedMap = React.useMemo(() => {
+    const loc = AdminServices.getInstance().localization;
     if (!isLocalizedField) return null;
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
+    if (value && typeof value === 'object' && !Array.isArray(value) && loc.isLocaleMap(value)) {
       const entries = Object.entries(value);
-      if (entries.every(([key]) => LocalizationUtils.isLocaleMap(key))) {
+      const normalized: Record<string, any> = {};
+      entries.forEach(([localeKey, localeValue]) => {
+        const code = loc.normalizeLocaleCode(localeKey);
+        if (code) normalized[code] = localeValue;
+      });
+      return normalized;
+    }
+    if (typeof value === 'string') {
+      const parsed = loc.tryParseLocaleJson(value);
+      if (parsed && loc.isLocaleMap(parsed)) {
         const normalized: Record<string, any> = {};
-        entries.forEach(([localeKey, localeValue]) => {
-          const code = LocalizationUtils.normalizeLocaleCode(localeKey);
+        Object.entries(parsed).forEach(([localeKey, localeValue]) => {
+          const code = loc.normalizeLocaleCode(localeKey);
           if (code) normalized[code] = localeValue;
         });
         return normalized;

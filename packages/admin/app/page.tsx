@@ -242,18 +242,18 @@ export default function AdminPage() {
 
                 return true;
               }).map(s => {
-                const colShortSlug = s.shortSlug || s.slug;
-                const colPluginSlug = s.pluginSlug || 'system';
+                const colShortSlug = (s.shortSlug || s.slug).replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+                const colPluginSlug = s.pluginSlug || AdminConstants.SYSTEM_PLUGIN_SLUG;
                 
                 // Content Routing: Platform core entities use root-level paths
                 // whilst plugins use /plugin/slug paths.
                 let adminPath = `/${colPluginSlug}/${colShortSlug}`;
                 const displayPluginSlug = colPluginSlug.charAt(0).toUpperCase() + colPluginSlug.slice(1);
                 
-                if (colPluginSlug.toLowerCase() === 'system') {
-                    if (colShortSlug === 'users') adminPath = '/users';
-                    if (colShortSlug === 'media') adminPath = '/media';
-                    if (colShortSlug === 'activity') adminPath = '/activity';
+                if (colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) {
+                    if (colShortSlug === 'users') adminPath = AdminConstants.ROUTES.USERS.ROOT;
+                    if (colShortSlug === 'media') adminPath = AdminConstants.ROUTES.MEDIA.ROOT;
+                    if (colShortSlug === 'activity') adminPath = AdminConstants.ROUTES.ACTIVITY;
                 }
                 
                 return (
@@ -266,11 +266,11 @@ export default function AdminPage() {
                         <div className="flex items-center gap-2">
                            <p className="text-xs font-bold tracking-tight text-slate-400 uppercase">{s.name || colShortSlug}</p>
                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold tracking-tight uppercase ${
-                               (s.system || colPluginSlug.toLowerCase() === 'system')
+                               (s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG)
                                ? 'bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400' 
                                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                            }`}>
-                             {(s.system || colPluginSlug.toLowerCase() === 'system') ? 'Core' : displayPluginSlug}
+                             {(s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) ? 'Core' : displayPluginSlug}
                            </span>
                         </div>
                         <h4 className="text-2xl font-bold tracking-tight mt-0.5 text-slate-900 dark:text-white">{s.count}</h4>
