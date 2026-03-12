@@ -159,6 +159,9 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const columnsMenuRef = useRef<HTMLDivElement>(null);
 
   const resolvedSlug = collection?.slug || slug;
+  // Use unprefixedSlug for slot names: plugins register using their natural slug (e.g. "ecommerce-customers"),
+  // but collection.slug is table-prefixed at runtime (e.g. "fcp_ecommerce_customers").
+  const slotSlug = (collection as any)?.unprefixedSlug || slug;
   const pageSize = 10;
 
   useEffect(() => {
@@ -582,7 +585,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
 
       <div className="flex-1 w-full px-6 lg:px-12 py-12 space-y-8">
         <Slot
-          name={`admin.collection.${resolvedSlug}.list.header`}
+          name={`admin.collection.${slotSlug}.list.header`}
           props={{ collection, pluginSlug, resolvedSlug, total, page, search }}
         />
         <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -619,7 +622,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
         </div>
 
         <Slot
-          name={`admin.collection.${resolvedSlug}.list.top`}
+          name={`admin.collection.${slotSlug}.list.top`}
           props={{ collection, pluginSlug, resolvedSlug, total, page, search }}
         />
         <div className={`rounded-3xl border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 ${
@@ -728,7 +731,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
           />
         </div>
         <Slot
-          name={`admin.collection.${resolvedSlug}.list.bottom`}
+          name={`admin.collection.${slotSlug}.list.bottom`}
           props={{ collection, pluginSlug, resolvedSlug, total, page, search }}
         />
       </div>
