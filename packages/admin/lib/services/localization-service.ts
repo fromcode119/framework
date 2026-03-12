@@ -1,5 +1,6 @@
 import { BaseService } from './base-service';
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { LocalizationUtils } from '@fromcode119/core/client';
+import type { ResolveAnyStringOptions } from '@fromcode119/core/client';
 
 /**
  * Service for localization and internationalization.
@@ -74,6 +75,41 @@ export class LocalizationService extends BaseService {
    */
   normalizeLocaleCode(code: string): string {
     return LocalizationUtils.normalizeLocaleCode(code);
+  }
+
+  /**
+   * Check if a value is a locale map (object with locale code keys).
+   *
+   * @example
+   * isLocaleMap({ en: 'Hello', bg: 'Здравей' }) // true
+   * isLocaleMap('plain string') // false
+   */
+  isLocaleMap(value: unknown): boolean {
+    return LocalizationUtils.isLocaleMap(value);
+  }
+
+  /**
+   * Try to parse a JSON string as a locale map. Returns null if it's not valid JSON
+   * or not a locale map.
+   *
+   * @example
+   * tryParseLocaleJson('{"en":"Hello","bg":"Здравей"}') // { en: 'Hello', bg: 'Здравей' }
+   * tryParseLocaleJson('plain string') // null
+   */
+  tryParseLocaleJson(value: unknown): Record<string, unknown> | null {
+    return LocalizationUtils.tryParseLocaleJson(value);
+  }
+
+  /**
+   * Resolve any string value — if it's a locale map, return the best matching locale string.
+   *
+   * @example
+   * resolveAnyString({ en: 'Hello', bg: 'Здравей' }) // "Hello"
+   * resolveAnyString('plain') // "plain"
+   */
+  resolveAnyString(value: unknown, locale?: string): string {
+    const options: ResolveAnyStringOptions = locale ? { preferredLocale: locale } : {};
+    return LocalizationUtils.resolveAnyString(value, options);
   }
 
   /**

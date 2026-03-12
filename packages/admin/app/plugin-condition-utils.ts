@@ -1,4 +1,4 @@
-import { CoercionUtils } from '@fromcode119/sdk';
+import { CoercionUtils } from '@fromcode119/core/client';
 
 export class PluginConditionUtils {
   static matchesCondition(actualValue: unknown, expectedValue: unknown): boolean {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StringUtils } from '@fromcode119/sdk';
+import { StringUtils } from '@fromcode119/core/client';
 
 interface UseSlugGenerationOptions {
   sourceValue: string;

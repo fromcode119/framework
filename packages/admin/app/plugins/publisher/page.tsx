@@ -7,7 +7,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { AuthHooks } from '@/components/use-auth';
 import { AdminApi } from '@/lib/api';
-import { StringUtils } from '@fromcode119/sdk';
+import { StringUtils } from '@fromcode119/core/client';
 
 const PublisherPortal = () => {
     const { theme } = ThemeHooks.useTheme();

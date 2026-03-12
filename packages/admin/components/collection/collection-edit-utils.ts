@@ -1,4 +1,4 @@
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { AdminServices } from '@/lib/admin-services';
 
 /**
  * Utility class for collection edit operations.
@@ -61,7 +61,7 @@ export class CollectionEditUtils {
     if (value === null || value === undefined) return '';
     if (typeof value === 'string') return value;
     if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-    return LocalizationUtils.resolveLabelText(value, preferredLocale);
+    return AdminServices.getInstance().localization.resolveLocalizedText(value, preferredLocale);
   }
 
   /**
@@ -88,7 +88,7 @@ export class CollectionEditUtils {
     if (!payload || typeof payload !== 'object' || !Array.isArray(fields)) return payload;
 
     const nextPayload = { ...payload };
-    const preferredLocale = LocalizationUtils.normalizeLocaleCode(
+    const preferredLocale = AdminServices.getInstance().localization.normalizeLocaleCode(
       nextPayload?.locale || preferredLocaleFallback
     );
 

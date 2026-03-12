@@ -581,6 +581,10 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
       />
 
       <div className="flex-1 w-full px-6 lg:px-12 py-12 space-y-8">
+        <Slot
+          name={`admin.collection.${resolvedSlug}.list.header`}
+          props={{ collection, pluginSlug, resolvedSlug, total, page, search }}
+        />
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <FilterBar 
             slug={slug}
@@ -614,6 +618,10 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
           />
         </div>
 
+        <Slot
+          name={`admin.collection.${resolvedSlug}.list.top`}
+          props={{ collection, pluginSlug, resolvedSlug, total, page, search }}
+        />
         <div className={`rounded-3xl border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 ${
           theme === 'dark' ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-sm' : 'bg-white border-white shadow-xl'
         }`}>
@@ -719,6 +727,10 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             }}
           />
         </div>
+        <Slot
+          name={`admin.collection.${resolvedSlug}.list.bottom`}
+          props={{ collection, pluginSlug, resolvedSlug, total, page, search }}
+        />
       </div>
 
       <ListFooter 

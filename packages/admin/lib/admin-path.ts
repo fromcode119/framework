@@ -1,4 +1,4 @@
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core/client';
 
 const RAW_ADMIN_BASE_PATH = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '';
 

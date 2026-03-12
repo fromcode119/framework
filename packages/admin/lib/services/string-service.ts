@@ -1,5 +1,5 @@
 import { BaseService } from './base-service';
-import { StringUtils } from '@fromcode119/sdk';
+import { StringUtils } from '@fromcode119/core/client';
 
 /**
  * Service for string manipulation and processing.
