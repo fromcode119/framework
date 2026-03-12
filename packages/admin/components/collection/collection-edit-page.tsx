@@ -33,6 +33,7 @@ import { EditHeader } from './edit/edit-header';
 import { RevisionModal } from './edit/revision-modal';
 import { EditFooter } from './edit/edit-footer';
 import { SidebarVersions } from './edit/sidebar-versions';
+import { EditPageSectionNav } from './edit/edit-page-section-nav';
 import { CollectionEditUtils } from './collection-edit-utils';
 
 
@@ -352,6 +353,11 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     [mainFieldSections]
   );
 
+  const navSections = React.useMemo(
+    () => [...standardMainFieldSections, ...fullWidthMainFieldSections].map((s) => ({ key: s.key, title: s.title || 'Content' })),
+    [standardMainFieldSections, fullWidthMainFieldSections]
+  );
+
   if (!collection) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in-95 duration-700">
@@ -529,10 +535,35 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
             </div>
           )}
 
-          <div className={`grid grid-cols-1 ${renderSidebar ? 'lg:grid-cols-3' : ''} gap-8 pb-32`}>
+          <div className="flex items-start gap-3">
+            <EditPageSectionNav sections={navSections} theme={theme} />
+            <div className={`flex-1 grid grid-cols-1 ${renderSidebar ? 'lg:grid-cols-3' : ''} gap-8 pb-32`}>
             <div className={`${renderSidebar ? 'lg:col-span-2' : 'lg:col-span-1'} space-y-6`}>
               {standardMainFieldSections.map((section) => (
-                <Card key={section.key} title={section.title}>
+                <Card key={section.key} id={`section-${section.key}`} title={section.title}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                    {section.fields.map((field) => (
+                      <FieldRenderer 
+                        key={field.name}
+                        field={field}
+                        value={formData[field.name]}
+                        onChange={(val) => handleInputChange(field.name, val)}
+                        theme={theme}
+                        collectionSlug={resolvedSlug}
+                        pluginSettings={pluginSettings}
+                        disabled={saving}
+                        isNew={isNew}
+                        slugWarning={field.name === 'slug' ? slugWarning : undefined}
+                        slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
+                        readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
+                        onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+                      />
+                    ))}
+                  </div>
+                </Card>
+              ))}
+              {fullWidthMainFieldSections.map((section) => (
+                <Card key={`full-width-${section.key}`} id={`section-${section.key}`} title={section.title}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                     {section.fields.map((field) => (
                       <FieldRenderer 
@@ -632,36 +663,9 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                 )}
               </div>
             )}
+            </div>
           </div>
 
-          {fullWidthMainFieldSections.length > 0 && (
-            <div className="pb-32 space-y-6">
-              {fullWidthMainFieldSections.map((section) => (
-                <Card key={`full-width-${section.key}`} title={section.title}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-                    {section.fields.map((field) => (
-                      <FieldRenderer 
-                        key={field.name}
-                        field={field}
-                        value={formData[field.name]}
-                        onChange={(val) => handleInputChange(field.name, val)}
-                        theme={theme}
-                        collectionSlug={resolvedSlug}
-                        pluginSettings={pluginSettings}
-                        disabled={saving}
-                        isNew={isNew}
-                        slugWarning={field.name === 'slug' ? slugWarning : undefined}
-                        slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
-                        readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
-                        onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
-                      />
-                    ))}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-          
           <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew }} />
         </div>
       </div>
