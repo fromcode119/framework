@@ -25,10 +25,10 @@ export class CoreCollections {
     }
   };
 
-  // Cast needed: MediaCollection is typed as a plain object literal in @fromcode119/media
+  // Cast needed: MediaCollection.schema is typed without importing core's Collection
   // (media cannot import core's Collection type due to tsconfig reference direction).
   // The shape is structurally valid — this cast is safe.
-  static readonly media: Collection = MediaCollection as unknown as Collection;
+  static readonly media: Collection = MediaCollection.schema as unknown as Collection;
 
   static readonly settings: Collection = {
     slug: 'settings',
