@@ -19,7 +19,7 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import { Loader } from '@/components/ui/loader';
 import { AuthUtils } from '@/lib/auth-utils';
 import { TimezoneUtils } from '@/lib/timezone';
-import { RuntimeConstants } from '@fromcode119/sdk';
+import { RuntimeConstants } from '@fromcode119/core/client';
 
 const { 
   Menu = () => null, 

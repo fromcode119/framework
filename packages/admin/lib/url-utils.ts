@@ -1,4 +1,4 @@
-import { ApiVersionUtils } from '@fromcode119/sdk';
+import { ApiVersionUtils } from '@fromcode119/core/client';
 
 export class AdminUrlUtils {
   static normalizeRequestPath(path: string): string {

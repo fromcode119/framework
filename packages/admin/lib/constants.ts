@@ -1,4 +1,4 @@
-import { ApiVersionUtils } from '@fromcode119/sdk';
+import { ApiVersionUtils } from '@fromcode119/core/client';
 import { AdminPathUtils } from './admin-path';
 
 export class AdminConstants {
@@ -6,10 +6,15 @@ export class AdminConstants {
 
   static readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
+  static readonly SYSTEM_PLUGIN_SLUG = 'system';
+
   static readonly ROUTES = {
   ROOT: '/',
   MINIMAL: '/forge',
   ACTIVITY: '/activity',
+  MEDIA: {
+    ROOT: '/media',
+  },
   ADMIN: {
     BASE: '/admin',
   },

@@ -1,4 +1,4 @@
-import { Collection } from '@fromcode119/sdk';
+import { Collection } from '@fromcode119/core/client';
 
 /**
  * Resolves the collection-specific prefix from settings.
@@ -57,8 +57,10 @@ export class AdminCollectionUtils {
     const normSlug = String(slug || '').toLowerCase();
     const normPluginSlug = String(pluginSlug || 'system').toLowerCase();
     return collections.find(c => {
+      const rawShortSlug = String((c as any).shortSlug || '');
       const isSlugMatch =
-        String((c as any).shortSlug || '').toLowerCase() === normSlug ||
+        rawShortSlug.toLowerCase() === normSlug ||
+        rawShortSlug.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase() === normSlug ||
         String(c.slug || '').toLowerCase() === normSlug ||
         String((c as any).unprefixedSlug || '').toLowerCase() === normSlug;
       const isPluginMatch = String((c as any).pluginSlug || 'system').toLowerCase() === normPluginSlug;

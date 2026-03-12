@@ -56,9 +56,11 @@ export class CollectionService extends BaseService {
     for (const collection of collections) {
       const slug = String(collection?.slug ?? '').trim();
       const short = String(collection?.shortSlug ?? '').trim();
+      const shortKebab = short.replace(/([a-z0-9])([A-Z])/g, '$1-$2');
       const plugin = String(collection?.pluginSlug ?? '').trim();
       const combined = plugin && short ? `${plugin}-${short}` : '';
-      const probes = [slug, short, combined].map((e) => this.normalizeKey(e)).filter(Boolean);
+      const combinedKebab = plugin && shortKebab ? `${plugin}-${shortKebab}` : '';
+      const probes = [slug, short, shortKebab, combined, combinedKebab].map((e) => this.normalizeKey(e)).filter(Boolean);
       if (probes.some((p) => normalised.has(p))) return slug || raw;
     }
 

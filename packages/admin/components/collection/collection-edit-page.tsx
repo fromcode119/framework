@@ -26,7 +26,7 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { useCollectionForm } from '@/components/collection/hooks/use-collection-form';
 import { useSlugGeneration } from '@/components/collection/hooks/use-slug-generation';
 import { useSlugValidation } from '@/components/collection/hooks/use-slug-validation';
-import { LocalizationUtils , Field } from '@fromcode119/sdk';
+import { Field } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
 import { RecordInfo } from '@/components/collection/record-info';
 import { EditHeader } from './edit/edit-header';
@@ -59,7 +59,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const [readOnlyOverrideTarget, setReadOnlyOverrideTarget] = useState<{ name: string; label: string } | null>(null);
   const [readOnlyOverridePasswordTarget, setReadOnlyOverridePasswordTarget] = useState<{ name: string; label: string } | null>(null);
   const [readOnlyOverrideVerifying, setReadOnlyOverrideVerifying] = useState(false);
-  const preferredLocaleFallback = LocalizationUtils.normalizeLocaleCode(
+  const preferredLocaleFallback = AdminServices.getInstance().localization.normalizeLocaleCode(
     Cookies.get('fc_locale')
       || settings?.default_locale
       || settings?.defaultLocale
@@ -111,12 +111,12 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   formDataRef.current = formData;
 
   const sourceField = collection?.admin?.useAsTitle || (collection?.fields.find((f: Field) => f.name === 'name' || f.name === 'title')?.name);
-  const preferredLocale = LocalizationUtils.normalizeLocaleCode(formData?.locale || preferredLocaleFallback);
+  const preferredLocale = AdminServices.getInstance().localization.normalizeLocaleCode(formData?.locale || preferredLocaleFallback);
   const resolvedTitleValue = (collection?.admin?.useAsTitle
-    ? LocalizationUtils.resolveLabelText(formData[collection.admin.useAsTitle], preferredLocale)
+    ? AdminServices.getInstance().localization.resolveLocalizedText(formData[collection.admin.useAsTitle], preferredLocale)
     : '')
-    || LocalizationUtils.resolveLabelText(formData.title, preferredLocale)
-    || LocalizationUtils.resolveLabelText(formData.name, preferredLocale);
+    || AdminServices.getInstance().localization.resolveLocalizedText(formData.title, preferredLocale)
+    || AdminServices.getInstance().localization.resolveLocalizedText(formData.name, preferredLocale);
   
   const onSlugGenerate = useCallback((newSlugValue: string) => {
     setFieldValue('slug', newSlugValue);
@@ -126,7 +126,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   }, [setFieldValue]);
 
   const { manuallyEdited: slugManuallyEdited, setManuallyEdited: setSlugManuallyEdited } = useSlugGeneration({
-    sourceValue: sourceField ? LocalizationUtils.resolveLabelText(formData[sourceField], preferredLocale) : '',
+    sourceValue: sourceField ? AdminServices.getInstance().localization.resolveLocalizedText(formData[sourceField], preferredLocale) : '',
     isNew,
     manuallyEdited: false,
     onSlugGenerate
@@ -557,7 +557,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
             </div>
 
             {renderSidebar && (
-              <div className="space-y-6">
+              <div className="lg:col-span-1 space-y-6">
                 <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew }} />
                 <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew }} />
                 
