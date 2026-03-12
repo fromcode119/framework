@@ -1,3 +1,4 @@
+import * as LucideAllIcons from 'lucide-react';
 import type { GlobalStubSetupArgs, RuntimeBridgeInstallArgs } from './context-runtime-bridge.interfaces';
 
 export class ContextRuntimeBridge {
@@ -18,6 +19,7 @@ export class ContextRuntimeBridge {
     (window as any).ReactDom = args.ReactDOMRef;
     (window as any).FrameworkIcons = args.FrameworkIcons;
     (window as any).FrameworkIconRegistry = args.FrameworkIconRegistry;
+    (window as any).Lucide = LucideAllIcons;
 
     const queueMethod = (type: string) => (...methodArgs: any[]) => {
       console.log(`[Fromcode] Queuing method: ${type}`, methodArgs);
@@ -170,6 +172,7 @@ export class ContextRuntimeBridge {
     (window as any).getIcon = args.getIcon;
     (window as any).FrameworkIcons = args.FrameworkIcons;
     (window as any).FrameworkIconRegistry = args.FrameworkIconRegistry;
+    (window as any).Lucide = LucideAllIcons;
     (window as any).React = args.ReactRef;
     (window as any).ReactDOM = args.ReactDOMRef;
     (window as any).ReactDom = args.ReactDOMRef;
@@ -219,6 +222,7 @@ export class ContextRuntimeBridge {
         'data:application/javascript,' +
         encodeURIComponent(
           Object.keys((window as any).Lucide || (window as any).FrameworkIcons || {})
+            .filter((key) => key !== 'default' && key !== '__esModule' && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key))
             .map((key) => `export const ${key} = (window.Lucide || window.FrameworkIcons).${key};`)
             .join('\n') + `\nexport default (window.Lucide || window.FrameworkIcons);`,
         ),

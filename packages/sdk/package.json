@@ -21,6 +21,12 @@
       "import": "./dist/constants.js",
       "require": "./dist/constants.js",
       "types": "./dist/constants.d.ts"
+    },
+    "./server": {
+      "development": "./src/server.ts",
+      "import": "./dist/server.js",
+      "require": "./dist/server.js",
+      "types": "./dist/server.d.ts"
     }
   },
   "files": [
