@@ -49,7 +49,7 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
   setShowDeleteConfirm
 }) => {
   return (
-    <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
+    <div data-edit-header className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
       theme === 'dark' 
         ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
         : 'bg-white/80 border-slate-100 shadow-sm'
