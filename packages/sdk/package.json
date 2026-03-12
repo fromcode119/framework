@@ -33,6 +33,12 @@
       "import": "./dist/react/index.js",
       "require": "./dist/react/index.js",
       "types": "./dist/react/index.d.ts"
+    },
+    "./admin": {
+      "development": "./src/admin/index.ts",
+      "import": "./dist/admin/index.js",
+      "require": "./dist/admin/index.js",
+      "types": "./dist/admin/index.d.ts"
     }
   },
   "files": [
