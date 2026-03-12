@@ -36,6 +36,14 @@ export class SystemController {
     const dbWrapper = (manager as any).db;
     this.db = dbWrapper;
     this.shortcodes = new ShortcodeService(manager, restController);
+
+    this.manager.hooks.on('system:shortcodes:render', async (payload: any) => {
+      const content = String(payload?.content ?? '');
+      const user = payload?.user;
+      const maxShortcodes = payload?.maxShortcodes;
+      return this.shortcodes.render(content, { user, maxShortcodes });
+    });
+
     this.system = new SystemService(dbWrapper);
     this.users = new UserManagementService(dbWrapper, auth, manager);
     this.resolution = new ResolutionService(manager, restController);
