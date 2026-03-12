@@ -13,6 +13,12 @@ export class SchemaManager {
 
   async syncCollection(collection: Collection): Promise<void> {
     const tableName = collection.slug;
+    if (!tableName) {
+      throw new Error(
+        `syncCollection called with a collection missing a slug. ` +
+        `Pass the collection object (e.g. MyCollection.collection), not the class itself.`
+      );
+    }
     this.logger.info(`Syncing schema for collection: ${tableName} (${this.db.dialect})`);
 
     try {

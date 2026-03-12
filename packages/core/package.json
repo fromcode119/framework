@@ -21,6 +21,12 @@
       "import": "./dist/shared.js",
       "require": "./dist/shared.js",
       "types": "./dist/shared.d.ts"
+    },
+    "./client": {
+      "development": "./src/client.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.js",
+      "types": "./dist/client.d.ts"
     }
   },
   "browser": {
