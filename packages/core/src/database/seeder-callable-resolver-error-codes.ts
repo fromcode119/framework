@@ -1,0 +1,5 @@
+export class SeederCallableResolverErrorCodes {
+  static readonly INVALID_MODULE_EXPORTS = 'SEEDER_INVALID_MODULE_EXPORTS';
+  static readonly MISSING_SEED_CALLABLE = 'SEEDER_MISSING_SEED_CALLABLE';
+  static readonly NON_CALLABLE_SEED_SYMBOL = 'SEEDER_NON_CALLABLE_SEED_SYMBOL';
+}

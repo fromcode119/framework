@@ -1,4 +1,4 @@
-import { RuntimeBridge } from '@fromcode119/sdk';
+import { RuntimeBridge } from '@fromcode119/core/client';
 
 export class ContextBridge {
   private static getBridge(): any {

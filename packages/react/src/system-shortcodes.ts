@@ -4,7 +4,7 @@ import {
   type RenderShortcodesPayload,
   type RenderShortcodesResponse,
   type ShortcodeCatalogResponse
-} from '@fromcode119/sdk';
+} from '@fromcode119/core/client';
 import { ContextHooks } from './context-hooks';
 import type { ListShortcodesOptions, RenderShortcodesOptions } from './system-shortcodes.types';
 

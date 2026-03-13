@@ -2,14 +2,14 @@
 
 import React, { createContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import { SystemConstants, ApiVersionUtils } from '@fromcode119/sdk';
+import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
 import { FrameworkIcons } from './framework-icons';
 import { FrameworkIconRegistry } from './framework-icon-registry';
 import { RootFramework } from './root-framework';
 import { SystemShortcodes } from './system-shortcodes';
 import { CollectionQueryUtils } from './collection-queries';
 import { BrowserLocalization } from './browser-localization';
-import { RuntimeConstants, RelationUtils, CoercionUtils, StringUtils, NumberUtils, FormatUtils, LocalizationUtils, CollectionUtils, PaginationUtils, HookEventUtils } from '@fromcode119/sdk';
+import { RuntimeConstants, RelationUtils, CoercionUtils, StringUtils, NumberUtils, FormatUtils, LocalizationUtils, CollectionUtils, PaginationUtils, HookEventUtils } from '@fromcode119/core/client';
 import type { SlotComponent, MenuItem, CollectionMetadata, PluginContextValue } from './context.interfaces';
 import { ContextRuntimeBridge } from './context-runtime-bridge';
 
