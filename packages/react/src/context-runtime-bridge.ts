@@ -228,10 +228,10 @@ export class ContextRuntimeBridge {
             .join('\n') + `\nexport default (window.Lucide || window.FrameworkIcons);`,
         ),
       '@fromcode119/react': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
-      '@fromcode119/sdk': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
-      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
       '@fromcode119/admin/components': 'data:application/javascript,' + encodeURIComponent(adminExportSource),
       '@fromcode119/admin': 'data:application/javascript,' + encodeURIComponent(adminExportSource),
+      '@fromcode119/sdk': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
+      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
       '@fromcode119/sdk/admin': 'data:application/javascript,' + encodeURIComponent(adminExportSource),
     };
 
