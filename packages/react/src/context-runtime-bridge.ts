@@ -167,6 +167,7 @@ export class ContextRuntimeBridge {
     const runtimeRegistry = ((window as any)[args.RuntimeConstants.GLOBALS.MODULES] ||= {});
     runtimeRegistry['@fromcode119/react'] = bridge;
     runtimeRegistry['@fromcode119/sdk'] = bridge;
+    runtimeRegistry['@fromcode119/sdk/react'] = bridge;
 
     (window as any).Fromcode = bridge;
     (window as any).getIcon = args.getIcon;
@@ -228,8 +229,10 @@ export class ContextRuntimeBridge {
         ),
       '@fromcode119/react': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
       '@fromcode119/sdk': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
+      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(reactExportSource),
       '@fromcode119/admin/components': 'data:application/javascript,' + encodeURIComponent(adminExportSource),
       '@fromcode119/admin': 'data:application/javascript,' + encodeURIComponent(adminExportSource),
+      '@fromcode119/sdk/admin': 'data:application/javascript,' + encodeURIComponent(adminExportSource),
     };
 
     const currentServerModules = args.stabilityRef.current.serverRuntimeModules;

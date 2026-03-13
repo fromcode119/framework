@@ -1,5 +1,5 @@
 import { useCallback, useContext, useMemo } from 'react';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core/client';
 import { PluginsProvider } from './context';
 
 export class ContextHooks {

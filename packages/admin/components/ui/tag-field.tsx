@@ -5,7 +5,6 @@ import { FrameworkIcons } from '@/lib/icons';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { UiFieldUtils } from '@/lib/ui';
-import { StringUtils } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
 import { TagFieldUtils } from './tag-field-utils';
 
@@ -321,7 +320,7 @@ export const TagField = ({
           if (!hasExisting) {
             const payload: Record<string, any> = {
               name: strValue,
-              slug: StringUtils.slugify(strValue)
+              slug: AdminServices.getInstance().string.slugify(strValue)
             };
             const createUrl = apiOverrides?.create || `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${sourceCollection}`;
             await AdminApi.post(createUrl, payload);

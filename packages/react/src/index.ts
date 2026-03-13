@@ -14,8 +14,6 @@ export type {
   CollectionMetadata,
   PluginContextValue,
 } from './context.interfaces';
-export * from '@fromcode119/sdk';
-export type { LoadedPlugin as Plugin } from '@fromcode119/sdk';
 export * from 'lucide-react';
 export { Slot } from './slot';
 export { Override } from './override';

@@ -1,4 +1,4 @@
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { LocalizationUtils } from '@fromcode119/core/client';
 import type { PreferredLocaleOptions } from './browser-localization.interfaces';
 
 

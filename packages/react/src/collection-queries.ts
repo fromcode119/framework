@@ -1,4 +1,4 @@
-import { CollectionListPathOptions, CollectionUtils } from '@fromcode119/sdk';
+import { CollectionListPathOptions, CollectionUtils } from '@fromcode119/core/client';
 import type { CollectionApiClient } from './collection-queries.interfaces';
 
 
