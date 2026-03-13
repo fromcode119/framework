@@ -3,9 +3,11 @@ import { Logger } from '../logging';
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
+import { SeederCallableResolver } from './seeder-callable-resolver';
 
 export class Seeder {
   private logger = new Logger({ namespace: 'seeder' });
+  private resolver = new SeederCallableResolver();
 
   constructor(private db: IDatabaseManager) {}
 
@@ -27,18 +29,13 @@ export class Seeder {
         loadedModule = await import(pathToFileURL(absolutePath).href);
       }
 
-      const seedFunc =
-        (typeof loadedModule?.default === 'function' ? loadedModule.default : null) ||
-        Object.values(loadedModule || {}).find((f) => typeof f === 'function');
+      const resolved = this.resolver.resolveCallable(loadedModule);
 
-      if (typeof seedFunc === 'function') {
-        await (seedFunc as any)(this.db, sql);
-        this.logger.info('Seed completed successfully.');
-      } else {
-        throw new Error('No valid seed function found in file. Expected at least one exported function.');
-      }
+      await resolved.callable(this.db, sql);
+      this.logger.info(`Seed completed successfully using ${resolved.sourceType}:${resolved.symbolName}.`);
     } catch (err: any) {
-      this.logger.error(`Seed failed: ${err.message}`);
+      const suffix = err?.code ? ` [${err.code}]` : '';
+      this.logger.error(`Seed failed${suffix}: ${err.message}`);
       throw err;
     }
   }
