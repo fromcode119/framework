@@ -28,62 +28,41 @@ function getStickyHeaderHeight(): number {
 
 export function EditPageSectionNav({ sections, theme }: EditPageSectionNavProps) {
   const [activeKey, setActiveKey] = useState<string>(sections[0]?.key ?? '');
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const navRef = useRef<HTMLDivElement>(null);      // outer — stays in flow
-  const innerRef = useRef<HTMLDivElement>(null);    // inner — transforms
+  const [stickyTop, setStickyTop] = useState(130);
+  const navRef = useRef<HTMLDivElement>(null);
   const stickyTopRef = useRef<number>(130);
 
   // Measure actual header height on mount
   useEffect(() => {
     const measure = () => {
-      stickyTopRef.current = getStickyHeaderHeight();
+      const h = getStickyHeaderHeight();
+      stickyTopRef.current = h;
+      setStickyTop(h);
     };
     measure();
-    // Re-measure after a tick in case layout hasn't settled
     const t = setTimeout(measure, 200);
     return () => clearTimeout(t);
   }, []);
 
-  // IntersectionObserver to track active section
+  // Scroll-based section detection — finds the last section whose top
+  // is at or above the sticky nav position (most reliable approach)
   useEffect(() => {
     if (sections.length === 0) return;
-    observerRef.current?.disconnect();
-
-    const targets = sections
-      .map(({ key }) => document.getElementById(`section-${key}`))
-      .filter(Boolean) as HTMLElement[];
-
-    if (targets.length === 0) return;
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible.length > 0) {
-          setActiveKey(visible[0].target.id.replace('section-', ''));
-        }
-      },
-      { rootMargin: '-10% 0px -60% 0px', threshold: 0 }
-    );
-
-    targets.forEach((el) => observerRef.current!.observe(el));
-    return () => observerRef.current?.disconnect();
-  }, [sections]);
-
-  // JS sticky — translates inner to simulate sticky positioning
-  useEffect(() => {
     const onScroll = () => {
-      if (!navRef.current || !innerRef.current) return;
-      const top = navRef.current.getBoundingClientRect().top;
-      const offset = Math.max(0, stickyTopRef.current - top);
-      innerRef.current.style.transform = `translateY(${offset}px)`;
+      const threshold = window.scrollY + stickyTopRef.current + 20;
+      let current = sections[0]?.key ?? '';
+      for (const section of sections) {
+        const el = document.getElementById(`section-${section.key}`);
+        if (el && el.getBoundingClientRect().top + window.scrollY <= threshold) {
+          current = section.key;
+        }
+      }
+      setActiveKey(current);
     };
-
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, [sections.length]);
+  }, [sections]);
 
   const scrollToSection = (key: string) => {
     const el = document.getElementById(`section-${key}`);
@@ -102,10 +81,10 @@ export function EditPageSectionNav({ sections, theme }: EditPageSectionNavProps)
   const isDark = theme === 'dark';
 
   return (
-    // Outer: stays in flow, holds height, has z-index so tooltip shows above cards
-    <div ref={navRef} className="hidden lg:block select-none" style={{ width: 20, zIndex: 200, position: 'relative' }}>
-      {/* Inner: transformed by scroll listener */}
-      <div ref={innerRef} className="flex flex-col items-center gap-1 pt-1">
+    // Outer: self-stretch fills full row height so CSS sticky has room to operate
+    <div ref={navRef} className="hidden lg:block select-none self-stretch" style={{ width: 20, zIndex: 200, position: 'relative' }}>
+      {/* CSS sticky — no JS transform needed; overflow-x-clip on <main> allows this */}
+      <div className="flex flex-col items-center gap-1 pt-1" style={{ position: 'sticky', top: stickyTop }}>
         {/* Up arrow */}
         <button
           onClick={() => hasPrev && scrollToSection(sections[activeIndex - 1].key)}
