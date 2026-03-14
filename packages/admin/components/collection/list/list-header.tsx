@@ -69,16 +69,18 @@ export const CollectionListHeader: React.FC<CollectionListHeaderProps> = ({
               Invite
             </Button>
           )}
-          <Button 
-            variant="primary" 
-            size="sm"
-            as={Link}
-            href={`/${pluginSlug}/${slug}/new`}
-            className="px-6 py-3 rounded-xl font-semibold tracking-wide text-xs shadow-xl shadow-indigo-600/30"
-            icon={<FrameworkIcons.Plus size={18} />}
-          >
-            {collection.slug === 'users' ? 'Create User' : 'New Entry'}
-          </Button>
+          {!collection.admin?.disableCreate && (
+            <Button 
+              variant="primary" 
+              size="sm"
+              as={Link}
+              href={`/${pluginSlug}/${slug}/new`}
+              className="px-6 py-3 rounded-xl font-semibold tracking-wide text-xs shadow-xl shadow-indigo-600/30"
+              icon={<FrameworkIcons.Plus size={18} />}
+            >
+              {collection.slug === 'users' ? 'Create User' : 'New Entry'}
+            </Button>
+          )}
         </div>
       </div>
     </div>
