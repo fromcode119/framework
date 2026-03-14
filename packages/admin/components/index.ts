@@ -28,3 +28,4 @@ export * from './notification-context';
 export * from './notification-context-store';
 export * from './use-notification';
 export * from './plugin-dashboard';
+export * from './collection/edit/edit-page-section-nav';
