@@ -21,7 +21,7 @@ export class LocalizationService {
 
     const entries = Object.entries(candidate);
     if (!entries.length) return null;
-    if (!entries.every(([key]) => LocalizationUtils.isLocaleMap(key))) return null;
+    if (!entries.every(([key]) => Boolean(LocalizationUtils.normalizeLocaleCode(key)))) return null;
 
     const normalized: Record<string, any> = {};
     entries.forEach(([rawKey, rawValue]) => {

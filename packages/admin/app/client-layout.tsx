@@ -353,7 +353,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         onMiniToggle={() => setIsMini(!isMini)}
       />
       
-      <main className="flex-1 flex flex-col relative overflow-x-clip min-h-screen transition-all duration-300 ease-in-out">
+      <main className="flex-1 min-w-0 flex flex-col relative overflow-x-hidden min-h-screen transition-all duration-300 ease-in-out">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <div className="flex-1 flex flex-col transition-all duration-300">
           {children}
