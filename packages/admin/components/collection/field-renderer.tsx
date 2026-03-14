@@ -373,7 +373,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         wrapWithReadOnlyOverride(
           <div className="relative">
             <TextArea 
-              value={resolvedCurrentText}
+              value={typeof currentValue === 'string' ? currentValue : resolvedCurrentText}
               onChange={(e) => updateValue(e.target.value)}
               disabled={isFieldReadOnly}
               placeholder={`Enter ${label}...`}
@@ -422,7 +422,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
           <div className="relative">
             <Input 
               type="password"
-              value={resolvedCurrentText}
+              value={typeof currentValue === 'string' ? currentValue : resolvedCurrentText}
               onChange={(e) => updateValue(e.target.value)}
               placeholder="••••••••"
               disabled={isFieldReadOnly}
@@ -552,7 +552,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         <div className="relative">
           <Input 
             type={field.type === 'number' ? 'number' : 'text'}
-            value={field.type === 'number' ? (typeof currentValue === 'number' || typeof currentValue === 'string' ? currentValue : '') : resolvedCurrentText}
+            value={field.type === 'number' ? (typeof currentValue === 'number' || typeof currentValue === 'string' ? currentValue : '') : (typeof currentValue === 'string' ? currentValue : resolvedCurrentText)}
             onChange={(e) => {
               if (field.type === 'number') {
                 const raw = e.target.value;
