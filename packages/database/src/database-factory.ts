@@ -54,7 +54,7 @@ export class DatabaseFactory {
         if (typeof value === 'function') {
           return (...args: any[]) => {
             // Intercept methods that take a table name as first argument
-            const tableMethods = ['find', 'findOne', 'insert', 'update', 'delete', 'count', 'syncCollection', 'tableExists', 'getColumns'];
+            const tableMethods = ['find', 'findOne', 'insert', 'update', 'delete', 'count', 'syncCollection', 'tableExists', 'getColumns', 'addColumn'];
             if (typeof prop === 'string' && tableMethods.includes(prop) && args.length > 0) {
               args[0] = TableResolver.resolve(args[0]);
             }

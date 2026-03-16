@@ -1,10 +1,10 @@
 import { useCallback, useContext, useMemo } from 'react';
 import { SystemConstants } from '@fromcode119/core/client';
-import { PluginsProvider } from './context';
+import { PluginContextRegistry } from './plugin-context';
 
 export class ContextHooks {
   static usePlugins() {
-    const context = useContext(PluginsProvider.PluginContext);
+    const context = useContext(PluginContextRegistry.Context);
     if (!context) {
       throw new Error('usePlugins must be used within a PluginsProvider');
     }

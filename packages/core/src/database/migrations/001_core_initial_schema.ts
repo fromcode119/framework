@@ -1,10 +1,11 @@
-import { SystemMigration } from '../../types';
+import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '../helpers/dialect';
 
-export const InitialFrameworkMigration: SystemMigration = {
-  version: 1,
-  name: 'Initial core framework schema',
-  up: async (db, sql) => {
+class InitialFrameworkMigration extends BaseMigration {
+  readonly version = 1;
+  readonly name = 'Initial core framework schema';
+
+  async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         // 1. Plugins Table
@@ -406,8 +407,9 @@ export const InitialFrameworkMigration: SystemMigration = {
     await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_sessions_user_id" ON "_system_sessions"("user_id")`);
     await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_system_logs_plugin_slug" ON "_system_logs"("plugin_slug")`);
     await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_media_folder_id" ON "media"("folder_id")`);
-  },
-  down: async (db, sql) => {
+  }
+
+  async down(db: IDatabaseManager): Promise<void> {
     const tables = [
       'media', 'media_folders', '_system_logs', '_system_sessions', 
       '_system_meta', '_system_trusted_publishers', '_system_plugin_settings',
@@ -422,4 +424,6 @@ export const InitialFrameworkMigration: SystemMigration = {
       });
     }
   }
-};
+}
+
+export default new InitialFrameworkMigration();

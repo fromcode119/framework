@@ -52,6 +52,12 @@ Fromcode v2.0 introduces a fully class-based architecture, removing all deprecat
    npm run build
    ```
 
+## Secret Management
+
+Use local untracked `.env` files only. Start from `.env.example` and provide real values through your local environment for required secrets such as `JWT_SECRET`,  `ADMIN_SECRET`, and any SMTP/database credentials.
+
+Do not commit local `.env` files, backup env files, or build logs. Runtime services intentionally fail fast when required secrets are missing.
+
 ## Creating a Plugin
 
 ```typescript

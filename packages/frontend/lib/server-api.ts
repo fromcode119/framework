@@ -61,9 +61,10 @@ export class ServerApiUtils {
       .filter((value) => !ServerApiUtils.isLikelyFrontendBase(value))
       .map(ServerApiUtils.trimTrailingSlash);
 
-    // Only add localhost fallbacks in local development, or as a last resort when no
+    // Only add localhost fallbacks when NO primary URL is configured
+    // (avoids useless connection attempts in Docker where localhost != API)
     // real API base is configured (prevents silent failures during initial setup).
-    if (bases.length === 0 || process.env.NODE_ENV === 'development') {
+    if (bases.length === 0) {
       for (const fallback of [ServerApiUtils.LOCALHOST_PRIMARY, ServerApiUtils.LOCALHOST_FALLBACK]) {
         if (!bases.includes(fallback)) bases.push(fallback);
       }

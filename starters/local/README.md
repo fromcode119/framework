@@ -81,6 +81,8 @@ NEXT_PUBLIC_ADMIN_BASE_PATH=/admin
 
 See `.env.example` for the full reference.
 
+Keep `.env` local-only. Do not commit `.env`, `.env.backup`, or token values; use placeholder examples and shell-provided environment variables instead.
+
 ---
 
 ## Adding a plugin

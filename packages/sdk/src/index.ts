@@ -106,3 +106,4 @@ export type { MiddlewareConfig, PluginManifest, ThemeManifest, MenuItemManifest 
 
 // Plugin runtime interfaces
 export type { PluginContext, FromcodePlugin, LoadedPlugin } from '@fromcode119/core/client';
+

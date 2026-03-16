@@ -7,34 +7,20 @@ import { LoadedPlugin } from '../../types';
 import type { RuntimeModuleConfig } from './runtime-service.interfaces';
 
 // React runtime bridge exports — framework integration API only.
+// All registration and hook access must go through ContextBridge.* and ContextHooks.* class-based namespaces.
 // Utility access is via SDK class names in RuntimeConstants.SDK_UTIL_CLASS_NAMES (CoercionUtils, etc.)
 const REACT_RUNTIME_EXPORT_KEYS = [
   'Slot',
   'Override',
-  'usePlugins',
-  'useTranslation',
-  'usePluginAPI',
   'PluginsProvider',
   'getIcon',
   'createProxyIcon',
   'FrameworkIcons',
   'FrameworkIconRegistry',
   'IconNames',
-  'registerSlotComponent',
-  'registerFieldComponent',
-  'registerOverride',
-  'registerMenuItem',
-  'registerCollection',
-  'registerPlugins',
-  'registerTheme',
-  'registerSettings',
-  'registerAPI',
-  'getAPI',
-  'emit',
-  'on',
-  't',
-  'RuntimeBridge.getMetadata',
-  'resolveRelationValue',
+  'ContextBridge',
+  'ContextHooks',
+  'SystemShortcodes',
 ] as const;
 
 // SDK constants and utility classes available to plugin sandboxes.

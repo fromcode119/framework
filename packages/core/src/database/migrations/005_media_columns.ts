@@ -1,10 +1,11 @@
-import { SystemMigration } from '../../types';
+import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '../helpers/dialect';
 
-export const MediaColumnsBackfill: SystemMigration = {
-  version: 5,
-  name: 'Ensure media table has extended columns',
-  up: async (db, sql) => {
+class MediaColumnsBackfill extends BaseMigration {
+  readonly version = 5;
+  readonly name = 'Ensure media table has extended columns';
+
+  async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         // Add missing columns if they are not present
@@ -99,6 +100,5 @@ export const MediaColumnsBackfill: SystemMigration = {
       }
     });
   }
-};
-
-export default MediaColumnsBackfill;
+}
+export default new MediaColumnsBackfill();
