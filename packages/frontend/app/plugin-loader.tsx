@@ -21,8 +21,13 @@ export default function PluginLoader() {
     if (!isReady) return;
 
     // Plugin/theme ESM bundles import bare specifiers (e.g. @fromcode119/react).
-    // Wait until the runtime import map is available before importing modules.
-    const importMapReady = !!document.getElementById('fc-runtime-import-map');
+    // Wait until BOTH the runtime import map script tag exists AND the react bridge
+    // registry entry is populated. The script tag is created synchronously inside
+    // installRuntimeBridge(), but we double-check the registry to guard against any
+    // edge-case where the tag was created before the bridge object was written.
+    const importMapReady =
+      !!document.getElementById('fc-runtime-import-map') &&
+      !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/react'];
     if (!importMapReady) {
       const timer = window.setTimeout(() => setRetryTick((v) => v + 1), 50);
       return () => window.clearTimeout(timer);

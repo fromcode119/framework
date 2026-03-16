@@ -19,7 +19,9 @@ export class ReactExportSourceBuilder {
           if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) return false;
           return typeof bridge[key] !== 'undefined';
         })
-        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : window.Fromcode.${key};`)
+        // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
+        // when this data URL module is evaluated (e.g. timing race during bundle load).
+        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
         .join('\n') +
       ReactExportSourceBuilder.buildGroupedExports(reactModuleAccessor) +
       `export default ${reactBridgeAccessor};`
@@ -30,7 +32,9 @@ export class ReactExportSourceBuilder {
     const reactBridgeAccessor = `${reactModuleAccessor} || window.Fromcode`;
     return (
       ReactExportSourceBuilder.SDK_REACT_EXPORT_KEYS
-        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : window.Fromcode.${key};`)
+        // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
+        // when this data URL module is evaluated (e.g. timing race during bundle load).
+        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
         .join('\n') +
       ReactExportSourceBuilder.buildGroupedExports(reactModuleAccessor) +
       `export default ${reactBridgeAccessor};`
@@ -39,37 +43,40 @@ export class ReactExportSourceBuilder {
 
   private static buildGroupedExports(reactModuleAccessor: string): string {
     const R = reactModuleAccessor;
-    const r = (k: string) => `${R} ? ${R}.${k} : window.Fromcode.${k}`;
+    // Use lazy getters so values are resolved at call time, not at module evaluation time.
+    // This avoids timing races where the data URL module evaluates before the runtime bridge is installed.
+    // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet initialised.
+    const g = (k: string) => `get ${k}() { const _r = ${R}; return _r ? _r.${k} : (window.Fromcode && window.Fromcode.${k}); }`;
     return (
       `\nexport const ContextBridge = {\n` +
-      `  registerSlotComponent: ${r('registerSlotComponent')},\n` +
-      `  registerFieldComponent: ${r('registerFieldComponent')},\n` +
-      `  registerOverride: ${r('registerOverride')},\n` +
-      `  registerMenuItem: ${r('registerMenuItem')},\n` +
-      `  registerCollection: ${r('registerCollection')},\n` +
-      `  registerPlugins: ${r('registerPlugins')},\n` +
-      `  registerTheme: ${r('registerTheme')},\n` +
-      `  registerSettings: ${r('registerSettings')},\n` +
-      `  registerAPI: ${r('registerAPI')},\n` +
-      `  getAPI: ${r('getAPI')},\n` +
-      `  setPluginState: ${r('setPluginState')},\n` +
-      `  loadConfig: ${r('loadConfig')},\n` +
-      `  getFrontendMetadata: ${r('getFrontendMetadata')},\n` +
-      `  emit: ${r('emit')},\n` +
-      `  on: ${r('on')},\n` +
-      `  t: ${r('t')},\n` +
-      `  locale: ${r('locale')},\n` +
-      `  setLocale: ${r('setLocale')},\n` +
-      `  api: ${r('api')},\n` +
+      `  ${g('registerSlotComponent')},\n` +
+      `  ${g('registerFieldComponent')},\n` +
+      `  ${g('registerOverride')},\n` +
+      `  ${g('registerMenuItem')},\n` +
+      `  ${g('registerCollection')},\n` +
+      `  ${g('registerPlugins')},\n` +
+      `  ${g('registerTheme')},\n` +
+      `  ${g('registerSettings')},\n` +
+      `  ${g('registerAPI')},\n` +
+      `  ${g('getAPI')},\n` +
+      `  ${g('setPluginState')},\n` +
+      `  ${g('loadConfig')},\n` +
+      `  ${g('getFrontendMetadata')},\n` +
+      `  ${g('emit')},\n` +
+      `  ${g('on')},\n` +
+      `  ${g('t')},\n` +
+      `  ${g('locale')},\n` +
+      `  ${g('setLocale')},\n` +
+      `  ${g('api')},\n` +
       `};\n` +
       `export const ContextHooks = {\n` +
-      `  usePlugins: ${r('usePlugins')},\n` +
-      `  useTranslation: ${r('useTranslation')},\n` +
-      `  usePluginAPI: ${r('usePluginAPI')},\n` +
-      `  usePluginState: ${r('usePluginState')},\n` +
+      `  ${g('usePlugins')},\n` +
+      `  ${g('useTranslation')},\n` +
+      `  ${g('usePluginAPI')},\n` +
+      `  ${g('usePluginState')},\n` +
       `};\n` +
       `export const SystemShortcodes = {\n` +
-      `  useSystemShortcodes: ${r('useSystemShortcodes')},\n` +
+      `  ${g('useSystemShortcodes')},\n` +
       `};\n`
     );
   }
