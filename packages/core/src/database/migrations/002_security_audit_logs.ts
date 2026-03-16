@@ -1,10 +1,11 @@
-import { SystemMigration } from '../../types';
+import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '../helpers/dialect';
 
-export const SecurityAuditLogsMigration: SystemMigration = {
-  version: 2,
-  name: 'Security audit logs schema',
-  up: async (db, sql) => {
+class SecurityAuditLogsMigration extends BaseMigration {
+  readonly version = 2;
+  readonly name = 'Security audit logs schema';
+
+  async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`
@@ -41,8 +42,11 @@ export const SecurityAuditLogsMigration: SystemMigration = {
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS "idx_audit_status" ON "_system_audit_logs"("status");
     `);
-  },
-  down: async (db, sql) => {
+  }
+
+  async down(db: IDatabaseManager): Promise<void> {
     await db.execute(sql`DROP TABLE IF EXISTS "_system_audit_logs";`);
   }
-};
+}
+
+export default new SecurityAuditLogsMigration();

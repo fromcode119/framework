@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import React, { useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
+import { PluginContextRegistry } from './plugin-context';
 import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
 import { FrameworkIcons } from './framework-icons';
 import { FrameworkIconRegistry } from './framework-icon-registry';
@@ -19,7 +20,6 @@ type PluginsProviderProps = {
   runtimeModules?: Record<string, any>;
 };
 
-const PluginContext = createContext<PluginContextValue | null>(null);
 const inFlightGetRequests = new Map<string, Promise<any>>();
 
 const getFrontendConfigPath = (): string => {
@@ -35,7 +35,7 @@ const createProxyIcon = FrameworkIcons.createProxyIcon.bind(FrameworkIcons);
 const iconNames = FrameworkIcons.iconNames();
 
 const usePluginsBridgeHook = (): PluginContextValue => {
-  const context = React.useContext(PluginContext);
+  const context = React.useContext(PluginContextRegistry.Context);
   if (!context) {
     throw new Error('usePlugins must be used within a PluginsProvider');
   }
@@ -802,14 +802,14 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
   }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
 
   return (
-    <PluginContext.Provider value={value}>
+    <PluginContextRegistry.Context.Provider value={value}>
       {children}
-    </PluginContext.Provider>
+    </PluginContextRegistry.Context.Provider>
   );
 };
 
 export class PluginsProvider extends React.Component<PluginsProviderProps> {
-  static readonly PluginContext = PluginContext;
+  static readonly PluginContext = PluginContextRegistry.Context;
 
   render(): React.ReactNode {
     return <PluginsProviderInternal {...this.props} />;

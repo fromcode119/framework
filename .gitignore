@@ -29,6 +29,8 @@ packages/*/src/**/*.d.ts.map
 
 # Environment Variables
 .env
+.env.backup
+*.env.backup
 .env.local
 *.env.local
 *.env.development.local

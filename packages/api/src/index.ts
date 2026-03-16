@@ -433,7 +433,11 @@ export class APIServer {
 
     const themeManager = new ThemeManager((manager as any).db);
     await themeManager.init();
-    const auth = new AuthManager(process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is required to start the API server');
+    }
+    const auth = new AuthManager(jwtSecret);
     manager.setAuth(auth);
 
     // Step 2: Discover and initialize plugins. Their onInit hooks register routes

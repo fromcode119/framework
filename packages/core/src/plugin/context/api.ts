@@ -43,15 +43,19 @@ export class ApiContextProxy {
           return;
         }
 
-        const wrappedHandlers = handlers.map(handler => (req: any, res: any, next: any) => {
-          const currentPlugin = manager.plugins.get(plugin.manifest.slug);
-          if (!currentPlugin || currentPlugin.state !== 'active') {
-            return res.status(403).json({
-              error: `Plugin "${plugin.manifest.slug}" is disabled`,
-              code: 'PLUGIN_DISABLED'
-            });
+        const wrappedHandlers = handlers.map(handler => async (req: any, res: any, next: any) => {
+          try {
+            const currentPlugin = manager.plugins.get(plugin.manifest.slug);
+            if (!currentPlugin || currentPlugin.state !== 'active') {
+              return res.status(403).json({
+                error: `Plugin "${plugin.manifest.slug}" is disabled`,
+                code: 'PLUGIN_DISABLED'
+              });
+            }
+            await handler(req, res, next);
+          } catch (error) {
+            next(error);
           }
-          return handler(req, res, next);
         });
 
         manager.apiHost[method](fullPath, ...wrappedHandlers);

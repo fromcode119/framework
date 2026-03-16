@@ -13,6 +13,7 @@ export * from './types';
 
 // Utilities
 export * from './table-resolver';
+export { BaseMigration } from './base-migration';
 export * from './naming-strategy';
 export { DatabaseFactory } from './database-factory';
 
