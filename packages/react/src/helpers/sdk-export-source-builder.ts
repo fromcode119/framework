@@ -20,7 +20,9 @@ export class SdkExportSourceBuilder {
     const reactBridgeAccessor = `${reactModuleAccessor} || window.Fromcode`;
     return (
       SdkExportSourceBuilder.SDK_EXPORT_KEYS
-        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : window.Fromcode.${key};`)
+        // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
+        // when this data URL module is evaluated (e.g. timing race during bundle load).
+        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
         .join('\n') +
       `\nexport default ${reactBridgeAccessor};`
     );

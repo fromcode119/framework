@@ -66,7 +66,9 @@ export default function PluginLoader() {
       };
 
       // Small delay to ensure GlobalInitializer has run
-      // and window.FrameworkIcons, window.React, window.ReactDOM are available
+      // and window.FrameworkIcons, window.React, window.ReactDOM are available.
+      // Also wait for the runtime import map to be installed so that plugin ESM bundles
+      // can resolve bare specifiers like @fromcode119/sdk/react.
       let retryCount = 0;
       while (
         (!(window as any).FrameworkIcons || 
@@ -74,7 +76,9 @@ export default function PluginLoader() {
          !(window as any).Lucide ||
          !(window as any).Fromcode ||
          !resolveAdminComponentsModule() ||
-         typeof resolveAdminComponentsModule()?.Select === 'undefined') && 
+         typeof resolveAdminComponentsModule()?.Select === 'undefined' ||
+         !document.getElementById('fc-runtime-import-map') ||
+         !(window as any).__fromcodeRuntimeModules?.['@fromcode119/react']) && 
         retryCount < 100
       ) {
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -89,7 +93,9 @@ export default function PluginLoader() {
         !(window as any).Lucide ||
         !(window as any).Fromcode ||
         !adminComponentsModule ||
-        typeof adminComponentsModule.Select === 'undefined'
+        typeof adminComponentsModule.Select === 'undefined' ||
+        !document.getElementById('fc-runtime-import-map') ||
+        !(window as any).__fromcodeRuntimeModules?.['@fromcode119/react']
       ) {
         console.error("[Admin] Required globals not found on window. Plugin loading aborted.", {
           icons: !!(window as any).FrameworkIcons,
@@ -98,6 +104,8 @@ export default function PluginLoader() {
           bridge: !!(window as any).Fromcode,
           adminBridge: !!adminComponentsModule,
           select: typeof adminComponentsModule?.Select !== 'undefined',
+          importMap: !!document.getElementById('fc-runtime-import-map'),
+          reactBridge: !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/react'],
         });
         // Do not stop forever on startup races; request another refresh cycle.
         setTimeout(() => triggerRefresh(), 250);
