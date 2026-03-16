@@ -174,8 +174,8 @@ const envContent = [
     ? `DATABASE_URL=file:${path.join(dest, 'data', 'app.db')}`
     : 'DATABASE_URL=file:./data/app.db',
   '',
-  '# Set a real random string (min 32 chars)',
-  'JWT_SECRET=change-me-at-least-32-chars-before-going-live',
+  '# Replace with a real random string before exposing the app',
+  'JWT_SECRET=CHANGE_ME_JWT_SECRET_MIN_32_CHARS',
   '',
   'REDIS_URL=',
   '',
@@ -268,7 +268,7 @@ if (localMode) {
 } else {
   console.log(`  1. cd ${projectName}`);
   console.log('  2. Export a GitHub Packages token (read:packages):');
-  console.log('     export GITHUB_TOKEN=ghp_...');
+  console.log('     export GITHUB_TOKEN=<YOUR_GITHUB_TOKEN>');
   console.log('  3. Install and start (extension mode: API + Admin):');
   console.log('     npm install');
   console.log('     npm run dev');

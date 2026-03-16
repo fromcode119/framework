@@ -1,5 +1,6 @@
 import * as LucideAllIcons from 'lucide-react';
 import type { GlobalStubSetupArgs, RuntimeBridgeInstallArgs } from './context-runtime-bridge.interfaces';
+import { ContextBridge } from './context-bridge';
 import { AdminExportSourceBuilder } from './helpers/admin-export-source-builder';
 import { BridgeObjectBuilder } from './helpers/bridge-object-builder';
 import { ImportMapInstaller } from './helpers/import-map-installer';
@@ -27,21 +28,37 @@ export class ContextRuntimeBridge {
     (window as any).Lucide = LucideAllIcons;
 
     const queueMethod = (type: string) => (...methodArgs: any[]) => {
-      console.log(`[Fromcode] Queuing method: ${type}`, methodArgs);
       if (!(window as any)._fromcodeQueue) (window as any)._fromcodeQueue = [];
       (window as any)._fromcodeQueue.push({ type, args: methodArgs });
     };
 
-    if (!fc.registerSlotComponent) fc.registerSlotComponent = queueMethod('slot');
-    if (!fc.registerFieldComponent) fc.registerFieldComponent = queueMethod('field');
-    if (!fc.registerOverride) fc.registerOverride = queueMethod('override');
-    if (!fc.registerMenuItem) fc.registerMenuItem = queueMethod('menuItem');
-    if (!fc.registerCollection) fc.registerCollection = queueMethod('collection');
-    if (!fc.registerTheme) fc.registerTheme = queueMethod('theme');
-    if (!fc.registerSettings) fc.registerSettings = queueMethod('settings');
+    // Queue stubs via class-based namespace.
+    // Replaced with real implementations when installRuntimeBridge() is called.
+    if (!fc.ContextBridge) {
+      fc.ContextBridge = {
+        registerSlotComponent: queueMethod('slot'),
+        registerFieldComponent: queueMethod('field'),
+        registerOverride: queueMethod('override'),
+        registerMenuItem: queueMethod('menuItem'),
+        registerCollection: queueMethod('collection'),
+        registerTheme: queueMethod('theme'),
+        registerSettings: queueMethod('settings'),
+        registerAPI: queueMethod('api'),
+        getAPI: () => undefined,
+        emit: queueMethod('emit'),
+        on: queueMethod('on'),
+      };
+    }
 
-    if (!fc.t) fc.t = (key: string, _params?: any, defaultValue?: string) => defaultValue || key;
-    if (!fc.locale) fc.locale = 'en';
+    if (!fc.ContextHooks) {
+      fc.ContextHooks = {
+        usePlugins: () => ({ data: [], isLoading: false }),
+        useTranslation: () => ({ t: (k: string) => k }),
+        usePluginAPI: () => ({}),
+        usePluginState: () => [null, () => {}],
+        useSystemShortcodes: () => ({}),
+      };
+    }
 
     fc.getIcon = args.getIcon;
     fc.FrameworkIcons = args.FrameworkIcons;
@@ -54,6 +71,9 @@ export class ContextRuntimeBridge {
   static installRuntimeBridge(args: RuntimeBridgeInstallArgs): void {
     if (typeof window === 'undefined') return;
     if (args.apiUrl) (window as any).FROMCODE_API_URL = args.apiUrl;
+
+    // Install args into ContextBridge so its static methods delegate to live implementations.
+    ContextBridge.install(args);
 
     const bridge = BridgeObjectBuilder.build(args);
     const runtimeRegistry = ((window as any)[args.RuntimeConstants.GLOBALS.MODULES] ||= {});
@@ -92,37 +112,41 @@ export class ContextRuntimeBridge {
     );
   }
 
-  private static flushQueue(args: RuntimeBridgeInstallArgs): void {
+  private static flushQueue(_args: RuntimeBridgeInstallArgs): void {
     if (!(window as any)._fromcodeQueue) return;
 
-    console.log(`[Fromcode] Flushing queue with ${(window as any)._fromcodeQueue.length} items`);
     const queue = (window as any)._fromcodeQueue;
     delete (window as any)._fromcodeQueue;
 
     queue.forEach((item: any) => {
       try {
-        console.log(`[Fromcode] Processing queued item: ${item.type}`, item.args);
         switch (item.type) {
           case 'slot':
-            (args.registerSlotComponent as any)(...(item.args || [item.name, item.comp]));
+            ContextBridge.registerSlotComponent(...(item.args || [item.name, item.comp]));
             break;
           case 'field':
-            (args.registerFieldComponent as any)(...(item.args || [item.name, item.component]));
+            ContextBridge.registerFieldComponent(...(item.args || [item.name, item.component]));
             break;
           case 'override':
-            (args.registerOverride as any)(...(item.args || [item.name, item.component]));
+            ContextBridge.registerOverride(...(item.args || [item.name, item.component]));
             break;
           case 'menuItem':
-            (args.registerMenuItem as any)(...(item.args || [item.item]));
+            ContextBridge.registerMenuItem(...(item.args || [item.item]));
             break;
           case 'collection':
-            (args.registerCollection as any)(...(item.args || [item.collection]));
+            ContextBridge.registerCollection(...(item.args || [item.collection]));
             break;
           case 'theme':
-            (args.registerTheme as any)(...(item.args || [item.slug, item.config]));
+            ContextBridge.registerTheme(...(item.args || [item.slug, item.config]));
             break;
           case 'settings':
-            (args.registerSettings as any)(...(item.args || [item.settings]));
+            ContextBridge.registerSettings(...(item.args || [item.settings]));
+            break;
+          case 'emit':
+            ContextBridge.emit(...(item.args || []));
+            break;
+          case 'on':
+            ContextBridge.on(...(item.args || []));
             break;
         }
       } catch (error) {

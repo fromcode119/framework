@@ -29,9 +29,7 @@ export class MigrationLoader {
         const absolutePath = path.resolve(filePath);
         const module = require(absolutePath);
 
-        const migration = Object.values(module).find(
-          (m: any) => m && typeof m === 'object' && typeof m.version === 'number' && typeof m.up === 'function'
-        ) as SystemMigration;
+        const migration = module.default as SystemMigration | undefined;
 
         if (migration) {
           migrations.push(migration);

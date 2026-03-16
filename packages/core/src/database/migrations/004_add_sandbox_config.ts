@@ -1,10 +1,11 @@
-import { SystemMigration } from '../../types';
+import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '../helpers/dialect';
 
-export const AddSandboxConfigMigration: SystemMigration = {
-  version: 4,
-  name: 'Add sandbox configuration to plugins table',
-  up: async (db, sql) => {
+class AddSandboxConfigMigration extends BaseMigration {
+  readonly version = 4;
+  readonly name = 'Add sandbox configuration to plugins table';
+
+  async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`
@@ -26,8 +27,9 @@ export const AddSandboxConfigMigration: SystemMigration = {
         }
       }
     });
-  },
-  down: async (db, sql) => {
+  }
+
+  async down(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN IF EXISTS "sandbox_config"`);
@@ -43,4 +45,6 @@ export const AddSandboxConfigMigration: SystemMigration = {
       }
     });
   }
-};
+}
+
+export default new AddSandboxConfigMigration();

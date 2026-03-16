@@ -1,4 +1,19 @@
 export class ReactExportSourceBuilder {
+  /**
+   * Keys that must NOT be exported as standalone named exports from @fromcode119/react.
+   *
+   * These three keys are present on the bridge (via buildUtilRefs) AND are also exported
+   * as actual class references via buildGroupedExports(). Banning them here prevents
+   * duplicate export declarations from the standalone Object.keys(bridge) loop.
+   */
+  private static readonly BANNED_STANDALONE_EXPORTS: ReadonlySet<string> = new Set([
+    // Exported as actual class references via buildGroupedExports() — ban here to prevent
+    // duplicate export declarations from the standalone Object.keys(bridge) loop.
+    'ContextBridge',
+    'ContextHooks',
+    'SystemShortcodes',
+  ]);
+
   static readonly SDK_REACT_EXPORT_KEYS: readonly string[] = [
     'FrameworkIcons',
     'FrameworkIconRegistry',
@@ -17,6 +32,7 @@ export class ReactExportSourceBuilder {
         .filter((key) => {
           if (!key || key === 'default' || key === '__esModule') return false;
           if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) return false;
+          if (ReactExportSourceBuilder.BANNED_STANDALONE_EXPORTS.has(key)) return false;
           return typeof bridge[key] !== 'undefined';
         })
         // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
@@ -43,41 +59,15 @@ export class ReactExportSourceBuilder {
 
   private static buildGroupedExports(reactModuleAccessor: string): string {
     const R = reactModuleAccessor;
-    // Use lazy getters so values are resolved at call time, not at module evaluation time.
-    // This avoids timing races where the data URL module evaluates before the runtime bridge is installed.
-    // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet initialised.
-    const g = (k: string) => `get ${k}() { const _r = ${R}; return _r ? _r.${k} : (window.Fromcode && window.Fromcode.${k}); }`;
+    // Export the ACTUAL class objects stored on the bridge — not proxy plain-objects.
+    // ContextBridge / ContextHooks / SystemShortcodes are real ES classes with static
+    // methods that call getBridge() at invocation time, so there are no timing races.
+    // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
+    // when this data URL module is evaluated (e.g. during early bundle load).
     return (
-      `\nexport const ContextBridge = {\n` +
-      `  ${g('registerSlotComponent')},\n` +
-      `  ${g('registerFieldComponent')},\n` +
-      `  ${g('registerOverride')},\n` +
-      `  ${g('registerMenuItem')},\n` +
-      `  ${g('registerCollection')},\n` +
-      `  ${g('registerPlugins')},\n` +
-      `  ${g('registerTheme')},\n` +
-      `  ${g('registerSettings')},\n` +
-      `  ${g('registerAPI')},\n` +
-      `  ${g('getAPI')},\n` +
-      `  ${g('setPluginState')},\n` +
-      `  ${g('loadConfig')},\n` +
-      `  ${g('getFrontendMetadata')},\n` +
-      `  ${g('emit')},\n` +
-      `  ${g('on')},\n` +
-      `  ${g('t')},\n` +
-      `  ${g('locale')},\n` +
-      `  ${g('setLocale')},\n` +
-      `  ${g('api')},\n` +
-      `};\n` +
-      `export const ContextHooks = {\n` +
-      `  ${g('usePlugins')},\n` +
-      `  ${g('useTranslation')},\n` +
-      `  ${g('usePluginAPI')},\n` +
-      `  ${g('usePluginState')},\n` +
-      `};\n` +
-      `export const SystemShortcodes = {\n` +
-      `  ${g('useSystemShortcodes')},\n` +
-      `};\n`
+      `\nexport const ContextBridge = ${R} ? ${R}.ContextBridge : (window.Fromcode && window.Fromcode.ContextBridge);\n` +
+      `export const ContextHooks = ${R} ? ${R}.ContextHooks : (window.Fromcode && window.Fromcode.ContextHooks);\n` +
+      `export const SystemShortcodes = ${R} ? ${R}.SystemShortcodes : (window.Fromcode && window.Fromcode.SystemShortcodes);\n`
     );
   }
 }

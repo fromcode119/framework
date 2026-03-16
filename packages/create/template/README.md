@@ -5,7 +5,7 @@ A [Fromcode](https://fromcode.com) headless CMS application.
 ## Getting started
 
 ```bash
-export GITHUB_TOKEN=ghp_...
+export GITHUB_TOKEN=<YOUR_GITHUB_TOKEN>
 npm install
 npm run dev
 ```
@@ -23,6 +23,8 @@ npm run dev:full
 ## Configuration
 
 Edit `.env` before going live. At minimum, change `JWT_SECRET` to a random string of at least 32 characters.
+
+Local `.env` files are for your machine only. Keep `.env` untracked, use `.env.example` as the source of truth for placeholders, and provide `GITHUB_TOKEN` via your shell environment instead of committing it.
 
 ## Scripts
 

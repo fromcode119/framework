@@ -20,8 +20,7 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
   const isActive = plugins.some((p: any) => p.slug === pluginSlug);
 
   const collection = AdminCollectionUtils.resolveCollection(collections as any, pluginSlug, slug);
-  // Slot name uses hyphen separator to match UI registrations like 'admin.plugin.ecommerce.page.ecommerce-orders'
-  const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}-${slug}`;
+  const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}`;
   const hasPageSlot = !!(slots?.[pageSlot] && slots[pageSlot].length > 0);
   const shouldRedirectToPluginSettings = !collection && slug === 'settings';
 

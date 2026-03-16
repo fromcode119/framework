@@ -1,10 +1,11 @@
-import { SystemMigration } from '../../types';
+import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '../helpers/dialect';
 
-export const SchedulerTasksMigration: SystemMigration = {
-  version: 3,
-  name: 'Scheduler tasks schema',
-  up: async (db, sql) => {
+class SchedulerTasksMigration extends BaseMigration {
+  readonly version = 3;
+  readonly name = 'Scheduler tasks schema';
+
+  async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`
@@ -39,8 +40,11 @@ export const SchedulerTasksMigration: SystemMigration = {
         `);
       }
     });
-  },
-  down: async (db, sql) => {
+  }
+
+  async down(db: IDatabaseManager): Promise<void> {
     await db.execute(sql`DROP TABLE IF EXISTS "_system_scheduler_tasks"`);
   }
-};
+}
+
+export default new SchedulerTasksMigration();

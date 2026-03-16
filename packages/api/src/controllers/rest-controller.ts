@@ -217,10 +217,13 @@ export class RESTController {
       if (!res) return filtered;
       res.status(201).json(filtered);
     } catch (err: any) {
-      this.logger.error(`Failed to create ${collection.slug} record: ${err.message}`, { stack: err.stack });
+      const causeMsg = err?.cause?.message;
+      this.logger.error(`Failed to create ${collection.slug} record: ${err.message}${causeMsg ? ` | cause: ${causeMsg}` : ''}`, { stack: err.stack });
       if (!res) throw err;
-      const status = err?.statusCode || (err.code === '23505' ? 409 : 500);
-      res.status(status).json({ error: err.message });
+      const pgCode = err.code || err?.cause?.code;
+      const status = err?.statusCode || (pgCode === '23505' ? 409 : 500);
+      const errorMsg = causeMsg ? `${err.message} | ${causeMsg}` : err.message;
+      res.status(status).json({ error: errorMsg });
     }
   }
 
@@ -297,10 +300,13 @@ export class RESTController {
       if (!res) return filtered;
       res.json(filtered);
     } catch (err: any) {
-      this.logger.error(`Failed to update ${collection.slug} record ${req.params.id}: ${err.message}`, { stack: err.stack });
+      const causeMsg = err?.cause?.message;
+      this.logger.error(`Failed to update ${collection.slug} record ${req.params.id}: ${err.message}${causeMsg ? ` | cause: ${causeMsg}` : ''}`, { stack: err.stack });
       if (!res) throw err;
-      const status = err?.statusCode || (err.code === '23505' ? 409 : 500);
-      res.status(status).json({ error: err.message });
+      const pgCode = err.code || err?.cause?.code;
+      const status = err?.statusCode || (pgCode === '23505' ? 409 : 500);
+      const errorMsg = causeMsg ? `${err.message} | ${causeMsg}` : err.message;
+      res.status(status).json({ error: errorMsg });
     }
   }
 

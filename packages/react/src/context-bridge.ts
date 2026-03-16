@@ -1,92 +1,94 @@
-import { RuntimeBridge } from '@fromcode119/core/client';
+import type { RuntimeBridgeInstallArgs } from './context-runtime-bridge.interfaces';
 
 export class ContextBridge {
-  private static getBridge(): any {
-    return RuntimeBridge.getBridge();
+  private static _args: RuntimeBridgeInstallArgs | null = null;
+
+  /**
+   * Called once from ContextRuntimeBridge.installRuntimeBridge() to wire up the
+   * live args object.  All static methods below delegate directly to _args —
+   * no plain-object lookup required.
+   */
+  static install(args: RuntimeBridgeInstallArgs): void {
+    ContextBridge._args = args;
   }
 
   static registerSlotComponent(...args: any[]): any {
-    return ContextBridge.getBridge().registerSlotComponent?.(...args);
+    return ContextBridge._args?.registerSlotComponent?.(...args);
   }
 
   static registerFieldComponent(...args: any[]): any {
-    return ContextBridge.getBridge().registerFieldComponent?.(...args);
+    return ContextBridge._args?.registerFieldComponent?.(...args);
   }
 
   static registerOverride(...args: any[]): any {
-    return ContextBridge.getBridge().registerOverride?.(...args);
+    return ContextBridge._args?.registerOverride?.(...args);
   }
 
   static registerMenuItem(...args: any[]): any {
-    return ContextBridge.getBridge().registerMenuItem?.(...args);
+    return ContextBridge._args?.registerMenuItem?.(...args);
   }
 
   static registerCollection(...args: any[]): any {
-    return ContextBridge.getBridge().registerCollection?.(...args);
+    return ContextBridge._args?.registerCollection?.(...args);
   }
 
   static registerPlugins(...args: any[]): any {
-    return ContextBridge.getBridge().registerPlugins?.(...args);
+    return ContextBridge._args?.registerPlugins?.(...args);
   }
 
   static registerTheme(...args: any[]): any {
-    return ContextBridge.getBridge().registerTheme?.(...args);
+    return ContextBridge._args?.registerTheme?.(...args);
   }
 
   static registerSettings(...args: any[]): any {
-    return ContextBridge.getBridge().registerSettings?.(...args);
+    return ContextBridge._args?.registerSettings?.(...args);
   }
 
   static registerAPI(...args: any[]): any {
-    return ContextBridge.getBridge().registerAPI?.(...args);
+    return ContextBridge._args?.registerAPI?.(...args);
   }
 
   static getAPI(...args: any[]): any {
-    return ContextBridge.getBridge().getAPI?.(...args);
+    return ContextBridge._args?.getAPI?.(...args);
   }
 
   static setPluginState(...args: any[]): any {
-    return ContextBridge.getBridge().setPluginState?.(...args);
+    return ContextBridge._args?.setPluginState?.(...args);
   }
 
   static loadConfig(...args: any[]): any {
-    return ContextBridge.getBridge().loadConfig?.(...args);
+    return ContextBridge._args?.stableLoadConfig?.(...args);
   }
 
   static getFrontendMetadata(...args: any[]): any {
-    return ContextBridge.getBridge().getFrontendMetadata?.(...args);
-  }
-
-  static resolveContent(...args: any[]): any {
-    return ContextBridge.getBridge().resolveContent?.(...args);
+    return ContextBridge._args?.stableGetFrontendMetadata?.(...args);
   }
 
   static emit(...args: any[]): any {
-    return ContextBridge.getBridge().emit?.(...args);
+    return ContextBridge._args?.emit?.(...args);
   }
 
   static on(...args: any[]): any {
-    return ContextBridge.getBridge().on?.(...args);
+    return ContextBridge._args?.on?.(...args);
   }
 
   static t(...args: any[]): any {
-    return ContextBridge.getBridge().t?.(...args);
+    return ContextBridge._args?.stableT?.(...args);
   }
 
   static locale(): string | undefined {
-    return ContextBridge.getBridge().locale?.() as string | undefined;
+    return ContextBridge._args?.stabilityRef?.current?.locale;
   }
 
   static setLocale(...args: any[]): any {
-    return ContextBridge.getBridge().setLocale?.(...args);
+    return ContextBridge._args?.setLocale?.(...args);
   }
 
   static readonly api = new Proxy(
     {},
     {
       get: (_, prop) => {
-        const bridge = ContextBridge.getBridge();
-        return bridge.api?.[prop as any];
+        return ContextBridge._args?.stableApiBridge?.[prop as any];
       },
     },
   ) as any;
