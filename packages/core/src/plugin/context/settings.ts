@@ -1,6 +1,7 @@
 import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { SystemConstants } from '../../constants';
+import { PluginConfigValueService } from '../services/plugin-config-value-service';
 
 
 export class SettingsContextProxy {
@@ -14,7 +15,7 @@ export class SettingsContextProxy {
         },
         get: async () => {
           const stored = await manager.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: plugin.manifest.slug });
-          const storedSettings = stored?.settings?.settings || {};
+          const storedSettings = PluginConfigValueService.getSettings(stored?.settings);
           const schema = manager.getPluginSettings(plugin.manifest.slug);
 
           if (schema && schema.fields) {
@@ -30,7 +31,7 @@ export class SettingsContextProxy {
         },
         update: async (values: Record<string, any>) => {
           const stored = await manager.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: plugin.manifest.slug });
-          const currentConfig = stored?.settings || {};
+          const currentConfig = PluginConfigValueService.getConfig(stored?.settings);
 
           await manager.savePluginConfig(plugin.manifest.slug, {
             ...currentConfig,

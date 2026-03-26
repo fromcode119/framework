@@ -639,8 +639,13 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       return;
     }
 
-    console.log(`[Fromcode] Registering field component: ${name}`);
-    setFieldComponents(prev => ({ ...prev, [name]: actualComponent }));
+    setFieldComponents((prev) => {
+      if (prev[name] === actualComponent) {
+        return prev;
+      }
+
+      return { ...prev, [name]: actualComponent };
+    });
   }, []);
 
   const registerOverride = useCallback((name: string, component: any, pluginSlug?: string, priority?: number) => {
@@ -671,11 +676,23 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     });
   }, []);
 
+  const replaceMenuItems = useCallback((items: MenuItem[]) => {
+    setMenuItems(
+      (Array.isArray(items) ? items : [])
+        .slice()
+        .sort((a, b) => (a.priority || 0) - (b.priority || 0))
+    );
+  }, []);
+
   const registerCollection = useCallback((collection: CollectionMetadata) => {
     setCollections((prev) => {
       if (prev.some(c => c.slug === collection.slug)) return prev;
       return [...prev, collection];
     });
+  }, []);
+
+  const replaceCollections = useCallback((items: CollectionMetadata[]) => {
+    setCollections(Array.isArray(items) ? items : []);
   }, []);
 
   const registerPlugins = useCallback((newPlugins: any[]) => {
@@ -729,7 +746,9 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       registerFieldComponent,
       registerOverride,
       registerMenuItem,
+      replaceMenuItems,
       registerCollection,
+      replaceCollections,
       registerPlugins,
       registerTheme,
       registerSettings,
@@ -779,7 +798,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       runtimeModules,
       stabilityRef,
     });
-  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, stableLoadConfig, stableGetFrontendMetadata, emit, on, stableT, setLocale, stableApiBridge, isReady, runtimeModules, apiUrl]);
+  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, stableLoadConfig, stableGetFrontendMetadata, emit, on, stableT, setLocale, stableApiBridge, isReady, runtimeModules, apiUrl]);
 
   const value = React.useMemo(() => ({
     slots,
@@ -812,7 +831,9 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     registerFieldComponent,
     registerOverride,
     registerMenuItem,
+    replaceMenuItems,
     registerCollection,
+    replaceCollections,
     registerPlugins,
     registerTheme,
     registerSettings,
@@ -820,7 +841,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     getFrontendMetadata,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
 
   return (
     <PluginContextRegistry.Context.Provider value={value}>

@@ -5,6 +5,22 @@ import { AdminServices } from '@/lib/admin-services';
  * Handles relationship field display and scalar value extraction.
  */
 export class CollectionListUtils {
+  static areStringArraysEqual(left: string[], right: string[]): boolean {
+    if (left === right) return true;
+    if (left.length !== right.length) return false;
+    return left.every((value, index) => value === right[index]);
+  }
+
+  static areStringRecordMapsEqual(left: Record<string, string>, right: Record<string, string>): boolean {
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+    if (!CollectionListUtils.areStringArraysEqual([...leftKeys].sort(), [...rightKeys].sort())) {
+      return false;
+    }
+
+    return leftKeys.every((key) => left[key] === right[key]);
+  }
+
   static parsePageQueryValue(value: string | null): number {
     const parsed = Number.parseInt(String(value || '').trim(), 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;

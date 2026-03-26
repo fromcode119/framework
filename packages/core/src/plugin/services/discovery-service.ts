@@ -127,10 +127,13 @@ export class DiscoveryService {
 
             let mainFile = manifest.main || manifest.entry || 'index.js';
             let indexPath = path.join(pluginPath, mainFile);
-            
-            if (!fs.existsSync(indexPath) && mainFile.endsWith('.js')) {
+            const isDevelopmentRuntime = process.env.NODE_ENV !== 'production';
+
+            if (mainFile.endsWith('.js')) {
               const tsPath = indexPath.replace(/\.js$/, '.ts');
-              if (fs.existsSync(tsPath)) {
+              if (isDevelopmentRuntime && fs.existsSync(tsPath)) {
+                indexPath = tsPath;
+              } else if (!fs.existsSync(indexPath) && fs.existsSync(tsPath)) {
                 indexPath = tsPath;
               }
             }

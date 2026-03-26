@@ -10,7 +10,6 @@ type DynamicContentClientProps = {
 
 export default function DynamicContentClient({ content }: DynamicContentClientProps) {
   const { themeLayouts } = ContextHooks.usePlugins();
-  const renderableContent = ContentRenderingUtils.buildRenderableContent(content);
 
   const selectedLayoutName =
     content?.themeLayout ||
@@ -21,21 +20,27 @@ export default function DynamicContentClient({ content }: DynamicContentClientPr
     themeLayouts?.[selectedLayoutName] ||
     themeLayouts?.DefaultLayout ||
     (({ children }: any) => <>{children}</>);
+  const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, content);
+  const renderableContent = shouldBypassDefaultContent
+    ? null
+    : ContentRenderingUtils.buildRenderableContent(content);
 
   return (
     <LayoutComponent page={content}>
-      <div className="w-full">
-        <Slot name="frontend.content.display" props={{ content: renderableContent }} />
+      {!shouldBypassDefaultContent ? (
+        <div className="w-full">
+          <Slot name="frontend.content.display" props={{ content: renderableContent }} />
 
-        {((!renderableContent || typeof renderableContent === 'string')) && (
-          <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
-            <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(content)}</h1>
-            <div dangerouslySetInnerHTML={{ __html: renderableContent || '' }} />
-          </div>
-        )}
+          {((!renderableContent || typeof renderableContent === 'string')) && (
+            <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
+              <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(content)}</h1>
+              <div dangerouslySetInnerHTML={{ __html: renderableContent || '' }} />
+            </div>
+          )}
 
-        <Slot name="frontend.content.footer" props={{ content }} />
-      </div>
+          <Slot name="frontend.content.footer" props={{ content }} />
+        </div>
+      ) : null}
     </LayoutComponent>
   );
 }

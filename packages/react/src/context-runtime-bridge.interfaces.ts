@@ -16,7 +16,9 @@ export interface RuntimeBridgeInstallArgs {
   registerFieldComponent: (...args: any[]) => void;
   registerOverride: (...args: any[]) => void;
   registerMenuItem: (...args: any[]) => void;
+  replaceMenuItems: (...args: any[]) => void;
   registerCollection: (...args: any[]) => void;
+  replaceCollections: (...args: any[]) => void;
   registerPlugins: (...args: any[]) => void;
   registerTheme: (...args: any[]) => void;
   registerSettings: (...args: any[]) => void;

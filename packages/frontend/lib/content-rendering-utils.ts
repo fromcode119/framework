@@ -4,6 +4,23 @@ import { CoercionUtils } from '@fromcode119/core/client';
  * Utilities for rendering content blocks and resolving display metadata.
  */
 export class ContentRenderingUtils {
+  static shouldBypassDefaultContent(layoutComponent: any, content: any): boolean {
+    if (!layoutComponent) {
+      return false;
+    }
+
+    if (typeof layoutComponent.handlesOwnContent === 'function') {
+      return Boolean(layoutComponent.handlesOwnContent(content));
+    }
+
+    const slugs = Array.isArray(layoutComponent.handlesOwnContentSlugs)
+      ? layoutComponent.handlesOwnContentSlugs
+      : [];
+    const normalizedSlug = CoercionUtils.toString(content?.slug).trim().toLowerCase();
+
+    return Boolean(normalizedSlug && slugs.map((entry: any) => CoercionUtils.toString(entry).trim().toLowerCase()).includes(normalizedSlug));
+  }
+
   /**
    * Resolves the best display title from content object.
    * Tries content.title, then content.name, with a fallback.
