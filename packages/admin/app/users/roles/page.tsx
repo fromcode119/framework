@@ -102,7 +102,7 @@ export default function RolesPage() {
             />
             
             <div className="flex items-center gap-4">
-              <Link href="/users/roles/new">
+              <Link href={AdminConstants.ROUTES.USERS.ROLE_NEW}>
                 <Button 
                   className="px-6 h-11 rounded-xl font-bold uppercase tracking-tight text-[11px] shadow-lg shadow-indigo-600/10 text-white" 
                   icon={<FrameworkIcons.Plus size={16} strokeWidth={2} />}
@@ -181,7 +181,7 @@ export default function RolesPage() {
                             <div className="flex items-center gap-2">
                               <Button
                                 as={Link}
-                                href={`/users/roles/${role.slug}/edit`}
+                                href={AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)}
                                 variant="ghost"
                                 size="icon"
                                 className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-slate-600 hover:text-indigo-600 hover:border-indigo-500/50"
@@ -311,7 +311,7 @@ export default function RolesPage() {
                         {health?.maintenance ? 'Maintenance Mode: Active' : 'Maintenance Mode: Inactive'}
                       </span>
                     </div>
-                    <Link href="/activity">
+                    <Link href={AdminConstants.ROUTES.ACTIVITY}>
                       <Button variant="ghost" className="h-9 px-4 rounded-lg text-[9px] font-bold uppercase tracking-tight hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
                         View Logs
                       </Button>

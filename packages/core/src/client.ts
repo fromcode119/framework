@@ -31,14 +31,34 @@ export type { LoggerOptions } from './logging.interfaces';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 export { SystemConstants } from './constants';
+export { ClientRuntimeConstants } from './client-runtime-constants';
+export { CookieConstants } from './cookie-constants';
+export { AppPathConstants } from './app-path-constants';
 export { RuntimeConstants } from './runtime-constants';
 export { RouteConstants } from './route-constants';
+export { PublicRouteConstants } from './public-route-constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────
 export { CoercionUtils } from './coercion-utils';
 export { StringUtils } from './string-utils';
 export { NumberUtils } from './number-utils';
 export { FormatUtils } from './format-utils';
+export { ApiRequestError, ApiRequestService, ApiQueryUtils, ApiPathUtils } from './api';
+export {
+  AdminUserClient,
+  ApiScopeClient,
+  CollectionScopeClient,
+  SettingsScopeClient,
+  SdkClient,
+  AdminGlobalClient,
+  AdminResourceClient,
+  AdminSdkClient,
+  BrowserStateClient,
+  BrowserStateRuntimeBuilder,
+  SystemAuthClient,
+  SystemAuthSession,
+} from './clients';
+export type { BrowserCookieOptions } from './clients';
 export { RouteUtils } from './route-utils';
 export { UrlUtils } from './url-utils';
 export { ApiVersionUtils } from './api-version';
@@ -61,9 +81,15 @@ export type {
 export { RuntimeBridge } from './runtime-bridge';
 export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
 export { PluginDefinitionUtils } from './plugin-definition-utils';
+export { Plugins } from './plugins';
+export { PluginsFacade } from './plugins-facade';
+export { NamespacedPluginsFacade } from './namespaced-plugins-facade';
+export { PluginsRegistry } from './plugins-registry';
+export * from './data-sources';
 
 // ── Shared Utilities ──────────────────────────────────────────────────────────
 export { CoreServices } from './services/core-services';
+export { CollectionIdentityService } from './services/collection-identity-service';
 export { TypeUtils } from './utils/type-utils';
 
 // ── Configuration ─────────────────────────────────────────────────────────────
@@ -80,3 +106,4 @@ export { BaseController } from './base/base-controller';
 // ── Integrations (registry only — no provider implementations) ───────────────
 export { IntegrationRegistry } from './integrations/integration-registry';
 export type { IntegrationTypeDefinition } from './integrations/integration-registry.interfaces';
+export type { PluginApiResolver } from './plugin-api-resolver.interfaces';

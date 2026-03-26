@@ -1,3 +1,5 @@
+import { CoreServices } from '@fromcode119/core/client';
+
 /**
  * Utility class for tag field operations.
  * Handles collection candidate resolution, text formatting, and label inference.
@@ -5,45 +7,17 @@
 export class TagFieldUtils {
   /**
    * Resolves possible collection name variants for tag suggestions.
-   * Handles prefix variations (fcp_, fcp-) and underscore/hyphen normalization.
+   * Handles legacy physical aliases and underscore/hyphen normalization.
    * 
    * @param collection - Collection name
    * @returns Array of possible collection name variants
    * 
    * @example
-   * const variants = TagFieldUtils.resolveCollectionCandidates('fcp_posts');
-   * // => ['fcp_posts', 'fcp-posts', 'posts', ...]
+   * const variants = TagFieldUtils.resolveCollectionCandidates('@blog/posts');
+   * // => ['@blog/posts', 'blog-posts', 'blog_posts', 'posts', ...]
    */
   static resolveCollectionCandidates(collection: string): string[] {
-    const raw = String(collection || '').trim();
-    if (!raw) return [];
-    const unique = new Set<string>();
-    const push = (value: string) => {
-      const normalized = String(value || '').trim();
-      if (!normalized) return;
-      unique.add(normalized);
-    };
-
-    push(raw);
-    push(raw.replace(/_/g, '-'));
-    push(raw.replace(/-/g, '_'));
-
-    if (raw.startsWith('fcp_')) {
-      const withoutPrefix = raw.slice(4);
-      push(withoutPrefix);
-      push(withoutPrefix.replace(/_/g, '-'));
-      push(`fcp-${withoutPrefix.replace(/_/g, '-')}`);
-    } else if (raw.startsWith('fcp-')) {
-      const withoutPrefix = raw.slice(4);
-      push(withoutPrefix);
-      push(withoutPrefix.replace(/-/g, '_'));
-      push(`fcp_${withoutPrefix.replace(/-/g, '_')}`);
-    } else {
-      push(`fcp_${raw.replace(/-/g, '_')}`);
-      push(`fcp-${raw.replace(/_/g, '-')}`);
-    }
-
-    return Array.from(unique);
+    return CoreServices.getInstance().collectionIdentity.buildReferenceCandidates(collection);
   }
 
   /**

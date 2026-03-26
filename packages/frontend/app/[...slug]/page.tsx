@@ -1,4 +1,4 @@
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { LocalizationUtils } from '@fromcode119/core/client';
 import { notFound } from 'next/navigation';
 import DynamicContentClient from '../dynamic-content-client';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';

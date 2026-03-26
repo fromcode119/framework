@@ -3,13 +3,16 @@
 import React, { useState, useEffect } from "react";
 import type { ThemeContextType } from './theme-context.interfaces';
 import { ThemeContext } from './theme-context-store';
+import { AdminServices } from '@/lib/admin-services';
+
+const adminServices = AdminServices.getInstance();
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeContextType['theme']>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as ThemeContextType['theme'];
+    const saved = adminServices.uiPreference.readThemePreference() as ThemeContextType['theme'];
     if (saved) {
       setTheme(saved);
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -21,7 +24,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
+    adminServices.uiPreference.writeThemePreference(newTheme);
   };
 
   useEffect(() => {

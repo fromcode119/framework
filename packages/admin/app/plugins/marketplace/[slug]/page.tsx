@@ -10,7 +10,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { ContextHooks } from '@fromcode119/react';
-import type { PluginEntry } from '@fromcode119/core';
+import type { PluginEntry } from '@fromcode119/core/client';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
 
@@ -114,7 +114,7 @@ export default function MarketplaceDetailPage() {
         </div>
         <h2 className="text-xl font-semibold">Error</h2>
         <p className="text-slate-500">{error || 'Plugin not found'}</p>
-        <button onClick={() => router.push('/plugins/marketplace')} className="text-indigo-600 font-semibold hover:underline">
+        <button onClick={() => router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE)} className="text-indigo-600 font-semibold hover:underline">
           Back to Marketplace
         </button>
       </div>
@@ -126,7 +126,7 @@ export default function MarketplaceDetailPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
       <button 
-        onClick={() => router.push('/plugins/marketplace')}
+        onClick={() => router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE)}
         className={`flex items-center gap-2 px-4 py-2 rounded-xl border font-semibold transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}
       >
         <FrameworkIcons.Left size={16} />

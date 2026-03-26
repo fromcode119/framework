@@ -1,4 +1,4 @@
-import { RuntimeConstants, RuntimeBridge } from '@fromcode119/sdk';
+import { RuntimeConstants } from '@fromcode119/core/client';
 
 /**
  * ESM Registry Utility
@@ -10,29 +10,68 @@ export class EsmRegistry {
     const adminModuleAccessor = `window.${RuntimeConstants.GLOBALS.MODULES} && (window.${RuntimeConstants.GLOBALS.MODULES}['${RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS}'] || window.${RuntimeConstants.GLOBALS.MODULES}['${RuntimeConstants.MODULE_NAMES.ADMIN}'])`;
     const bridge = `${reactModuleAccessor} || window.Fromcode || {}`;;
 
-    // All SDK exports available via the React runtime bridge.
-    // Plugin code uses class methods: CoercionUtils.toNumber(), StringUtils.slugify(), etc.
-    const sdkExports = [
-      // React integration
-      'Slot', 'Override', 'usePlugins', 'useTranslation', 'usePluginAPI', 'PluginsProvider',
-      'getIcon', 'createProxyIcon', 'FrameworkIcons', 'FrameworkIconRegistry', 'IconNames',
-      'registerSlotComponent', 'registerFieldComponent', 'registerOverride', 'registerMenuItem',
-      'registerCollection', 'registerPlugins', 'registerTheme', 'registerSettings',
-      'registerAPI', 'getAPI', 'emit', 'on', 't', 'RuntimeBridge.getMetadata',
-      // SDK constants
+    const sdkExportKeys = [
+      'BaseRepository',
+      'BaseService',
+      'BaseController',
+      'CoercionUtils',
+      'StringUtils',
+      'NumberUtils',
+      'FormatUtils',
+      'ApiRequestError',
+      'ApiRequestService',
+      'ApiQueryUtils',
+      'ApiPathUtils',
+      'AdminUserClient',
+      'ApiScopeClient',
+      'CollectionScopeClient',
+      'SettingsScopeClient',
+      'SdkClient',
+      'AdminGlobalClient',
+      'AdminResourceClient',
+      'AdminSdkClient',
+      'Plugins',
+      'PluginsFacade',
+      'NamespacedPluginsFacade',
+      'PluginsRegistry',
+      'RouteUtils',
+      'UrlUtils',
+      'ApiVersionUtils',
+      'LocalizationUtils',
+      'CollectionUtils',
+      'HookEventUtils',
+      'PaginationUtils',
+      'RelationUtils',
+      'ShortcodeUtils',
+      'PluginDefinitionUtils',
+      'RuntimeBridge',
+      'CoreServices',
       'SystemConstants',
-      // Non-deprecated direct exports
-      'resolveRelationValue',
-      // SDK utility classes (use class methods, not bare function aliases)
-      ...RuntimeConstants.SDK_UTIL_CLASS_NAMES,
-    ].join(', ');
+      'RuntimeConstants',
+      'RouteConstants',
+      'PublicRouteConstants',
+      'DataSourceConstants',
+      'Logger',
+      'LogLevel',
+      'EnvConfig',
+      'CapabilityRegistry',
+      'IntegrationRegistry',
+      'RecordVersions',
+      'PluginCapability',
+      'MiddlewareStage',
+    ];
+    const sdkExportSource =
+      sdkExportKeys
+        .map((key) => `export const ${key} = ${bridge}.${key};`)
+        .join('\n') +
+      `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
 
     return {
       imports: {
         "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, Fragment, Profiler, StrictMode, Children, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, Component, PureComponent, version } = window.React;",
         "react-dom": "data:application/javascript,const rd = window.ReactDOM || window.ReactDom; export default rd; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = rd;",
-        "@fromcode119/react": `data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, usePluginAPI, PluginsProvider, getIcon, createProxyIcon, FrameworkIcons, FrameworkIconRegistry, IconNames, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, emit, on, CliUtils, RuntimeBridge } = ${bridge}; export default ${reactModuleAccessor} || window.Fromcode;`,
-        "@fromcode119/sdk": `data:application/javascript,export const { ${sdkExports} } = ${bridge}; export default ${reactModuleAccessor} || window.Fromcode;`,
+        "@fromcode119/react": `data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, usePluginAPI, PluginsProvider, getIcon, createProxyIcon, FrameworkIcons, FrameworkIconRegistry, IconNames, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, emit, on, CliUtils, RuntimeBridge } = ${bridge}; export default ${reactModuleAccessor} || window.Fromcode;`,
+        "@fromcode119/sdk": `data:application/javascript,${encodeURIComponent(sdkExportSource)}`,
         "@fromcode119/admin": `data:application/javascript,export default ${adminModuleAccessor} || window.Fromcode;`,
         "@fromcode119/admin/components": `data:application/javascript,export default ${adminModuleAccessor} || window.Fromcode;`,
         "react/jsx-runtime": "data:application/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsx, jsxs, Fragment };",

@@ -1,7 +1,7 @@
 import { BaseRouter } from '../routers/base-router';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
-import { AuthController } from '../controllers/auth-controller';
+import { AuthController } from '../controllers/auth';
 import { RouteConstants } from '@fromcode119/core';
 
 /**
@@ -52,10 +52,16 @@ export class AuthRouter extends BaseRouter {
 
     // User security (requires authentication)
     this.get(RouteConstants.SEGMENTS.SECURITY, this.auth.guard(), this.bind(this.controller.getMySecurityState.bind(this.controller)));
+    this.patch(RouteConstants.SEGMENTS.PROFILE, this.auth.guard(), this.bind(this.controller.updateMyProfile.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.VERIFY_PASSWORD, this.auth.guard(), this.bind(this.controller.verifyPassword.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.CHANGE_PASSWORD, this.auth.guard(), this.bind(this.controller.changePassword.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.EMAIL_CHANGE_REQUEST, this.auth.guard(), this.bind(this.controller.requestEmailChange.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.EMAIL_CHANGE_CONFIRM, this.bind(this.controller.confirmEmailChange.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.TWO_FACTOR_STATUS, this.auth.guard(), this.bind(this.controller.getMyTwoFactorStatus.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.TWO_FACTOR_SETUP, this.auth.guard(), this.bind(this.controller.setupMyTwoFactor.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.TWO_FACTOR_VERIFY, this.auth.guard(), this.bind(this.controller.verifyMyTwoFactor.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.TWO_FACTOR_RECOVERY, this.auth.guard(), this.bind(this.controller.regenerateMyRecoveryCodes.bind(this.controller)));
+    this.delete(RouteConstants.SEGMENTS.TWO_FACTOR_DISABLE, this.auth.guard(), this.bind(this.controller.disableMyTwoFactor.bind(this.controller)));
 
     // Session management (user)
     this.get(RouteConstants.SEGMENTS.SESSIONS_ME, this.auth.guard(), this.bind(this.controller.getMySessions.bind(this.controller)));

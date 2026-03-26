@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { CookieConstants } from '@fromcode119/core/client';
 import { AdminConstants } from './constants';
 
 /**
@@ -8,7 +9,7 @@ import { AdminConstants } from './constants';
  */
 export class AdminProxy {
   static handle(request: NextRequest): NextResponse {
-    const token = request.cookies.get('fc_token')?.value;
+    const token = request.cookies.get(CookieConstants.AUTH_TOKEN)?.value;
     const basePath = AdminProxy.resolveBasePath(request);
     const pathname = AdminProxy.stripBasePath(request.nextUrl.pathname, basePath);
     const publicAuthRoutes = new Set<string>(AdminConstants.ROUTES.AUTH.PUBLIC as readonly string[]);

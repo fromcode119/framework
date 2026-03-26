@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
+import { CoreServices } from '@fromcode119/core/client';
 import { useRouter } from 'next/navigation';
 import { AuthHooks } from '@/components/use-auth';
 import { StatCard } from '@/components/ui/stat-card';
@@ -26,6 +27,7 @@ export default function AdminPage() {
   const [loadingStats, setLoadingStats] = useState(true);
   const [updateAvailable, setUpdateAvailable] = useState<any>(null);
   const [showAllCollections, setShowAllCollections] = useState(false);
+  const collectionIdentity = CoreServices.getInstance().collectionIdentity;
   
   const hasMainContent = slots['admin.dashboard.main'] && slots['admin.dashboard.main'].length > 0;
   
@@ -233,9 +235,9 @@ export default function AdminPage() {
                 if (showAllCollections) return true;
 
                 // Default view filter logic:
-                // 1. Hide internal-looking slugs (starting with _ or fcp_)
+                // 1. Hide internal-looking slugs
                 // 2. Hide low count entities that aren't core
-                if (s.slug.startsWith('_') || s.slug.startsWith('fcp_')) return false;
+                if (collectionIdentity.isInternalCollectionIdentifier(String(s.slug || ''))) return false;
                 
                 // Hide empty non-core entities by default
                 if (s.count === 0) return false;

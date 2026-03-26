@@ -60,6 +60,12 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     // If it's a string (dynamic table), use raw SQL to ensure all columns are retrieved
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
+
+      // Guard against querying tables that haven't been created yet (first boot).
+      if (!(await this.tableExists(tableName))) {
+        return [];
+      }
+
       const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
 
       if (joins && joins.length > 0) {
@@ -298,6 +304,16 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   async count(tableOrName: any, options: any = {}): Promise<number> {
     const { where, joins } = options;
     const isString = typeof tableOrName === 'string';
+
+    // Guard: if given a string table name, skip the query entirely when the
+    // table hasn't been created yet (first boot / fresh install).  Without
+    // this guard, Postgres emits ERROR-level log entries for every
+    // not-yet-synced plugin collection even though the caller catches the
+    // exception.
+    if (isString && !(await this.tableExists(tableOrName))) {
+      return 0;
+    }
+
     const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
     
     let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);

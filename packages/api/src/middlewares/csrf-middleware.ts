@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { Logger } from '@fromcode119/core';
+import { CookieConstants, Logger } from '@fromcode119/core';
+import { RequestCookieService } from '../services/request-cookie-service';
 import { ApiUrlUtils } from '../utils/url';
 import { BaseMiddleware } from './base-middleware';
 
 export class CSRFMiddleware extends BaseMiddleware {
   private logger = new Logger({ namespace: 'security' });
+  private readonly cookies = new RequestCookieService();
 
   async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
     // Determine the root domain for cross-subdomain cookies
@@ -13,9 +15,10 @@ export class CSRFMiddleware extends BaseMiddleware {
 
     // 1. Generate CSRF token if not present in cookies OR if we need to ensure domain-scoping
     // We explicitly ensure it's on the root domain on health/status checks or if missing
-    if (!req.cookies.fc_csrf || (req.method === 'GET' && (req.path.includes('/status') || req.path.includes('/health')))) {
-        const existingToken = req.cookies.fc_csrf;
-        const token = (typeof existingToken === 'string' ? existingToken : null) || crypto.randomBytes(32).toString('hex');
+    const hasCsrfCookie = this.cookies.hasCookie(req, CookieConstants.AUTH_CSRF);
+    if (!hasCsrfCookie || (req.method === 'GET' && (req.path.includes('/status') || req.path.includes('/health')))) {
+        const existingToken = this.cookies.readPrimaryCookieValue(req, CookieConstants.AUTH_CSRF);
+        const token = existingToken || crypto.randomBytes(32).toString('hex');
         
         const isProd = process.env.NODE_ENV === 'production';
         const secure = isProd && ApiUrlUtils.isHttps(req);
@@ -32,8 +35,8 @@ export class CSRFMiddleware extends BaseMiddleware {
         }
 
         // Only set if we either don't have it at all, OR we found a better domain to attach to
-        if (!req.cookies.fc_csrf || domain) {
-            res.cookie('fc_csrf', token, cookieOptions);
+        if (!hasCsrfCookie || domain) {
+            res.cookie(CookieConstants.AUTH_CSRF, token, cookieOptions);
         }
     }
 
@@ -62,33 +65,9 @@ export class CSRFMiddleware extends BaseMiddleware {
     // 5. Validate token
     const headerToken = String(req.headers['x-csrf-token'] || '');
 
-    // Extract ALL cookies with the name 'fc_csrf' from the raw Cookie header
+    // Extract all cookies matching the configured CSRF cookie name from the raw header
     // to handle host-specific vs domain-specific cookie conflicts
-    const csrfCandidates: string[] = [];
-    if (req.headers.cookie) {
-        const rawCookies = String(req.headers.cookie).split(';');
-        rawCookies.forEach(c => {
-            const parts = c.trim().split('=');
-            if (parts.length >= 2) {
-                const name = parts[0].trim();
-                const value = parts.slice(1).join('=').trim();
-                if (name === 'fc_csrf' && value) {
-                    csrfCandidates.push(value);
-                }
-            }
-        });
-    }
-
-    // Fallback to req.cookies if populated
-    if (req.cookies?.fc_csrf) {
-        if (Array.isArray(req.cookies.fc_csrf)) {
-            req.cookies.fc_csrf.forEach((t: string) => {
-                if (t && !csrfCandidates.includes(t)) csrfCandidates.push(t);
-            });
-        } else if (typeof req.cookies.fc_csrf === 'string' && !csrfCandidates.includes(req.cookies.fc_csrf)) {
-            csrfCandidates.push(req.cookies.fc_csrf);
-        }
-    }
+    const csrfCandidates = this.cookies.collectCookieValues(req, CookieConstants.AUTH_CSRF);
 
     const isValid = csrfCandidates.some(candidate => candidate === headerToken);
 

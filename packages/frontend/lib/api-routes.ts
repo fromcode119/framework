@@ -1,4 +1,4 @@
-import { ApiVersionUtils } from '@fromcode119/sdk';
+import { ApiVersionUtils } from '@fromcode119/core/client';
 import { FrontendApiBaseUrl } from './api-base-url';
 
 export class FrontendApiRoutes {

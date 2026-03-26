@@ -22,6 +22,9 @@ export interface RuntimeBridgeInstallArgs {
   registerSettings: (...args: any[]) => void;
   registerAPI: (...args: any[]) => void;
   getAPI: (...args: any[]) => any;
+  registerPluginApi: (...args: any[]) => void;
+  getPluginApi: (...args: any[]) => any;
+  hasPluginApi: (...args: any[]) => boolean;
   setPluginState: (...args: any[]) => void;
   stableLoadConfig: (...args: any[]) => Promise<any>;
   stableGetFrontendMetadata: (...args: any[]) => Promise<any>;

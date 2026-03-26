@@ -1,4 +1,4 @@
-import { ApiVersionUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
+import { ApiPathUtils, ApiVersionUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 
 /**
  * API Configuration Singleton.
@@ -158,19 +158,19 @@ export class ApiConfig {
         LOGOUT: withVersion(SystemConstants.API_PATH.AUTH.LOGOUT),
         SESSIONS: withVersion(SystemConstants.API_PATH.AUTH.SESSIONS),
         MY_SESSIONS: withVersion(SystemConstants.API_PATH.AUTH.MY_SESSIONS),
-        REVOKE_MY_SESSION: (id: string) => withVersion(SystemConstants.API_PATH.AUTH.REVOKE_SESSION.replace(':id', id)),
+        REVOKE_MY_SESSION: (id: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.AUTH.REVOKE_SESSION, { id })),
         REVOKE_OTHER_SESSIONS: withVersion(SystemConstants.API_PATH.AUTH.REVOKE_OTHER_SESSIONS),
-        KILL_SESSION: (id: string) => withVersion(SystemConstants.API_PATH.AUTH.KILL_SESSION.replace(':id', id)),
+        KILL_SESSION: (id: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.AUTH.KILL_SESSION, { id })),
         API_TOKENS: withVersion(SystemConstants.API_PATH.AUTH.API_TOKENS),
-        API_TOKEN: (id: string) => withVersion(SystemConstants.API_PATH.AUTH.API_TOKEN.replace(':id', id)),
+        API_TOKEN: (id: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.AUTH.API_TOKEN, { id })),
       },
       plugins: {
         BASE: withVersion(SystemConstants.API_PATH.PLUGINS.BASE),
         ACTIVE: withVersion(SystemConstants.API_PATH.PLUGINS.ACTIVE),
-        TOGGLE: (slug: string) => withVersion(SystemConstants.API_PATH.PLUGINS.TOGGLE.replace(':slug', slug)),
-        CONFIG: (slug: string) => withVersion(SystemConstants.API_PATH.PLUGINS.CONFIG.replace(':slug', slug)),
-        SAVE_CONFIG: (slug: string) => withVersion(SystemConstants.API_PATH.PLUGINS.CONFIG.replace(':slug', slug)),
-        DELETE: (slug: string) => withVersion(SystemConstants.API_PATH.PLUGINS.DELETE.replace(':slug', slug)),
+        TOGGLE: (slug: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.TOGGLE, { slug })),
+        CONFIG: (slug: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.CONFIG, { slug })),
+        SAVE_CONFIG: (slug: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.CONFIG, { slug })),
+        DELETE: (slug: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.DELETE, { slug })),
         MARKETPLACE: withVersion(SystemConstants.API_PATH.PLUGINS.MARKETPLACE),
         INSTALL: (slug: string) => withVersion(`${SystemConstants.API_PATH.PLUGINS.INSTALL}/${slug}`),
         UI: SystemConstants.API_PATH.PLUGINS.UI,
@@ -193,36 +193,12 @@ export class ApiConfig {
   }
 
   /**
-   * Legacy (non-versioned) API routes for backwards compatibility.
-   */
-  get legacyRoutes() {
-    const withoutVersion = (path: unknown) => `${this.prefixes.BASE}${this.normalizePath(path, '/')}`;
-
-    return {
-      system: {
-        HEALTH: withoutVersion(SystemConstants.API_PATH.SYSTEM.HEALTH),
-        OPENAPI: withoutVersion(SystemConstants.API_PATH.SYSTEM.OPENAPI)
-      },
-      collections: {
-        BASE: withoutVersion(SystemConstants.API_PATH.COLLECTIONS.BASE)
-      }
-    } as const;
-  }
-
-  /**
    * Application (frontend) routes.
    */
   get appRoutes() {
     return {
-      auth: {
-        LOGIN: SystemConstants.APP_PATH.AUTH.LOGIN,
-        SETUP: SystemConstants.APP_PATH.AUTH.SETUP,
-        REGISTER: SystemConstants.APP_PATH.AUTH.REGISTER,
-        FORGOT_PASSWORD: SystemConstants.APP_PATH.AUTH.FORGOT_PASSWORD,
-        RESET_PASSWORD: SystemConstants.APP_PATH.AUTH.RESET_PASSWORD,
-        VERIFY_EMAIL: SystemConstants.APP_PATH.AUTH.VERIFY_EMAIL,
-        VERIFY_EMAIL_CHANGE: SystemConstants.APP_PATH.AUTH.VERIFY_EMAIL_CHANGE
-      }
+      auth: SystemConstants.APP_PATH.AUTH,
+      admin: SystemConstants.APP_PATH.ADMIN,
     } as const;
   }
 

@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import { BaseMiddleware } from './base-middleware';
+import { ApiConfig } from '../config/api-config';
 import type { RateLimitOptions } from './rate-limit-middleware.interfaces';
+import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
 
 /**
  * Rate Limiting Middleware using express-rate-limit.
@@ -28,6 +30,7 @@ export class RateLimitMiddleware extends BaseMiddleware {
 
   constructor(options: RateLimitOptions = {}) {
     super();
+    const apiConfig = ApiConfig.getInstance();
 
     const windowMs = options.windowMs ||
       parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000');
@@ -50,7 +53,7 @@ export class RateLimitMiddleware extends BaseMiddleware {
 
         // Default skip logic
         // Skip rate limiting for EventSource (SSE) and health checks
-        if (req.path.includes('/system/events') || req.path.includes('/health')) {
+        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
           return true;
         }
 
@@ -77,6 +80,7 @@ export class RateLimitMiddleware extends BaseMiddleware {
    * ```
    */
   static createDynamic(settingsCache: Map<string, string>): RateLimitRequestHandler {
+    const apiConfig = ApiConfig.getInstance();
     return rateLimit({
       windowMs: () => {
         return parseInt(
@@ -96,7 +100,7 @@ export class RateLimitMiddleware extends BaseMiddleware {
       message: { error: 'Too many requests from this IP, please try again later' },
       skip: (req) => {
         // Skip rate limiting for EventSource (SSE) and health checks
-        if (req.path.includes('/system/events') || req.path.includes('/health')) {
+        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
           return true;
         }
         return !!req.headers['x-skip-rate-limit'] &&
@@ -106,4 +110,3 @@ export class RateLimitMiddleware extends BaseMiddleware {
   }
 
 }
-

@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import { CookieConstants } from '@fromcode119/core/client';
 
 /**
  * Authentication browser utilities (cookie management).
@@ -11,7 +12,7 @@ export class AuthUtils {
   static purgeAuth(): void {
     if (typeof document === 'undefined') return;
 
-    const cookiesToClear = ['fc_token', 'fc_user', 'fc_csrf', 'fc_token_v1', 'fc_token_v2'];
+    const cookiesToClear = [...CookieConstants.AUTH_COOKIES_TO_CLEAR];
     const hostname = window.location.hostname;
     const domains = [hostname, '.' + hostname];
 

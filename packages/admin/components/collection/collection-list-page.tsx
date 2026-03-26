@@ -7,14 +7,15 @@ import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@/lib/icons';
-import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
+import { AdminUrlUtils } from '@/lib/url-utils';
 import { FieldRenderer } from '@/components/collection/field-renderer';
 import { CollectionNotFound } from '@/components/collection/collection-not-found';
 import { CollectionQuickEditCard } from '@/components/collection/collection-quick-edit-card';
+import { AdminServices } from '@/lib/admin-services';
 
 import { CollectionListHeader } from './list/list-header';
 import { FilterBar } from './list/filter-bar';
@@ -27,6 +28,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const RELATIONSHIP_LABEL_CACHE = new Map<string, string>();
+const adminServices = AdminServices.getInstance();
 
 
 
@@ -121,7 +123,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const [data, setData] = useState<any[]>([]);
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
 
-  const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
+  const frontendUrl = AdminUrlUtils.resolveFrontendBaseUrl(settings, settings?.frontend_url);
   
   // Find the collection by matching the short slug and the explicit pluginSlug
   const collection = AdminCollectionUtils.resolveCollection(collections, pluginSlug, slug);
@@ -160,7 +162,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
 
   const resolvedSlug = collection?.slug || slug;
   // Use unprefixedSlug for slot names: plugins register using their natural slug (e.g. "ecommerce-customers"),
-  // but collection.slug is table-prefixed at runtime (e.g. "fcp_ecommerce_customers").
+  // but collection.slug is still a physical storage identifier at runtime.
   const slotSlug = (collection as any)?.unprefixedSlug || slug;
   const pageSize = 10;
 
@@ -251,8 +253,6 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     });
   }, [collection]);
 
-  const columnsStorageKey = useMemo(() => `fc_columns_${pluginSlug}_${resolvedSlug}`, [pluginSlug, resolvedSlug]);
-
   const selectFilterFields = useMemo(() => {
     if (!collection) return [];
     return collection.fields.filter((field: any) => {
@@ -304,17 +304,12 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     const uniqueDefaults = Array.from(new Set(defaults));
 
     let next = uniqueDefaults;
-    try {
-      const raw = localStorage.getItem(columnsStorageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          const valid = parsed.filter((id: string) => availableIds.has(id));
-          if (valid.length) next = valid;
-        }
+    const persistedColumns = adminServices.uiPreference.readCollectionColumns(pluginSlug, resolvedSlug);
+    if (persistedColumns.length) {
+      const valid = persistedColumns.filter((id: string) => availableIds.has(id));
+      if (valid.length) {
+        next = valid;
       }
-    } catch {
-      // no-op
     }
 
     if (uniqueDefaults.includes('id') && availableIds.has('id') && !next.includes('id')) {
@@ -323,7 +318,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
 
     if (!next.length) next = allColumns.slice(0, 4).map((column) => column.id);
     setVisibleColumnIds(next);
-  }, [allColumns, collection?.admin?.defaultColumns, columnsStorageKey]);
+  }, [allColumns, collection?.admin?.defaultColumns, pluginSlug, resolvedSlug]);
 
   useEffect(() => {
     if (!showColumnsMenu) return;
@@ -365,7 +360,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
       } else {
         next = [...prev, columnId];
       }
-      localStorage.setItem(columnsStorageKey, JSON.stringify(next));
+      adminServices.uiPreference.writeCollectionColumns(pluginSlug, resolvedSlug, next);
       return next;
     });
   };
@@ -424,7 +419,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     try {
       const queryParams = new URLSearchParams();
       queryParams.append('format', format);
-      queryParams.append('token', Cookies.get('fromcode_token') || '');
+      queryParams.append('token', AdminApi.getAdminExportToken());
       if (ids && ids.length > 0) {
         queryParams.append('ids', ids.join(','));
       }

@@ -1,4 +1,4 @@
-import { IDatabaseManager, TableResolver, NamingStrategy } from '@fromcode119/database';
+import { IDatabaseManager, TableResolver, NamingStrategy, PhysicalTableNameUtils } from '@fromcode119/database';
 
 import { CollectionQueryBuilder } from './types';
 
@@ -11,7 +11,7 @@ import { CollectionQueryBuilder } from './types';
 export class PluginRegistry {
   private static instance: PluginRegistry;
   private db?: IDatabaseManager;
-  private entityMap: Map<string, string> = new Map(); // e.g., "content.pages" -> "fcp_content_pages"
+  private entityMap: Map<string, string> = new Map(); // e.g., "content.pages" -> physical table name
 
   private constructor() {
     // Automatically register this registry as the global table resolver
@@ -65,7 +65,7 @@ export class PluginRegistry {
       // Fallback to default naming convention if not explicitly registered
       const normalizedPlugin = NamingStrategy.toSnakeIdentifier(plugin);
       const normalizedTable = NamingStrategy.toSnakeIdentifier(rawEntity);
-      return `fcp_${normalizedPlugin}_${normalizedTable}`;
+      return PhysicalTableNameUtils.create(normalizedPlugin, normalizedTable);
     }
     
     return this.entityMap.get(identifier) || identifier;
@@ -186,4 +186,3 @@ export class PluginRegistry {
     }
   }
 }
-

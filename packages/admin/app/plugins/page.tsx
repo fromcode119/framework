@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { AdminConstants } from '@/lib/constants';
 
 export default function PluginsPage() {
-  redirect('/plugins/installed');
+  redirect(AdminConstants.ROUTES.PLUGINS.INSTALLED);
 }

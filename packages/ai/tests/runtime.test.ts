@@ -144,7 +144,7 @@ describe('assistant-runtime behavior baseline', () => {
 
   it('keeps safety approvals for staged writes', async () => {
     const collection: AssistantCollectionContext = {
-      slug: 'fcp_cms_pages',
+      slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
       pluginSlug: 'cms',
@@ -163,7 +163,7 @@ describe('assistant-runtime behavior baseline', () => {
               type: 'mcp_call',
               tool: 'content.update',
               input: {
-                collectionSlug: 'fcp_cms_pages',
+                collectionSlug: '@cms/pages',
                 id: 1,
                 data: { title: 'New Home' },
               },
@@ -187,7 +187,7 @@ describe('assistant-runtime behavior baseline', () => {
 
   it('drops staged content.update payload keys not defined in collection fields', async () => {
     const collection: AssistantCollectionContext = {
-      slug: 'fcp_cms_pages',
+      slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
       pluginSlug: 'cms',
@@ -206,7 +206,7 @@ describe('assistant-runtime behavior baseline', () => {
               type: 'mcp_call',
               tool: 'content.update',
               input: {
-                collectionSlug: 'fcp_cms_pages',
+                collectionSlug: '@cms/pages',
                 id: 1,
                 data: { label: 'Elite UK Contractors' },
               },
@@ -218,7 +218,7 @@ describe('assistant-runtime behavior baseline', () => {
     });
 
     const result = await runtime.chat({
-      message: 'Update fcp_cms_pages id 1 field label to "Elite UK Contractors"',
+      message: 'Update @cms/pages id 1 field label to "Elite UK Contractors"',
       agentMode: 'advanced',
       maxIterations: 1,
     });
@@ -263,7 +263,7 @@ describe('assistant-runtime behavior baseline', () => {
 
   it('returns homepage draft fast-path without model call in basic mode', async () => {
     const collection: AssistantCollectionContext = {
-      slug: 'fcp_cms_pages',
+      slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
       pluginSlug: 'cms',
@@ -289,7 +289,7 @@ describe('assistant-runtime behavior baseline', () => {
 
   it('uses content.update for homepage draft only when target record is explicit', async () => {
     const collection: AssistantCollectionContext = {
-      slug: 'fcp_cms_pages',
+      slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
       pluginSlug: 'cms',
@@ -303,7 +303,7 @@ describe('assistant-runtime behavior baseline', () => {
     });
 
     const result = await runtime.chat({
-      message: 'Create homepage draft in fcp_cms_pages id 8 with hero, proof, CTA, and FAQ.',
+      message: 'Create homepage draft in @cms/pages id 8 with hero, proof, CTA, and FAQ.',
       agentMode: 'basic',
     });
 
@@ -315,7 +315,7 @@ describe('assistant-runtime behavior baseline', () => {
 
   it('parses conversational replace phrasing and avoids freeform model staging', async () => {
     const collection: AssistantCollectionContext = {
-      slug: 'fcp_cms_pages',
+      slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
       pluginSlug: 'cms',

@@ -1,9 +1,10 @@
 import { TableNameResolver } from './types';
 import { NamingStrategy } from './naming-strategy';
+import { PhysicalTableNameUtils } from './physical-table-name-utils';
 
 /**
  * Manages the resolution of semantic table names (e.g., @content/pages)
- * to physical database table names (e.g., fcp_content_pages).
+ * to physical database table names.
  */
 export class TableResolver {
   private static resolver: TableNameResolver = (name: any): any => {
@@ -15,7 +16,7 @@ export class TableResolver {
       if (parts.length >= 2) {
         const plugin = NamingStrategy.toSnakeIdentifier(parts[0]);
         const table = NamingStrategy.toSnakeIdentifier(parts.slice(1).join('_'));
-        return `fcp_${plugin}_${table}`;
+        return PhysicalTableNameUtils.create(plugin, table);
       }
     }
     

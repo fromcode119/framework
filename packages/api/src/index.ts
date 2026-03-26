@@ -47,10 +47,13 @@ import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from './services/graph-ql-service';
 import { createHandler } from 'graphql-http/lib/use/express';
 import { createHash } from 'crypto';
-import { ServerSettingsService } from './server-settings-service';
-import { ServerAuthSetup } from './server-auth-setup';
-import { ServerMiddlewareSetup } from './server-middleware-setup';
-import { ServerRoutesSetup } from './server-routes-setup';
+import {
+  ServerAuthSetup,
+  ServerMiddlewareSetup,
+  ServerRoutesSetup,
+  ServerSettingsService,
+} from './server/index';
+import { PublicSystemRouteUtils } from './utils/public-system-route-utils';
 
 export class APIServer {
   public app = express();
@@ -165,6 +168,7 @@ export class APIServer {
     this.app.use(cookieParser());
     this.app.use(new CSRFMiddleware().middleware());
 
+    const apiConfig = ApiConfig.getInstance();
     const limiter = rateLimit({
       windowMs: parseInt(this.settingsCache.get('rate_limit_window') || process.env.RATE_LIMIT_WINDOW_MS || '900000'),
       limit: (req) => {
@@ -174,14 +178,14 @@ export class APIServer {
       message: { error: 'Too many requests from this IP, please try again later' },
       skip: (req) => {
         // Skip rate limiting for EventSource (SSE) and health checks
-        if (req.path.includes('/system/events') || req.path.includes('/health')) {
+        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
           return true;
         }
         return !!req.headers['x-skip-rate-limit'] && req.headers['x-skip-rate-limit'] === process.env.ADMIN_SECRET;
       }
     } as any);
 
-    this.app.use(`${ApiConfig.getInstance().prefixes.BASE}/`, limiter);
+    this.app.use(`${apiConfig.prefixes.BASE}/`, limiter);
 
     this.setupAuthIntegration();
     await this.registerCoreCollection('users', CoreCollections.user);
@@ -480,4 +484,3 @@ export class APIServer {
     server.start(port, host);
   }
 }
-

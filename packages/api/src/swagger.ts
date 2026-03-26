@@ -8,7 +8,7 @@ export class SwaggerGenerator {
     schemas: {}
   };
 
-  const collectionsBase = ApiConfig.getInstance().legacyRoutes.collections.BASE;
+  const collectionsBase = ApiConfig.getInstance().routes.collections.BASE;
 
   for (const collection of collections) {
     const slug = collection.slug;

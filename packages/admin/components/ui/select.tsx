@@ -231,7 +231,7 @@ export const Select = ({
                           ) : null}
                           {section.options.map((opt) => (
                         <button
-                          key={`${group.name}:${section.name}:${typeof opt.value === 'object' ? JSON.stringify(opt.value) : opt.value}`}
+                          key={`${group.name}:${section.name}:${typeof opt.value === 'object' ? JSON.stringify(opt.value) : opt.value}:${opt.label}`}
                           type="button"
                           onClick={() => {
                             const finalVal = opt.value && typeof opt.value === 'object' ? (opt.value as any).value || (opt.value as any).id || (opt.value as any).slug : opt.value;

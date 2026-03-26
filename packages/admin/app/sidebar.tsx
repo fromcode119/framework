@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { AppEnv } from '@/lib/env';
 import { AdminConstants } from '@/lib/constants';
 import { NavUtils } from '@/lib/nav-utils';
+import { AdminServices } from '@/lib/admin-services';
 
 const { 
   Close = () => null, 
@@ -22,10 +23,13 @@ const {
   Settings = () => null
 } = (FrameworkIcons || {}) as any;
 
+const adminServices = AdminServices.getInstance();
+
 interface NavItemProps {
   icon?: React.ReactNode;
   label: string;
   href: string;
+  persistenceKey?: string;
   active?: boolean;
   onClick?: () => void;
   children?: any[];
@@ -34,7 +38,7 @@ interface NavItemProps {
   version?: string;
 }
 
-const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroupHeader, version }: NavItemProps) => {
+const NavItem = ({ icon, label, href, persistenceKey, active, onClick, children, isMini, isGroupHeader, version }: NavItemProps) => {
   const { theme } = ThemeHooks.useTheme();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
@@ -43,6 +47,10 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
   const childPaths = React.useMemo(
     () => (children || []).map((child) => NavUtils.normalizePath(child.path)).filter(Boolean),
     [children]
+  );
+  const storageKey = React.useMemo(
+    () => String(persistenceKey || href || label).trim(),
+    [href, label, persistenceKey],
   );
   const activeChildPath = React.useMemo(
     () => NavUtils.resolveBestMatchPath(pathname, childPaths as string[]) || '',
@@ -54,20 +62,20 @@ const NavItem = ({ icon, label, href, active, onClick, children, isMini, isGroup
 
   // Load persistence state
   React.useEffect(() => {
-    if (label) {
-      const saved = localStorage.getItem(`fc_nav_expanded_${label}`);
+    if (storageKey) {
+      const saved = adminServices.uiPreference.readNavExpanded(storageKey);
       if (saved !== null) {
-        setExpanded(saved === 'true');
+        setExpanded(saved);
       }
     }
-  }, [label]);
+  }, [storageKey]);
 
   // Save persistence state
   React.useEffect(() => {
-    if (label) {
-      localStorage.setItem(`fc_nav_expanded_${label}`, expanded.toString());
+    if (storageKey) {
+      adminServices.uiPreference.writeNavExpanded(storageKey, expanded);
     }
-  }, [expanded, label]);
+  }, [expanded, storageKey]);
 
   // Auto-expand when a child becomes active
   React.useEffect(() => {
@@ -211,13 +219,9 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
 
   // Load state from localStorage on mount
   React.useEffect(() => {
-    const saved = localStorage.getItem('fc_sidebar_collapsed_groups');
-    if (saved) {
-      try {
-        setCollapsedGroups(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse sidebar state', e);
-      }
+    const saved = adminServices.uiPreference.readCollapsedSidebarGroups();
+    if (saved.length) {
+      setCollapsedGroups(saved);
     }
     setIsInitialized(true);
   }, []);
@@ -225,7 +229,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   // Save state to localStorage when it changes
   React.useEffect(() => {
     if (isInitialized) {
-      localStorage.setItem('fc_sidebar_collapsed_groups', JSON.stringify(collapsedGroups));
+      adminServices.uiPreference.writeCollapsedSidebarGroups(collapsedGroups);
     }
   }, [collapsedGroups, isInitialized]);
 
@@ -235,14 +239,34 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
     );
   };
 
+  const adminProtectedPaths: string[] = [
+    AdminConstants.ROUTES.ROOT,
+    AdminConstants.ROUTES.PLUGINS.ROOT,
+    AdminConstants.ROUTES.USERS.ROOT,
+    AdminConstants.ROUTES.SETTINGS.ROOT,
+    AdminConstants.ROUTES.MEDIA.ROOT,
+    AdminConstants.ROUTES.USERS.ROLE_LIST,
+    AdminConstants.ROUTES.USERS.PERMISSIONS,
+    AdminConstants.ROUTES.ACTIVITY,
+  ];
+
+  const coreGroupPaths: string[] = [
+    AdminConstants.ROUTES.ROOT,
+    AdminConstants.ROUTES.USERS.ROOT,
+    AdminConstants.ROUTES.MEDIA.ROOT,
+  ];
+
+  const managementGroupPaths: string[] = [
+    AdminConstants.ROUTES.PLUGINS.ROOT,
+    AdminConstants.ROUTES.THEMES.ROOT,
+  ];
+
   // Filter out items the user shouldn't see
   // For now, only 'admin' can see everything. 
   // In the future, this will be more granular.
   const authorizedMenuItems = menuItems.filter(item => {
     // If it's a platform/system route, require admin
-    const isAdminRoute = [
-      '/', '/plugins', '/users', '/settings', '/media', '/users/roles', '/users/permissions', '/activity'
-    ].some(path => item.path === path || item.path?.startsWith(path + '/'));
+    const isAdminRoute = adminProtectedPaths.some(path => item.path === path || item.path?.startsWith(path + '/'));
     
     if (isAdminRoute && !user?.roles?.includes('admin')) {
       return false;
@@ -258,11 +282,11 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
     
     // Manual mapping for core items if they don't have a group
     let groupKey = rawGroup;
-    if (['/', '/users', '/media'].includes(item.path)) {
+    if (coreGroupPaths.includes(item.path)) {
       groupKey = 'core';
-    } else if (['/plugins', '/themes'].includes(item.path)) {
+    } else if (managementGroupPaths.includes(item.path)) {
       groupKey = 'management';
-    } else if (item.path === '/activity') {
+    } else if (item.path === AdminConstants.ROUTES.ACTIVITY) {
       groupKey = 'system';
     }
 
@@ -341,6 +365,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     icon={<Icon name={item.icon || 'Package'} size={18} />}
                     label={item.label}
                     href={item.path}
+                    persistenceKey={`${item.pluginSlug || 'system'}:${item.path}`}
                     active={NavUtils.isPathActive(pathname, item.path, items.map((entry) => entry.path))}
                     onClick={onClose}
                     children={item.children}
@@ -373,8 +398,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
             )}
             {(!collapsedGroups.includes('core-fallback') || isMini) && (
               <>
-                <NavItem icon={<Icon name="Dashboard" size={18} />} label="Dashboard" href="/" active={pathname === '/'} onClick={onClose} isMini={isMini} />
-                <NavItem icon={<Icon name="Package" size={18} />} label="Plugins" href="/plugins" active={pathname === '/plugins'} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<Icon name="Dashboard" size={18} />} label="Dashboard" href={AdminConstants.ROUTES.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.ROOT}`} active={pathname === AdminConstants.ROUTES.ROOT} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<Icon name="Package" size={18} />} label="Plugins" href={AdminConstants.ROUTES.PLUGINS.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.PLUGINS.ROOT}`} active={pathname === AdminConstants.ROUTES.PLUGINS.ROOT} onClick={onClose} isMini={isMini} />
               </>
             )}
           </>
@@ -397,12 +422,13 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
           )}
           {(!collapsedGroups.includes('system') || isMini) && (
             <>
-              <NavItem icon={<Activity size={18}/>} label="Activity" href="/activity" active={pathname.startsWith('/activity')} onClick={onClose} isMini={isMini} />
+              <NavItem icon={<Activity size={18}/>} label="Activity" href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
               <NavItem 
                 icon={<Settings size={18}/>} 
                 label="Settings" 
                 href={AdminConstants.ROUTES.SETTINGS.GENERAL}
-                active={pathname.startsWith('/settings')} 
+                persistenceKey={`system:${AdminConstants.ROUTES.SETTINGS.ROOT}`}
+                active={pathname.startsWith(AdminConstants.ROUTES.SETTINGS.ROOT)} 
                 onClick={onClose} 
                 isMini={isMini} 
                 children={[

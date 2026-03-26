@@ -20,6 +20,9 @@ import { Loader } from '@/components/ui/loader';
 import { AuthUtils } from '@/lib/auth-utils';
 import { TimezoneUtils } from '@/lib/timezone';
 import { RuntimeConstants } from '@fromcode119/core/client';
+import { AdminServices } from '@/lib/admin-services';
+
+const adminServices = AdminServices.getInstance();
 
 const { 
   Menu = () => null, 
@@ -55,9 +58,9 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   }, []);
 
   const userMenuItems = [
-    { label: 'Profile Settings', icon: <User size={16} />, onClick: () => user?.id && router.push(`/users/${user.id}`) },
+    { label: 'Profile Settings', icon: <User size={16} />, onClick: () => user?.id && router.push(AdminConstants.ROUTES.USERS.DETAIL(user.id)) },
     ...(user?.roles?.includes('admin') ? [
-      { label: 'System Settings', icon: <Settings size={16} />, onClick: () => router.push('/settings') }
+      { label: 'System Settings', icon: <Settings size={16} />, onClick: () => router.push(AdminConstants.ROUTES.SETTINGS.ROOT) }
     ] : []),
     { label: 'Help Center', icon: <Help size={16} />, onClick: () => window.open('https://docs.fromcode.com', '_blank') },
     { label: 'Logout Session', icon: <Logout size={16} />, onClick: logout, variant: 'danger' as const },
@@ -155,16 +158,16 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   // Persist mobile sidebar open state
   useEffect(() => {
-    const saved = localStorage.getItem('fc_sidebar_open');
+    const saved = adminServices.uiPreference.readSidebarOpen();
     if (saved !== null) {
-      setSidebarOpen(saved === 'true');
+      setSidebarOpen(saved);
     }
     setIsSidebarInitialized(true);
   }, []);
 
   useEffect(() => {
     if (isSidebarInitialized) {
-      localStorage.setItem('fc_sidebar_open', isSidebarOpen.toString());
+      adminServices.uiPreference.writeSidebarOpen(isSidebarOpen);
     }
   }, [isSidebarOpen, isSidebarInitialized]);
 
@@ -173,22 +176,17 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const isMinimalPath = normalizedPathname?.startsWith(AdminConstants.ROUTES.MINIMAL) || normalizedPathname?.startsWith('/minimal');
   const [isAdvancedMode, setIsAdvancedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return localStorage.getItem('fc_admin_advanced_mode') === 'true';
+    return adminServices.uiPreference.readAdvancedMode();
   });
   
   // Robust auth page detection
   const isAuthPage = React.useMemo(() => {
-    return (
-      pathname?.includes('/login') ||
-      pathname?.includes('/setup') ||
-      pathname?.includes('/forgot-password') ||
-      pathname?.includes('/reset-password')
-    );
-  }, [pathname]);
+    return AdminConstants.ROUTES.AUTH.PUBLIC.some((route) => normalizedPathname?.startsWith(route));
+  }, [normalizedPathname]);
 
   const isSetupPath = React.useMemo(() => {
-     return pathname?.includes('/setup');
-  }, [pathname]);
+     return normalizedPathname?.startsWith(AdminConstants.ROUTES.AUTH.SETUP);
+  }, [normalizedPathname]);
   
   // Load dynamic framework configuration (import maps, etc)
   useEffect(() => {
@@ -204,24 +202,24 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   const [isMini, setIsMini] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('fc_sidebar_mini') === 'true';
+      return adminServices.uiPreference.readSidebarMini();
     }
     return false;
   });
 
   useEffect(() => {
-    localStorage.setItem('fc_sidebar_mini', isMini.toString());
+    adminServices.uiPreference.writeSidebarMini(isMini);
   }, [isMini]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const syncMode = () => {
-      setIsAdvancedMode(localStorage.getItem('fc_admin_advanced_mode') === 'true');
+      setIsAdvancedMode(adminServices.uiPreference.readAdvancedMode());
     };
-    window.addEventListener('fc:admin-mode-change', syncMode as EventListener);
+    window.addEventListener(RuntimeConstants.ADMIN_UI.EVENTS.MODE_CHANGED, syncMode as EventListener);
     window.addEventListener('storage', syncMode as EventListener);
     return () => {
-      window.removeEventListener('fc:admin-mode-change', syncMode as EventListener);
+      window.removeEventListener(RuntimeConstants.ADMIN_UI.EVENTS.MODE_CHANGED, syncMode as EventListener);
       window.removeEventListener('storage', syncMode as EventListener);
     };
   }, []);

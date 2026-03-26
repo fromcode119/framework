@@ -4,7 +4,7 @@ import {
   PluginManager,
   ThemeManager,
 } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core/client';
 import { AssistantCopyUtils } from '../../assistant-copy';
 import {
   AdminAssistantRuntimeEngine,
@@ -12,6 +12,7 @@ import {
 import { IDatabaseManager } from '@fromcode119/database';
 import { AssistantManagementToolsService } from './management-tools-service';
 import { AssistantCatalogService } from './catalog-service';
+import { AssistantRuntimeContentResolver } from './runtime-content-resolver';
 
 export class AssistantRuntimeFactoryService {
   constructor(
@@ -28,114 +29,12 @@ export class AssistantRuntimeFactoryService {
     const user = (req as any).user;
     const frameworkRoot = process.cwd();
     const themesRoot = String((this.themeManager as any)?.themesRoot || '').trim() || path.join(frameworkRoot, 'themes');
-
-    const resolveAssistantContentItem = async (collection: any, selector: any) => {
-      const rawCollection: any = collection.raw || collection;
-      const primaryKey = String(rawCollection?.primaryKey || 'id');
-      const fieldNames = Array.isArray(rawCollection?.fields)
-        ? rawCollection.fields.map((field: any) => String(field?.name || '').trim()).filter(Boolean)
-        : [];
-      const idCandidate = selector?.id;
-
-      if (idCandidate !== undefined && idCandidate !== null && String(idCandidate).trim() !== '') {
-        const rawId = String(idCandidate).trim();
-        const numericId = Number(rawId);
-        const canUseIdLookup = primaryKey !== 'id' || Number.isInteger(numericId);
-
-        if (canUseIdLookup) {
-          try {
-            const foundByPrimary = await this.restController.findOne(rawCollection, {
-              params: { id: primaryKey === 'id' ? String(numericId) : rawId },
-              query: { preview: true },
-              user,
-              headers: req.headers,
-              cookies: (req as any).cookies,
-            });
-            if (foundByPrimary) return foundByPrimary;
-          } catch {
-            // Fall back to field-based lookup.
-          }
-        }
-
-        const idCandidates = Array.from(
-          new Set([primaryKey, 'id', '_id', 'uuid'].filter((field) => fieldNames.includes(field))),
-        );
-        const valuesToTry = Number.isFinite(numericId) && String(numericId) === rawId
-          ? [numericId, rawId]
-          : [rawId];
-
-        for (const field of idCandidates) {
-          for (const candidateValue of valuesToTry) {
-            try {
-              const result = await this.restController.find(rawCollection, {
-                query: {
-                  [field]: candidateValue,
-                  limit: 1,
-                  offset: 0,
-                  preview: true,
-                },
-                user,
-                headers: req.headers,
-                cookies: (req as any).cookies,
-              });
-              if (Array.isArray(result?.docs) && result.docs.length) {
-                return result.docs[0];
-              }
-            } catch {
-              // Try next candidate field/value.
-            }
-          }
-        }
-      }
-
-      const where = selector?.where && typeof selector.where === 'object' ? selector.where : null;
-      if (where) {
-        const result = await this.restController.find(rawCollection, {
-          query: {
-            ...where,
-            limit: 1,
-            offset: 0,
-            preview: true,
-          },
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-        return Array.isArray(result?.docs) && result.docs.length ? result.docs[0] : null;
-      }
-
-      const slugCandidate = String(selector?.slug || '').trim();
-      const permalinkCandidate = String(selector?.permalink || '').trim();
-      const fallbackValue = slugCandidate || permalinkCandidate;
-      if (!fallbackValue) return null;
-
-      const priorityFields = ['slug', 'permalink', 'customPermalink', 'path', 'url', 'title', 'name', 'label', primaryKey];
-      const candidates = Array.from(new Set(priorityFields.filter((field) => fieldNames.includes(field))));
-      if (candidates.length === 0) return null;
-
-      for (const field of candidates) {
-        try {
-          const result = await this.restController.find(rawCollection, {
-            query: {
-              [field]: fallbackValue,
-              limit: 1,
-              offset: 0,
-              preview: true,
-            },
-            user,
-            headers: req.headers,
-            cookies: (req as any).cookies,
-          });
-          if (Array.isArray(result?.docs) && result.docs.length) {
-            return result.docs[0];
-          }
-        } catch {
-          // Try next candidate field.
-        }
-      }
-
-      return null;
-    };
+    const contentResolver = new AssistantRuntimeContentResolver(
+      this.restController,
+      user,
+      req.headers,
+      (req as any).cookies,
+    );
 
     const runtimeOptions = {
       aiClient: aiClient || null,
@@ -178,7 +77,7 @@ export class AssistantRuntimeFactoryService {
         };
       },
       resolveContent: async (collection, selector) => {
-        return resolveAssistantContentItem(collection, selector || {});
+        return contentResolver.resolveContentItem(collection, selector || {});
       },
       createContent: async (collection, payload) => {
         const rawCollection = collection.raw || collection;
@@ -196,7 +95,7 @@ export class AssistantRuntimeFactoryService {
         const primaryKey = String(rawCollection?.primaryKey || 'id');
         const whereField = primaryKey === 'id' ? 'id' : primaryKey;
 
-        const existing = await resolveAssistantContentItem(collection, {
+        const existing = await contentResolver.resolveContentItem(collection, {
           id: targetId,
         });
         const resolvedId = existing && typeof existing === 'object'

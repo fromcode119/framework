@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core/client';
 import { ContextHooks } from '@fromcode119/react';
 
 export default function ThemeInitializer() {

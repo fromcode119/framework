@@ -11,9 +11,9 @@ import { FrameworkIcons } from '@/lib/icons';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { NotificationHooks } from '@/components/use-notification';
-import { ContextHooks } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { LocalizationPageUtils } from './localization-page-utils';
+import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 
 type LocaleItem = {
   id: string;
@@ -48,7 +48,10 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
 export default function LocalizationSettingsPage() {
   const { theme } = ThemeHooks.useTheme();
   const { addNotification } = NotificationHooks.useNotification();
-  const { registerSettings } = ContextHooks.usePlugins();
+  const { registerSettings } = SettingsRegistrationService.useRegistration(
+    'localization-settings-page',
+    'LocalizationSettingsPage',
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, use, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Slot, ContextHooks } from '@fromcode119/react';
+import { Slot, ContextHooks, BrowserLocalization } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,11 +18,11 @@ import { PromptDialog } from '@/components/ui/prompt-dialog';
 import { ArrayField } from '@/components/ui/array-field';
 import { FieldRenderer } from '@/components/collection/field-renderer';
 import { FrameworkIcons } from '@/lib/icons';
-import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
+import { AdminUrlUtils } from '@/lib/url-utils';
 import { useCollectionForm } from '@/components/collection/hooks/use-collection-form';
 import { useSlugGeneration } from '@/components/collection/hooks/use-slug-generation';
 import { useSlugValidation } from '@/components/collection/hooks/use-slug-validation';
@@ -44,7 +44,6 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const { theme } = ThemeHooks.useTheme();
   const { collections, settings } = ContextHooks.usePlugins();
 
-  const frontendUrl = (settings?.frontend_url || '').replace(/\/$/, '');
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
   
   const isNew = id === 'new';
@@ -61,11 +60,12 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const [readOnlyOverridePasswordTarget, setReadOnlyOverridePasswordTarget] = useState<{ name: string; label: string } | null>(null);
   const [readOnlyOverrideVerifying, setReadOnlyOverrideVerifying] = useState(false);
   const preferredLocaleFallback = AdminServices.getInstance().localization.normalizeLocaleCode(
-    Cookies.get('fc_locale')
-      || settings?.default_locale
+    BrowserLocalization.getPreferredBrowserLocale({
+      fallback: settings?.default_locale
       || settings?.defaultLocale
       || settings?.system_default_locale
-      || ''
+      || '',
+    })
   );
 
   const getReadOnlyOverrideSubmitMetadata = useCallback(() => {
@@ -223,7 +223,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const getPreviewUrl = () => {
     if (!collection) return '#';
     return AdminCollectionUtils.generatePreviewUrl(
-      settings?.frontend_url || '', 
+      AdminUrlUtils.resolveFrontendBaseUrl(settings, settings?.frontend_url),
       formData, 
       collection, 
       settings?.permalink_structure,

@@ -663,7 +663,7 @@ describe('runtime classifier and fallback behavior', () => {
             output: {
               matches: [
                 {
-                  collectionSlug: 'fcp_cms_pages',
+                  collectionSlug: '@cms/pages',
                   recordId: 1,
                   field: 'phone',
                   value: '07000 000001',
