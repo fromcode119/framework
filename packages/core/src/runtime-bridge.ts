@@ -6,6 +6,56 @@ import type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
  * Utilities for accessing the Fromcode framework's shared browser runtime.
  */
 export class RuntimeBridge {
+  static resolveApiBaseUrl(options: { fallbackHost?: string } = {}): string {
+    const fallbackHost = String(options.fallbackHost || 'api.framework.local').trim() || 'api.framework.local';
+
+    const normalizeBaseCandidate = (value: any): string => {
+      const rawValue = String(value || '').trim();
+      if (!rawValue) {
+        return '';
+      }
+
+      try {
+        if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
+          const parsed = new URL(rawValue);
+          return RuntimeBridge.stripApiPath(`${parsed.origin}${parsed.pathname || ''}`);
+        }
+
+        if (rawValue.startsWith('/')) {
+          return '';
+        }
+
+        return RuntimeBridge.stripApiPath(`http://${rawValue}`);
+      } catch {
+        return '';
+      }
+    };
+
+    if (typeof window === 'undefined') {
+      const fromEnv = normalizeBaseCandidate(process.env.NEXT_PUBLIC_API_URL || process.env.API_URL);
+      return fromEnv || `http://${fallbackHost}`;
+    }
+
+    const fromBridge = normalizeBaseCandidate((window as any)?.FROMCODE_API_URL);
+    if (fromBridge) return fromBridge;
+
+    const fromLegacyBridge = normalizeBaseCandidate((window as any)?.__FROMCODE_API_URL);
+    if (fromLegacyBridge) return fromLegacyBridge;
+
+    const fromGlobal = normalizeBaseCandidate((window as any)?.Fromcode?.apiUrl);
+    if (fromGlobal) return fromGlobal;
+
+    const runtimeBridge = RuntimeBridge.getBridge<any>();
+    const fromRuntimeBridge = normalizeBaseCandidate(runtimeBridge?.apiUrl);
+    if (fromRuntimeBridge) return fromRuntimeBridge;
+
+    const fromEnv = normalizeBaseCandidate(process.env.NEXT_PUBLIC_API_URL);
+    if (fromEnv) return fromEnv;
+
+    const protocol = window.location?.protocol || 'http:';
+    return `${protocol}//${fallbackHost}`;
+  }
+
   /**
    * Resolves the framework's internal bridge for a specific runtime module.
    * Used by plugins to communicate with the shared singleton state.
@@ -45,5 +95,12 @@ export class RuntimeBridge {
     }
 
     return metadata;
+  }
+
+  private static stripApiPath(value: string): string {
+    return String(value || '')
+      .replace(/\/+$/, '')
+      .replace(/\/api\/v\d+$/i, '')
+      .replace(/\/api$/i, '');
   }
 }

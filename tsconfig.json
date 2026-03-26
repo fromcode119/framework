@@ -12,6 +12,7 @@
     "baseUrl": ".",
     "paths": {
       "@fromcode119/core": ["packages/core/src"],
+      "@fromcode119/core/client": ["packages/core/src/client.ts"],
       "@fromcode119/core/*": ["packages/core/src/*"],
       "@fromcode119/ai": ["packages/ai/src"],
       "@fromcode119/database": ["packages/database/src"],

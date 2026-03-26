@@ -1,3 +1,4 @@
+import { CoreServices } from '@fromcode119/core';
 import type { ActionSurface } from './assistant-core-constants.types';
 
 export class AssistantSurfaceUtils {
@@ -5,13 +6,14 @@ export class AssistantSurfaceUtils {
   static resolveToolSurface(toolName: string, input?: Record<string, any>): ActionSurface {
   const tool = String(toolName || '').trim().toLowerCase();
   const collection = String(input?.collectionSlug || input?.slug || '').toLowerCase();
+  const pluginSlug = CoreServices.getInstance().collectionIdentity.extractPluginSlug(collection);
   if (!tool) return 'mixed';
   if (tool.startsWith('themes.')) return 'frontend';
   if (tool.startsWith('content.')) return 'frontend';
   if (tool === 'plugins.list' || tool === 'themes.list') return 'frontend';
   if (tool.startsWith('plugins.settings.')) return 'backend';
   if (tool.startsWith('settings.') || tool.startsWith('system.')) return 'backend';
-  if (collection.startsWith('fcp_cms_')) return 'frontend';
+  if (pluginSlug === 'cms') return 'frontend';
   return 'mixed';
   }
 

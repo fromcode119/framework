@@ -1,4 +1,4 @@
-import { SystemConstants } from '../../constants';
+import { PhysicalTableNameUtils } from '@fromcode119/database';
 import { sql, eq, and, or } from 'drizzle-orm';
 import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from './utils.interfaces';
@@ -14,7 +14,7 @@ export class DatabaseContextProxy {
   security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
 ) {
       const { hasCapability, handleViolation, handleRateLimit } = security;
-      const tablePrefix = `${SystemConstants.TABLE_PREFIX.PLATFORM}${plugin.manifest.slug.replace(/-/g, '_')}_`;
+      const tablePrefix = PhysicalTableNameUtils.createPluginPrefix(plugin.manifest.slug);
 
       const wrappedSql = new Proxy(sql, {
         get: (target, prop) => {

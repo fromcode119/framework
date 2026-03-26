@@ -41,10 +41,16 @@ export class RouteConstants {
   SSO_PROVIDERS: '/sso/providers',
   SSO_LOGIN: '/sso/login',
   SECURITY: '/security',
+  PROFILE: '/profile',
   VERIFY_PASSWORD: '/verify-password',
   CHANGE_PASSWORD: '/change-password',
   EMAIL_CHANGE_REQUEST: '/email-change/request',
   EMAIL_CHANGE_CONFIRM: '/email-change/confirm',
+  TWO_FACTOR_STATUS: '/2fa/status',
+  TWO_FACTOR_SETUP: '/2fa/setup',
+  TWO_FACTOR_VERIFY: '/2fa/verify',
+  TWO_FACTOR_RECOVERY: '/2fa/recovery-codes/regenerate',
+  TWO_FACTOR_DISABLE: '/2fa',
   SESSIONS_ID_REVOKE: '/sessions/:id/revoke',
   SESSIONS_REVOKE_OTHERS: '/sessions/revoke-others',
   API_TOKENS_ID: '/api-tokens/:id',
@@ -61,6 +67,7 @@ export class RouteConstants {
   ADMIN_ACTIVITY: '/admin/activity',
   ADMIN_LOGS: '/admin/logs',
   ADMIN_AUDIT: '/admin/audit',
+  ADMIN_SETTINGS: '/admin/settings',
   ADMIN_ROLES: '/admin/roles',
   ADMIN_ROLES_SLUG: '/admin/roles/:slug',
   ADMIN_PERMISSIONS: '/admin/permissions',
@@ -80,6 +87,8 @@ export class RouteConstants {
   SHORTCODES: '/shortcodes',
   SHORTCODES_RENDER: '/shortcodes/render',
   DATA_SOURCES: '/data-sources',
+  DATA_SOURCES_CATALOG: '/datasources/catalog',
+  DATA_SOURCES_OPTIONS: '/datasources/options',
   DATA_SOURCE_QUERY: '/data-source/query',
   RESOLVE: '/resolve',
 
@@ -123,6 +132,8 @@ export class RouteConstants {
   GLOBAL_COLLECTIONS_SLUG_SUGGESTIONS_FIELD: '/collections/:slug/suggestions/:field',
 
   // ── Themes ──────────────────────────────────────────────────────────────
+  THEMES_UPLOAD_INSPECT: '/upload/inspect',
+  THEMES_UPLOAD: '/upload',
   THEMES_SLUG_ACTIVATE: '/:slug/activate',
   THEMES_SLUG_RESET: '/:slug/reset',
   THEMES_SLUG_INSTALL: '/:slug/install',
@@ -140,4 +151,3 @@ export class RouteConstants {
   // MEDIA_BASE: '/' is implicitly handled by the router mount point or just ''
   } as const;
 }
-

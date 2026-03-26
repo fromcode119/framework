@@ -14,7 +14,7 @@ Most endpoints require authentication via a JWT token.
   ```text
   Authorization: Bearer <token>
   ```
-- **Cookie Usage**: The Admin panel uses an `fc_token` cookie for session management.
+- **Cookie Usage**: The Admin panel uses the platform auth session cookie for session management.
 
 ## Collections API
 

@@ -51,7 +51,7 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
       } catch (e) {
         console.error("Failed to load role data", e);
         notify('error', 'Load Failed', 'Could not retrieve role details.');
-        router.push('/users/roles');
+        router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
       } finally {
         setFetching(false);
       }
@@ -74,7 +74,7 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
     try {
       await AdminApi.put(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${roleSlug}`, formData);
       notify('success', 'Role Updated', `${formData.name} has been synchronized.`);
-      router.push('/users/roles');
+      router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
     } catch (e: any) {
       console.error("Failed to update role", e);
       notify('error', 'Update Failed', e.message || "An error occurred while saving.");
@@ -220,7 +220,7 @@ export default function EditRolePage({ params }: { params: Promise<{ slug: strin
                 <Button 
                   variant="ghost" 
                   className="w-full h-11 font-bold text-slate-400"
-                  onClick={() => router.push('/users/roles')}
+                  onClick={() => router.push(AdminConstants.ROUTES.USERS.ROLE_LIST)}
                 >
                   Cancel
                 </Button>

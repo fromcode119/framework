@@ -9,6 +9,7 @@ import type { RegistryPlugin, RegistryManifest } from './manifest.types';
 export const PluginManifestSchema = z.object({
   // Identity
   slug: z.string().regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
+  namespace: z.string().regex(/^[a-z0-9.-]+$/, 'Namespace must be lowercase alphanumeric with dots or hyphens').optional(),
   name: z.string().min(1, 'Plugin name is required'),
   version: z.string().regex(
     /^\d+\.\d+\.\d+(-[\w.]+)?$/,

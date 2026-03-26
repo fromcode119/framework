@@ -1,4 +1,4 @@
-import { UrlUtils } from '@fromcode119/sdk';
+import { UrlUtils } from '@fromcode119/core/client';
 import { AssistantClient } from '../types.interfaces';
 import type { AnthropicConfig } from './anthropic.types';
 

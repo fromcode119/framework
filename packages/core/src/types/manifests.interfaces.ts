@@ -68,6 +68,7 @@ export interface MenuItemManifest {
 export interface PluginManifest {
   // Identity
   slug: string;                    // Unique identifier
+  namespace?: string;              // Vendor / registry namespace
   name: string;                    // Human-readable name
   version: string;                 // Semver version
   main?: string;                   // Entry point file (usually index.js)

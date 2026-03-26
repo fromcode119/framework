@@ -72,6 +72,48 @@ export class SystemController {
     }
   }
 
+  async getSettings(req: Request, res: Response) {
+    try {
+      const settings = await (this.manager as any).db.find(SystemConstants.TABLE.META);
+      const settingsMap: Record<string, any> = {};
+      settings.forEach((s: any) => {
+        try {
+          // Attempt to parse JSON if it looks like an object/array
+          if (typeof s.value === 'string' && (s.value.startsWith('{') || s.value.startsWith('['))) {
+            settingsMap[s.key] = JSON.parse(s.value);
+          } else {
+            settingsMap[s.key] = s.value;
+          }
+        } catch (e) {
+          settingsMap[s.key] = s.value;
+        }
+      });
+      res.json(settingsMap);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+
+  async updateSettings(req: Request, res: Response) {
+    try {
+      const payload = req.body;
+      const db = (this.manager as any).db;
+      
+      for (const [key, value] of Object.entries(payload)) {
+        const valStr = typeof value === 'string' ? value : JSON.stringify(value);
+        await db.findAndUpsert(SystemConstants.TABLE.META, { key }, { 
+          key, 
+          value: valStr,
+          updatedAt: new Date()
+        });
+      }
+      
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+
   async getIntegrations(req: Request, res: Response) {
     try {
       const data = await this.manager.integrations.listConfigs();

@@ -16,4 +16,5 @@ export { StatusService } from './status-service';
 export { CollectionService } from './collection-service';
 export { DateService } from './date-service';
 export { UrlService } from './url-service';
+export { UiPreferenceService } from './ui-preference-service';
 export { AdminServices } from '../admin-services';

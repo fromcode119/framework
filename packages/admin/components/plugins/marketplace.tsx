@@ -11,7 +11,7 @@ import { NotificationHooks } from '../use-notification';
 import { ContextHooks } from '@fromcode119/react';
 
 import { useRouter } from 'next/navigation';
-import type { PluginEntry } from '@fromcode119/core';
+import type { PluginEntry } from '@fromcode119/core/client';
 
 const Marketplace: React.FC = () => {
   const router = useRouter();
@@ -107,7 +107,7 @@ const Marketplace: React.FC = () => {
           return (
             <Card 
               key={plugin.slug} 
-              onClick={() => router.push(`/plugins/marketplace/${plugin.slug}`)}
+              onClick={() => router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.slug))}
               className={`group flex flex-col h-full border-0 relative transition-all duration-700 cursor-pointer overflow-hidden rounded-[3rem] ${theme === 'dark' ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-2xl shadow-slate-200/50 hover:shadow-indigo-500/20'}`}
             >
               {/* Massive subtle background icon */}
@@ -188,7 +188,7 @@ const Marketplace: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   {installed ? (
                     <button 
-                      onClick={(e) => { e.stopPropagation(); router.push(`/plugins/${plugin.slug}`); }}
+                      onClick={(e) => { e.stopPropagation(); router.push(AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.slug)); }}
                       className={`w-full flex-1 flex items-center justify-center gap-3 h-16 rounded-[1.5rem] text-[12px] font-semibold tracking-wide transition-all shadow-xl ${theme === 'dark' ? 'bg-indigo-600/10 text-indigo-400 hover:bg-indigo-600/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
                     >
                       <FrameworkIcons.Plugins size={18} />

@@ -6,12 +6,13 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc -b && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
+    "build": "npm run check:sdk-boundary && tsc -b && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
     "build:api": "tsc -b packages/api",
     "build:admin": "npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run build --workspace=@fromcode119/frontend",
     "audit:core-boundary": "node scripts/audit-core-boundary.mjs",
     "check:plugin-architecture": "node scripts/check-plugin-architecture.mjs",
+    "check:sdk-boundary": "node scripts/check-sdk-boundary.mjs",
     "check:plugin-architecture:warn": "ARCH_LEGACY_MODE=warn ARCH_LAYER_MODE=warn ARCH_SIZE_MODE=warn node scripts/check-plugin-architecture.mjs",
     "check:plugin-architecture:strict": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=ecommerce,finance,cms node scripts/check-plugin-architecture.mjs",
     "check:plugin-architecture:phase:finance": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance node scripts/check-plugin-architecture.mjs",

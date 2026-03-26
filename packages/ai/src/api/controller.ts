@@ -4,7 +4,7 @@ import {
   ThemeManager,
   TypeUtils,
 } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core/client';
 import { AdminAssistantRuntime } from '@fromcode119/ai';
 import type { AssistantSkillDefinition, AssistantCollectionContext } from '../admin-assistant-runtime/types';
 import type { RESTController } from './controller.types';

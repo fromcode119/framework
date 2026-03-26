@@ -46,7 +46,7 @@ export default function UserProfilePage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4">
         <h1 className="text-2xl font-semibold text-slate-400 tracking-tight">User Not Found</h1>
-        <Link href="/users">
+        <Link href={AdminConstants.ROUTES.USERS.LIST}>
           <Button variant="ghost">Return to Database</Button>
         </Link>
       </div>
@@ -65,7 +65,7 @@ export default function UserProfilePage() {
       }`}>
         <div className="w-full px-6 lg:px-12 py-8 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/users" className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
+            <Link href={AdminConstants.ROUTES.USERS.LIST} className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
               <FrameworkIcons.Left size={20} />
             </Link>
             <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-indigo-500/20 ring-4 ring-indigo-500/10">
@@ -83,7 +83,7 @@ export default function UserProfilePage() {
           </div>
           
           <div className="flex items-center gap-4">
-             <Link href={`/users/${id}/edit`}>
+             <Link href={AdminConstants.ROUTES.USERS.EDIT(id as string)}>
                 <Button 
                   variant="secondary"
                   className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] border-slate-200 dark:border-slate-800"
@@ -92,7 +92,7 @@ export default function UserProfilePage() {
                   Edit Profile
                 </Button>
              </Link>
-             <Link href={`/users/${id}/roles`}>
+             <Link href={AdminConstants.ROUTES.USERS.ROLES(id as string)}>
                 <Button 
                   className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] text-white"
                   icon={<FrameworkIcons.Shield size={16} />}
@@ -147,7 +147,7 @@ export default function UserProfilePage() {
                  )}
                </div>
                <div className="mt-8 pt-6 border-t border-slate-800/10 flex justify-end">
-                  <Link href={`/users/${id}/roles`}>
+                  <Link href={AdminConstants.ROUTES.USERS.ROLES(id as string)}>
                     <Button variant="ghost" className="text-[10px] font-bold tracking-tight text-indigo-500 uppercase">
                       Manage Assignments
                     </Button>

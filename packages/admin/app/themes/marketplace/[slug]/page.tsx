@@ -13,7 +13,7 @@ import { NotificationHooks } from '@/components/use-notification';
 import { ContextHooks } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
-import type { MarketplaceTheme } from '@fromcode119/core';
+import type { MarketplaceTheme } from '@fromcode119/core/client';
 
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -59,7 +59,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
           const installed = (instResponse || []).find((t: any) => t.slug === slug);
           setInstalledTheme(installed);
         } else {
-          router.push('/themes/marketplace');
+          router.push(AdminConstants.ROUTES.THEMES.MARKETPLACE);
         }
       } catch (err) {
         console.error("Failed to fetch marketplace theme", err);

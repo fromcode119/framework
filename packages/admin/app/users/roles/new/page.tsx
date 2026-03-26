@@ -50,7 +50,7 @@ export default function NewRolePage() {
     setLoading(true);
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.ROLES, formData);
-      router.push('/users/roles');
+      router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
     } catch (e) {
       console.error("Failed to save role", e);
     } finally {
@@ -195,7 +195,7 @@ export default function NewRolePage() {
                   <Button 
                     variant="ghost"
                     className="w-full h-12 text-xs font-bold tracking-tight text-slate-400 uppercase"
-                    onClick={() => router.push('/users/roles')}
+                    onClick={() => router.push(AdminConstants.ROUTES.USERS.ROLE_LIST)}
                   >
                     Cancel
                   </Button>

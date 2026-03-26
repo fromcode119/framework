@@ -10,7 +10,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { ContextHooks } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
-import type { PluginEntry } from '@fromcode119/core';
+import type { PluginEntry } from '@fromcode119/core/client';
 
 export default function MarketplacePage() {
   const router = useRouter();
@@ -117,7 +117,7 @@ export default function MarketplacePage() {
             return (
               <Card 
                 key={plugin.slug} 
-                onClick={() => router.push(`/plugins/marketplace/${plugin.slug}`)}
+                onClick={() => router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.slug))}
                 className={`group flex flex-col h-full border-0 relative transition-all duration-700 cursor-pointer overflow-hidden rounded-[2rem] ${theme === 'dark' ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-2xl shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
               >
                 <div className="p-8 space-y-6 flex-1 relative">
@@ -200,7 +200,7 @@ export default function MarketplacePage() {
                   <div className="flex items-center gap-3">
                     {installed && !hasUpdate ? (
                       <button 
-                        onClick={(e) => { e.stopPropagation(); router.push(`/plugins/${plugin.slug}`); }}
+                        onClick={(e) => { e.stopPropagation(); router.push(AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.slug)); }}
                         className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all ${theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
                       >
                         <FrameworkIcons.Check size={16} />

@@ -86,12 +86,16 @@ export interface PluginContext {
   
   readonly plugin: {
     slug: string;
+    namespace: string;
     version: string;
     dataDir: string;
     config: Record<string, any>;
   };
   
   readonly plugins: {
+    namespace(namespace: string): any;
+    has(namespace: string, slug: string): boolean;
+    get(namespace: string, slug: string): any;
     isEnabled(slug: string): boolean;
     getAPI(slug: string): any;
     emit(event: string, payload: any): void;

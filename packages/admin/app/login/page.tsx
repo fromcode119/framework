@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // SELF-HEALING: Purge any conflicting cookies on landing to the login page.
-    // This resolves the "multiple fc_token" error without requiring user to clear cache.
+    // This resolves duplicate auth-token cookie conflicts without requiring user to clear cache.
     AuthUtils.purgeAuth();
 
     async function checkStatus() {

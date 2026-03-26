@@ -1,8 +1,12 @@
+import { ClientRuntimeConstants } from './client-runtime-constants';
+
 export class RuntimeConstants {
   static readonly GLOBALS = {
     FROMCODE: 'Fromcode',
     MODULES: '__fromcodeRuntimeModules',
   } as const;
+
+  static readonly ADMIN_UI = ClientRuntimeConstants.ADMIN_UI;
 
   static readonly MODULE_NAMES = {
     ADMIN: '@fromcode119/admin',
@@ -37,4 +41,3 @@ export class RuntimeConstants {
     'AdminServices', 'EditPageSectionNav',
   ] as const;
 }
-

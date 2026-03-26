@@ -20,25 +20,16 @@ export class SystemTwoFactorService {
     try {
       const userId = parseInt(req.params.id, 10);
       if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
-      const enabledRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
-      const recoveryCodes = await this.readRecoveryCodeRecords(userId);
-      res.json({ enabled: enabledRow?.value === 'true', recoveryCodesRemaining: recoveryCodes.filter((e) => !e.usedAt).length });
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+      res.json(await this.getStatusForUser(userId));
+    } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
   async setup2FA(req: Request, res: Response) {
     try {
       const userId = parseInt(req.params.id, 10);
       if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
-      const user = await this.users.getUser(userId);
-      if (!user) return res.status(404).json({ error: 'User not found' });
-      const secret = speakeasy.generateSecret({ name: `Fromcode (${user.email})`, length: 32 });
-      const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
-      const existingSecret = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
-      if (existingSecret) { await this.db.update(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` }, { value: secret.base32 }); }
-      else { await this.db.insert(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending`, value: secret.base32 }); }
-      res.json({ secret: secret.base32, qrCode });
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+      res.json(await this.setupForUser(userId));
+    } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
   async verify2FA(req: Request, res: Response) {
@@ -47,50 +38,92 @@ export class SystemTwoFactorService {
       if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
       const { token } = req.body;
       if (!token) return res.status(400).json({ error: 'Token is required' });
-      const secretRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
-      if (!secretRow) return res.status(400).json({ error: '2FA setup not initiated. Please start setup first.' });
-      const verified = speakeasy.totp.verify({ secret: secretRow.value, encoding: 'base32', token, window: 1 });
-      if (!verified) return res.status(400).json({ error: 'Invalid verification code' });
-
-      const existingTOTPSecret = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret` });
-      if (existingTOTPSecret) { await this.db.update(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret` }, { value: secretRow.value }); }
-      else { await this.db.insert(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret`, value: secretRow.value }); }
-
-      const existing2FAEnabled = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
-      if (existing2FAEnabled) { await this.db.update(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` }, { value: 'true' }); }
-      else { await this.db.insert(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled`, value: 'true' }); }
-
-      const recoveryCodes = this.generateRecoveryCodes();
-      await this.writeRecoveryCodeRecords(userId, recoveryCodes.map((code) => ({ hash: this.hashRecoveryCode(code), usedAt: null as string | null, createdAt: new Date().toISOString() })));
-      await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
-      await this.sendSecurityNotification({ userId, subject: 'Two-factor authentication enabled', title: 'Two-factor authentication has been enabled on your account.', details: [`Time: ${new Date().toISOString()}`] });
-      res.json({ success: true, message: '2FA enabled successfully', recoveryCodes });
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+      res.json(await this.verifyForUser(userId, String(token)));
+    } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
   async regenerateRecoveryCodes(req: Request, res: Response) {
     try {
       const userId = parseInt(req.params.id, 10);
       if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
-      const enabledRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
-      if (enabledRow?.value !== 'true') return res.status(400).json({ error: '2FA must be enabled before recovery codes can be generated.' });
-      const recoveryCodes = this.generateRecoveryCodes();
-      await this.writeRecoveryCodeRecords(userId, recoveryCodes.map((code) => ({ hash: this.hashRecoveryCode(code), usedAt: null as string | null, createdAt: new Date().toISOString() })));
-      res.json({ success: true, recoveryCodes });
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+      res.json(await this.regenerateRecoveryCodesForUser(userId));
+    } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
   async disable2FA(req: Request, res: Response) {
     try {
       const userId = parseInt(req.params.id, 10);
       if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
-      await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
-      await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret` });
-      await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
-      await this.db.delete(SystemConstants.TABLE.META, { key: this.getRecoveryCodesKey(userId) });
-      await this.sendSecurityNotification({ userId, subject: 'Two-factor authentication disabled', title: 'Two-factor authentication has been disabled on your account.', details: [`Time: ${new Date().toISOString()}`] });
-      res.json({ success: true, message: '2FA disabled successfully' });
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+      res.json(await this.disableForUser(userId));
+    } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
+  }
+
+  async getStatusForUser(userId: number): Promise<{ enabled: boolean; recoveryCodesRemaining: number }> {
+    const enabledRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
+    const recoveryCodes = await this.readRecoveryCodeRecords(userId);
+    return {
+      enabled: enabledRow?.value === 'true',
+      recoveryCodesRemaining: recoveryCodes.filter((entry) => !entry.usedAt).length,
+    };
+  }
+
+  async setupForUser(userId: number): Promise<{ secret: string; qrCode: string }> {
+    const user = await this.users.getUser(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const secret = speakeasy.generateSecret({ name: `Fromcode (${user.email})`, length: 32 });
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
+    const key = `user:${userId}:totp_secret_pending`;
+    const existingSecret = await this.db.findOne(SystemConstants.TABLE.META, { key });
+    if (existingSecret) {
+      await this.db.update(SystemConstants.TABLE.META, { key }, { value: secret.base32 });
+    } else {
+      await this.db.insert(SystemConstants.TABLE.META, { key, value: secret.base32 });
+    }
+
+    return { secret: secret.base32, qrCode };
+  }
+
+  async verifyForUser(userId: number, token: string): Promise<{ success: true; message: string; recoveryCodes: string[] }> {
+    const secretRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
+    if (!secretRow) {
+      throw new Error('2FA setup not initiated. Please start setup first.');
+    }
+
+    const verified = speakeasy.totp.verify({ secret: secretRow.value, encoding: 'base32', token, window: 1 });
+    if (!verified) {
+      throw new Error('Invalid verification code');
+    }
+
+    await this.upsertMetaValue(`user:${userId}:totp_secret`, secretRow.value);
+    await this.upsertMetaValue(`user:${userId}:2fa_enabled`, 'true');
+    const recoveryCodes = this.generateRecoveryCodes();
+    await this.writeRecoveryCodeRecords(userId, recoveryCodes.map((code) => ({ hash: this.hashRecoveryCode(code), usedAt: null, createdAt: new Date().toISOString() })));
+    await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
+    await this.sendSecurityNotification({ userId, subject: 'Two-factor authentication enabled', title: 'Two-factor authentication has been enabled on your account.', details: [`Time: ${new Date().toISOString()}`] });
+    return { success: true, message: '2FA enabled successfully', recoveryCodes };
+  }
+
+  async regenerateRecoveryCodesForUser(userId: number): Promise<{ success: true; recoveryCodes: string[] }> {
+    const enabledRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
+    if (enabledRow?.value !== 'true') {
+      throw new Error('2FA must be enabled before recovery codes can be generated.');
+    }
+
+    const recoveryCodes = this.generateRecoveryCodes();
+    await this.writeRecoveryCodeRecords(userId, recoveryCodes.map((code) => ({ hash: this.hashRecoveryCode(code), usedAt: null, createdAt: new Date().toISOString() })));
+    return { success: true, recoveryCodes };
+  }
+
+  async disableForUser(userId: number): Promise<{ success: true; message: string }> {
+    await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
+    await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret` });
+    await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
+    await this.db.delete(SystemConstants.TABLE.META, { key: this.getRecoveryCodesKey(userId) });
+    await this.sendSecurityNotification({ userId, subject: 'Two-factor authentication disabled', title: 'Two-factor authentication has been disabled on your account.', details: [`Time: ${new Date().toISOString()}`] });
+    return { success: true, message: '2FA disabled successfully' };
   }
 
   // --- Private helpers ---
@@ -124,10 +157,32 @@ export class SystemTwoFactorService {
 
   private async writeRecoveryCodeRecords(userId: number, records: Array<{ hash: string; usedAt: string | null; createdAt?: string }>) {
     const key = this.getRecoveryCodesKey(userId);
+    await this.upsertMetaValue(key, JSON.stringify(records));
+  }
+
+  private async upsertMetaValue(key: string, value: string) {
     const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
-    const value = JSON.stringify(records);
-    if (existing) { await this.db.update(SystemConstants.TABLE.META, { key }, { value }); }
-    else { await this.db.insert(SystemConstants.TABLE.META, { key, value }); }
+    if (existing) {
+      await this.db.update(SystemConstants.TABLE.META, { key }, { value });
+      return;
+    }
+
+    await this.db.insert(SystemConstants.TABLE.META, { key, value });
+  }
+
+  private resolveErrorStatus(error: any): number {
+    const message = String(error?.message || '').trim().toLowerCase();
+    if (message.includes('user not found')) {
+      return 404;
+    }
+    if (
+      message.includes('invalid') ||
+      message.includes('not initiated') ||
+      message.includes('must be enabled')
+    ) {
+      return 400;
+    }
+    return 500;
   }
 
   private async sendSecurityNotification(options: { userId: number; subject: string; title: string; details?: string[] }) {

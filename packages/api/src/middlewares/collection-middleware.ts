@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PluginManager } from '@fromcode119/core';
+import { CoreServices, PluginManager } from '@fromcode119/core';
 import { BaseMiddleware } from './base-middleware';
 
 /**
@@ -41,18 +41,16 @@ export class CollectionMiddleware extends BaseMiddleware {
     const targetSlug = slug.toLowerCase();
     const targetPluginSlug = requestedPluginSlug?.toLowerCase();
 
-    // First try: Exact match (usually the full prefixed slug)
     let collectionEntry = this.manager.getCollection(slug);
-    
-    // Second try: If requested via plugin namespace, try the standard prefixed format
-    if (!collectionEntry && targetPluginSlug) {
-      const standardPrefixed = `fcp_${targetPluginSlug.replace(/-/g, '_')}_${targetSlug}`;
-      collectionEntry = this.manager.getCollection(standardPrefixed);
-    }
-
-    // Third try: Case-insensitive search through all collections by slug, shortSlug or unprefixedSlug
     if (!collectionEntry) {
-      collectionEntry = this.findCollectionByFuzzyMatch(targetSlug, targetPluginSlug);
+      const resolvedSlug = CoreServices.getInstance().collectionIdentity.resolveRegisteredSlug(
+        slug,
+        this.manager.getCollections(),
+        targetPluginSlug,
+      );
+      if (resolvedSlug) {
+        collectionEntry = this.manager.getCollection(resolvedSlug);
+      }
     }
     
     if (!collectionEntry) {
@@ -87,52 +85,6 @@ export class CollectionMiddleware extends BaseMiddleware {
 
     req.collection = collectionEntry.collection;
     next();
-  }
-
-  /**
-   * Find collection using fuzzy matching strategies.
-   * Searches by suffix match on slug, shortSlug, and unprefixedSlug.
-   */
-  private findCollectionByFuzzyMatch(targetSlug: string, targetPluginSlug?: string): any {
-    const registeredCollections = (this.manager as any).registeredCollections as Map<string, any>;
-    const allEntries = Array.from(registeredCollections.entries());
-
-    // Filter and sort entries to prioritize the requested plugin if available
-    const potentialMatches = allEntries.filter(([key, entry]) => {
-      const collectionSlug = entry.collection.slug?.toLowerCase();
-      const shortSlug = entry.collection.shortSlug?.toLowerCase();
-      const unprefixedSlug = entry.collection.unprefixedSlug?.toLowerCase();
-      
-      const hasSuffixMatch = (value?: string) => {
-        if (!value) return false;
-        return (
-          value.endsWith(`_${targetSlug}`) ||
-          value.endsWith(`/${targetSlug}`) ||
-          value.endsWith(`-${targetSlug}`)
-        );
-      };
-
-      return (
-        key.toLowerCase() === targetSlug || 
-        collectionSlug === targetSlug || 
-        shortSlug === targetSlug ||
-        unprefixedSlug === targetSlug ||
-        hasSuffixMatch(key.toLowerCase()) ||
-        hasSuffixMatch(collectionSlug)
-      );
-    });
-
-    if (potentialMatches.length > 0) {
-      // Prioritize match from the requested plugin
-      const bestMatch = targetPluginSlug 
-        ? potentialMatches.find(([_, entry]) => entry.pluginSlug?.toLowerCase() === targetPluginSlug) || potentialMatches[0]
-        : potentialMatches[0];
-      
-      console.log(`[CollectionMiddleware] Found match via fallback: ${bestMatch[0]} for requested ${targetSlug} (Namespace: ${targetPluginSlug || 'none'})`);
-      return bestMatch[1];
-    }
-
-    return null;
   }
 
   /**

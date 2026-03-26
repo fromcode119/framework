@@ -220,7 +220,7 @@ export abstract class BaseDialect {
         sqlStr += ` ORDER BY ${orderBy}`;
       } else if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
         const clauses = Object.entries(orderBy)
-          .map(([k, v]) => `"t0"."${k}" ${String(v).toUpperCase()}`);
+          .map(([k, v]) => `"t0"."${NamingStrategy.toSnakeCase(k)}" ${String(v).toUpperCase()}`);
         sqlStr += ` ORDER BY ${clauses.join(', ')}`;
       }
     }

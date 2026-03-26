@@ -1,10 +1,9 @@
 import { Collection, LoadedPlugin , Field } from '../../types';
 import { Logger } from '../../logging';
-import { SystemConstants } from '../../constants';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { ContextSecurityProxy } from './utils';
 import { PluginRegistry } from '@fromcode119/plugins';
-import { NamingStrategy } from '@fromcode119/database';
+import { NamingStrategy, PhysicalTableNameUtils } from '@fromcode119/database';
 
 
 export class CollectionsContextProxy {
@@ -22,7 +21,8 @@ export class CollectionsContextProxy {
             handleViolation('content');
           }
 
-          const tablePrefix = `${SystemConstants.TABLE_PREFIX.PLATFORM}${plugin.manifest.slug.replace(/-/g, '_')}_`;
+          const normalizedPluginSlug = NamingStrategy.toSnakeIdentifier(plugin.manifest.slug);
+          const tablePrefix = PhysicalTableNameUtils.createPluginPrefix(normalizedPluginSlug);
           const inputSlug = collection.slug;
 
           // Clean slug to avoid "ecommerce_ecommerce-categories" kind of redundancy
@@ -34,9 +34,9 @@ export class CollectionsContextProxy {
             ? inputSlug.replace(tablePrefix, '')
             : cleanInputSlug;
           const normalizedTableSuffix = NamingStrategy.toSnakeIdentifier(tableSuffixSource);
-          const prefixedSlug = `${tablePrefix}${normalizedTableSuffix}`;
+          const prefixedSlug = PhysicalTableNameUtils.create(plugin.manifest.slug, normalizedTableSuffix);
 
-          if ((inputSlug.startsWith(plugin.manifest.slug) && inputSlug !== plugin.manifest.slug) || inputSlug.startsWith(SystemConstants.TABLE_PREFIX.PLATFORM)) {
+          if ((inputSlug.startsWith(plugin.manifest.slug) && inputSlug !== plugin.manifest.slug) || PhysicalTableNameUtils.hasPlatformPrefix(inputSlug)) {
             rootLogger.warn(
               `Collection slug "${inputSlug}" in plugin "${plugin.manifest.slug}" was automatically cleaned to be used as table name. ` +
               `Final table: ${prefixedSlug}`
@@ -105,7 +105,7 @@ export class CollectionsContextProxy {
           });
         },
         extend: (targetPlugin: string, targetCollection: string, extensions: Partial<Collection>) => {
-          const fullSlug = `${SystemConstants.TABLE_PREFIX.PLATFORM}${targetPlugin.replace(/-/g, '_')}_${NamingStrategy.toSnakeIdentifier(targetCollection)}`;
+          const fullSlug = PhysicalTableNameUtils.create(targetPlugin, NamingStrategy.toSnakeIdentifier(targetCollection));
 
           const entry = manager.getCollection(fullSlug);
           if (entry) {

@@ -1,4 +1,4 @@
-import { SystemConstants, ApiVersionUtils } from '@fromcode119/sdk';
+import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
 
 const SERVER_FETCH_TIMEOUT_MS = Number(process.env.SERVER_FETCH_TIMEOUT_MS || 12000);
 const DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';

@@ -7,6 +7,7 @@ import { StatusService } from './services/status-service';
 import { CollectionService } from './services/collection-service';
 import { DateService } from './services/date-service';
 import { UrlService } from './services/url-service';
+import { UiPreferenceService } from './services/ui-preference-service';
 
 /**
  * Service Locator for Admin utilities.
@@ -52,6 +53,7 @@ export class AdminServices {
   private _collection: CollectionService | null = null;
   private _date: DateService | null = null;
   private _url: UrlService | null = null;
+  private _uiPreference: UiPreferenceService | null = null;
 
   private constructor() {
     // Private constructor enforces singleton pattern
@@ -154,5 +156,13 @@ export class AdminServices {
   get url(): UrlService {
     if (!this._url) this._url = new UrlService();
     return this._url;
+  }
+
+  /**
+   * UI preference service (theme, sidebar, persistent admin UI state).
+   */
+  get uiPreference(): UiPreferenceService {
+    if (!this._uiPreference) this._uiPreference = new UiPreferenceService();
+    return this._uiPreference;
   }
 }

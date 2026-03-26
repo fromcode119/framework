@@ -8,10 +8,10 @@ import { Select } from '@/components/ui/select';
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminApi } from '@/lib/api';
 import { NotificationHooks } from '@/components/use-notification';
-import { ContextHooks } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { RoutingPageUtils } from './routing-page-utils';
+import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 
 const PLACEHOLDERS = [
   { label: ':slug', description: 'The sanitized post title (recommended)', example: 'hello-world' },
@@ -31,12 +31,14 @@ const PRESETS = [
   { label: 'Category and name', value: '/:category/:slug' },
 ];
 
-
-
 export default function RoutingPage() {
   const { theme } = ThemeHooks.useTheme();
   const { addNotification } = NotificationHooks.useNotification();
-  const { registerSettings, collections } = ContextHooks.usePlugins();
+  const { collections: safeCollections, registerSettings } = SettingsRegistrationService.useRegistration(
+    'routing-settings-page',
+    'RoutingPage',
+    true,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [structure, setStructure] = useState('/:slug');
@@ -115,7 +117,7 @@ export default function RoutingPage() {
         });
       });
 
-      const collectionCandidates = (collections || []).filter((c: any) => {
+      const collectionCandidates = (safeCollections || []).filter((c: any) => {
         if (!c || c.system) return false;
         if (availableCollectionSet.size > 0) {
           const shortSlug = String(c.shortSlug || c.slug || '');
@@ -194,7 +196,7 @@ export default function RoutingPage() {
     }, 250);
 
     return () => clearTimeout(timeout);
-  }, [availableCollections, collections, frontendMeta, searchTerm]);
+  }, [availableCollections, frontendMeta, safeCollections, searchTerm]);
 
   useEffect(() => {
     let cancelled = false;
@@ -208,7 +210,7 @@ export default function RoutingPage() {
           .flatMap((c: any) => [String(c?.shortSlug || ''), String(c?.slug || '')])
           .filter(Boolean)
       );
-      const candidateCollections = (collections || [])
+      const candidateCollections = (safeCollections || [])
         .filter((c: any) => {
           if (!c || c.system) return false;
           if (availableCollectionSet.size > 0) {
@@ -260,7 +262,7 @@ export default function RoutingPage() {
     return () => {
       cancelled = true;
     };
-  }, [availableCollections, collections, homeTarget]);
+  }, [availableCollections, homeTarget, safeCollections]);
 
   const handleSave = async () => {
     setIsSaving(true);

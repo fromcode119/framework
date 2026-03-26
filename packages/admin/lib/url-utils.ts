@@ -16,10 +16,13 @@ export class AdminUrlUtils {
   explicit?: unknown,
   fallback: string = 'http://frontend.framework.local'
 ): string {
+      const explicitValue = AdminUrlUtils.normalizeFrontendCandidate(explicit);
+      const settingsFrontend = AdminUrlUtils.normalizeFrontendCandidate(settings?.frontend_url);
+      const settingsSite = AdminUrlUtils.normalizeFrontendCandidate(settings?.site_url);
       const raw =
-        AdminUrlUtils.toNonEmptyString(explicit) ||
-        AdminUrlUtils.toNonEmptyString(settings?.frontend_url) ||
-        AdminUrlUtils.toNonEmptyString(settings?.site_url) ||
+        explicitValue ||
+        settingsFrontend ||
+        settingsSite ||
         AdminUrlUtils.toNonEmptyString(process.env.FRONTEND_URL) ||
         AdminUrlUtils.toNonEmptyString(process.env.NEXT_PUBLIC_FRONTEND_URL) ||
         AdminUrlUtils.toNonEmptyString(process.env.NEXT_PUBLIC_SITE_URL) ||
@@ -56,5 +59,18 @@ export class AdminUrlUtils {
 
     const hostWithPort = port ? `${resolvedHost}:${port}` : resolvedHost;
     return `${protocol}//${hostWithPort}`.replace(/\/+$/, '');
+  }
+
+  private static normalizeFrontendCandidate(value: unknown): string {
+    const raw = AdminUrlUtils.toNonEmptyString(value);
+    if (!raw) return '';
+    if (!raw.includes('localhost')) return raw;
+
+    const inferred = AdminUrlUtils.inferFrontendBaseUrlFromBrowser();
+    if (inferred.includes('frontend.framework.local')) {
+      return '';
+    }
+
+    return raw;
   }
 }

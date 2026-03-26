@@ -31,9 +31,10 @@ export class Slot extends React.Component<SlotProps> {
     }
 
     try {
+      const componentName = (item.component as any)?.displayName || (item.component as any)?.name || `c${index}`;
       return React.createElement(item.component, {
-        key: `${item.pluginSlug}-${index}`,
         ...this.props.props,
+        key: `${item.pluginSlug}-${componentName}-${index}`,
       });
     } catch (error) {
       console.error(`[Slot] Runtime error in slot component "${this.props.name}":`, error);

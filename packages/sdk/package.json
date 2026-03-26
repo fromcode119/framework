@@ -28,6 +28,12 @@
       "require": "./dist/server.js",
       "types": "./dist/server.d.ts"
     },
+    "./database": {
+      "development": "./src/database/index.ts",
+      "import": "./dist/database/index.js",
+      "require": "./dist/database/index.js",
+      "types": "./dist/database/index.d.ts"
+    },
     "./react": {
       "development": "./src/react/index.ts",
       "import": "./dist/react/index.js",

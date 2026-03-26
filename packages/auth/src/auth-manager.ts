@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
-import { Logger } from '@fromcode119/core';
+import { CookieConstants, Logger } from '@fromcode119/core';
 import { UserPermissionChecker } from './permission-checker';
 import type { User } from './index.interfaces';
 import type { SessionValidator, ApiKeyValidator } from './index.types';
@@ -119,20 +119,20 @@ export class AuthManager {
           if (parts.length >= 2) {
             const name = parts[0].trim();
             const value = parts.slice(1).join('=').trim();
-            if (name === 'fc_token' && value && value !== 'undefined' && value !== 'null') {
+            if (name === CookieConstants.AUTH_TOKEN && value && value !== 'undefined' && value !== 'null') {
               tokenCandidates.push(value);
             }
           }
         });
       }
 
-      if (req.cookies?.fc_token) {
-        if (Array.isArray(req.cookies.fc_token)) {
-          req.cookies.fc_token.forEach((t: string) => {
+      if (req.cookies?.[CookieConstants.AUTH_TOKEN]) {
+        if (Array.isArray(req.cookies[CookieConstants.AUTH_TOKEN])) {
+          req.cookies[CookieConstants.AUTH_TOKEN].forEach((t: string) => {
             if (t && !tokenCandidates.includes(t)) tokenCandidates.push(t);
           });
-        } else if (typeof req.cookies.fc_token === 'string' && !tokenCandidates.includes(req.cookies.fc_token)) {
-          tokenCandidates.push(req.cookies.fc_token);
+        } else if (typeof req.cookies[CookieConstants.AUTH_TOKEN] === 'string' && !tokenCandidates.includes(req.cookies[CookieConstants.AUTH_TOKEN])) {
+          tokenCandidates.push(req.cookies[CookieConstants.AUTH_TOKEN]);
         }
       }
 
@@ -172,8 +172,8 @@ export class AuthManager {
             sameSite: 'lax'
           };
 
-          res.clearCookie('fc_token', baseOptions);
-          res.clearCookie('fc_csrf', { ...baseOptions, httpOnly: false });
+          res.clearCookie(CookieConstants.AUTH_TOKEN, baseOptions);
+          res.clearCookie(CookieConstants.AUTH_CSRF, { ...baseOptions, httpOnly: false });
 
           let domain = process.env.COOKIE_DOMAIN;
           if (!domain && req.hostname && req.hostname.includes('.') && !req.hostname.match(/^\d+\.\d+\.\d+\.\d+$/) && req.hostname !== 'localhost') {
@@ -184,8 +184,8 @@ export class AuthManager {
           }
 
           if (domain) {
-            res.clearCookie('fc_token', { ...baseOptions, domain });
-            res.clearCookie('fc_csrf', { ...baseOptions, domain, httpOnly: false });
+            res.clearCookie(CookieConstants.AUTH_TOKEN, { ...baseOptions, domain });
+            res.clearCookie(CookieConstants.AUTH_CSRF, { ...baseOptions, domain, httpOnly: false });
           }
         }
       }

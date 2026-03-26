@@ -3,7 +3,21 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@fromcode119/core": ["../core/src"],
+      "@fromcode119/core/client": ["../core/src/client.ts"],
+      "@fromcode119/core/*": ["../core/src/*"],
+      "@fromcode119/database": ["../database/src"],
+      "@fromcode119/database/*": ["../database/src/*"],
+      "@fromcode119/plugins": ["../plugins/src"],
+      "@fromcode119/plugins/*": ["../plugins/src/*"],
+      "@fromcode119/sdk": ["./src/index.ts"],
+      "@fromcode119/sdk/*": ["./src/*"],
+      "@fromcode119/react": ["./src/react/react-shim.d.ts"],
+      "@fromcode119/admin/components": ["./src/admin/admin-components-shim.d.ts"]
+    }
   },
   "include": ["src/**/*"],
   "references": [

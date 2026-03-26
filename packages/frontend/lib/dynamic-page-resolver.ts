@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { cookies } from 'next/headers';
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import { ServerApiUtils } from './server-api';
 import { QueryParamUtils } from './query-param-utils';
 import type { SearchParams, LocaleStrategy } from './dynamic-page-resolver.types';
@@ -80,7 +80,7 @@ export class DynamicPageResolver {
       if (fromQuery) return fromQuery;
     }
     const cookieStore = await cookies();
-    const fromCookie = LocalizationUtils.normalizeLocaleCode(cookieStore.get('fc_locale')?.value || '');
+    const fromCookie = LocalizationUtils.normalizeLocaleCode(cookieStore.get(CookieConstants.LOCALE)?.value || '');
     return fromCookie || '';
   }
 
