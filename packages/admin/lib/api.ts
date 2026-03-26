@@ -6,6 +6,7 @@ import { AdminPathUtils } from './admin-path';
 
 export class AdminApi {
   private static readonly browserState = new BrowserStateClient();
+  private static readonly inFlightGetRequests = new Map<string, Promise<any>>();
 
   static getBaseUrl(): string {
     return AdminConstants.API_BASE_URL;
@@ -20,8 +21,24 @@ export class AdminApi {
     return AdminApi.browserState.readCookie(CookieConstants.ADMIN_EXPORT_AUTH_TOKEN);
   }
 
-  static async get(path: string, options?: RequestInit): Promise<any> {
-    return AdminApi.request(path, { ...options, method: 'GET' });
+  static async get(path: string, options?: RequestInit & { noDedupe?: boolean }): Promise<any> {
+    if (options?.noDedupe) {
+      return AdminApi.request(path, { ...options, method: 'GET' });
+    }
+
+    const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
+    const dedupeKey = `${AdminApi.getURL(path)}|${token ? 'auth' : 'anon'}`;
+    const inFlight = AdminApi.inFlightGetRequests.get(dedupeKey);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    const requestPromise = AdminApi.request(path, { ...options, method: 'GET' }).finally(() => {
+      AdminApi.inFlightGetRequests.delete(dedupeKey);
+    });
+
+    AdminApi.inFlightGetRequests.set(dedupeKey, requestPromise);
+    return requestPromise;
   }
 
   static async post(path: string, body?: any, options?: RequestInit): Promise<any> {

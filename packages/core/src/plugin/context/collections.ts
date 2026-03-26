@@ -3,7 +3,8 @@ import { Logger } from '../../logging';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { ContextSecurityProxy } from './utils';
 import { PluginRegistry } from '@fromcode119/plugins';
-import { NamingStrategy, PhysicalTableNameUtils } from '@fromcode119/database';
+import { NamingStrategy } from '@fromcode119/database/naming-strategy';
+import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 
 
 export class CollectionsContextProxy {

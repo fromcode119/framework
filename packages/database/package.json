@@ -8,6 +8,11 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./physical-table-name-utils": {
+      "import": "./dist/physical-table-name-utils.js",
+      "require": "./dist/physical-table-name-utils.js",
+      "types": "./dist/physical-table-name-utils.d.ts"
+    },
     "./naming-strategy": {
       "import": "./dist/naming-strategy.js",
       "require": "./dist/naming-strategy.js",

@@ -53,11 +53,13 @@ export function AdminAssistantPageLayoutEffects(props: AdminAssistantPageLayoutE
   }, [props.messagesLength, props.followDistanceThreshold, props.viewportRef, props.followLatestRef]);
 
   React.useEffect(() => {
-    if (props.activeBatchId) {
-      props.setSelectedActionIndexes(props.lastActions.map((_, index) => index));
-      return;
-    }
-    props.setSelectedActionIndexes([]);
+    const nextIndexes = props.activeBatchId ? props.lastActions.map((_, index) => index) : [];
+    props.setSelectedActionIndexes((prev) => {
+      if (prev.length === nextIndexes.length && prev.every((value, index) => value === nextIndexes[index])) {
+        return prev;
+      }
+      return nextIndexes;
+    });
   }, [props.activeBatchId, props.lastActions, props.setSelectedActionIndexes]);
 
   React.useEffect(() => {

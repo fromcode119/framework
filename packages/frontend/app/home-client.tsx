@@ -66,10 +66,11 @@ export default function HomeClient({ initialContent, forcedLayout }: HomeClientP
       themeLayouts?.[selectedLayoutName] ||
       themeLayouts?.DefaultLayout ||
       (({ children }: any) => <>{children}</>);
+    const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, initialContent);
 
     return (
       <LayoutComponent page={initialContent}>
-        {renderContent(initialContent)}
+        {!shouldBypassDefaultContent ? renderContent(initialContent) : null}
       </LayoutComponent>
     );
   }

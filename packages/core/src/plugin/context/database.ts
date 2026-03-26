@@ -1,4 +1,4 @@
-import { PhysicalTableNameUtils } from '@fromcode119/database';
+import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { sql, eq, and, or } from 'drizzle-orm';
 import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from './utils.interfaces';

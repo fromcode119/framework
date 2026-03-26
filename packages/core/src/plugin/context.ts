@@ -18,7 +18,7 @@ import { UsersContextProxy } from './context/users';
 import { MetaContextProxy } from './context/meta';
 import { RolesContextProxy } from './context/roles';
 import { PluginsFacade } from '../plugins-facade';
-import { PluginsRegistry } from '../plugins-registry';
+import { PluginsManagerResolver } from '../plugins-manager-resolver';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -28,15 +28,7 @@ export class PluginContextFactory {
 ): PluginContext {
       const pluginLogger = rootLogger.child(plugin.manifest.slug);
       const security = ContextSecurityProxy.createSecurityHelpers(plugin, manager, rootLogger);
-      const pluginsRegistry = new PluginsRegistry();
-
-      for (const loadedPlugin of manager.plugins.values()) {
-        const namespace = String(loadedPlugin.manifest.namespace || '').trim();
-        if (!namespace || loadedPlugin.state !== 'active' || !loadedPlugin.publicAPI) continue;
-        pluginsRegistry.register(namespace, loadedPlugin.manifest.slug, loadedPlugin.publicAPI);
-      }
-
-      const pluginsFacade = new PluginsFacade(pluginsRegistry);
+      const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(manager.plugins));
 
       const context: PluginContext = {
         db: DatabaseContextProxy.createDatabaseProxy(plugin, manager, security) as any,

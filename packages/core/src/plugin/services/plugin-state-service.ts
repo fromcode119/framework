@@ -1,6 +1,7 @@
 import { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '../../logging';
 import { SystemConstants } from '../../constants';
+import { PluginConfigValueService } from './plugin-config-value-service';
 
 export class PluginStateService {
   private logger = new Logger({ namespace: 'PluginState' });
@@ -75,7 +76,7 @@ export class PluginStateService {
   async getPluginConfig(slug: string): Promise<any> {
     try {
       const row = await this.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: slug });
-      return row?.settings || {};
+      return PluginConfigValueService.getConfig(row?.settings);
     } catch (err) {
       return {};
     }

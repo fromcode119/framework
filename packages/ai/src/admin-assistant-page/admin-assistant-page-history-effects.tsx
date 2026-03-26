@@ -8,6 +8,7 @@ import type { AdminAssistantPageHistoryEffectsProps } from './admin-assistant-pa
 
 export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistoryEffectsProps) {
   const prefsLoadedRef = React.useRef(false);
+  const historyHydratedRef = React.useRef(false);
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -17,8 +18,10 @@ export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistor
   }, [props.themeMode, props.browserState]);
 
   React.useEffect(() => {
+    if (historyHydratedRef.current) return;
     let cancelled = false;
     const hydrate = async () => {
+      historyHydratedRef.current = true;
       const savedActive = typeof window !== 'undefined' ? props.browserState.readActiveSessionId() : '';
       let serverLoaded = false;
       let localSessions: ReturnType<typeof AdminAssistantPageSessionService.loadHistoryFromLocal> = [];
@@ -42,28 +45,39 @@ export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistor
         try {
           if (serverLoaded) {
             const detailed = await AdminAssistantPageSessionService.fetchSession(props.api, savedActive, props.provider);
-            if (cancelled || !detailed) return;
-            props.setHistorySessions((prev) => [detailed, ...prev.filter((item) => item.id !== detailed.id)]);
-            props.setActiveSessionId(detailed.id);
-            props.setMessages(detailed.messages.length ? detailed.messages : AdminAssistantPageUtils.createReadyConversation());
-            props.setProvider(detailed.provider || 'openai');
-            if (detailed.model) props.setModel(detailed.model);
-            if (detailed.skillId) props.setSkillId(detailed.skillId);
-            props.setChatMode(detailed.chatMode || 'auto');
-            props.setSandboxMode(detailed.sandboxMode !== false);
+            if (!cancelled && detailed) {
+              props.setHistorySessions((prev) => [detailed, ...prev.filter((item) => item.id !== detailed.id)]);
+              props.setActiveSessionId(detailed.id);
+              props.setMessages(detailed.messages.length ? detailed.messages : AdminAssistantPageUtils.createReadyConversation());
+              props.setProvider(detailed.provider || 'openai');
+              if (detailed.model) props.setModel(detailed.model);
+              if (detailed.skillId) props.setSkillId(detailed.skillId);
+              props.setChatMode(detailed.chatMode || 'auto');
+              props.setSandboxMode(detailed.sandboxMode !== false);
+            } else if (!cancelled) {
+              props.browserState.writeActiveSessionId('');
+              props.setActiveSessionId('');
+            }
           } else {
             const active = localSessions.find((item) => item.id === savedActive);
-            if (!active) return;
-            props.setActiveSessionId(active.id);
-            props.setMessages(active.messages);
-            props.setProvider(active.provider || 'openai');
-            if (active.model) props.setModel(active.model);
-            if (active.skillId) props.setSkillId(active.skillId);
-            props.setChatMode(active.chatMode || 'auto');
-            props.setSandboxMode(active.sandboxMode !== false);
+            if (active) {
+              props.setActiveSessionId(active.id);
+              props.setMessages(active.messages);
+              props.setProvider(active.provider || 'openai');
+              if (active.model) props.setModel(active.model);
+              if (active.skillId) props.setSkillId(active.skillId);
+              props.setChatMode(active.chatMode || 'auto');
+              props.setSandboxMode(active.sandboxMode !== false);
+            } else {
+              props.browserState.writeActiveSessionId('');
+              props.setActiveSessionId('');
+            }
           }
         } catch {
-          return;
+          if (!cancelled) {
+            props.browserState.writeActiveSessionId('');
+            props.setActiveSessionId('');
+          }
         }
       }
 

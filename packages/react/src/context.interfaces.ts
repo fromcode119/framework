@@ -57,7 +57,9 @@ export interface PluginContextValue {
   registerFieldComponent: (name: string, component: any) => void;
   registerOverride: (name: string, component: SlotComponent) => void;
   registerMenuItem: (item: MenuItem) => void;
+  replaceMenuItems: (items: MenuItem[]) => void;
   registerCollection: (collection: CollectionMetadata) => void;
+  replaceCollections: (collections: CollectionMetadata[]) => void;
   registerPlugins: (plugins: any[]) => void;
   registerTheme: (slug: string, config: any) => void;
   registerSettings: (settings: Record<string, any>) => void;

@@ -28,6 +28,8 @@ const nextConfig = {
       '@fromcode119/core/*': '../core/src/*',
       '@fromcode119/sdk': '../sdk/src',
       '@fromcode119/sdk/*': '../sdk/src/*',
+      '@fromcode119/database/physical-table-name-utils': '../database/src/physical-table-name-utils.ts',
+      '@fromcode119/database/naming-strategy': '../database/src/naming-strategy.ts',
       ...Object.fromEntries(extensions.map(ext => [
         `@fromcode119/${ext}`,
         `../${ext}/src`
@@ -63,14 +65,14 @@ const nextConfig = {
     // server-only imports (drizzle-orm, pg, nodemailer, ffmpeg, etc.).
     const serverOnlyStub = path.resolve(__dirname, './webpack/database-stub.js');
     [
-      '@fromcode119/database',
-      '@fromcode119/media',
-      '@fromcode119/cache',
-      '@fromcode119/email',
-      '@fromcode119/scheduler',
-      '@fromcode119/marketplace-client',
-      '@fromcode119/plugins',
-      'express', // defense-in-depth: BaseRouter (and any plugin code) must never reach the client bundle
+      '@fromcode119/database$',
+      '@fromcode119/media$',
+      '@fromcode119/cache$',
+      '@fromcode119/email$',
+      '@fromcode119/scheduler$',
+      '@fromcode119/marketplace-client$',
+      '@fromcode119/plugins$',
+      'express$', // defense-in-depth: BaseRouter (and any plugin code) must never reach the client bundle
     ].forEach(pkg => { config.resolve.alias[pkg] = serverOnlyStub; });
 
     // Stub async_hooks so the AsyncLocalStorage static initialiser in
@@ -80,6 +82,8 @@ const nextConfig = {
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
     config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/index.ts');
     config.resolve.alias['@fromcode119/sdk$'] = path.resolve(__dirname, '../sdk/src/index.ts');
+    config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
+    config.resolve.alias['@fromcode119/database/naming-strategy$'] = path.resolve(__dirname, '../database/src/naming-strategy.ts');
 
     config.resolve.alias['@fromcode119/react/'] = path.resolve(__dirname, '../react/src/');
     config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
