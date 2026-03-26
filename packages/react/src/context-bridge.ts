@@ -1,3 +1,4 @@
+import { ApiPathUtils, ApiScopeClient } from '@fromcode119/core/client';
 import type { RuntimeBridgeInstallArgs } from './context-runtime-bridge.interfaces';
 
 export class ContextBridge {
@@ -50,6 +51,34 @@ export class ContextBridge {
 
   static getAPI(...args: any[]): any {
     return ContextBridge._args?.getAPI?.(...args);
+  }
+
+  static registerPluginApi(...args: any[]): any {
+    return ContextBridge._args?.registerPluginApi?.(...args);
+  }
+
+  static registerPluginScopeApi(namespace: string, name: string): ApiScopeClient {
+    const client = new ApiScopeClient(ContextBridge.api, ApiPathUtils.pluginPath(name));
+    ContextBridge.registerPluginApi(namespace, name, client);
+    return client;
+  }
+
+  static registerPluginClient<T>(
+    namespace: string,
+    name: string,
+    factory: (api: any, basePath: string) => T,
+  ): T {
+    const client = factory(ContextBridge.api, ApiPathUtils.pluginPath(name));
+    ContextBridge.registerPluginApi(namespace, name, client);
+    return client;
+  }
+
+  static getPluginApi(...args: any[]): any {
+    return ContextBridge._args?.getPluginApi?.(...args);
+  }
+
+  static hasPluginApi(...args: any[]): any {
+    return ContextBridge._args?.hasPluginApi?.(...args);
   }
 
   static setPluginState(...args: any[]): any {

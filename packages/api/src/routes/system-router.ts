@@ -79,6 +79,14 @@ export class SystemRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.ADMIN_AUDIT, this.auth.requirePermission('system:audit'), 
       this.bind(this.controller.getAuditLogs.bind(this.controller)));
     
+    // System settings
+    this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
+      this.bind(this.controller.getSettings.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
+      this.bind(this.controller.updateSettings.bind(this.controller)));
+    this.put(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
+      this.bind(this.controller.updateSettings.bind(this.controller)));
+    
     // Role management
     this.get(RouteConstants.SEGMENTS.ADMIN_ROLES, this.auth.requirePermission('roles:view'), 
       this.bind(this.controller.getRoles.bind(this.controller)));

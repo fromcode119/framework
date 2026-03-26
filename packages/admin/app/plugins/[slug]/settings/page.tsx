@@ -2,13 +2,14 @@
 
 import React, { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { AdminConstants } from '@/lib/constants';
 
 export default function PluginSettingsRedirectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
 
   useEffect(() => {
-    router.replace(`/plugins/${slug}?tab=settings`);
+    router.replace(AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(slug));
   }, [router, slug]);
 
   return (
@@ -17,4 +18,3 @@ export default function PluginSettingsRedirectPage({ params }: { params: Promise
     </div>
   );
 }
-

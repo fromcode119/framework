@@ -1,4 +1,4 @@
-import { Logger, UrlUtils } from '@fromcode119/sdk';
+import { Logger, UrlUtils } from '@fromcode119/core/client';
 import { AssistantClient } from '../types.interfaces';
 import type { OpenAiConfig } from './openai.types';
 

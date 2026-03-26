@@ -2,6 +2,7 @@ import { LocalizationService } from './localization-service';
 import { ContentService } from './content-service';
 import { MenuService } from './menu-service';
 import { CollectionService } from './collection-service';
+import { CollectionIdentityService } from './collection-identity-service';
 
 /**
  * Core Services Singleton.
@@ -40,6 +41,7 @@ export class CoreServices {
   private _content: ContentService | null = null;
   private _menu: MenuService | null = null;
   private _collection: CollectionService | null = null;
+  private _collectionIdentity: CollectionIdentityService | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -93,6 +95,13 @@ export class CoreServices {
       this._collection = new CollectionService();
     }
     return this._collection;
+  }
+
+  get collectionIdentity(): CollectionIdentityService {
+    if (!this._collectionIdentity) {
+      this._collectionIdentity = new CollectionIdentityService();
+    }
+    return this._collectionIdentity;
   }
 
   /**

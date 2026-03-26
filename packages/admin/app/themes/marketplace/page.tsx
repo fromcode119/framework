@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { NotificationHooks } from '@/components/use-notification';
 import { FrameworkIcons } from '@/lib/icons';
 import { useRouter } from 'next/navigation';
-import type { MarketplaceTheme } from '@fromcode119/core';
+import type { MarketplaceTheme } from '@fromcode119/core/client';
 
 export default function ThemesMarketplacePage() {
   const { theme } = ThemeHooks.useTheme();
@@ -97,7 +97,7 @@ export default function ThemesMarketplacePage() {
               return (
                 <Card 
                   key={t.slug}
-                  onClick={() => router.push(`/themes/marketplace/${t.slug}`)}
+                  onClick={() => router.push(AdminConstants.ROUTES.THEMES.MARKETPLACE_DETAIL(t.slug))}
                   className={`group flex flex-col border-0 relative transition-all duration-700 cursor-pointer overflow-hidden rounded-[2.5rem] ${theme === 'dark' ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-2xl shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
                 >
                   <div className="p-10 space-y-6 flex-1">
@@ -141,7 +141,7 @@ export default function ThemesMarketplacePage() {
                       <div className="flex items-center gap-3">
                         {installed && !hasUpdate ? (
                           <button 
-                            onClick={(e) => { e.stopPropagation(); router.push(`/themes/${t.slug}`); }}
+                            onClick={(e) => { e.stopPropagation(); router.push(AdminConstants.ROUTES.THEMES.DETAIL(t.slug)); }}
                             className={`w-full py-5 rounded-[2rem] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white border text-slate-400 hover:bg-slate-50 hover:text-indigo-600 shadow-sm'}`}
                           >
                             <FrameworkIcons.Check size={18} strokeWidth={3} />

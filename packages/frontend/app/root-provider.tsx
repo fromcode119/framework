@@ -10,14 +10,15 @@ import { FrontendApiBaseUrl } from '@/lib/api-base-url';
 
 function SystemGate({ children }: { children: ReactNode }) {
   const status = useSystemStatus();
+  const normalizedChildren = React.Children.toArray(children);
 
   if (status === 'MAINTENANCE') {
     return <MaintenanceScreen />;
   }
 
   return (
-    <Override name="frontend.layout.main" fallback={children}>
-      {children}
+    <Override name="frontend.layout.main" fallback={normalizedChildren}>
+      {normalizedChildren}
     </Override>
   );
 }
@@ -51,13 +52,14 @@ function RouterBridge() {
 
 export default function RootProvider({ children }: { children: ReactNode }) {
   const apiUrl = FrontendApiBaseUrl.resolveFrontendApiBaseUrl();
+  const normalizedChildren = React.Children.toArray(children);
 
   return (
     <PluginsProvider apiUrl={apiUrl}>
       <RouterBridge />
       <ThemeInitializer />
       <SystemGate>
-        {children}
+        {normalizedChildren}
       </SystemGate>
     </PluginsProvider>
   );

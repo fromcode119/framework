@@ -28,7 +28,7 @@ export default function NewPermissionPage() {
     setLoading(true);
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS, formData);
-      router.push('/users/permissions');
+      router.push(AdminConstants.ROUTES.USERS.PERMISSIONS);
     } catch (e) {
       console.error("Failed to save permission", e);
     } finally {

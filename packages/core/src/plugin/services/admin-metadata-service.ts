@@ -2,6 +2,9 @@ import { LoadedPlugin, Collection } from '../../types';
 import { Logger } from '../../logging';
 import { CoreServices } from '../../services';
 import { AdminRouteUtils } from './admin-route-utils';
+import { AppPathConstants } from '../../app-path-constants';
+import { SystemConstants } from '../../constants';
+import { ApiPathUtils } from '../../api/api-path-utils';
 
 export class AdminMetadataService {
   private logger = new Logger({ namespace: 'admin-metadata-service' });
@@ -32,8 +35,8 @@ export class AdminMetadataService {
           config: p.manifest.config || {},
           ui: {
             ...(p.manifest.ui || {}),
-            entryUrl: p.manifest.ui?.entry ? `/plugins/${p.manifest.slug}/ui/${p.manifest.ui.entry}` : undefined,
-            cssUrls: p.manifest.ui?.css ? p.manifest.ui.css.map(css => `/plugins/${p.manifest.slug}/ui/${css}`) : [],
+            entryUrl: p.manifest.ui?.entry ? this.pluginUiAssetPath(p.manifest.slug, p.manifest.ui.entry) : undefined,
+            cssUrls: p.manifest.ui?.css ? p.manifest.ui.css.map(css => this.pluginUiAssetPath(p.manifest.slug, css)) : [],
             headInjections: []
           }
         };
@@ -42,25 +45,25 @@ export class AdminMetadataService {
     const rawMenuItems: any[] = [];
 
     // System Items
-    rawMenuItems.push({ label: 'Dashboard', path: '/', icon: 'Dashboard', group: 'Core', pluginSlug: 'system', priority: 10 });
+    rawMenuItems.push({ label: 'Dashboard', path: AppPathConstants.ADMIN.ROOT, icon: 'Dashboard', group: 'Core', pluginSlug: 'system', priority: 10 });
     rawMenuItems.push({
       label: 'Users',
-      path: '/users',
+      path: AppPathConstants.ADMIN.USERS.ROOT,
       icon: 'Users',
       group: 'Platform',
       pluginSlug: 'system',
       priority: 11,
       isGroup: true,
       children: [
-        { label: 'Users List', path: '/users', icon: 'Users' },
-        { label: 'Roles', path: '/users/roles', icon: 'Shield' },
-        { label: 'Permissions', path: '/users/permissions', icon: 'Lock' }
+        { label: 'Users List', path: AppPathConstants.ADMIN.USERS.LIST, icon: 'Users' },
+        { label: 'Roles', path: AppPathConstants.ADMIN.USERS.ROLE_LIST, icon: 'Shield' },
+        { label: 'Permissions', path: AppPathConstants.ADMIN.USERS.PERMISSIONS, icon: 'Lock' }
       ]
     });
-    rawMenuItems.push({ label: 'Plugins', path: '/plugins', icon: 'Package', group: 'Management', pluginSlug: 'system', priority: 20 });
-    rawMenuItems.push({ label: 'Media', path: '/media', icon: 'Image', group: 'Core', pluginSlug: 'system', priority: 30 });
-    rawMenuItems.push({ label: 'Themes', path: '/themes', icon: 'Palette', group: 'Platform', pluginSlug: 'system', priority: 90 });
-    rawMenuItems.push({ label: 'Activity', path: '/activity', icon: 'Activity', group: 'Platform', pluginSlug: 'system', priority: 85 });
+    rawMenuItems.push({ label: 'Plugins', path: AppPathConstants.ADMIN.PLUGINS.ROOT, icon: 'Package', group: 'Management', pluginSlug: 'system', priority: 20 });
+    rawMenuItems.push({ label: 'Media', path: AppPathConstants.ADMIN.MEDIA.ROOT, icon: 'Image', group: 'Core', pluginSlug: 'system', priority: 30 });
+    rawMenuItems.push({ label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', pluginSlug: 'system', priority: 90 });
+    rawMenuItems.push({ label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', pluginSlug: 'system', priority: 85 });
 
     // Plugin Items
     pluginMetadata.forEach(p => {
@@ -233,5 +236,9 @@ export class AdminMetadataService {
       menu: dedupedMenu,
       runtimeModules
     };
+  }
+
+  private pluginUiAssetPath(slug: string, asset: string): string {
+    return ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug }).replace('*', asset.replace(/^\/+/, ''));
   }
 }

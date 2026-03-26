@@ -1,4 +1,4 @@
-import { LocalizationUtils } from '@fromcode119/sdk';
+import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import { cookies } from 'next/headers';
 import { ServerApiUtils } from '@/lib/server-api';
 import { QueryParamUtils } from '@/lib/query-param-utils';
@@ -58,7 +58,7 @@ export class HomePageResolver {
     }
 
     const cookieStore = await cookies();
-    const fromCookie = LocalizationUtils.normalizeLocaleCode(cookieStore.get('fc_locale')?.value || '');
+    const fromCookie = LocalizationUtils.normalizeLocaleCode(cookieStore.get(CookieConstants.LOCALE)?.value || '');
     return fromCookie || '';
   }
 

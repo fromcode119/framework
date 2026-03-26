@@ -21,7 +21,6 @@ export default function PluginLoader() {
   useEffect(() => {
     if (typeof window === 'undefined' || !user || process.env.NODE_ENV !== 'development') return;
 
-    console.log("[HMR] Initializing EventSource connection...");
     const eventSource = new EventSource(`${AdminConstants.API_BASE_URL}${AdminConstants.ENDPOINTS.SYSTEM.EVENTS}`, {
         withCredentials: true
     });
@@ -45,18 +44,11 @@ export default function PluginLoader() {
     };
 
     return () => {
-      console.log("[HMR] Closing EventSource connection...");
       eventSource.close();
     };
   }, [user, triggerRefresh]);
 
   useEffect(() => {
-    console.debug("[Admin] PluginLoader Effect triggered", { 
-      hasRegisterPlugins: typeof registerPlugins === 'function',
-      keys: Object.keys(pluginsContext),
-      refreshVersion
-    });
-
     if (typeof window === 'undefined' || isAuthLoading || !user || !isReady) return;
 
     async function loadPlugins() {
@@ -173,7 +165,6 @@ export default function PluginLoader() {
                 ? `?v=${devCacheToken}`
                 : (refreshVersion > 0 ? `?v=${refreshVersion}` : '');
               const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
-              console.debug(`[Admin] Loading plugin UI from: ${src}`);
               
               // 1. Module Preload (only if it doesn't exist)
               if (!document.querySelector(`link[href="${src}"][rel="modulepreload"]`)) {
@@ -200,8 +191,6 @@ export default function PluginLoader() {
                     registerSlotComponent(slotName, component, plugin.slug, priority);
                   });
                 }
-                
-                console.log(`[Admin] Plugin ${plugin.slug} UI module loaded and initialized. (ver: ${refreshVersion})`);
               }).catch(err => {
                 console.warn(`[Admin] Failed to dynamic import plugin ${plugin.slug}:`, err);
                 

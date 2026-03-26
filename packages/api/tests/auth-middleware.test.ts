@@ -1,4 +1,5 @@
 import { AuthManager } from '@fromcode119/auth';
+import { CookieConstants } from '../../core/src/cookie-constants';
 import * as jwt from 'jsonwebtoken';
 
 describe('AuthManager Middleware Conflict Fix', () => {
@@ -16,10 +17,10 @@ describe('AuthManager Middleware Conflict Fix', () => {
 
         // Simulate Express request with multiple cookies in raw header
         // This simulates the host vs domain conflict where the browser sends:
-        // Cookie: fc_token=invalid; fc_token=valid
+        // Cookie: auth-token=invalid; auth-token=valid
         const req: any = {
             headers: {
-                cookie: `fc_token=${invalidToken}; fc_token=${validToken}`
+                cookie: `${CookieConstants.AUTH_TOKEN}=${invalidToken}; ${CookieConstants.AUTH_TOKEN}=${validToken}`
             },
             url: '/api/test'
         };
@@ -41,7 +42,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
 
         const req: any = {
             headers: {
-                cookie: `fc_token=${validToken}; fc_token=${invalidToken}`
+                cookie: `${CookieConstants.AUTH_TOKEN}=${validToken}; ${CookieConstants.AUTH_TOKEN}=${invalidToken}`
             },
             url: '/api/test'
         };
@@ -63,7 +64,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
 
         const req: any = {
             cookies: {
-                fc_token: [staleToken, validToken]
+                [CookieConstants.AUTH_TOKEN]: [staleToken, validToken]
             },
             headers: {},
             url: '/api/test'
@@ -87,7 +88,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
         const req: any = {
             headers: {
                 authorization: `Bearer ${validToken}`,
-                cookie: `fc_token=${invalidToken}`
+                cookie: `${CookieConstants.AUTH_TOKEN}=${invalidToken}`
             },
             url: '/api/test'
         };

@@ -1,5 +1,5 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core/client';
 import type { AssistantHistoryEntry } from './session-store.types';
 
 export class AssistantSessionStore {

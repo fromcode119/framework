@@ -49,6 +49,9 @@ export interface PluginContextValue {
   on: (event: string, handler: (data: any) => void) => () => void;
   registerAPI: (slug: string, api: any) => void;
   getAPI: (slug: string) => any;
+  registerPluginApi: (namespace: string, slug: string, api: any) => void;
+  getPluginApi: (namespace: string, slug: string) => any;
+  hasPluginApi: (namespace: string, slug: string) => boolean;
   setPluginState: (pluginSlug: string, key: string, value: any) => void;
   registerSlotComponent: (slotName: string, component: any, pluginSlug?: string, priority?: number) => void;
   registerFieldComponent: (name: string, component: any) => void;

@@ -31,7 +31,7 @@ export class SeederCallableResolver {
       }
 
       return {
-        callable: candidate,
+        callable: candidate as (...args: unknown[]) => unknown,
         symbolName,
         sourceType: symbolName === 'default' ? 'default' : 'named'
       };

@@ -33,7 +33,7 @@ export class AssistantCopyUtils {
     riskPolicy: 'approval_required',
     entryExamples: [
       'Replace "Slow Websites" with "Better Sites" in homepage copy.',
-      'Update hero title in fcp_cms_pages id=1.',
+      'Update hero title in @cms/pages id=1.',
     ],
   },
   {

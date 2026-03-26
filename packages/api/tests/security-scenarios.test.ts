@@ -1,4 +1,5 @@
 import { SecurityMiddleware } from '../src/middlewares/security';
+import { CookieConstants } from '../../core/src/cookie-constants';
 import { Request, Response, NextFunction } from 'express';
 
 describe('CSRF Middleware Security Scenarios', () => {
@@ -32,7 +33,7 @@ describe('CSRF Middleware Security Scenarios', () => {
     });
 
     it('should block POST requests without CSRF header', () => {
-        req.headers.cookie = 'fc_csrf=valid-token';
+        req.headers.cookie = `${CookieConstants.AUTH_CSRF}=valid-token`;
         SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(res.status).toHaveBeenCalledWith(403);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -41,14 +42,14 @@ describe('CSRF Middleware Security Scenarios', () => {
     });
 
     it('should block POST requests with mismatched CSRF header', () => {
-        req.headers.cookie = 'fc_csrf=valid-token';
+        req.headers.cookie = `${CookieConstants.AUTH_CSRF}=valid-token`;
         req.headers['x-csrf-token'] = 'invalid-token';
         SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(res.status).toHaveBeenCalledWith(403);
     });
 
     it('should allow POST requests with matching CSRF header', () => {
-        req.headers.cookie = 'fc_csrf=valid-token';
+        req.headers.cookie = `${CookieConstants.AUTH_CSRF}=valid-token`;
         req.headers['x-csrf-token'] = 'valid-token';
         SecurityMiddleware.csrfMiddleware(req, res, next);
         expect(next).toHaveBeenCalled();
@@ -59,7 +60,7 @@ describe('CSRF Middleware Security Scenarios', () => {
         const otherToken = 'token-two';
         
         // Browser sends multiple cookies due to host vs domain conflict
-        req.headers.cookie = `fc_csrf=${otherToken}; fc_csrf=${matchingToken}`;
+        req.headers.cookie = `${CookieConstants.AUTH_CSRF}=${otherToken}; ${CookieConstants.AUTH_CSRF}=${matchingToken}`;
         req.headers['x-csrf-token'] = matchingToken;
         
         SecurityMiddleware.csrfMiddleware(req, res, next);
@@ -72,7 +73,7 @@ describe('CSRF Middleware Security Scenarios', () => {
         const matchingToken = 'token-one';
         const otherToken = 'token-two';
         
-        req.headers.cookie = `fc_csrf=${matchingToken}; fc_csrf=${otherToken}`;
+        req.headers.cookie = `${CookieConstants.AUTH_CSRF}=${matchingToken}; ${CookieConstants.AUTH_CSRF}=${otherToken}`;
         req.headers['x-csrf-token'] = matchingToken;
         
         SecurityMiddleware.csrfMiddleware(req, res, next);
@@ -84,7 +85,7 @@ describe('CSRF Middleware Security Scenarios', () => {
         req.method = 'GET';
         SecurityMiddleware.csrfMiddleware(req, res, next);
         
-        expect(res.cookie).toHaveBeenCalledWith('fc_csrf', expect.any(String), expect.objectContaining({
+        expect(res.cookie).toHaveBeenCalledWith(CookieConstants.AUTH_CSRF, expect.any(String), expect.objectContaining({
             httpOnly: false,
             path: '/'
         }));
@@ -96,7 +97,7 @@ describe('CSRF Middleware Security Scenarios', () => {
         req.hostname = 'admin.framework.local';
         SecurityMiddleware.csrfMiddleware(req, res, next);
         
-        expect(res.cookie).toHaveBeenCalledWith('fc_csrf', expect.any(String), expect.objectContaining({
+        expect(res.cookie).toHaveBeenCalledWith(CookieConstants.AUTH_CSRF, expect.any(String), expect.objectContaining({
             domain: '.framework.local'
         }));
     });

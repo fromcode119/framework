@@ -42,9 +42,11 @@ export class PluginStateService {
   async savePluginState(slug: string, state: string, capabilities?: string[], version?: string) {
     const normSlug = slug.toLowerCase();
     try {
+      const healthStatus = state === 'error' ? 'error' : 'healthy';
       const values: any = { 
         slug: normSlug, 
         state, 
+        health_status: healthStatus,
         updated_at: new Date() 
       };
       

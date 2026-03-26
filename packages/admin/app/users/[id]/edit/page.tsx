@@ -68,7 +68,7 @@ export default function EditUserPage() {
 
     try {
       await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.USER(id as string), formData);
-      router.push(`/users/${id}`);
+      router.push(AdminConstants.ROUTES.USERS.DETAIL(id as string));
     } catch (err: any) {
       console.error('Failed to update user:', err);
       setErrors({ global: err.message || 'Failed to update user' });
@@ -92,7 +92,7 @@ export default function EditUserPage() {
       }`}>
         <div className="w-full px-6 lg:px-12 py-10 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href={`/users/${id}`} className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
+            <Link href={AdminConstants.ROUTES.USERS.DETAIL(id as string)} className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
               <FrameworkIcons.Left size={20} />
             </Link>
             <div>

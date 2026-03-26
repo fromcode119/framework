@@ -139,7 +139,7 @@ export default function PermissionsPage() {
             />
             
             <div className="flex items-center gap-4">
-              <Link href="/users/permissions/new">
+              <Link href={AdminConstants.ROUTES.USERS.PERMISSIONS_NEW}>
                 <Button 
                   variant="secondary"
                   className="h-11 px-6 rounded-xl font-bold uppercase tracking-tight text-[10px] border-slate-200 dark:border-slate-800"

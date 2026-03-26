@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { TypeUtils } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core/client';
 import type { ControllerDeps } from './controller-deps';
 
 /** Handles session CRUD and reasoning report endpoints. */

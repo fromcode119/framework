@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { AdminConstants } from '@/lib/constants';
 
 export default function ThemesPage() {
-  redirect('/themes/installed');
+  redirect(AdminConstants.ROUTES.THEMES.INSTALLED);
 }

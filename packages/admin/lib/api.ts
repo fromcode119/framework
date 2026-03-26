@@ -1,10 +1,12 @@
 import { AdminConstants } from './constants';
-import Cookies from 'js-cookie';
+import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
 import { AuthUtils } from './auth-utils';
 import { AdminUrlUtils } from './url-utils';
 import { AdminPathUtils } from './admin-path';
 
 export class AdminApi {
+  private static readonly browserState = new BrowserStateClient();
+
   static getBaseUrl(): string {
     return AdminConstants.API_BASE_URL;
   }
@@ -12,6 +14,10 @@ export class AdminApi {
   static getURL(path: string): string {
     const normalizedPath = AdminUrlUtils.normalizeRequestPath(path);
     return normalizedPath.startsWith('http') ? normalizedPath : `${AdminConstants.API_BASE_URL}${normalizedPath}`;
+  }
+
+  static getAdminExportToken(): string {
+    return AdminApi.browserState.readCookie(CookieConstants.ADMIN_EXPORT_AUTH_TOKEN);
   }
 
   static async get(path: string, options?: RequestInit): Promise<any> {
@@ -48,8 +54,8 @@ export class AdminApi {
 
   static async upload(path: string, formData: FormData, options?: RequestInit): Promise<any> {
     const url = AdminApi.getURL(path);
-    const token = Cookies.get('fc_token');
-    const csrfToken = Cookies.get('fc_csrf');
+    const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
+    const csrfToken = AdminApi.browserState.readCookie(CookieConstants.AUTH_CSRF);
     const headers: Record<string, string> = {
       'X-Framework-Client': 'admin-ui',
       'X-Requested-With': 'XMLHttpRequest',
@@ -73,8 +79,8 @@ export class AdminApi {
   }
 
   private static async request(path: string, options: RequestInit = {}): Promise<any> {
-    const token = Cookies.get('fc_token');
-    const csrfToken = Cookies.get('fc_csrf');
+    const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
+    const csrfToken = AdminApi.browserState.readCookie(CookieConstants.AUTH_CSRF);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'X-Framework-Client': 'admin-ui',

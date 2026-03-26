@@ -52,6 +52,10 @@ export class EnvConfig {
     SANDBOX_MEMORY_LIMIT: z.string().transform((v) => parseInt(v, 10)).default('128'),
     SANDBOX_TIMEOUT: z.string().transform((v) => parseInt(v, 10)).default('50'),
 
+    // Resource Paths
+    PLUGINS_DIR: z.string().optional(),
+    THEMES_DIR: z.string().optional(),
+
     // Logging
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info')
   });

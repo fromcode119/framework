@@ -3,7 +3,7 @@
 import React, { useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { PluginContextRegistry } from './plugin-context';
-import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
+import { SystemConstants, ApiVersionUtils, CookieConstants, BrowserStateClient } from '@fromcode119/core/client';
 import { FrameworkIcons } from './framework-icons';
 import { FrameworkIconRegistry } from './framework-icon-registry';
 import { RootFramework } from './root-framework';
@@ -28,6 +28,12 @@ const getFrontendConfigPath = (): string => {
     throw new Error('[Fromcode API] Missing SYSTEM.FRONTEND path constant');
   }
   return path;
+};
+
+const getPluginApiRegistryKey = (namespace: string, slug: string): string => {
+  const normalizedNamespace = String(namespace || '').trim().toLowerCase();
+  const normalizedSlug = String(slug || '').trim().toLowerCase();
+  return `${normalizedNamespace}:${normalizedSlug}`;
 };
 
 const getIcon = FrameworkIcons.getIcon.bind(FrameworkIcons);
@@ -112,6 +118,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
   const [pluginAPIs] = useState<Record<string, any>>({});
   const [events] = useState(() => new Map<string, Set<(data: any) => void>>());
   const [serverRuntimeModules, setServerRuntimeModules] = useState<Record<string, any>>({});
+  const browserState = useMemo(() => new BrowserStateClient(), []);
   
   const getBaseURL = useCallback(() => {
     const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
@@ -123,22 +130,6 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     
     return effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
   }, [apiUrl]);
-
-  const getCookieValue = useCallback((name: string): string => {
-    if (typeof document === 'undefined') return '';
-    const cookie = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith(`${name}=`))
-      ?.split('=')
-      .slice(1)
-      .join('=');
-    if (!cookie) return '';
-    try {
-      return decodeURIComponent(cookie);
-    } catch {
-      return cookie;
-    }
-  }, []);
 
   const apiFetch = useCallback(async (path: string, options: (RequestInit & { silent?: boolean; noDedupe?: boolean }) = {}) => {
     const { silent, noDedupe, ...fetchOptions } = options as any;
@@ -157,8 +148,8 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       url = `${base}${vPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
     }
     
-    const token = getCookieValue('fc_token');
-    const csrfToken = getCookieValue('fc_csrf');
+    const token = browserState.readCookie(CookieConstants.AUTH_TOKEN);
+    const csrfToken = browserState.readCookie(CookieConstants.AUTH_CSRF);
     const method = String(fetchOptions.method || 'GET').toUpperCase();
     const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(method);
     const existingHeaders = (fetchOptions.headers || {}) as Record<string, string>;
@@ -183,7 +174,15 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
           if (!silent) {
             console.error(`[Fromcode API] Error ${res.status} from ${url}:`, err);
           }
-          throw new Error(err.error || `Failed to fetch from ${url}`);
+          const requestError = new Error(err.error || `Failed to fetch from ${url}`) as Error & {
+            statusCode?: number;
+            data?: unknown;
+            url?: string;
+          };
+          requestError.statusCode = res.status;
+          requestError.data = err;
+          requestError.url = url;
+          throw requestError;
       }
       return res.json();
     };
@@ -207,7 +206,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     });
     inFlightGetRequests.set(dedupeKey, promise);
     return promise;
-  }, [getBaseURL, getCookieValue]);
+  }, [browserState, getBaseURL]);
 
   const api = useMemo(() => ({
     getBaseUrl: () => getBaseURL(),
@@ -345,15 +344,18 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
            });
         }
 
-        // Load Theme JS Bundle (Entry)
+        // Load Theme JS Bundle (Entry) — theme bundles are built as IIFE (Vite).
+        // IIFE bundles reference React/ReactDOM as globals, so we expose them on
+        // window before injecting the script tag.
         if (theme.ui?.entry) {
           const entryUrl = theme.ui.entry.startsWith('http') ? theme.ui.entry : `${baseThemeUrl}/ui/${theme.ui.entry}`;
-          if (!document.querySelector(`script[src="${entryUrl}"]`)) {
+          if (!document.querySelector(`script[data-theme-entry="${entryUrl}"]`)) {
+            (window as any).React = React;
+            (window as any).ReactDOM = ReactDOM;
             const script = document.createElement('script');
             script.src = entryUrl;
-            // Don't set type='module' for IIFE bundles - they need to run as regular scripts
-            // script.type = 'module';
-            script.async = false;
+            script.setAttribute('data-theme-entry', entryUrl);
+            script.onerror = (err) => console.warn('[Fromcode] Failed to load theme bundle:', err);
             document.head.appendChild(script);
           }
         }
@@ -384,13 +386,26 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     };
   }, []);
 
-  const registerAPI = useCallback((slug: string, api: any) => {
-    pluginAPIs[slug] = api;
+  const registerPluginApi = useCallback((namespace: string, slug: string, api: any) => {
+    pluginAPIs[getPluginApiRegistryKey(namespace, slug)] = api;
   }, [pluginAPIs]);
 
-  const getAPI = useCallback((slug: string) => {
-    return pluginAPIs[slug];
+  const getPluginApi = useCallback((namespace: string, slug: string) => {
+    return pluginAPIs[getPluginApiRegistryKey(namespace, slug)];
   }, [pluginAPIs]);
+
+  const hasPluginApi = useCallback((namespace: string, slug: string) => {
+    return getPluginApi(namespace, slug) !== undefined;
+  }, [getPluginApi]);
+
+  const registerAPI = useCallback((slug: string, api: any) => {
+    pluginAPIs[slug] = api;
+    registerPluginApi('org.fromcode', slug, api);
+  }, [pluginAPIs, registerPluginApi]);
+
+  const getAPI = useCallback((slug: string) => {
+    return getPluginApi('org.fromcode', slug) ?? pluginAPIs[slug];
+  }, [getPluginApi, pluginAPIs]);
 
   const setPluginState = useCallback((pluginSlug: string, key: string, value: any) => {
     setPluginStateInternal(prev => ({
@@ -470,7 +485,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
   const stabilityRef = React.useRef({
     slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
     fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
-    triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
+    triggerRefresh, api, resolveContent, getAPI, getPluginApi, hasPluginApi, setLocale, t, emit, on,
     loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl
   });
 
@@ -478,10 +493,10 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     stabilityRef.current = {
       slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
       fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
-      triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on,
+      triggerRefresh, api, resolveContent, getAPI, getPluginApi, hasPluginApi, setLocale, t, emit, on,
       loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl
     };
-  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady, triggerRefresh, api, resolveContent, getAPI, setLocale, t, emit, on, loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl]);
+  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady, triggerRefresh, api, resolveContent, getAPI, getPluginApi, hasPluginApi, setLocale, t, emit, on, loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl]);
 
   // NEW: Stable bridge wrappers to prevent re-injection loops for functions with volatile dependencies
   const stableT = useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
@@ -720,6 +735,9 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       registerSettings,
       registerAPI,
       getAPI,
+      registerPluginApi,
+      getPluginApi,
+      hasPluginApi,
       setPluginState,
       stableLoadConfig,
       stableGetFrontendMetadata,
@@ -761,7 +779,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       runtimeModules,
       stabilityRef,
     });
-  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, setPluginState, stableLoadConfig, stableGetFrontendMetadata, emit, on, stableT, setLocale, stableApiBridge, isReady, runtimeModules, apiUrl]);
+  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, stableLoadConfig, stableGetFrontendMetadata, emit, on, stableT, setLocale, stableApiBridge, isReady, runtimeModules, apiUrl]);
 
   const value = React.useMemo(() => ({
     slots,
@@ -786,6 +804,9 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     on,
     registerAPI,
     getAPI,
+    registerPluginApi,
+    getPluginApi,
+    hasPluginApi,
     setPluginState,
     registerSlotComponent,
     registerFieldComponent,
@@ -799,7 +820,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     getFrontendMetadata,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
 
   return (
     <PluginContextRegistry.Context.Provider value={value}>
@@ -815,4 +836,3 @@ export class PluginsProvider extends React.Component<PluginsProviderProps> {
     return <PluginsProviderInternal {...this.props} />;
   }
 }
-

@@ -5,4 +5,5 @@ export { BaseRouter, BaseController } from '@fromcode119/core';
 export { ProjectPaths } from '@fromcode119/core';
 export { IntegrationManager } from '@fromcode119/core';
 export { RequestContextUtils } from '@fromcode119/core';
+export { PluginRegistry } from '@fromcode119/plugins';
 export type { RequestStore } from '@fromcode119/core';

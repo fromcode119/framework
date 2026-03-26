@@ -1,0 +1,30 @@
+export interface AssistantSettingsDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  presentation?: 'docked' | 'overlay';
+  onRequestClose?: () => void;
+  provider: string;
+  onProviderChange: (provider: string) => void;
+  providerOptions: Array<{ value: string; label: string }>;
+  model: string;
+  onModelChange: (model: string) => void;
+  modelOptions: Array<{ value: string; label: string }>;
+  loadingModels: boolean;
+  modelsError: string;
+  skillId: string;
+  onSkillIdChange: (skillId: string) => void;
+  skillOptions: Array<{ value: string; label: string }>;
+  apiKey: string;
+  onApiKeyChange: (key: string) => void;
+  hasSavedSecret: boolean;
+  baseUrl: string;
+  onBaseUrlChange: (url: string) => void;
+  onSave: () => Promise<void>;
+  isSaving: boolean;
+  autoApprove: boolean;
+  onAutoApproveChange: (value: boolean) => void;
+  showTechnicalDetails: boolean;
+  onShowTechnicalDetailsChange: (value: boolean) => void;
+  verboseLogging: boolean;
+  onVerboseLoggingChange: (value: boolean) => void;
+}

@@ -10,9 +10,9 @@ import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminApi } from '@/lib/api';
 import { NotificationHooks } from '@/components/use-notification';
-import { ContextHooks } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
+import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
   <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
@@ -34,7 +34,7 @@ const SettingRow = ({ icon: Icon, title, description, children, theme }: any) =>
 export default function GeneralSettingsPage() {
   const { theme, toggleTheme } = ThemeHooks.useTheme();
   const { addNotification } = NotificationHooks.useNotification();
-  const { registerSettings } = ContextHooks.usePlugins();
+  const { registerSettings } = SettingsRegistrationService.useRegistration('general-settings-page', 'GeneralSettingsPage');
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingTelemetryTest, setIsSendingTelemetryTest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

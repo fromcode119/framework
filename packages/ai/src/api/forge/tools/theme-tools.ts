@@ -2,23 +2,18 @@ import { TypeUtils, ThemeManager } from '@fromcode119/core';
 import type { McpToolDefinition } from '@fromcode119/mcp';
 import { AssistantToolingHelpers } from './helpers';
 
-const DEFAULT_MAX_SCANNED_FILES = 2000;
-const DEFAULT_SEARCH_MATCH_LIMIT = 80;
+const DEFAULT_MAX_SCANNED_FILES = 2000, DEFAULT_SEARCH_MATCH_LIMIT = 80;
 
 export class ThemeTools {
   static buildThemeManagementTools(input: { themeManager: ThemeManager; helpers: AssistantToolingHelpers }): McpToolDefinition[] {
     const { themeManager, helpers } = input;
-
-  const themeSummary = () =>
-    themeManager.getThemes().map((theme: any) => ({
+    const themeSummary = () => themeManager.getThemes().map((theme: any) => ({
       slug: String(theme?.slug || '').trim(),
       name: String(theme?.name || theme?.slug || '').trim(),
       version: String(theme?.version || '').trim(),
       state: String(theme?.state || 'inactive').trim(),
     }));
-
-  return [
-    {
+    return [{
       tool: 'themes.list',
       readOnly: true,
       description: 'List installed themes and active state.',
@@ -299,7 +294,6 @@ export class ThemeTools {
           themes: themeSummary(),
         };
       },
-    },
-  ];
+    }];
   }
 }

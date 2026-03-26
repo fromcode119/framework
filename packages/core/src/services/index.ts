@@ -14,6 +14,7 @@ export { LocalizationService } from './localization-service';
 export { ContentService } from './content-service';
 export { MenuService } from './menu-service';
 export { CollectionService } from './collection-service';
+export { CollectionIdentityService } from './collection-identity-service';
 
 // Main singleton
 export { CoreServices } from './core-services';

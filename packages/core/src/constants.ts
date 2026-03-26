@@ -1,3 +1,16 @@
+import { AppPathConstants } from './app-path-constants';
+import { RouteConstants } from './route-constants';
+
+const ROUTE_SEGMENTS = RouteConstants.SEGMENTS;
+const AUTH_BASE = ROUTE_SEGMENTS.AUTH;
+const SYSTEM_BASE = ROUTE_SEGMENTS.SYSTEM;
+const PLUGINS_BASE = ROUTE_SEGMENTS.PLUGINS;
+const THEMES_BASE = ROUTE_SEGMENTS.THEMES;
+const MEDIA_BASE = ROUTE_SEGMENTS.MEDIA;
+const VERSIONS_BASE = ROUTE_SEGMENTS.VERSIONS;
+const COLLECTIONS_BASE = '/collections';
+const joinPath = (base: string, segment: string): string => `${base}${segment}`;
+
 /**
  * System-reserved database tables.
  * Plugins should use these names instead of hardcoded strings.
@@ -81,66 +94,94 @@ export class SystemConstants {
 
   static readonly API_PATH = {
   AUTH: {
-    STATUS: '/auth/status',
-    SETUP: '/auth/setup',
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    REGISTER: '/auth/register',
-    VERIFY_EMAIL: '/auth/verify-email',
-    RESEND_VERIFICATION: '/auth/resend-verification',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-    VERIFY_PASSWORD: '/auth/verify-password',
-    CHANGE_PASSWORD: '/auth/change-password',
-    SECURITY: '/auth/security',
-    EMAIL_CHANGE_REQUEST: '/auth/email-change/request',
-    EMAIL_CHANGE_CONFIRM: '/auth/email-change/confirm',
-    SSO_PROVIDERS: '/auth/sso/providers',
-    SSO_LOGIN: '/auth/sso/login',
-    SESSIONS: '/auth/sessions',
-    MY_SESSIONS: '/auth/sessions/me',
-    REVOKE_SESSION: '/auth/sessions/:id/revoke',
-    REVOKE_OTHER_SESSIONS: '/auth/sessions/revoke-others',
-    KILL_SESSION: '/auth/sessions/:id/kill',
-    API_TOKENS: '/auth/api-tokens',
-    API_TOKEN: '/auth/api-tokens/:id'
+    BASE: AUTH_BASE,
+    STATUS: joinPath(AUTH_BASE, ROUTE_SEGMENTS.STATUS),
+    SETUP: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SETUP),
+    LOGIN: joinPath(AUTH_BASE, ROUTE_SEGMENTS.LOGIN),
+    LOGOUT: joinPath(AUTH_BASE, ROUTE_SEGMENTS.LOGOUT),
+    REGISTER: joinPath(AUTH_BASE, ROUTE_SEGMENTS.REGISTER),
+    VERIFY_EMAIL: joinPath(AUTH_BASE, ROUTE_SEGMENTS.VERIFY_EMAIL),
+    RESEND_VERIFICATION: joinPath(AUTH_BASE, ROUTE_SEGMENTS.RESEND_VERIFICATION),
+    FORGOT_PASSWORD: joinPath(AUTH_BASE, ROUTE_SEGMENTS.FORGOT_PASSWORD),
+    RESET_PASSWORD: joinPath(AUTH_BASE, ROUTE_SEGMENTS.RESET_PASSWORD),
+    VERIFY_PASSWORD: joinPath(AUTH_BASE, ROUTE_SEGMENTS.VERIFY_PASSWORD),
+    PROFILE: joinPath(AUTH_BASE, ROUTE_SEGMENTS.PROFILE),
+    CHANGE_PASSWORD: joinPath(AUTH_BASE, ROUTE_SEGMENTS.CHANGE_PASSWORD),
+    SECURITY: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SECURITY),
+    EMAIL_CHANGE_REQUEST: joinPath(AUTH_BASE, ROUTE_SEGMENTS.EMAIL_CHANGE_REQUEST),
+    EMAIL_CHANGE_CONFIRM: joinPath(AUTH_BASE, ROUTE_SEGMENTS.EMAIL_CHANGE_CONFIRM),
+    TWO_FACTOR_STATUS: joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_STATUS),
+    TWO_FACTOR_SETUP: joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_SETUP),
+    TWO_FACTOR_VERIFY: joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_VERIFY),
+    TWO_FACTOR_RECOVERY_REGENERATE: joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_RECOVERY),
+    TWO_FACTOR_DISABLE: joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_DISABLE),
+    SSO_PROVIDERS: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SSO_PROVIDERS),
+    SSO_LOGIN: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SSO_LOGIN),
+    SESSIONS: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SESSIONS),
+    MY_SESSIONS: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SESSIONS_ME),
+    REVOKE_SESSION: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SESSIONS_ID_REVOKE),
+    REVOKE_OTHER_SESSIONS: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SESSIONS_REVOKE_OTHERS),
+    KILL_SESSION: joinPath(AUTH_BASE, ROUTE_SEGMENTS.SESSIONS_ID_KILL),
+    API_TOKENS: joinPath(AUTH_BASE, ROUTE_SEGMENTS.API_TOKENS),
+    API_TOKEN: joinPath(AUTH_BASE, ROUTE_SEGMENTS.API_TOKENS_ID),
+    ACCOUNT_SELF_SERVICE: [
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.SECURITY),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.PROFILE),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.CHANGE_PASSWORD),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.EMAIL_CHANGE_REQUEST),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.SESSIONS_ME),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.SESSIONS_REVOKE_OTHERS),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_STATUS),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_SETUP),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_VERIFY),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_RECOVERY),
+      joinPath(AUTH_BASE, ROUTE_SEGMENTS.TWO_FACTOR_DISABLE),
+    ] as const
   },
   SYSTEM: {
-    HEALTH: '/health',
-    STATUS: '/status',
-    FRONTEND: '/system/frontend',
-    RESOLVE: '/system/resolve',
-    I18N: '/system/i18n',
-    EVENTS: '/system/events',
-    SHORTCODES: '/system/shortcodes',
-    SHORTCODES_RENDER: '/system/shortcodes/render',
-    ADMIN_PLUGINS: '/system/admin/metadata',
-    ADMIN_STATS: '/system/admin/stats/collections',
+    BASE: SYSTEM_BASE,
+    HEALTH: ROUTE_SEGMENTS.HEALTH,
+    STATUS: ROUTE_SEGMENTS.STATUS,
+    FRONTEND: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.FRONTEND),
+    ADMIN_USERS: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_USERS),
+    ADMIN_USER: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_USERS_ID),
+    RESOLVE: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.RESOLVE),
+    I18N: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.I18N),
+    EVENTS: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.EVENTS),
+    SHORTCODES: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.SHORTCODES),
+    SHORTCODES_RENDER: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.SHORTCODES_RENDER),
+    ADMIN_PLUGINS: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_METADATA),
+    ADMIN_STATS: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_STATS_COLLECTIONS),
     OPENAPI: '/openapi.json'
   },
   COLLECTIONS: {
-    SETTINGS: '/collections/settings',
-    BASE: '/collections',
-    ITEM: '/collections/:slug',
-    DETAIL: '/collections/:slug/:id'
+    SETTINGS: `${COLLECTIONS_BASE}/settings`,
+    BASE: COLLECTIONS_BASE,
+    ITEM: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG,
+    DETAIL: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_ID
   },
   PLUGINS: {
-    BASE: '/plugins',
-    ACTIVE: '/plugins/active',
-    UI: '/plugins/:slug/ui/*',
-    TOGGLE: '/plugins/:slug/toggle',
-    CONFIG: '/plugins/:slug/config',
-    DELETE: '/plugins/:slug',
-    MARKETPLACE: '/marketplace/plugins',
-    INSTALL: '/marketplace/install'
+    BASE: PLUGINS_BASE,
+    ACTIVE: joinPath(PLUGINS_BASE, ROUTE_SEGMENTS.ACTIVE),
+    UI: joinPath(PLUGINS_BASE, ROUTE_SEGMENTS.PLUGINS_SLUG_UI_WILDCARD),
+    TOGGLE: joinPath(PLUGINS_BASE, ROUTE_SEGMENTS.PLUGINS_SLUG_TOGGLE),
+    CONFIG: joinPath(PLUGINS_BASE, ROUTE_SEGMENTS.PLUGINS_SLUG_CONFIG),
+    DELETE: joinPath(PLUGINS_BASE, ROUTE_SEGMENTS.PLUGINS_SLUG),
+    MARKETPLACE: joinPath(ROUTE_SEGMENTS.MARKETPLACE, PLUGINS_BASE),
+    INSTALL: joinPath(ROUTE_SEGMENTS.MARKETPLACE, ROUTE_SEGMENTS.PLUGINS_INSTALL)
   },
   THEMES: {
-    BASE: '/themes',
-    MARKETPLACE: '/themes/marketplace'
+    BASE: THEMES_BASE,
+    MARKETPLACE: joinPath(THEMES_BASE, ROUTE_SEGMENTS.PLUGINS_MARKETPLACE)
   },
   MEDIA: {
-    BASE: '/media',
-    UPLOAD: '/media/upload'
+    BASE: MEDIA_BASE,
+    UPLOAD: joinPath(MEDIA_BASE, ROUTE_SEGMENTS.MEDIA_UPLOAD)
+  },
+  VERSIONS: {
+    BASE: VERSIONS_BASE,
+    ITEM: joinPath(VERSIONS_BASE, ROUTE_SEGMENTS.COLLECTIONS_SLUG_ID),
+    RESTORE: joinPath(VERSIONS_BASE, ROUTE_SEGMENTS.COLLECTIONS_SLUG_ID_VERSION_RESTORE)
   }
   } as const;
 
@@ -148,15 +189,8 @@ export class SystemConstants {
    * Frontend app routes (non-API page paths).
    */
   static readonly APP_PATH = {
-  AUTH: {
-    LOGIN: '/login',
-    SETUP: '/setup',
-    REGISTER: '/register',
-    FORGOT_PASSWORD: '/forgot-password',
-    RESET_PASSWORD: '/reset-password',
-    VERIFY_EMAIL: '/verify-email',
-    VERIFY_EMAIL_CHANGE: '/verify-email-change'
-  }
+  AUTH: AppPathConstants.AUTH,
+  ADMIN: AppPathConstants.ADMIN
   } as const;
 
   /**
@@ -173,19 +207,7 @@ export class SystemConstants {
    * Route prefix strings used for internal permission checks.
    */
   static readonly PUBLIC_ROUTE_PREFIXES = {
-  PLUGIN_ASSETS: '/plugins/'
+  PLUGIN_ASSETS: `${ROUTE_SEGMENTS.PLUGINS}/`
   } as const;
 
-  /**
-   * Platform-level database table name prefix.
-   * The framework adds this prefix when creating SQLite tables from collection slugs.
-   * Use this constant instead of hardcoding 'fcp_' in migrations or seed files.
-   *
-   * @example
-   * const rawTable = `${SystemConstants.TABLE_PREFIX.PLATFORM}ecommerce_products`;
-   */
-  static readonly TABLE_PREFIX = {
-    PLATFORM: 'fcp_',
-  } as const;
 }
-

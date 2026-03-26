@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { SystemConstants } from '@fromcode119/sdk';
+import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from './api-routes';
 import type { SystemStatus } from './use-system-status.types';
 import { SystemStatusUtils } from './system-status-utils';

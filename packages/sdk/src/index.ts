@@ -42,6 +42,23 @@ export { CoercionUtils } from '@fromcode119/core/client';
 export { StringUtils } from '@fromcode119/core/client';
 export { NumberUtils } from '@fromcode119/core/client';
 export { FormatUtils } from '@fromcode119/core/client';
+export { ApiRequestError } from '@fromcode119/core/client';
+export { ApiRequestService } from '@fromcode119/core/client';
+export { ApiQueryUtils } from '@fromcode119/core/client';
+export { ApiPathUtils } from '@fromcode119/core/client';
+export { AdminUserClient } from '@fromcode119/core/client';
+export { ApiScopeClient } from '@fromcode119/core/client';
+export { CollectionScopeClient } from '@fromcode119/core/client';
+export { SettingsScopeClient } from '@fromcode119/core/client';
+export { SdkClient } from '@fromcode119/core/client';
+export { AdminGlobalClient } from '@fromcode119/core/client';
+export { AdminResourceClient } from '@fromcode119/core/client';
+export { AdminSdkClient } from '@fromcode119/core/client';
+export { BrowserStateClient } from '@fromcode119/core/client';
+export { BrowserStateRuntimeBuilder } from '@fromcode119/core/client';
+export { SystemAuthClient } from '@fromcode119/core/client';
+export { SystemAuthSession } from '@fromcode119/core/client';
+export type { BrowserCookieOptions } from '@fromcode119/core/client';
 export { RouteUtils } from '@fromcode119/core/client';
 export { UrlUtils } from '@fromcode119/core/client';
 export { ApiVersionUtils } from '@fromcode119/core/client';
@@ -62,13 +79,22 @@ export type {
   ShortcodeCatalogResponse,
 } from '@fromcode119/core/client';
 export { PluginDefinitionUtils } from '@fromcode119/core/client';
+export { Plugins } from '@fromcode119/core/client';
+export { PluginsFacade } from '@fromcode119/core/client';
+export { NamespacedPluginsFacade } from '@fromcode119/core/client';
+export { PluginsRegistry } from '@fromcode119/core/client';
 export { RuntimeBridge } from '@fromcode119/core/client';
+export { CoreServices } from '@fromcode119/core/client';
 export type { FrontendRuntimeMetadata } from '@fromcode119/core/client';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 export { SystemConstants } from '@fromcode119/core/client';
+export { ClientRuntimeConstants } from '@fromcode119/core/client';
+export { CookieConstants } from '@fromcode119/core/client';
 export { RuntimeConstants } from '@fromcode119/core/client';
 export { RouteConstants } from '@fromcode119/core/client';
+export { PublicRouteConstants } from '@fromcode119/core/client';
+export { DataSourceConstants } from '@fromcode119/core/client';
 
 // ── Logging ───────────────────────────────────────────────────────────────────
 export { Logger } from '@fromcode119/core/client';
@@ -87,6 +113,7 @@ export type { CapabilityMetadata } from '@fromcode119/core/client';
 // Use @fromcode119/sdk/server to access IntegrationManager in plugin server code.
 export { IntegrationRegistry } from '@fromcode119/core/client';
 export type { IntegrationTypeDefinition } from '@fromcode119/core/client';
+export type { PluginApiResolver } from '@fromcode119/core/client';
 // RequestContextUtils / RequestStore intentionally omitted — server-only (AsyncLocalStorage),
 // must not be bundled into client-side builds. Use @fromcode119/sdk/server.
 export { RecordVersions } from '@fromcode119/core/client';
@@ -103,7 +130,12 @@ export type { Collection, CollectionQueryInterface } from '@fromcode119/core/cli
 
 // Manifest definitions
 export type { MiddlewareConfig, PluginManifest, ThemeManifest, MenuItemManifest } from '@fromcode119/core/client';
+export type {
+  DatasourceDescriptor,
+  DatasourceOptionItem,
+  DatasourceOptionsPayload,
+  FilterDefinition,
+} from '@fromcode119/core/client';
 
 // Plugin runtime interfaces
 export type { PluginContext, FromcodePlugin, LoadedPlugin } from '@fromcode119/core/client';
-

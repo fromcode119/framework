@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
-import { RouteConstants } from '@fromcode119/sdk';
+import { RouteConstants } from '@fromcode119/core/client';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 
 const ADMIN_BASE_PATH = RouteConstants.SEGMENTS.ADMIN_BASE;

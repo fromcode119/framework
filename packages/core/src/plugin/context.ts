@@ -17,6 +17,8 @@ import { UiContextProxy } from './context/ui';
 import { UsersContextProxy } from './context/users';
 import { MetaContextProxy } from './context/meta';
 import { RolesContextProxy } from './context/roles';
+import { PluginsFacade } from '../plugins-facade';
+import { PluginsRegistry } from '../plugins-registry';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -26,6 +28,15 @@ export class PluginContextFactory {
 ): PluginContext {
       const pluginLogger = rootLogger.child(plugin.manifest.slug);
       const security = ContextSecurityProxy.createSecurityHelpers(plugin, manager, rootLogger);
+      const pluginsRegistry = new PluginsRegistry();
+
+      for (const loadedPlugin of manager.plugins.values()) {
+        const namespace = String(loadedPlugin.manifest.namespace || '').trim();
+        if (!namespace || loadedPlugin.state !== 'active' || !loadedPlugin.publicAPI) continue;
+        pluginsRegistry.register(namespace, loadedPlugin.manifest.slug, loadedPlugin.publicAPI);
+      }
+
+      const pluginsFacade = new PluginsFacade(pluginsRegistry);
 
       const context: PluginContext = {
         db: DatabaseContextProxy.createDatabaseProxy(plugin, manager, security) as any,
@@ -101,11 +112,24 @@ export class PluginContextFactory {
         },
         plugin: {
           slug: plugin.manifest.slug,
+          namespace: String(plugin.manifest.namespace || '').trim(),
           version: plugin.manifest.version,
           dataDir: `./data/plugins/${plugin.manifest.slug}`,
           config: plugin.manifest.config || {},
         },
         plugins: {
+          namespace: (namespace: string) => {
+            if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
+            return pluginsFacade.namespace(namespace);
+          },
+          has: (namespace: string, slug: string) => {
+            if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
+            return pluginsFacade.has(namespace, slug);
+          },
+          get: (namespace: string, slug: string) => {
+            if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
+            return pluginsFacade.get(namespace, slug);
+          },
           isEnabled: (slug: string) => {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
             return manager.plugins.get(slug)?.state === 'active';

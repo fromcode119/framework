@@ -9,6 +9,7 @@ import { PluginNotFound } from '@/components/plugins/plugin-not-found';
 import { Loader } from '@/components/ui/loader';
 import { ThemeHooks } from '@/components/use-theme';
 import { useRouter } from 'next/navigation';
+import { AdminConstants } from '@/lib/constants';
 
 export default function CollectionListRoute({ params }: { params: Promise<{ pluginSlug: string; slug: string }> }) {
   const { pluginSlug, slug } = use(params);
@@ -26,7 +27,7 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
 
   useEffect(() => {
     if (!shouldRedirectToPluginSettings) return;
-    router.replace(`/plugins/${pluginSlug}?tab=settings`);
+    router.replace(AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(pluginSlug));
   }, [pluginSlug, router, shouldRedirectToPluginSettings]);
 
   if (!isReady) {

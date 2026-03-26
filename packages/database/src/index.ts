@@ -13,6 +13,8 @@ export * from './types';
 
 // Utilities
 export * from './table-resolver';
+export { PhysicalTableNameUtils } from './physical-table-name-utils';
+export type { PhysicalTableReference } from './physical-table-name-utils.interfaces';
 export { BaseMigration } from './base-migration';
 export * from './naming-strategy';
 export { DatabaseFactory } from './database-factory';
