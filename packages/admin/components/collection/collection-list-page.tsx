@@ -317,7 +317,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
     }
 
     if (!next.length) next = allColumns.slice(0, 4).map((column) => column.id);
-    setVisibleColumnIds(next);
+    setVisibleColumnIds((prev) => CollectionListUtils.areStringArraysEqual(prev, next) ? prev : next);
   }, [allColumns, collection?.admin?.defaultColumns, pluginSlug, resolvedSlug]);
 
   useEffect(() => {
@@ -334,14 +334,14 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
 
   useEffect(() => {
     if (!selectFilterFields.length) {
-      setFieldFilters({});
+      setFieldFilters((prev) => CollectionListUtils.areStringRecordMapsEqual(prev, {}) ? prev : {});
       return;
     }
     const next: Record<string, string> = {};
     selectFilterFields.forEach((field: any) => {
       next[field.name] = 'all';
     });
-    setFieldFilters(next);
+    setFieldFilters((prev) => CollectionListUtils.areStringRecordMapsEqual(prev, next) ? prev : next);
   }, [resolvedSlug, selectFilterFields]);
 
   const columns = useMemo(() => {

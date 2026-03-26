@@ -1,4 +1,4 @@
-import { PhysicalTableNameUtils } from '@fromcode119/database';
+import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { BaseService } from './base-service';
 
 export class CollectionIdentityService extends BaseService {
@@ -14,7 +14,8 @@ export class CollectionIdentityService extends BaseService {
   }
 
   isPhysicalIdentifier(value: string): boolean {
-    return PhysicalTableNameUtils.hasPlatformPrefix(String(value || '').trim());
+    const normalizedValue = String(value || '').trim().toLowerCase();
+    return PhysicalTableNameUtils.hasPlatformPrefix(normalizedValue);
   }
 
   isInternalCollectionIdentifier(value: string): boolean {

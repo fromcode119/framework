@@ -64,6 +64,10 @@ export function AssistantSettingsDrawer({
     if (onRequestClose) onRequestClose();
     else onClose();
   }, [onClose, onRequestClose]);
+  const handleSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSave();
+  }, [handleSave]);
 
   return (
     <>
@@ -86,6 +90,7 @@ export function AssistantSettingsDrawer({
         presentation={presentation}
         onRequestClose={handleRequestClose}
       >
+        <form className="contents" onSubmit={handleSubmit}>
         {/* Header */}
         <div className="flex h-16 items-center justify-between border-b border-[var(--border)] px-6">
           <span id="settings-title" className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--text-sub)] opacity-70">
@@ -157,8 +162,7 @@ export function AssistantSettingsDrawer({
               Cancel
             </button>
             <button
-              type="button"
-              onClick={handleSave}
+              type="submit"
               disabled={isSaving}
               className={`${GlassMorphism.GLASS_BUTTON} group relative overflow-hidden px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60`}
             >
@@ -182,6 +186,7 @@ export function AssistantSettingsDrawer({
             </button>
           </div>
         </div>
+        </form>
       </AssistantSettingsDrawerFrame>
     </>
   );

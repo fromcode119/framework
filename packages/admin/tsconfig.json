@@ -34,6 +34,12 @@
       "@fromcode119/core/*": [
         "../core/src/*"
       ],
+      "@fromcode119/database": [
+        "../database/src"
+      ],
+      "@fromcode119/database/*": [
+        "../database/src/*"
+      ],
       "@fromcode119/react": [
         "../react/src"
       ],
@@ -42,6 +48,9 @@
       ],
       "@fromcode119/ai": [
         "../ai/src"
+      ],
+      "@fromcode119/ai/admin": [
+        "../ai/src/admin-extension.ts"
       ],
       "@fromcode119/ai/*": [
         "../ai/src/*"

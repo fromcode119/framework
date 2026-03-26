@@ -1,12 +1,13 @@
-import { CoreServices } from '@fromcode119/core';
+import { CollectionIdentityService } from '@fromcode119/core/client';
 import type { ActionSurface } from './assistant-core-constants.types';
 
 export class AssistantSurfaceUtils {
+  private static readonly collectionIdentity = new CollectionIdentityService();
 
   static resolveToolSurface(toolName: string, input?: Record<string, any>): ActionSurface {
   const tool = String(toolName || '').trim().toLowerCase();
   const collection = String(input?.collectionSlug || input?.slug || '').toLowerCase();
-  const pluginSlug = CoreServices.getInstance().collectionIdentity.extractPluginSlug(collection);
+  const pluginSlug = AssistantSurfaceUtils.collectionIdentity.extractPluginSlug(collection);
   if (!tool) return 'mixed';
   if (tool.startsWith('themes.')) return 'frontend';
   if (tool.startsWith('content.')) return 'frontend';

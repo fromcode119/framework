@@ -1,21 +1,32 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ContextHooks } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AuthHooks } from '@/components/use-auth';
-import { usePathname } from 'next/navigation';
 import { RuntimeConstants } from '@fromcode119/core/client';
 import { PluginConditionUtils } from './plugin-condition-utils';
 import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 
 export default function PluginLoader() {
   const pluginsContext = ContextHooks.usePlugins();
-  const { registerSlotComponent, registerMenuItem, registerCollection, registerSettings, registerPlugins, refreshVersion, triggerRefresh, isReady } = pluginsContext;
+  const {
+    plugins: registeredPlugins,
+    menuItems: registeredMenuItems,
+    settings: registeredSettings,
+    registerSlotComponent,
+    registerMenuItem,
+    registerCollection,
+    replaceMenuItems,
+    replaceCollections,
+    registerSettings,
+    registerPlugins,
+    refreshVersion,
+    triggerRefresh,
+    isReady
+  } = pluginsContext;
   const { user, isLoading: isAuthLoading } = AuthHooks.useAuth();
-  const pathname = usePathname();
-  const [loaded, setLoaded] = useState(false);
 
   // Hot Module Replacement Listener
   useEffect(() => {
@@ -105,7 +116,14 @@ export default function PluginLoader() {
       }
 
       try {
-        const responseData = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.STAGED);
+        const shouldReuseContextMetadata = refreshVersion === 0 && Array.isArray(registeredPlugins) && registeredPlugins.length > 0;
+        const responseData = shouldReuseContextMetadata
+          ? {
+              plugins: registeredPlugins,
+              menu: registeredMenuItems,
+              settings: registeredSettings,
+            }
+          : await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.STAGED);
         const plugins: AdminPluginMetadata[] = responseData.plugins || [];
         const remoteMenu: any[] = responseData.menu || [];
         const settings: Record<string, any> = responseData.settings || {};
@@ -156,14 +174,28 @@ export default function PluginLoader() {
 
         if (Array.isArray(plugins)) {
           registerPlugins(plugins);
+          const nextCollections = plugins.flatMap((plugin) =>
+            Array.isArray(plugin?.admin?.collections)
+              ? plugin.admin.collections.map((collection: any) => ({
+                  ...collection,
+                  pluginSlug: collection?.pluginSlug || plugin.slug,
+                }))
+              : []
+          );
+
+          if (typeof replaceCollections === 'function') {
+            replaceCollections(nextCollections);
+          } else {
+            for (const collection of nextCollections) {
+              registerCollection(collection);
+            }
+          }
+
           for (const plugin of plugins) {
             // Load UI entry points if defined (Phase 4)
             const entryUrl = plugin.ui?.entryUrl;
             if (entryUrl) {
-              const devCacheToken = `${Date.now()}-${Math.max(1, refreshVersion)}`;
-              const cacheBreaker = process.env.NODE_ENV === 'development'
-                ? `?v=${devCacheToken}`
-                : (refreshVersion > 0 ? `?v=${refreshVersion}` : '');
+              const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
               const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
               
               // 1. Module Preload (only if it doesn't exist)
@@ -214,10 +246,7 @@ export default function PluginLoader() {
             // Load CSS if defined
             if (plugin.ui?.cssUrls) {
               plugin.ui.cssUrls.forEach((cssUrl, index) => {
-                const devCacheToken = `${Date.now()}-${Math.max(1, refreshVersion)}`;
-                const cacheBreaker = process.env.NODE_ENV === 'development'
-                  ? `?v=${devCacheToken}`
-                  : (refreshVersion > 0 ? `?v=${refreshVersion}` : '');
+                const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
                 const href = `${AdminConstants.API_BASE_URL}${cssUrl}${cacheBreaker}`;
                 console.debug(`[Admin] Loading plugin CSS from: ${href}`);
                 
@@ -235,31 +264,24 @@ export default function PluginLoader() {
                 }
               });
             }
-
-            if (!plugin.admin) continue;
-            
-            // Register Collections (Metadata only, Sidebar uses Menu)
-            if (plugin.admin.collections) {
-              for (const collection of plugin.admin.collections) {
-                registerCollection(collection);
-              }
-            }
           }
         }
 
-        // Register Global Menu Items
-        for (const menuItem of sanitizedMenu) {
-          registerMenuItem(menuItem);
+        if (typeof replaceMenuItems === 'function') {
+          replaceMenuItems(sanitizedMenu);
+        } else {
+          for (const menuItem of sanitizedMenu) {
+            registerMenuItem(menuItem);
+          }
         }
 
-        setLoaded(true);
       } catch (err) {
         console.error("Failed to load plugin metadata:", err);
       }
     }
 
     loadPlugins();
-  }, [user, isAuthLoading, isReady, registerSlotComponent, registerMenuItem, registerCollection, registerPlugins, registerSettings, refreshVersion, triggerRefresh, pathname]);
+  }, [user, isAuthLoading, isReady, registerSlotComponent, registerMenuItem, registerCollection, replaceMenuItems, replaceCollections, registerPlugins, registerSettings, refreshVersion, triggerRefresh]);
 
   return null;
 }

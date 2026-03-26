@@ -32,6 +32,12 @@
       "@fromcode119/core/*": [
         "../core/src/*"
       ],
+      "@fromcode119/database": [
+        "../database/src"
+      ],
+      "@fromcode119/database/*": [
+        "../database/src/*"
+      ],
       "@fromcode119/react": [
         "../react/src"
       ],

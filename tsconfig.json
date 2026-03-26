@@ -16,6 +16,7 @@
       "@fromcode119/core/*": ["packages/core/src/*"],
       "@fromcode119/ai": ["packages/ai/src"],
       "@fromcode119/database": ["packages/database/src"],
+      "@fromcode119/database/*": ["packages/database/src/*"],
       "@fromcode119/sdk": ["packages/sdk/src"],
       "@fromcode119/sdk/*": ["packages/sdk/src/*"],
       "@fromcode119/auth": ["packages/auth/src"],
