@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Slot, PluginsProvider, ContextHooks } from '@fromcode119/react';
 import { ThemeProvider } from '@/components/theme-context';
@@ -155,6 +155,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const [, setTimezoneRenderVersion] = useState(0);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarInitialized, setIsSidebarInitialized] = useState(false);
+  const metadataLoadKeyRef = useRef<string | null>(null);
+  const initializationCheckKeyRef = useRef('');
 
   // Persist mobile sidebar open state
   useEffect(() => {
@@ -190,7 +192,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   
   // Load dynamic framework configuration (import maps, etc)
   useEffect(() => {
-    if (!isAuthPage && user) {
+    if (!isAuthPage && user?.id) {
+      if (metadataLoadKeyRef.current === user.id) {
+        return;
+      }
+      metadataLoadKeyRef.current = user.id;
       loadConfig(AdminConstants.ENDPOINTS.SYSTEM.METADATA);
     }
   }, [loadConfig, user, isAuthPage]);
@@ -227,6 +233,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
 
   useEffect(() => {
+    const checkKey = `${isSetupPath ? 'setup' : 'default'}:${normalizedPathname || '/'}`;
+    if (initializationCheckKeyRef.current === checkKey) {
+      return;
+    }
+    initializationCheckKeyRef.current = checkKey;
+
     const checkInitialization = async () => {
       try {
         const data = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS);
@@ -248,7 +260,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       }
     };
     checkInitialization();
-  }, [isSetupPath]); 
+  }, [isSetupPath, normalizedPathname]); 
 
   // Guard: Redirect to login if user is missing and we aren't loading or on auth page
   useEffect(() => {
