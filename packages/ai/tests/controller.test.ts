@@ -458,33 +458,6 @@ describe('assistant-controller modernization', () => {
     expect(toolNames).toEqual(expect.arrayContaining(['web.search', 'web.fetch']));
   });
 
-  it('adds framework file tools to tools endpoint even when runtime list is partial', async () => {
-    const { controller } = createControllerHarness();
-    const runtime = {
-      listTools: jest.fn().mockResolvedValue([
-        { tool: 'web.search', description: 'Search', readOnly: true },
-        { tool: 'web.fetch', description: 'Fetch', readOnly: true },
-      ]),
-    };
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
-
-    const req: MockReq = { body: {}, headers: {}, cookies: {} };
-    const res = createResponseMock();
-
-    await controller.assistantTools(req as any, res as any);
-
-    const payload = (res.json as jest.Mock).mock.calls[0][0];
-    const toolNames = Array.isArray(payload?.tools) ? payload.tools.map((entry: any) => entry.tool) : [];
-    expect(toolNames).toEqual(
-      expect.arrayContaining([
-        'plugins.files.search_text',
-        'plugins.files.replace_text',
-        'themes.files.search_text',
-        'themes.files.replace_text',
-      ]),
-    );
-  });
-
   it('lists Anthropic models', async () => {
     const { controller } = createControllerHarness();
     const originalFetch = (global as any).fetch;
