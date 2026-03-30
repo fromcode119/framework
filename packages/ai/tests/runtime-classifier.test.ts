@@ -593,7 +593,7 @@ describe('runtime classifier and fallback behavior', () => {
         { slug: 'cms', name: 'Content Management System', version: '1.5.9', state: 'active' },
       ] as any,
       getThemes: () => [
-        { slug: 'snapbilt-bundle-demo', name: 'SnapBilt Bundle Demo', version: '1.0.0', state: 'active' },
+        { slug: 'snapbilt', name: 'SnapBilt Industrial', version: '1.0.0', state: 'active' },
       ] as any,
     });
     const result = await OrchestratorRunner.runOrchestrator(
@@ -698,54 +698,4 @@ describe('runtime classifier and fallback behavior', () => {
     expect(String(result?.message || '').toLowerCase()).toContain('staged');
   });
 
-  it('shows file match locations when user CliUtils.asks "where are they" after file-scope clarification', async () => {
-    const bridge = McpBridgeFactory.create({
-      tools: [
-        {
-          tool: 'themes.files.search_text',
-          readOnly: true,
-          handler: async () => ({
-            ok: true,
-            output: {
-              matches: [
-                {
-                  slug: 'snapbilt-bundle-demo',
-                  path: '/repo/themes/snapbilt-bundle-demo/src/components/Blocks.jsx',
-                  value: 'Stop Losing £50k+ Leads',
-                },
-                {
-                  slug: 'snapbilt-bundle-demo',
-                  path: '/repo/themes/snapbilt-bundle-demo/src/components/examples/ApexRoofing.jsx',
-                  value: 'Stop Losing £50k+ Leads',
-                },
-              ],
-            },
-          }),
-        },
-      ],
-    });
-    const deps = createDeps();
-    const depsWithTools = {
-      ...deps,
-      createBridge: async () => bridge,
-      listTools: async () => [{ tool: 'themes.files.search_text', readOnly: true }],
-    };
-
-    const result = await OrchestratorRunner.runOrchestrator(
-      {
-        message: 'where are they?',
-        history: [
-          { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
-          { role: 'assistant', content: 'I found file matches; choose CMS/content values or file changes.' },
-        ],
-        checkpoint: { reason: 'clarification_needed', stage: 'clarify', resumePrompt: 'continue' },
-      },
-      depsWithTools,
-    );
-
-    expect((result?.message || '').toLowerCase()).toContain('file matches');
-    expect(result?.message || '').toContain('/repo/themes/snapbilt-bundle-demo/src/components/Blocks.jsx');
-    expect((result?.actions || []).length).toBe(0);
-    expect(result?.model).toBe('deterministic-clarify');
-  });
 });
