@@ -24,8 +24,8 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
       user: {
         id: userId,
         email: this.normalizeEmail(user.email),
-        firstName: String(user.firstName || '').trim(),
-        lastName: String(user.lastName || '').trim(),
+        firstName: this.readUserFirstName(user),
+        lastName: this.readUserLastName(user),
         phone: profile.phone,
         roles: this.readRoles(user),
       },

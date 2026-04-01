@@ -222,7 +222,7 @@ export class AuthControllerAccount extends AuthControllerLifecycle {
     const sent = await this.sendEmailChangeVerificationEmail({
       to: newEmail,
       confirmUrl,
-      firstName: String(user.firstName || '').trim()
+      firstName: this.readUserFirstName(user)
     });
 
     await this.sendSecurityNotification({

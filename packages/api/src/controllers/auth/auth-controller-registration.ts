@@ -82,7 +82,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     if (verified) return res.json({ success: true, message: 'Email is already verified.' });
     const verification = await this.issueEmailVerificationToken(user.id, email);
     const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);
-    const emailSent = await this.sendVerificationEmail({ to: email, verificationUrl, firstName: String(user.firstName || '').trim() });
+    const emailSent = await this.sendVerificationEmail({ to: email, verificationUrl, firstName: this.readUserFirstName(user) });
     if (!emailSent && process.env.NODE_ENV === 'production') return res.status(500).json({ error: 'Unable to send verification email. Please try again later.' });
     const response: Record<string, any> = { success: true, message: 'Verification email sent.' };
     if (process.env.NODE_ENV !== 'production') { response.verificationUrl = verificationUrl; response.emailDelivery = emailSent ? 'sent' : 'failed'; }
