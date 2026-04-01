@@ -31,6 +31,14 @@ export class AuthControllerInfrastructure {
     return AuthUtils.normalizeEmail(email);
   }
 
+  protected readUserFirstName(user: any): string {
+    return String(user?.firstName || user?.first_name || '').trim();
+  }
+
+  protected readUserLastName(user: any): string {
+    return String(user?.lastName || user?.last_name || '').trim();
+  }
+
   protected isValidEmail(email: string): boolean {
     return AuthUtils.isValidEmail(email);
   }

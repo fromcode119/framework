@@ -9,6 +9,9 @@ export interface IntegrationConfigField {
   required?: boolean;
   placeholder?: string;
   options?: Array<{ label: string; value: string }>;
+  optionsEndpoint?: string;
+  searchable?: boolean;
+  defaultValue?: string | number | boolean;
 }
 export interface IntegrationProviderDefinition<TInstance = any> {
   key: string;

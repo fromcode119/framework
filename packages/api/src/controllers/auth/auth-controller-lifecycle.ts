@@ -325,7 +325,7 @@ export class AuthControllerLifecycle extends AuthControllerRegistration {
       const emailSent = await this.sendPasswordResetEmail({
         to: email,
         resetUrl,
-        firstName: String(user.firstName || '').trim()
+        firstName: this.readUserFirstName(user)
       });
 
       await this.manager.writeLog(

@@ -13,7 +13,14 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
   protected async issueLoginSession(req: Request, res: Response, user: any) {
     const roles = this.readRoles(user);
     const jti = Math.random().toString(36).substring(2) + Date.now().toString(36);
-    const userResponse = { id: String(user.id), email: this.normalizeEmail(user.email), roles, jti };
+    const userResponse = {
+      id: String(user.id),
+      email: this.normalizeEmail(user.email),
+      firstName: this.readUserFirstName(user),
+      lastName: this.readUserLastName(user),
+      roles,
+      jti,
+    };
     const sessionDurationMinutes = await this.getSessionDurationMinutes();
     const maxAgeMs = sessionDurationMinutes * 60 * 1000;
     const token = await this.auth.generateToken(userResponse, { expiresIn: `${sessionDurationMinutes}m` });

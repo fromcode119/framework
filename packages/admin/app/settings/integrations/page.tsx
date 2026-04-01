@@ -16,6 +16,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { AdminConstants } from '@/lib/constants';
 import { AdminApi } from '@/lib/api';
 import { IntegrationsPageUtils } from './IntegrationsPageUtils';
+import { IntegrationsFieldOptionsService } from './integrations-field-options-service';
 
 type IntegrationFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';
 
@@ -27,6 +28,9 @@ interface IntegrationConfigField {
   required?: boolean;
   placeholder?: string;
   options?: Array<{ label: string; value: string }>;
+  optionsEndpoint?: string;
+  searchable?: boolean;
+  defaultValue?: string | number | boolean;
 }
 
 interface IntegrationProvider {
@@ -82,6 +86,11 @@ export default function IntegrationsSettingsPage() {
   const [activeType, setActiveType] = useState('');
   const [selectedProviderId, setSelectedProviderId] = useState('');
   const [editor, setEditor] = useState<ProviderEditorState | null>(null);
+  const [dynamicFieldOptions, setDynamicFieldOptions] = useState<Record<string, Array<{ label: string; value: string }>>>({});
+  const [dynamicFieldErrors, setDynamicFieldErrors] = useState<Record<string, string>>({});
+  const [dynamicFieldLoading, setDynamicFieldLoading] = useState<Record<string, boolean>>({});
+
+  const fieldOptionsService = useMemo(() => new IntegrationsFieldOptionsService(), []);
 
   const integrationOptions = useMemo(
     () =>
@@ -116,6 +125,77 @@ export default function IntegrationsSettingsPage() {
     if (!activeIntegration || !editor?.providerKey) return null;
     return activeIntegration.providers.find((provider) => provider.key === editor.providerKey) || null;
   }, [activeIntegration, editor?.providerKey]);
+
+  useEffect(() => {
+    if (!editor || !currentProviderDefinition) {
+      setDynamicFieldOptions({});
+      setDynamicFieldErrors({});
+      setDynamicFieldLoading({});
+      return;
+    }
+
+    const dynamicFields = (currentProviderDefinition.fields || []).filter(
+      (field) => field.type === 'select' && !!field.optionsEndpoint
+    );
+
+    if (!dynamicFields.length) {
+      setDynamicFieldOptions({});
+      setDynamicFieldErrors({});
+      setDynamicFieldLoading({});
+      return;
+    }
+
+    let isActive = true;
+    const providerId = editor.isNew ? '' : editor.providerId;
+    const initialLoadingState = dynamicFields.reduce<Record<string, boolean>>((acc, field) => {
+      acc[fieldOptionsService.buildFieldStateKey(providerId, editor.providerKey, field.name)] = !!providerId;
+      return acc;
+    }, {});
+
+    setDynamicFieldLoading(initialLoadingState);
+    setDynamicFieldErrors({});
+
+    const loadFieldOptions = async () => {
+      const nextOptions: Record<string, Array<{ label: string; value: string }>> = {};
+      const nextErrors: Record<string, string> = {};
+      const nextLoading: Record<string, boolean> = {};
+
+      for (const field of dynamicFields) {
+        const fieldKey = fieldOptionsService.buildFieldStateKey(providerId, editor.providerKey, field.name);
+        nextLoading[fieldKey] = false;
+
+        if (!providerId) {
+          nextOptions[fieldKey] = fieldOptionsService.ensureValueOption(field.options || [], editor.config?.[field.name]);
+          continue;
+        }
+
+        try {
+          const loadedOptions = await fieldOptionsService.loadOptions(field, {
+            providerId,
+            providerKey: editor.providerKey
+          });
+          nextOptions[fieldKey] = fieldOptionsService.ensureValueOption(loadedOptions, editor.config?.[field.name]);
+        } catch (error: any) {
+          nextOptions[fieldKey] = fieldOptionsService.ensureValueOption(field.options || [], editor.config?.[field.name]);
+          nextErrors[fieldKey] = error?.message || 'Unable to load options.';
+        }
+      }
+
+      if (!isActive) {
+        return;
+      }
+
+      setDynamicFieldOptions(nextOptions);
+      setDynamicFieldErrors(nextErrors);
+      setDynamicFieldLoading(nextLoading);
+    };
+
+    void loadFieldOptions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [currentProviderDefinition, editor, fieldOptionsService]);
 
   const applyIntegrationUpdate = (updated: IntegrationRecord): IntegrationRecord => {
     setIntegrations((previous) => {
@@ -718,10 +798,28 @@ export default function IntegrationsSettingsPage() {
                       }
 
                       if (field.type === 'select') {
-                        const options = (field.options || []).map((option) => ({
-                          label: option.label,
-                          value: option.value
-                        }));
+                        const fieldStateKey = fieldOptionsService.buildFieldStateKey(
+                          editor.isNew ? '' : editor.providerId,
+                          editor.providerKey,
+                          field.name
+                        );
+                        const hasDynamicOptions = !!field.optionsEndpoint;
+                        const options = fieldOptionsService.ensureValueOption(
+                          dynamicFieldOptions[fieldStateKey] || (field.options || []).map((option) => ({
+                            label: option.label,
+                            value: option.value
+                          })),
+                          value
+                        );
+                        const isDynamicFieldLoading = !!dynamicFieldLoading[fieldStateKey];
+                        const dynamicFieldError = dynamicFieldErrors[fieldStateKey];
+                        const helperText = isDynamicFieldLoading
+                          ? 'Loading options...'
+                          : dynamicFieldError
+                            ? dynamicFieldError
+                            : !editor.providerId && hasDynamicOptions
+                              ? 'Save this provider first to load the office list.'
+                              : field.description;
                         return (
                           <div key={field.name}>
                             <Select
@@ -729,11 +827,13 @@ export default function IntegrationsSettingsPage() {
                               onChange={setFieldValue}
                               options={options}
                               label={`${field.label}${field.required ? ' *' : ''}`}
-                              searchable={false}
+                              searchable={field.searchable !== false}
                               size="md"
+                              disabled={isDynamicFieldLoading || (!editor.providerId && hasDynamicOptions)}
+                              placeholder={isDynamicFieldLoading ? 'Loading options...' : undefined}
                             />
-                            {field.description && (
-                              <p className="mt-1 text-[11px] text-slate-500">{field.description}</p>
+                            {helperText && (
+                              <p className="mt-1 text-[11px] text-slate-500">{helperText}</p>
                             )}
                           </div>
                         );
