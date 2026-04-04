@@ -67,7 +67,7 @@ export interface Collection {
   pluginSlug?: string; // Automatically populated by framework
   shortSlug?: string;  // Automatically populated by framework
   unprefixedSlug?: string; // Automatically populated by framework (the original plugin-provided slug)
-  name?: string;
+  displayName?: string;
   type?: 'list' | 'global' | 'singleton'; // Collection type
   tableName?: string; // Optional: specify a different table name
   primaryKey?: string; // Optional: default is 'id'

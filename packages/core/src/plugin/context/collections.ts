@@ -54,7 +54,7 @@ export class CollectionsContextProxy {
             shortSlug,
             unprefixedSlug: inputSlug,
             pluginSlug: plugin.manifest.slug,
-            name: collection.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
+            displayName: collection.displayName || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
           };
 
           if (modifiedCollection.workflow) {
