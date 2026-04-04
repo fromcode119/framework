@@ -158,7 +158,7 @@ export class AdminMetadataService {
             return;
           }
           
-          const label = col.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1);
+          const label = col.displayName || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1);
           
           const isExplicitlyHandled = rawMenuItems.some(m => {
              if (m.pluginSlug !== slug) return false;
