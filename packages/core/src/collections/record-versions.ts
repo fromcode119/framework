@@ -5,7 +5,7 @@ export class RecordVersions {
   static readonly collection: Collection = {
     slug: SystemConstants.TABLE.RECORD_VERSIONS,
     shortSlug: 'versions',
-    name: 'Record Versions',
+    displayName: 'Record Versions',
     system: true,
     admin: {
       useAsTitle: 'id',
