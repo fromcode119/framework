@@ -7,10 +7,12 @@ import { spawn } from 'child_process';
 import * as esbuild from 'esbuild';
 import { PluginManifest } from '@fromcode119/core';
 import { CliUtils } from '../utils';
+import { PluginDependencyCommandService } from '../services/plugin-dependency-command-service';
 
 export class PluginCommands {
   static registerPluginCommands(program: Command) {
     const plugin = program.command('plugin').description('Manage plugins');
+    const dependencyService = new PluginDependencyCommandService();
 
     plugin
       .command('create [name]')
@@ -252,6 +254,30 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
       });
 
     plugin
+      .command('deps-install <slug>')
+      .description('Install backend npm dependencies for a plugin')
+      .action(async (slug) => {
+        try {
+          const pluginDir = await dependencyService.installForSlug(slug);
+          console.log(chalk.green(`Plugin dependencies installed for ${pluginDir}`));
+        } catch (error) {
+          console.error(chalk.red('Error installing plugin dependencies:'), error);
+        }
+      });
+
+    plugin
+      .command('deps-install-all')
+      .description('Install backend npm dependencies for all plugins')
+      .action(async () => {
+        try {
+          const installed = await dependencyService.installAll();
+          console.log(chalk.green(`Plugin dependency install pass completed for ${installed} plugin(s).`));
+        } catch (error) {
+          console.error(chalk.red('Error installing plugin dependencies:'), error);
+        }
+      });
+
+    plugin
       .command('test <slug>')
       .description('Run tests for a plugin')
       .action(async (slug) => {
@@ -264,6 +290,7 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
           }
 
           console.log(chalk.blue(`\nRunning tests for plugin: ${chalk.bold(slug)}...`));
+          await dependencyService.installForSlug(slug);
 
           const pkgPath = path.join(pluginDir, 'package.json');
           let command = 'npm test';
@@ -396,6 +423,8 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
           if (backendEntry && backendEntry.endsWith('.ts')) {
             console.log(chalk.blue(CliUtils.t('cli.build.starting', { type: 'plugin backend', slug })));
 
+            const backendExternal = await dependencyService.getBackendExternalModules(pluginDir);
+
             await esbuild.build({
               entryPoints: [backendEntry],
               bundle: true,
@@ -413,7 +442,8 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
                 'express',
                 'knex',
                 'drizzle-orm',
-                'pg'
+                'pg',
+                ...backendExternal
               ],
               sourcemap: true,
               minify: false,

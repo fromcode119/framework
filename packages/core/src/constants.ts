@@ -172,6 +172,7 @@ export class SystemConstants {
   },
   THEMES: {
     BASE: THEMES_BASE,
+    UI: joinPath(THEMES_BASE, ROUTE_SEGMENTS.THEMES_SLUG_UI_WILDCARD),
     MARKETPLACE: joinPath(THEMES_BASE, ROUTE_SEGMENTS.PLUGINS_MARKETPLACE)
   },
   MEDIA: {
@@ -207,7 +208,8 @@ export class SystemConstants {
    * Route prefix strings used for internal permission checks.
    */
   static readonly PUBLIC_ROUTE_PREFIXES = {
-  PLUGIN_ASSETS: `${ROUTE_SEGMENTS.PLUGINS}/`
+  PLUGIN_ASSETS: `${ROUTE_SEGMENTS.PLUGINS}/`,
+  THEME_ASSETS: `${ROUTE_SEGMENTS.THEMES}/`
   } as const;
 
 }

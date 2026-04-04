@@ -2,21 +2,45 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Script from 'next/script';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
+import { VerifyEmailCaptchaService } from './verify-email-captcha-service';
+import VerifyEmailResendCard from './verify-email-resend-card';
+import VerifyEmailVerificationCard from './verify-email-verification-card';
+import { VerifyEmailCopyService } from './verify-email-copy-service';
 export const dynamic = 'force-dynamic';
 
 export default function VerifyEmailPage() {
+  const copy = VerifyEmailCopyService.getCopy();
+  const recaptchaSiteKey = String(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '').trim();
   const [token, setToken] = useState('');
   const [emailForResend, setEmailForResend] = useState('');
   const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [resendMessage, setResendMessage] = useState('');
+  const [resendVerificationUrl, setResendVerificationUrl] = useState('');
+  const resendCaptchaAction = VerifyEmailCaptchaService.resendVerificationAction;
+
+  const executeCaptcha = async (): Promise<string> => {
+    if (!recaptchaSiteKey) return '';
+    const grecaptcha = (window as Window & {
+      grecaptcha?: {
+        ready(callback: () => void): void;
+        execute(siteKey: string, options: { action: string }): Promise<string>;
+      };
+    }).grecaptcha;
+    if (!grecaptcha?.ready || !grecaptcha?.execute) return '';
+    await new Promise<void>((resolve) => grecaptcha.ready(() => resolve()));
+    return String(await grecaptcha.execute(recaptchaSiteKey, { action: resendCaptchaAction }) || '').trim();
+  };
 
   const verify = async (tokenValue: string) => {
     if (!tokenValue) {
       setStatus('error');
-      setMessage('Verification token is missing.');
+      setMessage(copy.missingToken);
       return;
     }
 
@@ -35,20 +59,31 @@ export default function VerifyEmailPage() {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(payload?.error || payload?.message || 'Verification failed.');
+        const backendMessage = String(payload?.error || payload?.message || '').trim();
+        if (backendMessage === 'Invalid verification token') {
+          throw new Error(copy.invalidToken);
+        }
+        if (backendMessage === 'Verification link has expired. Please request a new one.') {
+          throw new Error(copy.expiredToken);
+        }
+        throw new Error(backendMessage || copy.verifyFailed);
       }
       setStatus('success');
-      setMessage(payload?.message || 'Email verified successfully.');
-    } catch (err: any) {
+      setMessage(copy.verifySuccess);
+    } catch (err: unknown) {
       setStatus('error');
-      setMessage(err?.message || 'Verification failed.');
+      setMessage(err instanceof Error ? err.message : copy.verifyFailed);
     }
   };
 
   const resend = async (event: React.FormEvent) => {
     event.preventDefault();
+    setResendStatus('idle');
+    setResendMessage('');
+    setResendVerificationUrl('');
     setIsResending(true);
     try {
+      const captchaToken = await executeCaptcha();
       const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.RESEND_VERIFICATION), {
         method: 'POST',
         credentials: 'include',
@@ -57,15 +92,34 @@ export default function VerifyEmailPage() {
           'X-Framework-Client': 'frontend-ui',
           'X-Requested-With': 'XMLHttpRequest'
         },
-        body: JSON.stringify({ email: emailForResend })
+        body: JSON.stringify({
+          email: emailForResend,
+          captchaToken: captchaToken || undefined
+        })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(payload?.error || payload?.message || 'Unable to resend verification email.');
+        const backendMessage = String(payload?.error || payload?.message || '').trim();
+        if (payload?.requiresCaptcha) {
+          throw new Error(copy.captchaRequired);
+        }
+        if (backendMessage === 'Too many verification email requests. Please try again later.') {
+          throw new Error(copy.rateLimited);
+        }
+        throw new Error(backendMessage || copy.resendFailed);
       }
-      setMessage(payload?.message || 'Verification email sent.');
-    } catch (err: any) {
-      setMessage(err?.message || 'Unable to resend verification email.');
+      setResendStatus('success');
+      if (payload?.alreadyVerified) {
+        setResendMessage(copy.alreadyVerified);
+      } else {
+        setResendMessage(copy.resendSuccess);
+      }
+      if (payload?.verificationUrl) {
+        setResendVerificationUrl(String(payload.verificationUrl));
+      }
+    } catch (err: unknown) {
+      setResendStatus('error');
+      setResendMessage(err instanceof Error ? err.message : copy.resendFailed);
     } finally {
       setIsResending(false);
     }
@@ -80,75 +134,61 @@ export default function VerifyEmailPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto max-w-xl px-6 py-16">
-        <h1 className="text-3xl font-bold tracking-tight">Verify Email</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Confirm your account email to unlock customer sign-in.
-        </p>
+    <main className="fc-auth-page fc-verify-email-page min-h-screen bg-slate-50 text-slate-900">
+      {recaptchaSiteKey ? (
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(recaptchaSiteKey)}`}
+          strategy="afterInteractive"
+        />
+      ) : null}
+      <div className="fc-auth-shell mx-auto max-w-xl px-6 py-16">
+        <Link href="/" className="fc-auth-back-link">
+          {`← ${copy.backHome}`}
+        </Link>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <label className="block text-sm font-semibold">
-            Verification Token
-            <input
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-              placeholder="Paste verification token"
-            />
-          </label>
-
-          <button
-            type="button"
-            onClick={() => verify(token)}
-            disabled={status === 'verifying'}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {status === 'verifying' ? 'Verifying...' : 'Verify Email'}
-          </button>
-
-          {message ? (
-            <div
-              className={`mt-4 rounded-lg px-3 py-2 text-sm ${
-                status === 'success'
-                  ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                  : status === 'error'
-                    ? 'border border-rose-200 bg-rose-50 text-rose-700'
-                    : 'border border-slate-200 bg-slate-50 text-slate-700'
-              }`}
-            >
-              {message}
-            </div>
-          ) : null}
+        <div className="fc-auth-hero">
+          <p className="fc-auth-kicker">{copy.kicker}</p>
+          <h1 className="fc-auth-title">{copy.title}</h1>
+          <p className="fc-auth-description">
+            {copy.description}
+          </p>
         </div>
 
-        <form onSubmit={resend} className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-bold text-slate-900">Didn’t receive your email?</h2>
-          <p className="mt-1 text-xs text-slate-600">Enter your email and we’ll send another verification link.</p>
-          <label className="mt-3 block text-sm font-semibold">
-            Email
-            <input
-              type="email"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
-              value={emailForResend}
-              onChange={(event) => setEmailForResend(event.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={isResending}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isResending ? 'Sending...' : 'Resend Verification Email'}
-          </button>
-        </form>
+        <VerifyEmailVerificationCard
+          token={token}
+          status={status}
+          message={message}
+          verificationTokenLabel={copy.verificationTokenLabel}
+          verificationTokenPlaceholder={copy.verificationTokenPlaceholder}
+          verifyingLabel={copy.verifying}
+          verifyButtonLabel={copy.verifyButton}
+          goToLoginLabel={copy.goToLogin}
+          verificationErrorNote={copy.verificationErrorNote}
+          onTokenChange={setToken}
+          onVerify={() => verify(token)}
+        />
 
-        <p className="mt-4 text-sm text-slate-600">
-          Need an account first?{' '}
-          <Link href="/register" className="font-semibold text-indigo-600 hover:underline">
-            Register
+        <VerifyEmailResendCard
+          email={emailForResend}
+          isResending={isResending}
+          resendMessage={resendMessage}
+          resendStatus={resendStatus}
+          resendVerificationUrl={resendVerificationUrl}
+          resendTitle={copy.resendTitle}
+          resendDescription={copy.resendDescription}
+          emailLabel={copy.emailLabel}
+          resendSendingLabel={copy.resendSending}
+          resendButtonLabel={copy.resendButton}
+          openVerificationLinkLabel={copy.openVerificationLink}
+          goToLoginLabel={copy.goToLogin}
+          onEmailChange={setEmailForResend}
+          onSubmit={resend}
+        />
+
+        <p className="fc-auth-footer">
+          {copy.noAccount}{' '}
+          <Link href="/register" className="fc-auth-footer-link">
+            {copy.register}
           </Link>
         </p>
       </div>

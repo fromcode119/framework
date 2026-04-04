@@ -12,6 +12,7 @@ import { AppEnv } from '@/lib/env';
 import { AdminConstants } from '@/lib/constants';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminServices } from '@/lib/admin-services';
+import SecondarySidebarPanelBody from './secondary-sidebar-panel-body';
 
 const { 
   Close = () => null, 
@@ -31,14 +32,20 @@ interface NavItemProps {
   href: string;
   persistenceKey?: string;
   active?: boolean;
+  isAnchoredToSecondary?: boolean;
   onClick?: () => void;
   children?: any[];
   isMini?: boolean;
   isGroupHeader?: boolean;
   version?: string;
+  canHoverPreview?: boolean;
+  showHoverPreview?: boolean;
+  preserveActiveAnchor?: boolean;
+  onHoverPreviewStart?: (path: string) => void;
+  onHoverPreviewEnd?: () => void;
 }
 
-const NavItem = ({ icon, label, href, persistenceKey, active, onClick, children, isMini, isGroupHeader, version }: NavItemProps) => {
+const NavItem = ({ icon, label, href, persistenceKey, active, isAnchoredToSecondary, onClick, children, isMini, isGroupHeader, version, canHoverPreview, showHoverPreview, preserveActiveAnchor, onHoverPreviewStart, onHoverPreviewEnd }: NavItemProps) => {
   const { theme } = ThemeHooks.useTheme();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
@@ -86,6 +93,8 @@ const NavItem = ({ icon, label, href, persistenceKey, active, onClick, children,
 
   // The parent is "highlighted" if it is active AND NO CHILD is active.
   const isHighlighted = active && !isChildActive;
+  const isPreviewingSecondary = Boolean(showHoverPreview && !isHighlighted && !isChildActive);
+  const extendsSecondary = Boolean((isAnchoredToSecondary || isPreviewingSecondary) && (isHighlighted || isChildActive || isPreviewingSecondary || preserveActiveAnchor));
   
   // If it's a group header, clicking should just toggle expansion
   const handleClick = (e: React.MouseEvent) => {
@@ -99,21 +108,33 @@ const NavItem = ({ icon, label, href, persistenceKey, active, onClick, children,
   };
 
   return (
-    <div className="flex flex-col gap-1">
-      <div className={`flex items-center group relative ${isMini ? 'justify-center w-full' : 'gap-1'}`}>
+    <div className="relative flex flex-col gap-1">
+      <div
+        className={`flex items-center group relative ${isMini ? 'justify-center w-full' : 'gap-1'}`}
+        onMouseEnter={canHoverPreview && !isMini ? () => onHoverPreviewStart?.(href) : undefined}
+        onMouseLeave={canHoverPreview && !isMini ? onHoverPreviewEnd : undefined}
+      >
+        {extendsSecondary && !isMini && (
+          <div
+            aria-hidden="true"
+            className={`pointer-events-none absolute bottom-0 right-[-2rem] top-0 w-8 ${isHighlighted || preserveActiveAnchor ? 'bg-indigo-600 shadow-[14px_0_28px_-18px_rgba(79,70,229,0.65)]' : isPreviewingSecondary ? 'bg-slate-100 shadow-[14px_0_24px_-20px_rgba(15,23,42,0.14)] dark:bg-slate-800/60 dark:shadow-[14px_0_24px_-20px_rgba(2,6,23,0.55)]' : 'bg-indigo-50 dark:bg-indigo-500/10'}`}
+          />
+        )}
         <Link 
           href={isGroupHeader ? '#' : href} 
           onClick={handleClick}
           className={`flex items-center transition-all duration-300 ${
             isHighlighted 
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
+              ? 'bg-indigo-600 text-white shadow-[10px_0_28px_rgba(79,70,229,0.28)]' 
+              : isPreviewingSecondary
+                ? 'bg-slate-100 text-indigo-600 shadow-[10px_0_24px_rgba(15,23,42,0.08)] dark:bg-slate-800/60 dark:text-slate-200'
               : isChildActive
                 ? 'bg-indigo-50 text-indigo-600 font-semibold dark:bg-indigo-500/10 dark:text-indigo-400'
                 : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'
-          } ${isMini ? 'flex-col justify-center w-14 h-14 rounded-xl gap-1' : 'flex-1 justify-between px-3.5 py-2 rounded-lg'}`}
+          } ${isMini ? 'flex-col justify-center w-14 h-14 rounded-xl gap-1' : `${extendsSecondary && !hasChildren ? 'w-[calc(100%+2rem)] max-w-none' : 'flex-1'} justify-between px-3.5 py-2 rounded-lg ${extendsSecondary ? 'rounded-r-none relative z-10 mr-[-2rem] pr-5' : ''}`}`}
         >
           <div className={`flex items-center justify-center ${isMini ? 'w-full' : 'gap-3'}`}>
-            <span className={`${isHighlighted ? 'text-white' : isChildActive ? 'text-indigo-500' : 'text-slate-500 group-hover:text-indigo-500 transition-colors'} flex items-center justify-center`}>
+            <span className={`${isHighlighted ? 'text-white' : isPreviewingSecondary ? 'text-indigo-500 dark:text-slate-200' : isChildActive ? 'text-indigo-500' : 'text-slate-500 group-hover:text-indigo-500 transition-colors'} flex items-center justify-center`}>
               {icon}
             </span>
             
@@ -202,17 +223,30 @@ const NavItem = ({ icon, label, href, persistenceKey, active, onClick, children,
   );
 };
 
-export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: { 
+export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiveContextChange, activeSecondaryAnchorPath, hoverPreviewPath, previewablePaths, onHoverPreviewPathChange, inlineSecondaryContext, inlineSecondaryItems, inlineSecondarySourceLabel, showInlineSecondary, activePrimaryPathOverride, onPreviewRegionEnter, onPreviewRegionLeave }: { 
   isOpen?: boolean, 
   onClose?: () => void,
   isMini?: boolean,
-  onMiniToggle?: () => void
+  onMiniToggle?: () => void,
+  onActiveContextChange?: (contextId: string) => void,
+  activeSecondaryAnchorPath?: string,
+  hoverPreviewPath?: string,
+  previewablePaths?: string[],
+  onHoverPreviewPathChange?: (path: string) => void,
+  inlineSecondaryContext?: any,
+  inlineSecondaryItems?: any[],
+  inlineSecondarySourceLabel?: string,
+  showInlineSecondary?: boolean,
+  activePrimaryPathOverride?: string,
+  onPreviewRegionEnter?: () => void,
+  onPreviewRegionLeave?: () => void,
 }) {
   const { menuItems, plugins } = ContextHooks.usePlugins();
   const { theme } = ThemeHooks.useTheme();
   const { user } = AuthHooks.useAuth();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
+  const normalizedActivePrimaryPathOverride = React.useMemo(() => NavUtils.normalizePath(activePrimaryPathOverride), [activePrimaryPathOverride]);
 
   const [collapsedGroups, setCollapsedGroups] = React.useState<string[]>([]);
   const [isInitialized, setIsInitialized] = React.useState(false);
@@ -298,36 +332,100 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
   const sortedGroups = NavUtils.sortMenuGroups(Object.keys(groupedMenu))
     .filter((groupKey) => !NavUtils.getMenuGroupMeta(groupKey).manual);
 
+  const activePrimaryContextId = React.useMemo(() => {
+    const normalizedPath = NavUtils.normalizePath(pathname);
+    if (!normalizedPath) {
+      return '';
+    }
+
+    const entries: Array<{ path: string; pluginSlug: string }> = [];
+    for (const item of authorizedMenuItems) {
+      const itemPath = NavUtils.normalizePath(item.path);
+      if (itemPath) {
+        entries.push({ path: itemPath, pluginSlug: String(item.pluginSlug || '').trim().toLowerCase() });
+      }
+
+      for (const child of item.children || []) {
+        const childPath = NavUtils.normalizePath(child.path);
+        if (!childPath) {
+          continue;
+        }
+        entries.push({
+          path: childPath,
+          pluginSlug: String(child.pluginSlug || item.pluginSlug || '').trim().toLowerCase(),
+        });
+      }
+    }
+
+    const bestPath = NavUtils.resolveBestMatchPath(normalizedPath, entries.map((entry) => entry.path));
+    if (!bestPath) {
+      return '';
+    }
+
+    const match = entries.find((entry) => entry.path === bestPath);
+    return String(match?.pluginSlug || '');
+  }, [authorizedMenuItems, pathname]);
+
+  const activeTopLevelItem = React.useMemo(() => {
+    if (normalizedActivePrimaryPathOverride) {
+      return authorizedMenuItems.find((item) => NavUtils.normalizePath(item.path) === normalizedActivePrimaryPathOverride) || null;
+    }
+
+    return NavUtils.resolveBestMatchEntry(pathname, authorizedMenuItems);
+  }, [authorizedMenuItems, normalizedActivePrimaryPathOverride, pathname]);
+
+  const activeGroupKey = React.useMemo(() => {
+    const normalizedGroup = NavUtils.normalizeGroupKey(activeTopLevelItem?.group);
+    if (coreGroupPaths.includes(String(activeTopLevelItem?.path || ''))) {
+      return 'core';
+    }
+    if (managementGroupPaths.includes(String(activeTopLevelItem?.path || ''))) {
+      return 'management';
+    }
+    if (String(activeTopLevelItem?.path || '') === AdminConstants.ROUTES.ACTIVITY) {
+      return 'system';
+    }
+    return normalizedGroup;
+  }, [activeTopLevelItem, coreGroupPaths, managementGroupPaths]);
+
+  React.useEffect(() => {
+    onActiveContextChange?.(activePrimaryContextId);
+  }, [activePrimaryContextId, onActiveContextChange]);
+
+  const showMobileSecondaryPanel = Boolean(showInlineSecondary && !isMini && (inlineSecondaryItems || []).length > 0);
+
   return (
-    <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-[72px]' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 border-r flex flex-col shadow-2xl lg:shadow-none overflow-hidden group/sidebar`}>
-      <div className={`p-5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
-        <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
-          <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 flex-shrink-0">
-            <Zap size={18} className="text-white" fill="currentColor" />
-          </div>
-          {!isMini && (
-            <div className={`flex flex-col`}>
-              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
-                {AppEnv.APP_NAME}
-              </span>
-              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
-                Admin Panel
-              </span>
+    <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-[72px]' : showMobileSecondaryPanel ? 'w-full max-w-full' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 ${showMobileSecondaryPanel ? 'border-r-0' : 'border-r'} flex ${showMobileSecondaryPanel ? 'flex-row lg:flex-col' : 'flex-col'} shadow-2xl lg:shadow-[12px_0_28px_-24px_rgba(15,23,42,0.28)] dark:lg:shadow-[12px_0_28px_-24px_rgba(2,6,23,0.9)] overflow-hidden group/sidebar`} onMouseEnter={onPreviewRegionEnter} onMouseLeave={onPreviewRegionLeave}>
+      <div className={`min-w-0 ${showMobileSecondaryPanel ? 'w-[45%] max-w-[18rem] min-w-[15rem] border-r border-slate-200 dark:border-slate-800' : 'w-full lg:flex-1 lg:min-h-0'} flex flex-col bg-white dark:bg-[#020617]`}>
+        <div className={`p-5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
+          <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
+            <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 flex-shrink-0">
+              <Zap size={18} className="text-white" fill="currentColor" />
             </div>
-          )}
+            {!isMini && (
+              <div className={`flex flex-col`}>
+                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
+                  {AppEnv.APP_NAME}
+                </span>
+                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
+                  Admin Panel
+                </span>
+              </div>
+            )}
+          </div>
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <Close size={20} />
+          </button>
         </div>
-        <button 
-          onClick={onClose}
-          className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-        >
-          <Close size={20} />
-        </button>
-      </div>
-      
-      <nav className={`flex-1 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto no-scrollbar space-y-1 pb-32`}>
+        
+        <nav className={`flex-1 min-h-0 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto scrollbar-hide space-y-1 pb-32`}>
         <div className="pt-2">
            {!isMini && <Slot name="admin.layout.sidebar.top" />}
         </div>
+
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group] || [];
           const displayGroup = NavUtils.getMenuGroupMeta(group).label;
@@ -366,12 +464,18 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
                     label={item.label}
                     href={item.path}
                     persistenceKey={`${item.pluginSlug || 'system'}:${item.path}`}
-                    active={NavUtils.isPathActive(pathname, item.path, items.map((entry) => entry.path))}
+                    active={normalizedActivePrimaryPathOverride ? NavUtils.normalizePath(item.path) === normalizedActivePrimaryPathOverride : NavUtils.isPathActive(pathname, item.path, items.map((entry) => entry.path))}
+                    isAnchoredToSecondary={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
                     onClick={onClose}
                     children={item.children}
                     isMini={isMini}
                     isGroupHeader={item.isGroup}
                     version={plugins.find(p => p.slug === item.pluginSlug)?.version}
+                    canHoverPreview={(previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
+                    showHoverPreview={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(hoverPreviewPath) && (previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
+                    preserveActiveAnchor={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
+                    onHoverPreviewStart={(path) => onHoverPreviewPathChange?.(path)}
+                    onHoverPreviewEnd={() => onHoverPreviewPathChange?.('')}
                   />
                 ))
               )}
@@ -449,7 +553,29 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle }: {
         <div className="mt-4">
            {!isMini && <Slot name="admin.layout.sidebar.bottom" />}
         </div>
-      </nav>
+
+        </nav>
+      </div>
+
+      {showMobileSecondaryPanel && (
+        <div className="lg:hidden min-w-0 flex-1 flex flex-col bg-slate-50/90 dark:bg-[#0b1220]">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+              More In {String(inlineSecondarySourceLabel || inlineSecondaryContext?.label || 'This Section').trim()}
+            </div>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
+            <SecondarySidebarPanelBody
+              context={inlineSecondaryContext || null}
+              items={inlineSecondaryItems || []}
+              sourceLabel={String(inlineSecondarySourceLabel || '')}
+              pathname={pathname}
+              onListKeyDown={() => undefined}
+              onItemActivate={onClose}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Mini Toggle Button */}
       <div className={`absolute bottom-0 left-0 right-0 border-t border-slate-100 dark:border-slate-800 hidden lg:block bg-white dark:bg-[#020617] z-50 ${isMini ? 'p-2.5' : 'p-4'}`}>

@@ -60,11 +60,16 @@ export class ServerRoutesSetup {
 
     const { AUTH, PLUGINS, MARKETPLACE, THEMES, SYSTEM, MEDIA, VERSIONS } = RouteConstants.SEGMENTS;
     const vApi = express.Router();
+    const pluginAssetRouter = new PluginAssetRouter(this.manager).router;
+    const themeAssetRouter = new ThemeAssetRouter(this.themeManager).router;
+
     vApi.use(AUTH, new AuthRouter(this.manager, this.auth).router);
+    vApi.use(PLUGINS, pluginAssetRouter);
     vApi.use(PLUGINS, new PluginRouter(this.manager, this.auth).router);
     vApi.use(PLUGINS, new PluginSettingsRouter(this.manager, this.auth).router);
     vApi.use(PLUGINS, this.pluginRouter);
     vApi.use(MARKETPLACE, new MarketplaceRouter(this.manager, this.auth).router);
+    vApi.use(THEMES, themeAssetRouter);
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth).router);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
@@ -87,8 +92,8 @@ export class ServerRoutesSetup {
 
     vApi.use(new CollectionRouter(this.manager, this.restController).router);
     this.app.use(vPrefix, vApi);
-    this.app.use('/plugins', new PluginAssetRouter(this.manager).router);
-    this.app.use('/themes', new ThemeAssetRouter(this.themeManager).router);
+    this.app.use(PLUGINS, pluginAssetRouter);
+    this.app.use(THEMES, themeAssetRouter);
 
     const baseCollectionRouter = new BaseCollectionRouter(this.manager, this.restController).router;
     this.app.use(ApiConfig.getInstance().routes.collections.BASE, baseCollectionRouter);

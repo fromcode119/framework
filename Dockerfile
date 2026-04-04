@@ -52,7 +52,7 @@ FROM base AS api-only
 RUN npm run build:api
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=api
-CMD ["npm", "run", "start", "--workspace=@fromcode119/api"]
+CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start --workspace=@fromcode119/api"]
 
 # ===================================
 # MODE 2: API + Admin
@@ -61,7 +61,7 @@ FROM base AS api-admin
 RUN npm run build:api && npm run build:admin
 EXPOSE 3000 3001
 ENV DEPLOYMENT_MODE=api-admin
-CMD ["npm", "run", "start:api-admin"]
+CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:api-admin"]
 
 # ===================================
 # MODE 3: Full Stack (API + Admin + Frontend)
@@ -70,7 +70,7 @@ FROM base AS full-stack
 RUN npm run build:api && npm run build:admin && npm run build:frontend
 EXPOSE 3000 3001 3002
 ENV DEPLOYMENT_MODE=full
-CMD ["npm", "run", "start:all"]
+CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:all"]
 
 # ===================================
 # MODE 4: Frontend Only (Edge deployment)

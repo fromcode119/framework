@@ -40,6 +40,15 @@ export class ApiPathUtils {
     return `${ApiVersionUtils.prefix()}${ApiPathUtils.ensureLeadingSlash(path)}`;
   }
 
+  static absoluteUrl(baseUrl: string, path: string): string {
+    const normalizedBaseUrl = String(baseUrl || '').trim().replace(/\/+$/, '');
+    if (!normalizedBaseUrl) {
+      return ApiPathUtils.ensureLeadingSlash(path);
+    }
+
+    return `${normalizedBaseUrl}${ApiPathUtils.ensureLeadingSlash(path)}`;
+  }
+
   static authPath(path = ''): string {
     return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.AUTH.BASE, path));
   }
@@ -74,5 +83,23 @@ export class ApiPathUtils {
 
   static themePath(slug: string, path = ''): string {
     return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.THEMES.BASE, slug, path));
+  }
+
+  static pluginUiAssetPath(slug: string, asset = ''): string {
+    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug }).replace(/\/\*$/, '');
+    return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
+  }
+
+  static themeUiAssetPath(slug: string, asset = ''): string {
+    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.UI, { slug }).replace(/\/\*$/, '');
+    return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
+  }
+
+  static pluginUiAssetUrl(baseUrl: string, slug: string, asset: string): string {
+    return ApiPathUtils.absoluteUrl(baseUrl, ApiPathUtils.pluginUiAssetPath(slug, asset));
+  }
+
+  static themeUiAssetUrl(baseUrl: string, slug: string, asset: string): string {
+    return ApiPathUtils.absoluteUrl(baseUrl, ApiPathUtils.themeUiAssetPath(slug, asset));
   }
 }

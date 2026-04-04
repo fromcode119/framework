@@ -12,6 +12,5 @@ docker-compose.yml
 Dockerfile
 README.md
 docs
-scripts
 public/uploads/*
 !public/uploads/.gitkeep
