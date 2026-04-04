@@ -34,7 +34,7 @@ export interface PluginManagerInterface {
   emit(event: string, payload: any): void;
   getImportMap(): { imports: Record<string, string> };
   getRuntimeModules(): Record<string, any>;
-  getAdminMetadata(): any;
+  getAdminMetadata(): Promise<any>;
   updatePlugin(slug: string, pkg: any): Promise<void>;
   createContext(plugin: LoadedPlugin): PluginContext;
   setAuth(auth: any): void;

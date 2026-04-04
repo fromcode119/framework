@@ -5,6 +5,7 @@ export class UiPreferenceService extends BaseService {
   private static readonly THEME_KEY = 'theme';
   private static readonly SIDEBAR_OPEN_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.SIDEBAR_OPEN;
   private static readonly SIDEBAR_MINI_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.SIDEBAR_MINI;
+  private static readonly SECONDARY_SIDEBAR_DESKTOP_OPEN_KEY = 'admin.ui.secondary-sidebar.desktop-open';
   private static readonly ADVANCED_MODE_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.ADVANCED_MODE;
   private static readonly COLLAPSED_GROUPS_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.COLLAPSED_GROUPS;
 
@@ -37,6 +38,19 @@ export class UiPreferenceService extends BaseService {
 
   writeSidebarMini(isMini: boolean): void {
     this.browserState.writeLocalString(UiPreferenceService.SIDEBAR_MINI_KEY, String(Boolean(isMini)));
+  }
+
+  readSecondarySidebarDesktopOpen(): boolean | null {
+    const value = this.browserState.readLocalString(UiPreferenceService.SECONDARY_SIDEBAR_DESKTOP_OPEN_KEY);
+    if (!value) {
+      return null;
+    }
+
+    return value === 'true';
+  }
+
+  writeSecondarySidebarDesktopOpen(isOpen: boolean): void {
+    this.browserState.writeLocalString(UiPreferenceService.SECONDARY_SIDEBAR_DESKTOP_OPEN_KEY, String(Boolean(isOpen)));
   }
 
   readAdvancedMode(): boolean {

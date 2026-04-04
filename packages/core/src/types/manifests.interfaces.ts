@@ -65,6 +65,30 @@ export interface MenuItemManifest {
   children?: MenuItemManifest[];
 }
 
+export interface SecondaryPanelItemManifest {
+  id: string;
+  label: string;
+  path: string;
+  sourcePaths?: string[];
+  icon?: string;
+  scope?: 'self' | 'plugin-target' | 'global';
+  targetNamespace?: string;
+  targetPlugin?: string;
+  priority?: number;
+  requiredRoles?: string[];
+  requiredCapabilities?: string[];
+  group?: string;
+  description?: string;
+  sourceNamespace?: string;
+  sourcePlugin?: string;
+  allowGlobal?: boolean;
+  governanceKey?: string;
+}
+
+export interface SecondaryPanelManifest {
+  items?: SecondaryPanelItemManifest[];
+}
+
 export interface PluginManifest {
   // Identity
   slug: string;                    // Unique identifier
@@ -104,6 +128,7 @@ export interface PluginManifest {
     groupStrategy?: 'dropdown' | 'section' | Record<string, 'dropdown' | 'section'>;
     icon?: string;
     menu?: MenuItemManifest[];
+    secondaryPanel?: SecondaryPanelManifest;
     slots?: { slot: string; component: string; priority?: number }[];
     collections?: Collection[];
     management?: {

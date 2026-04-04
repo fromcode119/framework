@@ -103,6 +103,7 @@ export type { RequestStore } from './context/request-context.interfaces';
 
 // Plugin Services (Server-only)
 export { DiscoveryService } from './plugin/services/discovery-service';
+export { PluginDependencyInstallerService } from './plugin/services/plugin-dependency-installer-service';
 export { PluginStateService } from './plugin/services/plugin-state-service';
 export { MarketplaceCatalogService } from './marketplace/marketplace-catalog-service';
 export { RuntimeService } from './plugin/services/runtime-service';

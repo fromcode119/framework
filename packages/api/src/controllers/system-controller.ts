@@ -52,7 +52,7 @@ export class SystemController {
 
   async getAdminMetadata(req: Request, res: Response) {
     try {
-      const metadata = this.manager.getAdminMetadata() as any;
+      const metadata = await this.manager.getAdminMetadata() as any;
       const runtimeModules = this.manager.getRuntimeModules();
       const frontendMeta = await this.themeManager.getFrontendMetadata(runtimeModules);
 
@@ -65,6 +65,21 @@ export class SystemController {
       const settingsMap: Record<string, any> = {};
       settings.forEach((s: any) => settingsMap[s.key] = s.value);
       metadata.settings = settingsMap;
+      metadata.secondaryPanel = metadata.secondaryPanel || {
+        version: 1,
+        contexts: {},
+        itemsByContext: {},
+        globalItems: [],
+        policy: {
+          allowlistKey: 'admin.secondaryPanel.allowlist.v1',
+          allowlistEntries: 0,
+          evaluatedAt: new Date().toISOString(),
+        },
+        precedence: {
+          scopeOrder: ['self', 'plugin-target', 'global'],
+          tieBreakOrder: ['priority-asc', 'canonicalId-asc'],
+        },
+      };
 
       res.json(metadata);
     } catch (e: any) {
@@ -209,6 +224,7 @@ export class SystemController {
 
   async getFrontendMetadata(req: Request, res: Response) {
     const metadata = await this.themeManager.getFrontendMetadata(this.manager.getRuntimeModules());
+    const adminMetadata = await this.manager.getAdminMetadata() as any;
     const activePlugins = this.manager.getSortedPlugins(
       this.manager.getPlugins().filter((p: any) => p.state === 'active')
     ).map((p: any) => ({
@@ -224,6 +240,22 @@ export class SystemController {
 
     res.json({
       ...metadata,
+      menu: Array.isArray(adminMetadata?.menu) ? adminMetadata.menu : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),
+      secondaryPanel: adminMetadata?.secondaryPanel || {
+        version: 1,
+        contexts: {},
+        itemsByContext: {},
+        globalItems: [],
+        policy: {
+          allowlistKey: 'admin.secondaryPanel.allowlist.v1',
+          allowlistEntries: 0,
+          evaluatedAt: new Date().toISOString(),
+        },
+        precedence: {
+          scopeOrder: ['self', 'plugin-target', 'global'],
+          tieBreakOrder: ['priority-asc', 'canonicalId-asc'],
+        },
+      },
       plugins: activePlugins
     });
   }

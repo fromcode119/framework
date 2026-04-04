@@ -84,6 +84,7 @@ export class RouteConstants {
   EVENTS: '/events',
   FRONTEND: '/frontend',
   I18N: '/i18n',
+  WEBHOOKS: '/webhooks',
   SHORTCODES: '/shortcodes',
   SHORTCODES_RENDER: '/shortcodes/render',
   DATA_SOURCES: '/data-sources',

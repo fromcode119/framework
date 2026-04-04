@@ -6,25 +6,22 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AuthHooks } from '@/components/use-auth';
 import { RuntimeConstants } from '@fromcode119/core/client';
-import { PluginConditionUtils } from './plugin-condition-utils';
 import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 
 export default function PluginLoader() {
   const pluginsContext = ContextHooks.usePlugins();
   const {
     plugins: registeredPlugins,
-    menuItems: registeredMenuItems,
     settings: registeredSettings,
+    loadConfig,
     registerSlotComponent,
-    registerMenuItem,
     registerCollection,
-    replaceMenuItems,
     replaceCollections,
     registerSettings,
     registerPlugins,
     refreshVersion,
     triggerRefresh,
-    isReady
+    isReady,
   } = pluginsContext;
   const { user, isLoading: isAuthLoading } = AuthHooks.useAuth();
 
@@ -117,15 +114,16 @@ export default function PluginLoader() {
 
       try {
         const shouldReuseContextMetadata = refreshVersion === 0 && Array.isArray(registeredPlugins) && registeredPlugins.length > 0;
+        if (!shouldReuseContextMetadata) {
+          await loadConfig(AdminConstants.ENDPOINTS.SYSTEM.METADATA);
+        }
         const responseData = shouldReuseContextMetadata
           ? {
               plugins: registeredPlugins,
-              menu: registeredMenuItems,
               settings: registeredSettings,
             }
           : await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.STAGED);
         const plugins: AdminPluginMetadata[] = responseData.plugins || [];
-        const remoteMenu: any[] = responseData.menu || [];
         const settings: Record<string, any> = responseData.settings || {};
         const pluginSettingsBySlug = plugins.reduce((acc: Record<string, Record<string, any>>, plugin: AdminPluginMetadata) => {
           const slug = String(plugin?.slug || '').trim();
@@ -133,40 +131,6 @@ export default function PluginLoader() {
           acc[slug] = (plugin as any)?.config?.settings || {};
           return acc;
         }, {});
-
-        const sanitizedMenu = remoteMenu.filter((item: any) => {
-          const path = String(item?.path || '').trim().toLowerCase();
-          // Plugin settings are handled in /plugins/:slug?tab=settings and should not duplicate sidebar entries.
-          if (/^\/[^/]+\/settings\/?$/.test(path)) return false;
-
-          // Generic condition check based on plugin settings
-          if (item?.condition?.setting) {
-            const pluginSlug = String(item.pluginSlug || item.condition?.pluginSlug || 'system');
-            const pluginSettings = pluginSettingsBySlug[pluginSlug] || {};
-            const expectedValue = item.condition.value ?? true;
-
-            let actualValue = pluginSettings[item.condition.setting];
-            if (actualValue === undefined && settings?.[pluginSlug] && typeof settings[pluginSlug] === 'object') {
-              actualValue = settings[pluginSlug][item.condition.setting];
-            }
-            if (actualValue === undefined) {
-              const dottedKey = `${pluginSlug}.${item.condition.setting}`;
-              if (settings?.[dottedKey] !== undefined) {
-                actualValue = settings[dottedKey];
-              } else if (pluginSlug === 'system' && settings?.[item.condition.setting] !== undefined) {
-                actualValue = settings[item.condition.setting];
-              }
-            }
-
-            // If setting exists and doesn't match expected value, hide item.
-            // If setting is undefined, default to visible (opt-out behavior).
-            if (actualValue !== undefined && !PluginConditionUtils.matchesCondition(actualValue, expectedValue)) {
-              return false;
-            }
-          }
-
-          return true;
-        });
 
         if (settings) {
           registerSettings(settings);
@@ -267,21 +231,13 @@ export default function PluginLoader() {
           }
         }
 
-        if (typeof replaceMenuItems === 'function') {
-          replaceMenuItems(sanitizedMenu);
-        } else {
-          for (const menuItem of sanitizedMenu) {
-            registerMenuItem(menuItem);
-          }
-        }
-
       } catch (err) {
         console.error("Failed to load plugin metadata:", err);
       }
     }
 
     loadPlugins();
-  }, [user, isAuthLoading, isReady, registerSlotComponent, registerMenuItem, registerCollection, replaceMenuItems, replaceCollections, registerPlugins, registerSettings, refreshVersion, triggerRefresh]);
+  }, [user, isAuthLoading, isReady, loadConfig, registerSlotComponent, registerCollection, replaceCollections, registerPlugins, registerSettings, refreshVersion, triggerRefresh]);
 
   return null;
 }

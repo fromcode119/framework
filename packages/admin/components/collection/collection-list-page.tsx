@@ -663,8 +663,16 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
                       className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
                     >
                       <FrameworkIcons.Eye size={16} />
-                    </a>
+                      </a>
                   )}
+                  <Slot
+                    name={`admin.collection.${slotSlug}.list.table.actions`}
+                    props={{ row, collection, pluginSlug, resolvedSlug }}
+                  />
+                  <Slot
+                    name="admin.collection.list.table.actions"
+                    props={{ row, collection, pluginSlug, resolvedSlug }}
+                  />
                   <Link 
                     href={`/${pluginSlug}/${slug}/${row.id}`}
                     onClick={(e) => e.stopPropagation()}

@@ -1,10 +1,16 @@
-import { ApiPathUtils, ApiVersionUtils, AppPathConstants, RouteConstants, SystemConstants } from '@fromcode119/core/client';
+import { ApiPathUtils, ApiVersionUtils, AppPathConstants, RouteConstants, RuntimeBridge, SystemConstants } from '@fromcode119/core/client';
 import { AdminPathUtils } from './admin-path';
 
 export class AdminConstants {
   static readonly API_VERSION_PREFIX = ApiVersionUtils.prefix();
 
-  static readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+  static readonly SECONDARY_SIDEBAR = {
+    WIDTH_PX: 280,
+    MOBILE_BREAKPOINT: 1024,
+    PANEL_ID: 'admin-secondary-sidebar-panel',
+  } as const;
+
+  static readonly API_BASE_URL = RuntimeBridge.resolveApiBaseUrl();
 
   static readonly SYSTEM_PLUGIN_SLUG = 'system';
 

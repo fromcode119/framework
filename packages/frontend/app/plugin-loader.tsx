@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { ContextHooks } from '@fromcode119/react';
+import { ApiPathUtils } from '@fromcode119/core/client';
 import { FrontendApiBaseUrl } from '@/lib/api-base-url';
 
 export default function PluginLoader() {
@@ -13,12 +15,36 @@ export default function PluginLoader() {
   const pluginList = Array.isArray(plugins) ? plugins : [];
   const loadedModulesRef = useRef<Set<string>>(new Set());
   const [retryTick, setRetryTick] = useState(0);
-  const getPluginUiAssetUrl = (pluginSlug: string, asset: string) =>
-    `${apiUrl}/plugins/${pluginSlug}/ui/${asset}`;
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
     if (!isReady) return;
+
+    if (theme?.slug) {
+      const themeCss = Array.isArray(theme?.ui?.css) ? theme.ui.css : [];
+      themeCss.forEach((style: string) => {
+        const href = style.startsWith('http') ? style : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, style);
+        if (document.head.querySelector(`link[href="${href}"]`)) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+      });
+
+      const themeEntry = String(theme?.ui?.entry || '').trim();
+      if (themeEntry) {
+        const entryUrl = themeEntry.startsWith('http') ? themeEntry : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, themeEntry);
+        if (!document.querySelector(`script[data-theme-entry="${entryUrl}"]`)) {
+          (window as any).React = React;
+          (window as any).ReactDOM = ReactDOM;
+          const script = document.createElement('script');
+          script.src = entryUrl;
+          script.setAttribute('data-theme-entry', entryUrl);
+          script.onerror = (err) => console.warn('[frontend] Failed to load theme bundle:', err);
+          document.head.appendChild(script);
+        }
+      }
+    }
 
     // Plugin/theme ESM bundles import bare specifiers (e.g. @fromcode119/react).
     // Wait until BOTH the runtime import map script tag exists AND the react bridge
@@ -76,7 +102,7 @@ export default function PluginLoader() {
     // Load plugin runtime modules after import map is registered.
     pluginList.forEach((plugin: any) => {
       if (!plugin?.ui?.entry) return;
-      const moduleUrl = getPluginUiAssetUrl(plugin.slug, plugin.ui.entry);
+      const moduleUrl = ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, plugin.ui.entry);
       void loadModule(`plugin:${plugin.slug}:${plugin.ui.entry}`, moduleUrl);
     });
 
@@ -86,7 +112,7 @@ export default function PluginLoader() {
       if (!css) return;
       const cssList = Array.isArray(css) ? css : [css];
       cssList.forEach((style: string) => {
-        const href = getPluginUiAssetUrl(plugin.slug, style);
+        const href = ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, style);
         if (document.head.querySelector(`link[href="${href}"]`)) return;
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -95,8 +121,6 @@ export default function PluginLoader() {
       });
     });
 
-    // Theme assets are loaded by loadConfig() in PluginsProvider.
-    // Keep PluginLoader focused on plugin runtime modules to avoid duplicate theme imports.
   }, [pluginList, apiUrl, isReady, retryTick, theme]);
 
   return null;

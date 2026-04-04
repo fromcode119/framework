@@ -12,6 +12,9 @@ export type {
   SlotComponent,
   MenuItem,
   CollectionMetadata,
+  SecondaryPanelItem,
+  SecondaryPanelContext,
+  SecondaryPanelState,
   PluginContextValue,
 } from './context.interfaces';
 export * from 'lucide-react';

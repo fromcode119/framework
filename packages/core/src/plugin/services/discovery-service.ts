@@ -25,11 +25,14 @@ const manifestSchema = z.object({
 }).passthrough();
 
 import type { DependencyIssue } from './discovery-service.interfaces';
+import { PluginDependencyInstallerService } from './plugin-dependency-installer-service';
 
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
+  private dependencyInstaller: PluginDependencyInstallerService;
 
   constructor(private pluginsRoot: string, private projectRoot: string) {
+    this.dependencyInstaller = new PluginDependencyInstallerService(projectRoot);
     this.ensureSharedModuleResolution();
   }
 
@@ -140,6 +143,7 @@ export class DiscoveryService {
 
             if (fs.existsSync(indexPath)) {
               try {
+                await this.dependencyInstaller.ensureInstalled(pluginPath);
                 const savedPluginState = existingPlugins.get(manifest.slug as string);
                 const persistedState = installedState[(manifest.slug as string).toLowerCase()];
                 const hasPersistedSandboxConfig = persistedState && Object.prototype.hasOwnProperty.call(persistedState, 'sandboxConfig') && persistedState.sandboxConfig !== undefined;
@@ -404,6 +408,7 @@ export class DiscoveryService {
       fs.mkdirSync(targetDir, { recursive: true });
       
       this.moveDir(contentDir, targetDir);
+      await this.dependencyInstaller.ensureInstalled(targetDir);
       return manifest;
     } finally {
       try {

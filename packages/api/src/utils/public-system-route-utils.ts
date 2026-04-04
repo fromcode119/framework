@@ -9,6 +9,9 @@ export class PublicSystemRouteUtils {
   static readonly HEALTH_SUFFIX = PublicRouteConstants.HEALTH_SUFFIX;
   static readonly ACCOUNT_SELF_SERVICE_SUFFIXES = PublicRouteConstants.ACCOUNT_SELF_SERVICE_SUFFIXES;
   static readonly PLUGIN_ASSETS_PREFIX = PublicRouteConstants.PLUGIN_ASSETS_PREFIX;
+  static readonly THEME_ASSETS_PREFIX = PublicRouteConstants.THEME_ASSETS_PREFIX;
+  static readonly PLUGIN_UI_ASSET_RE = /(?:^|\/)plugins\/[^/]+\/ui\//;
+  static readonly THEME_UI_ASSET_RE = /(?:^|\/)themes\/[^/]+\/ui\//;
 
   static isAuthPath(path: string): boolean {
     const prefixes = ApiConfig.getInstance().prefixes;
@@ -31,13 +34,26 @@ export class PublicSystemRouteUtils {
     return path.includes(PublicSystemRouteUtils.HEALTH_SUFFIX);
   }
 
+  static isPluginAssetPath(path: string): boolean {
+    return PublicSystemRouteUtils.PLUGIN_UI_ASSET_RE.test(path);
+  }
+
+  static isThemeAssetPath(path: string): boolean {
+    return PublicSystemRouteUtils.THEME_UI_ASSET_RE.test(path);
+  }
+
+  static isUiAssetPath(path: string): boolean {
+    return PublicSystemRouteUtils.isPluginAssetPath(path) || PublicSystemRouteUtils.isThemeAssetPath(path);
+  }
+
   static isRateLimitBypassPath(path: string): boolean {
     return (
       PublicSystemRouteUtils.isEventsPath(path) ||
       PublicSystemRouteUtils.isHealthPath(path) ||
       PublicSystemRouteUtils.isFrontendConfigPath(path) ||
       PublicSystemRouteUtils.isI18nPath(path) ||
-      PublicSystemRouteUtils.isAccountSelfServicePath(path)
+      PublicSystemRouteUtils.isAccountSelfServicePath(path) ||
+      PublicSystemRouteUtils.isUiAssetPath(path)
     );
   }
 
@@ -52,7 +68,7 @@ export class PublicSystemRouteUtils {
       PublicSystemRouteUtils.isI18nPath(path) ||
       PublicSystemRouteUtils.isEventsPath(path) ||
       PublicSystemRouteUtils.isFrontendConfigPath(path) ||
-      path.startsWith(PublicSystemRouteUtils.PLUGIN_ASSETS_PREFIX)
+      PublicSystemRouteUtils.isUiAssetPath(path)
     );
   }
 

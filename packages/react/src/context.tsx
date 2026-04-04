@@ -3,7 +3,7 @@
 import React, { useState, ReactNode, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { PluginContextRegistry } from './plugin-context';
-import { SystemConstants, ApiVersionUtils, CookieConstants, BrowserStateClient } from '@fromcode119/core/client';
+import { SystemConstants, ApiVersionUtils, CookieConstants, BrowserStateClient, ApiPathUtils } from '@fromcode119/core/client';
 import { FrameworkIcons } from './framework-icons';
 import { FrameworkIconRegistry } from './framework-icon-registry';
 import { RootFramework } from './root-framework';
@@ -11,7 +11,7 @@ import { SystemShortcodes } from './system-shortcodes';
 import { CollectionQueryUtils } from './collection-queries';
 import { BrowserLocalization } from './browser-localization';
 import { RuntimeConstants, RelationUtils, CoercionUtils, StringUtils, NumberUtils, FormatUtils, LocalizationUtils, CollectionUtils, PaginationUtils, HookEventUtils } from '@fromcode119/core/client';
-import type { SlotComponent, MenuItem, CollectionMetadata, PluginContextValue } from './context.interfaces';
+import type { SlotComponent, MenuItem, CollectionMetadata, PluginContextValue, SecondaryPanelState } from './context.interfaces';
 import { ContextRuntimeBridge } from './context-runtime-bridge';
 
 type PluginsProviderProps = {
@@ -21,6 +21,22 @@ type PluginsProviderProps = {
 };
 
 const inFlightGetRequests = new Map<string, Promise<any>>();
+
+const emptySecondaryPanelState = (): SecondaryPanelState => ({
+  version: 1,
+  contexts: {},
+  itemsByContext: {},
+  globalItems: [],
+  policy: {
+    allowlistKey: 'admin.secondaryPanel.allowlist.v1',
+    allowlistEntries: 0,
+    evaluatedAt: new Date(0).toISOString(),
+  },
+  precedence: {
+    scopeOrder: ['self', 'plugin-target', 'global'],
+    tieBreakOrder: ['priority-asc', 'canonicalId-asc'],
+  },
+});
 
 const getFrontendConfigPath = (): string => {
   const path = SystemConstants?.API_PATH?.SYSTEM?.FRONTEND;
@@ -106,6 +122,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
   const [themeLayouts, setThemeLayouts] = useState<Record<string, any>>({});
   const [activeTheme, setActiveTheme] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [secondaryPanel, setSecondaryPanel] = useState<SecondaryPanelState>(emptySecondaryPanelState());
   const [collections, setCollections] = useState<CollectionMetadata[]>([]);
   const [fieldComponents, setFieldComponents] = useState<Record<string, any>>({});
   const [plugins, setPlugins] = useState<any[]>([]);
@@ -310,6 +327,8 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
         setMenuItems(data.menu);
       }
 
+      setSecondaryPanel(data.secondaryPanel || emptySecondaryPanelState());
+
       if (data.settings) {
         setSettings(data.settings);
       }
@@ -329,12 +348,10 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
         setThemeVariables(data.activeTheme.variables || {});
         
         const theme = data.activeTheme;
-        const baseThemeUrl = `${base}/themes/${theme.slug}`;
-
         // Load Theme CSS
         if (theme.ui?.css) {
            theme.ui.css.forEach((cssPath: string) => {
-              const fullUrl = cssPath.startsWith('http') ? cssPath : `${baseThemeUrl}/ui/${cssPath}`;
+              const fullUrl = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(base, theme.slug, cssPath);
               if (!document.querySelector(`link[href="${fullUrl}"]`)) {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
@@ -348,7 +365,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
         // IIFE bundles reference React/ReactDOM as globals, so we expose them on
         // window before injecting the script tag.
         if (theme.ui?.entry) {
-          const entryUrl = theme.ui.entry.startsWith('http') ? theme.ui.entry : `${baseThemeUrl}/ui/${theme.ui.entry}`;
+          const entryUrl = theme.ui.entry.startsWith('http') ? theme.ui.entry : ApiPathUtils.themeUiAssetUrl(base, theme.slug, theme.ui.entry);
           if (!document.querySelector(`script[data-theme-entry="${entryUrl}"]`)) {
             (window as any).React = React;
             (window as any).ReactDOM = ReactDOM;
@@ -381,6 +398,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       themeVariables: state.themeVariables ?? {},
       settings: state.settings ?? {},
       menuItems: Array.isArray(state.menuItems) ? state.menuItems : [],
+      secondaryPanel: state.secondaryPanel ?? emptySecondaryPanelState(),
       collections: Array.isArray(state.collections) ? state.collections : [],
       plugins: Array.isArray(state.plugins) ? state.plugins : []
     };
@@ -451,6 +469,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     setSlots({});
     setOverrides({});
     setMenuItems([]);
+    setSecondaryPanel(emptySecondaryPanelState());
     setCollections([]);
     
     // Reload translations to pick up any newly activated plugin languages
@@ -483,7 +502,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
 
   // Use a ref for state and logic that the bridge needs but should not trigger effect re-runs
   const stabilityRef = React.useRef({
-    slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
+    slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, secondaryPanel, collections, 
     fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
     triggerRefresh, api, resolveContent, getAPI, getPluginApi, hasPluginApi, setLocale, t, emit, on,
     loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl
@@ -491,12 +510,12 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
 
   React.useEffect(() => {
     stabilityRef.current = {
-      slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, 
+      slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, secondaryPanel, collections, 
       fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady,
       triggerRefresh, api, resolveContent, getAPI, getPluginApi, hasPluginApi, setLocale, t, emit, on,
       loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl
     };
-  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady, triggerRefresh, api, resolveContent, getAPI, getPluginApi, hasPluginApi, setLocale, t, emit, on, loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl]);
+  }, [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, secondaryPanel, collections, fieldComponents, plugins, settings, translations, locale, refreshVersion, isReady, triggerRefresh, api, resolveContent, getAPI, getPluginApi, hasPluginApi, setLocale, t, emit, on, loadConfig, getFrontendMetadata, serverRuntimeModules, runtimeModules, apiUrl]);
 
   // NEW: Stable bridge wrappers to prevent re-injection loops for functions with volatile dependencies
   const stableT = useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
@@ -807,6 +826,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     themeLayouts,
     activeTheme,
     menuItems,
+    secondaryPanel,
     collections,
     fieldComponents,
     plugins,
@@ -841,7 +861,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     getFrontendMetadata,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, secondaryPanel, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
 
   return (
     <PluginContextRegistry.Context.Provider value={value}>
