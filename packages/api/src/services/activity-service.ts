@@ -23,7 +23,7 @@ export class ActivityService {
             id: `${c.slug}-${row[pk]}`,
             type: 'record',
             collection: c.slug,
-            collectionName: c.name || c.slug,
+            collectionName: c.displayName || c.slug,
             recordId: row[pk],
             title: row[c.admin?.useAsTitle || pk] || `Record #${row[pk]}`,
             timestamp: row.updatedAt || row.createdAt || row.updated_at || row.created_at || new Date(),

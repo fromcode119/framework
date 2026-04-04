@@ -9,3 +9,4 @@ themes/*/bundle.js.map
 .env
 node_modules/
 .DS_Store
+*.tsbuildinfo

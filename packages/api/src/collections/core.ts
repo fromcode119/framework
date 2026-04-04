@@ -4,7 +4,7 @@ import { MediaCollection } from '@fromcode119/media';
 export class CoreCollections {
   static readonly user: Collection = {
     slug: 'users',
-    name: 'Users',
+    displayName: 'Users',
     tableName: SystemConstants.TABLE.USERS,
     system: true,
     fields: [
@@ -32,7 +32,7 @@ export class CoreCollections {
 
   static readonly settings: Collection = {
     slug: 'settings',
-    name: 'Global Settings',
+    displayName: 'Global Settings',
     tableName: SystemConstants.TABLE.META,
     primaryKey: 'key',
     timestamps: false,
