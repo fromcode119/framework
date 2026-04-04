@@ -8,4 +8,5 @@ export class PublicRouteConstants {
   static readonly HEALTH_SUFFIX = SystemConstants.API_PATH.SYSTEM.HEALTH;
   static readonly ACCOUNT_SELF_SERVICE_SUFFIXES = SystemConstants.API_PATH.AUTH.ACCOUNT_SELF_SERVICE;
   static readonly PLUGIN_ASSETS_PREFIX = SystemConstants.PUBLIC_ROUTE_PREFIXES.PLUGIN_ASSETS;
+  static readonly THEME_ASSETS_PREFIX = SystemConstants.PUBLIC_ROUTE_PREFIXES.THEME_ASSETS;
 }

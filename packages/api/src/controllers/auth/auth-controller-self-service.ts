@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSecurity } from './auth-controller-security';
 import { SystemTwoFactorService } from '../system-2fa-service';
+import { AuthProfileService } from '../../services/auth-profile-service';
 import { UserManagementService } from '../../services/user-management-service';
 
 export class AuthControllerSelfService extends AuthControllerSecurity {
@@ -26,7 +27,6 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
         email: this.normalizeEmail(user.email),
         firstName: this.readUserFirstName(user),
         lastName: this.readUserLastName(user),
-        phone: profile.phone,
         roles: this.readRoles(user),
       },
       profile,
@@ -55,28 +55,22 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const profile = this.sanitizeProfilePayload(req.body || {});
+    const userNameFields = AuthProfileService.extractUserNameFields(profile);
+    const profileMeta = AuthProfileService.stripUserNameFields(profile);
     await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, {
-      firstName: profile.firstName || null,
-      lastName: profile.lastName || null,
+      firstName: userNameFields.firstName || null,
+      lastName: userNameFields.lastName || null,
       updatedAt: new Date(),
     });
-    await this.upsertMeta(this.getProfileKey(userId), JSON.stringify({
-      phone: profile.phone,
-      addressLine1: profile.addressLine1,
-      addressLine2: profile.addressLine2,
-      city: profile.city,
-      postalCode: profile.postalCode,
-      country: profile.country,
-    }));
+    await this.upsertMeta(this.getProfileKey(userId), JSON.stringify(profileMeta));
 
     return res.json({
       success: true,
       user: {
         id: userId,
         email: this.normalizeEmail(user.email),
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        phone: profile.phone,
+        firstName: userNameFields.firstName,
+        lastName: userNameFields.lastName,
         roles: this.readRoles(user),
       },
       profile,
@@ -137,48 +131,11 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
 
   protected async readProfile(userId: number): Promise<Record<string, string>> {
     const row = await this.readMetaRow(this.getProfileKey(userId));
-    const baseProfile = {
-      firstName: '',
-      lastName: '',
-      phone: '',
-      addressLine1: '',
-      addressLine2: '',
-      city: '',
-      postalCode: '',
-      country: 'BG',
-    };
-
-    if (!row?.value) {
-      return baseProfile;
-    }
-
-    try {
-      const parsed = JSON.parse(String(row.value));
-      return {
-        ...baseProfile,
-        phone: String(parsed?.phone || '').trim(),
-        addressLine1: String(parsed?.addressLine1 || '').trim(),
-        addressLine2: String(parsed?.addressLine2 || '').trim(),
-        city: String(parsed?.city || '').trim(),
-        postalCode: String(parsed?.postalCode || '').trim(),
-        country: String(parsed?.country || 'BG').trim().toUpperCase() || 'BG',
-      };
-    } catch {
-      return baseProfile;
-    }
+    return AuthProfileService.parseStoredProfile(row?.value);
   }
 
   protected sanitizeProfilePayload(payload: Record<string, any>): Record<string, string> {
-    return {
-      firstName: String(payload.firstName || '').trim(),
-      lastName: String(payload.lastName || '').trim(),
-      phone: String(payload.phone || '').trim(),
-      addressLine1: String(payload.addressLine1 || '').trim(),
-      addressLine2: String(payload.addressLine2 || '').trim(),
-      city: String(payload.city || '').trim(),
-      postalCode: String(payload.postalCode || '').trim(),
-      country: String(payload.country || 'BG').trim().toUpperCase() || 'BG',
-    };
+    return AuthProfileService.sanitizeProfilePayload(payload);
   }
 
   protected getTwoFactorService(): SystemTwoFactorService {

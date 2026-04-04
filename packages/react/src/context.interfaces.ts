@@ -26,6 +26,51 @@ export interface CollectionMetadata {
   admin?: any;
 }
 
+export interface SecondaryPanelItem {
+  canonicalId: string;
+  id: string;
+  label: string;
+  path: string;
+  sourcePaths: string[];
+  icon?: string;
+  scope: string;
+  sourceNamespace: string;
+  sourcePlugin: string;
+  sourceCanonicalKey: string;
+  targetNamespace: string;
+  targetPlugin: string;
+  targetCanonicalKey: string;
+  priority: number;
+  group?: string;
+  description?: string;
+  requiredRoles: string[];
+  requiredCapabilities: string[];
+}
+
+export interface SecondaryPanelContext {
+  id: string;
+  label: string;
+  targetNamespace: string;
+  targetPlugin: string;
+  targetCanonicalKey: string;
+}
+
+export interface SecondaryPanelState {
+  version: number;
+  contexts: Record<string, SecondaryPanelContext>;
+  itemsByContext: Record<string, SecondaryPanelItem[]>;
+  globalItems: SecondaryPanelItem[];
+  policy: {
+    allowlistKey: string;
+    allowlistEntries: number;
+    evaluatedAt: string;
+  };
+  precedence: {
+    scopeOrder: string[];
+    tieBreakOrder: string[];
+  };
+}
+
 export interface PluginContextValue {
   slots: Record<string, SlotComponent[]>;
   overrides: Record<string, SlotComponent>;
@@ -33,6 +78,7 @@ export interface PluginContextValue {
   themeLayouts: Record<string, any>;
   activeTheme: any;
   menuItems: MenuItem[];
+  secondaryPanel: SecondaryPanelState;
   collections: CollectionMetadata[];
   fieldComponents: Record<string, React.ComponentType<any>>;
   plugins: any[];

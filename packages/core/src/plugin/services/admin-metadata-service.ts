@@ -5,14 +5,26 @@ import { AdminRouteUtils } from './admin-route-utils';
 import { AppPathConstants } from '../../app-path-constants';
 import { SystemConstants } from '../../constants';
 import { ApiPathUtils } from '../../api/api-path-utils';
+import { AdminSecondaryPanelAllowlistEntry, AdminSecondaryPanelInputItem, AdminSecondaryPanelNormalizedItem, AdminSecondaryPanelRejection } from './admin-secondary-panel.interfaces';
+import { AdminSecondaryPanelNormalizer } from './admin-secondary-panel-normalizer';
+import { AdminSecondaryPanelGuard } from './admin-secondary-panel-guard';
+import { AdminSecondaryPanelGovernanceService } from './admin-secondary-panel-governance-service';
+import { AdminSecondaryPanelPrecedenceService } from './admin-secondary-panel-precedence-service';
+import { AdminSecondaryPanelResolver } from './admin-secondary-panel-resolver';
 
 export class AdminMetadataService {
   private logger = new Logger({ namespace: 'admin-metadata-service' });
+  private secondaryPanelNormalizer = new AdminSecondaryPanelNormalizer();
+  private secondaryPanelGuard = new AdminSecondaryPanelGuard();
+  private secondaryPanelGovernance = new AdminSecondaryPanelGovernanceService();
+  private secondaryPanelPrecedence = new AdminSecondaryPanelPrecedenceService();
+  private secondaryPanelResolver = new AdminSecondaryPanelResolver();
 
   public getAdminMetadata(
     allPlugins: LoadedPlugin[],
     registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>,
-    runtimeModules: any
+    runtimeModules: any,
+    allowlistEntries: AdminSecondaryPanelAllowlistEntry[] = []
   ) {
     const pluginMetadata = allPlugins
       .filter(p => p.state === 'active' && p.manifest.admin)
@@ -80,6 +92,11 @@ export class AdminMetadataService {
           .map((slotDef) => String(slotDef?.slot || '').trim())
           .filter(Boolean)
       );
+      const secondaryPanelPaths = new Set<string>(
+        ((p.admin?.secondaryPanel?.items || []) as Array<{ path?: string }>)
+          .map((item) => String(item?.path || '').trim().toLowerCase())
+          .filter(Boolean)
+      );
       const contentSlot = `admin.plugin.${slug}.content`;
 
       if (p.admin?.menu) {
@@ -135,6 +152,10 @@ export class AdminMetadataService {
           // Shorter URL for primary collections (e.g. /forms instead of /forms/forms)
           if (shortSlug === slug) {
               path = `/${slug}`;
+          }
+
+          if (secondaryPanelPaths.has(path.toLowerCase())) {
+            return;
           }
           
           const label = col.name || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1);
@@ -231,11 +252,49 @@ export class AdminMetadataService {
 
     const dedupedMenu = CoreServices.getInstance().menu.deduplicate(sorted);
 
+    const secondaryPanel = this.buildSecondaryPanel(allPlugins, allowlistEntries);
+
     return {
       plugins: pluginMetadata,
       menu: dedupedMenu,
+      secondaryPanel,
       runtimeModules
     };
+  }
+
+  private buildSecondaryPanel(allPlugins: LoadedPlugin[], allowlistEntries: AdminSecondaryPanelAllowlistEntry[]) {
+    const normalizedItems = allPlugins
+      .filter(plugin => plugin.state === 'active')
+      .flatMap((plugin) => this.getSecondaryPanelInputs(plugin))
+      .map((input) => this.secondaryPanelNormalizer.normalize(input));
+
+    const accepted: AdminSecondaryPanelNormalizedItem[] = [];
+    for (const item of normalizedItems) {
+      const guardRejection = this.secondaryPanelGuard.validate(item);
+      if (guardRejection) {
+        this.logSecondaryPanelRejection(guardRejection);
+        continue;
+      }
+      const governanceRejection = this.secondaryPanelGovernance.isAllowed(item, allowlistEntries);
+      if (governanceRejection) {
+        this.logSecondaryPanelRejection(governanceRejection);
+        continue;
+      }
+      accepted.push(item);
+    }
+    return this.secondaryPanelResolver.resolve(this.secondaryPanelPrecedence.apply(accepted), allowlistEntries.length);
+  }
+
+  private getSecondaryPanelInputs(plugin: LoadedPlugin): AdminSecondaryPanelInputItem[] {
+    const sourceNamespace = String(plugin.manifest.namespace || '').trim().toLowerCase();
+    const sourcePlugin = String(plugin.manifest.slug || '').trim().toLowerCase();
+    const sourceCanonicalKey = `${sourceNamespace}:${sourcePlugin}`;
+    const items = plugin.manifest.admin?.secondaryPanel?.items || [];
+    return items.map((item) => ({ sourceNamespace, sourcePlugin, sourceCanonicalKey, item }));
+  }
+
+  private logSecondaryPanelRejection(rejection: AdminSecondaryPanelRejection): void {
+    this.logger.warn(`[admin-secondary-panel] REJECTED ${JSON.stringify(rejection)}`);
   }
 
   private pluginUiAssetPath(slug: string, asset: string): string {

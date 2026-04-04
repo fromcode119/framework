@@ -42,6 +42,16 @@ export class NavUtils {
     return matches[0] || null;
   }
 
+  static resolveBestMatchEntry<T extends { path?: string }>(pathname: string, entries: T[]): T | null {
+    const normalizedEntries = (entries || []).filter((entry) => NavUtils.normalizePath(entry?.path));
+    const bestPath = NavUtils.resolveBestMatchPath(pathname, normalizedEntries.map((entry) => String(entry.path || '')));
+    if (!bestPath) {
+      return null;
+    }
+
+    return normalizedEntries.find((entry) => NavUtils.normalizePath(entry.path) === bestPath) || null;
+  }
+
   static isPathActive(pathname: string, itemPath?: string, candidatePaths: string[] = []): boolean {
     const target = NavUtils.normalizePath(itemPath);
     if (!target) return false;

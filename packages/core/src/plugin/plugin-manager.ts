@@ -35,6 +35,7 @@ import { PluginRegistry } from '@fromcode119/plugins';
 import { IntegrationManager } from '../integrations';
 import { PluginTelemetryService } from './services/plugin-telemetry-service';
 import { PluginScaffoldService } from './services/plugin-scaffold-service';
+import { AdminSecondaryPanelAllowlistEntry } from './services/admin-secondary-panel.interfaces';
 
 export class PluginManager implements PluginManagerInterface {
   public audit: AuditManager;
@@ -433,12 +434,29 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   getRuntimeModules() { return this.runtime.getModules(this.getPlugins().filter(p => p.state === 'active')); }
-  getAdminMetadata() { 
+  async getAdminMetadata() {
+    const allowlistEntries = await this.getSecondaryPanelAllowlistEntries();
     return this.admin.getAdminMetadata(
       this.getSortedPlugins(), 
       this.registeredCollections, 
-      this.getRuntimeModules()
+      this.getRuntimeModules(),
+      allowlistEntries,
     ); 
+  }
+
+  private async getSecondaryPanelAllowlistEntries(): Promise<AdminSecondaryPanelAllowlistEntry[]> {
+    try {
+      const records = await (this.db as any).find(SystemConstants.TABLE.META);
+      const row = (records || []).find((entry: any) => String(entry?.key || '') === 'admin.secondaryPanel.allowlist.v1');
+      if (!row || row.value === null || row.value === undefined) {
+        return [];
+      }
+      const parsed = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      this.logger.warn(`[secondary-panel] Failed to load allowlist: ${error instanceof Error ? error.message : String(error)}`);
+      return [];
+    }
   }
 
   getImportMap() {

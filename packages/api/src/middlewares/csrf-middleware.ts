@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { CookieConstants, Logger } from '@fromcode119/core';
 import { RequestCookieService } from '../services/request-cookie-service';
 import { ApiUrlUtils } from '../utils/url';
+import { WebhookRouteUtils } from '../utils/webhook-route-utils';
 import { BaseMiddleware } from './base-middleware';
 
 export class CSRFMiddleware extends BaseMiddleware {
@@ -58,7 +59,7 @@ export class CSRFMiddleware extends BaseMiddleware {
     }
 
     // 4. Skip for webhooks (usually have their own signature verification)
-    if (req.path.includes('/webhooks/')) {
+    if (WebhookRouteUtils.isWebhookPath(req.path)) {
         return next();
     }
 

@@ -54,6 +54,7 @@ import {
   ServerSettingsService,
 } from './server/index';
 import { PublicSystemRouteUtils } from './utils/public-system-route-utils';
+import { WebhookRouteUtils } from './utils/webhook-route-utils';
 
 export class APIServer {
   public app = express();
@@ -162,7 +163,14 @@ export class APIServer {
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';
     const formBodyLimit = process.env.API_FORM_BODY_LIMIT || jsonBodyLimit;
-    this.app.use(express.json({ limit: jsonBodyLimit }));
+    this.app.use(express.json({
+      limit: jsonBodyLimit,
+      verify: (req: any, _res, buf, encoding) => {
+        if (WebhookRouteUtils.isWebhookPath(String(req?.path || ''))) {
+          req.rawBody = buf.toString((encoding as BufferEncoding) || 'utf8');
+        }
+      }
+    }));
     this.app.use(express.urlencoded({ extended: true, limit: formBodyLimit }));
     this.app.use(new XSSMiddleware().middleware());
     this.app.use(cookieParser());

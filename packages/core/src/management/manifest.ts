@@ -57,6 +57,46 @@ export const PluginManifestSchema = z.object({
     ]).optional(),
     icon: z.string().optional(),
     menu: z.array(z.any()).optional(),
+    secondaryPanel: z.object({
+      items: z.array(
+        z.object({
+          id: z.string().min(1),
+          label: z.string().min(1),
+          path: z.string().regex(/^\/[A-Za-z0-9\-\/_]*$/, 'Secondary panel path must start with /'),
+          sourcePaths: z.array(z.string().regex(/^\/[A-Za-z0-9\-\/_]*$/, 'Secondary panel source path must start with /')).optional(),
+          icon: z.string().optional(),
+          scope: z.enum(['self', 'plugin-target', 'global']).optional().default('self'),
+          targetNamespace: z.string().regex(/^[a-z0-9.-]+$/, 'targetNamespace must be lowercase alphanumeric with dots or hyphens').optional(),
+          targetPlugin: z.string().regex(/^[a-z0-9-]+$/, 'targetPlugin must be lowercase alphanumeric with hyphens').optional(),
+          priority: z.number().int().optional(),
+          requiredRoles: z.array(z.string()).optional(),
+          requiredCapabilities: z.array(z.string()).optional(),
+          group: z.string().optional(),
+          description: z.string().optional(),
+          sourceNamespace: z.string().optional(),
+          sourcePlugin: z.string().optional(),
+          allowGlobal: z.boolean().optional(),
+          governanceKey: z.string().optional(),
+        }).superRefine((item, ctx) => {
+          if (item.scope === 'plugin-target') {
+            if (!item.targetNamespace) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['targetNamespace'], message: 'targetNamespace is required for plugin-target scope' });
+            }
+            if (!item.targetPlugin) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['targetPlugin'], message: 'targetPlugin is required for plugin-target scope' });
+            }
+          }
+          if (item.scope === 'global') {
+            if (item.allowGlobal !== true) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['allowGlobal'], message: 'allowGlobal=true is required for global scope' });
+            }
+            if (!String(item.governanceKey || '').trim()) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['governanceKey'], message: 'governanceKey is required for global scope' });
+            }
+          }
+        })
+      ).optional()
+    }).optional(),
     slots: z.array(z.object({
       slot: z.string(),
       component: z.string(),

@@ -7,6 +7,7 @@
 import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerTokenSupport } from './auth-controller-token-support';
+import type { LoginThrottleSettings, LoginThrottleState } from './auth-controller.interfaces';
 
 export abstract class AuthControllerRegistration extends AuthControllerTokenSupport {
   protected sanitizeAuthFlowContext(raw: any): Record<string, any> | undefined {
@@ -26,6 +27,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   async register(req: Request, res: Response) {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
     if (!(await this.isFrontendRegistrationEnabled())) return res.status(404).json({ error: 'Not found' });
+    if (this.parseUserId((req as any)?.user?.id)) return res.status(409).json({ error: 'You are already signed in' });
 
     const { email, password, firstName, lastName, context } = req.body || {};
     const normalizedEmail = this.normalizeEmail(email);
@@ -74,12 +76,64 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
 
   async resendVerification(req: Request, res: Response) {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
+    const { captchaToken } = req.body || {};
     const email = this.normalizeEmail(req.body?.email);
     if (!email || !this.isValidEmail(email)) return res.status(400).json({ error: 'A valid email is required' });
+    const throttleKey = this.getVerificationResendThrottleKey(email, req.ip || '');
+    const throttleSettings = await this.getVerificationResendThrottleSettings();
+    const existingThrottleState = await this.readLoginThrottleState(throttleKey);
+
+    if (this.isVerificationResendLocked(existingThrottleState)) {
+      return res.status(429).json({
+        error: 'Too many verification email requests. Please try again later.',
+        lockedUntil: existingThrottleState.lockedUntil || null
+      });
+    }
+
+    const throttleState = await this.recordVerificationResendAttempt(throttleKey, throttleSettings);
+
+    if (this.isVerificationResendLocked(throttleState)) {
+      return res.status(429).json({
+        error: 'Too many verification email requests. Please try again later.',
+        lockedUntil: throttleState.lockedUntil || null
+      });
+    }
+
+    const requiresCaptcha = this.requiresVerificationResendCaptcha(throttleSettings);
+    if (requiresCaptcha && !String(captchaToken || '').trim()) {
+      return res.status(400).json({
+        error: 'Captcha verification is required before sending another verification email.',
+        requiresCaptcha: true
+      });
+    }
+
+    if (String(captchaToken || '').trim()) {
+      try {
+        const captchaResult = await this.manager.hooks.call('auth:captcha:verify', {
+          token: String(captchaToken || '').trim(),
+          ip: req.ip,
+          email
+        }) as Record<string, unknown> | undefined;
+        if (captchaResult && captchaResult.valid === false) {
+          return res.status(400).json({
+            error: String(captchaResult.message || 'Captcha verification failed.'),
+            requiresCaptcha: true
+          });
+        }
+      } catch (captchaError: unknown) {
+        return res.status(400).json({
+          error: captchaError instanceof Error ? captchaError.message : 'Captcha verification failed.',
+          requiresCaptcha: true
+        });
+      }
+    }
+
     const user = await this.db.findOne(SystemConstants.TABLE.USERS, { email });
     if (!user) return res.json({ success: true, message: 'If an account exists, a verification email has been sent.' });
     const verified = await this.isEmailVerified(user.id);
-    if (verified) return res.json({ success: true, message: 'Email is already verified.' });
+    if (verified) {
+      return res.json({ success: true, alreadyVerified: true, message: 'Email is already verified.' });
+    }
     const verification = await this.issueEmailVerificationToken(user.id, email);
     const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);
     const emailSent = await this.sendVerificationEmail({ to: email, verificationUrl, firstName: this.readUserFirstName(user) });
@@ -108,5 +162,61 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     const referer = String(req.get('referer') || '').trim();
     if (referer) { try { return new URL(referer).hostname.startsWith('frontend.'); } catch { return false; } }
     return false;
+  }
+
+  protected async getVerificationResendThrottleSettings(): Promise<LoginThrottleSettings> {
+    return {
+      threshold: 5,
+      windowMinutes: 10,
+      lockoutMinutes: 15,
+      captchaEnabled: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED, false),
+      captchaThreshold: 1
+    };
+  }
+
+  protected getVerificationResendThrottleKey(email: string, ip: string): string {
+    const normalizedEmail = this.normalizeEmail(email);
+    const normalizedIp = String(ip || '').trim() || 'unknown';
+    return `auth:verification_resend:${this.normalizeEmail(`${normalizedEmail}|${normalizedIp}`)}`;
+  }
+
+  protected isVerificationResendLocked(state: LoginThrottleState): boolean {
+    return this.isLoginLocked(state);
+  }
+
+  protected requiresVerificationResendCaptcha(settings: LoginThrottleSettings): boolean {
+    return settings.captchaEnabled;
+  }
+
+  protected async recordVerificationResendAttempt(
+    key: string,
+    settings: LoginThrottleSettings
+  ): Promise<LoginThrottleState> {
+    const state = await this.readLoginThrottleState(key);
+    const now = Date.now();
+    const windowMs = settings.windowMinutes * 60 * 1000;
+    let countAttempts = 1;
+
+    if (state.lastFailureAt) {
+      const lastAt = new Date(state.lastFailureAt).getTime();
+      if (!Number.isNaN(lastAt) && now - lastAt <= windowMs) {
+        countAttempts = Number(state.count || 0) + 1;
+      }
+    }
+
+    const payload: LoginThrottleState = {
+      count: countAttempts,
+      firstFailureAt: countAttempts === 1
+        ? new Date(now).toISOString()
+        : (state.firstFailureAt || new Date(now).toISOString()),
+      lastFailureAt: new Date(now).toISOString()
+    };
+
+    if (countAttempts >= settings.threshold) {
+      payload.lockedUntil = new Date(now + settings.lockoutMinutes * 60 * 1000).toISOString();
+    }
+
+    await this.upsertMeta(key, JSON.stringify(payload));
+    return payload;
   }
 }
