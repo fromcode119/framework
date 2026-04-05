@@ -1,4 +1,3 @@
-import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { BaseService } from './base-service';
 
 export class CollectionIdentityService extends BaseService {
@@ -14,8 +13,7 @@ export class CollectionIdentityService extends BaseService {
   }
 
   isPhysicalIdentifier(value: string): boolean {
-    const normalizedValue = String(value || '').trim().toLowerCase();
-    return PhysicalTableNameUtils.hasPlatformPrefix(normalizedValue);
+    return false;
   }
 
   isInternalCollectionIdentifier(value: string): boolean {
@@ -24,18 +22,19 @@ export class CollectionIdentityService extends BaseService {
   }
 
   createPhysicalSlug(pluginSlug: string, collectionSlug: string): string {
-    return PhysicalTableNameUtils.create(pluginSlug, collectionSlug);
+    const normalizedPluginSlug = this.normalizeIdentifierSegment(pluginSlug);
+    const normalizedCollectionSlug = this.normalizeIdentifierSegment(collectionSlug);
+    if (!normalizedPluginSlug || !normalizedCollectionSlug) {
+      return '';
+    }
+
+    return `${normalizedPluginSlug}_${normalizedCollectionSlug}`;
   }
 
   extractPluginSlug(value: string): string {
     const rawValue = String(value || '').trim().toLowerCase();
     if (!rawValue) {
       return '';
-    }
-
-    const parsedReference = PhysicalTableNameUtils.parse(rawValue);
-    if (parsedReference) {
-      return parsedReference.pluginSlug;
     }
 
     if (rawValue.startsWith('@')) {
@@ -76,16 +75,6 @@ export class CollectionIdentityService extends BaseService {
     };
 
     push(rawValue);
-
-    const parsedReference = PhysicalTableNameUtils.parse(rawValue);
-    if (parsedReference) {
-      push(parsedReference.physicalName);
-      push(parsedReference.semanticName);
-      push(parsedReference.tableName);
-      push(parsedReference.tableName.replace(/_/g, '-'));
-      push(`${parsedReference.pluginSlug}-${parsedReference.tableName.replace(/_/g, '-')}`);
-      return Array.from(candidates);
-    }
 
     const pluginSlug = this.normalizeIdentifierSegment(requestedPluginSlug || this.extractPluginSlug(rawValue));
     const collectionSlug = this.resolveCollectionTail(rawValue, pluginSlug);

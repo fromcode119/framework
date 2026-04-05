@@ -336,7 +336,7 @@ export class IntegrationRegistry {
         storedProfiles.profiles.find((p) => p.id === storedProfiles.activeProfileId) || storedProfiles.profiles[0];
       if (activeProfile?.providerKey) return { providerKey: activeProfile.providerKey, config: activeProfile.config || {} };
     }
-    return this.profileService.readStored(normalizedType);
+    return null;
   }
 
   async readStoredProfilesConfig(typeKey: string): Promise<IntegrationStoredProfiles | null> {
@@ -406,11 +406,6 @@ export class IntegrationRegistry {
     } catch (error: any) {
       this.logger.warn(`Failed to read integration providers for "${normalizedType}": ${error?.message || String(error)}`);
     }
-
-    const legacy = await this.profileService.readStored(normalizedType);
-    if (legacy?.providerKey && runtime.providers.has(legacy.providerKey)) {
-      return [{ id: `${legacy.providerKey}-1`, providerKey: legacy.providerKey, config: legacy.config || {}, enabled: true }];
-    }
     return null;
   }
 
@@ -439,9 +434,6 @@ export class IntegrationRegistry {
       group: 'integrations',
       description: `Provider configurations for ${normalizedType} integration.`,
     });
-
-    const primary = normalizedProviders.find((e) => e.enabled !== false) || normalizedProviders[0];
-    await this.profileService.writeStored(normalizedType, primary.providerKey, primary.config || {});
   }
 
   private normalize(value: string) {

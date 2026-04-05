@@ -65,11 +65,6 @@ export class ContextHooks {
     return useMemo(() => sdk.getPlugin(slug), [sdk, slug]);
   }
 
-  /** @deprecated Use ContextHooks.usePlugin() */
-  static usePluginAPI(slug: string) {
-    return ContextHooks.usePlugin(slug);
-  }
-
   static useAuth() {
     const sdk = ContextHooks.useSdk();
     return useMemo(() => sdk.getAuth(), [sdk]);
@@ -90,19 +85,9 @@ export class ContextHooks {
     return useMemo(() => sdk.getBrowserState(), [sdk]);
   }
 
-  /** @deprecated Use ContextHooks.useAuth() */
-  static useAuthAPI() {
-    return ContextHooks.useAuth();
-  }
-
   static useSystem() {
     const sdk = ContextHooks.useSdk();
     return useMemo(() => sdk.getSystem(), [sdk]);
-  }
-
-  /** @deprecated Use ContextHooks.useSystem() */
-  static useSystemAPI() {
-    return ContextHooks.useSystem();
   }
 
   static useCollection(collectionSlug: string) {
@@ -110,19 +95,9 @@ export class ContextHooks {
     return useMemo(() => sdk.getCollection(collectionSlug), [collectionSlug, sdk]);
   }
 
-  /** @deprecated Use ContextHooks.useCollection() */
-  static useCollectionAPI(collectionSlug: string) {
-    return ContextHooks.useCollection(collectionSlug);
-  }
-
   static useTheme(slug: string) {
     const sdk = ContextHooks.useSdk();
     return useMemo(() => sdk.getTheme(slug), [sdk, slug]);
-  }
-
-  /** @deprecated Use ContextHooks.useTheme() */
-  static useThemeAPI(slug: string) {
-    return ContextHooks.useTheme(slug);
   }
 
   static useSettings() {
