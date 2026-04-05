@@ -1,6 +1,5 @@
 import type { CoreExtensionContext } from '@fromcode119/core';
 import { ProviderCapabilitiesUtils } from './gateways/integration-provider';
-import { AssistantRouter } from './api/routes';
 
 export class AiExtension {
   static async onInit(context: CoreExtensionContext): Promise<void> {
@@ -24,13 +23,6 @@ export class AiExtension {
     context.registerCapability('mcp');
     context.registerCapability('llm');
     context.registerCapability('forge-assistant');
-
-    if (context.registerApiRoutes) {
-      context.registerApiRoutes(AssistantRouter.create);
-      logger.info('Registered Assistant API routes factory');
-    } else {
-      logger.warn('API route registration not available');
-    }
 
     logger.info('AI extension initialized successfully');
   }

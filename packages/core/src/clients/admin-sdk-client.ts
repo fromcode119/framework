@@ -17,9 +17,4 @@ export class AdminSdkClient {
   getCollection(slug: string): AdminResourceClient {
     return new AdminResourceClient(this.baseUrl, slug);
   }
-
-  /** @deprecated Use getCollection() */
-  getResource(slug: string): AdminResourceClient {
-    return this.getCollection(slug);
-  }
 }

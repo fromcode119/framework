@@ -25,7 +25,6 @@ export class CoreExtensionManager {
   private db: IDatabaseManager;
   private packagesRoot: string;
   private capabilities: Set<string> = new Set();
-  private registeredApiRoutes: Map<string, any> = new Map(); // Store router factory functions by extension slug
   private registeredAdminSlots: Map<string, Array<{ slot: string; component: any; priority: number; extensionSlug: string }>> = new Map(); // Store admin UI slots by slot name
   
   // Framework services that extensions can use
@@ -280,14 +279,6 @@ export class CoreExtensionManager {
   }
 
   /**
-   * Get all registered API route factories from active extensions
-   * Returns a map of extension slug to router factory function
-   */
-  public getRegisteredApiRoutes(): Map<string, any> {
-    return new Map(this.registeredApiRoutes);
-  }
-
-  /**
    * Get all registered admin slots from active extensions
    * Returns a map of slot name to array of registered components with metadata
    */
@@ -354,10 +345,6 @@ export class CoreExtensionManager {
           extensionSlug: extension.manifest.slug,
         });
         logger.info(`Registered admin slot '${slot}' with priority ${priority} for extension: ${extension.manifest.slug}`);
-      },
-      registerApiRoutes: (routerFactory: any) => {
-        this.registeredApiRoutes.set(extension.manifest.slug, routerFactory);
-        logger.info(`Registered API route factory for extension: ${extension.manifest.slug}`);
       },
     };
   }

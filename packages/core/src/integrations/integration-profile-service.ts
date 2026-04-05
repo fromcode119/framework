@@ -150,21 +150,6 @@ export class IntegrationProfileService {
       this.logger.warn(`Failed to read integration profiles for "${normalizedType}": ${error?.message || String(error)}`);
     }
 
-    const legacy = await this.readStored(normalizedType);
-    if (legacy?.providerKey) {
-      return {
-        activeProfileId: 'default',
-        profiles: [
-          {
-            id: 'default',
-            name: 'Default',
-            providerKey: legacy.providerKey,
-            config: legacy.config || {},
-          },
-        ],
-      };
-    }
-
     return null;
   }
 
@@ -204,42 +189,6 @@ export class IntegrationProfileService {
       group: 'integrations',
       description: `Profile configurations for ${normalizedType} integration providers.`,
     });
-
-    await this.writeStored(normalizedType, selectedProfile.providerKey, selectedProfile.config || {});
-  }
-
-  // --- Raw legacy storage helpers ---
-
-  async readStored(typeKey: string): Promise<{ providerKey: string; config: Record<string, any> } | null> {
-    try {
-      const providerRow = await this.db.findOne(SystemConstants.TABLE.META, { key: this.getProviderSettingKey(typeKey) });
-      const configRow = await this.db.findOne(SystemConstants.TABLE.META, { key: this.getConfigSettingKey(typeKey) });
-
-      const providerKey = this.normalize(String(providerRow?.value || ''));
-      const rawConfig = String(configRow?.value || '').trim();
-      const config = rawConfig ? this.safeParseJson(rawConfig, {}) : {};
-
-      if (!providerKey) return null;
-      return { providerKey, config };
-    } catch (error: any) {
-      this.logger.warn(`Failed to read integration settings for "${typeKey}": ${error?.message || String(error)}`);
-      return null;
-    }
-  }
-
-  async writeStored(typeKey: string, providerKey: string, config: Record<string, any>) {
-    await this.upsertMeta({
-      key: this.getProviderSettingKey(typeKey),
-      value: providerKey,
-      group: 'integrations',
-      description: `Active provider for ${typeKey} integration.`,
-    });
-    await this.upsertMeta({
-      key: this.getConfigSettingKey(typeKey),
-      value: JSON.stringify(config || {}),
-      group: 'integrations',
-      description: `JSON configuration for ${typeKey} integration provider.`,
-    });
   }
 
   async upsertMeta(entry: { key: string; value: string; group?: string; description?: string }) {
@@ -265,8 +214,6 @@ export class IntegrationProfileService {
     });
   }
 
-  getProviderSettingKey(typeKey: string) { return `integration_${typeKey}_provider`; }
-  getConfigSettingKey(typeKey: string) { return `integration_${typeKey}_config`; }
   getProvidersSettingKey(typeKey: string) { return `integration_${typeKey}_providers`; }
   getProfilesSettingKey(typeKey: string) { return `integration_${typeKey}_profiles`; }
 

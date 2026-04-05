@@ -75,21 +75,6 @@ export class ServerRoutesSetup {
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
     vApi.use(VERSIONS, new VersioningRouter(this.manager, this.auth, this.restController).router);
 
-    // Mount extension routes
-    if (this.manager.extensions && typeof (this.manager.extensions as any).getRegisteredApiRoutes === 'function') {
-      try {
-        const extensionRoutes = (this.manager.extensions as any).getRegisteredApiRoutes();
-        for (const [extensionSlug, routeFactory] of extensionRoutes) {
-          try {
-            const extension = (this.manager.extensions as any).getExtension(extensionSlug);
-            const apiPath = extension?.manifest?.apiPath || extensionSlug;
-            this.logger.info(`Mounting API routes for extension: ${extensionSlug} at /${apiPath}`);
-            vApi.use(`/${apiPath}`, routeFactory({ manager: this.manager, themeManager: this.themeManager, auth: this.auth, restController: this.restController }));
-          } catch (error) { this.logger.error(`Failed to mount routes for extension ${extensionSlug}:`, error); }
-        }
-      } catch (e) { this.logger.error('Failed to get extension routes:', e); }
-    }
-
     vApi.use(new CollectionRouter(this.manager, this.restController).router);
     this.app.use(vPrefix, vApi);
     this.app.use(PLUGINS, pluginAssetRouter);
