@@ -123,9 +123,6 @@ export interface CoreExtensionContext {
   
   /** Register admin UI components */
   registerAdminSlot?: (slot: string, component: any, priority?: number) => void;
-  
-  /** Register API routes */
-  registerApiRoutes?: (router: any) => void;
 }
 
 export interface CoreExtensionState {

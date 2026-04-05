@@ -24,6 +24,7 @@
     "test": "npm run test --workspaces --if-present",
     "test:plugins": "npm run test --workspace=@fromcode119/admin -- --config ../../vitest.plugins.config.ts",
     "fromcode": "tsx packages/cli/src/bin.ts",
+    "seed:theme": "node scripts/seed-theme.mjs",
     "start:all": "concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\" \"PORT=3002 npm run start --workspace=@fromcode119/frontend\"",
     "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\"",
     "start:all:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\" \"PORT=3002 npm run start --workspace=@fromcode119/frontend\"",

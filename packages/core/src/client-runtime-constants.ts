@@ -8,10 +8,6 @@ export class ClientRuntimeConstants {
     AUTH_CSRF: `${ClientRuntimeConstants.STORAGE_PREFIX}csrf`,
     AUTH_USER: `${ClientRuntimeConstants.STORAGE_PREFIX}user`,
     LOCALE: `${ClientRuntimeConstants.STORAGE_PREFIX}locale`,
-    LEGACY_AUTH_TOKENS: [
-      `${ClientRuntimeConstants.STORAGE_PREFIX}token_v1`,
-      `${ClientRuntimeConstants.STORAGE_PREFIX}token_v2`,
-    ],
   } as const;
 
   static readonly ADMIN_UI = {

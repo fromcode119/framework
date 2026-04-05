@@ -39,9 +39,6 @@ export class RuntimeBridge {
     const fromBridge = normalizeBaseCandidate((window as any)?.FROMCODE_API_URL);
     if (fromBridge) return fromBridge;
 
-    const fromLegacyBridge = normalizeBaseCandidate((window as any)?.__FROMCODE_API_URL);
-    if (fromLegacyBridge) return fromLegacyBridge;
-
     const fromGlobal = normalizeBaseCandidate((window as any)?.Fromcode?.apiUrl);
     if (fromGlobal) return fromGlobal;
 

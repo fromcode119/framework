@@ -3,6 +3,7 @@ import { ContentService } from './content-service';
 import { MenuService } from './menu-service';
 import { CollectionService } from './collection-service';
 import { CollectionIdentityService } from './collection-identity-service';
+import { SeedPageService } from './seed-page-service';
 
 /**
  * Core Services Singleton.
@@ -42,6 +43,7 @@ export class CoreServices {
   private _menu: MenuService | null = null;
   private _collection: CollectionService | null = null;
   private _collectionIdentity: CollectionIdentityService | null = null;
+  private _seedPage: SeedPageService | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -102,6 +104,13 @@ export class CoreServices {
       this._collectionIdentity = new CollectionIdentityService();
     }
     return this._collectionIdentity;
+  }
+
+  get seedPage(): SeedPageService {
+    if (!this._seedPage) {
+      this._seedPage = new SeedPageService();
+    }
+    return this._seedPage;
   }
 
   /**

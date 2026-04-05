@@ -24,8 +24,8 @@ export class CollectionService extends BaseService {
   }
 
   /**
-   * Resolves an ambiguous collection slug to the registered slug.
-   * Handles legacy physical slugs and plugin-slug/collection combinations.
+    * Resolves a collection slug to the registered slug.
+    * Supports canonical plugin-slug/collection and semantic references.
    *
    * @param rawSlug     - The slug as supplied (may be prefixed/underscored)
    * @param collections - Live collection registry
