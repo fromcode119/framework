@@ -20,8 +20,7 @@ const {
   Down = () => null,
   Left = () => null,
   // System-level icons still used directly
-  Activity = () => null,
-  Settings = () => null
+  Activity = () => null
 } = (FrameworkIcons || {}) as any;
 
 const adminServices = AdminServices.getInstance();
@@ -309,8 +308,25 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
     return true;
   });
 
+  const footerSettingsPath = React.useMemo(
+    () => NavUtils.normalizePath(AdminConstants.ROUTES.SETTINGS.ROOT),
+    []
+  );
+  const footerSettingsItem = React.useMemo(
+    () => authorizedMenuItems.find((item) => NavUtils.normalizePath(item.path) === footerSettingsPath) || null,
+    [authorizedMenuItems, footerSettingsPath]
+  );
+  const footerSettingsIsGroup = React.useMemo(
+    () => Boolean(footerSettingsItem && 'isGroup' in footerSettingsItem && footerSettingsItem.isGroup),
+    [footerSettingsItem]
+  );
+  const groupedMenuItems = React.useMemo(
+    () => authorizedMenuItems.filter((item) => NavUtils.normalizePath(item.path) !== footerSettingsPath),
+    [authorizedMenuItems, footerSettingsPath]
+  );
+
   // Group menu items by their group property
-  const groupedMenu = authorizedMenuItems
+  const groupedMenu = groupedMenuItems
     .reduce((acc: Record<string, any[]>, item) => {
     const rawGroup = NavUtils.normalizeGroupKey(item.group);
     
@@ -527,25 +543,26 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
           {(!collapsedGroups.includes('system') || isMini) && (
             <>
               <NavItem icon={<Activity size={18}/>} label="Activity" href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
-              <NavItem 
-                icon={<Settings size={18}/>} 
-                label="Settings" 
-                href={AdminConstants.ROUTES.SETTINGS.GENERAL}
-                persistenceKey={`system:${AdminConstants.ROUTES.SETTINGS.ROOT}`}
-                active={pathname.startsWith(AdminConstants.ROUTES.SETTINGS.ROOT)} 
-                onClick={onClose} 
-                isMini={isMini} 
-                children={[
-                  { label: 'General', path: AdminConstants.ROUTES.SETTINGS.GENERAL, icon: 'Settings' },
-                  { label: 'Framework', path: AdminConstants.ROUTES.SETTINGS.FRAMEWORK, icon: 'System' },
-                  { label: 'Integrations', path: AdminConstants.ROUTES.SETTINGS.INTEGRATIONS, icon: 'Orbit' },
-                  { label: 'Localization', path: AdminConstants.ROUTES.SETTINGS.LOCALIZATION, icon: 'Globe' },
-                  { label: 'Routing', path: AdminConstants.ROUTES.SETTINGS.ROUTING, icon: 'Link' },
-                  { label: 'Security', path: AdminConstants.ROUTES.SETTINGS.SECURITY, icon: 'Shield' },
-                  { label: 'Infrastructure', path: AdminConstants.ROUTES.SETTINGS.INFRASTRUCTURE, icon: 'Activity' },
-                  { label: 'Updates', path: AdminConstants.ROUTES.SETTINGS.UPDATES, icon: 'Refresh' },
-                ]}
-              />
+              {footerSettingsItem && (
+                <NavItem 
+                  icon={<Icon name={footerSettingsItem.icon || 'Settings'} size={18} />}
+                  label={footerSettingsItem.label}
+                  href={footerSettingsItem.path}
+                  persistenceKey={`${footerSettingsItem.pluginSlug || 'system'}:${footerSettingsItem.path}`}
+                  active={normalizedActivePrimaryPathOverride ? NavUtils.normalizePath(footerSettingsItem.path) === normalizedActivePrimaryPathOverride : NavUtils.isPathActive(pathname, footerSettingsItem.path, [footerSettingsItem.path])}
+                  isAnchoredToSecondary={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
+                  onClick={onClose}
+                  children={footerSettingsItem.children}
+                  isMini={isMini}
+                  isGroupHeader={footerSettingsIsGroup}
+                  version={plugins.find(p => p.slug === footerSettingsItem.pluginSlug)?.version}
+                  canHoverPreview={(previewablePaths || []).includes(NavUtils.normalizePath(footerSettingsItem.path))}
+                  showHoverPreview={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(hoverPreviewPath) && (previewablePaths || []).includes(NavUtils.normalizePath(footerSettingsItem.path))}
+                  preserveActiveAnchor={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
+                  onHoverPreviewStart={(path) => onHoverPreviewPathChange?.(path)}
+                  onHoverPreviewEnd={() => onHoverPreviewPathChange?.('')}
+                />
+              )}
             </>
           )}
         </div>
