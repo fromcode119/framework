@@ -61,6 +61,7 @@ export { SystemAuthSession } from '@fromcode119/core/client';
 export type { BrowserCookieOptions } from '@fromcode119/core/client';
 export { RouteUtils } from '@fromcode119/core/client';
 export { UrlUtils } from '@fromcode119/core/client';
+export { PublicAssetUrlUtils } from '@fromcode119/core/client';
 export { ApiVersionUtils } from '@fromcode119/core/client';
 export { LocalizationUtils } from '@fromcode119/core/client';
 export type { NormalizeLocaleOptions, ResolveAnyStringOptions } from '@fromcode119/core/client';
