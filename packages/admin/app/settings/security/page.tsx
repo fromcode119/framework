@@ -45,6 +45,17 @@ export default function SecuritySettingsPage() {
     auth_session_duration_minutes: '10080',
   });
 
+  const fetchSettings = async () => {
+    const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS);
+    setSettings((prev) => ({
+      ...prev,
+      two_factor_enabled: response.two_factor_enabled === 'true',
+      rate_limit_max: response.rate_limit_max ?? prev.rate_limit_max,
+      rate_limit_window: response.rate_limit_window ?? prev.rate_limit_window,
+      auth_session_duration_minutes: response.auth_session_duration_minutes ?? prev.auth_session_duration_minutes,
+    }));
+  };
+
   const fetchStats = async () => {
     try {
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.SECURITY);
@@ -55,37 +66,37 @@ export default function SecuritySettingsPage() {
   };
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const loadPageData = async () => {
       try {
-        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
-        const docs = response.docs || [];
-        const newSettings = { ...settings };
-        docs.forEach((s: any) => {
-          if (['two_factor_enabled', 'rate_limit_max', 'rate_limit_window', 'auth_session_duration_minutes'].includes(s.key)) {
-            newSettings[s.key] = s.key === 'two_factor_enabled' ? s.value === 'true' : s.value;
-          }
-        });
-        setSettings(newSettings);
+        await fetchSettings();
+        if (activeTab === 'dashboard') {
+          await fetchStats();
+        }
       } finally {
         setIsLoading(false);
       }
     };
-    
-    fetchSettings();
-    if (activeTab === 'dashboard') fetchStats();
+
+    loadPageData();
   }, [activeTab]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await Promise.all(Object.entries(settings).map(([key, value]) => {
-        return AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS(key), {
-          value: typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value)
-        });
-      }));
+      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, {
+        two_factor_enabled: settings.two_factor_enabled ? 'true' : 'false',
+        rate_limit_max: String(settings.rate_limit_max),
+        rate_limit_window: String(settings.rate_limit_window),
+        auth_session_duration_minutes: String(settings.auth_session_duration_minutes),
+      });
+      await fetchSettings();
       addNotification({ title: 'Security Updated', message: 'API protection and account defense synced.', type: 'success' });
-    } catch (err) {
-      addNotification({ title: 'Update Failed', message: 'Failed to save security configuration.', type: 'error' });
+    } catch (err: any) {
+      addNotification({
+        title: 'Update Failed',
+        message: err?.message || 'Failed to save security configuration.',
+        type: 'error'
+      });
     } finally {
       setIsSaving(false);
     }
@@ -388,7 +399,7 @@ export default function SecuritySettingsPage() {
                 theme={theme}
                 icon={FrameworkIcons.Clock} 
                 title="Rate Limit Window" 
-                description="The time window in milliseconds (900000 = 15m)."
+                description="Per IP, the request counter resets after this window elapses. Example: 900000 = 15 minutes."
               >
                 <Input 
                   type="number"

@@ -83,6 +83,7 @@ export class AdminConstants {
   },
   SYSTEM: {
     HEALTH: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.HEALTH),
+    SETTINGS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS),
     STATS: {
       COLLECTIONS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_STATS),
       SECURITY: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SECURITY),

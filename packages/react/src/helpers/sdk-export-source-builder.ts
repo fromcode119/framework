@@ -32,6 +32,7 @@ export class SdkExportSourceBuilder {
     'PluginDefinitionUtils',
     'RouteUtils',
     'UrlUtils',
+    'PublicAssetUrlUtils',
     'ApiVersionUtils',
     'RuntimeBridge',
     'CoreServices',

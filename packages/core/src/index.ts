@@ -65,6 +65,7 @@ export {
 export type { BrowserCookieOptions } from './clients';
 export { RouteUtils } from './route-utils';
 export { UrlUtils } from './url-utils';
+export { PublicAssetUrlUtils } from './public-asset-url-utils';
 export { ApiVersionUtils } from './api-version';
 export { LocalizationUtils } from './localization';
 export type { NormalizeLocaleOptions, ResolveAnyStringOptions } from './localization.interfaces';
