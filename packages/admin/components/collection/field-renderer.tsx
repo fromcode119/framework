@@ -13,6 +13,7 @@ import { LocaleRegistryUtils } from '@/lib/locale-utils';
 import { TagFieldLocal } from './tag-field-local';
 import { RelationshipSelectLocal } from './relationship-select-local';
 import { MediaRelationField } from './media-relation-field';
+import { CustomFieldErrorBoundary } from './custom-field-error-boundary';
 import { UiFieldUtils } from '@/lib/ui';
 import { FieldRendererUtils } from './field-renderer-utils';
 
@@ -321,7 +322,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       
       {field.type === 'relationship' && field.relationTo === 'media' ? (
         wrapWithReadOnlyOverride(
-          <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} />
+          <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} hasMany={Boolean(field.hasMany)} />
         )
       ) : field.type === 'relationship' &&
         field.admin?.component !== 'TagField' &&
@@ -347,20 +348,42 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         )
       ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'CodeEditor' ? (() => {
         const componentName = field.admin.component;
-        const CustomComponent = fieldComponents[componentName];
-        
-        if (CustomComponent) {
-          return wrapWithReadOnlyOverride(
-            <CustomComponent 
-              value={currentValue}
-              onChange={updateValue}
-              theme={theme}
-              field={field}
-              collectionSlug={collectionSlug}
-              pluginSettings={pluginSettings}
-              disabled={isFieldReadOnly}
-            />
-          );
+        const registeredComponent = fieldComponents[componentName];
+        let CustomComponent: any = registeredComponent;
+
+        if (registeredComponent && typeof registeredComponent === 'object' && !registeredComponent.$$typeof) {
+          CustomComponent =
+            registeredComponent.component ||
+            registeredComponent.Component ||
+            registeredComponent.render ||
+            registeredComponent.default ||
+            registeredComponent;
+        }
+
+        const canRenderComponent =
+          Boolean(CustomComponent) &&
+          (typeof CustomComponent === 'function' || typeof CustomComponent === 'string');
+
+        if (canRenderComponent) {
+          try {
+            const customNode = React.createElement(CustomComponent, {
+              value: currentValue,
+              onChange: updateValue,
+              theme,
+              field,
+              collectionSlug,
+              pluginSettings,
+              disabled: isFieldReadOnly,
+            });
+
+            return wrapWithReadOnlyOverride(
+              <CustomFieldErrorBoundary componentName={componentName}>
+                {customNode}
+              </CustomFieldErrorBoundary>
+            );
+          } catch (error) {
+            console.error(`[FieldRenderer] Failed to render custom component "${componentName}"`, error);
+          }
         }
 
         return (

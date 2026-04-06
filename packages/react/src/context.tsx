@@ -653,8 +653,26 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       actualComponent = component.default;
     }
 
+    if (actualComponent && typeof actualComponent === 'object' && !actualComponent.$$typeof) {
+      actualComponent =
+        actualComponent.component ||
+        actualComponent.Component ||
+        actualComponent.render ||
+        actualComponent.default ||
+        actualComponent;
+    }
+
     if (!actualComponent) {
       console.warn(`[Fromcode] Field component "${name}" resolved to undefined.`);
+      return;
+    }
+
+    const canRenderComponent =
+      Boolean(actualComponent) &&
+      (typeof actualComponent === 'function' || typeof actualComponent === 'string');
+
+    if (!canRenderComponent) {
+      console.warn(`[Fromcode] Field component "${name}" resolved to non-renderable value. Ignored.`);
       return;
     }
 

@@ -36,6 +36,7 @@ export class EsmRegistry {
       'PluginsRegistry',
       'RouteUtils',
       'UrlUtils',
+      'PublicAssetUrlUtils',
       'ApiVersionUtils',
       'LocalizationUtils',
       'CollectionUtils',
