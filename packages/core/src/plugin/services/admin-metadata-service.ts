@@ -11,6 +11,7 @@ import { AdminSecondaryPanelGuard } from './admin-secondary-panel-guard';
 import { AdminSecondaryPanelGovernanceService } from './admin-secondary-panel-governance-service';
 import { AdminSecondaryPanelPrecedenceService } from './admin-secondary-panel-precedence-service';
 import { AdminSecondaryPanelResolver } from './admin-secondary-panel-resolver';
+import { AdminSystemNavigationMetadataService } from './admin-system-navigation-metadata-service';
 
 export class AdminMetadataService {
   private logger = new Logger({ namespace: 'admin-metadata-service' });
@@ -19,6 +20,7 @@ export class AdminMetadataService {
   private secondaryPanelGovernance = new AdminSecondaryPanelGovernanceService();
   private secondaryPanelPrecedence = new AdminSecondaryPanelPrecedenceService();
   private secondaryPanelResolver = new AdminSecondaryPanelResolver();
+  private systemNavigationMetadata = new AdminSystemNavigationMetadataService();
 
   public getAdminMetadata(
     allPlugins: LoadedPlugin[],
@@ -54,28 +56,12 @@ export class AdminMetadataService {
         };
       });
 
-    const rawMenuItems: any[] = [];
-
-    // System Items
-    rawMenuItems.push({ label: 'Dashboard', path: AppPathConstants.ADMIN.ROOT, icon: 'Dashboard', group: 'Core', pluginSlug: 'system', priority: 10 });
-    rawMenuItems.push({
-      label: 'Users',
-      path: AppPathConstants.ADMIN.USERS.ROOT,
-      icon: 'Users',
-      group: 'Platform',
-      pluginSlug: 'system',
-      priority: 11,
-      isGroup: true,
-      children: [
-        { label: 'Users List', path: AppPathConstants.ADMIN.USERS.LIST, icon: 'Users' },
-        { label: 'Roles', path: AppPathConstants.ADMIN.USERS.ROLE_LIST, icon: 'Shield' },
-        { label: 'Permissions', path: AppPathConstants.ADMIN.USERS.PERMISSIONS, icon: 'Lock' }
-      ]
-    });
-    rawMenuItems.push({ label: 'Plugins', path: AppPathConstants.ADMIN.PLUGINS.ROOT, icon: 'Package', group: 'Management', pluginSlug: 'system', priority: 20 });
-    rawMenuItems.push({ label: 'Media', path: AppPathConstants.ADMIN.MEDIA.ROOT, icon: 'Image', group: 'Core', pluginSlug: 'system', priority: 30 });
-    rawMenuItems.push({ label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', pluginSlug: 'system', priority: 90 });
-    rawMenuItems.push({ label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', pluginSlug: 'system', priority: 85 });
+    const rawMenuItems: any[] = this.systemNavigationMetadata
+      .getMenuItems()
+      .map((item) => ({
+        ...item,
+        pluginSlug: 'system',
+      }));
 
     // Plugin Items
     pluginMetadata.forEach(p => {
@@ -263,9 +249,12 @@ export class AdminMetadataService {
   }
 
   private buildSecondaryPanel(allPlugins: LoadedPlugin[], allowlistEntries: AdminSecondaryPanelAllowlistEntry[]) {
-    const normalizedItems = allPlugins
-      .filter(plugin => plugin.state === 'active')
-      .flatMap((plugin) => this.getSecondaryPanelInputs(plugin))
+    const normalizedItems = [
+      ...this.systemNavigationMetadata.getSecondaryPanelInputs(),
+      ...allPlugins
+        .filter(plugin => plugin.state === 'active')
+        .flatMap((plugin) => this.getSecondaryPanelInputs(plugin)),
+    ]
       .map((input) => this.secondaryPanelNormalizer.normalize(input));
 
     const accepted: AdminSecondaryPanelNormalizedItem[] = [];
