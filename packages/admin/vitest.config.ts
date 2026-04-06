@@ -12,6 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
+      '@fromcode119/core': path.resolve(__dirname, '../core/src'),
       '@fromcode119/react': path.resolve(__dirname, '../react/src'),
       '@fromcode119/sdk': path.resolve(__dirname, '../sdk/src'),
     },
