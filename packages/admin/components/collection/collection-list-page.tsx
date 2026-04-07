@@ -237,6 +237,13 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
             return <Badge variant={variant as any}>{value}</Badge>;
           }
 
+          if (CollectionListUtils.shouldRenderBooleanBadge(field, columnName, header, raw)) {
+            const booleanBadge = CollectionListUtils.resolveBooleanBadge(columnName, header, raw);
+            if (booleanBadge) {
+              return <Badge variant={booleanBadge.variant}>{booleanBadge.label}</Badge>;
+            }
+          }
+
           if (field?.type === 'relationship') {
             return <RelationshipCellValue relationTo={field.relationTo} raw={raw} />;
           }
@@ -585,6 +592,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
         />
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <FilterBar 
+            collection={collection}
             slug={slug}
             theme={theme}
             search={search}

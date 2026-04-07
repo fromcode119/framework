@@ -37,7 +37,10 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     });
 
     const cookieOptions = this.getCookieOptions(req, false, maxAgeMs);
-    res.cookie(CookieConstants.AUTH_TOKEN, token, cookieOptions);
+    const sessionCookieName = this.getSessionCookieName(req);
+
+    this.clearConflictingSessionCookies(req, res);
+    res.cookie(sessionCookieName, token, cookieOptions);
 
     return { token, user: userResponse };
   }

@@ -6,6 +6,7 @@ export { RecordVersions } from './collections/record-versions';
 export { PluginManager } from './plugin/plugin-manager';
 export type { PluginManagerInterface } from './plugin/context/utils.interfaces';
 export { ThemeManager } from './theme/theme-manager';
+export { ThemeDefaultPageContractOverrideLoader } from './theme/theme-default-page-contract-override-loader';
 export { CoreExtensionManager } from './extensions/extension-manager';
 export type {
   CoreExtensionManifest,
@@ -38,6 +39,7 @@ export { SystemConstants } from './constants';
 export { ClientRuntimeConstants } from './client-runtime-constants';
 export { CookieConstants } from './cookie-constants';
 export { AppPathConstants } from './app-path-constants';
+export { RequestSurfaceUtils } from './request-surface-utils';
 export { RuntimeConstants } from './runtime-constants';
 export { RouteConstants } from './route-constants';
 export { PublicRouteConstants } from './public-route-constants';

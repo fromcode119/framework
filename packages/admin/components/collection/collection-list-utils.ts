@@ -5,6 +5,21 @@ import { AdminServices } from '@/lib/admin-services';
  * Handles relationship field display and scalar value extraction.
  */
 export class CollectionListUtils {
+  static readonly BOOLEAN_FIELD_NAMES = new Set([
+    'active',
+    'enabled',
+    'disabled',
+    'verified',
+    'published',
+    'featured',
+    'visible',
+    'archived',
+    'approved',
+    'completed',
+    'default',
+    'required'
+  ]);
+
   static areStringArraysEqual(left: string[], right: string[]): boolean {
     if (left === right) return true;
     if (left.length !== right.length) return false;
@@ -29,10 +44,83 @@ export class CollectionListUtils {
   static prettifyColumnName(value: string): string {
     return value
       .replace(/([A-Z])/g, ' $1')
+      .replace(/-/g, ' ')
       .replace(/_/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
       .replace(/^./, (str) => str.toUpperCase());
+  }
+
+  static resolveCollectionLabel(collection: any, fallbackSlug: string): string {
+    const displayName = String(collection?.displayName || collection?.name || '').trim();
+    if (displayName) return displayName;
+    return CollectionListUtils.prettifyColumnName(String(fallbackSlug || '').trim() || 'Records');
+  }
+
+  static resolveCollectionSingularLabel(collection: any, fallbackSlug: string): string {
+    const label = CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug);
+    if (/ies$/i.test(label)) return label.replace(/ies$/i, 'y');
+    if (/ses$/i.test(label)) return label.replace(/es$/i, '');
+    if (/s$/i.test(label) && !/ss$/i.test(label)) return label.replace(/s$/i, '');
+    return label;
+  }
+
+  static resolveCollectionSearchPlaceholder(collection: any, fallbackSlug: string): string {
+    return `Search ${CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug).toLowerCase()}...`;
+  }
+
+  static resolveCollectionDescription(collection: any, fallbackSlug: string): string {
+    return `Manage and organize ${CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug).toLowerCase()} records.`;
+  }
+
+  static resolveBooleanBadge(fieldName: string, fieldLabel: string, raw: unknown): null | { variant: 'success' | 'gray'; label: string } {
+    const value = CollectionListUtils.toBooleanValue(raw);
+    if (value === null) return null;
+
+    const normalizedField = String(fieldLabel || fieldName || '').trim().toLowerCase();
+    if (normalizedField === 'active') {
+      return { variant: value ? 'success' : 'gray', label: value ? 'Active' : 'Inactive' };
+    }
+    if (normalizedField === 'enabled') {
+      return { variant: value ? 'success' : 'gray', label: value ? 'Enabled' : 'Disabled' };
+    }
+    if (normalizedField === 'verified') {
+      return { variant: value ? 'success' : 'gray', label: value ? 'Verified' : 'Unverified' };
+    }
+    if (normalizedField === 'published') {
+      return { variant: value ? 'success' : 'gray', label: value ? 'Published' : 'Draft' };
+    }
+
+    return { variant: value ? 'success' : 'gray', label: value ? 'Yes' : 'No' };
+  }
+
+  static shouldRenderBooleanBadge(field: any, fieldName: string, fieldLabel: string, raw: unknown): boolean {
+    if (field?.type === 'boolean' || field?.type === 'checkbox') return true;
+    if (typeof raw === 'boolean') return true;
+
+    const value = CollectionListUtils.toBooleanValue(raw);
+    if (value === null) return false;
+
+    const normalizedFieldName = String(fieldName || '').trim().toLowerCase();
+    const normalizedFieldLabel = String(fieldLabel || '').trim().toLowerCase();
+    return CollectionListUtils.BOOLEAN_FIELD_NAMES.has(normalizedFieldName)
+      || CollectionListUtils.BOOLEAN_FIELD_NAMES.has(normalizedFieldLabel);
+  }
+
+  static toBooleanValue(raw: unknown): boolean | null {
+    if (typeof raw === 'boolean') return raw;
+    if (typeof raw === 'number') {
+      if (raw === 1 || raw === 1.0) return true;
+      if (raw === 0 || raw === 0.0) return false;
+      return null;
+    }
+    const normalized = String(raw ?? '').trim().toLowerCase();
+    if (!normalized) return null;
+    if (normalized === '1.0') return true;
+    if (normalized === '0.0') return false;
+    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+    return null;
   }
 
   static formatCellValue(raw: unknown): string {

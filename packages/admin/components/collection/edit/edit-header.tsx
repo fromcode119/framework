@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { CollectionListUtils } from '../collection-list-utils';
 
 interface EditHeaderProps {
   collection: any;
@@ -48,6 +49,9 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
   saving,
   setShowDeleteConfirm
 }) => {
+  const collectionLabel = CollectionListUtils.resolveCollectionLabel(collection, slug);
+  const singularCollectionLabel = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
+
   return (
     <div data-edit-header className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
       theme === 'dark' 
@@ -61,7 +65,7 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
             className={`flex items-center gap-1.5 text-[10px] font-semibold transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}
           >
             <FrameworkIcons.Left size={14} />
-            {collection.name || slug}
+            {collectionLabel}
           </Link>
           <span className="text-slate-300">/</span>
           <span className={`text-[10px] font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>
@@ -73,12 +77,12 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
           <div>
             <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
               {isNew 
-                ? `Create ${collection.name || collection.slug}` 
-                : (resolvedTitleValue || `Untitled ${collection.name || 'Entry'}`)
+                ? `Create ${singularCollectionLabel}` 
+                : (resolvedTitleValue || `Untitled ${singularCollectionLabel}`)
               }
             </h1>
             <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70 mt-1">
-              {isNew ? `Define a new record for ${collection.name || collection.slug}` : `Modify existing ${resolvedTitleValue || collection.name || 'entry'}`}
+              {isNew ? `Define a new record for ${collectionLabel.toLowerCase()}` : `Modify existing ${resolvedTitleValue || singularCollectionLabel.toLowerCase()}`}
             </p>
           </div>
           

@@ -99,6 +99,7 @@ export interface PluginContextValue {
   getPluginApi: (namespace: string, slug: string) => any;
   hasPluginApi: (namespace: string, slug: string) => boolean;
   setPluginState: (pluginSlug: string, key: string, value: any) => void;
+  registerContentTransformer: (name: string, transform: (content: unknown, currentContent: unknown) => unknown, priority?: number) => void;
   registerSlotComponent: (slotName: string, component: any, pluginSlug?: string, priority?: number) => void;
   registerFieldComponent: (name: string, component: any) => void;
   registerOverride: (name: string, component: SlotComponent) => void;

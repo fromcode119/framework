@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
-import { CookieConstants, Logger } from '@fromcode119/core';
+import { CookieConstants, Logger, RequestSurfaceUtils, RouteConstants } from '@fromcode119/core';
 import { UserPermissionChecker } from './permission-checker';
 import type { User } from './index.interfaces';
 import type { SessionValidator, ApiKeyValidator } from './index.types';
@@ -90,6 +90,7 @@ export class AuthManager {
   middleware() {
     return async (req: any, res: any, next: any) => {
       const tokenCandidates: string[] = [];
+      const sessionCookieNames = this.getSessionCookieNames(req);
 
       const apiKey = req.headers?.['x-api-key'] || req.query?.api_key;
       if (apiKey && this.apiKeyValidator) {
@@ -119,22 +120,29 @@ export class AuthManager {
           if (parts.length >= 2) {
             const name = parts[0].trim();
             const value = parts.slice(1).join('=').trim();
-            if (name === CookieConstants.AUTH_TOKEN && value && value !== 'undefined' && value !== 'null') {
+            if (sessionCookieNames.includes(name) && value && value !== 'undefined' && value !== 'null') {
               tokenCandidates.push(value);
             }
           }
         });
       }
 
-      if (req.cookies?.[CookieConstants.AUTH_TOKEN]) {
-        if (Array.isArray(req.cookies[CookieConstants.AUTH_TOKEN])) {
-          req.cookies[CookieConstants.AUTH_TOKEN].forEach((t: string) => {
+      sessionCookieNames.forEach((cookieName) => {
+        if (!req.cookies?.[cookieName]) {
+          return;
+        }
+
+        if (Array.isArray(req.cookies[cookieName])) {
+          req.cookies[cookieName].forEach((t: string) => {
             if (t && !tokenCandidates.includes(t)) tokenCandidates.push(t);
           });
-        } else if (typeof req.cookies[CookieConstants.AUTH_TOKEN] === 'string' && !tokenCandidates.includes(req.cookies[CookieConstants.AUTH_TOKEN])) {
-          tokenCandidates.push(req.cookies[CookieConstants.AUTH_TOKEN]);
+          return;
         }
-      }
+
+        if (typeof req.cookies[cookieName] === 'string' && !tokenCandidates.includes(req.cookies[cookieName])) {
+          tokenCandidates.push(req.cookies[cookieName]);
+        }
+      });
 
       let hasExpiredToken = false;
       for (const t of tokenCandidates) {
@@ -155,7 +163,7 @@ export class AuthManager {
       }
 
       if (tokenCandidates.length > 0 && !req.user) {
-        if (req.url && !req.url.includes('/status') && !req.url.includes('/health')) {
+        if (this.shouldLogTokenFailure(req.url)) {
           this.logger.warn(`All ${tokenCandidates.length} token candidates failed for ${req.url}`);
         }
 
@@ -173,6 +181,7 @@ export class AuthManager {
           };
 
           res.clearCookie(CookieConstants.AUTH_TOKEN, baseOptions);
+          res.clearCookie(CookieConstants.CLIENT_AUTH_TOKEN, { ...baseOptions, httpOnly: false });
           res.clearCookie(CookieConstants.AUTH_CSRF, { ...baseOptions, httpOnly: false });
 
           let domain = process.env.COOKIE_DOMAIN;
@@ -185,6 +194,7 @@ export class AuthManager {
 
           if (domain) {
             res.clearCookie(CookieConstants.AUTH_TOKEN, { ...baseOptions, domain });
+            res.clearCookie(CookieConstants.CLIENT_AUTH_TOKEN, { ...baseOptions, domain, httpOnly: false });
             res.clearCookie(CookieConstants.AUTH_CSRF, { ...baseOptions, domain, httpOnly: false });
           }
         }
@@ -192,6 +202,28 @@ export class AuthManager {
 
       next();
     };
+  }
+
+  private getSessionCookieNames(req: any): string[] {
+    return this.isAdminRequestContext(req)
+      ? [CookieConstants.AUTH_TOKEN]
+      : [CookieConstants.CLIENT_AUTH_TOKEN];
+  }
+
+  private isAdminRequestContext(req: any): boolean {
+    return RequestSurfaceUtils.isAdminRequestContext(req);
+  }
+
+  private shouldLogTokenFailure(requestUrl: unknown): boolean {
+    const path = String(requestUrl || '').split('?')[0].split('#')[0].trim();
+    if (!path) {
+      return false;
+    }
+
+    const lastSegment = path.split('/').filter(Boolean).pop() || '';
+    return lastSegment !== RouteConstants.SEGMENTS.STATUS.slice(1)
+      && lastSegment !== RouteConstants.SEGMENTS.HEALTH.slice(1)
+      && lastSegment !== RouteConstants.SEGMENTS.READY.slice(1);
   }
 
   guard(roles: string[] = []) {

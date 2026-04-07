@@ -71,6 +71,7 @@ export class ServerRoutesSetup {
     vApi.use(MARKETPLACE, new MarketplaceRouter(this.manager, this.auth).router);
     vApi.use(THEMES, themeAssetRouter);
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth).router);
+    this.registerCoreExtensionRoutes(vApi);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
     vApi.use(VERSIONS, new VersioningRouter(this.manager, this.auth, this.restController).router);
@@ -82,6 +83,32 @@ export class ServerRoutesSetup {
 
     const baseCollectionRouter = new BaseCollectionRouter(this.manager, this.restController).router;
     this.app.use(ApiConfig.getInstance().routes.collections.BASE, baseCollectionRouter);
+  }
+
+  private registerCoreExtensionRoutes(vApi: express.Router): void {
+    const registeredRoutes = this.manager.extensions?.getRegisteredApiRoutes?.();
+    if (!registeredRoutes || registeredRoutes.size === 0) {
+      return;
+    }
+
+    for (const factory of registeredRoutes.values()) {
+      if (typeof factory !== 'function') {
+        continue;
+      }
+
+      const registered = factory({
+        manager: this.manager,
+        themeManager: this.themeManager,
+        auth: this.auth,
+        restController: this.restController,
+      });
+      const basePath = String(registered?.basePath || '').trim().replace(/^\/+/, '');
+      if (!basePath || !registered?.router) {
+        continue;
+      }
+
+      vApi.use(`/${basePath}`, registered.router);
+    }
   }
 
   async registerCoreCollection(slug: string, collection: any) {

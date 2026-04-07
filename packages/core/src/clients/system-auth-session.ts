@@ -8,11 +8,6 @@ export class SystemAuthSession {
   private readonly browserState = new BrowserStateClient();
 
   getStoredToken(): string {
-    const primaryToken = this.browserState.readCookie(CookieConstants.AUTH_TOKEN);
-    if (primaryToken) {
-      return primaryToken;
-    }
-
     return this.browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN);
   }
 

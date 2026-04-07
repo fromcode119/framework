@@ -298,11 +298,7 @@ export class AuthControllerLifecycle extends AuthControllerRegistration {
       contextFromUrl ||
       toContextString((req.query as any)?.context) ||
       toContextString(req.get('x-framework-client'));
-    const contextHint = rawContextHint.includes('admin')
-      ? 'admin'
-      : rawContextHint.includes('frontend')
-        ? 'frontend'
-        : '';
+    const contextHint = this.normalizeResetContextHint(rawContextHint);
     if (!email || !this.isValidEmail(email)) {
       return res.status(400).json({ error: 'A valid email is required' });
     }

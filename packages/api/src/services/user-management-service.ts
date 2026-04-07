@@ -1,14 +1,10 @@
-import { 
-  IDatabaseManager, users, systemRoles, systemUsersToRoles, 
-  systemRolesToPermissions
-} from '@fromcode119/database';
+import { IDatabaseManager, users, systemRoles, systemUsersToRoles, systemRolesToPermissions } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });
-
   private toIsoUtc(date: Date): string {
     const time = date?.getTime?.();
     if (!Number.isFinite(Number(time))) return '';
@@ -217,10 +213,19 @@ export class UserManagementService {
       return;
     }
 
-    await this.db.insert(SystemConstants.TABLE.PERMISSIONS, {
-      ...payload,
-      createdAt: now
-    });
+    try {
+      await this.db.insert(SystemConstants.TABLE.PERMISSIONS, {
+        ...payload,
+        createdAt: now
+      });
+    } catch (error: any) {
+      const message = String(error?.message || '');
+      if (!message.includes('UNIQUE constraint failed') && !message.toLowerCase().includes('duplicate')) {
+        throw error;
+      }
+
+      await this.db.update(SystemConstants.TABLE.PERMISSIONS, { name: data.name }, payload);
+    }
   }
 
   async deleteUser(id: number) {
@@ -240,24 +245,31 @@ export class UserManagementService {
   async getPermissions() {
     const plugins = this.manager.getPlugins().filter(p => p.state === 'active');
     const dbPermissions = await this.db.find(SystemConstants.TABLE.PERMISSIONS);
+    const permissionNames = new Set(dbPermissions.map((permission: any) => String(permission?.name || '').trim()).filter(Boolean));
     
     for (const p of plugins) {
-      const caps: any[] = Array.isArray(p.manifest.capabilities) ? p.manifest.capabilities : [];
+      const manifest = p?.manifest || {};
+      const pluginSlug = String(manifest.slug || 'system').trim() || 'system';
+      const pluginName = String(manifest.name || pluginSlug).trim() || 'Plugin';
+      const pluginGroup = String(manifest.admin?.group || 'Other').trim() || 'Other';
+      const caps: any[] = Array.isArray(manifest.capabilities) ? manifest.capabilities : [];
       for (const cap of caps) {
-        const name = typeof cap === 'string' ? cap : cap.name;
-        if (!dbPermissions.find((d: any) => d.name === name)) {
-          const now = new Date();
-          const perm = {
-            name,
-            description: typeof cap === 'string' ? `Capability from ${p.manifest.name}` : cap.description,
-            pluginSlug: p.manifest.slug,
-            group: p.manifest.admin?.group || 'Other',
-            impact: 'Medium',
-            createdAt: now,
-            updatedAt: now
-          };
-          await this.db.insert(SystemConstants.TABLE.PERMISSIONS, perm);
+        const name = String(typeof cap === 'string' ? cap : cap?.name || '').trim();
+        if (!name || permissionNames.has(name)) {
+          continue;
         }
+
+        const now = new Date();
+        const description = typeof cap === 'string' ? `Capability from ${pluginName}` : String(cap?.description || `Capability from ${pluginName}`).trim();
+        await this.savePermission({
+          name,
+          description,
+          pluginSlug,
+          group: pluginGroup,
+          impact: 'Medium',
+          updatedAt: now,
+        });
+        permissionNames.add(name);
       }
     }
     return this.db.find(SystemConstants.TABLE.PERMISSIONS);

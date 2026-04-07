@@ -6,6 +6,7 @@ describe('rest-controller', () => {
 
   beforeEach(() => {
     mockDb = {
+      dialect: 'postgres',
       find: jest.fn(),
       findOne: jest.fn(),
       insert: jest.fn(),
@@ -51,6 +52,19 @@ describe('rest-controller', () => {
 
     expect(mockDb.update).toHaveBeenCalled();
     expect(res.json).toHaveBeenCalled();
+  });
+
+  it('create uses string table writes for sqlite collections', async () => {
+    mockDb.dialect = 'sqlite';
+    mockDb.insert.mockResolvedValue({ id: 1, title: 'Hello' });
+
+    const req: any = { body: { title: 'Hello' }, query: {} };
+    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await controller.create(mockCollection, req, res);
+
+    expect(mockDb.insert).toHaveBeenCalledWith('posts', expect.objectContaining({ title: 'Hello' }));
+    expect(res.status).toHaveBeenCalledWith(201);
   });
 
   it('find maps page+limit to offset when offset is not provided', async () => {

@@ -1,6 +1,13 @@
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { CookieConstants, PluginManager, Logger, SystemConstants } from '@fromcode119/core';
+import {
+  AppPathConstants,
+  CookieConstants,
+  Logger,
+  PluginManager,
+  RequestSurfaceUtils,
+  SystemConstants,
+} from '@fromcode119/core';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { ApiConfig } from '../../config/api-config';
 import { ApiUrlUtils } from '../../utils/url';
@@ -94,16 +101,18 @@ export class AuthControllerInfrastructure {
 
     if (configured) return configured.replace(/\/+$/, '');
 
-    const { host, proto } = ApiUrlUtils.getRequestHostAndProto(req);
-    if (host) {
-      if (host.startsWith('api.')) {
-        return `${proto}://${host.replace(/^api\./, 'frontend.')}`;
-      }
-      return `${proto}://${host}`;
+    const refererUrl = RequestSurfaceUtils.readRefererUrl(req);
+    if (refererUrl && RequestSurfaceUtils.isFrontendPath(refererUrl.pathname)) {
+      return `${refererUrl.protocol}//${refererUrl.host}`.replace(/\/+$/, '');
     }
 
-    // Attempt to use general SITE_URL as last determined resort
-    return String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || 'http://localhost:3000').replace(/\/+$/, '');
+    const siteUrl = String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || '').trim();
+    if (siteUrl) return siteUrl.replace(/\/+$/, '');
+
+    const requestOrigin = this.getRequestOriginBaseUrl(req);
+    if (requestOrigin) return requestOrigin.replace(/\/+$/, '');
+
+    throw new Error('Frontend base URL is not configured. Set frontend_url or provide a resolvable request origin.');
   }
 
   protected async getAdminBaseUrl(req: Request): Promise<string> {
@@ -115,45 +124,50 @@ export class AuthControllerInfrastructure {
       process.env.NEXT_PUBLIC_ADMIN_URL;
     if (configured) return configured.replace(/\/+$/, '');
 
-    const originBase = ApiUrlUtils.getRequestOrigin(req);
-    if (originBase) {
-      try {
-        const parsed = new URL(originBase);
-        if (parsed.hostname.startsWith('admin.')) {
-          return originBase.replace(/\/+$/, '');
-        }
-      } catch {}
+    const refererUrl = RequestSurfaceUtils.readRefererUrl(req);
+    if (refererUrl && RequestSurfaceUtils.isAdminPath(refererUrl.pathname)) {
+      return `${refererUrl.protocol}//${refererUrl.host}${AppPathConstants.ADMIN.ADMIN.BASE}`.replace(/\/+$/, '');
     }
 
     const { host, proto } = ApiUrlUtils.getRequestHostAndProto(req);
     if (host) {
-      if (host.startsWith('api.')) {
-        return `${proto}://${host.replace(/^api\./, 'admin.')}`;
-      }
-      if (host.startsWith('frontend.')) {
-        return `${proto}://${host.replace(/^frontend\./, 'admin.')}`;
-      }
-      return `${proto}://${host}`;
+      return `${proto}://${host}${AppPathConstants.ADMIN.ADMIN.BASE}`;
     }
 
-    // Attempt to use general SITE_URL as last determined resort
-    return String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || 'http://localhost:3001').replace(/\/+$/, '');
+    const siteUrl = String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || '').trim();
+    if (siteUrl) {
+      return this.joinBaseUrl(siteUrl, AppPathConstants.ADMIN.ADMIN.BASE);
+    }
+
+    const requestOrigin = this.getRequestOriginBaseUrl(req);
+    if (requestOrigin) {
+      return this.joinBaseUrl(requestOrigin, AppPathConstants.ADMIN.ADMIN.BASE);
+    }
+
+    throw new Error('Admin base URL is not configured. Set admin_url or provide a resolvable request origin.');
   }
 
   protected isAdminRequestContext(req: Request): boolean {
-    const clientHeader = String(req.get('x-framework-client') || '').toLowerCase();
-    if (clientHeader.includes('admin')) return true;
+    return RequestSurfaceUtils.isAdminRequestContext(req);
+  }
 
-    const originBase = ApiUrlUtils.getRequestOrigin(req);
-    if (originBase) {
-      try {
-        return new URL(originBase).hostname.startsWith('admin.');
-      } catch {
-        return false;
-      }
+  protected getSessionCookieName(req: Request): string {
+    return this.isAdminRequestContext(req)
+      ? CookieConstants.AUTH_TOKEN
+      : CookieConstants.CLIENT_AUTH_TOKEN;
+  }
+
+  protected clearConflictingSessionCookies(req: Request, res: Response) {
+    const cookieOptions = this.getCookieOptions(req, true);
+
+    if (this.isAdminRequestContext(req)) {
+      this.clearCookieVariants(res, CookieConstants.CLIENT_AUTH_TOKEN, cookieOptions, false);
+      return;
     }
 
-    return false;
+    this.clearCookieVariants(res, CookieConstants.AUTH_TOKEN, cookieOptions, false);
+    this.clearCookieVariants(res, CookieConstants.AUTH_USER, cookieOptions, false);
+    this.clearCookieVariants(res, CookieConstants.ADMIN_EXPORT_AUTH_TOKEN, cookieOptions, false);
   }
 
   protected async buildEmailVerificationUrl(req: Request, token: string): Promise<string> {
@@ -162,13 +176,11 @@ export class AuthControllerInfrastructure {
   }
 
   protected async buildPasswordResetUrl(req: Request, token: string, contextHint?: string): Promise<string> {
-    const hint = String(contextHint || '').toLowerCase();
-    const isAdminHint = hint.includes('admin');
-    const isFrontendHint = hint.includes('frontend');
+    const normalizedContextHint = this.normalizeResetContextHint(contextHint);
     let baseUrl = '';
-    if (isAdminHint) {
+    if (normalizedContextHint === 'admin') {
       baseUrl = await this.getAdminBaseUrl(req);
-    } else if (isFrontendHint) {
+    } else if (normalizedContextHint === 'frontend') {
       baseUrl = await this.getFrontendBaseUrl(req);
     } else if (this.isAdminRequestContext(req)) {
       baseUrl = await this.getAdminBaseUrl(req);
@@ -264,8 +276,11 @@ export class AuthControllerInfrastructure {
 
   protected clearAuthCookies(req: Request, res: Response) {
     const cookieOptions = this.getCookieOptions(req, true);
-    this.clearCookieVariants(res, CookieConstants.AUTH_TOKEN, cookieOptions, true);
+    this.clearCookieVariants(res, CookieConstants.AUTH_TOKEN, cookieOptions, false);
+    this.clearCookieVariants(res, CookieConstants.CLIENT_AUTH_TOKEN, cookieOptions, false);
     this.clearCookieVariants(res, CookieConstants.AUTH_CSRF, cookieOptions, false);
+    this.clearCookieVariants(res, CookieConstants.AUTH_USER, cookieOptions, false);
+    this.clearCookieVariants(res, CookieConstants.ADMIN_EXPORT_AUTH_TOKEN, cookieOptions, false);
   }
 
   protected clearCookieVariants(res: Response, name: string, cookieOptions: Record<string, any>, httpOnly: boolean) {
@@ -307,5 +322,20 @@ export class AuthControllerInfrastructure {
   // Implemented in policy layer. Defined here so infrastructure can call it.
   protected async getSettingNumber(_key: string, defaultValue: number, _min: number, _max: number): Promise<number> {
     return defaultValue;
+  }
+
+  protected normalizeResetContextHint(contextHint?: string): string {
+    const normalizedHint = String(contextHint || '').trim().toLowerCase();
+    if (normalizedHint === 'admin' || normalizedHint === RequestSurfaceUtils.CLIENTS.ADMIN_UI) {
+      return 'admin';
+    }
+    if (normalizedHint === 'frontend' || normalizedHint === RequestSurfaceUtils.CLIENTS.FRONTEND_UI) {
+      return 'frontend';
+    }
+    return '';
+  }
+
+  protected joinBaseUrl(baseUrl: string, path: string): string {
+    return `${String(baseUrl || '').replace(/\/+$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
   }
 }

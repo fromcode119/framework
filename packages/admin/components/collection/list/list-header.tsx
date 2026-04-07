@@ -6,6 +6,7 @@ import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
+import { CollectionListUtils } from '../collection-list-utils';
 
 interface CollectionListHeaderProps {
   collection: any;
@@ -20,6 +21,9 @@ export const CollectionListHeader: React.FC<CollectionListHeaderProps> = ({
   slug,
   theme
 }) => {
+  const displayName = CollectionListUtils.resolveCollectionLabel(collection, slug);
+  const singularDisplayName = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
+
   return (
     <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
       theme === 'dark' 
@@ -42,11 +46,11 @@ export const CollectionListHeader: React.FC<CollectionListHeaderProps> = ({
                         <FrameworkIcons.Layout size={20} />
                       </div>
                     )}
-                    title={collection.slug === 'users' ? 'User Management' : (collection.name || slug.charAt(0).toUpperCase() + slug.slice(1))}
+                    title={collection.slug === 'users' ? 'User Management' : displayName}
                     subtitle={
                       collection.slug === 'users'
                         ? 'Manage system users, roles and security permissions.'
-                        : `Manage and organize ${(collection.name || slug).toLowerCase()} records.`
+                        : CollectionListUtils.resolveCollectionDescription(collection, slug)
                     }
                     subtitleClassName="text-slate-500 font-bold text-xs tracking-tight opacity-80 mt-2"
                   />
@@ -78,7 +82,7 @@ export const CollectionListHeader: React.FC<CollectionListHeaderProps> = ({
               className="px-6 py-3 rounded-xl font-semibold tracking-wide text-xs shadow-xl shadow-indigo-600/30"
               icon={<FrameworkIcons.Plus size={18} />}
             >
-              {collection.slug === 'users' ? 'Create User' : 'New Entry'}
+              {collection.slug === 'users' ? 'Create User' : `New ${singularDisplayName}`}
             </Button>
           )}
         </div>

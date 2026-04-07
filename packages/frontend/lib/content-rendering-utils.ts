@@ -1,4 +1,5 @@
 import { CoercionUtils } from '@fromcode119/core/client';
+import { RenderableContentTransformerRegistry } from '../../react/src/renderable-content-transformer-registry';
 
 /**
  * Utilities for rendering content blocks and resolving display metadata.
@@ -35,7 +36,7 @@ export class ContentRenderingUtils {
 
   /**
    * Builds renderable content structure from a content object.
-   * Handles direct content, content blocks, and auto-generates product detail blocks for product-like records.
+   * Handles direct content and delegates plugin-specific adaptation to registered transformers.
    */
   static buildRenderableContent(content: any): any {
     const directContent = content?.content ?? content?.contentBlocks ?? null;
@@ -48,38 +49,6 @@ export class ContentRenderingUtils {
       return directContent;
     }
 
-    const slug = CoercionUtils.toString(content?.slug);
-    const isProductLike = Boolean(
-      slug &&
-      (
-        content?.price !== undefined ||
-        content?.effectivePrice !== undefined ||
-        content?.salePrice !== undefined ||
-        content?.currency !== undefined ||
-        content?.shortDescription !== undefined
-      )
-    );
-
-    if (!isProductLike) return directContent;
-
-    const normalizedPrefix = CoercionUtils.toString(content?.customPermalink).startsWith('/cosmic-box/')
-      ? '/cosmic-box'
-      : '/shop';
-
-    return [
-      {
-        id: `auto-product-detail-${CoercionUtils.toString(content?.id) || slug}`,
-        type: 'ecommerce-product-detail',
-        data: {
-          title: ContentRenderingUtils.resolveDisplayTitle(content),
-          slugSource: 'url',
-          slugPathPrefix: normalizedPrefix,
-          productSlug: slug,
-          showDescription: false,
-          buttonLabel: 'Добави към количката',
-          successMessage: 'Продуктът е добавен в количката.'
-        }
-      }
-    ];
+    return RenderableContentTransformerRegistry.transform(content, directContent);
   }
 }

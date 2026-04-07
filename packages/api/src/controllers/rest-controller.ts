@@ -44,6 +44,10 @@ export class RESTController {
     return await this.hooks.call(HookEventUtils.event(collection.slug, phase), payload) as T;
   }
 
+  private resolveWriteTarget(collection: Collection): string {
+    return collection.tableName || collection.slug;
+  }
+
   /** Universal find (handles both REST and Internal/GraphQL) */
   async find(collection: Collection, req: any, res?: Response) {
     try {
@@ -195,7 +199,7 @@ export class RESTController {
       const insertData = await this.processor.processIncomingData(collection, data, table, {
         localeContext
       });
-      const newItem = await this.db.insert(table, insertData);
+      const newItem = await this.db.insert(this.resolveWriteTarget(collection), insertData);
 
       // Hooks: After Create
       let finalItem = newItem;
@@ -273,7 +277,7 @@ export class RESTController {
         existingRecord: existing,
         localeContext
       });
-      const updated = await this.db.update(table, where, updateData);
+      const updated = await this.db.update(this.resolveWriteTarget(collection), where, updateData);
       
       if (!updated) {
         if (!res) return null;
@@ -315,7 +319,7 @@ export class RESTController {
       const { id } = req.params;
       const pk = collection.primaryKey || 'id';
       const table = QueryHelper.getVirtualTable(collection);
-      const success = await this.db.delete(table, { [pk]: pk === 'id' ? parseInt(id) : id });
+      const success = await this.db.delete(this.resolveWriteTarget(collection), { [pk]: pk === 'id' ? parseInt(id) : id });
 
       if (success) {
         this.logger.info(`Deleted record in ${collection.slug} : ${id}`);
@@ -335,6 +339,7 @@ export class RESTController {
     try {
       const items = Array.isArray(req.body) ? req.body : [req.body];
       const table = QueryHelper.getVirtualTable(collection);
+      const writeTarget = this.resolveWriteTarget(collection);
       const results: any[] = [];
       const globalSummary = req.body._change_summary || `Bulk creation of ${collection.slug}`;
       const localeContext = await this.localization.getLocaleContext(req);
@@ -345,7 +350,7 @@ export class RESTController {
         const individualSummary = data._change_summary || globalSummary;
         if (data._change_summary) delete data._change_summary;
         const insertData = await this.processor.processIncomingData(collection, data, table, { localeContext });
-        const newItem = await this.db.insert(table, insertData);
+        const newItem = await this.db.insert(writeTarget, insertData);
         let finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_CREATE, newItem);
         finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
         await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, individualSummary);
@@ -370,6 +375,7 @@ export class RESTController {
         return res.status(400).json({ error: 'ids must be a non-empty array' });
       }
       const table = QueryHelper.getVirtualTable(collection);
+      const writeTarget = this.resolveWriteTarget(collection);
       const pk = collection.primaryKey || 'id';
       const localeContext = await this.localization.getLocaleContext(req);
       const { data: sanitizedUpdateData, overrideMeta } = this.fieldGuard.extractReadOnlyOverrideMetadata(data);
@@ -385,7 +391,7 @@ export class RESTController {
         if (!existing) continue;
         await this.fieldGuard.enforceReadOnlyFieldConstraints({ collection, incomingData: updateData, existingRecord: existing, req, overrideMeta });
         const processedUpdate = await this.processor.processIncomingData(collection, updateData, table, { existingRecord: existing, localeContext });
-        const updated = await this.db.update(table, where, processedUpdate);
+        const updated = await this.db.update(writeTarget, where, processedUpdate);
         if (updated) {
           let finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_UPDATE, updated);
           finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
@@ -464,6 +470,7 @@ export class RESTController {
       const items = req.body;
       if (!Array.isArray(items)) return res.status(400).json({ error: 'Payload must be an array of records' });
       const table = QueryHelper.getVirtualTable(collection);
+      const writeTarget = this.resolveWriteTarget(collection);
       const results: any[] = [];
       const localeContext = await this.localization.getLocaleContext(req as any);
       for (const item of items) {
@@ -472,7 +479,7 @@ export class RESTController {
         this.fieldGuard.assertPermalinkNotReserved(collection, itemData);
         try {
           const insertData = await this.processor.processIncomingData(collection, itemData, table, { localeContext });
-          const newItem = await this.db.insert(table, insertData);
+          const newItem = await this.db.insert(writeTarget, insertData);
           results.push({ id: newItem.id, status: 'success' });
         } catch (e: any) { results.push({ item: item.name || item.title || 'unknown', status: 'error', error: e.message }); }
       }

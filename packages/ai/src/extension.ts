@@ -1,5 +1,6 @@
 import type { CoreExtensionContext } from '@fromcode119/core';
 import { ProviderCapabilitiesUtils } from './gateways/integration-provider';
+import { AssistantRouter } from './api/routes';
 
 export class AiExtension {
   static async onInit(context: CoreExtensionContext): Promise<void> {
@@ -23,6 +24,10 @@ export class AiExtension {
     context.registerCapability('mcp');
     context.registerCapability('llm');
     context.registerCapability('forge-assistant');
+    context.registerApiRoute?.('ai', (routeContext: any) => ({
+      basePath: String(context.extension.manifest.apiPath || context.extension.manifest.slug || 'ai').trim(),
+      router: AssistantRouter.create(routeContext),
+    }));
 
     logger.info('AI extension initialized successfully');
   }
