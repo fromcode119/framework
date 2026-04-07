@@ -89,6 +89,12 @@ export interface SecondaryPanelManifest {
   items?: SecondaryPanelItemManifest[];
 }
 
+export interface PublicRouteManifest {
+  path: string;
+  targetPath?: string;
+  contentType?: string;
+}
+
 export interface PluginManifest {
   // Identity
   slug: string;                    // Unique identifier
@@ -164,6 +170,7 @@ export interface PluginManifest {
     css?: string[];
     assets?: string[];
     headInjections?: any[];
+    publicRoutes?: PublicRouteManifest[];
   };
 
   // Marketplace / Organization

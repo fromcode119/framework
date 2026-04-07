@@ -29,6 +29,7 @@ export class RuntimeConstants {
     'HookEventUtils',
     'ApiVersionUtils',
     'RouteUtils',
+    'PublicAssetUrlUtils',
     'UrlUtils',
   ] as const;
 

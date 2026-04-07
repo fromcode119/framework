@@ -46,7 +46,7 @@ export class SystemController {
 
     this.system = new SystemService(dbWrapper);
     this.users = new UserManagementService(dbWrapper, auth, manager);
-    this.resolution = new ResolutionService(manager, restController);
+    this.resolution = new ResolutionService(manager, themeManager, restController);
     this.twoFactor = new SystemTwoFactorService(dbWrapper, () => manager.email, this.users);
   }
 

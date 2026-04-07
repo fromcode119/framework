@@ -1,5 +1,5 @@
 import { BaseService } from './base-service';
-import { AdminApi } from '../api';
+import { PublicAssetUrlUtils } from '@fromcode119/core/client';
 
 /**
  * Service for media file handling and URL resolution.
@@ -23,16 +23,7 @@ export class MediaService extends BaseService {
    * resolveMediaUrl('data:image/png;base64,...') // "data:image/png;base64,..."
    */
   resolveMediaUrl(value: any): string {
-    const raw = String(value || '').trim();
-    if (!raw) return '';
-
-    // Already absolute or special protocol
-    if (/^https?:\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) {
-      return raw;
-    }
-
-    // Resolve relative path via API
-    return AdminApi.getURL(raw.startsWith('/') ? raw : `/${raw}`);
+    return PublicAssetUrlUtils.resolveMediaUrl(value);
   }
 
   /**

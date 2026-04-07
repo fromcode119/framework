@@ -47,18 +47,7 @@ export class AdminUrlUtils {
 
   private static inferFrontendBaseUrlFromBrowser(): string {
     if (typeof window === 'undefined') return '';
-    const { protocol, hostname, port } = window.location;
-    if (!hostname) return '';
-
-    let resolvedHost = hostname;
-    if (hostname.startsWith('admin.')) {
-      resolvedHost = hostname.replace(/^admin\./, 'frontend.');
-    } else if (hostname.startsWith('api.')) {
-      resolvedHost = hostname.replace(/^api\./, 'frontend.');
-    }
-
-    const hostWithPort = port ? `${resolvedHost}:${port}` : resolvedHost;
-    return `${protocol}//${hostWithPort}`.replace(/\/+$/, '');
+    return window.location.origin.replace(/\/+$/, '');
   }
 
   private static normalizeFrontendCandidate(value: unknown): string {

@@ -8,6 +8,8 @@ import { Seeder } from '../database/seeder';
 import { ProjectPaths } from '../config/paths';
 import { ThemeInstallerService } from './theme-installer-service';
 import { ThemeScaffoldService } from './theme-scaffold-service';
+import { ThemeDefaultPageContractOverrideLoader } from './theme-default-page-contract-override-loader';
+import type { ThemeDefaultPageContractOverride } from '../types';
 
 export class ThemeManager {
   private activeTheme: string | null = null;
@@ -18,6 +20,7 @@ export class ThemeManager {
   private seeder: Seeder;
   private installer: ThemeInstallerService;
   private scaffolder: ThemeScaffoldService;
+  private overrideLoader: ThemeDefaultPageContractOverrideLoader;
 
   constructor(private db: any, private pluginManager?: any) {
     this.themesRoot = ProjectPaths.getThemesDir();
@@ -39,6 +42,7 @@ export class ThemeManager {
       () => this.discoverThemes(),
       (slug) => this.activateTheme(slug),
     );
+    this.overrideLoader = new ThemeDefaultPageContractOverrideLoader();
   }
 
   async checkForUpdates(slug: string): Promise<{ available: boolean; currentVersion: string; latestVersion?: string; updateUrl?: string }> {
@@ -232,6 +236,16 @@ export class ThemeManager {
   }
 
   public getThemeDirectory(slug: string): string { return this.resolveThemeDirectory(slug); }
+
+  async getActiveThemeDefaultPageContractOverrides(): Promise<ThemeDefaultPageContractOverride[]> {
+    const manifest = this.getActiveThemeManifest();
+    if (!manifest) {
+      return [];
+    }
+
+    const themeDirectory = this.resolveThemeDirectory(manifest.slug);
+    return this.overrideLoader.load(themeDirectory);
+  }
 
   private resolveThemeDirectory(slug: string): string {
     const directPath = path.join(this.themesRoot, slug);

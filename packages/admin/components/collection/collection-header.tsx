@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
+import { CollectionListUtils } from './collection-list-utils';
 
 interface CollectionHeaderProps {
   collection: any;
@@ -40,6 +41,8 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
   scheduledPublishAt,
   status
 }) => {
+  const collectionLabel = CollectionListUtils.resolveCollectionLabel(collection, slug);
+
   return (
     <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
       theme === 'dark' 
@@ -53,7 +56,7 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
             className={`flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}
           >
             <FrameworkIcons.Left size={12} />
-            {collection.name || slug}
+            {collectionLabel}
           </Link>
           <span className="text-slate-300">/</span>
           <span className={`text-[10px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>

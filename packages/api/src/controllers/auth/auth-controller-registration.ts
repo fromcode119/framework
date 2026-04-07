@@ -5,7 +5,7 @@
  */
 
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/core';
+import { RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerTokenSupport } from './auth-controller-token-support';
 import type { LoginThrottleSettings, LoginThrottleState } from './auth-controller.interfaces';
 
@@ -155,13 +155,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   }
 
   protected isFrontendRequestContext(req: Request): boolean {
-    const clientHeader = String(req.get('x-framework-client') || '').trim().toLowerCase();
-    if (clientHeader.includes('frontend')) return true;
-    const originBase = this.getRequestOriginBaseUrl(req);
-    if (originBase) { try { return new URL(originBase).hostname.startsWith('frontend.'); } catch { return false; } }
-    const referer = String(req.get('referer') || '').trim();
-    if (referer) { try { return new URL(referer).hostname.startsWith('frontend.'); } catch { return false; } }
-    return false;
+    return RequestSurfaceUtils.isFrontendRequestContext(req);
   }
 
   protected async getVerificationResendThrottleSettings(): Promise<LoginThrottleSettings> {

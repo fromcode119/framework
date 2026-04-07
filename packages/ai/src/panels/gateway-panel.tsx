@@ -99,6 +99,7 @@ export function GatewayPanel({
             </label>
             <input
               type="password"
+              autoComplete="new-password"
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
               placeholder={AssistantProviderUtils.providerApiKeyPlaceholder(provider)}

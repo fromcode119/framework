@@ -13,6 +13,10 @@ export class ContextBridge {
     ContextBridge._args = args;
   }
 
+  static registerContentTransformer(...args: any[]): any {
+    return ContextBridge._args?.registerContentTransformer?.(...args);
+  }
+
   static registerSlotComponent(...args: any[]): any {
     return ContextBridge._args?.registerSlotComponent?.(...args);
   }

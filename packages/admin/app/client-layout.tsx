@@ -18,7 +18,11 @@ export default function ClientLayout({ children }: ClientLayoutChildrenProps) {
   }, []);
 
   return (
-    <PluginsProvider apiUrl={AdminConstants.API_BASE_URL} runtimeModules={runtimeModules}>
+    <PluginsProvider
+      apiUrl={AdminConstants.API_BASE_URL}
+      clientType="admin-ui"
+      runtimeModules={runtimeModules}
+    >
       <ThemeProvider>
         <ClientLayoutShell>{children}</ClientLayoutShell>
       </ThemeProvider>

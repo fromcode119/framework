@@ -13,10 +13,12 @@ import { BrowserLocalization } from './browser-localization';
 import { RuntimeConstants, RelationUtils, CoercionUtils, StringUtils, NumberUtils, FormatUtils, LocalizationUtils, CollectionUtils, PaginationUtils, HookEventUtils } from '@fromcode119/core/client';
 import type { SlotComponent, MenuItem, CollectionMetadata, PluginContextValue, SecondaryPanelState } from './context.interfaces';
 import { ContextRuntimeBridge } from './context-runtime-bridge';
+import { RenderableContentTransformerRegistry } from './renderable-content-transformer-registry';
 
 type PluginsProviderProps = {
   children: ReactNode;
-  apiUrl?: string;
+  apiUrl: string;
+  clientType: 'admin-ui' | 'frontend-ui';
   runtimeModules?: Record<string, any>;
 };
 
@@ -115,7 +117,7 @@ const usePluginStateBridgeHook = (pluginSlug: string, key?: string) => {
   return [state, setter] as const;
 };
 
-const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsProviderProps) => {
+const PluginsProviderInternal = ({ children, apiUrl, clientType, runtimeModules }: PluginsProviderProps) => {
   const [slots, setSlots] = useState<Record<string, SlotComponent[]>>({});
   const [overrides, setOverrides] = useState<Record<string, SlotComponent>>({});
   const [themeVariables, setThemeVariables] = useState<Record<string, string>>({});
@@ -137,16 +139,9 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
   const [serverRuntimeModules, setServerRuntimeModules] = useState<Record<string, any>>({});
   const browserState = useMemo(() => new BrowserStateClient(), []);
   
-  const getBaseURL = useCallback(() => {
-    const bridgeUrl = typeof window !== 'undefined' ? (window as any).FROMCODE_API_URL : '';
-    let effectiveApiUrl = apiUrl || bridgeUrl || 'http://api.framework.local';
-    
-    if (!effectiveApiUrl.startsWith('http') && !effectiveApiUrl.startsWith('/')) {
-      effectiveApiUrl = `http://${effectiveApiUrl}`;
-    }
-    
-    return effectiveApiUrl.endsWith('/') ? effectiveApiUrl.slice(0, -1) : effectiveApiUrl;
-  }, [apiUrl]);
+  const getBaseURL = useCallback(() => (
+    apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
+  ), [apiUrl]);
 
   const apiFetch = useCallback(async (path: string, options: (RequestInit & { silent?: boolean; noDedupe?: boolean }) = {}) => {
     const { silent, noDedupe, ...fetchOptions } = options as any;
@@ -165,7 +160,9 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       url = `${base}${vPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
     }
     
-    const token = browserState.readCookie(CookieConstants.AUTH_TOKEN);
+    const token = clientType === 'frontend-ui'
+      ? browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN)
+      : '';
     const csrfToken = browserState.readCookie(CookieConstants.AUTH_CSRF);
     const method = String(fetchOptions.method || 'GET').toUpperCase();
     const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(method);
@@ -177,7 +174,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
         credentials: fetchOptions.credentials || 'include',
         headers: {
           ...existingHeaders,
-          ...(isUnsafeMethod && !existingHeaders['X-Framework-Client'] ? { 'X-Framework-Client': 'frontend-ui' } : {}),
+          ...(!existingHeaders['X-Framework-Client'] ? { 'X-Framework-Client': clientType } : {}),
           ...(isUnsafeMethod && !existingHeaders['X-Requested-With'] ? { 'X-Requested-With': 'XMLHttpRequest' } : {}),
           ...(isUnsafeMethod && csrfToken && !existingHeaders['X-CSRF-Token'] ? { 'X-CSRF-Token': csrfToken } : {}),
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -223,7 +220,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     });
     inFlightGetRequests.set(dedupeKey, promise);
     return promise;
-  }, [browserState, getBaseURL]);
+  }, [browserState, clientType, getBaseURL]);
 
   const api = useMemo(() => ({
     getBaseUrl: () => getBaseURL(),
@@ -433,6 +430,14 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
         [key]: value
       }
     }));
+  }, []);
+
+  const registerContentTransformer = useCallback((
+    name: string,
+    transform: (content: unknown, currentContent: unknown) => unknown,
+    priority?: number,
+  ) => {
+    RenderableContentTransformerRegistry.register(name, transform, priority);
   }, []);
 
   const emit = useCallback((event: string, data: any) => {
@@ -779,6 +784,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
 
     ContextRuntimeBridge.installRuntimeBridge({
       apiUrl,
+      registerContentTransformer,
       registerSlotComponent,
       registerFieldComponent,
       registerOverride,
@@ -835,7 +841,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
       runtimeModules,
       stabilityRef,
     });
-  }, [registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, stableLoadConfig, stableGetFrontendMetadata, emit, on, stableT, setLocale, stableApiBridge, isReady, runtimeModules, apiUrl]);
+  }, [registerContentTransformer, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, stableLoadConfig, stableGetFrontendMetadata, emit, on, stableT, setLocale, stableApiBridge, isReady, runtimeModules, apiUrl]);
 
   const value = React.useMemo(() => ({
     slots,
@@ -865,6 +871,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     getPluginApi,
     hasPluginApi,
     setPluginState,
+    registerContentTransformer,
     registerSlotComponent,
     registerFieldComponent,
     registerOverride,
@@ -879,7 +886,7 @@ const PluginsProviderInternal = ({ children, apiUrl, runtimeModules }: PluginsPr
     getFrontendMetadata,
     resolveContent,
     api
-  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, secondaryPanel, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
+  }), [slots, overrides, themeVariables, themeLayouts, activeTheme, menuItems, secondaryPanel, collections, fieldComponents, plugins, settings, pluginState, translations, locale, refreshVersion, triggerRefresh, t, emit, on, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, setPluginState, registerContentTransformer, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection, replaceCollections, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata, resolveContent, api]);
 
   return (
     <PluginContextRegistry.Context.Provider value={value}>

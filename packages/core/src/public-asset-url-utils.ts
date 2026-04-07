@@ -1,9 +1,12 @@
 import { ApiPathUtils } from './api';
+import { ApiVersionUtils } from './api-version';
 import { SystemConstants } from './constants';
 import { PublicRouteConstants } from './public-route-constants';
 import { RuntimeBridge } from './runtime-bridge';
 
 export class PublicAssetUrlUtils {
+  private static readonly uploadBasePath = String(SystemConstants.STORAGE.DEFAULT_PUBLIC_URL || '/uploads').trim() || '/uploads';
+
   static resolveApiBaseUrl(): string {
     return RuntimeBridge.resolveApiBaseUrl();
   }
@@ -24,6 +27,50 @@ export class PublicAssetUrlUtils {
     const normalizedUploadPath = PublicAssetUrlUtils.normalizeUploadPath(assetPath);
     if (!normalizedUploadPath) return '';
     return ApiPathUtils.absoluteUrl(apiBaseUrl, normalizedUploadPath);
+  }
+
+  static resolveMediaUrl(value: any, apiBaseUrl = PublicAssetUrlUtils.resolveApiBaseUrl()): string {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+      return raw;
+    }
+
+    if (/^https?:\/\//i.test(raw)) {
+      try {
+        const parsed = new URL(raw);
+        const normalizedUploadPath = PublicAssetUrlUtils.normalizeUploadPath(parsed.pathname);
+        if (normalizedUploadPath) {
+          return ApiPathUtils.absoluteUrl(parsed.origin, normalizedUploadPath);
+        }
+
+        if (PublicAssetUrlUtils.isThemePublicPath(parsed.pathname)) {
+          return ApiPathUtils.absoluteUrl(parsed.origin, parsed.pathname);
+        }
+
+        return raw;
+      } catch {
+        return raw;
+      }
+    }
+
+    if (PublicAssetUrlUtils.isThemePublicPath(raw)) {
+      return ApiPathUtils.absoluteUrl(apiBaseUrl, raw);
+    }
+
+    const normalizedUploadPath = PublicAssetUrlUtils.normalizeUploadPath(raw);
+    if (normalizedUploadPath) {
+      return ApiPathUtils.absoluteUrl(apiBaseUrl, normalizedUploadPath);
+    }
+
+    if (raw.startsWith('/')) {
+      return ApiPathUtils.absoluteUrl(apiBaseUrl, raw);
+    }
+
+    return raw.includes('.')
+      ? PublicAssetUrlUtils.uploadAssetUrl(raw, apiBaseUrl)
+      : '';
   }
 
   static resolveThemeAwareUrl(
@@ -65,20 +112,31 @@ export class PublicAssetUrlUtils {
   }
 
   private static isUploadPath(value: string): boolean {
-    const uploadPrefix = String(SystemConstants.STORAGE.DEFAULT_PUBLIC_URL || '').trim();
+    const uploadPrefix = PublicAssetUrlUtils.normalizePath(PublicAssetUrlUtils.uploadBasePath);
     const uploadPrefixWithoutLeadingSlash = uploadPrefix.replace(/^\/+/, '');
+    const normalizedValue = PublicAssetUrlUtils.normalizePath(value);
 
-    return value === uploadPrefix ||
-      value.startsWith(`${uploadPrefix}/`) ||
-      value === uploadPrefixWithoutLeadingSlash ||
-      value.startsWith(`${uploadPrefixWithoutLeadingSlash}/`);
+    return normalizedValue === uploadPrefix ||
+      normalizedValue.startsWith(`${uploadPrefix}/`) ||
+      normalizedValue === uploadPrefixWithoutLeadingSlash ||
+      normalizedValue.startsWith(`${uploadPrefixWithoutLeadingSlash}/`);
   }
 
   private static normalizeUploadPath(value: any): string {
-    const raw = String(value || '').trim();
-    if (!raw) return '';
-    if (raw.startsWith('/')) return raw;
-    return `/${raw}`;
+    const normalizedPath = PublicAssetUrlUtils.normalizePath(value);
+    if (!normalizedPath) return '';
+
+    const unversionedPath = PublicAssetUrlUtils.stripApiVersionPrefix(normalizedPath);
+    if (PublicAssetUrlUtils.isUploadPath(unversionedPath)) {
+      return unversionedPath.startsWith('/') ? unversionedPath : `/${unversionedPath}`;
+    }
+
+    const filename = unversionedPath.replace(/^\/+/, '');
+    if (!filename || filename.includes('/')) {
+      return '';
+    }
+
+    return `${PublicAssetUrlUtils.normalizePath(PublicAssetUrlUtils.uploadBasePath)}/${filename}`;
   }
 
   private static matchesThemeAsset(value: string, prefixes?: string[], files?: string[]): boolean {
@@ -91,5 +149,46 @@ export class PublicAssetUrlUtils {
 
   private static trimLeadingSlashes(value: any): string {
     return String(value || '').replace(/^\/+/, '');
+  }
+
+  private static normalizePath(value: any): string {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    try {
+      const parsed = new URL(raw);
+      return PublicAssetUrlUtils.normalizePath(parsed.pathname);
+    } catch {}
+
+    const withoutQueryOrHash = raw.split('?')[0].split('#')[0].trim();
+    if (!withoutQueryOrHash) return '';
+
+    const withLeadingSlash = withoutQueryOrHash.startsWith('/')
+      ? withoutQueryOrHash
+      : `/${withoutQueryOrHash}`;
+    const compacted = withLeadingSlash.replace(/\/{2,}/g, '/');
+    if (compacted.length === 1) return compacted;
+    return compacted.replace(/\/+$/, '');
+  }
+
+  private static stripApiVersionPrefix(pathname: string): string {
+    const normalizedPath = PublicAssetUrlUtils.normalizePath(pathname);
+    if (!normalizedPath) return '';
+
+    const regexStrippedPath = normalizedPath.replace(/^\/api\/v[^/]+(?=\/|$)/i, '');
+    if (regexStrippedPath !== normalizedPath) {
+      return PublicAssetUrlUtils.normalizePath(regexStrippedPath || '/');
+    }
+
+    const apiPrefix = ApiVersionUtils.prefix();
+    if (normalizedPath === apiPrefix) {
+      return '/';
+    }
+
+    if (normalizedPath.startsWith(`${apiPrefix}/`)) {
+      return PublicAssetUrlUtils.normalizePath(normalizedPath.slice(apiPrefix.length));
+    }
+
+    return normalizedPath;
   }
 }

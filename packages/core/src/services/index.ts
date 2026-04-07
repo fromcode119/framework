@@ -15,6 +15,7 @@ export { ContentService } from './content-service';
 export { MenuService } from './menu-service';
 export { CollectionService } from './collection-service';
 export { CollectionIdentityService } from './collection-identity-service';
+export * from './default-page-contract';
 export { SeedPageService } from './seed-page-service';
 
 // Main singleton

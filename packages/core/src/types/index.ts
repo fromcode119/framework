@@ -9,5 +9,6 @@ export * from './marketplace.types';
 export * from './schema.interfaces';
 export * from './schema.types';
 export * from './manifests.interfaces';
+export * from './default-page-contract';
 export * from './plugin.interfaces';
 export * from './core.interfaces';

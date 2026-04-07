@@ -43,9 +43,20 @@ export const DateTimePicker = ({
   const updatePosition = () => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
+      const popoverWidth = 360;
+      const popoverHeight = showTime ? 460 : 380;
+      const viewportPadding = 12;
+      const maxLeft = Math.max(viewportPadding, window.innerWidth - popoverWidth - viewportPadding);
+      const preferredLeft = rect.left;
+      const preferredTop = rect.bottom + 8;
+      const shouldOpenUpwards = preferredTop + popoverHeight > window.innerHeight - viewportPadding;
+      const top = shouldOpenUpwards
+        ? Math.max(viewportPadding, rect.top - popoverHeight - 8)
+        : Math.max(viewportPadding, preferredTop);
+
       setCoords({
-        top: rect.bottom + 8,
-        left: rect.left,
+        top,
+        left: Math.min(Math.max(preferredLeft, viewportPadding), maxLeft),
         width: rect.width
       });
     }
@@ -154,6 +165,8 @@ export const DateTimePicker = ({
               position: 'fixed',
               top: coords.top,
               left: coords.left,
+              width: 'min(360px, calc(100vw - 24px))',
+              maxWidth: 'calc(100vw - 24px)',
               zIndex: 9999
             }}
             className={`p-5 rounded-lg border animate-in zoom-in-95 slide-in-from-top-2 duration-300 shadow-2xl
@@ -165,25 +178,28 @@ export const DateTimePicker = ({
               mode="single"
               selected={pickerDate}
               onSelect={handleSelect}
+              showOutsideDays={false}
               className={`${theme === 'dark' ? 'rdp-dark' : ''}`}
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
                 month: "space-y-4",
-                caption: "flex justify-between items-center px-2 py-1",
+                month_caption: "flex justify-between items-center px-2 py-1",
                 caption_label: "text-sm font-bold text-indigo-600",
                 nav: "flex items-center gap-1",
-                nav_button: `h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800`,
-                table: "border-collapse space-y-1",
-                head_row: "flex",
-                head_cell: "text-slate-400 rounded-md w-9 font-semibold text-[10px] py-1",
-                row: "flex w-full mt-1",
-                cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
-                day: `h-9 w-9 p-0 font-semibold text-[12px] aria-selected:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all`,
-                day_selected: "bg-indigo-600 !text-white hover:bg-indigo-600 shadow-lg shadow-indigo-600/30",
-                day_today: "border-2 border-indigo-500/20 text-indigo-500",
-                day_outside: "opacity-20",
-                day_disabled: "opacity-20",
-                day_hidden: "invisible",
+                button_previous: `h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800`,
+                button_next: `h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800`,
+                month_grid: "w-full border-separate border-spacing-y-1",
+                weekdays: "",
+                weekday: "h-8 w-10 p-0 text-center align-middle text-slate-400 font-semibold text-[10px]",
+                weeks: "",
+                week: "",
+                day: "h-10 w-10 p-0 text-center align-middle",
+                day_button: `flex h-9 w-9 items-center justify-center rounded-lg p-0 font-semibold text-[12px] transition-all mx-auto text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800`,
+                selected: "bg-indigo-600 !text-white hover:bg-indigo-600 shadow-lg shadow-indigo-600/30",
+                today: "border-2 border-indigo-500/20 text-indigo-500",
+                outside: "pointer-events-none opacity-0",
+                disabled: "opacity-20",
+                hidden: "pointer-events-none opacity-0",
               }}
               components={{
                 Chevron: ({ orientation }: { orientation?: string }) => 

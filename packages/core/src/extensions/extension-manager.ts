@@ -25,6 +25,7 @@ export class CoreExtensionManager {
   private db: IDatabaseManager;
   private packagesRoot: string;
   private capabilities: Set<string> = new Set();
+  private registeredApiRoutes: Map<string, any> = new Map();
   private registeredAdminSlots: Map<string, Array<{ slot: string; component: any; priority: number; extensionSlug: string }>> = new Map(); // Store admin UI slots by slot name
   
   // Framework services that extensions can use
@@ -230,6 +231,7 @@ export class CoreExtensionManager {
       }
       
       extension.state = 'disabled';
+      this.registeredApiRoutes.delete(slug);
       
       // Update state
       await this.updateExtensionState(slug, { enabled: false });
@@ -276,6 +278,14 @@ export class CoreExtensionManager {
    */
   public hasCapability(capability: string): boolean {
     return this.capabilities.has(capability);
+  }
+
+  /**
+   * Get all registered API route factories from active extensions
+   * Returns a map of route key to router factory function
+   */
+  public getRegisteredApiRoutes(): Map<string, any> {
+    return new Map(this.registeredApiRoutes);
   }
 
   /**
@@ -334,6 +344,11 @@ export class CoreExtensionManager {
         logger.info(`Unregistered capability: ${capability}`);
       },
       getRegisteredCapabilities: () => [...extensionCapabilities],
+      registerApiRoute: (routeKey: string, factory: any) => {
+        const normalizedKey = String(routeKey || '').trim() || extension.manifest.slug;
+        this.registeredApiRoutes.set(normalizedKey, factory);
+        logger.info(`Registered API route '${normalizedKey}' for extension: ${extension.manifest.slug}`);
+      },
       registerAdminSlot: (slot: string, component: any, priority: number = 10) => {
         if (!this.registeredAdminSlots.has(slot)) {
           this.registeredAdminSlots.set(slot, []);
