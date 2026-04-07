@@ -8,16 +8,30 @@ export class SeedPageService extends BaseService {
   buildPageLookupCandidates(baseCandidates: string[], page: { slug?: string; customPermalink?: string }): string[] {
     const values: string[] = [];
 
+    const pushUnique = (value: string): void => {
+      if (value && !values.includes(value)) {
+        values.push(value);
+      }
+    };
+
     const push = (value: unknown): void => {
       const raw = String(value || '').trim();
       if (!raw) return;
-      if (!values.includes(raw)) values.push(raw);
+      pushUnique(raw);
 
-      const withoutLeading = raw.replace(/^\/+/, '');
-      if (withoutLeading && !values.includes(withoutLeading)) values.push(withoutLeading);
+      if (raw === '/') {
+        return;
+      }
 
-      const withLeading = `/${withoutLeading}`;
-      if (withoutLeading && !values.includes(withLeading)) values.push(withLeading);
+      const normalizedPath = raw.replace(/^\/+/, '').replace(/\/+$/, '');
+      if (!normalizedPath) {
+        return;
+      }
+
+      pushUnique(normalizedPath);
+      pushUnique(`/${normalizedPath}`);
+      pushUnique(`${normalizedPath}/`);
+      pushUnique(`/${normalizedPath}/`);
     };
 
     // Priority: custom permalink, then slug, then explicit candidates.

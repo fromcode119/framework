@@ -3,6 +3,11 @@ import { ContentService } from './content-service';
 import { MenuService } from './menu-service';
 import { CollectionService } from './collection-service';
 import { CollectionIdentityService } from './collection-identity-service';
+import { PluginDefaultPageBackfillService } from './default-page-contract/plugin-default-page-backfill-service';
+import { PluginDefaultPageDiagnosticService } from './default-page-contract/plugin-default-page-diagnostic-service';
+import { PluginDefaultPageMaterializationService } from './default-page-contract/plugin-default-page-materialization-service';
+import { PluginDefaultPageContractRegistryService } from './default-page-contract/plugin-default-page-contract-registry-service';
+import { PluginDefaultPageContractResolutionService } from './default-page-contract/plugin-default-page-contract-resolution-service';
 import { SeedPageService } from './seed-page-service';
 
 /**
@@ -43,6 +48,11 @@ export class CoreServices {
   private _menu: MenuService | null = null;
   private _collection: CollectionService | null = null;
   private _collectionIdentity: CollectionIdentityService | null = null;
+  private _defaultPageContracts: PluginDefaultPageContractRegistryService | null = null;
+  private _defaultPageContractResolution: PluginDefaultPageContractResolutionService | null = null;
+  private _defaultPageBackfill: PluginDefaultPageBackfillService | null = null;
+  private _defaultPageDiagnostic: PluginDefaultPageDiagnosticService | null = null;
+  private _defaultPageMaterialization: PluginDefaultPageMaterializationService | null = null;
   private _seedPage: SeedPageService | null = null;
 
   private constructor() {
@@ -104,6 +114,45 @@ export class CoreServices {
       this._collectionIdentity = new CollectionIdentityService();
     }
     return this._collectionIdentity;
+  }
+
+  get defaultPageContracts(): PluginDefaultPageContractRegistryService {
+    if (!this._defaultPageContracts) {
+      this._defaultPageContracts = new PluginDefaultPageContractRegistryService();
+    }
+    return this._defaultPageContracts;
+  }
+
+  get defaultPageContractResolution(): PluginDefaultPageContractResolutionService {
+    if (!this._defaultPageContractResolution) {
+      this._defaultPageContractResolution = new PluginDefaultPageContractResolutionService(this.defaultPageContracts);
+    }
+    return this._defaultPageContractResolution;
+  }
+
+  get defaultPageBackfill(): PluginDefaultPageBackfillService {
+    if (!this._defaultPageBackfill) {
+      this._defaultPageBackfill = new PluginDefaultPageBackfillService(this.seedPage);
+    }
+    return this._defaultPageBackfill;
+  }
+
+  get defaultPageDiagnostic(): PluginDefaultPageDiagnosticService {
+    if (!this._defaultPageDiagnostic) {
+      this._defaultPageDiagnostic = new PluginDefaultPageDiagnosticService(
+        this.defaultPageContractResolution,
+        this.defaultPageMaterialization,
+        this.defaultPageBackfill,
+      );
+    }
+    return this._defaultPageDiagnostic;
+  }
+
+  get defaultPageMaterialization(): PluginDefaultPageMaterializationService {
+    if (!this._defaultPageMaterialization) {
+      this._defaultPageMaterialization = new PluginDefaultPageMaterializationService(this.seedPage);
+    }
+    return this._defaultPageMaterialization;
   }
 
   get seedPage(): SeedPageService {

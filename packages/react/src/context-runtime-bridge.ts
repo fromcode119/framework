@@ -36,6 +36,7 @@ export class ContextRuntimeBridge {
     // Replaced with real implementations when installRuntimeBridge() is called.
     if (!fc.ContextBridge) {
       fc.ContextBridge = {
+        registerContentTransformer: queueMethod('contentTransformer'),
         registerSlotComponent: queueMethod('slot'),
         registerFieldComponent: queueMethod('field'),
         registerOverride: queueMethod('override'),
@@ -121,6 +122,9 @@ export class ContextRuntimeBridge {
     queue.forEach((item: any) => {
       try {
         switch (item.type) {
+          case 'contentTransformer':
+            ContextBridge.registerContentTransformer(...(item.args || []));
+            break;
           case 'slot':
             ContextBridge.registerSlotComponent(...(item.args || [item.name, item.comp]));
             break;

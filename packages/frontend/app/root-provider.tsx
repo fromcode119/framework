@@ -55,7 +55,7 @@ export default function RootProvider({ children }: { children: ReactNode }) {
   const normalizedChildren = React.Children.toArray(children);
 
   return (
-    <PluginsProvider apiUrl={apiUrl}>
+    <PluginsProvider apiUrl={apiUrl} clientType="frontend-ui">
       <RouterBridge />
       <ThemeInitializer />
       <SystemGate>

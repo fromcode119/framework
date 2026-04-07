@@ -1,12 +1,22 @@
-import { PluginManager } from '@fromcode119/core';
-import { type Collection, SystemConstants } from '@fromcode119/core';
+import {
+  CoreServices,
+  PluginManager,
+  ThemeManager,
+  SystemConstants,
+} from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
+import { ResolutionContractMatchService } from './helpers/resolution-contract-match-service';
 
 export class ResolutionService {
+  private readonly contractMatcher: ResolutionContractMatchService;
+
   constructor(
     private manager: PluginManager,
+    private themeManager: ThemeManager,
     private restController: RESTController
-  ) {}
+  ) {
+    this.contractMatcher = new ResolutionContractMatchService(restController);
+  }
 
   async resolveSlug(slug: string, options: { 
     user?: any; 
@@ -43,6 +53,8 @@ export class ResolutionService {
       if (options.locale_mode) q.locale_mode = options.locale_mode;
       return q;
     };
+
+    const resolvedContracts = await this.resolveDefaultPageContracts();
 
     const activePlugins = new Set(this.manager.getPlugins().filter(p => p.state === 'active').map(p => p.manifest.slug));
     const collections = this.manager.registeredCollections;
@@ -95,6 +107,18 @@ export class ResolutionService {
       }
     }
 
+    const contractMatch = await this.contractMatcher.resolve(
+      normalizedInput,
+      resolvedContracts,
+      collections,
+      activePlugins,
+      withLocale,
+      options,
+    );
+    if (contractMatch) {
+      return contractMatch;
+    }
+
     // 2. Structure Search
     for (const { collection, pluginSlug } of collections.values()) {
       if (!collection) continue;
@@ -140,5 +164,10 @@ export class ResolutionService {
     }
 
     return null;
+  }
+
+  private async resolveDefaultPageContracts() {
+    const overrides = await this.themeManager.getActiveThemeDefaultPageContractOverrides();
+    return CoreServices.getInstance().defaultPageContractResolution.resolveAll({ overrides });
   }
 }

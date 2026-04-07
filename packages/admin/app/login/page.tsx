@@ -5,7 +5,7 @@ import { AuthHooks } from '@/components/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@/lib/icons';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
@@ -15,6 +15,7 @@ import { AuthUtils } from '@/lib/auth-utils';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { notify } = NotificationHooks.useNotify();
   const { login } = AuthHooks.useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -29,9 +30,11 @@ export default function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string; totpToken?: string; recoveryCode?: string }>({});
 
   useEffect(() => {
-    // SELF-HEALING: Purge any conflicting cookies on landing to the login page.
-    // This resolves duplicate auth-token cookie conflicts without requiring user to clear cache.
-    AuthUtils.purgeAuth();
+    if (searchParams.get('reason') === 'session_expired') {
+      // SELF-HEALING: Purge conflicting auth cookies only after an explicit
+      // session-expired redirect instead of on every login-page visit.
+      AuthUtils.purgeAuth();
+    }
 
     async function checkStatus() {
       try {
@@ -46,7 +49,7 @@ export default function LoginPage() {
       }
     }
     checkStatus();
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();

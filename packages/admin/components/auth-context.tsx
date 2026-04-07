@@ -17,20 +17,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for existing session profile (token is in HttpOnly cookie, we can't read it)
-    const savedUser = browserState.readCookie(CookieConstants.AUTH_USER);
+    let isMounted = true;
 
-    if (savedUser && savedUser !== 'null' && savedUser !== 'undefined') {
-      try {
-        const parsed = JSON.parse(savedUser);
-        if (parsed && typeof parsed === 'object' && parsed.email) {
-          setUser(parsed);
+    const hydrateAuthState = async () => {
+      const savedUser = browserState.readCookie(CookieConstants.AUTH_USER);
+
+      if (savedUser && savedUser !== 'null' && savedUser !== 'undefined') {
+        try {
+          const parsed = JSON.parse(savedUser);
+          if (parsed && typeof parsed === 'object' && parsed.email) {
+            if (isMounted) {
+              setUser(parsed);
+              setIsLoading(false);
+            }
+            return;
+          }
+        } catch {
+          console.error('[AuthProvider] Failed to parse user session');
         }
-      } catch (err) {
-        console.error("Failed to parse user session");
       }
-    }
-    setIsLoading(false);
+
+      try {
+        const securityState = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.SECURITY, { noDedupe: true });
+        const securityUser = securityState?.user;
+
+        if (securityUser && typeof securityUser === 'object' && securityUser.email) {
+          const domain = AuthUtils.getCookieDomain();
+          browserState.writeCookie(CookieConstants.AUTH_USER, JSON.stringify(securityUser), {
+            path: '/',
+            domain,
+            maxAgeSeconds: 7 * 24 * 60 * 60,
+          });
+
+          if (isMounted) {
+            setUser(securityUser);
+          }
+        }
+      } catch (error: any) {
+        if (error?.status && error.status !== 401) {
+          console.error('[AuthProvider] Failed to restore authenticated user:', error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    hydrateAuthState();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = (token: string | undefined, userData: User) => {

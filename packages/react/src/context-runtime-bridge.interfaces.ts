@@ -12,6 +12,7 @@ export interface GlobalStubSetupArgs {
 
 export interface RuntimeBridgeInstallArgs {
   apiUrl?: string;
+  registerContentTransformer: (...args: any[]) => void;
   registerSlotComponent: (...args: any[]) => void;
   registerFieldComponent: (...args: any[]) => void;
   registerOverride: (...args: any[]) => void;

@@ -115,6 +115,16 @@ export type { CapabilityMetadata } from '@fromcode119/core/client';
 export { IntegrationRegistry } from '@fromcode119/core/client';
 export type { IntegrationTypeDefinition } from '@fromcode119/core/client';
 export type { PluginApiResolver } from '@fromcode119/core/client';
+export type {
+  PluginDefaultPageContractIdentity,
+  PluginDefaultPageContract,
+  PluginDefaultPageContractDependency,
+  PluginDefaultPageContractKind,
+  PluginDefaultPageContractMaterializationMode,
+  PluginDefaultPageContractRegistration,
+  RegisteredPluginDefaultPageContract,
+  ThemeDefaultPageContractOverride,
+} from '@fromcode119/core/client';
 // RequestContextUtils / RequestStore intentionally omitted — server-only (AsyncLocalStorage),
 // must not be bundled into client-side builds. Use @fromcode119/sdk/server.
 export { RecordVersions } from '@fromcode119/core/client';

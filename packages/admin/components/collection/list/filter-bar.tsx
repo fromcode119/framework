@@ -3,8 +3,10 @@
 import React from 'react';
 import { FrameworkIcons } from '@/lib/icons';
 import { Select } from '@/components/ui/select';
+import { CollectionListUtils } from '../collection-list-utils';
 
 interface FilterBarProps {
+  collection?: any;
   slug: string;
   theme: string;
   search: string;
@@ -26,6 +28,7 @@ interface FilterBarProps {
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
+  collection,
   slug,
   theme,
   search,
@@ -53,7 +56,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
         <input 
           type="text"
-          placeholder={`Search ${slug}...`}
+          placeholder={CollectionListUtils.resolveCollectionSearchPlaceholder(collection, slug)}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={`w-full h-11 pl-12 pr-4 rounded-xl border transition-all text-sm font-semibold outline-none ${

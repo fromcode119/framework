@@ -66,7 +66,10 @@ export class ServerMiddlewareSetup {
 
     this.app.use((req: any, res, next) => {
       const probeRoutes = ApiConfig.getInstance().probeRoutes;
-      const hasToken = this.requestCookies.hasCookie(req, CookieConstants.AUTH_TOKEN) || Boolean(req.headers.authorization);
+      const hasToken =
+        this.requestCookies.hasCookie(req, CookieConstants.AUTH_TOKEN) ||
+        this.requestCookies.hasCookie(req, CookieConstants.CLIENT_AUTH_TOKEN) ||
+        Boolean(req.headers.authorization);
       const isNoise =
         req.url.includes(probeRoutes.HEALTH) ||
         req.url.includes(probeRoutes.READY) ||

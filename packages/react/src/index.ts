@@ -8,6 +8,7 @@ export { ContextHooks } from './context-hooks';
 export {
   ContextBridge,
 } from './context-bridge';
+export { RenderableContentTransformerRegistry } from './renderable-content-transformer-registry';
 export type {
   SlotComponent,
   MenuItem,
@@ -17,6 +18,10 @@ export type {
   SecondaryPanelState,
   PluginContextValue,
 } from './context.interfaces';
+export type {
+  RenderableContentTransformer,
+  RenderableContentTransformerMetadata,
+} from './renderable-content-transformer.interfaces';
 export * from 'lucide-react';
 export { Slot } from './slot';
 export { Override } from './override';

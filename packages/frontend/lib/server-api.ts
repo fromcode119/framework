@@ -124,7 +124,7 @@ export class ServerApiUtils {
     return null;
   }
 
-  static async serverFetchResponse(path: string): Promise<Response | null> {
+  static async serverFetchResponse(path: string, requestInit?: RequestInit): Promise<Response | null> {
     const requestPath = ServerApiUtils.AdminUrlUtils(path);
     if (!requestPath) {
       if (DEBUG_SERVER_FETCH) {
@@ -142,7 +142,11 @@ export class ServerApiUtils {
       const timeout = setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT_MS);
       try {
         const url = /^https?:\/\//i.test(requestPath) ? requestPath : `${prefix}${requestPath}`;
-        const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+        const response = await fetch(url, {
+          ...requestInit,
+          cache: requestInit?.cache ?? 'no-store',
+          signal: controller.signal,
+        });
         if (!response.ok) { lastResponse = response; continue; }
         return response;
       } catch (error) {

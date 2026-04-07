@@ -122,7 +122,9 @@ export class AdminApi {
   }
 
   private static handleUnauthorized(response: Response, url: string): void {
-    if (response.status !== 401) {
+    const shouldPurge = response.status === 401;
+
+    if (!shouldPurge) {
       return;
     }
     if (url.includes(AdminConstants.ENDPOINTS.AUTH.STATUS) || url.includes(AdminConstants.ENDPOINTS.AUTH.LOGIN)) {
@@ -135,7 +137,7 @@ export class AdminApi {
       return;
     }
 
-    console.warn('[API] 401 Unauthorized detected. Purging session.');
+    console.warn(`[API] ${response.status} auth failure detected. Purging session.`);
     AuthUtils.purgeAuth();
     window.location.href = AdminConstants.ADMIN_URLS.AUTH.LOGIN_SESSION_EXPIRED();
   }
