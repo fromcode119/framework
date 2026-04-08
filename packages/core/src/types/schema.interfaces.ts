@@ -10,7 +10,7 @@ export interface Field {
   unique?: boolean;
   defaultValue?: any;
   options?: { label: string; value: any }[]; // For select type
-  relationTo?: string; // For relationship/upload type
+  relationTo?: string | string[]; // For relationship/upload type
   hasMany?: boolean; // For relationship
   min?: number; // For number
   max?: number; // For number
