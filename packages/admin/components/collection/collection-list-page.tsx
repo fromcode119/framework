@@ -47,7 +47,8 @@ const RelationshipCellValue: React.FC<{ relationTo?: string | string[]; raw: any
       .map((entry) => {
         const value = CollectionListUtils.resolveRelationScalar(entry);
         const directLabel = CollectionListUtils.resolveRelationDisplayLabel(entry);
-        return { value, directLabel };
+        const target = CollectionListUtils.resolveRelationTarget(entry);
+        return { value, directLabel, target };
       })
       .filter((entry) => entry.value || entry.directLabel);
   }, [raw]);
@@ -61,7 +62,8 @@ const RelationshipCellValue: React.FC<{ relationTo?: string | string[]; raw: any
         .filter((entry) => {
           if (!entry.value) return false;
           if (entry.directLabel && entry.directLabel !== entry.value) return false;
-          return !relationSlugs.some((relationSlug) => {
+          const candidateSlugs = entry.target ? [entry.target] : relationSlugs;
+          return !candidateSlugs.some((relationSlug) => {
             const key = `${relationSlug}:${entry.value}`;
             return RELATIONSHIP_LABEL_CACHE.has(key) || resolved[key];
           });
@@ -74,7 +76,8 @@ const RelationshipCellValue: React.FC<{ relationTo?: string | string[]; raw: any
 
       await Promise.all(
         pending.map(async (entry) => {
-          for (const relationSlug of relationSlugs) {
+          const candidateSlugs = entry.target ? [entry.target] : relationSlugs;
+          for (const relationSlug of candidateSlugs) {
             const key = `${relationSlug}:${entry.value}`;
             try {
               const byId = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}/${encodeURIComponent(entry.value)}`);
@@ -119,7 +122,8 @@ const RelationshipCellValue: React.FC<{ relationTo?: string | string[]; raw: any
 
   const labels = tokens.map((entry) => {
     if (entry.directLabel && entry.directLabel !== entry.value) return entry.directLabel;
-    const key = relationSlugs
+    const candidateSlugs = entry.target ? [entry.target] : relationSlugs;
+    const key = candidateSlugs
       .map((relationSlug) => `${relationSlug}:${entry.value}`)
       .find((candidate) => resolved[candidate] || RELATIONSHIP_LABEL_CACHE.get(candidate));
     return (key && (resolved[key] || RELATIONSHIP_LABEL_CACHE.get(key))) || entry.directLabel || entry.value;
