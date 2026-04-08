@@ -348,9 +348,22 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
-    const columnDef = this.fieldToSqlFragment(field);
+    const columnDef = this.fieldToSqlFragment(field, { includeUnique: false });
     await this.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    if (field.unique) {
+      await this.createUniqueIndex(tableName, NamingStrategy.toSnakeCase(field.name));
+    }
     this.jsonColumnsCache.delete(tableName);
+  }
+
+  private async createUniqueIndex(tableName: string, columnName: string): Promise<void> {
+    const indexName = `${tableName}_${columnName}_unique_idx`
+      .replace(/[^a-zA-Z0-9_]/g, '_')
+      .replace(/_+/g, '_');
+
+    await this.execute(
+      sql`CREATE UNIQUE INDEX IF NOT EXISTS ${sql.identifier(indexName)} ON ${sql.identifier(tableName)} (${sql.identifier(columnName)})`
+    );
   }
 
   private async getJsonColumns(tableName: string): Promise<Set<string>> {
@@ -431,8 +444,9 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     }
   }
 
-  private fieldToSqlFragment(field: ISchemaField): any {
+  private fieldToSqlFragment(field: ISchemaField, options: { includeUnique?: boolean } = {}): any {
     const dbName = NamingStrategy.toSnakeCase(field.name);
+    const includeUnique = options.includeUnique !== false;
     let type = sql`TEXT`;
     
     switch (field.type) {
@@ -452,7 +466,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
     const constraints: any[] = [];
     if (field.required) constraints.push(sql`NOT NULL`);
-    if (field.unique) constraints.push(sql`UNIQUE`);
+    if (includeUnique && field.unique) constraints.push(sql`UNIQUE`);
     
     if (field.defaultValue !== undefined) {
       if (typeof field.defaultValue === 'string') {

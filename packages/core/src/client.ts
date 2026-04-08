@@ -91,6 +91,7 @@ export * from './data-sources';
 // ── Shared Utilities ──────────────────────────────────────────────────────────
 export { CoreServices } from './services/core-services';
 export { CollectionIdentityService } from './services/collection-identity-service';
+export { MediaRelationService } from './services/media-relation-service';
 export { TypeUtils } from './utils/type-utils';
 
 // ── Configuration ─────────────────────────────────────────────────────────────

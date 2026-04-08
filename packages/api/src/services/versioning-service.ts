@@ -87,26 +87,44 @@ export class VersioningService {
     return results?.[0] || null;
   }
 
+  private resolveVersionData(versionData: unknown): Record<string, unknown> {
+    if (versionData && typeof versionData === 'object' && !Array.isArray(versionData)) {
+      return versionData as Record<string, unknown>;
+    }
+
+    if (typeof versionData === 'string' && versionData.trim()) {
+      try {
+        return this.resolveVersionData(JSON.parse(versionData));
+      } catch (err: any) {
+        this.logger.warn(`Failed to parse version payload: ${err.message}`);
+      }
+    }
+
+    return {};
+  }
+
   async restoreVersion(collection: Collection, refId: any, version: number, user: any) {
     const targetVersion = await this.getVersion(collection.slug, refId, version);
     if (!targetVersion) {
       throw new Error(`Version ${version} not found for ${collection.slug}/${refId}`);
     }
 
-    const dataToRestore = targetVersion.version_data;
+    const dataToRestore = this.resolveVersionData(targetVersion.version_data);
+    const primaryKey = collection.primaryKey || 'id';
+    const where = { [primaryKey]: primaryKey === 'id' ? Number(refId) || refId : refId };
     
     // Perform the update on the target collection
-    await this.db.update(collection.slug, refId, dataToRestore);
+    const restoredRecord = await this.db.update(collection.slug, where, dataToRestore);
 
     // Create a new snapshot for the restoration action itself
     await this.createSnapshot(
       collection, 
       refId, 
-      dataToRestore, 
+      restoredRecord || dataToRestore, 
       user, 
       `Restored to version ${version}`
     );
 
-    return dataToRestore;
+    return restoredRecord || dataToRestore;
   }
 }

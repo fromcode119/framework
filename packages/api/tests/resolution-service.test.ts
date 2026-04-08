@@ -3,6 +3,16 @@ jest.mock('@fromcode119/core', () => ({
     getInstance: jest.fn(),
     reset: jest.fn(),
   },
+  CoercionUtils: {
+    toBoolean: jest.fn((value: unknown, fallback = false) => {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'number' && Number.isFinite(value)) return value > 0;
+      const normalized = String(value ?? '').trim().toLowerCase();
+      if (['true', '1', '1.0', 'yes', 'on', 'enabled', 'active'].includes(normalized)) return true;
+      if (['false', '0', '0.0', 'no', 'off', 'disabled', 'inactive'].includes(normalized)) return false;
+      return fallback;
+    }),
+  },
   SystemConstants: {
     TABLE: {
       META: 'meta',
@@ -272,7 +282,10 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
+      db: {
+        find: jest.fn().mockResolvedValue([]),
+        findOne: jest.fn().mockResolvedValue({ id: 7, disablePermalink: '1.0' }),
+      },
       getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'ecommerce' } }]),
       registeredCollections: new Map([
         [
@@ -282,7 +295,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'ecommerce-products',
               shortSlug: 'catalog',
-              fields: [{ name: 'slug' }, { name: 'disablePermalink' }],
+              fields: [{ name: 'slug' }],
             },
           },
         ],

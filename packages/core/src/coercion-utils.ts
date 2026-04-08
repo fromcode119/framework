@@ -19,10 +19,26 @@ export class CoercionUtils {
 
   static toBoolean(value: unknown, fallback: boolean | undefined = false): boolean | undefined {
     if (typeof value === 'boolean') return value;
+    if (typeof value === 'number' && Number.isFinite(value)) return value > 0;
     const normalized = CoercionUtils.toString(value).toLowerCase();
-    if (['true', '1', 'yes', 'on', 'enabled', 'active'].includes(normalized)) return true;
-    if (['false', '0', 'no', 'off', 'disabled', 'inactive'].includes(normalized)) return false;
+    if (['true', '1', '1.0', 'yes', 'on', 'enabled', 'active'].includes(normalized)) return true;
+    if (['false', '0', '0.0', 'no', 'off', 'disabled', 'inactive'].includes(normalized)) return false;
     return fallback;
+  }
+
+  static parseJson<T>(value: unknown, fallback: T): T {
+    if (value === null || value === undefined || value === '') return fallback;
+    if (typeof value !== 'string') return value as T;
+
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (typeof parsed === 'string' && parsed.trim()) {
+        return CoercionUtils.parseJson(parsed, parsed as T);
+      }
+      return parsed as T;
+    } catch {
+      return fallback;
+    }
   }
 
   static toIsoDateOrNow(value: unknown): string {
@@ -66,9 +82,24 @@ export class CoercionUtils {
     return {} as T;
   }
 
+  /** Coerce to plain object, parsing JSON strings when needed. Returns {} if invalid. */
+  static toParsedObject<T extends Record<string, unknown> = Record<string, unknown>>(value: unknown): T {
+    if (value && typeof value === 'object' && !Array.isArray(value)) return value as T;
+    const parsed = CoercionUtils.parseJson<unknown>(value, null);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
+    return {} as T;
+  }
+
   /** Coerce to array. Returns [] if not an array. */
   static toArray<T = unknown>(value: unknown): T[] {
     return Array.isArray(value) ? (value as T[]) : [];
+  }
+
+  /** Coerce to array, parsing JSON strings when needed. Returns [] if invalid. */
+  static toParsedArray<T = unknown>(value: unknown): T[] {
+    if (Array.isArray(value)) return value as T[];
+    const parsed = CoercionUtils.parseJson<unknown>(value, null);
+    return Array.isArray(parsed) ? (parsed as T[]) : [];
   }
 
   /**
