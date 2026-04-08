@@ -12,45 +12,45 @@ describe('CollectionService', () => {
   describe('resolveBySlug', () => {
     const collections: Collection[] = [
       {
-        slug: 'cms-pages',
-        shortSlug: 'pages',
-        pluginSlug: 'cms',
-        label: 'Pages'
+        slug: 'plugin-a-entries',
+        shortSlug: 'entries',
+        pluginSlug: 'plugin-a',
+        label: 'Entries'
       } as unknown as Collection,
       {
-        slug: 'cms-posts',
-        shortSlug: 'posts',
-        pluginSlug: 'cms',
-        label: 'Posts'
+        slug: 'plugin-a-records',
+        shortSlug: 'records',
+        pluginSlug: 'plugin-a',
+        label: 'Records'
       } as unknown as Collection,
       {
-        slug: 'ecommerce-products',
-        shortSlug: 'products',
-        pluginSlug: 'ecommerce',
-        label: 'Products'
+        slug: 'plugin-b-items',
+        shortSlug: 'items',
+        pluginSlug: 'plugin-b',
+        label: 'Items'
       } as unknown as Collection
     ];
 
     it('resolves by shortSlug', () => {
-      const result = service.resolveBySlug(collections, 'cms', 'pages');
+      const result = service.resolveBySlug(collections, 'plugin-a', 'entries');
       expect(result).toBeDefined();
-      expect(result?.slug).toBe('cms-pages');
+      expect(result?.slug).toBe('plugin-a-entries');
     });
 
     it('resolves by full slug', () => {
-      const result = service.resolveBySlug(collections, 'cms', 'cms-posts');
+      const result = service.resolveBySlug(collections, 'plugin-a', 'plugin-a-records');
       expect(result).toBeDefined();
-      expect(result?.slug).toBe('cms-posts');
+      expect(result?.slug).toBe('plugin-a-records');
     });
 
     it('matches plugin context', () => {
-      const result = service.resolveBySlug(collections, 'ecommerce', 'products');
+      const result = service.resolveBySlug(collections, 'plugin-b', 'items');
       expect(result).toBeDefined();
-      expect(result?.slug).toBe('ecommerce-products');
+      expect(result?.slug).toBe('plugin-b-items');
     });
 
     it('returns undefined for non-matching plugin', () => {
-      const result = service.resolveBySlug(collections, 'wrong-plugin', 'pages');
+      const result = service.resolveBySlug(collections, 'wrong-plugin', 'entries');
       expect(result).toBeUndefined();
     });
 
@@ -73,23 +73,23 @@ describe('CollectionService', () => {
     });
 
     it('handles case-insensitive matching', () => {
-      const result = service.resolveBySlug(collections, 'CMS', 'PAGES');
+      const result = service.resolveBySlug(collections, 'PLUGIN-A', 'ENTRIES');
       expect(result).toBeDefined();
-      expect(result?.slug).toBe('cms-pages');
+      expect(result?.slug).toBe('plugin-a-entries');
     });
 
     it('handles empty collections array', () => {
-      const result = service.resolveBySlug([], 'cms', 'pages');
+      const result = service.resolveBySlug([], 'plugin-a', 'entries');
       expect(result).toBeUndefined();
     });
   });
 
   describe('generatePreviewUrl', () => {
     const collection: Collection = {
-      slug: 'cms-posts',
-      shortSlug: 'posts',
-      pluginSlug: 'cms',
-      label: 'Posts'
+      slug: 'plugin-a-records',
+      shortSlug: 'records',
+      pluginSlug: 'plugin-a',
+      label: 'Records'
     } as unknown as Collection;
 
     it('generates URL with custom permalink', () => {
@@ -115,9 +115,9 @@ describe('CollectionService', () => {
         id: 1,
         customPermalink: 'page'
       };
-      const options = { prefix: 'blog' };
+      const options = { prefix: 'library' };
       const url = service.generatePreviewUrl('http://example.com', record, collection, options);
-      expect(url).toBe('http://example.com/blog/page?preview=1');
+      expect(url).toBe('http://example.com/library/page?preview=1');
     });
 
     it('does not add prefix to absolute custom permalink', () => {
@@ -125,7 +125,7 @@ describe('CollectionService', () => {
         id: 1,
         customPermalink: '/absolute'
       };
-      const options = { prefix: 'blog' };
+      const options = { prefix: 'library' };
       const url = service.generatePreviewUrl('http://example.com', record, collection, options);
       expect(url).toBe('http://example.com/absolute?preview=1');
     });
@@ -133,21 +133,21 @@ describe('CollectionService', () => {
     it('generates URL from slug using default structure', () => {
       const record = {
         id: 1,
-        slug: 'my-post',
+        slug: 'sample-record',
         createdAt: new Date('2024-01-15')
       };
       const url = service.generatePreviewUrl('http://example.com', record, collection);
-      expect(url).toBe('http://example.com/my-post?preview=1');
+      expect(url).toBe('http://example.com/sample-record?preview=1');
     });
 
     it('supports :slug placeholder', () => {
       const record = {
         id: 1,
-        slug: 'hello-world'
+        slug: 'sample-record'
       };
-      const options = { permalinkStructure: '/posts/:slug' };
+      const options = { permalinkStructure: '/records/:slug' };
       const url = service.generatePreviewUrl('http://example.com', record, collection, options);
-      expect(url).toBe('http://example.com/posts/hello-world?preview=1');
+      expect(url).toBe('http://example.com/records/sample-record?preview=1');
     });
 
     it('supports :year/:month/:day placeholders', () => {
@@ -164,24 +164,24 @@ describe('CollectionService', () => {
     it('supports :id placeholder', () => {
       const record = {
         id: 42,
-        slug: 'post'
+        slug: 'record'
       };
-      const options = { permalinkStructure: '/posts/:id' };
+      const options = { permalinkStructure: '/records/:id' };
       const url = service.generatePreviewUrl('http://example.com', record, collection, options);
-      expect(url).toBe('http://example.com/posts/42?preview=1');
+      expect(url).toBe('http://example.com/records/42?preview=1');
     });
 
     it('adds prefix to structured URLs', () => {
       const record = {
         id: 1,
-        slug: 'post'
+        slug: 'record'
       };
       const options = {
         permalinkStructure: '/:slug',
-        prefix: 'blog'
+        prefix: 'library'
       };
       const url = service.generatePreviewUrl('http://example.com', record, collection, options);
-      expect(url).toBe('http://example.com/blog/post?preview=1');
+      expect(url).toBe('http://example.com/library/record?preview=1');
     });
 
     it('cleans up trailing slash from base URL', () => {
@@ -199,7 +199,7 @@ describe('CollectionService', () => {
     });
 
     it('returns # for empty base URL', () => {
-      const record = { id: 1, slug: 'post' };
+      const record = { id: 1, slug: 'record' };
       const url = service.generatePreviewUrl('', record, collection);
       expect(url).toBe('#');
     });

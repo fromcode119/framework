@@ -47,6 +47,15 @@ export const Select = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const isDarkTheme = theme === 'dark';
+  const triggerThemeClasses = isDarkTheme
+    ? '!bg-slate-900/60 !border-slate-800 !text-white caret-white placeholder:text-slate-600 hover:!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-0 [color-scheme:dark] autofill:[-webkit-text-fill-color:#ffffff] autofill:caret-white autofill:shadow-[inset_0_0_0px_1000px_rgba(15,23,42,0.96)]'
+    : '';
+  const emptyLabelThemeClasses = isDarkTheme ? 'text-slate-500 font-medium' : 'text-slate-400 font-medium';
+  const chevronThemeClasses = isDarkTheme ? 'text-slate-500' : 'text-slate-400';
+  const searchInputThemeClasses = isDarkTheme
+    ? '!bg-slate-900/60 !border-slate-800 !text-white caret-white placeholder:text-slate-600 hover:!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-0 [color-scheme:dark]'
+    : '';
 
   const selectedOption = options.find(opt => {
     // Ensure both are treated as strings for stable comparison
@@ -134,9 +143,9 @@ export const Select = ({
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`${UiFieldUtils.getFieldClasses(size, `flex items-center justify-between text-left group overflow-hidden relative ${triggerClassName}`)} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`${UiFieldUtils.getFieldClasses(size, `flex items-center justify-between text-left group overflow-hidden relative ${triggerClassName}`)} ${triggerThemeClasses} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
-          <span className={`truncate relative z-10 ${!selectedOption ? 'text-slate-400 font-medium' : ''}`}>
+          <span className={`truncate relative z-10 ${!selectedOption ? emptyLabelThemeClasses : ''}`}>
              <div className="flex flex-col leading-none">
                 {selectedOption ? (
                   <span className="truncate">{selectedOption.label}</span>
@@ -146,7 +155,7 @@ export const Select = ({
              </div>
           </span>
           
-          <div className={`transition-transform duration-300 relative z-10 ${isOpen ? 'rotate-180 text-indigo-500' : 'text-slate-400'}`}>
+          <div className={`transition-transform duration-300 relative z-10 ${isOpen ? 'rotate-180 text-indigo-500' : chevronThemeClasses}`}>
             <FrameworkIcons.Down size={14} />
           </div>
 
@@ -186,7 +195,7 @@ export const Select = ({
                         setSearchValue(nextValue);
                         onSearchChange?.(nextValue);
                       }}
-                      className={UiFieldUtils.getFieldClasses('sm', 'pl-8')}
+                      className={UiFieldUtils.getFieldClasses('sm', `pl-8 ${searchInputThemeClasses}`)}
                     />
                   </div>
                 </div>

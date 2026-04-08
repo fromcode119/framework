@@ -75,6 +75,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               setStatusFilter(value);
               setPage(1);
             }}
+            theme={theme}
             searchable={false}
             size="md"
             className="w-full"
@@ -168,6 +169,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                   setFieldFilters((prev) => ({ ...prev, [field.name]: value }));
                   setPage(1);
                 }}
+                theme={theme}
                 searchable={false}
                 size="md"
                 className="w-full"
