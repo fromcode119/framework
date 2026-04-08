@@ -3,15 +3,15 @@ import { CollectionKeyUtils } from './collection-key-utils';
 
 describe('CollectionKeyUtils.resolveSourceSlugs', () => {
   const mockCollections = [
-    { slug: 'posts', shortSlug: 'posts', pluginSlug: 'cms' },
-    { slug: 'pages', shortSlug: 'pages', pluginSlug: 'cms' },
+    { slug: 'alpha-records', shortSlug: 'alpha-records', pluginSlug: 'plugin-a' },
+    { slug: 'beta-records', shortSlug: 'beta-records', pluginSlug: 'plugin-b' },
   ];
 
   it('resolves multiple relation targets from array values', () => {
-    expect(CollectionKeyUtils.resolveSourceSlugs(['posts', 'pages'], mockCollections)).toEqual(['posts', 'pages']);
+    expect(CollectionKeyUtils.resolveSourceSlugs(['alpha-records', 'beta-records'], mockCollections)).toEqual(['alpha-records', 'beta-records']);
   });
 
   it('resolves multiple relation targets from comma-delimited values', () => {
-    expect(CollectionKeyUtils.resolveSourceSlugs('posts,pages', mockCollections)).toEqual(['posts', 'pages']);
+    expect(CollectionKeyUtils.resolveSourceSlugs('alpha-records,beta-records', mockCollections)).toEqual(['alpha-records', 'beta-records']);
   });
 });

@@ -27,8 +27,15 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
     () => CollectionKeyUtils.resolveSourceSlugs(requestedSourceCollection, collections || []),
     [collections, requestedSourceCollection]
   );
+  const isMultiSource = sourceCollectionSlugs.length > 1;
+  const currentTarget = React.useMemo(() => RelationshipSelectLocalUtils.resolveRelationTarget(value), [value]);
 
   const currentValue = React.useMemo(() => RelationshipSelectLocalUtils.toScalar(value), [value]);
+  const currentSelectValue = React.useMemo(() => {
+    if (!currentValue) return '';
+    if (!isMultiSource || !currentTarget) return currentValue;
+    return RelationshipSelectLocalUtils.toOptionKey(currentValue, currentTarget);
+  }, [currentTarget, currentValue, isMultiSource]);
   const [search, setSearch] = React.useState('');
   const [options, setOptions] = React.useState<SelectOption[]>([]);
   const rawValueMapRef = React.useRef<Record<string, any>>({});
@@ -59,10 +66,15 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
       const lookupField = resolveLookupField(sourceCollectionSlug);
       for (const doc of docs) {
         const rawValue = doc?.id ?? doc?._id ?? doc?.value ?? doc?.slug;
-        const optionValue = RelationshipSelectLocalUtils.toScalar(rawValue);
+        const scalarValue = RelationshipSelectLocalUtils.toScalar(rawValue);
+        const optionValue = isMultiSource
+          ? RelationshipSelectLocalUtils.toOptionKey(scalarValue, sourceCollectionSlug)
+          : scalarValue;
         if (!optionValue || seen.has(optionValue)) continue;
         seen.add(optionValue);
-        rawValueMapRef.current[optionValue] = rawValue ?? optionValue;
+        rawValueMapRef.current[optionValue] = isMultiSource
+          ? RelationshipSelectLocalUtils.buildTaggedValue(rawValue ?? scalarValue, sourceCollectionSlug)
+          : rawValue ?? optionValue;
         const preferredLabel =
           AdminServices.getInstance().localization.resolveLabelText(doc?.[lookupField]) ||
           AdminServices.getInstance().localization.resolveLabelText(doc);
@@ -93,10 +105,14 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
           setOptions(nextOptions);
         }
 
-        if (!currentValue || nextOptions.some((option) => option.value === currentValue)) return;
+        if (!currentValue || nextOptions.some((option) => option.value === currentSelectValue)) return;
 
         // Ensure the currently selected value resolves to a label.
-        for (const sourceCollectionSlug of sourceCollectionSlugs) {
+        const candidateSlugs = currentTarget && isMultiSource
+          ? [currentTarget, ...sourceCollectionSlugs.filter((entry) => entry !== currentTarget)]
+          : sourceCollectionSlugs;
+
+        for (const sourceCollectionSlug of candidateSlugs) {
           const lookupField = resolveLookupField(sourceCollectionSlug);
           try {
             const byId = await CollectionQueryUtils.queryCollectionDocById(api, sourceCollectionSlug, currentValue);
@@ -120,13 +136,13 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
         }
 
         if (!disposed) {
-          rawValueMapRef.current[currentValue] = value;
-          upsertOption({ value: currentValue, label: currentValue });
+          rawValueMapRef.current[currentSelectValue || currentValue] = value;
+          upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
         }
       } catch {
         if (!disposed && currentValue) {
-          rawValueMapRef.current[currentValue] = value;
-          upsertOption({ value: currentValue, label: currentValue });
+          rawValueMapRef.current[currentSelectValue || currentValue] = value;
+          upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
         }
       }
     };
@@ -135,18 +151,28 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
     return () => {
       disposed = true;
     };
-  }, [api, collections, currentValue, field.admin?.sourceField, search, sourceCollectionSlugs, upsertOption, value]);
+  }, [api, collections, currentSelectValue, currentTarget, currentValue, field.admin?.sourceField, isMultiSource, search, sourceCollectionSlugs, upsertOption, value]);
 
   return (
     <Select
-      value={currentValue}
+      value={currentSelectValue}
       onChange={(next) => {
         const key = String(next || '').trim();
         if (!key) {
           onChange('');
           return;
         }
-        onChange(rawValueMapRef.current[key] ?? key);
+        const rawValue = rawValueMapRef.current[key];
+        if (rawValue !== undefined) {
+          onChange(rawValue);
+          return;
+        }
+        if (!isMultiSource) {
+          onChange(key);
+          return;
+        }
+        const parsed = RelationshipSelectLocalUtils.parseOptionKey(key);
+        onChange(RelationshipSelectLocalUtils.buildTaggedValue(parsed.scalar, parsed.relationTo));
       }}
       options={options}
       placeholder={`Select ${field.label || field.name || 'record'}...`}

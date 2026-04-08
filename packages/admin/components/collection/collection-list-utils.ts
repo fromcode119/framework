@@ -199,4 +199,11 @@ export class CollectionListUtils {
     }
     return String(value).trim();
   }
+
+  static resolveRelationTarget(value: any): string {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+    return String(
+      value.relationTo ?? value.sourceCollection ?? value.collection ?? value.collectionSlug ?? ''
+    ).trim();
+  }
 }
