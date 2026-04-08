@@ -21,6 +21,16 @@ describe('resolveCollection', () => {
     const result = AdminCollectionUtils.resolveCollection(mockCollections, 'other', 'posts');
     expect(result).toBeUndefined();
   });
+
+  it('should resolve plugin collections from the global collections route', () => {
+    const result = AdminCollectionUtils.resolveCollection(mockCollections, 'collections', 'content-posts');
+    expect(result?.slug).toBe('content-posts');
+  });
+
+  it('should resolve global collection aliases from the global collections route', () => {
+    const result = AdminCollectionUtils.resolveCollection(mockCollections, 'collections', '@content/posts');
+    expect(result?.slug).toBe('content-posts');
+  });
 });
 
 describe('generatePreviewUrl', () => {

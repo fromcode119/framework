@@ -1,4 +1,6 @@
-import { Collection } from '@fromcode119/core/client';
+import { Collection, CollectionIdentityService } from '@fromcode119/core/client';
+
+const collectionIdentityService = new CollectionIdentityService();
 
 /**
  * Resolves the collection-specific prefix from settings.
@@ -54,17 +56,22 @@ export class AdminCollectionUtils {
   }
 
   static resolveCollection(collections: Collection[], pluginSlug: string, slug: string): Collection | undefined {
-    const normSlug = String(slug || '').toLowerCase();
     const normPluginSlug = String(pluginSlug || 'system').toLowerCase();
-    return collections.find(c => {
-      const rawShortSlug = String((c as any).shortSlug || '');
-      const isSlugMatch =
-        rawShortSlug.toLowerCase() === normSlug ||
-        rawShortSlug.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase() === normSlug ||
-        String(c.slug || '').toLowerCase() === normSlug ||
-        String((c as any).unprefixedSlug || '').toLowerCase() === normSlug;
-      const isPluginMatch = String((c as any).pluginSlug || 'system').toLowerCase() === normPluginSlug;
-      return isSlugMatch && isPluginMatch;
+    const isGlobalCollectionRoute = normPluginSlug === 'collections';
+    const requestedPluginSlug = isGlobalCollectionRoute ? undefined : normPluginSlug;
+    const resolvedSlug = collectionIdentityService.resolveRegisteredSlug(slug, collections as any, requestedPluginSlug);
+    const normalizedResolvedSlug = String(resolvedSlug || '').toLowerCase();
+
+    return collections.find((collection) => {
+      if (String(collection.slug || '').toLowerCase() !== normalizedResolvedSlug) {
+        return false;
+      }
+
+      if (isGlobalCollectionRoute) {
+        return true;
+      }
+
+      return String((collection as any).pluginSlug || 'system').toLowerCase() === normPluginSlug;
     });
   }
 }
