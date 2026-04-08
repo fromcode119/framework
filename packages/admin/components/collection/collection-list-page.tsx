@@ -26,14 +26,20 @@ import { CollectionListUtils } from './collection-list-utils';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { CollectionKeyUtils } from './collection-key-utils';
 
 const RELATIONSHIP_LABEL_CACHE = new Map<string, string>();
 const adminServices = AdminServices.getInstance();
 
 
 
-const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ relationTo, raw }) => {
+const RelationshipCellValue: React.FC<{ relationTo?: string | string[]; raw: any }> = ({ relationTo, raw }) => {
+  const { collections } = ContextHooks.usePlugins();
   const [resolved, setResolved] = useState<Record<string, string>>({});
+  const relationSlugs = useMemo(
+    () => CollectionKeyUtils.resolveSourceSlugs(relationTo, collections || []),
+    [collections, relationTo]
+  );
 
   const tokens = useMemo(() => {
     const entries = Array.isArray(raw) ? raw : [raw];
@@ -48,15 +54,17 @@ const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ re
 
   useEffect(() => {
     let disposed = false;
-    if (!relationTo) return () => { disposed = true; };
+    if (!relationSlugs.length) return () => { disposed = true; };
 
     const run = async () => {
       const pending = tokens
         .filter((entry) => {
           if (!entry.value) return false;
           if (entry.directLabel && entry.directLabel !== entry.value) return false;
-          const key = `${relationTo}:${entry.value}`;
-          return !RELATIONSHIP_LABEL_CACHE.has(key) && !resolved[key];
+          return !relationSlugs.some((relationSlug) => {
+            const key = `${relationSlug}:${entry.value}`;
+            return RELATIONSHIP_LABEL_CACHE.has(key) || resolved[key];
+          });
         })
         .slice(0, 8);
 
@@ -66,27 +74,33 @@ const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ re
 
       await Promise.all(
         pending.map(async (entry) => {
-          const key = `${relationTo}:${entry.value}`;
-          try {
-            const byId = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}/${encodeURIComponent(entry.value)}`);
-            const label = CollectionListUtils.resolveRelationDisplayLabel(byId) || entry.value;
-            updates[key] = label;
-            RELATIONSHIP_LABEL_CACHE.set(key, label);
-            return;
-          } catch {
+          for (const relationSlug of relationSlugs) {
+            const key = `${relationSlug}:${entry.value}`;
             try {
-              const bySlug = await AdminApi.get(
-                `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationTo)}?slug=${encodeURIComponent(entry.value)}&limit=1`
-              );
-              const doc = Array.isArray(bySlug) ? bySlug[0] : bySlug?.docs?.[0];
-              const label = CollectionListUtils.resolveRelationDisplayLabel(doc) || entry.value;
+              const byId = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}/${encodeURIComponent(entry.value)}`);
+              const label = CollectionListUtils.resolveRelationDisplayLabel(byId) || entry.value;
               updates[key] = label;
               RELATIONSHIP_LABEL_CACHE.set(key, label);
+              return;
             } catch {
-              updates[key] = entry.value;
-              RELATIONSHIP_LABEL_CACHE.set(key, entry.value);
+              try {
+                const bySlug = await AdminApi.get(
+                  `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}?slug=${encodeURIComponent(entry.value)}&limit=1`
+                );
+                const doc = Array.isArray(bySlug) ? bySlug[0] : bySlug?.docs?.[0];
+                const label = CollectionListUtils.resolveRelationDisplayLabel(doc) || entry.value;
+                updates[key] = label;
+                RELATIONSHIP_LABEL_CACHE.set(key, label);
+                return;
+              } catch {
+                continue;
+              }
             }
           }
+
+          const fallbackKey = `${relationSlugs[0]}:${entry.value}`;
+          updates[fallbackKey] = entry.value;
+          RELATIONSHIP_LABEL_CACHE.set(fallbackKey, entry.value);
         })
       );
 
@@ -99,13 +113,15 @@ const RelationshipCellValue: React.FC<{ relationTo?: string; raw: any }> = ({ re
     return () => {
       disposed = true;
     };
-  }, [relationTo, resolved, tokens]);
+  }, [relationSlugs, resolved, tokens]);
 
   if (!tokens.length) return <>-</>;
 
   const labels = tokens.map((entry) => {
     if (entry.directLabel && entry.directLabel !== entry.value) return entry.directLabel;
-    const key = relationTo && entry.value ? `${relationTo}:${entry.value}` : '';
+    const key = relationSlugs
+      .map((relationSlug) => `${relationSlug}:${entry.value}`)
+      .find((candidate) => resolved[candidate] || RELATIONSHIP_LABEL_CACHE.get(candidate));
     return (key && (resolved[key] || RELATIONSHIP_LABEL_CACHE.get(key))) || entry.directLabel || entry.value;
   });
 
