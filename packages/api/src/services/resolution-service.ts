@@ -1,8 +1,10 @@
 import {
   CoreServices,
+  CoercionUtils,
   PluginManager,
   ThemeManager,
   SystemConstants,
+  type Collection,
 } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 import { ResolutionContractMatchService } from './helpers/resolution-contract-match-service';
@@ -82,7 +84,9 @@ export class ResolutionService {
             } as any);
 
             if (results?.docs?.length > 0) {
-              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc: results.docs[0] };
+              const doc = results.docs[0];
+              if (await this.isPermalinkDisabled(collection, doc.id, !!options.preview)) continue;
+              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc };
             }
           }
         }
@@ -98,7 +102,9 @@ export class ResolutionService {
               user: options.user
             } as any);
             if (results?.docs?.length > 0) {
-              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc: results.docs[0] };
+              const doc = results.docs[0];
+              if (await this.isPermalinkDisabled(collection, doc.id, !!options.preview)) continue;
+              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc };
             }
           }
         }
@@ -116,6 +122,10 @@ export class ResolutionService {
       options,
     );
     if (contractMatch) {
+      const contractCollection = this.findResolvedCollection(collections, contractMatch.type, contractMatch.plugin);
+      if (contractCollection && await this.isPermalinkDisabled(contractCollection, contractMatch.doc?.id, !!options.preview)) {
+        return null;
+      }
       return contractMatch;
     }
 
@@ -157,7 +167,9 @@ export class ResolutionService {
 
           const result: any = await this.restController.find(collection, { query, user: options.user } as any);
           if (result?.docs?.length > 0) {
-            return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc: result.docs[0] };
+            const doc = result.docs[0];
+            if (await this.isPermalinkDisabled(collection, doc.id, !!options.preview)) continue;
+            return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc };
           }
         }
       } catch {}
@@ -169,5 +181,36 @@ export class ResolutionService {
   private async resolveDefaultPageContracts() {
     const overrides = await this.themeManager.getActiveThemeDefaultPageContractOverrides();
     return CoreServices.getInstance().defaultPageContractResolution.resolveAll({ overrides });
+  }
+
+  private findResolvedCollection(
+    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    type: string,
+    plugin: string,
+  ): Collection | null {
+    for (const { collection, pluginSlug } of collections.values()) {
+      if (!collection || pluginSlug !== plugin) {
+        continue;
+      }
+
+      const collectionType = collection.shortSlug || collection.slug;
+      if (collectionType === type) {
+        return collection;
+      }
+    }
+
+    return null;
+  }
+
+  private async isPermalinkDisabled(collection: Collection, docId: any, preview: boolean): Promise<boolean> {
+    if (preview) return false;
+    if (docId === null || docId === undefined || docId === '') return false;
+    try {
+      const pk = collection.primaryKey || 'id';
+      const raw = await this.manager.db.findOne(collection.tableName || collection.slug, { [pk]: docId });
+      return CoercionUtils.toBoolean(raw?.disablePermalink ?? raw?.disable_permalink, false) === true;
+    } catch {
+      return false;
+    }
   }
 }

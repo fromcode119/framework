@@ -51,6 +51,7 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
 }) => {
   const collectionLabel = CollectionListUtils.resolveCollectionLabel(collection, slug);
   const singularCollectionLabel = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
+  const hideHeaderPrimaryAction = collection?.admin?.hideHeaderPrimaryAction === true;
 
   return (
     <div data-edit-header className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
@@ -133,17 +134,19 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
               </div>
             )}
             
-            <Button 
-              className="h-10 px-6 rounded-lg font-semibold text-[10px] shadow-lg shadow-indigo-600/20" 
-              onClick={(e) => {
-                 handleSubmit(e, changeSummary);
-                 setChangeSummary('');
-              }}
-              isLoading={saving}
-              icon={<FrameworkIcons.Save size={14} />}
-            >
-              {isNew ? 'Create' : 'Save'}
-            </Button>
+            {!hideHeaderPrimaryAction && (
+              <Button 
+                className="h-10 px-6 rounded-lg font-semibold text-[10px] shadow-lg shadow-indigo-600/20" 
+                onClick={(e) => {
+                   handleSubmit(e, changeSummary);
+                   setChangeSummary('');
+                }}
+                isLoading={saving}
+                icon={<FrameworkIcons.Save size={14} />}
+              >
+                {isNew ? 'Create' : 'Save'}
+              </Button>
+            )}
 
             {!isNew && (
               <button 

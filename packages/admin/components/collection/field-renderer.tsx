@@ -16,6 +16,7 @@ import { MediaRelationField } from './media-relation-field';
 import { CustomFieldErrorBoundary } from './custom-field-error-boundary';
 import { UiFieldUtils } from '@/lib/ui';
 import { FieldRendererUtils } from './field-renderer-utils';
+import { PermalinkField } from '@/components/ui/permalink-field';
 
 interface CollectionField {
   name: string;
@@ -207,6 +208,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       field.type === 'datetime' ||
       field.type === 'color' ||
       field.type === 'code' ||
+      field.type === 'permalink' ||
       Boolean(field.admin?.component)
     );
 
@@ -567,6 +569,15 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             value={currentValue}
             onChange={updateValue}
             language={field.admin?.language || 'javascript'}
+            disabled={isFieldReadOnly}
+          />
+        )
+      ) : field.type === 'permalink' ? (
+        wrapWithReadOnlyOverride(
+          <PermalinkField
+            value={currentValue}
+            onChange={updateValue}
+            theme={theme}
             disabled={isFieldReadOnly}
           />
         )

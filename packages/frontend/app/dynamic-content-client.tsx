@@ -29,7 +29,7 @@ export default function DynamicContentClient({ content }: DynamicContentClientPr
     <LayoutComponent page={content}>
       {!shouldBypassDefaultContent ? (
         <div className="w-full">
-          <Slot name="frontend.content.display" props={{ content: renderableContent }} />
+          <Slot name="frontend.content.display" props={{ content: renderableContent, entry: content }} />
 
           {((!renderableContent || typeof renderableContent === 'string')) && (
             <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">

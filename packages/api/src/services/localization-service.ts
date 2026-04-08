@@ -113,7 +113,7 @@ export class LocalizationService {
 
     const cleanData = { ...data };
     collection.fields.forEach((field: any) => {
-      if (field.admin?.hidden) {
+      if (field.admin?.hidden && !options.rawLocalized) {
         delete cleanData[field.name];
         return;
       }

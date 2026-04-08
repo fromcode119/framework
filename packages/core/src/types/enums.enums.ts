@@ -39,4 +39,5 @@ export type FieldType =
   | 'array'
   | 'group'
   | 'color'
-  | 'code';
+  | 'code'
+  | 'permalink';

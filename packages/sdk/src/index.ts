@@ -86,6 +86,7 @@ export { NamespacedPluginsFacade } from '@fromcode119/core/client';
 export { PluginsRegistry } from '@fromcode119/core/client';
 export { RuntimeBridge } from '@fromcode119/core/client';
 export { CoreServices } from '@fromcode119/core/client';
+export { MediaRelationService } from '@fromcode119/core/client';
 export type { FrontendRuntimeMetadata } from '@fromcode119/core/client';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
