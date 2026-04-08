@@ -26,7 +26,7 @@ interface CollectionField {
   required?: boolean;
   defaultValue?: any;
   options?: { label: string; value: any }[];
-  relationTo?: string;
+  relationTo?: string | string[];
   hasMany?: boolean;
   admin?: {
     component?: string;

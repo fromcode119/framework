@@ -23,15 +23,10 @@ import { RelationshipSelectLocalUtils } from './relationship-select-local-utils'
 export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = ({ field, value, onChange, theme }) => {
   const { collections, api } = ContextHooks.usePlugins();
   const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
-  const sourceCollectionSlug = React.useMemo(
-    () => CollectionKeyUtils.resolveSourceSlug(requestedSourceCollection, collections || []),
+  const sourceCollectionSlugs = React.useMemo(
+    () => CollectionKeyUtils.resolveSourceSlugs(requestedSourceCollection, collections || []),
     [collections, requestedSourceCollection]
   );
-  const sourceCollection = collections.find((c: any) => c.slug === sourceCollectionSlug);
-  const preferredLabelField =
-    sourceCollection?.admin?.useAsTitle ||
-    (sourceCollectionSlug === 'users' ? 'username' : sourceCollectionSlug === 'media' ? 'filename' : 'name');
-  const lookupField = field.admin?.sourceField || preferredLabelField;
 
   const currentValue = React.useMemo(() => RelationshipSelectLocalUtils.toScalar(value), [value]);
   const [search, setSearch] = React.useState('');
@@ -48,11 +43,20 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
 
   React.useEffect(() => {
     let disposed = false;
-    if (!sourceCollectionSlug) return () => { disposed = true; };
+    if (!sourceCollectionSlugs.length) return () => { disposed = true; };
 
-    const mapDocsToOptions = (docs: any[]): SelectOption[] => {
+    const resolveLookupField = (sourceCollectionSlug: string): string => {
+      const sourceCollection = collections.find((entry: any) => entry.slug === sourceCollectionSlug);
+      const preferredLabelField =
+        sourceCollection?.admin?.useAsTitle ||
+        (sourceCollectionSlug === 'users' ? 'username' : sourceCollectionSlug === 'media' ? 'filename' : 'name');
+      return field.admin?.sourceField || preferredLabelField;
+    };
+
+    const mapDocsToOptions = (docs: any[], sourceCollectionSlug: string): SelectOption[] => {
       const seen = new Set<string>();
       const mapped: SelectOption[] = [];
+      const lookupField = resolveLookupField(sourceCollectionSlug);
       for (const doc of docs) {
         const rawValue = doc?.id ?? doc?._id ?? doc?.value ?? doc?.slug;
         const optionValue = RelationshipSelectLocalUtils.toScalar(rawValue);
@@ -60,7 +64,6 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
         seen.add(optionValue);
         rawValueMapRef.current[optionValue] = rawValue ?? optionValue;
         const preferredLabel =
-          AdminServices.getInstance().localization.resolveLabelText(doc?.[preferredLabelField]) ||
           AdminServices.getInstance().localization.resolveLabelText(doc?.[lookupField]) ||
           AdminServices.getInstance().localization.resolveLabelText(doc);
         mapped.push({
@@ -73,11 +76,18 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
 
     const fetchOptions = async () => {
       try {
-        const docs = await CollectionQueryUtils.queryCollectionDocs(api, sourceCollectionSlug, {
-          limit: 30,
-          search: search.trim() || undefined
-        });
-        const nextOptions = mapDocsToOptions(docs);
+        const responses = await Promise.all(
+          sourceCollectionSlugs.map(async (sourceCollectionSlug) => {
+            const docs = await CollectionQueryUtils.queryCollectionDocs(api, sourceCollectionSlug, {
+              limit: 30,
+              search: search.trim() || undefined
+            });
+            return mapDocsToOptions(docs, sourceCollectionSlug);
+          })
+        );
+        const nextOptions = responses.flat().filter((option, index, entries) => (
+          entries.findIndex((entry) => entry.value === option.value) === index
+        ));
 
         if (!disposed) {
           setOptions(nextOptions);
@@ -86,21 +96,32 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
         if (!currentValue || nextOptions.some((option) => option.value === currentValue)) return;
 
         // Ensure the currently selected value resolves to a label.
-        try {
-          const byId = await CollectionQueryUtils.queryCollectionDocById(api, sourceCollectionSlug, currentValue);
-          const resolved = mapDocsToOptions([byId])[0];
-          if (resolved && !disposed) upsertOption(resolved);
-        } catch {
+        for (const sourceCollectionSlug of sourceCollectionSlugs) {
+          const lookupField = resolveLookupField(sourceCollectionSlug);
           try {
-            const byFieldDoc = await CollectionQueryUtils.queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
-            const resolved = byFieldDoc ? mapDocsToOptions([byFieldDoc])[0] : undefined;
-            if (resolved && !disposed) upsertOption(resolved);
+            const byId = await CollectionQueryUtils.queryCollectionDocById(api, sourceCollectionSlug, currentValue);
+            const resolved = mapDocsToOptions([byId], sourceCollectionSlug)[0];
+            if (resolved && !disposed) {
+              upsertOption(resolved);
+              return;
+            }
           } catch {
-            if (!disposed) {
-              rawValueMapRef.current[currentValue] = value;
-              upsertOption({ value: currentValue, label: currentValue });
+            try {
+              const byFieldDoc = await CollectionQueryUtils.queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
+              const resolved = byFieldDoc ? mapDocsToOptions([byFieldDoc], sourceCollectionSlug)[0] : undefined;
+              if (resolved && !disposed) {
+                upsertOption(resolved);
+                return;
+              }
+            } catch {
+              continue;
             }
           }
+        }
+
+        if (!disposed) {
+          rawValueMapRef.current[currentValue] = value;
+          upsertOption({ value: currentValue, label: currentValue });
         }
       } catch {
         if (!disposed && currentValue) {
@@ -114,7 +135,7 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
     return () => {
       disposed = true;
     };
-  }, [sourceCollectionSlug, preferredLabelField, lookupField, search, currentValue, upsertOption, value]);
+  }, [api, collections, currentValue, field.admin?.sourceField, search, sourceCollectionSlugs, upsertOption, value]);
 
   return (
     <Select
