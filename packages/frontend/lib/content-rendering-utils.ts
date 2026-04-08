@@ -1,5 +1,5 @@
 import { CoercionUtils } from '@fromcode119/core/client';
-import { RenderableContentTransformerRegistry } from '../../react/src/renderable-content-transformer-registry';
+import { RenderableContentTransformerRegistry } from '@fromcode119/react';
 
 /**
  * Utilities for rendering content blocks and resolving display metadata.

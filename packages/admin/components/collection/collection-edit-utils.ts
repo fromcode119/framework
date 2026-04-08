@@ -1,10 +1,36 @@
 import { AdminServices } from '@/lib/admin-services';
+import { CoercionUtils } from '@fromcode119/core/client';
 
 /**
  * Utility class for collection edit operations.
  * Handles revision deserialization, text normalization, and payload transformation.
  */
 export class CollectionEditUtils {
+  static normalizeCollectionFormData(
+    payload: Record<string, any>,
+    fields: any[]
+  ): Record<string, any> {
+    if (!payload || typeof payload !== 'object' || !Array.isArray(fields)) return payload;
+
+    const nextPayload = { ...payload };
+
+    fields.forEach((field: any) => {
+      const fieldName = String(field?.name || '').trim();
+      if (!fieldName || !(fieldName in nextPayload)) return;
+
+      if (field?.type !== 'checkbox' && field?.type !== 'boolean') {
+        return;
+      }
+
+      const normalized = CoercionUtils.toBoolean(nextPayload[fieldName], undefined);
+      if (normalized !== undefined) {
+        nextPayload[fieldName] = normalized;
+      }
+    });
+
+    return nextPayload;
+  }
+
   /**
    * Revives serialized revision values by parsing JSON strings recursively.
    * 

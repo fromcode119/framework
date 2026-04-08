@@ -438,6 +438,7 @@ const PluginsProviderInternal = ({ children, apiUrl, clientType, runtimeModules 
     priority?: number,
   ) => {
     RenderableContentTransformerRegistry.register(name, transform, priority);
+    setRefreshVersion((value) => value + 1);
   }, []);
 
   const emit = useCallback((event: string, data: any) => {

@@ -83,6 +83,25 @@ export class CollectionsContextProxy {
             }
           }
 
+          if (modifiedCollection.fields.find((f: Field) => f.name === 'slug')) {
+            if (!modifiedCollection.fields.find((f: Field) => f.name === 'customPermalink')) {
+              modifiedCollection.fields.push({
+                name: 'customPermalink',
+                type: 'text',
+                unique: true,
+                admin: { hidden: true }
+              } as any);
+            }
+            if (!modifiedCollection.fields.find((f: Field) => f.name === 'disablePermalink')) {
+              modifiedCollection.fields.push({
+                name: 'disablePermalink',
+                type: 'checkbox',
+                defaultValue: false,
+                admin: { hidden: true }
+              } as any);
+            }
+          }
+
           const existing = manager.registeredCollections.get(prefixedSlug);
           if (existing) {
             const fieldNames = new Set(existing.collection.fields.map((f: Field) => f.name));

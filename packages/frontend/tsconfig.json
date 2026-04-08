@@ -39,7 +39,7 @@
         "../database/src/*"
       ],
       "@fromcode119/react": [
-        "../react/src"
+        "../react/src/index.ts"
       ],
       "@fromcode119/react/*": [
         "../react/src/*"
