@@ -22,7 +22,7 @@
     "check:plugin-architecture:phase:all": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error node scripts/check-plugin-architecture.mjs",
     "dev": "npm run dev --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "test:plugins": "npm run test --workspace=@fromcode119/admin -- --config ../../vitest.plugins.config.ts",
+    "test:framework": "npm run test --workspace=@fromcode119/admin -- --config ../../vitest.plugins.config.ts",
     "fromcode": "tsx packages/cli/src/bin.ts",
     "seed:theme": "node scripts/seed-theme.mjs",
     "start:all": "concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\" \"PORT=3002 npm run start --workspace=@fromcode119/frontend\"",

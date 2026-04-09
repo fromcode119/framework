@@ -9,6 +9,50 @@ import { RuntimeConstants } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
 
 const adminServices = AdminServices.getInstance();
+const INITIALIZATION_STATUS_TTL_MS = 5000;
+const INITIALIZATION_ERROR_TTL_MS = 15000;
+
+let initializationStatusPromise: Promise<boolean> | null = null;
+let initializationStatusValue: boolean | null = null;
+let initializationStatusExpiresAt = 0;
+let initializationStatusError: unknown = null;
+let initializationStatusErrorExpiresAt = 0;
+
+async function getInitializationStatus(): Promise<boolean> {
+  const now = Date.now();
+
+  if (initializationStatusValue !== null && initializationStatusExpiresAt > now) {
+    return initializationStatusValue;
+  }
+
+  if (initializationStatusError && initializationStatusErrorExpiresAt > now) {
+    throw initializationStatusError;
+  }
+
+  if (initializationStatusPromise) {
+    return initializationStatusPromise;
+  }
+
+  initializationStatusPromise = AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS)
+    .then((data) => {
+      const initialized = data.initialized === true;
+      initializationStatusValue = initialized;
+      initializationStatusExpiresAt = Date.now() + INITIALIZATION_STATUS_TTL_MS;
+      initializationStatusError = null;
+      initializationStatusErrorExpiresAt = 0;
+      return initialized;
+    })
+    .catch((error) => {
+      initializationStatusError = error;
+      initializationStatusErrorExpiresAt = Date.now() + INITIALIZATION_ERROR_TTL_MS;
+      throw error;
+    })
+    .finally(() => {
+      initializationStatusPromise = null;
+    });
+
+  return initializationStatusPromise;
+}
 
 export class ClientLayoutAuthStateHooks {
   static useState() {
@@ -51,7 +95,7 @@ export class ClientLayoutAuthStateHooks {
     }, []);
 
     React.useEffect(() => {
-      const checkKey = `${isSetupPath ? 'setup' : 'default'}:${normalizedPathname || '/'}`;
+      const checkKey = isSetupPath ? 'setup' : 'default';
       if (initializationCheckKeyRef.current === checkKey) {
         return;
       }
@@ -59,8 +103,7 @@ export class ClientLayoutAuthStateHooks {
       initializationCheckKeyRef.current = checkKey;
       const checkInitialization = async () => {
         try {
-          const data = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS);
-          const initialized = data.initialized === true;
+          const initialized = await getInitializationStatus();
 
           setIsInitialized(initialized);
 
@@ -80,7 +123,7 @@ export class ClientLayoutAuthStateHooks {
       };
 
       checkInitialization();
-    }, [isSetupPath, normalizedPathname, router]);
+    }, [isSetupPath, router]);
 
     React.useEffect(() => {
       if (isInitialized === true && !user && !isAuthPage && !isAuthLoading) {

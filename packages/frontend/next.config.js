@@ -64,6 +64,15 @@ const nextConfig = {
     config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
     config.resolve.alias['@fromcode119/sdk/'] = path.resolve(__dirname, '../sdk/src/');
 
+    // When package source directories are aliased into webpack, prefer TypeScript
+    // source files over any stale generated JavaScript artifacts that may exist.
+    config.resolve.extensionAlias = {
+      ...(config.resolve.extensionAlias || {}),
+      '.js': ['.ts', '.tsx', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+      '.cjs': ['.cts', '.cjs'],
+    };
+
     config.resolve.symlinks = false;
 
     // Add SDK source to modules to ensure it's found when transpiling other packages

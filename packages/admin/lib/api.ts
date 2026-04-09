@@ -7,6 +7,10 @@ import { AdminPathUtils } from './admin-path';
 export class AdminApi {
   private static readonly browserState = new BrowserStateClient();
   private static readonly inFlightGetRequests = new Map<string, Promise<any>>();
+  private static readonly cachedGetResponses = new Map<string, { expiresAt: number; data: any }>();
+  private static readonly cachedGetErrors = new Map<string, { expiresAt: number; error: any }>();
+  private static readonly GET_RESPONSE_TTL_MS = 5000;
+  private static readonly GET_ERROR_TTL_MS = 15000;
 
   static getBaseUrl(): string {
     return AdminConstants.API_BASE_URL;
@@ -28,20 +32,48 @@ export class AdminApi {
 
     const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
     const dedupeKey = `${AdminApi.getURL(path)}|${token ? 'auth' : 'anon'}`;
+    const now = Date.now();
+    const cachedResponse = AdminApi.cachedGetResponses.get(dedupeKey);
+    if (cachedResponse && cachedResponse.expiresAt > now) {
+      return cachedResponse.data;
+    }
+
+    const cachedError = AdminApi.cachedGetErrors.get(dedupeKey);
+    if (cachedError && cachedError.expiresAt > now) {
+      throw cachedError.error;
+    }
+
     const inFlight = AdminApi.inFlightGetRequests.get(dedupeKey);
     if (inFlight) {
       return inFlight;
     }
 
-    const requestPromise = AdminApi.request(path, { ...options, method: 'GET' }).finally(() => {
-      AdminApi.inFlightGetRequests.delete(dedupeKey);
-    });
+    const requestPromise = AdminApi.request(path, { ...options, method: 'GET' })
+      .then((data) => {
+        AdminApi.cachedGetResponses.set(dedupeKey, {
+          expiresAt: Date.now() + AdminApi.GET_RESPONSE_TTL_MS,
+          data,
+        });
+        AdminApi.cachedGetErrors.delete(dedupeKey);
+        return data;
+      })
+      .catch((error) => {
+        AdminApi.cachedGetErrors.set(dedupeKey, {
+          expiresAt: Date.now() + AdminApi.GET_ERROR_TTL_MS,
+          error,
+        });
+        throw error;
+      })
+      .finally(() => {
+        AdminApi.inFlightGetRequests.delete(dedupeKey);
+      });
 
     AdminApi.inFlightGetRequests.set(dedupeKey, requestPromise);
     return requestPromise;
   }
 
   static async post(path: string, body?: any, options?: RequestInit): Promise<any> {
+    AdminApi.clearGetCaches();
     return AdminApi.request(path, {
       ...options,
       method: 'POST',
@@ -50,6 +82,7 @@ export class AdminApi {
   }
 
   static async put(path: string, body?: any, options?: RequestInit): Promise<any> {
+    AdminApi.clearGetCaches();
     return AdminApi.request(path, {
       ...options,
       method: 'PUT',
@@ -58,6 +91,7 @@ export class AdminApi {
   }
 
   static async patch(path: string, body?: any, options?: RequestInit): Promise<any> {
+    AdminApi.clearGetCaches();
     return AdminApi.request(path, {
       ...options,
       method: 'PATCH',
@@ -66,10 +100,12 @@ export class AdminApi {
   }
 
   static async delete(path: string, options?: RequestInit): Promise<any> {
+    AdminApi.clearGetCaches();
     return AdminApi.request(path, { ...options, method: 'DELETE' });
   }
 
   static async upload(path: string, formData: FormData, options?: RequestInit): Promise<any> {
+    AdminApi.clearGetCaches();
     const url = AdminApi.getURL(path);
     const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
     const csrfToken = AdminApi.browserState.readCookie(CookieConstants.AUTH_CSRF);
@@ -170,5 +206,10 @@ export class AdminApi {
     errObj.raw = rawBody;
     errObj.url = url;
     throw errObj;
+  }
+
+  private static clearGetCaches(): void {
+    AdminApi.cachedGetResponses.clear();
+    AdminApi.cachedGetErrors.clear();
   }
 }

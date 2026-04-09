@@ -23,6 +23,11 @@ type PluginsProviderProps = {
 };
 
 const inFlightGetRequests = new Map<string, Promise<any>>();
+const cachedGetResponses = new Map<string, { expiresAt: number; data: any }>();
+const cachedGetErrors = new Map<string, { expiresAt: number; error: any }>();
+
+const GET_RESPONSE_TTL_MS = 5000;
+const GET_ERROR_TTL_MS = 15000;
 
 const emptySecondaryPanelState = (): SecondaryPanelState => ({
   version: 1,
@@ -212,12 +217,40 @@ const PluginsProviderInternal = ({ children, apiUrl, clientType, runtimeModules 
     }
 
     const dedupeKey = `${url}|${fetchOptions.credentials || 'include'}|${token ? 'auth' : 'anon'}`;
+    const now = Date.now();
+    const cachedResponse = cachedGetResponses.get(dedupeKey);
+    if (cachedResponse && cachedResponse.expiresAt > now) {
+      return cachedResponse.data;
+    }
+
+    const cachedError = cachedGetErrors.get(dedupeKey);
+    if (cachedError && cachedError.expiresAt > now) {
+      throw cachedError.error;
+    }
+
     const inFlight = inFlightGetRequests.get(dedupeKey);
     if (inFlight) return inFlight;
 
-    const promise = execute().finally(() => {
-      inFlightGetRequests.delete(dedupeKey);
-    });
+    const promise = execute()
+      .then((data) => {
+        cachedGetResponses.set(dedupeKey, {
+          expiresAt: Date.now() + GET_RESPONSE_TTL_MS,
+          data,
+        });
+        cachedGetErrors.delete(dedupeKey);
+        return data;
+      })
+      .catch((error) => {
+        cachedGetErrors.set(dedupeKey, {
+          expiresAt: Date.now() + GET_ERROR_TTL_MS,
+          error,
+        });
+        throw error;
+      })
+      .finally(() => {
+        inFlightGetRequests.delete(dedupeKey);
+      });
+
     inFlightGetRequests.set(dedupeKey, promise);
     return promise;
   }, [browserState, clientType, getBaseURL]);
@@ -437,8 +470,14 @@ const PluginsProviderInternal = ({ children, apiUrl, clientType, runtimeModules 
     transform: (content: unknown, currentContent: unknown) => unknown,
     priority?: number,
   ) => {
+    const isNew = !RenderableContentTransformerRegistry.has(name);
     RenderableContentTransformerRegistry.register(name, transform, priority);
-    setRefreshVersion((value) => value + 1);
+    // Only bump refreshVersion for genuinely new transformers. Re-registrations
+    // (e.g. after triggerRefresh re-loads plugin bundles) must NOT increment the
+    // version or they create an infinite plugin-loader → re-import → init loop.
+    if (isNew) {
+      setRefreshVersion((value) => value + 1);
+    }
   }, []);
 
   const emit = useCallback((event: string, data: any) => {
