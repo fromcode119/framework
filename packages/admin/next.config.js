@@ -89,6 +89,15 @@ const nextConfig = {
     config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
     config.resolve.alias['@fromcode119/sdk/'] = path.resolve(__dirname, '../sdk/src/');
 
+    // When package source directories are aliased into webpack, prefer TypeScript
+    // source files over any stale generated JavaScript artifacts that may exist.
+    config.resolve.extensionAlias = {
+      ...(config.resolve.extensionAlias || {}),
+      '.js': ['.ts', '.tsx', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+      '.cjs': ['.cts', '.cjs'],
+    };
+
     // Dynamically add aliases for all discovered extensions
     extensions.forEach(ext => {
       config.resolve.alias[`@fromcode119/${ext}$`] = path.resolve(__dirname, `../${ext}/src/index.ts`);
