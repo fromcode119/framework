@@ -1,8 +1,6 @@
 import React from 'react';
 import { useLayoutEffect } from 'react';
 import { ContextHooks } from '@fromcode119/react';
-import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
 import { TimezoneUtils } from '@/lib/timezone';
 import { AdminServices } from '@/lib/admin-services';
 import { ClientLayoutPanelStateService } from './client-layout-panel-state-service';
@@ -25,7 +23,6 @@ export class ClientLayoutSidebarStateHooks {
     const [viewportWidth, setViewportWidth] = React.useState(0);
     const [isSidebarInitialized, setIsSidebarInitialized] = React.useState(false);
     const [metadataSecondaryPanel, setMetadataSecondaryPanel] = React.useState(ClientLayoutPanelStateService.createEmptyState());
-    const metadataLoadKeyRef = React.useRef<string | null>(null);
     const [isMini, setIsMini] = React.useState(() => {
       if (typeof window !== 'undefined') {
         return adminServices.uiPreference.readSidebarMini();
@@ -60,20 +57,12 @@ export class ClientLayoutSidebarStateHooks {
     }, []);
 
     React.useEffect(() => {
-      if (args.isAuthPage || !args.user?.id) {
+      if (!secondaryPanel || Object.keys(secondaryPanel.contexts || {}).length === 0) {
         return;
       }
 
-      if (metadataLoadKeyRef.current === args.user.id) {
-        return;
-      }
-
-      metadataLoadKeyRef.current = args.user.id;
-      loadConfig(AdminConstants.ENDPOINTS.SYSTEM.METADATA);
-      AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.METADATA)
-        .then((data) => setMetadataSecondaryPanel(data?.secondaryPanel || ClientLayoutPanelStateService.createEmptyState()))
-        .catch((error) => console.warn('[ClientLayout] Failed to load secondary panel metadata:', error));
-    }, [args.isAuthPage, args.user, loadConfig]);
+      setMetadataSecondaryPanel(secondaryPanel);
+    }, [secondaryPanel]);
 
     useLayoutEffect(() => {
       TimezoneUtils.applyDateLocaleTimezonePatch(String(settings?.timezone || ''));

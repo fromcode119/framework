@@ -23,6 +23,11 @@ export class RenderableContentTransformerRegistry {
     });
   }
 
+  static has(name: string): boolean {
+    const normalizedName = String(name || '').trim();
+    return RenderableContentTransformerRegistry.transformers.has(normalizedName);
+  }
+
   static transform(content: unknown, currentContent: unknown): unknown {
     let nextContent = currentContent;
 

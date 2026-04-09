@@ -8,6 +8,43 @@ import { AuthHooks } from '@/components/use-auth';
 import { RuntimeConstants } from '@fromcode119/core/client';
 import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 
+const METADATA_RETRY_COOLDOWN_MS = 15000;
+
+let metadataBootstrapPromise: Promise<void> | null = null;
+let metadataBootstrapError: unknown = null;
+let metadataBootstrapRetryAfter = 0;
+
+// Prevents multiple concurrent "globals not ready" retry timers from accumulating.
+let globalRetryTimerId: ReturnType<typeof setTimeout> | null = null;
+
+async function ensureMetadataLoaded(loadConfig: (path?: string) => Promise<any>): Promise<void> {
+  const now = Date.now();
+
+  if (metadataBootstrapPromise) {
+    return metadataBootstrapPromise;
+  }
+
+  if (metadataBootstrapError && metadataBootstrapRetryAfter > now) {
+    throw metadataBootstrapError;
+  }
+
+  metadataBootstrapPromise = loadConfig(AdminConstants.ENDPOINTS.SYSTEM.METADATA)
+    .then(() => {
+      metadataBootstrapError = null;
+      metadataBootstrapRetryAfter = 0;
+    })
+    .catch((error) => {
+      metadataBootstrapError = error;
+      metadataBootstrapRetryAfter = Date.now() + METADATA_RETRY_COOLDOWN_MS;
+      throw error;
+    })
+    .finally(() => {
+      metadataBootstrapPromise = null;
+    });
+
+  return metadataBootstrapPromise;
+}
+
 export default function PluginLoader() {
   const pluginsContext = ContextHooks.usePlugins();
   const {
@@ -57,9 +94,16 @@ export default function PluginLoader() {
   }, [user, triggerRefresh]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || isAuthLoading || !user || !isReady) return;
+    if (typeof window === 'undefined' || isAuthLoading || !user) return;
+
+    let cancelled = false;
 
     async function loadPlugins() {
+      if (!isReady) {
+        await ensureMetadataLoaded(loadConfig);
+        return;
+      }
+
       const resolveAdminComponentsModule = () => {
         const runtimeRegistry = (window as any)?.[RuntimeConstants.GLOBALS.MODULES] || {};
         return runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] || runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN] || null;
@@ -79,11 +123,14 @@ export default function PluginLoader() {
          typeof resolveAdminComponentsModule()?.Select === 'undefined' ||
          !document.getElementById('fc-runtime-import-map') ||
          !(window as any).__fromcodeRuntimeModules?.['@fromcode119/react']) && 
-        retryCount < 100
+        retryCount < 200 &&
+        !cancelled
       ) {
         await new Promise(resolve => setTimeout(resolve, 50));
         retryCount++;
       }
+
+      if (cancelled) return;
 
       const adminComponentsModule = resolveAdminComponentsModule();
 
@@ -107,15 +154,21 @@ export default function PluginLoader() {
           importMap: !!document.getElementById('fc-runtime-import-map'),
           reactBridge: !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/react'],
         });
-        // Do not stop forever on startup races; request another refresh cycle.
-        setTimeout(() => triggerRefresh(), 250);
+        // Schedule a single deduplicated retry. The module-level guard prevents
+        // multiple timers from accumulating across rapid re-renders.
+        if (!globalRetryTimerId) {
+          globalRetryTimerId = setTimeout(() => {
+            globalRetryTimerId = null;
+            if (!cancelled) triggerRefresh();
+          }, 3000);
+        }
         return;
       }
 
       try {
         const shouldReuseContextMetadata = refreshVersion === 0 && Array.isArray(registeredPlugins) && registeredPlugins.length > 0;
         if (!shouldReuseContextMetadata) {
-          await loadConfig(AdminConstants.ENDPOINTS.SYSTEM.METADATA);
+          await ensureMetadataLoaded(loadConfig);
         }
         const responseData = shouldReuseContextMetadata
           ? {
@@ -237,7 +290,15 @@ export default function PluginLoader() {
     }
 
     loadPlugins();
-  }, [user, isAuthLoading, isReady, loadConfig, registerSlotComponent, registerCollection, replaceCollections, registerPlugins, registerSettings, refreshVersion, triggerRefresh]);
+
+    return () => {
+      cancelled = true;
+      if (globalRetryTimerId) {
+        clearTimeout(globalRetryTimerId);
+        globalRetryTimerId = null;
+      }
+    };
+  }, [user, isAuthLoading, isReady, loadConfig, registerSlotComponent, registerCollection, replaceCollections, registerPlugins, registerSettings, refreshVersion]);
 
   return null;
 }
