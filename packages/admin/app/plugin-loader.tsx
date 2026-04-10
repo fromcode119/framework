@@ -68,15 +68,16 @@ export default function PluginLoader() {
     if (typeof window === 'undefined' || !user || process.env.NODE_ENV !== 'development') return;
 
     const eventsUrl = new URL(AdminConstants.ENDPOINTS.SYSTEM.EVENTS, AdminConstants.API_BASE_URL || window.location.origin);
-    if (eventsUrl.origin !== window.location.origin) {
-      if (!crossOriginEventsWarningLogged) {
-        crossOriginEventsWarningLogged = true;
-        console.info(`[HMR] Skipping EventSource bridge in development because the API origin (${eventsUrl.origin}) does not match the admin origin (${window.location.origin}).`);
-      }
-      return;
+    const eventSourceUrl = eventsUrl.origin === window.location.origin
+      ? eventsUrl.pathname + eventsUrl.search
+      : eventsUrl.toString();
+
+    if (eventsUrl.origin !== window.location.origin && !crossOriginEventsWarningLogged) {
+      crossOriginEventsWarningLogged = true;
+      console.info(`[HMR] Using cross-origin EventSource bridge in development from ${window.location.origin} to ${eventsUrl.origin}.`);
     }
 
-    const eventSource = new EventSource(eventsUrl.pathname + eventsUrl.search, {
+    const eventSource = new EventSource(eventSourceUrl, {
         withCredentials: true
     });
 

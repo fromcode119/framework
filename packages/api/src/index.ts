@@ -184,9 +184,10 @@ export class APIServer {
         if (process.env.NODE_ENV === 'development') return 10000;
         return parseInt(this.settingsCache.get('rate_limit_max') || process.env.RATE_LIMIT_MAX || '100');
       },
+      keyGenerator: (req) => AdminBootstrapRateLimitUtils.resolveKey(req),
       message: { error: 'Too many requests from this IP, please try again later' },
       skip: (req) => {
-        if (AdminBootstrapRateLimitUtils.shouldBypass(req)) {
+        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
           return true;
         }
 

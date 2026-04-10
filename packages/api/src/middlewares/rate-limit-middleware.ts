@@ -4,6 +4,7 @@ import { BaseMiddleware } from './base-middleware';
 import { ApiConfig } from '../config/api-config';
 import type { RateLimitOptions } from './rate-limit-middleware.interfaces';
 import { AdminBootstrapRateLimitUtils } from '../utils/admin-bootstrap-rate-limit-utils';
+import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
 
 /**
  * Rate Limiting Middleware using express-rate-limit.
@@ -44,6 +45,7 @@ export class RateLimitMiddleware extends BaseMiddleware {
     this.limiter = rateLimit({
       windowMs,
       limit: maxRequests,
+      keyGenerator: (req) => AdminBootstrapRateLimitUtils.resolveKey(req),
       message: { error: message },
       skip: (req) => {
         // Custom skip logic from options
@@ -51,7 +53,7 @@ export class RateLimitMiddleware extends BaseMiddleware {
           return true;
         }
 
-        if (AdminBootstrapRateLimitUtils.shouldBypass(req)) {
+        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
           return true;
         }
 
@@ -94,9 +96,10 @@ export class RateLimitMiddleware extends BaseMiddleware {
           '100'
         );
       },
+      keyGenerator: (req) => AdminBootstrapRateLimitUtils.resolveKey(req),
       message: { error: 'Too many requests from this IP, please try again later' },
       skip: (req) => {
-        if (AdminBootstrapRateLimitUtils.shouldBypass(req)) {
+        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
           return true;
         }
 

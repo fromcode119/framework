@@ -16,6 +16,7 @@ export class FactualQueryHelpers {
     const directMetricQuestion = /\b(what is|what's|tell me|show me)\s+(the\s+)?(revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount)\b/.test(text);
     const periodOrOwnershipHint = /\b(this|last|today|yesterday|month|week|year|i have|my)\b/.test(text);
     return /\baccess my\b/.test(text)
+      || FactualQueryHelpers.looksLikeEntityDetailQuestion(source)
       || directMetricQuestion
       || (asksForMetric && namesMetricTarget)
       || (namesMetricTarget && periodOrOwnershipHint);
@@ -45,12 +46,21 @@ export class FactualQueryHelpers {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
     if (!text) return false;
     if (FactualQueryHelpers.inferPeriod(text)) return true;
-    return /\b(for|what about|and|total|revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average)\b/.test(text);
+    return /\b(for|what about|and|total|revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number|how much|how many)\b/.test(text);
   }
 
   static hasExplicitMetricTarget(message: string): boolean {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
-    return /\b(total|revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number)\b/.test(text);
+    return /\b(total|revenue|sales|earnings|income|profit|refunds?|wallet|balance|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number)\b/.test(text);
+  }
+
+  static looksLikeEntityDetailQuestion(message: string): boolean {
+    const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
+    const namesEntity = /\b(order|orders|transaction|transactions|payment|payments|invoice|invoices|shipment|shipments|record|records|item|items|product|products|customer|customers)\b/.test(text);
+    const asksForPosition = /\b(first|last|latest|earliest|oldest|newest|highest|lowest|biggest|smallest)\b/.test(text);
+    const asksForFieldValue = /\b(what|which|who|when)\b/.test(text)
+      && /\b(status|email|id|reference|provider|customer|name|title|color|colour|weight|shipping|address|phone|sku|tracking)\b/.test(text);
+    return namesEntity && (asksForPosition || asksForFieldValue || /\b(what was|which was|who was|when was)\b/.test(text));
   }
 
   static formatRange(range: any): string {
@@ -103,15 +113,11 @@ export class FactualQueryHelpers {
         score += 8;
       }
     }
-    if (/\b(total|summary)\b/.test(path)) {
-      score += 2;
-    }
-    if (/\btotal\b|total[a-z]/i.test(path)) {
-      score += 3;
+    if (/\b(total|summary)\b/.test(lowerMessage) && /\b(total|summary)\b/.test(lowerPath)) {
+      score += 4;
     }
     if (FactualQueryHelpers.isCountLikePath(path)) {
       score += /\b(how many|count|number)\b/.test(lowerMessage) ? 12 : 0;
-      score += /\b(transactions?|orders?|records?|entries|rows|docs?)\b/.test(lowerMessage) && /\btransaction|order|record|entry|row|doc\b/i.test(path) ? 8 : 0;
     }
     if (/\btransactions?\b/.test(lowerMessage) && /\btransactioncount\b|transactioncount|transaction_count/i.test(path)) {
       score += 20;
@@ -173,10 +179,11 @@ export class FactualQueryHelpers {
   static tokenize(value: string): string[] {
     const stopWords = new Set([
       'a', 'an', 'and', 'are', 'can', 'could', 'do', 'for', 'give', 'help', 'i', 'me', 'my',
-      'of', 'please', 'show', 'tell', 'the', 'this', 'to', 'what', 'whats', 'with', 'you',
+      'of', 'please', 'show', 'tell', 'the', 'this', 'to', 'was', 'what', 'whats', 'with', 'you',
     ]);
-    return TextHelpers.normalize(value)
+    return String(value || '')
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .toLowerCase()
       .replace(/[^a-z0-9]+/g, ' ')
       .split(' ')
       .map((token) => token.trim())

@@ -31,6 +31,12 @@ export class FactualQueryService {
     }
 
     const inferredPeriod = FactualQueryHelpers.inferPeriod(message);
+    if (
+      FactualQueryHelpers.looksLikeEntityDetailQuestion(message)
+      || (!inferredPeriod && !FactualQueryHelpers.hasExplicitMetricTarget(message))
+    ) {
+      return null;
+    }
     if (inferredPeriod) {
       const nextInput = {
         ...(factualMemory.input && typeof factualMemory.input === 'object' ? factualMemory.input : {}),
@@ -75,7 +81,6 @@ export class FactualQueryService {
       memory: factualMemory,
     };
   }
-
   private static async resolvePluginAccessReply(
     context: RuntimeContext,
     message: string,
@@ -123,7 +128,7 @@ export class FactualQueryService {
     context: RuntimeContext,
     message: string,
   ): Promise<{ message: string; model: string; memory?: AssistantSessionEntityMemory['factual'] } | null> {
-    if (!FactualQueryHelpers.looksLikeReadOnlyDataQuestion(message)) {
+    if (!FactualQueryHelpers.looksLikeReadOnlyDataQuestion(message) || FactualQueryHelpers.looksLikeEntityDetailQuestion(message)) {
       return null;
     }
 
@@ -276,7 +281,10 @@ export class FactualQueryService {
     }
 
     const primary = metrics[0];
-    const secondary = metrics.find((entry) => entry.path !== primary.path && entry.score >= 0) || null;
+    if (primary.score < 6) {
+      return null;
+    }
+    const secondary = metrics.find((entry) => entry.path !== primary.path && entry.score >= 4) || null;
     const rangeText = FactualQueryHelpers.formatRange({
       label: factualMemory.rangeLabel,
       from: factualMemory.rangeFrom,
