@@ -86,7 +86,7 @@ export class AdminAssistantPageGatewayService {
       return {
         models,
         error: models.length === 0 ? 'No models returned by this provider.' : '',
-        nextModel: models.length > 0 && !models.some((item) => item.value === currentModel) ? models[0].value : currentModel,
+        nextModel: this.resolvePreferredModel(provider, currentModel, models),
       };
     } catch (error: any) {
       const rawError = String(error?.message || 'Failed to fetch models.').trim();
@@ -185,12 +185,56 @@ export class AdminAssistantPageGatewayService {
     return { hasSavedSecret: params.hasSavedSecret || Boolean(apiKey) };
   }
 
+  static isTransientBootstrapError(error: any): boolean {
+    const status = Number(error?.status || error?.data?.status || 0);
+    const message = String(error?.message || '').trim().toLowerCase();
+    return status === 429
+      || status >= 500
+      || message.includes('failed to fetch')
+      || message.includes('fetch failed')
+      || message.includes('networkerror')
+      || message.includes('network error');
+  }
+
   private static resolveHostname(baseUrl: string): string {
     try {
       return new URL(baseUrl).hostname || '';
     } catch {
       return '';
     }
+  }
+
+  private static resolvePreferredModel(
+    provider: string,
+    currentModel: string,
+    models: Array<{ value: string; label: string }>,
+  ): string {
+    if (models.length === 0) {
+      return currentModel;
+    }
+
+    if (!currentModel) {
+      return models[0].value;
+    }
+
+    const exactMatch = models.find((item) => item.value === currentModel);
+    if (exactMatch) {
+      return exactMatch.value;
+    }
+
+    if (provider === 'ollama') {
+      const normalizedCurrentModel = this.normalizeOllamaModel(currentModel);
+      const aliasMatch = models.find((item) => this.normalizeOllamaModel(item.value) === normalizedCurrentModel);
+      if (aliasMatch) {
+        return aliasMatch.value;
+      }
+    }
+
+    return models[0].value;
+  }
+
+  private static normalizeOllamaModel(model: string): string {
+    return String(model || '').trim().replace(/:latest$/i, '');
   }
 
   private static validateProviderBaseUrl(baseUrl: string): string {

@@ -10,6 +10,7 @@ export interface AdminAssistantPageHistoryEffectsProps {
   sandboxMode: boolean;
   baseUrl: string;
   checkingIntegration: boolean;
+  integrationConfigured: boolean;
   historyHydrated: boolean;
   historySource: 'server' | 'local';
   activeSessionId: string;

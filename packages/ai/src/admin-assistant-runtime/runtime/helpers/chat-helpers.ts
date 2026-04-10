@@ -17,10 +17,7 @@ export class ChatHelpers {
    * // => "Hey. What do you want to talk about?"
    */
   static fallbackSmalltalk(message: string): string {
-    const text = String(message || '').trim();
-    if (/^hey|^hi|^hello/i.test(text)) return 'Hey. What do you want to talk about?';
-    if (/let'?s chat/i.test(text)) return 'Sure. Pick a topic and we can dig in.';
-    return 'Tell me what you need and I will help.';
+    return 'Ask a concrete workspace question and I will check it directly.';
   }
 
   /**
@@ -35,7 +32,7 @@ export class ChatHelpers {
    */
   static fallbackFactual(intent: RuntimeIntent): string {
     if (intent.quickAnswer) return intent.quickAnswer;
-    return 'I can help with that. Share a bit more detail so I can answer precisely.';
+    return 'Ask a concrete target, metric, or time window and I will check it directly.';
   }
 
   /**

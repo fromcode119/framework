@@ -1,4 +1,5 @@
 import { ApiPathUtils } from './api/api-path-utils';
+import { ApplicationUrlUtils } from './application-url-utils';
 import { ApiVersionUtils } from './api-version';
 import { AppPathConstants } from './app-path-constants';
 import { RequestSurfaceOriginUtils } from './request-surface-origin-utils';
@@ -142,6 +143,17 @@ export class RequestSurfaceUtils {
     return normalizedPath.startsWith('/');
   }
 
+  static isExtensionAdminPath(value: unknown): boolean {
+    const normalizedPath = RequestSurfaceUtils.normalizePathname(value);
+    if (!normalizedPath) {
+      return false;
+    }
+
+    return RequestSurfaceUtils.isExtensionAdminApiPath(
+      RequestSurfaceUtils.stripApiVersionPrefix(normalizedPath),
+    );
+  }
+
   static readRefererUrl(requestLike: {
     headers?: Record<string, unknown>;
     get?: (name: string) => string | undefined;
@@ -166,7 +178,7 @@ export class RequestSurfaceUtils {
       return true;
     }
 
-    return url.hostname.toLowerCase().startsWith('admin.')
+    return ApplicationUrlUtils.hasHostRole(url, ApplicationUrlUtils.ADMIN_APP)
       || RequestSurfaceUtils.isAdminPath(url.pathname);
   }
 
@@ -175,12 +187,20 @@ export class RequestSurfaceUtils {
       return false;
     }
 
+    const hostRole = ApplicationUrlUtils.detectHostRole(url);
+    if (hostRole === ApplicationUrlUtils.API_APP) {
+      return false;
+    }
+    if (hostRole === ApplicationUrlUtils.FRONTEND_APP) {
+      return true;
+    }
+
     return RequestSurfaceUtils.isFrontendPath(url.pathname);
   }
 
   private static readConfiguredAdminUrl(): URL | null {
     return RequestSurfaceUtils.readAbsoluteUrl(
-      process.env.ADMIN_URL || process.env.NEXT_PUBLIC_ADMIN_URL || '',
+      process.env.ADMIN_URL || '',
     );
   }
 
@@ -195,7 +215,15 @@ export class RequestSurfaceUtils {
       return false;
     }
 
-    return /^\/[^/]+\/admin(?:\/|$)/.test(normalizedPath);
+    const normalizedAdminBasePath = RequestSurfaceUtils.normalizePathname(RequestSurfaceUtils.ADMIN_BASE_PATH);
+    const adminSegment = normalizedAdminBasePath.startsWith('/')
+      ? normalizedAdminBasePath.slice(1)
+      : normalizedAdminBasePath;
+    const pathSegments = normalizedPath.split('/').filter(Boolean);
+
+    return Boolean(adminSegment)
+      && pathSegments.length >= 2
+      && pathSegments[1] === adminSegment;
   }
 
   private static readPathCandidates(requestLike: {

@@ -11,7 +11,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - NODE_ENV=production
-      - PUBLIC_URL=${API_PUBLIC_URL}
+      - API_URL=${API_PUBLIC_URL}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
     depends_on:
@@ -33,6 +33,7 @@ services:
     environment:
       - API_URL=http://api:4000
       - NEXT_PUBLIC_API_URL=${API_PUBLIC_URL}
+      - ADMIN_URL=${ADMIN_PUBLIC_URL}
       - NODE_ENV=production
     depends_on:
       - api

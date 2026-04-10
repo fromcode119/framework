@@ -2,6 +2,7 @@ import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import { cookies } from 'next/headers';
 import { ServerApiUtils } from '@/lib/server-api';
 import { QueryParamUtils } from '@/lib/query-param-utils';
+import type { ResolvedDocResult } from '@/lib/dynamic-page-resolver.types';
 import type { HomeTargetResolution, LocaleUrlStrategy, MaybePromise, SearchParams } from './home-page.types';
 
 export class HomePageResolver {
@@ -63,6 +64,11 @@ export class HomePageResolver {
   }
 
   private static async resolveBySlug(slug: string, locale: string, fallbackLocale: string): Promise<unknown> {
+    const result = await this.resolveBySlugResult(slug, locale, fallbackLocale);
+    return result?.doc || null;
+  }
+
+  static async resolveBySlugResult(slug: string, locale: string, fallbackLocale: string): Promise<ResolvedDocResult | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
     if (locale) {
@@ -73,7 +79,11 @@ export class HomePageResolver {
     }
 
     const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemResolvePath(query)) as Record<string, unknown>;
-    return result?.doc || null;
+    return {
+      type: String(result?.type || '').trim(),
+      plugin: String(result?.plugin || '').trim(),
+      doc: (result?.doc as Record<string, unknown> | null) || null,
+    };
   }
 
   private static async resolveHomeTarget(locale: string, fallbackLocale: string): Promise<HomeTargetResolution> {
@@ -81,7 +91,7 @@ export class HomePageResolver {
 
     if (target.startsWith('layout:')) {
       const forcedLayout = target.slice('layout:'.length).trim();
-      return { content: null, forcedLayout: forcedLayout || null };
+      return { content: null, forcedLayout: forcedLayout || null, resolution: null };
     }
 
     if (target.startsWith('collection:')) {
@@ -95,21 +105,42 @@ export class HomePageResolver {
         );
         const doc = ServerApiUtils.extractFirstDoc(result);
         if (doc) {
-          return { content: doc, forcedLayout: null };
+          return {
+            content: doc,
+            forcedLayout: null,
+            resolution: {
+              type: this.resolveCollectionTargetType(doc as Record<string, unknown>, collectionSlug),
+              plugin: '',
+              doc: doc as Record<string, unknown>,
+            },
+          };
         }
       }
     }
 
-    const byRoot = await this.resolveBySlug('/', locale, fallbackLocale);
-    if (byRoot) {
-      return { content: byRoot, forcedLayout: null };
+    const byRoot = await this.resolveBySlugResult('/', locale, fallbackLocale);
+    if (byRoot?.doc) {
+      return { content: byRoot.doc, forcedLayout: null, resolution: byRoot };
     }
 
-    const byHome = await this.resolveBySlug('home', locale, fallbackLocale);
-    if (byHome) {
-      return { content: byHome, forcedLayout: null };
+    const byHome = await this.resolveBySlugResult('home', locale, fallbackLocale);
+    if (byHome?.doc) {
+      return { content: byHome.doc, forcedLayout: null, resolution: byHome };
     }
 
-    return { content: null, forcedLayout: null };
+    return { content: null, forcedLayout: null, resolution: null };
+  }
+
+  private static resolveCollectionTargetType(doc: Record<string, unknown>, collectionSlug: string): string {
+    const explicitType = String(doc?.contentType || doc?.type || '').trim().toLowerCase();
+    if (explicitType) {
+      return explicitType;
+    }
+
+    const normalized = String(collectionSlug || '').trim().toLowerCase();
+    if (normalized.endsWith('s') && normalized.length > 1) {
+      return normalized.slice(0, -1);
+    }
+    return normalized;
   }
 }

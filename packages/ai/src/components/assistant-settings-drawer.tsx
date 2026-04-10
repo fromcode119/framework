@@ -56,14 +56,18 @@ export function AssistantSettingsDrawer({
   }, [baseUrl]);
 
   const handleSave = async () => {
-    onApiKeyChange(localApiKey);
-    onBaseUrlChange(localBaseUrl);
-    await onSave();
+    await onSave({
+      apiKey: localApiKey,
+      baseUrl: localBaseUrl,
+    });
   };
   const handleRequestClose = React.useCallback(() => {
+    setLocalApiKey(apiKey);
+    setLocalBaseUrl(baseUrl);
+    setShowApiKey(false);
     if (onRequestClose) onRequestClose();
     else onClose();
-  }, [onClose, onRequestClose]);
+  }, [apiKey, baseUrl, onClose, onRequestClose]);
   const handleSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void handleSave();
@@ -130,14 +134,8 @@ export function AssistantSettingsDrawer({
               localApiKey={localApiKey}
               localBaseUrl={localBaseUrl}
               showApiKey={showApiKey}
-              onApiKeyChange={(value) => {
-                setLocalApiKey(value);
-                onApiKeyChange(value);
-              }}
-              onBaseUrlChange={(value) => {
-                setLocalBaseUrl(value);
-                onBaseUrlChange(value);
-              }}
+              onApiKeyChange={setLocalApiKey}
+              onBaseUrlChange={setLocalBaseUrl}
               onToggleApiKeyVisibility={() => setShowApiKey(!showApiKey)}
             />
             <AssistantSettingsPreferencesSection

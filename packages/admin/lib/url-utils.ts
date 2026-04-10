@@ -1,4 +1,5 @@
 import { ApiVersionUtils } from '@fromcode119/core/client';
+import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
 
 export class AdminUrlUtils {
   static normalizeRequestPath(path: string): string {
@@ -14,24 +15,24 @@ export class AdminUrlUtils {
   static resolveFrontendBaseUrl(
   settings?: Record<string, unknown> | null,
   explicit?: unknown,
-  fallback: string = 'http://frontend.framework.local'
+  fallback: string = ''
 ): string {
       const explicitValue = AdminUrlUtils.normalizeFrontendCandidate(explicit);
       const settingsFrontend = AdminUrlUtils.normalizeFrontendCandidate(settings?.frontend_url);
       const settingsSite = AdminUrlUtils.normalizeFrontendCandidate(settings?.site_url);
+      const fallbackValue = AdminUrlUtils.normalizeFrontendCandidate(fallback);
       const raw =
         explicitValue ||
         settingsFrontend ||
         settingsSite ||
         AdminUrlUtils.toNonEmptyString(process.env.FRONTEND_URL) ||
-        AdminUrlUtils.toNonEmptyString(process.env.NEXT_PUBLIC_FRONTEND_URL) ||
         AdminUrlUtils.toNonEmptyString(process.env.NEXT_PUBLIC_SITE_URL) ||
         AdminUrlUtils.toNonEmptyString(process.env.PUBLIC_APP_URL) ||
         AdminUrlUtils.toNonEmptyString(process.env.APP_URL) ||
-        AdminUrlUtils.inferFrontendBaseUrlFromBrowser() ||
-        fallback;
+        ApplicationUrlUtils.inferBrowserBaseUrl(ApplicationUrlUtils.FRONTEND_APP) ||
+        fallbackValue;
 
-      if (!raw) return fallback;
+      if (!raw) return '';
       if (raw.startsWith('http://') || raw.startsWith('https://')) return raw.replace(/\/+$/, '');
       return `http://${raw.replace(/^\/+/, '').replace(/\/+$/, '')}`;
 
@@ -44,19 +45,13 @@ export class AdminUrlUtils {
   private static toNonEmptyString(value: unknown): string {
     return String(value ?? '').trim();
   }
-
-  private static inferFrontendBaseUrlFromBrowser(): string {
-    if (typeof window === 'undefined') return '';
-    return window.location.origin.replace(/\/+$/, '');
-  }
-
   private static normalizeFrontendCandidate(value: unknown): string {
     const raw = AdminUrlUtils.toNonEmptyString(value);
     if (!raw) return '';
-    if (!raw.includes('localhost')) return raw;
+    if (!ApplicationUrlUtils.isLoopbackCandidate(raw)) return raw;
 
-    const inferred = AdminUrlUtils.inferFrontendBaseUrlFromBrowser();
-    if (inferred.includes('frontend.framework.local')) {
+    const inferred = ApplicationUrlUtils.inferBrowserBaseUrl(ApplicationUrlUtils.FRONTEND_APP);
+    if (inferred && !ApplicationUrlUtils.isLoopbackCandidate(inferred)) {
       return '';
     }
 

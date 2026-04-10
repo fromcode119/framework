@@ -30,8 +30,10 @@ cp .env.example .env
 
 Important variables to review:
 
-- `PUBLIC_URL=http://api.framework.local`
+- `API_URL=http://api.framework.local`
 - `NEXT_PUBLIC_API_URL=http://api.framework.local`
+- `ADMIN_URL=http://admin.framework.local`
+- `FRONTEND_URL=http://frontend.framework.local`
 - `API_VERSION_PREFIX=v1`
 - `CORS_ALLOWED_DOMAINS=framework.local,api.framework.local,admin.framework.local`
 - `PLUGINS_DIR=/app/plugins`
@@ -91,7 +93,7 @@ When testing content-heavy modules (CMS, forms, ecommerce, mlm, etc.):
 
 ### `fetch failed` from frontend server components
 
-- Verify `NEXT_PUBLIC_API_URL` and internal API URL.
+- Verify `NEXT_PUBLIC_API_URL` and `API_URL`/`INTERNAL_API_URL` are correct for your deployment mode.
 - Ensure API container is healthy.
 - Check DNS resolution for `api.framework.local` from both host and container.
 

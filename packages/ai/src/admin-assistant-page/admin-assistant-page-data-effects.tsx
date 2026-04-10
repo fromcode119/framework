@@ -13,17 +13,22 @@ export function AdminAssistantPageDataEffects(props: AdminAssistantPageDataEffec
       try {
         const integration = await AdminAssistantPageGatewayService.fetchIntegration(props.api);
         if (cancelled) return;
-        if (!props.browserState.hasProviderOrModelPreference()) {
-          props.setProvider(integration.provider || 'openai');
-          props.setModel(integration.model || (AssistantConstants.PROVIDER_PRESETS[integration.provider]?.[0]?.value || AssistantConstants.PROVIDER_PRESETS.openai[0].value));
-          props.setBaseUrl(integration.baseUrl);
-        }
+        const provider = integration.provider || 'openai';
+        props.setProvider(provider);
+        props.setModel(
+          integration.model ||
+            (AssistantConstants.PROVIDER_PRESETS[provider]?.[0]?.value ||
+              AssistantConstants.PROVIDER_PRESETS.openai[0].value),
+        );
+        props.setBaseUrl(integration.baseUrl);
         props.setIntegrationConfigured(integration.integrationConfigured);
         props.setHasSavedSecret(integration.hasSavedSecret);
-      } catch {
+      } catch (error) {
         if (!cancelled) {
-          props.setIntegrationConfigured(false);
-          props.setHasSavedSecret(false);
+          if (!AdminAssistantPageGatewayService.isTransientBootstrapError(error)) {
+            props.setIntegrationConfigured(false);
+            props.setHasSavedSecret(false);
+          }
         }
       } finally {
         if (!cancelled) props.setCheckingIntegration(false);
@@ -33,7 +38,7 @@ export function AdminAssistantPageDataEffects(props: AdminAssistantPageDataEffec
     return () => {
       cancelled = true;
     };
-  }, [props.api, props.browserState, props.setBaseUrl, props.setCheckingIntegration, props.setHasSavedSecret, props.setIntegrationConfigured, props.setModel, props.setProvider]);
+  }, [props.api, props.setBaseUrl, props.setCheckingIntegration, props.setHasSavedSecret, props.setIntegrationConfigured, props.setModel, props.setProvider]);
 
   React.useEffect(() => {
     if (props.checkingIntegration || !props.uiPrefsHydrated) return;
@@ -65,8 +70,11 @@ export function AdminAssistantPageDataEffects(props: AdminAssistantPageDataEffec
           const next = prev.filter((tool) => tools.some((entry) => entry.tool === tool));
           return next.length > 0 ? next : tools.map((entry) => entry.tool);
         });
-      } catch {
+      } catch (error) {
         if (!cancelled) {
+          if (AdminAssistantPageGatewayService.isTransientBootstrapError(error)) {
+            return;
+          }
           props.setAvailableTools([]);
           props.setSelectedTools([]);
         }
@@ -86,8 +94,11 @@ export function AdminAssistantPageDataEffects(props: AdminAssistantPageDataEffec
         if (cancelled) return;
         props.setSkills(skills);
         props.setSkillId((prev) => (skills.some((entry) => entry.id === prev) ? prev : skills[0]?.id || 'general'));
-      } catch {
+      } catch (error) {
         if (!cancelled) {
+          if (AdminAssistantPageGatewayService.isTransientBootstrapError(error)) {
+            return;
+          }
           props.setSkills([{ id: 'general', label: 'General' }]);
           props.setSkillId((prev) => prev || 'general');
         }

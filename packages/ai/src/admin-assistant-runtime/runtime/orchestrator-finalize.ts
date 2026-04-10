@@ -4,6 +4,7 @@ import type { AssistantChatResult } from '../types';
 import type { RuntimeContext, RuntimeDependencies, RuntimeIntent } from './types.types';
 import { ResponseBuilder } from './response';
 import { ChatResponder } from './chat-responder';
+import { FactualQueryService } from './factual-query-service';
 import { WorkspaceMapService } from './workspace-map';
 import { OrchestratorActionUtils } from './orchestrator-action-utils';
 import { OrchestratorListingUtils } from './orchestrator-listing-utils';
@@ -97,7 +98,8 @@ export class OrchestratorFinalizeUtils {
   const collectionMatch = WorkspaceMapService.matchWorkspaceCollection(message, context.workspaceMap);
   const asksCollectionRecords =
     !!collectionMatch &&
-    /\b(list|show|what|which|who|have|records?|entries|rows|docs?|data)\b/i.test(String(message || ''));
+    /\b(list|show|what|which)\b/i.test(String(message || '')) &&
+    /\b(records?|entries|rows|docs?|data|items?|transactions?|orders?)\b/i.test(String(message || ''));
   if (collectionMatch && asksCollectionRecords && typeof context.options.listContent === 'function') {
     const collectionContext = context.collections.find((item) => {
       const slug = String(item?.slug || '').trim();
@@ -189,9 +191,19 @@ export class OrchestratorFinalizeUtils {
   }
 
   const inventoryFollowup = findInventoryFollowupReply(message, context);
+  const chatReply = inventoryFollowup
+    ? null
+    : await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
+  const factualReply = inventoryFollowup || (chatReply && chatReply.source !== 'fallback')
+    ? null
+    : await FactualQueryService.resolveReply(context, message);
   const reply = inventoryFollowup
     ? { message: inventoryFollowup, model: 'inventory-followup' }
-    : await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
+    : chatReply && chatReply.source !== 'fallback'
+      ? chatReply
+      : factualReply
+        ? factualReply
+        : chatReply || await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
 
   const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });
   return finalize(deps, {
@@ -209,7 +221,9 @@ export class OrchestratorFinalizeUtils {
       resumePrompt: 'Continue the conversation naturally.',
       stage: 'finalize',
       planningPassesUsed: Number(context.input?.checkpoint?.planningPassesUsed || 0),
-      memory: context.input?.checkpoint?.memory,
+      memory: factualReply?.memory
+        ? { factual: factualReply.memory }
+        : context.input?.checkpoint?.memory,
     }),
     agentMode,
   });
