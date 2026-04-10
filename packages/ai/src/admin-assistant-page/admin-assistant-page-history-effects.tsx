@@ -9,6 +9,7 @@ import type { AdminAssistantPageHistoryEffectsProps } from './admin-assistant-pa
 export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistoryEffectsProps) {
   const prefsLoadedRef = React.useRef(false);
   const historyHydratedRef = React.useRef(false);
+  const historyHydrationInFlightRef = React.useRef(false);
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -18,10 +19,10 @@ export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistor
   }, [props.themeMode, props.browserState]);
 
   React.useEffect(() => {
-    if (historyHydratedRef.current) return;
+    if (historyHydratedRef.current || historyHydrationInFlightRef.current || props.historyHydrated) return;
     let cancelled = false;
+    historyHydrationInFlightRef.current = true;
     const hydrate = async () => {
-      historyHydratedRef.current = true;
       const savedActive = typeof window !== 'undefined' ? props.browserState.readActiveSessionId() : '';
       let serverLoaded = false;
       let localSessions: ReturnType<typeof AdminAssistantPageSessionService.loadHistoryFromLocal> = [];
@@ -81,13 +82,18 @@ export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistor
         }
       }
 
-      if (!cancelled) props.setHistoryHydrated(true);
+      historyHydrationInFlightRef.current = false;
+      if (!cancelled) {
+        historyHydratedRef.current = true;
+        props.setHistoryHydrated(true);
+      }
     };
     void hydrate();
     return () => {
       cancelled = true;
+      historyHydrationInFlightRef.current = false;
     };
-  }, [props.api, props.browserState, props.provider, props.setActiveSessionId, props.setChatMode, props.setHistoryHydrated, props.setHistoryLoading, props.setHistorySessions, props.setHistorySource, props.setMessages, props.setModel, props.setProvider, props.setSandboxMode, props.setSkillId]);
+  }, [props.api, props.browserState, props.historyHydrated, props.provider, props.setActiveSessionId, props.setChatMode, props.setHistoryHydrated, props.setHistoryLoading, props.setHistorySessions, props.setHistorySource, props.setMessages, props.setModel, props.setProvider, props.setSandboxMode, props.setSkillId]);
 
   React.useEffect(() => {
     if (typeof window === 'undefined' || !props.historyHydrated) return;
@@ -108,12 +114,19 @@ export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistor
         props.setUiPrefsHydrated(true);
         return;
       }
-      const provider = parsed.provider || props.provider;
-      const baseUrl = AdminAssistantPageUtils.sanitizeBaseUrlForProvider(provider, props.browserState.readProviderBaseUrl(provider));
-      if (parsed.provider && AssistantConstants.PROVIDER_OPTIONS.some((item) => item.value === parsed.provider)) props.setProvider(parsed.provider);
-      if (parsed.model) props.setModel(parsed.model);
-      if (baseUrl) props.setBaseUrl(baseUrl);
-      else if (provider === 'ollama') props.setBaseUrl(AdminAssistantPageUtils.OLLAMA_DOCKER_BASE_URL);
+      if (!props.integrationConfigured) {
+        const provider = parsed.provider || props.provider;
+        const baseUrl = AdminAssistantPageUtils.sanitizeBaseUrlForProvider(
+          provider,
+          props.browserState.readProviderBaseUrl(provider),
+        );
+        if (parsed.provider && AssistantConstants.PROVIDER_OPTIONS.some((item) => item.value === parsed.provider)) {
+          props.setProvider(parsed.provider);
+        }
+        if (parsed.model) props.setModel(parsed.model);
+        if (baseUrl) props.setBaseUrl(baseUrl);
+        else if (provider === 'ollama') props.setBaseUrl(AdminAssistantPageUtils.OLLAMA_DOCKER_BASE_URL);
+      }
       if (parsed.skillId) props.setSkillId(parsed.skillId);
       if (parsed.chatMode) props.setChatMode(parsed.chatMode);
       if (typeof parsed.sandboxMode === 'boolean') props.setSandboxMode(parsed.sandboxMode);
@@ -129,7 +142,7 @@ export function AdminAssistantPageHistoryEffects(props: AdminAssistantPageHistor
     } finally {
       props.setUiPrefsHydrated(true);
     }
-  }, [props.baseUrl, props.browserState, props.checkingIntegration, props.provider, props.setBaseUrl, props.setChatMode, props.setLayoutState, props.setModel, props.setProvider, props.setSandboxMode, props.setSkillId, props.setUiPrefsHydrated]);
+  }, [props.baseUrl, props.browserState, props.checkingIntegration, props.integrationConfigured, props.provider, props.setBaseUrl, props.setChatMode, props.setLayoutState, props.setModel, props.setProvider, props.setSandboxMode, props.setSkillId, props.setUiPrefsHydrated]);
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return;

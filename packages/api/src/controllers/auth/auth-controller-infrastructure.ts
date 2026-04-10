@@ -95,7 +95,6 @@ export class AuthControllerInfrastructure {
 
     const configured =
       process.env.FRONTEND_URL ||
-      process.env.NEXT_PUBLIC_FRONTEND_URL ||
       process.env.PUBLIC_APP_URL ||
       process.env.APP_URL;
 
@@ -120,8 +119,7 @@ export class AuthControllerInfrastructure {
     if (configuredInDb) return configuredInDb.replace(/\/+$/, '');
 
     const configured =
-      process.env.ADMIN_URL ||
-      process.env.NEXT_PUBLIC_ADMIN_URL;
+      process.env.ADMIN_URL;
     if (configured) return configured.replace(/\/+$/, '');
 
     const refererUrl = RequestSurfaceUtils.readRefererUrl(req);

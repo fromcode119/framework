@@ -1,6 +1,7 @@
 /** Plugin telemetry service — email alerting and digest. Extracted from PluginManager (ARC-007). */
 
 import { SystemConstants } from '../../constants';
+import { ApplicationUrlUtils } from '../../application-url-utils';
 import { IDatabaseManager } from '@fromcode119/database';
 import { createHash } from 'crypto';
 
@@ -85,6 +86,21 @@ export class PluginTelemetryService {
     return upper === 'ERROR' || upper === 'FATAL' || upper === 'CRITICAL' || upper === 'ALERT';
   }
 
+  private resolveSenderAddress(): string {
+    const configuredSender = String(process.env.EMAIL_FROM || process.env.SMTP_FROM || '').trim();
+    if (configuredSender) {
+      return configuredSender;
+    }
+
+    const platformDomain = ApplicationUrlUtils.derivePlatformDomain(
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
+    );
+
+    return `no-reply@${platformDomain || 'localhost'}`;
+  }
+
   // --- Notification methods ---
 
   async notifyOnCriticalLog(level: string, message: string, pluginSlug?: string, context?: any): Promise<void> {
@@ -104,7 +120,7 @@ export class PluginTelemetryService {
     await this.upsertMetaValue(dedupeKey, new Date(now).toISOString());
 
     const appName = process.env.APP_NAME || 'Fromcode';
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@framework.local';
+  const from = this.resolveSenderAddress();
     const pluginLabel = String(pluginSlug || 'system').trim() || 'system';
     const headline = String(message || '').trim() || 'Critical system log entry';
     const shortHeadline = headline.length > 140 ? `${headline.slice(0, 137)}...` : headline;
@@ -144,7 +160,7 @@ export class PluginTelemetryService {
     const topPlugins = Object.entries(pluginCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
     const criticalRows = recent.filter((row: any) => this.isCriticalLevel(String(row?.level || ''))).slice(0, 8);
     const appName = process.env.APP_NAME || 'Fromcode';
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@framework.local';
+    const from = this.resolveSenderAddress();
     const fromIso = new Date(weekAgo).toISOString();
     const toIso = new Date(now).toISOString();
 
@@ -168,7 +184,7 @@ export class PluginTelemetryService {
 
     const nowIso = new Date().toISOString();
     const appName = process.env.APP_NAME || 'Fromcode';
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@framework.local';
+  const from = this.resolveSenderAddress();
     const actorEmail = this.normalizeEmailAddress(triggeredBy?.email) || 'unknown';
     const actorId = String(triggeredBy?.id || '').trim() || 'unknown';
     const actorRoles = Array.isArray(triggeredBy?.roles) ? triggeredBy.roles.join(', ') : '';

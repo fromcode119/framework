@@ -19,7 +19,7 @@ export interface AssistantSettingsDrawerProps {
   hasSavedSecret: boolean;
   baseUrl: string;
   onBaseUrlChange: (url: string) => void;
-  onSave: () => Promise<void>;
+  onSave: (values: { apiKey: string; baseUrl: string }) => Promise<void>;
   isSaving: boolean;
   autoApprove: boolean;
   onAutoApproveChange: (value: boolean) => void;

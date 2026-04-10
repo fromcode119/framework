@@ -55,6 +55,7 @@ import {
 } from './server/index';
 import { PublicSystemRouteUtils } from './utils/public-system-route-utils';
 import { WebhookRouteUtils } from './utils/webhook-route-utils';
+import { AdminBootstrapRateLimitUtils } from './utils/admin-bootstrap-rate-limit-utils';
 
 export class APIServer {
   public app = express();
@@ -185,10 +186,10 @@ export class APIServer {
       },
       message: { error: 'Too many requests from this IP, please try again later' },
       skip: (req) => {
-        // Skip rate limiting for EventSource (SSE) and health checks
-        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
+        if (AdminBootstrapRateLimitUtils.shouldBypass(req)) {
           return true;
         }
+
         return !!req.headers['x-skip-rate-limit'] && req.headers['x-skip-rate-limit'] === process.env.ADMIN_SECRET;
       }
     } as any);

@@ -1,3 +1,4 @@
+import { ApplicationUrlUtils } from './application-url-utils';
 import { SystemConstants } from './constants';
 import { RuntimeConstants } from './runtime-constants';
 import type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
@@ -7,50 +8,27 @@ import type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
  */
 export class RuntimeBridge {
   static resolveApiBaseUrl(options: { fallbackHost?: string } = {}): string {
-    const fallbackHost = String(options.fallbackHost || 'api.framework.local').trim() || 'api.framework.local';
-
-    const normalizeBaseCandidate = (value: any): string => {
-      const rawValue = String(value || '').trim();
-      if (!rawValue) {
-        return '';
-      }
-
-      try {
-        if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
-          const parsed = new URL(rawValue);
-          return RuntimeBridge.stripApiPath(`${parsed.origin}${parsed.pathname || ''}`);
-        }
-
-        if (rawValue.startsWith('/')) {
-          return '';
-        }
-
-        return RuntimeBridge.stripApiPath(`http://${rawValue}`);
-      } catch {
-        return '';
-      }
-    };
+    const fallbackBaseUrl = ApplicationUrlUtils.normalizeBaseUrlCandidate(options.fallbackHost, { stripApiPath: true });
 
     if (typeof window === 'undefined') {
-      const fromEnv = normalizeBaseCandidate(process.env.NEXT_PUBLIC_API_URL || process.env.API_URL);
-      return fromEnv || `http://${fallbackHost}`;
+      return ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true })
+        || fallbackBaseUrl;
     }
 
-    const fromBridge = normalizeBaseCandidate((window as any)?.FROMCODE_API_URL);
+    const fromBridge = ApplicationUrlUtils.normalizeBaseUrlCandidate((window as any)?.FROMCODE_API_URL, { stripApiPath: true });
     if (fromBridge) return fromBridge;
 
-    const fromGlobal = normalizeBaseCandidate((window as any)?.Fromcode?.apiUrl);
+    const fromGlobal = ApplicationUrlUtils.normalizeBaseUrlCandidate((window as any)?.Fromcode?.apiUrl, { stripApiPath: true });
     if (fromGlobal) return fromGlobal;
 
     const runtimeBridge = RuntimeBridge.getBridge<any>();
-    const fromRuntimeBridge = normalizeBaseCandidate(runtimeBridge?.apiUrl);
+    const fromRuntimeBridge = ApplicationUrlUtils.normalizeBaseUrlCandidate(runtimeBridge?.apiUrl, { stripApiPath: true });
     if (fromRuntimeBridge) return fromRuntimeBridge;
 
-    const fromEnv = normalizeBaseCandidate(process.env.NEXT_PUBLIC_API_URL);
+    const fromEnv = ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true });
     if (fromEnv) return fromEnv;
 
-    const protocol = window.location?.protocol || 'http:';
-    return `${protocol}//${fallbackHost}`;
+    return ApplicationUrlUtils.inferBrowserBaseUrl(ApplicationUrlUtils.API_APP) || fallbackBaseUrl;
   }
 
   /**
@@ -92,12 +70,5 @@ export class RuntimeBridge {
     }
 
     return metadata;
-  }
-
-  private static stripApiPath(value: string): string {
-    return String(value || '')
-      .replace(/\/+$/, '')
-      .replace(/\/api\/v\d+$/i, '')
-      .replace(/\/api$/i, '');
   }
 }

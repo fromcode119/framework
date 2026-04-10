@@ -13,6 +13,7 @@ import { IDatabaseManager } from '@fromcode119/database';
 import { AssistantManagementToolsService } from './management-tools-service';
 import { AssistantCatalogService } from './catalog-service';
 import { AssistantRuntimeContentResolver } from './runtime-content-resolver';
+import { PluginAssistantDiscoveryService } from './plugin-assistant-discovery-service';
 
 export class AssistantRuntimeFactoryService {
   constructor(
@@ -22,6 +23,7 @@ export class AssistantRuntimeFactoryService {
     private db: IDatabaseManager,
     private managementTools: AssistantManagementToolsService,
     private catalog: AssistantCatalogService,
+    private pluginAssistantDiscovery: PluginAssistantDiscoveryService,
     private promptKeys: { basic: string; advanced: string },
   ) {}
 
@@ -129,15 +131,17 @@ export class AssistantRuntimeFactoryService {
       },
       resolveAdditionalTools: async ({ dryRun }) => {
         const frameworkTools = this.managementTools.buildTools();
+        const discoveredPluginTools = this.pluginAssistantDiscovery.buildTools();
         try {
           const payload = await this.manager.hooks.call('assistant:tools:extend', { dryRun, tools: [] as any[] });
           const extensionTools = Array.isArray((payload as any)?.tools) ? (payload as any).tools : [];
-          return [...frameworkTools, ...extensionTools];
+          return this.mergeTools(frameworkTools, discoveredPluginTools, extensionTools);
         } catch {
-          return frameworkTools;
+          return this.mergeTools(frameworkTools, discoveredPluginTools);
         }
       },
       resolveAdditionalPromptLines: async ({ collections, tools }) => {
+        const discoveredPromptLines = this.pluginAssistantDiscovery.buildPromptLines();
         try {
           const payload = await this.manager.hooks.call('assistant:prompt:extend', {
             lines: [] as string[],
@@ -145,9 +149,9 @@ export class AssistantRuntimeFactoryService {
             tools,
           });
           const lines = Array.isArray((payload as any)?.lines) ? (payload as any).lines : [];
-          return lines.map((line: any) => String(line || '').trim()).filter(Boolean);
+          return this.mergePromptLines(discoveredPromptLines, lines);
         } catch {
-          return [];
+          return this.mergePromptLines(discoveredPromptLines);
         }
       },
       resolveWorkspaceMap: async ({ collections, plugins, themes, tools }) => {
@@ -254,5 +258,31 @@ export class AssistantRuntimeFactoryService {
     };
 
     return new AdminAssistantRuntimeEngine(runtimeOptions);
+  }
+
+  private mergePromptLines(...groups: any[][]): string[] {
+    const merged = new Set<string>();
+    for (const group of groups) {
+      for (const line of Array.isArray(group) ? group : []) {
+        const normalized = String(line || '').trim();
+        if (normalized) {
+          merged.add(normalized);
+        }
+      }
+    }
+    return Array.from(merged);
+  }
+
+  private mergeTools(...groups: any[][]): any[] {
+    const merged = new Map<string, any>();
+    for (const group of groups) {
+      for (const tool of Array.isArray(group) ? group : []) {
+        const toolName = String(tool?.tool || '').trim();
+        if (toolName && !merged.has(toolName)) {
+          merged.set(toolName, tool);
+        }
+      }
+    }
+    return Array.from(merged.values());
   }
 }

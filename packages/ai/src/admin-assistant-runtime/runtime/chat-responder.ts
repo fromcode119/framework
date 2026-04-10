@@ -4,6 +4,7 @@ import { WorkspaceMapService } from './workspace-map';
 import { ChatHelpers } from './helpers/chat-helpers';
 import type { RuntimeContext, RuntimeDependencies, RuntimeIntent } from './types.types';
 import type { ChatReply } from './chat-responder.types';
+import { ReadOnlyChatToolLoop } from './read-only-chat-tool-loop';
 
 export class ChatResponder {
   static async generateChatReply(
@@ -47,6 +48,23 @@ export class ChatResponder {
         ...history,
         { role: 'user', content: message },
       ];
+
+      const readOnlyReply = await ReadOnlyChatToolLoop.generateReply({
+        context,
+        systemPrompt,
+        history,
+        message,
+        aiClient,
+        temperature: generation.temperature,
+        maxTokens: generation.maxTokens,
+        provider,
+      });
+      if (readOnlyReply) {
+        return readOnlyReply;
+      }
+      if (ReadOnlyChatToolLoop.requiresToolGrounding(message)) {
+        return { message: ChatHelpers.fallbackFactual(intent), model: 'fallback', source: 'fallback' };
+      }
 
       try {
         const response = await aiClient.chat({
