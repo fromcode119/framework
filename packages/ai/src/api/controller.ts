@@ -139,9 +139,44 @@ export class AssistantController {
     const rawStage = String((input as any)?.stage || '').trim().toLowerCase();
     const stage = ['classify', 'retrieve', 'plan', 'clarify', 'finalize'].includes(rawStage) ? rawStage as any : undefined;
     const listingMemoryRaw = (input as any)?.memory?.listing;
+    const factualMemoryRaw = (input as any)?.memory?.factual;
     const listingCollectionSlug = String(listingMemoryRaw?.collectionSlug || '').trim();
     const listingMemory = listingCollectionSlug ? { collectionSlug: listingCollectionSlug, lastSelectedRowIndex: Number.isFinite(Number(listingMemoryRaw?.lastSelectedRowIndex)) ? Math.max(0, Number(listingMemoryRaw.lastSelectedRowIndex)) : undefined, lastSelectedRecordId: String(listingMemoryRaw?.lastSelectedRecordId || '').trim() || undefined, lastSelectedField: String(listingMemoryRaw?.lastSelectedField || '').trim() || undefined } : undefined;
-    return { resumePrompt, reason, stage, planningPassesUsed, memory: listingMemory ? { listing: listingMemory } : undefined };
+    const factualTool = String(factualMemoryRaw?.tool || '').trim();
+    const factualInput = factualMemoryRaw?.input && typeof factualMemoryRaw.input === 'object'
+      ? { ...factualMemoryRaw.input }
+      : undefined;
+    const factualMetrics = Array.isArray(factualMemoryRaw?.metrics)
+      ? factualMemoryRaw.metrics
+          .filter((entry: any) => entry && typeof entry === 'object')
+          .map((entry: any) => ({
+            path: String(entry?.path || '').trim(),
+            value: entry?.value,
+          }))
+          .filter((entry: { path: string; value: unknown }) =>
+            !!entry.path && ['string', 'number', 'boolean'].includes(typeof entry.value),
+          )
+          .slice(0, 24)
+      : undefined;
+    const factualMemory = factualTool
+      ? {
+          tool: factualTool,
+          input: factualInput,
+          rangeLabel: String(factualMemoryRaw?.rangeLabel || '').trim() || undefined,
+          rangeFrom: String(factualMemoryRaw?.rangeFrom || '').trim() || undefined,
+          rangeTo: String(factualMemoryRaw?.rangeTo || '').trim() || undefined,
+          currency: String(factualMemoryRaw?.currency || '').trim() || undefined,
+          primaryMetricPath: String(factualMemoryRaw?.primaryMetricPath || '').trim() || undefined,
+          metrics: factualMetrics,
+        }
+      : undefined;
+    const memory = listingMemory || factualMemory
+      ? {
+          ...(listingMemory ? { listing: listingMemory } : {}),
+          ...(factualMemory ? { factual: factualMemory } : {}),
+        }
+      : undefined;
+    return { resumePrompt, reason, stage, planningPassesUsed, memory };
   }
 
   private async resolveAssistantClientFromRequest(req: Request): Promise<{ client: any; provider: string }> {

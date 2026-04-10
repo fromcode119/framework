@@ -54,6 +54,20 @@ export abstract class BaseMigration {
   async down(_db: IDatabaseManager): Promise<void> {}
 
   /**
+   * Build a semantic collection reference from owner plugin + collection slugs.
+   *
+   * Use this in cross-plugin migrations instead of hardcoding `@plugin/table`
+   * literals inline. The migration still targets a collection by owner slug, but
+   * the construction stays consistent and centralised at the framework layer.
+   *
+   * @param pluginSlug     - Owner plugin slug, e.g. `cms`.
+   * @param collectionSlug - Collection slug within the owner plugin, e.g. `pages`.
+   */
+  protected collectionRef(pluginSlug: string, collectionSlug: string): string {
+    return `@${pluginSlug}/${collectionSlug}`;
+  }
+
+  /**
    * Add a column to `tableName` only when the column does not already exist.
    *
    * Comparison is case-insensitive so that a column named `MyField` matches an

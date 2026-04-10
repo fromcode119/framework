@@ -452,4 +452,5 @@ Property Equity to +20%`,
     expect(result.message.toLowerCase()).toContain('hey again');
     expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(1);
   });
+
 });
