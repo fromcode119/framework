@@ -10,6 +10,7 @@ export class FactualQueryToolService {
     const plugin = FactualQueryToolService.matchPlugin(context, message);
     const queryTokens = FactualQueryHelpers.tokenize(message);
     const mentionsBusinessMetric = /\b(revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount)\b/.test(TextHelpers.normalize(message));
+    const asksForEntityDetail = FactualQueryHelpers.looksLikeEntityDetailQuestion(message);
 
     return (Array.isArray(context.tools) ? context.tools : [])
       .map((tool: any) => ({
@@ -21,7 +22,7 @@ export class FactualQueryToolService {
       .map((tool) => ({
         tool: tool.tool,
         description: tool.description,
-        score: FactualQueryToolService.scoreReadOnlyTool(tool, queryTokens, plugin, mentionsBusinessMetric),
+        score: FactualQueryToolService.scoreReadOnlyTool(tool, queryTokens, plugin, mentionsBusinessMetric, asksForEntityDetail),
       }))
       .filter((tool) => tool.score > 0)
       .sort((left, right) => right.score - left.score || left.tool.localeCompare(right.tool));
@@ -59,6 +60,7 @@ export class FactualQueryToolService {
     queryTokens: string[],
     plugin: any | null,
     mentionsBusinessMetric: boolean,
+    asksForEntityDetail: boolean,
   ): number {
     const haystack = TextHelpers.normalize(`${tool.tool} ${tool.description}`);
     let score = 0;
@@ -86,6 +88,12 @@ export class FactualQueryToolService {
     }
     if (/\b(summary|stats?|report|overview|totals?)\b/.test(haystack)) {
       score += 8;
+    }
+    if (asksForEntityDetail && /\b(summary|stats?|report|overview|totals?)\b/.test(haystack)) {
+      score -= 20;
+    }
+    if (asksForEntityDetail && /\b(list|search|find|lookup|detail|record|records|transaction|transactions|order|orders|item|items)\b/.test(haystack)) {
+      score += 18;
     }
     if (mentionsBusinessMetric && /\b(finance|payment|invoice|transaction|wallet|refund|order|sales|revenue|balance)\b/.test(haystack)) {
       score += 10;

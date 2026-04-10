@@ -652,6 +652,49 @@ describe('runtime classifier and fallback behavior', () => {
     expect(result?.model).toBe('mock-chat-model');
   });
 
+  it('prefers factual checkpoint followup over generic model clarification', async () => {
+    const aiClient = {
+      chat: jest.fn().mockResolvedValue({
+        content: 'To give you an accurate total, could you clarify the period?',
+        model: 'mock-chat-model',
+      }),
+    };
+    const deps = createDeps({ aiClient: aiClient as any });
+    const result = await OrchestratorRunner.runOrchestrator(
+      {
+        message: 'what is the total?',
+        agentMode: 'basic',
+        checkpoint: {
+          reason: 'user_continue',
+          stage: 'finalize',
+          resumePrompt: 'Continue the conversation naturally.',
+          memory: {
+            factual: {
+              tool: 'finance.summary.get',
+              input: { period: 'last_month' },
+              rangeLabel: 'last month',
+              rangeFrom: '2026-03-01',
+              rangeTo: '2026-03-31',
+              currency: 'EUR',
+              primaryMetricPath: 'summary.transactionCount',
+              metrics: [
+                { path: 'summary.totalRevenue', value: 1897.16 },
+                { path: 'summary.totalRefunds', value: 0 },
+                { path: 'summary.transactionCount', value: 19 },
+              ],
+            },
+          },
+        },
+      },
+      deps,
+    );
+
+    expect(result?.model).toBe('tool-factual-followup');
+    expect(result?.message).toContain('For last month (2026-03-01 to 2026-03-31), total revenue is');
+    expect(result?.message).toContain('€1,897.16');
+    expect(aiClient.chat).not.toHaveBeenCalled();
+  });
+
   it('continues replace flow from clarification with url hint and stages deterministic action', async () => {
     const bridge = McpBridgeFactory.create({
       tools: [

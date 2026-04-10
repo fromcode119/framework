@@ -1,6 +1,7 @@
 import { RuntimeMiscHelpers } from '../helpers/runtime-misc-helpers';
 import { ReplyMessageBuilders } from '../helpers/reply-message-builders';
 import { FactualQueryHelpers } from './factual-query-helpers';
+import { FactualQueryToolService } from './factual-query-tool-service';
 import type { RuntimeContext } from './types.types';
 import type { ChatReply } from './chat-responder.types';
 
@@ -26,64 +27,62 @@ export class ReadOnlyChatToolLoop {
     maxTokens: number;
     provider: string;
   }): Promise<ChatReply | null> {
-    const readOnlyTools = (Array.isArray(input.context.tools) ? input.context.tools : [])
-      .filter((tool) => tool?.readOnly === true)
-      .map((tool) => ({
-        tool: String(tool?.tool || '').trim(),
-        description: String(tool?.description || '').trim(),
-      }))
-      .filter((tool) => !!tool.tool)
-      .slice(0, 40);
+    const readOnlyTools = ReadOnlyChatToolLoop.selectReadOnlyTools(input.context, input.message);
+    const checkpointContext = ReadOnlyChatToolLoop.buildCheckpointContext(input.context);
+    const toolResults: Array<{ tool: string; input: Record<string, any>; result: any }> = [];
+    const seenCalls = new Set<string>();
 
     if (readOnlyTools.length === 0) {
       return null;
     }
 
-    const toolPlan = await ReadOnlyChatToolLoop.planToolCalls({
-      aiClient: input.aiClient,
-      systemPrompt: input.systemPrompt,
-      history: input.history,
-      message: input.message,
-      tools: readOnlyTools,
-      temperature: input.temperature,
-      maxTokens: Math.min(900, input.maxTokens),
-    });
-    if (!toolPlan) {
-      return null;
-    }
-
-    const toolCalls = Array.isArray(toolPlan.toolCalls) ? toolPlan.toolCalls.slice(0, 2) : [];
-    if (toolCalls.length === 0) {
-      if (ReadOnlyChatToolLoop.requiresToolGrounding(input.message)) {
-        return null;
-      }
-      const directMessage = String(toolPlan.message || '').trim();
-      return directMessage
-        ? {
+    for (let iteration = 0; iteration < 3; iteration += 1) {
+      const toolPlan = await ReadOnlyChatToolLoop.planToolCalls({
+        aiClient: input.aiClient,
+        systemPrompt: input.systemPrompt,
+        history: input.history,
+        message: input.message,
+        tools: readOnlyTools,
+        toolResults,
+        checkpointContext,
+        temperature: input.temperature,
+        maxTokens: Math.min(900, input.maxTokens),
+      });
+      const plannedToolCalls = (Array.isArray(toolPlan?.toolCalls) ? toolPlan?.toolCalls : [])
+        .slice(0, 2)
+        .filter((call) => {
+          const toolName = String(call?.tool || '').trim();
+          const toolInput = call?.input && typeof call.input === 'object' ? call.input : {};
+          const key = JSON.stringify({ tool: toolName, input: toolInput });
+          if (!toolName || seenCalls.has(key)) return false;
+          seenCalls.add(key);
+          return true;
+        });
+      const toolCalls = plannedToolCalls.length > 0
+        ? plannedToolCalls
+        : ReadOnlyChatToolLoop.buildFallbackToolCalls(input.context, input.message, readOnlyTools, seenCalls);
+      if (toolCalls.length === 0) {
+        const directMessage = String(toolPlan?.message || '').trim();
+        if (directMessage && (toolResults.length > 0 || !ReadOnlyChatToolLoop.requiresToolGrounding(input.message))) {
+          return {
             message: directMessage,
-            model: String(toolPlan.model || input.provider || 'ai'),
+            model: String(toolPlan?.model || input.provider || 'ai'),
             source: 'tool_model',
-          }
-        : null;
-    }
-
-    const toolResults: Array<{ tool: string; input: Record<string, any>; result: any }> = [];
-    for (const call of toolCalls) {
-      const toolName = String(call?.tool || '').trim();
-      if (!toolName) {
-        continue;
+          };
+        }
+        break;
       }
-      const toolInput = call?.input && typeof call.input === 'object' ? call.input : {};
-      const result = await input.context.bridge.call({
-        tool: toolName,
-        input: toolInput,
-        context: { dryRun: true },
-      });
-      toolResults.push({
-        tool: toolName,
-        input: toolInput,
-        result,
-      });
+
+      for (const call of toolCalls) {
+        const toolName = String(call?.tool || '').trim();
+        const toolInput = call?.input && typeof call.input === 'object' ? call.input : {};
+        const result = await input.context.bridge.call({
+          tool: toolName,
+          input: toolInput,
+          context: { dryRun: true },
+        });
+        toolResults.push({ tool: toolName, input: toolInput, result });
+      }
     }
 
     if (toolResults.length === 0) {
@@ -96,6 +95,7 @@ export class ReadOnlyChatToolLoop {
       history: input.history,
       message: input.message,
       toolResults,
+      checkpointContext,
       temperature: Math.min(0.15, input.temperature),
       maxTokens: Math.min(700, input.maxTokens),
       provider: input.provider,
@@ -121,21 +121,33 @@ export class ReadOnlyChatToolLoop {
     history: Array<{ role: 'user' | 'assistant'; content: string }>;
     message: string;
     tools: Array<{ tool: string; description: string }>;
+    toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>;
+    checkpointContext?: string;
     temperature: number;
     maxTokens: number;
   }): Promise<{ message: string; toolCalls: Array<{ tool: string; input: Record<string, any> }>; model: string } | null> {
-    const plannerPrompt = [
+    const plannerPromptLines = [
       input.systemPrompt,
       '',
       'You can answer read-only workspace questions by selecting read-only tools.',
       'Prefer a useful grounded answer over a vague fallback.',
       'For workspace data, plugin-access, or business metric questions, do not guess and do not claim lack of access before checking tools.',
+      'When the user asks a follow-up, reuse prior factual range/context only if it is relevant to the new question.',
+      'If the follow-up changes from a summary question to an entity/detail question, pick a more appropriate read-only tool instead of repeating the previous summary.',
+      'You may ask for more data by returning toolCalls after seeing prior tool results. Stop only when you have enough grounded evidence to answer.',
       'Return STRICT JSON only with this shape:',
       '{"message":"string","toolCalls":[{"tool":"string","input":{}}]}',
       'Use at most 2 read-only tool calls.',
       'Only return toolCalls as an empty array when the answer is already obvious from the conversation and does not require workspace inspection.',
       `Available read-only tools: ${JSON.stringify(input.tools)}`,
-    ].join('\n');
+    ];
+    if (input.checkpointContext) {
+      plannerPromptLines.push(`Checkpoint context: ${input.checkpointContext}`);
+    }
+    if (input.toolResults.length > 0) {
+      plannerPromptLines.push(`Prior tool results: ${JSON.stringify(input.toolResults)}`);
+    }
+    const plannerPrompt = plannerPromptLines.join('\n');
 
     try {
       const response = await input.aiClient.chat({
@@ -175,18 +187,23 @@ export class ReadOnlyChatToolLoop {
     history: Array<{ role: 'user' | 'assistant'; content: string }>;
     message: string;
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>;
+    checkpointContext?: string;
     temperature: number;
     maxTokens: number;
     provider: string;
   }): Promise<ChatReply | null> {
-    const replyPrompt = [
+    const replyPromptLines = [
       input.systemPrompt,
       '',
       'Answer the user using only the tool results below.',
       'Be direct, concise, and grounded in the data.',
       'If a tool result is incomplete, say what you could confirm instead of refusing generically.',
       `TOOL_RESULTS_JSON:${JSON.stringify(input.toolResults)}`,
-    ].join('\n');
+    ];
+    if (input.checkpointContext) {
+      replyPromptLines.push(`Checkpoint context: ${input.checkpointContext}`);
+    }
+    const replyPrompt = replyPromptLines.join('\n');
 
     try {
       const response = await input.aiClient.chat({
@@ -211,5 +228,71 @@ export class ReadOnlyChatToolLoop {
     } catch {
       return null;
     }
+  }
+  private static selectReadOnlyTools(
+    context: RuntimeContext,
+    message: string,
+  ): Array<{ tool: string; description: string }> {
+    const allTools = (Array.isArray(context.tools) ? context.tools : [])
+      .filter((tool) => tool?.readOnly === true)
+      .map((tool) => ({
+        tool: String(tool?.tool || '').trim(),
+        description: String(tool?.description || '').trim(),
+      }))
+      .filter((tool) => !!tool.tool);
+
+    const ranked = FactualQueryToolService.rankReadOnlyTools(context, message);
+    if (ranked.length === 0) {
+      return allTools.slice(0, 40);
+    }
+
+    const byName = new Map(allTools.map((tool) => [tool.tool, tool]));
+    const prioritized = ranked
+      .map((tool) => byName.get(tool.tool))
+      .filter((tool): tool is { tool: string; description: string } => !!tool);
+    const fallback = allTools.filter((tool) => !prioritized.some((entry) => entry.tool === tool.tool));
+    return [...prioritized, ...fallback].slice(0, 40);
+  }
+
+  private static buildCheckpointContext(context: RuntimeContext): string {
+    const factual = context.checkpoint?.memory?.factual;
+    if (factual?.tool) {
+      return JSON.stringify({
+        tool: factual.tool,
+        input: factual.input,
+        rangeLabel: factual.rangeLabel,
+        rangeFrom: factual.rangeFrom,
+        rangeTo: factual.rangeTo,
+        primaryMetricPath: factual.primaryMetricPath,
+      });
+    }
+
+    const listing = context.checkpoint?.memory?.listing;
+    if (listing?.collectionSlug) {
+      return JSON.stringify({
+        collectionSlug: listing.collectionSlug,
+        lastSelectedRowIndex: listing.lastSelectedRowIndex,
+        lastSelectedField: listing.lastSelectedField,
+      });
+    }
+
+    return '';
+  }
+  private static buildFallbackToolCalls(
+    context: RuntimeContext,
+    message: string,
+    tools: Array<{ tool: string; description: string }>,
+    seenCalls: Set<string>,
+  ): Array<{ tool: string; input: Record<string, any> }> {
+    if (!FactualQueryHelpers.looksLikeEntityDetailQuestion(message)) return [];
+    const toolName = String(tools[0]?.tool || '').trim();
+    if (!toolName) return [];
+    const input = context.checkpoint?.memory?.factual?.input && typeof context.checkpoint.memory.factual.input === 'object'
+      ? { ...context.checkpoint.memory.factual.input }
+      : {};
+    if (/\b(first|earliest|oldest)\b/i.test(message)) { input.sort = 'asc'; input.limit = 1; }
+    if (/\b(last|latest|newest)\b/i.test(message)) { input.sort = 'desc'; input.limit = 1; }
+    const key = JSON.stringify({ tool: toolName, input });
+    return seenCalls.has(key) ? [] : [{ tool: toolName, input }];
   }
 }
