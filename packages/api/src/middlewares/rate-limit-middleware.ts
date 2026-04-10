@@ -3,7 +3,7 @@ import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import { BaseMiddleware } from './base-middleware';
 import { ApiConfig } from '../config/api-config';
 import type { RateLimitOptions } from './rate-limit-middleware.interfaces';
-import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
+import { AdminBootstrapRateLimitUtils } from '../utils/admin-bootstrap-rate-limit-utils';
 
 /**
  * Rate Limiting Middleware using express-rate-limit.
@@ -51,15 +51,12 @@ export class RateLimitMiddleware extends BaseMiddleware {
           return true;
         }
 
-        // Default skip logic
-        // Skip rate limiting for EventSource (SSE) and health checks
-        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
+        if (AdminBootstrapRateLimitUtils.shouldBypass(req)) {
           return true;
         }
 
-        // Admin bypass via secret header
-        return !!req.headers['x-skip-rate-limit'] &&
-          req.headers['x-skip-rate-limit'] === process.env.ADMIN_SECRET;
+        return !!req.headers['x-skip-rate-limit']
+          && req.headers['x-skip-rate-limit'] === process.env.ADMIN_SECRET;
       }
     } as any);
   }
@@ -99,10 +96,10 @@ export class RateLimitMiddleware extends BaseMiddleware {
       },
       message: { error: 'Too many requests from this IP, please try again later' },
       skip: (req) => {
-        // Skip rate limiting for EventSource (SSE) and health checks
-        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
+        if (AdminBootstrapRateLimitUtils.shouldBypass(req)) {
           return true;
         }
+
         return !!req.headers['x-skip-rate-limit'] &&
           req.headers['x-skip-rate-limit'] === process.env.ADMIN_SECRET;
       }

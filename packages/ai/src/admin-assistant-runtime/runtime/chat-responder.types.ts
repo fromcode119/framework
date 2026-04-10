@@ -4,5 +4,5 @@
 export type ChatReply = {
   message: string;
   model: string;
-  source: 'quick' | 'model' | 'fallback';
+  source: 'quick' | 'model' | 'tool_model' | 'fallback';
 };

@@ -1,4 +1,5 @@
 const path = require('path');
+const { NextConfigEnv } = require('../../config/next-config-env');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -19,18 +20,7 @@ const nextConfig = {
     },
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: process.env.NEXT_PUBLIC_API_URL 
-          ? new URL(process.env.NEXT_PUBLIC_API_URL).hostname 
-          : 'api.framework.local',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      }
-    ],
+    remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
   },
   webpack: (config, { dev, isServer }) => {
     // Force aliasing of @ to handle cases where the package is inside node_modules

@@ -99,22 +99,65 @@ export class ResponseBuilder {
         lastSelectedRecordId?: string;
         lastSelectedField?: string;
       };
+      factual?: {
+        tool: string;
+        input?: Record<string, any>;
+        rangeLabel?: string;
+        rangeFrom?: string;
+        rangeTo?: string;
+        currency?: string;
+        primaryMetricPath?: string;
+        metrics?: Array<{ path: string; value: string | number | boolean }>;
+      };
     };
   }): AssistantSessionCheckpoint {
     const listingMemory = input.memory?.listing;
+    const factualMemory = input.memory?.factual;
     const normalizedMemory =
-      listingMemory && String(listingMemory.collectionSlug || '').trim()
-        ? {
-            listing: {
-              collectionSlug: String(listingMemory.collectionSlug).trim(),
-              lastSelectedRowIndex: Number.isFinite(Number(listingMemory.lastSelectedRowIndex))
-                ? Math.max(0, Number(listingMemory.lastSelectedRowIndex))
-                : undefined,
-              lastSelectedRecordId: String(listingMemory.lastSelectedRecordId || '').trim() || undefined,
-              lastSelectedField: String(listingMemory.lastSelectedField || '').trim() || undefined,
-            },
-          }
-        : undefined;
+      (() => {
+        const normalizedListing =
+          listingMemory && String(listingMemory.collectionSlug || '').trim()
+            ? {
+                collectionSlug: String(listingMemory.collectionSlug).trim(),
+                lastSelectedRowIndex: Number.isFinite(Number(listingMemory.lastSelectedRowIndex))
+                  ? Math.max(0, Number(listingMemory.lastSelectedRowIndex))
+                  : undefined,
+                lastSelectedRecordId: String(listingMemory.lastSelectedRecordId || '').trim() || undefined,
+                lastSelectedField: String(listingMemory.lastSelectedField || '').trim() || undefined,
+              }
+            : undefined;
+        const normalizedFactual =
+          factualMemory && String(factualMemory.tool || '').trim()
+            ? {
+                tool: String(factualMemory.tool).trim(),
+                input: factualMemory.input && typeof factualMemory.input === 'object'
+                  ? { ...factualMemory.input }
+                  : undefined,
+                rangeLabel: String(factualMemory.rangeLabel || '').trim() || undefined,
+                rangeFrom: String(factualMemory.rangeFrom || '').trim() || undefined,
+                rangeTo: String(factualMemory.rangeTo || '').trim() || undefined,
+                currency: String(factualMemory.currency || '').trim() || undefined,
+                primaryMetricPath: String(factualMemory.primaryMetricPath || '').trim() || undefined,
+                metrics: Array.isArray(factualMemory.metrics)
+                  ? factualMemory.metrics
+                      .filter((entry) => entry && typeof entry === 'object')
+                      .map((entry) => ({
+                        path: String(entry.path || '').trim(),
+                        value: entry.value as string | number | boolean,
+                      }))
+                      .filter((entry) => !!entry.path)
+                      .slice(0, 24)
+                  : undefined,
+              }
+            : undefined;
+        if (!normalizedListing && !normalizedFactual) {
+          return undefined;
+        }
+        return {
+          listing: normalizedListing,
+          factual: normalizedFactual,
+        };
+      })();
     return {
       reason: input.reason as AssistantSessionCheckpoint['reason'],
       resumePrompt: String(input.resumePrompt || '').trim(),

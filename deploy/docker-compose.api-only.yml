@@ -11,7 +11,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - NODE_ENV=production
-      - PUBLIC_URL=${API_PUBLIC_URL}
+      - API_URL=${API_PUBLIC_URL}
       - MARKETPLACE_URL=${MARKETPLACE_URL}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes

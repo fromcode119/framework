@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import { ServerApiUtils } from './server-api';
 import { QueryParamUtils } from './query-param-utils';
-import type { SearchParams, LocaleStrategy } from './dynamic-page-resolver.types';
+import type { SearchParams, LocaleStrategy, ResolvedDocResult } from './dynamic-page-resolver.types';
 
 const readSettingsMap = cache(async (): Promise<Map<string, string>> => {
   const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSettingsCollectionPath(500)) as Record<string, any>;
@@ -90,6 +90,16 @@ export class DynamicPageResolver {
     localeOverride: string | undefined,
     strategy: LocaleStrategy,
   ): Promise<any | null> {
+    const result = await DynamicPageResolver.resolveDocResult(slug, searchParams, localeOverride, strategy);
+    return result?.doc || null;
+  }
+
+  static async resolveDocResult(
+    slug: string,
+    searchParams: SearchParams | undefined,
+    localeOverride: string | undefined,
+    strategy: LocaleStrategy,
+  ): Promise<ResolvedDocResult | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
     const locale = await DynamicPageResolver.resolveLocale(searchParams, localeOverride, strategy);
@@ -102,7 +112,11 @@ export class DynamicPageResolver {
     if (!response || !response.ok) return null;
 
     const result = await response.json();
-    return result?.doc || null;
+    return {
+      type: String(result?.type || '').trim(),
+      plugin: String(result?.plugin || '').trim(),
+      doc: (result?.doc as Record<string, unknown> | null) || null,
+    };
   }
 
   static async resolveDocWithPermalinkFallback(
@@ -111,14 +125,24 @@ export class DynamicPageResolver {
     localeOverride: string | undefined,
     strategy: LocaleStrategy,
   ): Promise<any | null> {
+    const result = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, searchParams, localeOverride, strategy);
+    return result?.doc || null;
+  }
+
+  static async resolveDocWithPermalinkFallbackResult(
+    slug: string,
+    searchParams: SearchParams | undefined,
+    localeOverride: string | undefined,
+    strategy: LocaleStrategy,
+  ): Promise<ResolvedDocResult | null> {
     const cleanSlug = String(slug || '').trim().replace(/^\/+/, '');
     if (!cleanSlug) return null;
 
-    const doc = await DynamicPageResolver.resolveDoc(cleanSlug, searchParams, localeOverride, strategy);
-    if (doc) return doc;
+    const doc = await DynamicPageResolver.resolveDocResult(cleanSlug, searchParams, localeOverride, strategy);
+    if (doc?.doc) return doc;
 
     // Lead-slash fallback: helps matching records where permalink was stored WITH a slash.
-    return DynamicPageResolver.resolveDoc(`/${cleanSlug}`, searchParams, localeOverride, strategy);
+    return DynamicPageResolver.resolveDocResult(`/${cleanSlug}`, searchParams, localeOverride, strategy);
   }
 
   static async resolveBySlug(

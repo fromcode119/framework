@@ -13,6 +13,7 @@ const METADATA_RETRY_COOLDOWN_MS = 15000;
 let metadataBootstrapPromise: Promise<void> | null = null;
 let metadataBootstrapError: unknown = null;
 let metadataBootstrapRetryAfter = 0;
+let crossOriginEventsWarningLogged = false;
 
 // Prevents multiple concurrent "globals not ready" retry timers from accumulating.
 let globalRetryTimerId: ReturnType<typeof setTimeout> | null = null;
@@ -66,7 +67,16 @@ export default function PluginLoader() {
   useEffect(() => {
     if (typeof window === 'undefined' || !user || process.env.NODE_ENV !== 'development') return;
 
-    const eventSource = new EventSource(`${AdminConstants.API_BASE_URL}${AdminConstants.ENDPOINTS.SYSTEM.EVENTS}`, {
+    const eventsUrl = new URL(AdminConstants.ENDPOINTS.SYSTEM.EVENTS, AdminConstants.API_BASE_URL || window.location.origin);
+    if (eventsUrl.origin !== window.location.origin) {
+      if (!crossOriginEventsWarningLogged) {
+        crossOriginEventsWarningLogged = true;
+        console.info(`[HMR] Skipping EventSource bridge in development because the API origin (${eventsUrl.origin}) does not match the admin origin (${window.location.origin}).`);
+      }
+      return;
+    }
+
+    const eventSource = new EventSource(eventsUrl.pathname + eventsUrl.search, {
         withCredentials: true
     });
 
@@ -84,8 +94,9 @@ export default function PluginLoader() {
       }
     };
 
-    eventSource.onerror = (err) => {
-      console.warn("[HMR] EventSource connection lost. Retrying...", err);
+    eventSource.onerror = () => {
+      console.warn('[HMR] EventSource connection lost. Closing dev stream until the next page refresh.');
+      eventSource.close();
     };
 
     return () => {

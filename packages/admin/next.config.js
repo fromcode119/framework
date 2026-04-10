@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { NextConfigEnv } = require('../../config/next-config-env');
 
 // Dynamically discover all extensions in the packages directory
 const packagesDir = path.resolve(__dirname, '..');
@@ -11,6 +12,7 @@ const extensions = fs.readdirSync(packagesDir).filter(name => {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '',
+  allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
   reactStrictMode: true,
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages
   // are replaced with no-op stubs via webpack aliases below, so no external resolution needed.
@@ -41,18 +43,7 @@ const nextConfig = {
     },
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: process.env.NEXT_PUBLIC_API_URL 
-          ? new URL(process.env.NEXT_PUBLIC_API_URL).hostname 
-          : 'api.framework.local',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      }
-    ],
+    remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
   },
   webpack: (config, { isServer, dev }) => {
     // Force aliasing of @ to handle cases where the package is inside node_modules

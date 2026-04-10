@@ -23,7 +23,4 @@ export interface AdminAssistantPageDataEffectsProps {
   setSelectedTools: React.Dispatch<React.SetStateAction<string[]>>;
   setSkills: React.Dispatch<React.SetStateAction<AssistantSkill[]>>;
   setSkillId: React.Dispatch<React.SetStateAction<string>>;
-  browserState: {
-    hasProviderOrModelPreference(): boolean;
-  };
 }

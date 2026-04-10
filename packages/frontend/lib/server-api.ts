@@ -1,12 +1,10 @@
 import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
+import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
 
 const SERVER_FETCH_TIMEOUT_MS = Number(process.env.SERVER_FETCH_TIMEOUT_MS || 12000);
 const DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';
 
 export class ServerApiUtils {
-  private static readonly LOCALHOST_PRIMARY = 'http://localhost:3000';
-  private static readonly LOCALHOST_FALLBACK = 'http://localhost:4000';
-
   static buildSystemResolvePath(query: URLSearchParams | string): string {
     const queryString = typeof query === 'string' ? query : query.toString();
     return `${SystemConstants.API_PATH.SYSTEM.RESOLVE}?${queryString}`;
@@ -50,13 +48,11 @@ export class ServerApiUtils {
   }
 
   static getServerApiPrefixes(): string[] {
-    // NEXT_PUBLIC_API_URL is intentionally excluded here — it is a public browser URL
-    // (e.g. http://api.framework.local) that is unreachable from inside a Docker container.
-    // and takes first priority for all server-side fetches.
     const bases: string[] = [
       process.env.API_URL,
+      process.env.NEXT_PUBLIC_API_URL,
     ]
-      .map((value) => String(value || '').trim())
+      .map((value) => ApplicationUrlUtils.normalizeBaseUrlCandidate(value, { stripApiPath: true }))
       .filter(Boolean)
       .filter((value) => !ServerApiUtils.isLikelyFrontendBase(value))
       .map(ServerApiUtils.trimTrailingSlash);
@@ -65,7 +61,7 @@ export class ServerApiUtils {
     // (avoids useless connection attempts in Docker where localhost != API)
     // real API base is configured (prevents silent failures during initial setup).
     if (bases.length === 0) {
-      for (const fallback of [ServerApiUtils.LOCALHOST_PRIMARY, ServerApiUtils.LOCALHOST_FALLBACK]) {
+      for (const fallback of ApplicationUrlUtils.getServerApiBaseUrlCandidates()) {
         if (!bases.includes(fallback)) bases.push(fallback);
       }
     }
@@ -75,7 +71,7 @@ export class ServerApiUtils {
 
   static buildFrontendApiBaseUrl(): string {
     const prefixes = ServerApiUtils.getServerApiPrefixes();
-    if (!prefixes.length) return ServerApiUtils.LOCALHOST_PRIMARY;
+    if (!prefixes.length) return ApplicationUrlUtils.LOCALHOST_PRIMARY_API_BASE_URL;
     return prefixes[0].replace(ApiVersionUtils.prefix(), '');
   }
 
@@ -84,7 +80,8 @@ export class ServerApiUtils {
    * Uses NEXT_PUBLIC_API_URL which resolves to the public domain instead of internal Docker hostnames.
    */
   static buildPublicApiBaseUrl(): string {
-    return process.env.NEXT_PUBLIC_API_URL?.trim() || ServerApiUtils.LOCALHOST_PRIMARY;
+    return ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true })
+      || ApplicationUrlUtils.LOCALHOST_PRIMARY_API_BASE_URL;
   }
 
   static async serverFetchJson(path: string): Promise<unknown> {
@@ -189,12 +186,11 @@ export class ServerApiUtils {
 
   private static isLikelyFrontendBase(value: string): boolean {
     try {
-      const candidate = new URL(value).origin.toLowerCase();
+      const candidate = new URL(ApplicationUrlUtils.normalizeBaseUrlCandidate(value)).origin.toLowerCase();
       const configuredFrontendOrigins = [
         process.env.FRONTEND_URL,
-        process.env.NEXT_PUBLIC_FRONTEND_URL,
       ]
-        .map((origin) => String(origin || '').trim())
+        .map((origin) => ApplicationUrlUtils.normalizeBaseUrlCandidate(origin))
         .filter(Boolean)
         .map((origin) => {
           try { return new URL(origin).origin.toLowerCase(); } catch { return ''; }

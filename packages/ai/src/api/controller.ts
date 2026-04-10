@@ -12,6 +12,7 @@ import { IDatabaseManager } from '@fromcode119/database';
 import { AssistantManagementToolsService } from './forge/management-tools-service';
 import { AssistantSessionStore } from './forge/session-store';
 import { AssistantCatalogService } from './forge/catalog-service';
+import { PluginAssistantDiscoveryService } from './forge/plugin-assistant-discovery-service';
 import { AssistantRuntimeFactoryService } from './forge/runtime-factory-service';
 import { AssistantRequestPayloadService } from './forge/request-payload-service';
 import { EnhancedContextManager } from './forge/enhanced-context-manager';
@@ -35,6 +36,7 @@ export class AssistantController {
   private managementTools: AssistantManagementToolsService;
   private sessions: AssistantSessionStore;
   private catalog: AssistantCatalogService;
+  private pluginAssistantDiscovery: PluginAssistantDiscoveryService;
   private runtimeFactory: AssistantRuntimeFactoryService;
   private payloadService: AssistantRequestPayloadService;
   private toolSelector: IntelligentToolSelector;
@@ -46,7 +48,8 @@ export class AssistantController {
     this.managementTools = new AssistantManagementToolsService(manager, themeManager);
     this.sessions = new AssistantSessionStore(this.db, ASSISTANT_SESSION_KEY_PREFIX, ASSISTANT_SESSION_GROUP);
     this.catalog = new AssistantCatalogService(manager, themeManager, restController, (value) => this.managementTools.normalizeSearchText(value));
-    this.runtimeFactory = new AssistantRuntimeFactoryService(manager, themeManager, restController, this.db, this.managementTools, this.catalog, { basic: ASSISTANT_PROMPT_BASIC_KEY, advanced: ASSISTANT_PROMPT_ADVANCED_KEY });
+    this.pluginAssistantDiscovery = new PluginAssistantDiscoveryService(manager, this.catalog);
+    this.runtimeFactory = new AssistantRuntimeFactoryService(manager, themeManager, restController, this.db, this.managementTools, this.catalog, this.pluginAssistantDiscovery, { basic: ASSISTANT_PROMPT_BASIC_KEY, advanced: ASSISTANT_PROMPT_ADVANCED_KEY });
     this.payloadService = new AssistantRequestPayloadService((input) => this.sessions.normalizeHistory(input));
     this.toolSelector = new IntelligentToolSelector(this.managementTools.buildTools() as any);
     this.complexityDetector = new TaskComplexityDetector();

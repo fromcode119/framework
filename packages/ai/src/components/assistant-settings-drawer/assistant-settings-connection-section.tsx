@@ -46,6 +46,7 @@ export function AssistantSettingsConnectionSection({
                 type={showApiKey ? 'text' : 'password'}
                 value={localApiKey}
                 onChange={(event) => onApiKeyChange(event.target.value)}
+                autoComplete="new-password"
                 placeholder={hasSavedSecret ? '••••••••••••••••' : apiKeyPlaceholder}
                 className={`${GlassMorphism.GLASS_INPUT} w-full pr-10 text-sm`}
               />
@@ -70,6 +71,7 @@ export function AssistantSettingsConnectionSection({
             type="url"
             value={localBaseUrl}
             onChange={(event) => onBaseUrlChange(event.target.value)}
+            autoComplete="url"
             placeholder={baseUrlPlaceholder}
             className={`${GlassMorphism.GLASS_INPUT} w-full text-sm`}
           />

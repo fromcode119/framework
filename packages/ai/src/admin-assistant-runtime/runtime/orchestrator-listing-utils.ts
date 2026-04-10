@@ -33,17 +33,15 @@ export class OrchestratorListingUtils {
 
   static parseListingCollectionFromHistory(history: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>): string {
   const source = Array.isArray(history) ? history : [];
-  for (let i = source.length - 1; i >= 0; i -= 1) {
-    if (source[i]?.role !== 'assistant') continue;
-    const content = String(source[i]?.content || '');
-    if (!content) continue;
-    const foundMatch = content.match(/\bfound\s+\d+\s+records?\s+in\s+`?([a-z0-9_-]+)`?/i);
-    if (foundMatch?.[1]) return String(foundMatch[1]).trim();
-    const emptyMatch = content.match(/`([a-z0-9_-]+)`\s+currently has no records?/i);
-    if (emptyMatch?.[1]) return String(emptyMatch[1]).trim();
-    const followupMatch = content.match(/\bfor\s+`([a-z0-9_-]+)`\s*,\s*record\s+\d+/i);
-    if (followupMatch?.[1]) return String(followupMatch[1]).trim();
-  }
+  const latestAssistant = [...source].reverse().find((entry) => entry?.role === 'assistant');
+  const content = String(latestAssistant?.content || '');
+  if (!content) return '';
+  const foundMatch = content.match(/\bfound\s+\d+\s+records?\s+in\s+`?([a-z0-9_-]+)`?/i);
+  if (foundMatch?.[1]) return String(foundMatch[1]).trim();
+  const emptyMatch = content.match(/`([a-z0-9_-]+)`\s+currently has no records?/i);
+  if (emptyMatch?.[1]) return String(emptyMatch[1]).trim();
+  const followupMatch = content.match(/\bfor\s+`([a-z0-9_-]+)`\s*,\s*record\s+\d+/i);
+  if (followupMatch?.[1]) return String(followupMatch[1]).trim();
     return '';
   }
 
@@ -58,7 +56,7 @@ export class OrchestratorListingUtils {
   const hasReference =
     /\b(his|her|their|that|this|first|second|third|field|value|record|entry)\b/.test(text) ||
     /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(text) ||
-    /\b[a-z][a-z0-9_]*\b/.test(text);
+    /\b(?:id|slug|email|name|title)\s*[:=]?\s*[a-z0-9._%+-]+\b/i.test(text);
     return asks && hasReference;
   }
 
@@ -289,4 +287,3 @@ export class OrchestratorListingUtils {
     return key === hint || key.includes(hint) || hint.includes(key);
   }
 }
-

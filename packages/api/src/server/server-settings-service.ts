@@ -1,6 +1,6 @@
 /** ServerSettingsService — settings cache management. Extracted from APIServer (ARC-007). */
 
-import { Logger } from '@fromcode119/core';
+import { ApplicationUrlUtils, Logger } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { CacheManager } from '@fromcode119/cache';
 
@@ -59,13 +59,15 @@ export class ServerSettingsService {
       const hasMetaTable = await this.db.tableExists(SystemConstants.TABLE.META);
       if (!hasMetaTable) return;
 
+      const urlDefaults = this.buildUrlDefaults();
+
       const defaults = [
         { key: SystemConstants.META_KEY.PLATFORM_NAME, value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
         { key: SystemConstants.META_KEY.SITE_NAME, value: 'Fromcode', description: 'Public site name used in emails and frontend.', group: 'General' },
-        { key: SystemConstants.META_KEY.SITE_URL, value: 'http://frontend.framework.local', description: 'Base URL for the public site.', group: 'General' },
-        { key: SystemConstants.META_KEY.FRONTEND_URL, value: 'http://frontend.framework.local', description: 'The primary URL for your frontend application.', group: 'General' },
-        { key: SystemConstants.META_KEY.ADMIN_URL, value: 'http://admin.framework.local', description: 'The primary URL for your admin dashboard.', group: 'General' },
-        { key: SystemConstants.META_KEY.PLATFORM_DOMAIN, value: 'framework.local', description: 'Root domain for the entire platform setup.', group: 'General' },
+        { key: SystemConstants.META_KEY.SITE_URL, value: urlDefaults.siteUrl, description: 'Base URL for the public site.', group: 'General' },
+        { key: SystemConstants.META_KEY.FRONTEND_URL, value: urlDefaults.frontendUrl, description: 'The primary URL for your frontend application.', group: 'General' },
+        { key: SystemConstants.META_KEY.ADMIN_URL, value: urlDefaults.adminUrl, description: 'The primary URL for your admin dashboard.', group: 'General' },
+        { key: SystemConstants.META_KEY.PLATFORM_DOMAIN, value: urlDefaults.platformDomain, description: 'Root domain for the entire platform setup.', group: 'General' },
         { key: SystemConstants.META_KEY.TIMEZONE, value: 'UTC', description: 'Default system timezone.', group: 'General' },
         { key: SystemConstants.META_KEY.ROUTING_HOME_TARGET, value: 'auto', description: 'Homepage route target.', group: 'Routing' },
         { key: SystemConstants.META_KEY.PERMALINK_STRUCTURE, value: '/:slug', description: 'Default URL structure for content.', group: 'General' },
@@ -108,12 +110,15 @@ export class ServerSettingsService {
           await this.cache.set(`system_setting:${d.key}`, d.value);
         } else {
           if (existing.key) { this.settingsCache.set(existing.key, existing.value); await this.cache.set(`system_setting:${existing.key}`, existing.value); }
-          const shouldReplaceLocalhost =
+          const shouldReplaceLegacyUrlDefault =
             (d.key === SystemConstants.META_KEY.SITE_URL ||
               d.key === SystemConstants.META_KEY.FRONTEND_URL ||
               d.key === SystemConstants.META_KEY.ADMIN_URL) &&
-            String(existing.value || '').trim().startsWith('http://localhost:');
-          if (shouldReplaceLocalhost && existing.value !== d.value) {
+            this.isLegacyUrlDefaultValue(String(existing.value || '').trim());
+          const shouldReplaceLegacyDomainDefault =
+            d.key === SystemConstants.META_KEY.PLATFORM_DOMAIN
+            && this.isLegacyPlatformDomainValue(String(existing.value || '').trim());
+          if ((shouldReplaceLegacyUrlDefault || shouldReplaceLegacyDomainDefault) && d.value && existing.value !== d.value) {
             await this.db.update(SystemConstants.TABLE.META, { key: d.key }, { value: d.value, description: d.description, group: d.group });
             this.settingsCache.set(d.key, d.value);
             await this.cache.set(`system_setting:${d.key}`, d.value);
@@ -127,5 +132,35 @@ export class ServerSettingsService {
     } catch (e) {
       this.logger.error('Failed to ensure default settings: ' + e);
     }
+  }
+
+  private buildUrlDefaults(): {
+    siteUrl: string;
+    frontendUrl: string;
+    adminUrl: string;
+    platformDomain: string;
+  } {
+    const frontendUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP);
+    const adminUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP);
+    const siteUrl = frontendUrl;
+    const platformDomain = ApplicationUrlUtils.derivePlatformDomain(frontendUrl, adminUrl);
+
+    return {
+      siteUrl,
+      frontendUrl,
+      adminUrl,
+      platformDomain,
+    };
+  }
+
+  private isLegacyUrlDefaultValue(value: string): boolean {
+    return ApplicationUrlUtils.isLegacyFrameworkUrlCandidate(value, [
+      ApplicationUrlUtils.FRONTEND_APP,
+      ApplicationUrlUtils.ADMIN_APP,
+    ]);
+  }
+
+  private isLegacyPlatformDomainValue(value: string): boolean {
+    return ApplicationUrlUtils.isLegacyPlatformDomain(value);
   }
 }
