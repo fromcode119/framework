@@ -46,7 +46,7 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 # MODE 1: API Only
 # ===================================
 FROM base AS api-only
-RUN npm run build:api
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=api
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start --workspace=@fromcode119/api"]
@@ -57,7 +57,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start 
 FROM base AS api-admin
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run build:api && npm run build:admin
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin
 EXPOSE 3000 3001
 ENV DEPLOYMENT_MODE=api-admin
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:api-admin"]
@@ -68,7 +68,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:
 FROM base AS full-stack
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run build:api && npm run build:admin && npm run build:frontend
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin && NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend
 EXPOSE 3000 3001 3002
 ENV DEPLOYMENT_MODE=full
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:all"]
@@ -79,7 +79,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:
 FROM base AS frontend-only
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run build:frontend
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=frontend
 ENV API_URL=https://api.example.com
@@ -91,7 +91,7 @@ CMD ["npm", "run", "start", "--workspace=@fromcode119/frontend"]
 FROM base AS admin-only
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run build:admin
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=admin
 CMD ["npm", "run", "start", "--workspace=@fromcode119/admin"]
