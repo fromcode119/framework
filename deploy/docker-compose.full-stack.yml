@@ -7,8 +7,11 @@ services:
       context: ..
       target: base
     command: npm run start --workspace=@fromcode119/api
+    env_file:
+      - ../.env
     environment:
       - DATABASE_URL=${DATABASE_URL}
+      - DB_DIALECT=${DB_DIALECT:-postgres}
       - REDIS_URL=${REDIS_URL}
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=production
@@ -33,6 +36,8 @@ services:
       context: ..
       target: base
     command: npm run start --workspace=@fromcode119/admin
+    env_file:
+      - ../.env
     environment:
       - API_URL=${ADMIN_API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://api:3000}
@@ -50,6 +55,8 @@ services:
       context: ..
       target: base
     command: npm run start --workspace=@fromcode119/frontend
+    env_file:
+      - ../.env
     environment:
       - API_URL=${FRONTEND_API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://api:3000}
@@ -64,6 +71,8 @@ services:
 
   db:
     image: postgres:15-alpine
+    env_file:
+      - ../.env
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
