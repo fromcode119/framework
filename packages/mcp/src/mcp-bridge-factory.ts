@@ -16,6 +16,9 @@ export class McpBridgeFactory {
           tool: tool.tool,
           description: tool.description,
           readOnly: tool.readOnly === true,
+          metadata: tool.metadata && typeof tool.metadata === 'object'
+            ? { ...tool.metadata }
+            : undefined,
         }));
       },
       async call(request: McpCall) {

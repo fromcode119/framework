@@ -31,6 +31,6 @@ export type AssistantToolOption = {
   tool: string;
   description?: string;
   readOnly?: boolean;
+  metadata?: Record<string, unknown>;
 };
-
 

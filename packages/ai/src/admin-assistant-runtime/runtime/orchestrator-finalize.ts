@@ -191,20 +191,15 @@ export class OrchestratorFinalizeUtils {
   }
 
   const inventoryFollowup = findInventoryFollowupReply(message, context);
-  const factualCheckpointReply = inventoryFollowup || !context.checkpoint?.memory?.factual
-    ? null
-    : await FactualQueryService.resolveReply(context, message);
-  const chatReply = inventoryFollowup || factualCheckpointReply
+  const chatReply = inventoryFollowup
     ? null
     : await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
-  const factualReply = inventoryFollowup || factualCheckpointReply || (chatReply && chatReply.source !== 'fallback')
-    ? factualCheckpointReply
+  const factualReply = inventoryFollowup || (chatReply && chatReply.source !== 'fallback')
+    ? null
     : await FactualQueryService.resolveReply(context, message);
   const reply = inventoryFollowup
     ? { message: inventoryFollowup, model: 'inventory-followup' }
-    : factualCheckpointReply
-      ? factualCheckpointReply
-      : chatReply && chatReply.source !== 'fallback'
+    : chatReply && chatReply.source !== 'fallback'
       ? chatReply
       : factualReply
         ? factualReply
