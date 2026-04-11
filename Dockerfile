@@ -62,9 +62,9 @@ RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode1
 # Three separate RUN steps so each process fully releases memory before the
 # next one starts, and Docker can cache each layer independently.
 # Using tsc directly to get full error output (npm swallows some output).
-RUN NODE_OPTIONS="--max-old-space-size=1536" ./node_modules/.bin/tsc -b packages/api 2>&1 || (echo "=== build:api FAILED ===" && exit 1)
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin 2>&1 || (echo "=== build:admin FAILED ===" && exit 1)
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend 2>&1 || (echo "=== build:frontend FAILED ===" && exit 1)
+RUN ./node_modules/.bin/tsc -b packages/api 2>&1; ec=$?; [ $ec -ne 0 ] && echo "^^^ TSC BUILD:API ERRORS ABOVE ^^^" && exit $ec || true
+RUN npm run build:admin 2>&1; ec=$?; [ $ec -ne 0 ] && echo "^^^ BUILD:ADMIN ERRORS ABOVE ^^^" && exit $ec || true
+RUN npm run build:frontend 2>&1; ec=$?; [ $ec -ne 0 ] && echo "^^^ BUILD:FRONTEND ERRORS ABOVE ^^^" && exit $ec || true
 
 # ===================================
 # MODE 1: API Only
