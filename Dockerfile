@@ -16,19 +16,23 @@ WORKDIR /app
 
 # Optimization: Copy package manifests first to leverage Docker cache
 COPY package.json package-lock.json ./
-COPY packages/core/package.json ./packages/core/
-COPY packages/react/package.json ./packages/react/
-COPY packages/database/package.json ./packages/database/
-COPY packages/api/package.json ./packages/api/
 COPY packages/admin/package.json ./packages/admin/
-COPY packages/frontend/package.json ./packages/frontend/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/api/package.json ./packages/api/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/cache/package.json ./packages/cache/
 COPY packages/cli/package.json ./packages/cli/
+COPY packages/core/package.json ./packages/core/
+COPY packages/create/package.json ./packages/create/
+COPY packages/database/package.json ./packages/database/
 COPY packages/email/package.json ./packages/email/
+COPY packages/frontend/package.json ./packages/frontend/
 COPY packages/marketplace-client/package.json ./packages/marketplace-client/
+COPY packages/mcp/package.json ./packages/mcp/
 COPY packages/media/package.json ./packages/media/
 COPY packages/next/package.json ./packages/next/
+COPY packages/plugins/package.json ./packages/plugins/
+COPY packages/react/package.json ./packages/react/
 COPY packages/scheduler/package.json ./packages/scheduler/
 COPY packages/sdk/package.json ./packages/sdk/
 
