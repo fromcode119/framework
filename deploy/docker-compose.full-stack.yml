@@ -11,8 +11,8 @@ services:
       target: base
     command: npm run start --workspace=@fromcode119/api
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - DB_DIALECT=${DB_DIALECT:-postgres}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DB_DIALECT=postgres
       - REDIS_URL=${REDIS_URL}
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=production
