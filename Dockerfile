@@ -61,10 +61,10 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode119/ && echo "--- Node version ---" && node --version
 # Three separate RUN steps so each process fully releases memory before the
 # next one starts, and Docker can cache each layer independently.
-# 768 MB heap fits within the ~2 GB available on a 4 GB host running other services.
-RUN NODE_OPTIONS="--max-old-space-size=768" npm run build:api
-RUN NODE_OPTIONS="--max-old-space-size=768" npm run build:admin
-RUN NODE_OPTIONS="--max-old-space-size=768" npm run build:frontend
+# Using tsc directly to get full error output (npm swallows some output).
+RUN NODE_OPTIONS="--max-old-space-size=1536" ./node_modules/.bin/tsc -b packages/api 2>&1 || (echo "=== build:api FAILED ===" && exit 1)
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin 2>&1 || (echo "=== build:admin FAILED ===" && exit 1)
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend 2>&1 || (echo "=== build:frontend FAILED ===" && exit 1)
 
 # ===================================
 # MODE 1: API Only
