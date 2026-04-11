@@ -10,10 +10,14 @@ class AddThemeNameColumn extends BaseMigration {
     try {
       const existingColumns = await db.getColumns(tableName);
       
+      const timestampType = db.dialect === 'postgres'
+        ? 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
+        : 'DATETIME DEFAULT CURRENT_TIMESTAMP';
+
       const columnsToAdd = [
         { name: 'name', type: 'TEXT' },
         { name: 'version', type: 'TEXT' },
-        { name: 'created_at', type: 'DATETIME DEFAULT CURRENT_TIMESTAMP' }
+        { name: 'created_at', type: timestampType }
       ];
 
       for (const col of columnsToAdd) {
