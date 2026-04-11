@@ -43,10 +43,24 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
     find . -name "*.tsbuildinfo" -delete 2>/dev/null || true
 
 # ===================================
+# SHARED BUILDER — compiles all packages sequentially.
+# All per-service targets inherit from this stage so that
+# docker compose build (which starts all services in parallel)
+# never runs more than one tsc/next-build at a time.
+# On a memory-constrained host (4 GB) parallel tsc processes
+# caused OOM → exit code 2.
+# ===================================
+FROM base AS builder
+ARG NEXT_PUBLIC_API_URL=http://localhost:3000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && \
+    NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin && \
+    NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend
+
+# ===================================
 # MODE 1: API Only
 # ===================================
-FROM base AS api-only
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api
+FROM builder AS api-only
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=api
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start --workspace=@fromcode119/api"]
@@ -54,11 +68,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start 
 # ===================================
 # MODE 2: API + Admin
 # ===================================
-FROM base AS api-admin
-ARG NEXT_PUBLIC_API_URL=http://localhost:3000
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && \
-    NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin
+FROM builder AS api-admin
 EXPOSE 3000 3001
 ENV DEPLOYMENT_MODE=api-admin
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:api-admin"]
@@ -66,12 +76,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:
 # ===================================
 # MODE 3: Full Stack (API + Admin + Frontend)
 # ===================================
-FROM base AS full-stack
-ARG NEXT_PUBLIC_API_URL=http://localhost:3000
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && \
-    NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin && \
-    NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend
+FROM builder AS full-stack
 EXPOSE 3000 3001 3002
 ENV DEPLOYMENT_MODE=full
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:all"]
@@ -79,10 +84,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:
 # ===================================
 # MODE 4: Frontend Only (Edge deployment)
 # ===================================
-FROM base AS frontend-only
-ARG NEXT_PUBLIC_API_URL=http://localhost:3000
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend
+FROM builder AS frontend-only
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=frontend
 ENV API_URL=https://api.example.com
@@ -91,10 +93,7 @@ CMD ["npm", "run", "start", "--workspace=@fromcode119/frontend"]
 # ===================================
 # MODE 5: Admin Only
 # ===================================
-FROM base AS admin-only
-ARG NEXT_PUBLIC_API_URL=http://localhost:3000
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin
+FROM builder AS admin-only
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=admin
 CMD ["npm", "run", "start", "--workspace=@fromcode119/admin"]
