@@ -2,6 +2,7 @@ import { RuntimeMiscHelpers } from '../helpers/runtime-misc-helpers';
 import { ReplyMessageBuilders } from '../helpers/reply-message-builders';
 import { FactualQueryHelpers } from './factual-query-helpers';
 import { FactualQueryToolService } from './factual-query-tool-service';
+import { ReadOnlyChatToolLoopRepairService } from './read-only-chat-tool-loop-repair-service';
 import type { RuntimeContext } from './types.types';
 import type { ChatReply } from './chat-responder.types';
 
@@ -46,7 +47,7 @@ export class ReadOnlyChatToolLoop {
         toolResults,
         checkpointContext,
         temperature: input.temperature,
-        maxTokens: Math.min(900, input.maxTokens),
+        maxTokens: Math.min(360, input.maxTokens),
       });
       const plannedToolCalls = (Array.isArray(toolPlan?.toolCalls) ? toolPlan?.toolCalls : [])
         .slice(0, 2)
@@ -60,7 +61,19 @@ export class ReadOnlyChatToolLoop {
         });
       const toolCalls = plannedToolCalls.length > 0
         ? plannedToolCalls
-        : ReadOnlyChatToolLoop.buildFallbackToolCalls(input.context, input.message, readOnlyTools, seenCalls);
+        : await ReadOnlyChatToolLoopRepairService.repairToolCalls(
+            input.aiClient,
+            input.message,
+            readOnlyTools,
+            checkpointContext,
+            {
+              ...(input.context.checkpoint?.memory?.factual?.input && typeof input.context.checkpoint.memory.factual.input === 'object'
+                ? input.context.checkpoint.memory.factual.input as Record<string, any>
+                : {}),
+              ...FactualQueryHelpers.buildToolInput(input.message),
+            },
+            seenCalls,
+          );
       if (toolCalls.length === 0) {
         const directMessage = String(toolPlan?.message || '').trim();
         if (directMessage && (toolResults.length > 0 || !ReadOnlyChatToolLoop.requiresToolGrounding(input.message))) {
@@ -97,7 +110,7 @@ export class ReadOnlyChatToolLoop {
       toolResults,
       checkpointContext,
       temperature: Math.min(0.15, input.temperature),
-      maxTokens: Math.min(700, input.maxTokens),
+      maxTokens: Math.min(320, input.maxTokens),
       provider: input.provider,
     });
     if (groundedReply) {
@@ -120,7 +133,7 @@ export class ReadOnlyChatToolLoop {
     systemPrompt: string;
     history: Array<{ role: 'user' | 'assistant'; content: string }>;
     message: string;
-    tools: Array<{ tool: string; description: string }>;
+    tools: Array<{ tool: string; description: string; metadata?: Record<string, unknown> }>;
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>;
     checkpointContext?: string;
     temperature: number;
@@ -139,7 +152,7 @@ export class ReadOnlyChatToolLoop {
       '{"message":"string","toolCalls":[{"tool":"string","input":{}}]}',
       'Use at most 2 read-only tool calls.',
       'Only return toolCalls as an empty array when the answer is already obvious from the conversation and does not require workspace inspection.',
-      `Available read-only tools: ${JSON.stringify(input.tools)}`,
+      `Available read-only tools: ${ReadOnlyChatToolLoop.serializeToolCatalog(input.tools)}`,
     ];
     if (input.checkpointContext) {
       plannerPromptLines.push(`Checkpoint context: ${input.checkpointContext}`);
@@ -232,26 +245,38 @@ export class ReadOnlyChatToolLoop {
   private static selectReadOnlyTools(
     context: RuntimeContext,
     message: string,
-  ): Array<{ tool: string; description: string }> {
+  ): Array<{ tool: string; description: string; metadata?: Record<string, unknown> }> {
     const allTools = (Array.isArray(context.tools) ? context.tools : [])
       .filter((tool) => tool?.readOnly === true)
       .map((tool) => ({
         tool: String(tool?.tool || '').trim(),
         description: String(tool?.description || '').trim(),
+        metadata: tool?.metadata && typeof tool.metadata === 'object'
+          ? { ...(tool.metadata as Record<string, unknown>) }
+          : undefined,
       }))
       .filter((tool) => !!tool.tool);
 
     const ranked = FactualQueryToolService.rankReadOnlyTools(context, message);
-    if (ranked.length === 0) {
-      return allTools.slice(0, 40);
-    }
-
+    if (ranked.length === 0) return allTools.slice(0, 18);
     const byName = new Map(allTools.map((tool) => [tool.tool, tool]));
-    const prioritized = ranked
-      .map((tool) => byName.get(tool.tool))
-      .filter((tool): tool is { tool: string; description: string } => !!tool);
+    const prioritized = ranked.flatMap((tool) => {
+      const entry = byName.get(tool.tool);
+      return entry ? [entry] : [];
+    });
     const fallback = allTools.filter((tool) => !prioritized.some((entry) => entry.tool === tool.tool));
-    return [...prioritized, ...fallback].slice(0, 40);
+    return [...prioritized, ...fallback].slice(0, 18);
+  }
+  private static serializeToolCatalog(
+    tools: Array<{ tool: string; description: string; metadata?: Record<string, unknown> }>,
+  ): string {
+    return JSON.stringify(tools.map((tool) => ({
+      tool: tool.tool,
+      description: tool.description,
+      metadata: tool.metadata && typeof tool.metadata === 'object'
+        ? { category: tool.metadata.category, entity: tool.metadata.entity, filters: tool.metadata.filters, returns: tool.metadata.returns, followupHints: tool.metadata.followupHints }
+        : undefined,
+    })));
   }
 
   private static buildCheckpointContext(context: RuntimeContext): string {
@@ -266,33 +291,10 @@ export class ReadOnlyChatToolLoop {
         primaryMetricPath: factual.primaryMetricPath,
       });
     }
-
     const listing = context.checkpoint?.memory?.listing;
     if (listing?.collectionSlug) {
-      return JSON.stringify({
-        collectionSlug: listing.collectionSlug,
-        lastSelectedRowIndex: listing.lastSelectedRowIndex,
-        lastSelectedField: listing.lastSelectedField,
-      });
+      return JSON.stringify({ collectionSlug: listing.collectionSlug, lastSelectedRowIndex: listing.lastSelectedRowIndex, lastSelectedField: listing.lastSelectedField });
     }
-
     return '';
-  }
-  private static buildFallbackToolCalls(
-    context: RuntimeContext,
-    message: string,
-    tools: Array<{ tool: string; description: string }>,
-    seenCalls: Set<string>,
-  ): Array<{ tool: string; input: Record<string, any> }> {
-    if (!FactualQueryHelpers.looksLikeEntityDetailQuestion(message)) return [];
-    const toolName = String(tools[0]?.tool || '').trim();
-    if (!toolName) return [];
-    const input = context.checkpoint?.memory?.factual?.input && typeof context.checkpoint.memory.factual.input === 'object'
-      ? { ...context.checkpoint.memory.factual.input }
-      : {};
-    if (/\b(first|earliest|oldest)\b/i.test(message)) { input.sort = 'asc'; input.limit = 1; }
-    if (/\b(last|latest|newest)\b/i.test(message)) { input.sort = 'desc'; input.limit = 1; }
-    const key = JSON.stringify({ tool: toolName, input });
-    return seenCalls.has(key) ? [] : [{ tool: toolName, input }];
   }
 }

@@ -37,7 +37,19 @@ export type AssistantAction = {
   input?: Record<string, any>;
 };
 
-export type AssistantToolSummary = Pick<McpToolDefinition, 'tool' | 'description' | 'readOnly'>;
+export type AssistantToolMetadata = {
+  category?: string;
+  entity?: string;
+  intentHints?: string[];
+  filters?: string[];
+  returns?: string[];
+  examples?: string[];
+  followupHints?: string[];
+};
+
+export type AssistantToolSummary = Pick<McpToolDefinition, 'tool' | 'description' | 'readOnly'> & {
+  metadata?: AssistantToolMetadata;
+};
 
 export type AssistantWorkspaceMapPlugin = {
   slug: string;
