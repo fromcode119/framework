@@ -33,6 +33,10 @@ services:
     networks:
       - framework
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 768M
 
   admin:
     build:
@@ -53,6 +57,10 @@ services:
     networks:
       - framework
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   frontend:
     build:
@@ -73,6 +81,10 @@ services:
     networks:
       - framework
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   db:
     image: postgres:15-alpine
@@ -85,12 +97,20 @@ services:
     networks:
       - framework
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
   redis:
     image: redis:7-alpine
     networks:
       - framework
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 96M
 
 networks:
   framework:
