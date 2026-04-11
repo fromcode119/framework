@@ -53,9 +53,12 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && \
-    NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin && \
-    NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend
+# Three separate RUN steps so each process fully releases memory before the
+# next one starts, and Docker can cache each layer independently.
+# 768 MB heap fits within the ~2 GB available on a 4 GB host running other services.
+RUN NODE_OPTIONS="--max-old-space-size=768" npm run build:api
+RUN NODE_OPTIONS="--max-old-space-size=768" npm run build:admin
+RUN NODE_OPTIONS="--max-old-space-size=768" npm run build:frontend
 
 # ===================================
 # MODE 1: API Only
