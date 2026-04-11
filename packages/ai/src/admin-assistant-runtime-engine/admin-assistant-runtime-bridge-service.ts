@@ -41,6 +41,9 @@ export class AdminAssistantRuntimeBridgeService {
         tool: String(tool?.tool || '').trim(),
         description: tool?.description ? String(tool.description) : undefined,
         readOnly: tool?.readOnly === true,
+        metadata: tool?.metadata && typeof tool.metadata === 'object'
+          ? { ...(tool.metadata as Record<string, unknown>) }
+          : undefined,
       }))
       .filter((tool) => !!tool.tool);
   }

@@ -231,8 +231,15 @@ export class AssistantController {
       const runtime = this.runtimeFactory.createAssistantRuntime(req);
       const runtimeToolsRaw = await runtime.listTools(true);
       const frameworkToolsRaw = this.managementTools.buildTools();
-      const normalize = (raw: any[]) => (Array.isArray(raw) ? raw : []).map((entry: any) => ({ tool: String(entry?.tool || '').trim(), description: entry?.description ? String(entry.description) : undefined, readOnly: entry?.readOnly === true })).filter((entry) => !!entry.tool);
-      const mergedByTool = new Map<string, { tool: string; description?: string; readOnly: boolean }>();
+      const normalize = (raw: any[]) => (Array.isArray(raw) ? raw : []).map((entry: any) => ({
+        tool: String(entry?.tool || '').trim(),
+        description: entry?.description ? String(entry.description) : undefined,
+        readOnly: entry?.readOnly === true,
+        metadata: entry?.metadata && typeof entry.metadata === 'object'
+          ? { ...(entry.metadata as Record<string, unknown>) }
+          : undefined,
+      })).filter((entry) => !!entry.tool);
+      const mergedByTool = new Map<string, { tool: string; description?: string; readOnly: boolean; metadata?: Record<string, unknown> }>();
       for (const entry of normalize(runtimeToolsRaw)) mergedByTool.set(entry.tool, entry);
       for (const entry of normalize(frameworkToolsRaw)) { if (!mergedByTool.has(entry.tool)) mergedByTool.set(entry.tool, entry); }
       return res.json({ tools: Array.from(mergedByTool.values()) });

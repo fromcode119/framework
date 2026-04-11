@@ -50,7 +50,7 @@ export class FactualQueryService {
         context: { dryRun: true },
       });
       if (result?.ok) {
-        const preferredMetricPath = FactualQueryHelpers.hasExplicitMetricTarget(message)
+        const preferredMetricPath = FactualQueryHelpers.hasSpecificMetricSubject(message)
           ? ''
           : String(factualMemory.primaryMetricPath || '').trim();
         const formatted = FactualQueryService.formatToolOutput(
@@ -177,7 +177,6 @@ export class FactualQueryService {
       return null;
     }
     const outputObject = output as Record<string, unknown>;
-
     const range = (outputObject as any)?.range && typeof (outputObject as any).range === 'object'
       ? (outputObject as any).range
       : null;
@@ -203,11 +202,14 @@ export class FactualQueryService {
 
     if (numericEntries.length > 0) {
       const primary = numericEntries[0];
-      const secondary = numericEntries.find((entry) =>
-        entry.path !== primary.path &&
-        entry.score >= 4 &&
-        !(/\b(how many|now many|count|number)\b/i.test(message) && FactualQueryHelpers.isSubCountLikePath(entry.path)),
-      ) || null;
+      const secondary = FactualQueryHelpers.hasSpecificMetricSubject(message)
+        ? numericEntries.find((entry) =>
+            entry.path !== primary.path &&
+            entry.value !== primary.value &&
+            entry.score >= 4 &&
+            !(/\b(how many|now many|count|number)\b/i.test(message) && FactualQueryHelpers.isSubCountLikePath(entry.path)),
+          ) || null
+        : null;
       const intro = rangeText ? `For ${rangeText}, ` : '';
       const primaryText = `${FactualQueryHelpers.humanizePath(primary.path)} is ${FactualQueryHelpers.formatValue(primary.path, primary.value, currency)}.`;
       const secondaryText = secondary
@@ -273,18 +275,16 @@ export class FactualQueryService {
       .filter((entry): entry is { path: string; value: number } => typeof entry?.value === 'number' && Number.isFinite(entry.value))
       .map((entry) => ({
         ...entry,
-        score: FactualQueryHelpers.scoreNumericEntry(entry.path, message),
+        score: FactualQueryHelpers.scoreNumericEntry(entry.path, message)
+          + (!FactualQueryHelpers.hasSpecificMetricSubject(message) && entry.path === String(factualMemory.primaryMetricPath || '').trim() ? 14 : 0),
       }))
       .sort((left, right) => right.score - left.score || left.path.localeCompare(right.path));
-    if (metrics.length === 0) {
-      return null;
-    }
-
+    if (metrics.length === 0) return null;
     const primary = metrics[0];
-    if (primary.score < 6) {
-      return null;
-    }
-    const secondary = metrics.find((entry) => entry.path !== primary.path && entry.score >= 4) || null;
+    if (primary.score < 6) return null;
+    const secondary = FactualQueryHelpers.hasSpecificMetricSubject(message)
+      ? metrics.find((entry) => entry.path !== primary.path && entry.value !== primary.value && entry.score >= 4) || null
+      : null;
     const rangeText = FactualQueryHelpers.formatRange({
       label: factualMemory.rangeLabel,
       from: factualMemory.rangeFrom,

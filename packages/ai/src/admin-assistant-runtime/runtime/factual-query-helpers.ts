@@ -24,15 +24,21 @@ export class FactualQueryHelpers {
 
   static inferPeriod(message: string): string | undefined {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
+    if (/\b(all time|overall|global|globally|ever)\b/.test(text)) return 'all_time';
     if (/\btoday\b/.test(text)) return 'today';
     if (/\byesterday\b/.test(text)) return 'yesterday';
     if (/\blast week\b/.test(text)) return 'last_week';
     if (/\bthis week\b/.test(text)) return 'this_week';
+    if (/\blast year\b/.test(text)) return 'last_year';
+    if (/\bthis year\b/.test(text)) return 'this_year';
     if (/\blast month\b/.test(text)) return 'last_month';
     if (/\bthis month\b/.test(text)) return 'this_month';
     if (/\blast 7 days\b|\bpast 7 days\b/.test(text)) return 'last_7_days';
     if (/\blast 30 days\b|\bpast 30 days\b/.test(text)) return 'last_30_days';
-    return /\b(revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount)\b/.test(text)
+    if (/\b(how many|count|number)\b/.test(text) && /\b(orders?|transactions?|records?|items?)\b/.test(text)) {
+      return 'all_time';
+    }
+    return /\b(revenue|sales|earnings|income|profit|refunds?|wallet|balance|metrics?|amount)\b/.test(text)
       ? 'last_30_days'
       : undefined;
   }
@@ -52,6 +58,11 @@ export class FactualQueryHelpers {
   static hasExplicitMetricTarget(message: string): boolean {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
     return /\b(total|revenue|sales|earnings|income|profit|refunds?|wallet|balance|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number)\b/.test(text);
+  }
+
+  static hasSpecificMetricSubject(message: string): boolean {
+    const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
+    return /\b(revenue|sales|earnings|income|profit|refunds?|wallet|balance|orders?|transactions?|metrics?|amount|shipping|weight|payment|method|status)\b/.test(text);
   }
 
   static looksLikeEntityDetailQuestion(message: string): boolean {
@@ -130,6 +141,12 @@ export class FactualQueryHelpers {
     }
     if (/\b(how many|count|number|transactions?)\b/.test(lowerMessage) && /\bcount\b|count[a-z]/i.test(path)) {
       score += 10;
+    }
+    if (/\borders?\b/.test(lowerMessage) && /\border\b|order[a-z]/i.test(path)) {
+      score += 18;
+    }
+    if (/\borders?\b/.test(lowerMessage) && /checkout_payment/i.test(path)) {
+      score -= 2;
     }
     if (/\brevenue|sales|earnings|income|profit\b/.test(lowerMessage) && /\brevenue\b|revenue[a-z]/i.test(path)) {
       score += 10;
