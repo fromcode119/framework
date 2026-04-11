@@ -34,9 +34,9 @@ services:
       target: base
     command: npm run start --workspace=@fromcode119/admin
     environment:
-      - API_URL=http://api:3000
-      - NEXT_PUBLIC_API_URL=http://api:3000
-      - ADMIN_URL=http://admin:3000
+      - API_URL=${ADMIN_API_URL:-http://api:3000}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://api:3000}
+      - ADMIN_URL=${ADMIN_URL:-http://admin:3000}
       - NODE_ENV=production
       - PORT=3000
     depends_on:
@@ -51,9 +51,9 @@ services:
       target: base
     command: npm run start --workspace=@fromcode119/frontend
     environment:
-      - API_URL=http://api:3000
-      - NEXT_PUBLIC_API_URL=http://api:3000
-      - FRONTEND_URL=http://frontend:3000
+      - API_URL=${FRONTEND_API_URL:-http://api:3000}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://api:3000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
       - NODE_ENV=production
       - PORT=3000
     depends_on:
