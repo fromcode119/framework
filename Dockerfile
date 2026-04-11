@@ -42,10 +42,6 @@ COPY . .
 RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && \
     find . -name "*.tsbuildinfo" -delete 2>/dev/null || true
 
-# Build shared TS packages only (no Next.js apps — they need NEXT_PUBLIC_API_URL at build time)
-# Use local tsc binary directly — plain `tsc` is not in PATH inside RUN shell
-RUN ./node_modules/.bin/tsc -b
-
 # ===================================
 # MODE 1: API Only
 # ===================================
