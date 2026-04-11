@@ -1,6 +1,7 @@
 import type { McpToolDefinition } from '@fromcode119/mcp';
 
 export interface ToolMetadata {
+  [key: string]: unknown;
   name: string;
   capabilities: string[]; // What this tool can do
   prerequisites: string[]; // What must be done first
