@@ -29,6 +29,14 @@ npm install
 npm run dev:local
 ```
 
+### Deploy with Coolify
+
+1. In Coolify, create a new **Docker Compose** resource from public repository `https://github.com/fromcode119/framework`
+2. Set **Docker Compose Location** to `deploy/docker-compose.full-stack.yml`
+3. Set required environment variables: `API_URL`, `POSTGRES_PASSWORD`, `JWT_SECRET`, `POSTGRES_USER`, `POSTGRES_DB`
+4. Add a GitHub webhook: repo → Settings → Webhooks → Payload URL from Coolify → `application/json` → push event
+5. Deploy
+
 ---
 
 ### Key Capabilities
