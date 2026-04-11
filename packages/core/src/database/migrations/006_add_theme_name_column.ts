@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager } from '@fromcode119/database';
 
 class AddThemeNameColumn extends BaseMigration {
   readonly version = 6;
@@ -6,33 +6,13 @@ class AddThemeNameColumn extends BaseMigration {
 
   async up(db: IDatabaseManager): Promise<void> {
     const tableName = '_system_themes';
-    
-    try {
-      const existingColumns = await db.getColumns(tableName);
-      
-      const timestampType = db.dialect === 'postgres'
-        ? 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
-        : 'DATETIME DEFAULT CURRENT_TIMESTAMP';
 
-      const columnsToAdd = [
-        { name: 'name', type: 'TEXT' },
-        { name: 'version', type: 'TEXT' },
-        { name: 'created_at', type: timestampType }
-      ];
-
-      for (const col of columnsToAdd) {
-        if (!existingColumns.includes(col.name)) {
-          await db.execute(sql`ALTER TABLE "${sql.raw(tableName)}" ADD COLUMN "${sql.raw(col.name)}" ${sql.raw(col.type)}`);
-        }
-      }
-    } catch (e) {
-      console.warn(`[Migration 006] Warning while adding columns to ${tableName}:`, (e as Error).message);
-    }
+    await this.addColumnIfMissing(db, tableName, { name: 'name', type: 'text' });
+    await this.addColumnIfMissing(db, tableName, { name: 'version', type: 'text' });
+    await this.addColumnIfMissing(db, tableName, { name: 'created_at', type: 'date' });
   }
 
-  async down(db: IDatabaseManager): Promise<void> {
-    // Dropping columns is restricted in some SQLite versions, typically we don't down migrations for simple additions
-  }
+  async down(_db: IDatabaseManager): Promise<void> {}
 }
 
 export default new AddThemeNameColumn();
