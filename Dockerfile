@@ -46,8 +46,7 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 # MODE 1: API Only
 # ===================================
 FROM base AS api-only
-RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && \
-    NODE_OPTIONS="--max-old-space-size=1536" ./node_modules/.bin/tsc -b packages/ai
+RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=api
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start --workspace=@fromcode119/api"]
@@ -59,7 +58,6 @@ FROM base AS api-admin
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && \
-    NODE_OPTIONS="--max-old-space-size=1536" ./node_modules/.bin/tsc -b packages/ai && \
     NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin
 EXPOSE 3000 3001
 ENV DEPLOYMENT_MODE=api-admin
@@ -72,7 +70,6 @@ FROM base AS full-stack
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN NODE_OPTIONS="--max-old-space-size=1536" npm run build:api && \
-    NODE_OPTIONS="--max-old-space-size=1536" ./node_modules/.bin/tsc -b packages/ai && \
     NODE_OPTIONS="--max-old-space-size=1536" npm run build:admin && \
     NODE_OPTIONS="--max-old-space-size=1536" npm run build:frontend
 EXPOSE 3000 3001 3002
