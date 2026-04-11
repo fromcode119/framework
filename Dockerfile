@@ -37,7 +37,7 @@ COPY packages/scheduler/package.json ./packages/scheduler/
 COPY packages/sdk/package.json ./packages/sdk/
 
 # Install dependencies
-RUN npm install --prefer-offline --no-audit
+RUN npm install --no-audit
 
 # Now copy the rest of the source
 COPY . .
@@ -57,6 +57,8 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Verify @fromcode119 workspace symlinks were created by npm install
+RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode119/ && echo "--- Node version ---" && node --version
 # Three separate RUN steps so each process fully releases memory before the
 # next one starts, and Docker can cache each layer independently.
 # 768 MB heap fits within the ~2 GB available on a 4 GB host running other services.
