@@ -8,10 +8,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base
+      target: api-only
+      args:
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
     command: npm run start --workspace=@fromcode119/api
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-fromcode}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fromcode}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-fromcode}:${POSTGRES_PASSWORD:-ChangeMe_Pg_P@ssw0rd}@db:5432/${POSTGRES_DB:-fromcode}
       - DB_DIALECT=${DB_DIALECT:-postgres}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET:-CHANGE_ME_JWT_SECRET_MIN_32_CHARS}
@@ -36,7 +38,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base
+      target: admin-only
+      args:
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
     command: npm run start --workspace=@fromcode119/admin
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
@@ -54,7 +58,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base
+      target: frontend-only
+      args:
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
     command: npm run start --workspace=@fromcode119/frontend
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
@@ -72,7 +78,7 @@ services:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-fromcode}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ChangeMe_Pg_P@ssw0rd}
       - POSTGRES_DB=${POSTGRES_DB:-fromcode}
     volumes:
       - postgres_data:/var/lib/postgresql/data
