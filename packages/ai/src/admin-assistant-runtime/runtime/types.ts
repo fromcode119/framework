@@ -43,11 +43,17 @@ export class RuntimeUtils {
 
   static toToolSummaryList(tools: McpToolDefinition[]): AssistantToolSummary[] {
       return (Array.isArray(tools) ? tools : [])
-        .map((tool) => ({
-          tool: String(tool?.tool || '').trim(),
-          description: tool?.description ? String(tool.description) : undefined,
-          readOnly: tool?.readOnly === true,
-        }))
+        .map((tool) => {
+          const toolWithMetadata = tool as McpToolDefinition & { metadata?: Record<string, unknown> };
+          return {
+            tool: String(toolWithMetadata?.tool || '').trim(),
+            description: toolWithMetadata?.description ? String(toolWithMetadata.description) : undefined,
+            readOnly: toolWithMetadata?.readOnly === true,
+            metadata: toolWithMetadata?.metadata && typeof toolWithMetadata.metadata === 'object'
+              ? { ...toolWithMetadata.metadata }
+              : undefined,
+          };
+        })
         .filter((tool) => !!tool.tool);
 
   }
