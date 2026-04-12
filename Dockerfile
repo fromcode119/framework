@@ -120,6 +120,14 @@ ENV DEPLOYMENT_MODE=full
 CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:all"]
 
 # ===================================
+# MODE 3B: Single-Domain Gateway
+# ===================================
+FROM base AS gateway-only
+EXPOSE 3000
+ENV DEPLOYMENT_MODE=gateway
+CMD ["./node_modules/.bin/tsx", "scripts/single-domain-gateway.ts"]
+
+# ===================================
 # MODE 4: Frontend Only (Edge deployment)
 # ===================================
 FROM builder AS frontend-only

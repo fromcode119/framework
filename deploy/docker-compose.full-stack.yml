@@ -5,20 +5,22 @@
 
 services:
   gateway:
-    image: nginx:1.27-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gateway-only
     depends_on:
       - api
       - admin
       - frontend
     environment:
-      - PUBLIC_API_BASE_PATH=${PUBLIC_API_BASE_PATH:-/api}
-      - PUBLIC_ADMIN_BASE_PATH=${PUBLIC_ADMIN_BASE_PATH:-/admin}
-      - PUBLIC_PLUGINS_BASE_PATH=${PUBLIC_PLUGINS_BASE_PATH:-/plugins}
-      - PUBLIC_THEMES_BASE_PATH=${PUBLIC_THEMES_BASE_PATH:-/themes}
-      - PUBLIC_UPLOADS_BASE_PATH=${PUBLIC_UPLOADS_BASE_PATH:-/uploads}
-      - PUBLIC_SOCKET_BASE_PATH=${PUBLIC_SOCKET_BASE_PATH:-/socket}
-    volumes:
-      - ./nginx/single-domain.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - PORT=3000
+      - API_URL=${API_URL:-http://api.framework.local}
+      - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      - API_TARGET_URL=http://api:3000
+      - ADMIN_TARGET_URL=http://admin:3000
+      - FRONTEND_TARGET_URL=http://frontend:3000
     networks:
       - framework
     restart: unless-stopped
@@ -50,9 +52,9 @@ services:
       - db
       - redis
     volumes:
-      - ./public/uploads:/app/public/uploads
-      - ${SHARED_PLUGINS_DIR:-./plugins}:/app/plugins
-      - ${SHARED_THEMES_DIR:-./themes}:/app/themes
+      - ../public/uploads:/app/public/uploads
+      - ${SHARED_PLUGINS_DIR:-../plugins}:/app/plugins
+      - ${SHARED_THEMES_DIR:-../themes}:/app/themes
     networks:
       - framework
     restart: unless-stopped
@@ -73,7 +75,6 @@ services:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
       - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
-      - NEXT_PUBLIC_ADMIN_BASE_PATH=${NEXT_PUBLIC_ADMIN_BASE_PATH:-/admin}
       - NODE_ENV=production
       - PORT=3000
     depends_on:
