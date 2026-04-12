@@ -16,8 +16,6 @@ services:
     depends_on:
       - api
       - admin
-    networks:
-      - framework
     restart: unless-stopped
 
   api:
@@ -40,8 +38,6 @@ services:
       - ../public/uploads:/app/public/uploads
       - ${SHARED_PLUGINS_DIR:-../plugins}:/app/plugins
       - ${SHARED_THEMES_DIR:-../themes}:/app/themes
-    networks:
-      - framework
     restart: unless-stopped
 
   admin:
@@ -58,8 +54,6 @@ services:
       - PORT=3000
     depends_on:
       - api
-    networks:
-      - framework
     restart: unless-stopped
 
   db:
@@ -70,18 +64,11 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - framework
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    networks:
-      - framework
     restart: unless-stopped
-
-networks:
-  framework:
 
 volumes:
   postgres_data:
