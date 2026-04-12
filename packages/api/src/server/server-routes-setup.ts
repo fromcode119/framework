@@ -3,7 +3,7 @@
 import express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
-import { Logger, PluginManager, ThemeManager } from '@fromcode119/core';
+import { ApiVersionUtils, Logger, PluginManager, ThemeManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { RESTController } from '../controllers/rest-controller';
@@ -50,6 +50,8 @@ export class ServerRoutesSetup {
     const healthHandler = async (req: any, res: any) => res.json({ status: 'ok', version: coreVersion, maintenance: await this.getMaintenanceStatus(), bypass: !!(req.user?.roles?.includes('admin')) });
     this.app.get(ApiConfig.getInstance().probeRoutes.HEALTH, healthHandler);
     this.app.get(ApiConfig.getInstance().probeRoutes.READY, healthHandler);
+    this.app.get(`${ApiVersionUtils.API_BASE_PATH}${ApiConfig.getInstance().probeRoutes.HEALTH}`, healthHandler);
+    this.app.get(`${ApiVersionUtils.API_BASE_PATH}${ApiConfig.getInstance().probeRoutes.READY}`, healthHandler);
     this.app.get(ApiConfig.getInstance().routes.system.HEALTH, healthHandler);
 
     const vPrefix = ApiConfig.getInstance().prefixes.VERSIONED;
