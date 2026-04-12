@@ -13,7 +13,6 @@
     { "path": "../media" },
     { "path": "../scheduler" },
     { "path": "../cache" },
-    { "path": "../email" },
-    { "path": "../ai" }
+    { "path": "../email" }
   ]
 }
