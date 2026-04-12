@@ -59,18 +59,37 @@ ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Verify @fromcode119 workspace symlinks were created by npm install
 RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode119/ && echo "--- Node version ---" && node --version
-# Three separate RUN steps so each process fully releases memory before the
+# Five separate RUN steps so each process fully releases memory before the
 # next one starts, and Docker can cache each layer independently.
 # Output written to file then replayed so errors appear at the END of the layer
 # log (Coolify log viewer only shows the tail of each step's output).
+
+# Step 1: Build API runtime project graph only.
+# This avoids compiling UI-only transitive packages via shared SDK aliases.
 RUN ./node_modules/.bin/tsc -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
     cat /tmp/tsc-api.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:api FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:api OK ==="
+
+# Step 2: Build React package required by the AI extension.
+RUN npm run build --workspace=@fromcode119/react > /tmp/build-react.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-react.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:react FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:react OK ==="
+
+# Step 3: Build AI extension.
+RUN npm run build --workspace=@fromcode119/ai > /tmp/build-ai.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-ai.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:ai FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:ai OK ==="
+
+# Step 4: Build admin UI
 RUN npm run build:admin > /tmp/build-admin.log 2>&1; ec=$?; \
     tail -80 /tmp/build-admin.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:admin FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:admin OK ==="
+
+# Step 5: Build frontend
 RUN npm run build:frontend > /tmp/build-frontend.log 2>&1; ec=$?; \
     tail -80 /tmp/build-frontend.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:frontend FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
