@@ -4,6 +4,31 @@
 # All paths are relative to the repo root (project-directory) — required for Coolify compatibility.
 
 services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gateway-only
+    depends_on:
+      - api
+      - admin
+      - frontend
+    environment:
+      - PORT=3000
+      - API_URL=${API_URL:-http://api.framework.local}
+      - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      - API_TARGET_URL=http://api:3000
+      - ADMIN_TARGET_URL=http://admin:3000
+      - FRONTEND_TARGET_URL=http://frontend:3000
+    networks:
+      - framework
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 96M
+
   api:
     build:
       context: .
@@ -27,9 +52,9 @@ services:
       - db
       - redis
     volumes:
-      - ./public/uploads:/app/public/uploads
-      - ${SHARED_PLUGINS_DIR:-./plugins}:/app/plugins
-      - ${SHARED_THEMES_DIR:-./themes}:/app/themes
+      - ../public/uploads:/app/public/uploads
+      - ${SHARED_PLUGINS_DIR:-../plugins}:/app/plugins
+      - ${SHARED_THEMES_DIR:-../themes}:/app/themes
     networks:
       - framework
     restart: unless-stopped
