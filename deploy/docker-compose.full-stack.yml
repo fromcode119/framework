@@ -21,8 +21,6 @@ services:
       - API_TARGET_URL=http://api:3000
       - ADMIN_TARGET_URL=http://admin:3000
       - FRONTEND_TARGET_URL=http://frontend:3000
-    networks:
-      - framework
     restart: unless-stopped
     deploy:
       resources:
@@ -55,8 +53,6 @@ services:
       - ../public/uploads:/app/public/uploads
       - ${SHARED_PLUGINS_DIR:-../plugins}:/app/plugins
       - ${SHARED_THEMES_DIR:-../themes}:/app/themes
-    networks:
-      - framework
     restart: unless-stopped
     deploy:
       resources:
@@ -79,8 +75,6 @@ services:
       - PORT=3000
     depends_on:
       - api
-    networks:
-      - framework
     restart: unless-stopped
     deploy:
       resources:
@@ -103,8 +97,6 @@ services:
       - PORT=3000
     depends_on:
       - api
-    networks:
-      - framework
     restart: unless-stopped
     deploy:
       resources:
@@ -119,8 +111,6 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-fromcode}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - framework
     restart: unless-stopped
     deploy:
       resources:
@@ -129,16 +119,11 @@ services:
 
   redis:
     image: redis:7-alpine
-    networks:
-      - framework
     restart: unless-stopped
     deploy:
       resources:
         limits:
           memory: 96M
-
-networks:
-  framework:
 
 volumes:
   postgres_data:
