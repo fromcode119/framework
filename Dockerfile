@@ -63,17 +63,32 @@ RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode1
 # next one starts, and Docker can cache each layer independently.
 # Output written to file then replayed so errors appear at the END of the layer
 # log (Coolify log viewer only shows the tail of each step's output).
-RUN ./node_modules/.bin/tsc -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
-    cat /tmp/tsc-api.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:api FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+RUN ./node_modules/.bin/tsc -b packages/api > /tmp/tsc-api.log 2>&1; \
+    ec=$?; \
+    if [ $ec -ne 0 ]; then \
+      echo "=== TSC ERRORS (exit $ec) ==="; \
+      grep "error TS" /tmp/tsc-api.log | head -40 || tail -40 /tmp/tsc-api.log; \
+      echo "=== build:api FAILED ==="; \
+      exit $ec; \
+    fi; \
     echo "=== build:api OK ==="
-RUN npm run build:admin > /tmp/build-admin.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-admin.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:admin FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+RUN npm run build:admin > /tmp/build-admin.log 2>&1; \
+    ec=$?; \
+    if [ $ec -ne 0 ]; then \
+      echo "=== BUILD:ADMIN ERRORS (exit $ec) ==="; \
+      grep -E "error TS|Error:" /tmp/build-admin.log | head -40 || tail -40 /tmp/build-admin.log; \
+      echo "=== build:admin FAILED ==="; \
+      exit $ec; \
+    fi; \
     echo "=== build:admin OK ==="
-RUN npm run build:frontend > /tmp/build-frontend.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-frontend.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:frontend FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+RUN npm run build:frontend > /tmp/build-frontend.log 2>&1; \
+    ec=$?; \
+    if [ $ec -ne 0 ]; then \
+      echo "=== BUILD:FRONTEND ERRORS (exit $ec) ==="; \
+      grep -E "error TS|Error:" /tmp/build-frontend.log | head -40 || tail -40 /tmp/build-frontend.log; \
+      echo "=== build:frontend FAILED ==="; \
+      exit $ec; \
+    fi; \
     echo "=== build:frontend OK ==="
 
 # ===================================
