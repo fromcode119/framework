@@ -130,6 +130,10 @@ export class RequestSurfaceUtils {
       return false;
     }
 
+    if (RequestSurfaceUtils.hasPathPrefix(normalizedPath, ApiVersionUtils.API_BASE_PATH)) {
+      return true;
+    }
+
     const unversionedPath = RequestSurfaceUtils.stripApiVersionPrefix(normalizedPath);
     return RequestSurfaceUtils.API_BASE_PATHS.some((prefix) => (
       RequestSurfaceUtils.hasPathPrefix(normalizedPath, prefix)
