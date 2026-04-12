@@ -1,4 +1,5 @@
 import { RouteConstants } from '@fromcode119/core/client';
+import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
 
 const RAW_ADMIN_BASE_PATH = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '';
 
@@ -12,7 +13,8 @@ const RAW_ADMIN_BASE_PATH = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '';
  */
 export class AdminPathUtils {
   static basePath(): string {
-    const configured = AdminPathUtils.normalizeBasePath(RAW_ADMIN_BASE_PATH);
+    const configured = ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
+      || AdminPathUtils.normalizeBasePath(RAW_ADMIN_BASE_PATH);
     if (configured) return configured;
     return AdminPathUtils.inferAdminBasePathFromWindow();
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { CookieConstants } from '@fromcode119/core/client';
+import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
 import { AdminConstants } from './constants';
 
 /**
@@ -49,7 +50,8 @@ export class AdminProxy {
   }
 
   private static resolveBasePath(request: NextRequest): string {
-    const envBasePath = AdminProxy.normalizeBasePath(process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
+    const envBasePath = ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
+      || AdminProxy.normalizeBasePath(process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
     if (envBasePath) return envBasePath;
 
     const configuredBasePath = AdminProxy.normalizeBasePath(request.nextUrl.basePath || '');

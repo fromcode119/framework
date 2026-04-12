@@ -14,21 +14,28 @@ export class RequestSurfaceUtils {
     FRONTEND_UI: 'frontend-ui',
   } as const;
 
-  static readonly ADMIN_BASE_PATH = AppPathConstants.ADMIN.ADMIN.BASE;
+  static get ADMIN_BASE_PATH(): string {
+    return ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
+      || AppPathConstants.ADMIN.ADMIN.BASE;
+  }
 
   static readonly ADMIN_SYSTEM_BASE_PATH = `${SystemConstants.API_PATH.SYSTEM.BASE}${RouteConstants.SEGMENTS.ADMIN_BASE}`;
 
-  static readonly ADMIN_API_BASE_PATH = ApiPathUtils.adminApiBasePath();
+  static get ADMIN_API_BASE_PATH(): string {
+    return ApiPathUtils.adminApiBasePath();
+  }
 
-  static readonly API_BASE_PATHS = [
-    RouteConstants.SEGMENTS.AUTH,
-    RouteConstants.SEGMENTS.SYSTEM,
-    RouteConstants.SEGMENTS.PLUGINS,
-    RouteConstants.SEGMENTS.THEMES,
-    RouteConstants.SEGMENTS.MEDIA,
-    RouteConstants.SEGMENTS.VERSIONS,
-    RequestSurfaceUtils.ADMIN_API_BASE_PATH,
-  ] as const;
+  static get API_BASE_PATHS(): string[] {
+    return [
+      RouteConstants.SEGMENTS.AUTH,
+      RouteConstants.SEGMENTS.SYSTEM,
+      RouteConstants.SEGMENTS.PLUGINS,
+      RouteConstants.SEGMENTS.THEMES,
+      RouteConstants.SEGMENTS.MEDIA,
+      RouteConstants.SEGMENTS.VERSIONS,
+      RequestSurfaceUtils.ADMIN_API_BASE_PATH,
+    ];
+  }
 
   static isAdminRequestContext(requestLike: {
     headers?: Record<string, unknown>;
