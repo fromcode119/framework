@@ -1,4 +1,5 @@
 import { ApiVersionUtils } from '../api-version';
+import { ApplicationUrlUtils } from '../application-url-utils';
 import { SystemConstants } from '../constants';
 import { RouteConstants } from '../route-constants';
 
@@ -66,7 +67,9 @@ export class ApiPathUtils {
   }
 
   static adminApiBasePath(): string {
-    return ApiPathUtils.join(RouteConstants.SEGMENTS.ADMIN_BASE, 'api');
+    const adminBasePath = ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
+      || RouteConstants.SEGMENTS.ADMIN_BASE;
+    return ApiPathUtils.join(adminBasePath, 'api');
   }
 
   static adminGlobalPath(slug: string): string {

@@ -1,3 +1,5 @@
+import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
+
 export class FrontendApiBaseUrl {
   static resolveFrontendApiBaseUrl(explicit?: string): string {
       const fromExplicit = FrontendApiBaseUrl.normalizeCandidate(String(explicit || ''));
@@ -29,7 +31,7 @@ export class FrontendApiBaseUrl {
     const raw = String(value || '').trim();
     if (!raw) return '';
     if (raw.startsWith('http://') || raw.startsWith('https://')) {
-      return FrontendApiBaseUrl.trimTrailingSlashes(raw);
+      return ApplicationUrlUtils.normalizeBaseUrlCandidate(raw, { stripApiPath: true });
     }
     if (raw.startsWith('/')) return FrontendApiBaseUrl.trimTrailingSlashes(raw);
     return FrontendApiBaseUrl.trimTrailingSlashes(`http://${raw}`);

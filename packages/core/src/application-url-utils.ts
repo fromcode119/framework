@@ -67,6 +67,37 @@ export class ApplicationUrlUtils {
     return '';
   }
 
+  static readAppBasePathFromEnvironment(app: string): string {
+    const normalizedApp = String(app || '').trim().toLowerCase();
+    if (normalizedApp === ApplicationUrlUtils.API_APP) {
+      return ApplicationUrlUtils.deriveBasePathFromUrl(
+        process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || '',
+        ApplicationUrlUtils.defaultBasePathForApp(normalizedApp),
+      );
+    }
+
+    if (normalizedApp === ApplicationUrlUtils.ADMIN_APP) {
+      const fromAdminUrl = ApplicationUrlUtils.deriveBasePathFromUrl(
+        process.env.ADMIN_URL || '',
+        ApplicationUrlUtils.defaultBasePathForApp(normalizedApp),
+      );
+      if (fromAdminUrl) {
+        return fromAdminUrl;
+      }
+
+      return ApplicationUrlUtils.normalizePathPrefix(process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
+    }
+
+    if (normalizedApp === ApplicationUrlUtils.FRONTEND_APP) {
+      return ApplicationUrlUtils.deriveBasePathFromUrl(
+        process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || '',
+        '',
+      );
+    }
+
+    return '';
+  }
+
   static getServerApiBaseUrlCandidates(): string[] {
     const values = [
       ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
@@ -213,11 +244,62 @@ export class ApplicationUrlUtils {
     }
   }
 
+  static deriveBasePathFromUrl(value: unknown, defaultPath = ''): string {
+    const parsed = ApplicationUrlUtils.parseAbsoluteUrl(value);
+    if (!parsed) {
+      return ApplicationUrlUtils.normalizePathPrefix(defaultPath);
+    }
+
+    const normalizedPath = ApplicationUrlUtils.normalizePathPrefix(parsed.pathname || '');
+    if (!normalizedPath) {
+      return ApplicationUrlUtils.normalizePathPrefix(defaultPath);
+    }
+
+    const withoutVersion = normalizedPath.replace(/\/v[^/]+$/i, '');
+    return ApplicationUrlUtils.normalizePathPrefix(withoutVersion) || ApplicationUrlUtils.normalizePathPrefix(defaultPath);
+  }
+
+  static normalizePathPrefix(value: unknown): string {
+    const rawValue = String(value ?? '').trim();
+    if (!rawValue || rawValue === '/') {
+      return '';
+    }
+
+    const withLeadingSlash = rawValue.startsWith('/') ? rawValue : `/${rawValue}`;
+    return withLeadingSlash.replace(/\/+$/, '').replace(/\/{2,}/g, '/');
+  }
+
+  private static defaultBasePathForApp(app: string): string {
+    if (app === ApplicationUrlUtils.API_APP) {
+      return '/api';
+    }
+
+    return '';
+  }
+
   private static stripApiPath(value: string): string {
-    return String(value || '')
-      .replace(/\/+$/, '')
-      .replace(/\/api\/v\d+$/i, '')
-      .replace(/\/api$/i, '');
+    const normalizedValue = ApplicationUrlUtils.normalizePathPrefix(value);
+    if (!normalizedValue) {
+      return '';
+    }
+
+    const apiBasePath = ApplicationUrlUtils.deriveBasePathFromUrl(
+      `http://placeholder${normalizedValue}`,
+      '',
+    );
+    if (!apiBasePath) {
+      return normalizedValue;
+    }
+
+    if (normalizedValue === apiBasePath) {
+      return '';
+    }
+
+    if (normalizedValue.startsWith(`${apiBasePath}/`)) {
+      return normalizedValue.slice(apiBasePath.length);
+    }
+
+    return normalizedValue;
   }
 
   private static unique(values: string[]): string[] {
