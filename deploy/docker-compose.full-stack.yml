@@ -10,8 +10,15 @@ services:
       - api
       - admin
       - frontend
+    environment:
+      - PUBLIC_API_BASE_PATH=${PUBLIC_API_BASE_PATH:-/api}
+      - PUBLIC_ADMIN_BASE_PATH=${PUBLIC_ADMIN_BASE_PATH:-/admin}
+      - PUBLIC_PLUGINS_BASE_PATH=${PUBLIC_PLUGINS_BASE_PATH:-/plugins}
+      - PUBLIC_THEMES_BASE_PATH=${PUBLIC_THEMES_BASE_PATH:-/themes}
+      - PUBLIC_UPLOADS_BASE_PATH=${PUBLIC_UPLOADS_BASE_PATH:-/uploads}
+      - PUBLIC_SOCKET_BASE_PATH=${PUBLIC_SOCKET_BASE_PATH:-/socket}
     volumes:
-      - ./nginx/single-domain.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/single-domain.conf.template:/etc/nginx/templates/default.conf.template:ro
     networks:
       - framework
     restart: unless-stopped
