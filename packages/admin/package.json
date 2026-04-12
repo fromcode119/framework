@@ -25,7 +25,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --webpack -H 0.0.0.0",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "test": "vitest"
   },
   "dependencies": {
