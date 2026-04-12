@@ -14,6 +14,7 @@ services:
       - admin
       - frontend
     environment:
+<<<<<<< HEAD
       - PORT=3000
       - API_URL=${API_URL:-http://api.framework.local}
       - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
@@ -21,6 +22,18 @@ services:
       - API_TARGET_URL=http://api:3000
       - ADMIN_TARGET_URL=http://admin:3000
       - FRONTEND_TARGET_URL=http://frontend:3000
+=======
+      - PUBLIC_API_BASE_PATH=${PUBLIC_API_BASE_PATH:-/api}
+      - PUBLIC_ADMIN_BASE_PATH=${PUBLIC_ADMIN_BASE_PATH:-/admin}
+      - PUBLIC_PLUGINS_BASE_PATH=${PUBLIC_PLUGINS_BASE_PATH:-/plugins}
+      - PUBLIC_THEMES_BASE_PATH=${PUBLIC_THEMES_BASE_PATH:-/themes}
+      - PUBLIC_UPLOADS_BASE_PATH=${PUBLIC_UPLOADS_BASE_PATH:-/uploads}
+      - PUBLIC_SOCKET_BASE_PATH=${PUBLIC_SOCKET_BASE_PATH:-/socket}
+    volumes:
+      - ./nginx/single-domain.conf.template:/etc/nginx/templates/default.conf.template:ro
+    networks:
+      - framework
+>>>>>>> 51805f1 (refactor(deploy): make gateway paths configurable)
     restart: unless-stopped
     deploy:
       resources:

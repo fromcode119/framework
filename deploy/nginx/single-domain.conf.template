@@ -1,0 +1,56 @@
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    client_max_body_size 100m;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+
+    location = ${PUBLIC_API_BASE_PATH} {
+        proxy_pass http://api:3000;
+    }
+
+    location ${PUBLIC_API_BASE_PATH}/ {
+        proxy_pass http://api:3000;
+    }
+
+    location ${PUBLIC_PLUGINS_BASE_PATH}/ {
+        proxy_pass http://api:3000;
+    }
+
+    location ${PUBLIC_THEMES_BASE_PATH}/ {
+        proxy_pass http://api:3000;
+    }
+
+    location ${PUBLIC_UPLOADS_BASE_PATH}/ {
+        proxy_pass http://api:3000;
+    }
+
+    location ${PUBLIC_SOCKET_BASE_PATH} {
+        proxy_pass http://api:3000;
+    }
+
+    location = ${PUBLIC_ADMIN_BASE_PATH} {
+        proxy_pass http://admin:3000;
+    }
+
+    location ${PUBLIC_ADMIN_BASE_PATH}/ {
+        proxy_pass http://admin:3000;
+    }
+
+    location / {
+        proxy_pass http://frontend:3000;
+    }
+}
