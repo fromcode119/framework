@@ -11,7 +11,7 @@ const extensions = fs.readdirSync(packagesDir).filter(name => {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '',
+  basePath: NextConfigEnv.getAdminBasePath(),
   allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
   reactStrictMode: true,
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages

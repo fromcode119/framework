@@ -2,10 +2,29 @@
 # Usage: docker-compose -f deploy/docker-compose.api-admin.yml up
 
 services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: gateway-only
+    environment:
+      - PORT=3000
+      - API_URL=${API_PUBLIC_URL}
+      - ADMIN_URL=${ADMIN_PUBLIC_URL}
+      - API_TARGET_URL=http://api:3000
+      - ADMIN_TARGET_URL=http://admin:3000
+    depends_on:
+      - api
+      - admin
+    networks:
+      - framework
+    restart: unless-stopped
+
   api:
     build:
       context: ..
-      target: base
+      dockerfile: Dockerfile
+      target: api-only
     command: npm run start --workspace=@fromcode119/api
     environment:
       - DATABASE_URL=${DATABASE_URL}
@@ -28,13 +47,15 @@ services:
   admin:
     build:
       context: ..
-      target: base
+      dockerfile: Dockerfile
+      target: admin-only
     command: npm run start --workspace=@fromcode119/admin
     environment:
-      - API_URL=http://api:4000
+      - API_URL=http://api:3000
       - NEXT_PUBLIC_API_URL=${API_PUBLIC_URL}
       - ADMIN_URL=${ADMIN_PUBLIC_URL}
       - NODE_ENV=production
+      - PORT=3000
     depends_on:
       - api
     networks:

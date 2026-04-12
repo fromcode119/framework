@@ -72,6 +72,17 @@ class NextConfigEnv {
     );
   }
 
+  static getAdminBasePath() {
+    NextConfigEnv.initializeEnvironment();
+
+    const fromAdminUrl = NextConfigEnv.deriveBasePathFromUrl(process.env.ADMIN_URL || '', '');
+    if (fromAdminUrl) {
+      return fromAdminUrl;
+    }
+
+    return NextConfigEnv.normalizePathPrefix(process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
+  }
+
   static parseCommaSeparatedValues(value) {
     return String(value || '')
       .split(',')
@@ -108,6 +119,31 @@ class NextConfigEnv {
     } catch {
       return null;
     }
+  }
+
+  static deriveBasePathFromUrl(value, defaultPath = '') {
+    const raw = String(value || '').trim();
+    if (!raw) return NextConfigEnv.normalizePathPrefix(defaultPath);
+
+    try {
+      const parsed = new URL(raw);
+      const normalizedPath = NextConfigEnv.normalizePathPrefix(parsed.pathname || '');
+      if (!normalizedPath) {
+        return NextConfigEnv.normalizePathPrefix(defaultPath);
+      }
+
+      const withoutVersion = normalizedPath.replace(/\/v[^/]+$/i, '');
+      return NextConfigEnv.normalizePathPrefix(withoutVersion) || NextConfigEnv.normalizePathPrefix(defaultPath);
+    } catch {
+      return NextConfigEnv.normalizePathPrefix(defaultPath);
+    }
+  }
+
+  static normalizePathPrefix(value) {
+    const raw = String(value || '').trim();
+    if (!raw || raw === '/') return '';
+    const withLeadingSlash = raw.startsWith('/') ? raw : `/${raw}`;
+    return withLeadingSlash.replace(/\/+$/, '').replace(/\/{2,}/g, '/');
   }
 
   static unique(values) {
