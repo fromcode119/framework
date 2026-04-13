@@ -21,6 +21,7 @@ export default function InstalledThemesPageClient() {
       isUploading={model.isUploading}
       loading={model.loading}
       onActivate={model.onActivate}
+      onDisable={model.onDisable}
       onDelete={model.onDelete}
       onUpdate={model.onUpdate}
       showUploadPreview={model.showUploadPreview}

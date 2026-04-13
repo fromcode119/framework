@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
+import { ApplicationUrlUtils } from '@fromcode119/core/client';
 
 export class FrontendApiBaseUrl {
   static resolveFrontendApiBaseUrl(explicit?: string): string {

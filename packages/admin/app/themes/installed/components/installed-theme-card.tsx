@@ -7,7 +7,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { AdminConstants } from '@/lib/constants';
 import type { InstalledThemeCardProps } from '../installed-themes-page.interfaces';
 
-export default function InstalledThemeCard({ isDark, onActivate, onDelete, onUpdate, theme, updateVersion }: InstalledThemeCardProps) {
+export default function InstalledThemeCard({ isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion }: InstalledThemeCardProps) {
   const isActive = theme.state === 'active';
 
   return (
@@ -41,6 +41,7 @@ export default function InstalledThemeCard({ isDark, onActivate, onDelete, onUpd
             <div className="flex gap-3">
               <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="flex-1 py-4 rounded-2xl font-semibold uppercase tracking-wider text-[11px] bg-indigo-600 text-white text-center shadow-xl shadow-indigo-600/20 hover:scale-[1.02] transition-transform">Manage Layout</Link>
               <Link href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} className={`p-4 rounded-2xl flex items-center justify-center transition-all ${isDark ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'} shadow-sm`}><FrameworkIcons.Settings size={18} /></Link>
+              <button onClick={() => onDisable(theme.slug)} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-950' : 'bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white shadow-sm'}`} title="Disable active theme"><FrameworkIcons.Close size={18} /></button>
               <button onClick={() => onDelete(theme.slug, true)} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' : 'bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white shadow-sm'}`} title="Delete theme"><FrameworkIcons.Trash size={18} /></button>
             </div>
           ) : (

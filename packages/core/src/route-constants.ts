@@ -136,6 +136,7 @@ export class RouteConstants {
   THEMES_UPLOAD_INSPECT: '/upload/inspect',
   THEMES_UPLOAD: '/upload',
   THEMES_SLUG_ACTIVATE: '/:slug/activate',
+  THEMES_SLUG_DISABLE: '/:slug/disable',
   THEMES_SLUG_RESET: '/:slug/reset',
   THEMES_SLUG_INSTALL: '/:slug/install',
   THEMES_SLUG_CONFIG: '/:slug/config',

@@ -12,8 +12,8 @@ type HomeClientProps = {
   forcedLayout: string | null;
 };
 
-const FRAMEWORK_TITLE = 'Fromcode Framework';
-const FRAMEWORK_DESCRIPTION = 'The open-source platform for building scalable applications.';
+const FRAMEWORK_TITLE = 'Atlantis';
+const FRAMEWORK_DESCRIPTION = 'Atlantis by Fromcode, the open-source platform for building scalable applications.';
 
 function StarterHero() {
   return (
@@ -25,9 +25,18 @@ function StarterHero() {
             Default Starter Page
           </div>
           <div className="mt-6 space-y-5">
-            <h1 className="text-5xl font-black tracking-tight text-slate-950 dark:text-white sm:text-7xl">
-              {FRAMEWORK_TITLE}
-            </h1>
+            <div className="flex justify-center">
+              <img
+                src="/brand/atlantis-logo-slate.png"
+                alt="Atlantis by Fromcode"
+                className="block h-auto w-full max-w-[260px] dark:hidden sm:max-w-[320px]"
+              />
+              <img
+                src="/brand/atlantis-logo-white.png"
+                alt="Atlantis by Fromcode"
+                className="hidden h-auto w-full max-w-[260px] dark:block sm:max-w-[320px]"
+              />
+            </div>
             <p className="mx-auto max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300 sm:text-xl">
               {FRAMEWORK_DESCRIPTION}
             </p>
@@ -37,35 +46,35 @@ function StarterHero() {
           </div>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <a
-            href={ADMIN_BASE_PATH}
-            className="inline-flex min-w-[180px] items-center justify-center rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-          >
-            Go to Admin
-          </a>
-          <a
-            href="https://docs.fromcode.com"
-            className="inline-flex min-w-[180px] items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-500 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
-          >
-            Documentation
-          </a>
-        </div>
-
-        <div className="mt-12 grid w-full max-w-4xl gap-4 text-left sm:grid-cols-3">
-          {[
-            ['Admin + API + Frontend', 'The starter stack is already wired so you can move from setup to shipped features without restructuring the app.'],
-            ['Theme-first frontend', 'Replace this fallback by publishing homepage content or supplying a theme layout with your own visual system.'],
-            ['Open framework surface', 'Plugins, themes, and workflows stay extensible instead of baking product branding into the core runtime.'],
-          ].map(([title, copy]) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/45"
+            <a
+              href={ADMIN_BASE_PATH}
+              className="inline-flex min-w-[180px] items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
             >
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{copy}</p>
-            </div>
-          ))}
-        </div>
+              Go to Admin
+            </a>
+            <a
+              href="https://docs.fromcode.com"
+              className="inline-flex min-w-[180px] items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-500 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
+            >
+              Documentation
+            </a>
+          </div>
+
+          <div className="mt-12 grid w-full max-w-4xl gap-4 text-left sm:grid-cols-3">
+            {[
+              ['Admin + API + Frontend', 'The starter stack is already wired so you can move from setup to shipped features without restructuring the app.'],
+              ['Theme-first frontend', 'Replace this fallback by publishing homepage content or supplying a theme layout with your own visual system.'],
+              ['Open framework surface', 'Plugins, themes, and workflows stay extensible while Atlantis branding remains the default runtime experience.'],
+            ].map(([title, copy]) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/45"
+              >
+                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{copy}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
