@@ -1,5 +1,5 @@
 import { ApiVersionUtils } from '@fromcode119/core/client';
-import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
+import { ApplicationUrlUtils } from '@fromcode119/core/client';
 
 export class AdminUrlUtils {
   static normalizeRequestPath(path: string): string {

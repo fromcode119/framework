@@ -11,6 +11,7 @@ export interface InstalledThemeManifest extends ThemeManifest {
 export interface InstalledThemeCardProps {
   isDark: boolean;
   onActivate: (slug: string) => Promise<void>;
+  onDisable: (slug: string) => Promise<void>;
   onDelete: (slug: string, isActive: boolean) => Promise<void>;
   onUpdate: (slug: string) => Promise<void>;
   theme: InstalledThemeManifest;
@@ -31,6 +32,7 @@ export interface InstalledThemesViewProps {
   isUploading: boolean;
   loading: boolean;
   onActivate: (slug: string) => Promise<void>;
+  onDisable: (slug: string) => Promise<void>;
   onDelete: (slug: string, isActive: boolean) => Promise<void>;
   onUpdate: (slug: string) => Promise<void>;
   showUploadPreview: boolean;
@@ -56,6 +58,7 @@ export interface InstalledThemesPageModel {
   isUploading: boolean;
   loading: boolean;
   onActivate: (slug: string) => Promise<void>;
+  onDisable: (slug: string) => Promise<void>;
   onDelete: (slug: string, isActive: boolean) => Promise<void>;
   onUpdate: (slug: string) => Promise<void>;
   showUploadPreview: boolean;

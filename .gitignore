@@ -67,3 +67,7 @@ public/uploads/
 !packages/admin/app/themes/
 !packages/admin/components/plugins
 !packages/admin/components/themes
+/uploads/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

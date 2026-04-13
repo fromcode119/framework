@@ -1,6 +1,11 @@
-# 🌊 Fromcode v2: Enterprise Modular Platform
-
 <div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="packages/frontend/public/brand/atlantis-logo-white.png">
+  <img alt="Atlantis by Fromcode" src="packages/frontend/public/brand/atlantis-logo-slate.png" width="340">
+</picture>
+
+**The open-source application framework by Fromcode**
 
 [![GitHub Stars](https://img.shields.io/github/stars/fromcode119/framework?style=for-the-badge&logo=github&color=gold)](https://github.com/fromcode119/framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
@@ -11,13 +16,12 @@
 
 ---
 
-# **Deploy specialized business domains as isolated, composable plugins**
-*A hardened application kernel that orchestrates plugins, themes, and packages through a unified TypeScript monorepo — with zero lock-in on any layer.*
+*Deploy specialized business domains as isolated, composable plugins — a hardened application kernel that orchestrates plugins, themes, and packages through a unified TypeScript monorepo with zero lock-in on any layer.*
 
 </div>
 
 
-> **Why Fromcode?** Traditional CMS platforms force you into their architecture. Frameworks like NestJS hand you raw materials but no system. Fromcode is the middle ground — a production-hardened kernel that handles identity, security, migrations, queues, media, AI hooks, and real-time out of the box, while staying completely modular and provider-agnostic at every layer.
+> **Why Atlantis?** Traditional frameworks hand you raw materials but no system. CMS platforms lock you into their schema. SaaS products lock you into their pricing. Atlantis is none of those — it's a production-hardened application kernel that handles identity, security, migrations, queues, media, AI hooks, and real-time out of the box, while remaining completely modular and provider-agnostic at every layer. Build a SaaS product, a content platform, a marketplace, a logistics system, or all of the above — without re-architecting between them.
 
 ## Getting Started Fast
 
@@ -404,7 +408,7 @@ Localization is a first-class feature of the kernel, not a plugin add-on. Every 
 <details>
 <summary>🏛️ <b>Class-Based Architecture</b> — Pure OOP, No Standalone Functions</summary>
 
-Every piece of Fromcode follows a strict class-based pattern. There are no bare exported functions anywhere in the codebase.
+Every piece of Atlantis follows a strict class-based pattern. There are no bare exported functions anywhere in the codebase.
 
 | Layer | Pattern | Example |
 |-------|---------|--------|
@@ -430,7 +434,7 @@ This means every class is independently instantiable, mockable, and replaceable 
 | **API Only** | `npm run dev:local:api` | 3000 | Pure REST/GraphQL backend, maximum flexibility |
 | **Local Dev** | `npm run dev:local` | 3000 (proxy) | All surfaces through a single local proxy |
 
-> **Headless support**: Consume any Fromcode endpoint from your own React, Next.js, Vue, or native clients. No coupling to the bundled frontend.
+> **Headless support**: Consume any Atlantis endpoint from your own React, Next.js, Vue, or native clients. No coupling to the bundled frontend.
 
 </details>
 
@@ -438,7 +442,7 @@ This means every class is independently instantiable, mockable, and replaceable 
 
 ## 🔌 Plugin Ecosystem
 
-Fromcode ships with a growing ecosystem of domain plugins. Each plugin registers into the kernel lifecycle and communicates only through the kernel context — never directly importing across plugin boundaries.
+Atlantis ships with a growing ecosystem of domain plugins. Each plugin registers into the kernel lifecycle and communicates only through the kernel context — never directly importing across plugin boundaries.
 
 <details open>
 <summary><b>Available Plugins</b></summary>
@@ -534,7 +538,7 @@ npm run audit:core-boundary
 </details>
 
 <details>
-<summary><b>The Fromcode CLI</b></summary>
+<summary><b>The Atlantis CLI</b></summary>
 
 ```bash
 npm run fromcode -- <command>
@@ -557,7 +561,7 @@ npm run fromcode -- <command>
 <details open>
 <summary><b>Hooked Kernel Architecture</b></summary>
 
-Fromcode uses a Hooked Kernel Architecture. The framework provides base orchestration while plugins register into defined lifecycle phases: `Discovery → Boot → Route → Hook`
+Atlantis uses a Hooked Kernel Architecture. The kernel provides base orchestration while plugins register into defined lifecycle phases: `Discovery → Boot → Route → Hook`
 
 ```mermaid
 graph TB
@@ -630,14 +634,14 @@ Domain Plugins          Drizzle ORM
 
 ---
 
-## 🆚 Why Fromcode?
+## 🆚 Why Atlantis?
 
-Fromcode is built for teams who have outgrown traditional CMS and framework limitations.
+Atlantis is built for teams who need a complete, extensible application platform — not a CMS, not a bare framework, not a locked-in SaaS.
 
 <details>
 <summary><b>Full Comparison Matrix</b></summary>
 
-| Feature | Fromcode | WordPress | Strapi | Payload | Ghost / Directus | NestJS / Express |
+| Feature | Atlantis | WordPress | Strapi | Payload | Ghost / Directus | NestJS / Express |
 |:--------|:--------:|:---------:|:------:|:-------:|:----------------:|:----------------:|
 | **Deployment Mode** | API / API+Admin / Full-Stack | Monolithic | Headless Only | Headless Only | Headless Only | API Only |
 | **Architecture** | Modular Kernel + Plugins | PHP Monolith | Static Schema | Code-first Schema | Static Schema | Manual Structure |
@@ -668,7 +672,7 @@ Fromcode is built for teams who have outgrown traditional CMS and framework limi
 │   ├── frontend/      # Next.js Frontend — theme rendering engine
 │   ├── core/          # Kernel — RBAC, security, migrations, services
 │   ├── sdk/           # Public contract for plugins/themes
-│   └── cli/           # Fromcode CLI tool
+│   └── cli/           # Atlantis CLI tool
 ├── plugins/           # 🔌 Domain plugins (cms, ecommerce, finance, logistics, ...)
 ├── themes/            # 🎨 UI themes and layout bundles
 ├── starters/          # Local dev proxy and startup scripts
@@ -699,6 +703,6 @@ Fromcode is built for teams who have outgrown traditional CMS and framework limi
 [![React 19](https://img.shields.io/badge/React-19-cyan?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-orange?style=for-the-badge)](https://orm.drizzle.team/)
 
-Built with ❤️ by the Fromcode team.
+Built with ❤️ by [Fromcode](https://fromcode.com).
 
 </div>

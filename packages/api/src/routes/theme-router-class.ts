@@ -27,6 +27,7 @@ export class ThemeRouter extends BaseRouter {
     // Theme activation and reset
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.bind(this.controller.activate.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.bind(this.controller.activate.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_DISABLE, this.auth.guard(['admin']), this.bind(this.controller.disable.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.THEMES_SLUG_RESET, this.auth.guard(['admin']), this.bind(this.controller.reset.bind(this.controller)));
     
     // Installation
