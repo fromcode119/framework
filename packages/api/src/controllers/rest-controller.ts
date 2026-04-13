@@ -199,9 +199,8 @@ export class RESTController {
       const insertData = await this.processor.processIncomingData(collection, data, table, {
         localeContext
       });
-      const pk = (collection as any).primaryKey;
-      const useUpsert = pk && pk !== 'id' && insertData[pk] !== undefined;
-      const newItem = useUpsert
+      const pk = collection.primaryKey;
+      const newItem = pk && pk !== 'id' && insertData[pk] !== undefined
         ? await this.db.upsert(this.resolveWriteTarget(collection), insertData, {
             target: [pk],
             set: Object.fromEntries(Object.entries(insertData).filter(([k]) => k !== pk)),
