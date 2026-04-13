@@ -199,7 +199,14 @@ export class RESTController {
       const insertData = await this.processor.processIncomingData(collection, data, table, {
         localeContext
       });
-      const newItem = await this.db.insert(this.resolveWriteTarget(collection), insertData);
+      const pk = (collection as any).primaryKey;
+      const useUpsert = pk && pk !== 'id' && insertData[pk] !== undefined;
+      const newItem = useUpsert
+        ? await this.db.upsert(this.resolveWriteTarget(collection), insertData, {
+            target: [pk],
+            set: Object.fromEntries(Object.entries(insertData).filter(([k]) => k !== pk)),
+          })
+        : await this.db.insert(this.resolveWriteTarget(collection), insertData);
 
       // Hooks: After Create
       let finalItem = newItem;
