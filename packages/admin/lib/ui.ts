@@ -14,7 +14,7 @@ export class UiFieldUtils {
   static readonly FIELD = {
     base: `w-full box-border appearance-none ${UiFieldUtils.COMMON.radius} outline-none border ${UiFieldUtils.COMMON.transition} font-semibold ${UiFieldUtils.COMMON.shadow}`,
     light: 'bg-white border-slate-200 text-slate-900 caret-slate-900 placeholder:text-slate-400 hover:border-indigo-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 autofill:[-webkit-text-fill-color:#0f172a] autofill:shadow-[inset_0_0_0px_1000px_#ffffff]',
-    dark: 'dark:bg-slate-900/60 dark:border-slate-800 dark:text-white dark:caret-white dark:placeholder:text-slate-600 dark:hover:border-indigo-500/50 dark:focus:border-indigo-500 dark:focus:ring-0 dark:[color-scheme:dark] dark:autofill:[-webkit-text-fill-color:#ffffff] dark:autofill:caret-white dark:autofill:shadow-[inset_0_0_0px_1000px_rgba(15,23,42,0.96)]',
+    dark: 'dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:caret-slate-100 dark:placeholder:text-slate-500 dark:hover:border-indigo-500/50 dark:focus:border-indigo-500 dark:focus:ring-0 dark:[color-scheme:dark] dark:autofill:[-webkit-text-fill-color:#f8fafc] dark:autofill:caret-white dark:autofill:shadow-[inset_0_0_0px_1000px_rgb(2,6,23)]',
     sizes: {
       sm: {
         layout: 'py-1.5 px-3 h-9 text-[11px] leading-none',

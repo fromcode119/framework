@@ -1,15 +1,16 @@
 import { AdminAssistantPage } from './admin-assistant-page';
 import type { AdminExtensionBridge } from './admin-extension.types';
+import { AppPathConstants } from '@fromcode119/core/client';
 
 export class AdminExtensionRegistry {
   static registerAdminExtension(bridge: AdminExtensionBridge) {
-      // Register Forge assistant UI component to admin.minimal.root slot
+      // Register Atlantis Intelligence UI component to admin.minimal.root slot
       bridge.registerSlotComponent('admin.minimal.root', AdminAssistantPage, 'ai', 100);
 
-      // Register navigation menu item for Forge assistant
+      // Register navigation menu item for Atlantis Intelligence
       bridge.registerMenuItem({
-        label: 'Forge',
-        path: '/forge',
+        label: 'Atlantis Intelligence',
+        path: AppPathConstants.ADMIN.MINIMAL,
         icon: 'Zap',
         priority: 10,
         pluginSlug: 'ai',
