@@ -13,71 +13,203 @@ type HomeClientProps = {
 };
 
 const FRAMEWORK_TITLE = 'Atlantis';
-const FRAMEWORK_DESCRIPTION = 'Atlantis by Fromcode, the open-source platform for building scalable applications.';
 
 function StarterHero() {
   return (
-    <section className="relative isolate overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.08),transparent_36%),linear-gradient(180deg,rgba(248,250,252,0.96),rgba(255,255,255,0.98))] dark:bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.12),transparent_38%),linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.98))]" />
-      <div className="mx-auto flex min-h-[72vh] w-full max-w-6xl flex-col items-center justify-center px-6 py-20 text-center">
-        <div className="max-w-4xl rounded-[2rem] border border-slate-200/80 bg-white/85 px-8 py-12 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.35)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
-          <div className="mx-auto inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-            Default Starter Page
-          </div>
-          <div className="mt-6 space-y-5">
-            <div className="flex justify-center">
-              <img
-                src="/brand/atlantis-logo-slate.png"
-                alt="Atlantis by Fromcode"
-                className="block h-auto w-full max-w-[260px] dark:hidden sm:max-w-[320px]"
-              />
-              <img
-                src="/brand/atlantis-logo-white.png"
-                alt="Atlantis by Fromcode"
-                className="hidden h-auto w-full max-w-[260px] dark:block sm:max-w-[320px]"
-              />
-            </div>
-            <p className="mx-auto max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300 sm:text-xl">
-              {FRAMEWORK_DESCRIPTION}
-            </p>
-            <p className="mx-auto max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
-              Your frontend is live. Publish homepage content or install a theme layout to replace this placeholder with your project branding.
-            </p>
+    <>
+      {/* Scoped style reset — defeats any active theme's !important rules */}
+      <style>{`
+        [data-sh] {
+          font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+          text-transform: none !important;
+          font-variant: normal !important;
+          letter-spacing: normal !important;
+        }
+        [data-sh] h1, [data-sh] h2, [data-sh] p, [data-sh] a, [data-sh] span {
+          font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+          text-transform: none !important;
+          font-variant: normal !important;
+        }
+        [data-sh] h1 {
+          color: #ffffff !important;
+          font-size: clamp(2.5rem, 6vw, 4.5rem) !important;
+          font-weight: 900 !important;
+          line-height: 1.05 !important;
+          letter-spacing: -0.025em !important;
+          text-align: center !important;
+          max-width: 56rem !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+        }
+        [data-sh] h2 {
+          color: #ffffff !important;
+          font-size: 0.875rem !important;
+          font-weight: 700 !important;
+          letter-spacing: 0 !important;
+        }
+        [data-sh] p {
+          color: #94a3b8 !important;
+          font-size: 1rem !important;
+          line-height: 2 !important;
+        }
+        [data-sh] .sh-grad {
+          background: linear-gradient(to right, #818cf8, #a5b4fc, #67e8f9) !important;
+          background-clip: text !important;
+          -webkit-background-clip: text !important;
+          color: transparent !important;
+          display: inline !important;
+        }
+        [data-sh] .sh-muted { color: #475569 !important; font-size: 0.75rem !important; }
+        [data-sh] .sh-muted a { color: #64748b !important; }
+        [data-sh] * { box-sizing: border-box; }
+        [data-sh] .sh-center { text-align: center !important; }
+        [data-sh] .sh-cta-row {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 0.75rem !important;
+          flex-wrap: wrap !important;
+          margin-top: 2.5rem !important;
+        }
+        [data-sh] .sh-btn-primary {
+          display: inline-flex !important; align-items: center !important; justify-content: center !important;
+          padding: 0.875rem 2rem !important; border-radius: 9999px !important;
+          background-color: #4f46e5 !important; color: #ffffff !important;
+          font-size: 0.875rem !important; font-weight: 700 !important;
+          text-decoration: none !important; white-space: nowrap !important;
+          box-shadow: 0 0 48px rgba(99,102,241,0.4) !important;
+          min-width: 196px !important;
+        }
+        [data-sh] .sh-btn-secondary {
+          display: inline-flex !important; align-items: center !important; justify-content: center !important;
+          padding: 0.875rem 2rem !important; border-radius: 9999px !important;
+          border: 1px solid rgba(255,255,255,0.1) !important;
+          background-color: rgba(255,255,255,0.04) !important; color: #cbd5e1 !important;
+          font-size: 0.875rem !important; font-weight: 700 !important;
+          text-decoration: none !important; white-space: nowrap !important;
+          min-width: 196px !important;
+        }
+        [data-sh] .sh-grid-3 { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+        [data-sh] .sh-grid-wrap { margin-top: 5rem !important; width: 100% !important; max-width: 64rem !important; }
+        [data-sh] .sh-pillar {
+          display: flex !important; flex-direction: column !important; gap: 1rem !important;
+          padding: 2rem !important;
+        }
+        [data-sh] .sh-feat-icon {
+          font-size: 1.5rem !important; line-height: 1 !important;
+          display: block !important; margin-bottom: 0.5rem !important;
+        }
+        [data-sh] .sh-footnote { margin-top: 4rem !important; padding-bottom: 2rem !important; }
+        @media (max-width: 639px) {
+          [data-sh] .sh-grid-3 { grid-template-columns: 1fr !important; }
+          [data-sh] .sh-cta-row { flex-direction: column !important; }
+        }
+      `}</style>
+
+      <div data-sh className="relative min-h-screen overflow-hidden bg-[#04080f]">
+        {/* Layered deep-ocean atmosphere */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_60%_at_50%_-10%,rgba(79,70,229,0.18),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_10%_60%,rgba(99,102,241,0.07),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_90%_80%,rgba(6,182,212,0.06),transparent)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgba(4,8,15,0.8)_100%)]" />
+          {/* Micro grid */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.018)_1px,transparent_1px)] bg-[size:80px_80px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_40%,black,transparent)]" />
+        </div>
+
+        <div className="sh-center relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 py-28 text-center">
+
+          {/* Logo */}
+          <div className="mb-14">
+            <img
+              src="/brand/atlantis-logo-white.png"
+              alt="Atlantis by Fromcode"
+              className="mx-auto h-auto w-full max-w-[180px] opacity-95 sm:max-w-[220px]"
+            />
           </div>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          {/* Headline */}
+          <h1 className="mx-auto max-w-4xl">
+            The framework that{' '}
+            <span className="sh-grad bg-gradient-to-r from-indigo-400 via-indigo-300 to-cyan-400 bg-clip-text">
+              doesn&apos;t get in your&nbsp;way
+            </span>
+            .
+          </h1>
+
+          <p className="mx-auto mt-7 max-w-xl">
+            Atlantis is the open-source full-stack platform by Fromcode for teams
+            who want to build production-grade applications — fast, composable, and on their own terms.
+          </p>
+
+          {/* CTAs */}
+          <div className="sh-cta-row mt-10 flex flex-col items-center gap-3 sm:flex-row">
             <a
               href={ADMIN_BASE_PATH}
-              className="inline-flex min-w-[180px] items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
+              className="sh-btn-primary inline-flex min-w-[196px] items-center justify-center rounded-full bg-indigo-600 px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_48px_rgba(99,102,241,0.4)] transition-all duration-300 hover:bg-indigo-500 hover:shadow-[0_0_64px_rgba(99,102,241,0.55)]"
             >
-              Go to Admin
+              Open Admin →
             </a>
             <a
               href="https://docs.fromcode.com"
-              className="inline-flex min-w-[180px] items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-500 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
+              className="sh-btn-secondary inline-flex min-w-[196px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-8 py-3.5 text-sm font-bold text-slate-300 backdrop-blur transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
             >
               Documentation
             </a>
           </div>
 
-          <div className="mt-12 grid w-full max-w-4xl gap-4 text-left sm:grid-cols-3">
-            {[
-              ['Admin + API + Frontend', 'The starter stack is already wired so you can move from setup to shipped features without restructuring the app.'],
-              ['Theme-first frontend', 'Replace this fallback by publishing homepage content or supplying a theme layout with your own visual system.'],
-              ['Open framework surface', 'Plugins, themes, and workflows stay extensible while Atlantis branding remains the default runtime experience.'],
-            ].map(([title, copy]) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/45"
-              >
-                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{copy}</p>
-              </div>
-            ))}
+          {/* Feature pillars */}
+          <div className="sh-grid-wrap mt-24 w-full max-w-5xl">
+            <div className="sh-grid-3 grid overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] text-left sm:grid-cols-3">
+              {[
+                {
+                  color: '#818cf8',
+                  icon: '⬡',
+                  title: 'Full-stack in one repo',
+                  body: 'Admin panel, REST API, and frontend ship together. No glue code, no ceremony — just your product.',
+                },
+                {
+                  color: '#22d3ee',
+                  icon: '◈',
+                  title: 'Isolated plugin system',
+                  body: 'Every plugin is a sealed module. They communicate through a typed event bus without touching each other.',
+                },
+                {
+                  color: '#a78bfa',
+                  icon: '◇',
+                  title: 'Theme-swappable UI',
+                  body: 'Replace the entire visual layer at runtime. Layouts, styles, and components — all owned by the theme.',
+                },
+              ].map(({ color, icon, title, body }, i) => (
+                <div
+                  key={title}
+                  className={`sh-pillar group flex flex-col gap-4 p-8 transition-colors duration-300 hover:bg-white/[0.03] ${i < 2 ? 'sm:border-r border-white/[0.07]' : ''}`}
+                >
+                  <div
+                    aria-hidden="true"
+                    style={{ fontSize: '1.75rem', lineHeight: 1, marginBottom: '0.75rem', color, fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}
+                  >{icon}</div>
+                  <h2>{title}</h2>
+                  <p className="transition-colors duration-300 group-hover:text-slate-400">
+                    {body}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Ambient footnote */}
+          <p className="sh-muted sh-footnote mt-16">
+            Built by{' '}
+            <a href="https://fromcode.com" className="underline decoration-slate-700 underline-offset-4 transition-colors hover:text-slate-400">
+              Fromcode
+            </a>
+            {' '}— Publish homepage content from the Admin to replace this page.
+          </p>
         </div>
       </div>
-    </section>
+    </>
   );
 }
 
