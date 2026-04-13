@@ -8,12 +8,15 @@ import { FrameworkIcons } from '@/lib/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { AdminApi } from '@/lib/api';
+import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminConstants } from '@/lib/constants';
 import { NotificationHooks } from '@/components/use-notification';
 import { AppEnv } from '@/lib/env';
 import { AuthUtils } from '@/lib/auth-utils';
 
 const loginInputClassName = 'bg-white text-slate-900 placeholder:text-slate-400 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:border-slate-700';
+const ATLANTIS_LOGO_SLATE_PATH = AdminPathUtils.toAdminPath('/brand/atlantis-logo-slate.png');
+const ATLANTIS_LOGO_WHITE_PATH = AdminPathUtils.toAdminPath('/brand/atlantis-logo-white.png');
 
 export default function LoginPage() {
   const router = useRouter();
@@ -131,21 +134,18 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="text-center mb-10">
-          <div className="mb-6 inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-white px-5 py-4 shadow-xl shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30">
+          <div className="mb-6 inline-flex items-center justify-center px-5 py-4 ">
             <img
-              src="/brand/atlantis-logo-slate.png"
+              src={ATLANTIS_LOGO_SLATE_PATH}
               alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
               className="h-auto w-[220px] dark:hidden"
             />
             <img
-              src="/brand/atlantis-logo-white.png"
+              src={ATLANTIS_LOGO_WHITE_PATH}
               alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
               className="hidden h-auto w-[220px] dark:block"
             />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-            Welcome to {AppEnv.APP_NAME}
-          </h1>
           <p className="font-medium text-slate-500 dark:text-slate-300">
             Sign in to manage your {AppEnv.APP_NAME} workspace powered by {AppEnv.COMPANY_NAME}.
           </p>

@@ -76,6 +76,7 @@ export class AdminConstants {
     UPLOAD: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_UPLOAD),
     UPLOAD_INSPECT: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_UPLOAD_INSPECT),
     ACTIVATE: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, { slug }),
+    DISABLE: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_DISABLE, { slug }),
     RESET: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_RESET, { slug }),
     INSTALL: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_INSTALL, { slug }),
     CONFIG: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, { slug }),

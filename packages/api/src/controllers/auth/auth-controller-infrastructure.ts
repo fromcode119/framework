@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import {
+  ApplicationUrlUtils,
   AppPathConstants,
   CookieConstants,
   Logger,
@@ -116,11 +117,11 @@ export class AuthControllerInfrastructure {
 
   protected async getAdminBaseUrl(req: Request): Promise<string> {
     const configuredInDb = String((await this.getMetaValue(SystemConstants.META_KEY.ADMIN_URL)) || '').trim();
-    if (configuredInDb) return configuredInDb.replace(/\/+$/, '');
+    if (configuredInDb) return this.normalizeAdminBaseUrl(configuredInDb);
 
     const configured =
       process.env.ADMIN_URL;
-    if (configured) return configured.replace(/\/+$/, '');
+    if (configured) return this.normalizeAdminBaseUrl(configured);
 
     const refererUrl = RequestSurfaceUtils.readRefererUrl(req);
     if (refererUrl && RequestSurfaceUtils.isAdminPath(refererUrl.pathname)) {
@@ -335,5 +336,25 @@ export class AuthControllerInfrastructure {
 
   protected joinBaseUrl(baseUrl: string, path: string): string {
     return `${String(baseUrl || '').replace(/\/+$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
+  }
+
+  protected normalizeAdminBaseUrl(baseUrl: string): string {
+    const normalizedBaseUrl = String(baseUrl || '').trim().replace(/\/+$/, '');
+    if (!normalizedBaseUrl) {
+      return '';
+    }
+
+    const configuredBasePath = ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
+      || AppPathConstants.ADMIN.ADMIN.BASE;
+    if (!configuredBasePath || configuredBasePath === '/') {
+      return normalizedBaseUrl;
+    }
+
+    const existingPath = ApplicationUrlUtils.deriveBasePathFromUrl(normalizedBaseUrl, '');
+    if (existingPath) {
+      return normalizedBaseUrl;
+    }
+
+    return this.joinBaseUrl(normalizedBaseUrl, configuredBasePath);
   }
 }

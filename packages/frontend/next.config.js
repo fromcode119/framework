@@ -46,6 +46,7 @@ const nextConfig = {
 
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
     config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/index.ts');
+    config.resolve.alias['@fromcode119/core/client$'] = path.resolve(__dirname, '../core/src/client.ts');
     config.resolve.alias['@fromcode119/sdk$'] = path.resolve(__dirname, '../sdk/src/index.ts');
     config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
     config.resolve.alias['@fromcode119/database/naming-strategy$'] = path.resolve(__dirname, '../database/src/naming-strategy.ts');
