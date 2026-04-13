@@ -24,6 +24,8 @@ function StarterHero() {
           text-transform: none !important;
           font-variant: normal !important;
           letter-spacing: normal !important;
+          background-color: #04080f !important;
+          color: #ffffff !important;
         }
         [data-sh] h1, [data-sh] h2, [data-sh] p, [data-sh] a, [data-sh] span {
           font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
