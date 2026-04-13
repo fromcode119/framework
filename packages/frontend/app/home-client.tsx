@@ -19,14 +19,14 @@ function StarterHero() {
     <>
       {/* Scoped style reset — defeats any active theme's !important rules */}
       <style>{`
+        html, body { background: #04080f !important; color: #ffffff !important; margin: 0 !important; padding: 0 !important; }
         [data-sh] {
           font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
           text-transform: none !important;
           font-variant: normal !important;
           letter-spacing: normal !important;
-          background-color: #04080f !important;
-          color: #ffffff !important;
         }
+        [data-sh] div { background-color: transparent !important; border: none !important; }
         [data-sh] h1, [data-sh] h2, [data-sh] p, [data-sh] a, [data-sh] span {
           font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
           text-transform: none !important;
@@ -81,7 +81,7 @@ function StarterHero() {
           font-size: 0.875rem !important; font-weight: 700 !important;
           text-decoration: none !important; white-space: nowrap !important;
           box-shadow: 0 0 48px rgba(99,102,241,0.4) !important;
-          min-width: 196px !important;
+          min-width: 196px !important; border: none !important;
         }
         [data-sh] .sh-btn-secondary {
           display: inline-flex !important; align-items: center !important; justify-content: center !important;
@@ -92,8 +92,10 @@ function StarterHero() {
           text-decoration: none !important; white-space: nowrap !important;
           min-width: 196px !important;
         }
+        [data-sh] .sh-dark-bg { background-color: #04080f !important; }
         [data-sh] .sh-grid-3 { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
         [data-sh] .sh-grid-wrap { margin-top: 5rem !important; width: 100% !important; max-width: 64rem !important; }
+        [data-sh] .sh-grid-panel { background-color: rgba(255,255,255,0.02) !important; border: 1px solid rgba(255,255,255,0.07) !important; }
         [data-sh] .sh-pillar {
           display: flex !important; flex-direction: column !important; gap: 1rem !important;
           padding: 2rem !important;
@@ -109,7 +111,7 @@ function StarterHero() {
         }
       `}</style>
 
-      <div data-sh className="relative min-h-screen overflow-hidden bg-[#04080f]">
+      <div data-sh className="sh-dark-bg relative min-h-screen overflow-hidden bg-[#04080f]">
         {/* Layered deep-ocean atmosphere */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_60%_at_50%_-10%,rgba(79,70,229,0.18),transparent)]" />
@@ -163,7 +165,7 @@ function StarterHero() {
 
           {/* Feature pillars */}
           <div className="sh-grid-wrap mt-24 w-full max-w-5xl">
-            <div className="sh-grid-3 grid overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] text-left sm:grid-cols-3">
+            <div className="sh-grid-3 sh-grid-panel grid overflow-hidden rounded-2xl text-left sm:grid-cols-3">
               {[
                 {
                   color: '#818cf8',
