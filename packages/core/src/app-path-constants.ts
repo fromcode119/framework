@@ -19,7 +19,7 @@ export class AppPathConstants {
 
   static readonly ADMIN = {
     ROOT: '/',
-    MINIMAL: '/forge',
+    MINIMAL: '/atlantis',
     ACTIVITY: '/activity',
     ACTIVITY_FILTER: (query: Record<string, string | number | boolean | undefined | null>) =>
       AppPathConstants.withQuery('/activity', query),
