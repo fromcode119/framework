@@ -69,7 +69,7 @@ export class RESTController {
   async find(collection: Collection, req: any, res?: Response) {
     try {
       const {
-        limit = 10,
+        limit,
         page,
         offset,
         sort,
@@ -98,9 +98,10 @@ export class RESTController {
 
       const whereClause = QueryHelper.buildWhereClause(this.db, collection, table, filters, search);
       const orderBy = QueryHelper.buildOrderBy(this.db, collection, table, sort);
+      const defaultLimit = collection.slug === 'settings' ? 1000 : 10;
       
       const parsedLimit = parseInt(String(limit), 10);
-      const limitVal = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 10;
+      const limitVal = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 1000) : defaultLimit;
 
       const hasOffsetInput =
         offset !== undefined &&

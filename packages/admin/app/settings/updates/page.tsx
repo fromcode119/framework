@@ -10,6 +10,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { ThemeHooks } from '@/components/use-theme';
+import { AppEnv } from '@/lib/env';
 
 export default function UpdatesPage() {
   const { theme } = ThemeHooks.useTheme();
@@ -59,6 +60,10 @@ export default function UpdatesPage() {
     </div>
   );
 
+  const installedVersion = String(status?.current || AppEnv.APP_VERSION || '').trim();
+  const latestVersion = String(status?.latest || installedVersion || '').trim();
+  const hasUpdate = Boolean(status?.hasUpdate && latestVersion && latestVersion !== installedVersion);
+
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
       {/* Sub-Page Header */}
@@ -101,8 +106,8 @@ export default function UpdatesPage() {
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-4">
                   <h2 className={`text-3xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Fromcode Core Engine</h2>
-                  <Badge variant={status?.hasUpdate ? 'warning' : 'success'} className="px-4 py-1.5 text-[10px] font-bold tracking-tight rounded-full">
-                    {status?.hasUpdate ? 'Update Available' : 'Framework Up to Date'}
+                  <Badge variant={hasUpdate ? 'warning' : 'success'} className="px-4 py-1.5 text-[10px] font-bold tracking-tight rounded-full">
+                    {hasUpdate ? 'Update Available' : 'Framework Up to Date'}
                   </Badge>
                 </div>
                 
@@ -115,21 +120,21 @@ export default function UpdatesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className={`p-6 rounded-[1.5rem] border transition-all ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
                   <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Installed Version</div>
-                  <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{status?.current}</div>
+                  <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{installedVersion}</div>
                 </div>
                 <div className={`p-6 rounded-[1.5rem] border transition-all ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
                   <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Latest Registry Version</div>
-                  <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{status?.latest || status?.current}</div>
+                  <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{latestVersion}</div>
                 </div>
               </div>
 
-              {status?.hasUpdate && (
+              {hasUpdate && (
                 <div className={`mt-8 p-8 rounded-[2rem] border transition-all transform hover:scale-[1.01] ${theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
                   <div className="flex items-center gap-3 text-amber-600 font-bold tracking-tight mb-3">
                     <div className="p-2 bg-amber-500/10 rounded-xl">
                       <FrameworkIcons.Warning size={20} />
                     </div>
-                    <span>v{status.latest} Recommended Update</span>
+                    <span>v{latestVersion} Recommended Update</span>
                   </div>
                   <p className={`text-sm font-bold leading-relaxed mb-8 ${theme === 'dark' ? 'text-amber-200/60' : 'text-amber-800/70'}`}>
                     This version introduces cumulative improvements to the plugin isolation layer 
@@ -140,7 +145,7 @@ export default function UpdatesPage() {
                     disabled={updating}
                     className="w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold tracking-tight text-[12px] transition-all shadow-2xl shadow-indigo-600/30 active:scale-95 disabled:opacity-50"
                   >
-                    {updating ? 'Applying Update...' : 'Install Core v' + status.latest}
+                    {updating ? 'Applying Update...' : 'Install Core v' + latestVersion}
                   </button>
                 </div>
               )}
@@ -160,7 +165,7 @@ export default function UpdatesPage() {
           onConfirm={handleUpdate}
           isLoading={updating}
           title="Apply System Update?"
-          description={`You are about to update Fromcode Core from v${status?.current} to v${status?.latest}. A complete system backup will be created automatically before proceeding. This process will overwrite system files and may cause a temporary service disruption while the server restarts.`}
+          description={`You are about to update Fromcode Core from v${installedVersion} to v${latestVersion}. A complete system backup will be created automatically before proceeding. This process will overwrite system files and may cause a temporary service disruption while the server restarts.`}
         />
       </div>
     </div>
