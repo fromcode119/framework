@@ -48,7 +48,7 @@ export class CollectionFieldGuard {
 
   hasIncomingReadOnlyChange(nextValue: any, existingValue: any, hasExistingRecord: boolean): boolean {
     if (nextValue === undefined) return false;
-    if (!hasExistingRecord) return this.normalizeComparableValue(nextValue) !== null;
+    if (!hasExistingRecord) return false; // allow setting read-only fields on create; only block changes after creation
     return this.normalizeComparableValue(nextValue) !== this.normalizeComparableValue(existingValue);
   }
 
