@@ -7,14 +7,13 @@ import ThemeAssets from "@/components/theme-assets";
 
 export const metadata: Metadata = {
   title: {
-    default: 'Atlantis Framework',
-    template: '%s | Atlantis Framework',
+    default: 'Fromcode Framework',
+    template: '%s | Fromcode Framework',
   },
-  description: 'Atlantis is the open-source application framework by Fromcode for building scalable applications.',
+  description: 'The open-source application framework by Fromcode for building scalable applications.',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/brand/atlantis-mark-indigo.png',
   },
 };
 
