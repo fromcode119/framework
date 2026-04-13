@@ -1,12 +1,16 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { NextResponse } from 'next/server';
 
-// Prevent favicon.ico 404 noise until a project-specific icon is uploaded.
 export async function GET() {
-  return new NextResponse(null, {
-    status: 204,
+  const iconPath = path.join(process.cwd(), 'public', 'favicon.ico');
+  const icon = await readFile(iconPath);
+
+  return new NextResponse(icon, {
+    status: 200,
     headers: {
-      'Cache-Control': 'public, max-age=86400'
+      'Content-Type': 'image/x-icon',
+      'Cache-Control': 'public, max-age=86400',
     }
   });
 }
-

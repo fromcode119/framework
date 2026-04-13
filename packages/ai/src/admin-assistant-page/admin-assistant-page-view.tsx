@@ -43,7 +43,7 @@ export function AdminAssistantPageView(props: AdminAssistantPageViewProps) {
         />
         <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
           <AssistantSimpleTopBar
-            sessionTitle="Forge AI"
+            sessionTitle="Atlantis Intelligence"
             historyCount={props.historySessions.length}
             onBackToAdmin={props.openAdvancedWorkspace}
             onHistoryToggle={props.toggleHistoryPanel}
