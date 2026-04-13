@@ -15,11 +15,12 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@/lib/icons';
 import { AppEnv } from '@/lib/env';
+import { PlatformBrandingService } from '@/lib/platform-branding-service';
 
 export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = AuthHooks.useAuth();
-  const { slots, refreshVersion } = ContextHooks.usePlugins();
+  const { slots, refreshVersion, settings } = ContextHooks.usePlugins();
   const [stats, setStats] = useState<any[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
   const [activePluginsCount, setActivePluginsCount] = useState<number>(0);
@@ -28,6 +29,7 @@ export default function AdminPage() {
   const [updateAvailable, setUpdateAvailable] = useState<any>(null);
   const [showAllCollections, setShowAllCollections] = useState(false);
   const collectionIdentity = CoreServices.getInstance().collectionIdentity;
+  const platformName = PlatformBrandingService.resolvePlatformName(settings as Record<string, unknown> | null | undefined);
   
   const hasMainContent = slots['admin.dashboard.main'] && slots['admin.dashboard.main'].length > 0;
   
@@ -399,7 +401,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                 <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400 uppercase">
-                  {AppEnv.APP_NAME} Infrastructure // v{AppEnv.APP_VERSION} {AppEnv.APP_CHANNEL}
+                  {platformName} Infrastructure // v{AppEnv.APP_VERSION} {AppEnv.APP_CHANNEL}
                 </span>
               </div>
               <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-tight">Connected to distributed cluster node. All systems operational.</p>
