@@ -1,122 +1,119 @@
-# docker-compose.yml
-# Based on framework-plan.md Section 12.2
+# Docker Compose for Full-Stack Mode (API + Admin + Frontend)
+# Usage: docker compose -f deploy/docker-compose.full-stack.yml up
+# Environment variables are injected via Coolify dashboard or a .env file at repo root.
+# All paths are relative to the repo root (project-directory) — required for Coolify compatibility.
 
 services:
-  # ===================
-  # API Service
-  # ===================
   api:
     build:
       context: .
-      target: base
-    command: npm run dev --workspace=@fromcode119/api
-    env_file: .env
+      dockerfile: Dockerfile
+      target: api-only
+      args:
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+    command: npm run start --workspace=@fromcode119/api
     environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-fromcode}:${POSTGRES_PASSWORD:-ChangeMe_Pg_P@ssw0rd}@db:5432/${POSTGRES_DB:-fromcode}
+      - DB_DIALECT=${DB_DIALECT:-postgres}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - JWT_SECRET=${JWT_SECRET:-CHANGE_ME_JWT_SECRET_MIN_32_CHARS}
+      - NODE_ENV=production
+      - API_URL=${API_URL:-http://api.framework.local}
+      - MARKETPLACE_URL=${MARKETPLACE_URL:-https://marketplace.fromcode.com/marketplace.json}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
+      - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
     depends_on:
       - db
       - redis
     volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/packages/api/node_modules
-      - /app/packages/core/node_modules
-      - /app/packages/admin/node_modules
-      - /app/packages/frontend/node_modules
       - ./public/uploads:/app/public/uploads
       - ${SHARED_PLUGINS_DIR:-./plugins}:/app/plugins
       - ${SHARED_THEMES_DIR:-./themes}:/app/themes
     networks:
       - framework
-      - docker_web
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 768M
 
-  # ===================
-  # Admin Service
-  # ===================
   admin:
     build:
       context: .
-      target: base
-    command: npm run dev --workspace=@fromcode119/admin
-    env_file: .env
+      dockerfile: Dockerfile
+      target: admin-only
+      args:
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+    command: npm run start --workspace=@fromcode119/admin
     environment:
-      - API_URL=${API_URL:-http://api:3000}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
-      - NODE_ENV=${NODE_ENV}
-      - WATCHPACK_POLLING=true
+      - API_URL=${INTERNAL_API_URL:-http://api:3000}
+      - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+      - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
+      - NODE_ENV=production
+      - PORT=3000
     depends_on:
       - api
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/packages/admin/node_modules
-      - /app/packages/admin/.next
-      - /app/packages/core/node_modules
     networks:
       - framework
-      - docker_web
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
-  # ===================
-  # Frontend Service
-  # ===================
   frontend:
     build:
       context: .
-      target: base
-    command: npm run dev --workspace=@fromcode119/frontend
-    env_file: .env
+      dockerfile: Dockerfile
+      target: frontend-only
+      args:
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+    command: npm run start --workspace=@fromcode119/frontend
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
-      - NODE_ENV=${NODE_ENV}
-      - WATCHPACK_POLLING=true
+      - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      - NODE_ENV=production
+      - PORT=3000
     depends_on:
       - api
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/packages/frontend/node_modules
-      - /app/packages/frontend/.next
-      - /app/packages/core/node_modules
     networks:
       - framework
-      - docker_web
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
-  # ===================
-  # Database
-  # ===================
   db:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER:-fromcode}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ChangeMe_Pg_P@ssw0rd}
+      - POSTGRES_DB=${POSTGRES_DB:-fromcode}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - framework
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-  # ===================
-  # Redis
-  # ===================
   redis:
     image: redis:7-alpine
     networks:
       - framework
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 96M
 
 networks:
   framework:
-  docker_web:
-    external: true
-    name: docker_web
 
 volumes:
   postgres_data:
