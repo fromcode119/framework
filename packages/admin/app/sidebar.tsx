@@ -8,11 +8,14 @@ import { Icon } from '@/components/icon';
 import { FrameworkIcons } from '@/lib/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
 import { AdminConstants } from '@/lib/constants';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminServices } from '@/lib/admin-services';
 import SecondarySidebarPanelBody from './secondary-sidebar-panel-body';
+
+const ATLANTIS_MARK_PATH = AdminPathUtils.toAdminPath('/brand/atlantis-mark-indigo.png');
 
 const { 
   Close = () => null, 
@@ -416,7 +419,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
         <div className={`p-5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30">
-              <img src="/brand/atlantis-mark-indigo.png" alt={`${AppEnv.APP_NAME} mark`} className="h-7 w-7 rounded-lg" />
+              <img src={ATLANTIS_MARK_PATH} alt={`${AppEnv.APP_NAME} mark`} className="h-7 w-7 rounded-lg" />
             </div>
             {!isMini && (
               <div className={`flex flex-col`}>

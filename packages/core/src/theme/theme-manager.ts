@@ -146,6 +146,23 @@ export class ThemeManager {
     this.logger.info(`Theme "${slug}" activated.`);
   }
 
+  async disableTheme(slug: string) {
+    const manifest = this.themes.get(slug);
+    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
+
+    const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
+    if (!existing && this.activeTheme !== slug) {
+      return;
+    }
+
+    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'inactive', updated_at: new Date() });
+    if (this.activeTheme === slug) {
+      this.activeTheme = null;
+    }
+
+    this.logger.info(`Theme "${slug}" disabled.`);
+  }
+
   async resetTheme(slug: string, options?: { runSeeds?: boolean; resetConfig?: boolean }) {
     const manifest = this.themes.get(slug);
     if (!manifest) throw new Error(`Theme "${slug}" not found.`);

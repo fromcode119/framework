@@ -177,6 +177,20 @@ export class InstalledThemesPageController {
           notify('error', 'Activation Failed', error.message);
         }
       },
+      onDisable: async (slug) => {
+        if (!confirm(`Disable theme "${slug}"? The frontend will fall back to the starter view until another theme is activated.`)) {
+          return;
+        }
+
+        try {
+          await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.DISABLE(slug));
+          notify('success', 'Theme Disabled', `${slug} is no longer active.`);
+          setThemes((value) => value.map((item) => ({ ...item, state: 'inactive' })));
+          triggerRefresh();
+        } catch (error: any) {
+          notify('error', 'Disable Failed', error.message);
+        }
+      },
       onDelete: async (slug, isActive) => {
         const confirmationMessage = isActive
           ? `Theme "${slug}" is active. The system will switch to another theme if available, or continue with no active theme. Continue?`

@@ -19,6 +19,7 @@ export default function InstalledThemesView({
   isUploading,
   loading,
   onActivate,
+  onDisable,
   onDelete,
   onUpdate,
   showUploadPreview,
@@ -44,7 +45,7 @@ export default function InstalledThemesView({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 min-[1400px]:grid-cols-3 gap-6">
-        {themes.length === 0 ? <div className="col-span-full py-20 text-center rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20"><div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.Palette size={32} className="text-slate-300 dark:text-slate-700" /></div><h3 className={`text-xl font-semibold mb-1 ${themeMode === 'dark' ? 'text-white' : 'text-slate-900'}`}>No themes installed</h3><p className="text-slate-500 font-medium italic">Your creative workspace is currently empty.</p></div> : themes.map((theme) => <InstalledThemeCard key={theme.slug} isDark={themeMode === 'dark'} onActivate={onActivate} onDelete={onDelete} onUpdate={onUpdate} theme={theme} updateVersion={updateVersionForTheme(theme)} />)}
+        {themes.length === 0 ? <div className="col-span-full py-20 text-center rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20"><div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.Palette size={32} className="text-slate-300 dark:text-slate-700" /></div><h3 className={`text-xl font-semibold mb-1 ${themeMode === 'dark' ? 'text-white' : 'text-slate-900'}`}>No themes installed</h3><p className="text-slate-500 font-medium italic">Your creative workspace is currently empty.</p></div> : themes.map((theme) => <InstalledThemeCard key={theme.slug} isDark={themeMode === 'dark'} onActivate={onActivate} onDisable={onDisable} onDelete={onDelete} onUpdate={onUpdate} theme={theme} updateVersion={updateVersionForTheme(theme)} />)}
       </div>
 
       <UploadPreviewDialog isOpen={showUploadPreview} title={uploadPreviewTitle} description={uploadPreviewDescription} sections={uploadPreviewSections} confirmLabel="Install Theme" cancelLabel="Cancel" isLoading={isUploading} onClose={closeUploadPreview} onConfirm={confirmUploadPreview} />

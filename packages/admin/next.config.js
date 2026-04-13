@@ -8,10 +8,11 @@ const extensions = fs.readdirSync(packagesDir).filter(name => {
   const ext = path.join(packagesDir, name);
   return fs.statSync(ext).isDirectory() && !['core', 'react', 'sdk', 'api', 'admin', 'auth', 'media', 'cache', 'database', 'scheduler'].includes(name);
 });
+const adminBasePath = NextConfigEnv.getAdminBasePath();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: NextConfigEnv.getAdminBasePath(),
+  basePath: adminBasePath,
   allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
   reactStrictMode: true,
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages
@@ -45,6 +46,50 @@ const nextConfig = {
   images: {
     remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
   },
+  async redirects() {
+    if (!adminBasePath) {
+      return [];
+    }
+
+    return [
+      {
+        source: '/login',
+        destination: `${adminBasePath}/login`,
+        permanent: false,
+        basePath: false,
+      },
+      {
+        source: '/forgot-password',
+        destination: `${adminBasePath}/forgot-password`,
+        permanent: false,
+        basePath: false,
+      },
+      {
+        source: '/reset-password',
+        destination: `${adminBasePath}/reset-password`,
+        permanent: false,
+        basePath: false,
+      },
+      {
+        source: '/setup',
+        destination: `${adminBasePath}/setup`,
+        permanent: false,
+        basePath: false,
+      },
+      {
+        source: '/brand/:path*',
+        destination: `${adminBasePath}/brand/:path*`,
+        permanent: false,
+        basePath: false,
+      },
+      {
+        source: '/favicon.ico',
+        destination: `${adminBasePath}/favicon.ico`,
+        permanent: false,
+        basePath: false,
+      },
+    ];
+  },
   webpack: (config, { isServer, dev }) => {
     // Force aliasing of @ to handle cases where the package is inside node_modules
     config.resolve.alias['@'] = path.resolve(__dirname);
@@ -72,6 +117,7 @@ const nextConfig = {
 
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
     config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/index.ts');
+    config.resolve.alias['@fromcode119/core/client$'] = path.resolve(__dirname, '../core/src/client.ts');
     config.resolve.alias['@fromcode119/sdk$'] = path.resolve(__dirname, '../sdk/src/index.ts');
     config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
     config.resolve.alias['@fromcode119/database/naming-strategy$'] = path.resolve(__dirname, '../database/src/naming-strategy.ts');

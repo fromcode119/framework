@@ -97,6 +97,16 @@ export class ThemeController {
     }
   }
 
+  async disable(req: Request, res: Response) {
+    const { slug } = req.params;
+    try {
+      await this.manager.disableTheme(slug);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   async reset(req: Request, res: Response) {
     const { slug } = req.params;
     const runSeeds = req.body?.runSeeds !== false;

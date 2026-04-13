@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { CookieConstants } from '@fromcode119/core/client';
-import { ApplicationUrlUtils } from '../../core/src/application-url-utils';
+import { ApplicationUrlUtils, CookieConstants } from '@fromcode119/core/client';
 import { AdminConstants } from './constants';
 
 /**
