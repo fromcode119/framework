@@ -11,6 +11,34 @@ export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
   private static client = new MarketplaceClient();
 
+  private static resolveInstalledVersion(): string {
+    const rootDir = ProjectPaths.getProjectRoot();
+    const candidatePaths = [
+      path.resolve(rootDir, 'packages/core/package.json'),
+      path.resolve(rootDir, 'packages/admin/package.json'),
+      path.resolve(rootDir, 'packages/api/package.json'),
+      path.resolve(rootDir, 'package.json'),
+    ];
+
+    for (const candidatePath of candidatePaths) {
+      if (!fs.existsSync(candidatePath)) {
+        continue;
+      }
+
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(candidatePath, 'utf8')) as { version?: string };
+        const version = String(packageJson.version || '').trim();
+        if (version && semver.valid(version)) {
+          return version;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return '0.0.0';
+  }
+
   private static getFileHash(filePath: string): string {
     if (!fs.existsSync(filePath)) return '';
     try {
@@ -27,13 +55,7 @@ export class SystemUpdateService {
       
       if (!marketplaceData.core) return null;
 
-      let currentVersion = '0.0.0';
-      const rootDir = ProjectPaths.getProjectRoot();
-      const pkgPath = path.resolve(rootDir, 'package.json');
-      if (fs.existsSync(pkgPath)) {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-        currentVersion = pkg.version || '0.0.0';
-      }
+      const currentVersion = this.resolveInstalledVersion();
 
       return {
         current: currentVersion,

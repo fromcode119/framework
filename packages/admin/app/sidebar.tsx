@@ -13,6 +13,7 @@ import { AppEnv } from '@/lib/env';
 import { AdminConstants } from '@/lib/constants';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminServices } from '@/lib/admin-services';
+import { PlatformBrandingService } from '@/lib/platform-branding-service';
 import SecondarySidebarPanelBody from './secondary-sidebar-panel-body';
 
 const ATLANTIS_MARK_PATH = AdminPathUtils.toAdminPath('/brand/atlantis-mark-indigo.png');
@@ -243,11 +244,15 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
   onPreviewRegionEnter?: () => void,
   onPreviewRegionLeave?: () => void,
 }) {
-  const { menuItems, plugins } = ContextHooks.usePlugins();
+  const { menuItems, plugins, settings } = ContextHooks.usePlugins();
   const { theme } = ThemeHooks.useTheme();
   const { user } = AuthHooks.useAuth();
   const rawPathname = usePathname();
   const pathname = rawPathname || '';
+  const platformName = React.useMemo(
+    () => PlatformBrandingService.resolvePlatformName(settings as Record<string, unknown> | null | undefined),
+    [settings]
+  );
   const normalizedActivePrimaryPathOverride = React.useMemo(() => NavUtils.normalizePath(activePrimaryPathOverride), [activePrimaryPathOverride]);
 
   const [collapsedGroups, setCollapsedGroups] = React.useState<string[]>([]);
@@ -419,12 +424,12 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
         <div className={`p-5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30">
-              <img src={ATLANTIS_MARK_PATH} alt={`${AppEnv.APP_NAME} mark`} className="h-7 w-7 rounded-lg" />
+              <img src={ATLANTIS_MARK_PATH} alt={`${platformName} mark`} className="h-7 w-7 rounded-lg" />
             </div>
             {!isMini && (
               <div className={`flex flex-col`}>
                 <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
-                  {AppEnv.APP_NAME}
+                  {platformName}
                 </span>
                 <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
                   by {AppEnv.COMPANY_NAME}
