@@ -48,6 +48,23 @@ export class RESTController {
     return collection.tableName || collection.slug;
   }
 
+  private resolveRecordIdentifier(collection: Collection, item: any): any {
+    const primaryKey = collection.primaryKey || 'id';
+    return item?.[primaryKey];
+  }
+
+  private async insertCollectionRecord(collection: Collection, table: any, data: any): Promise<any> {
+    const primaryKey = collection.primaryKey;
+    if (!primaryKey || primaryKey === 'id' || data[primaryKey] === undefined) {
+      return this.db.insert(this.resolveWriteTarget(collection), data);
+    }
+
+    return this.db.upsert(table, data, {
+      target: primaryKey,
+      set: Object.fromEntries(Object.entries(data).filter(([key]) => key !== primaryKey)),
+    });
+  }
+
   /** Universal find (handles both REST and Internal/GraphQL) */
   async find(collection: Collection, req: any, res?: Response) {
     try {
@@ -199,24 +216,19 @@ export class RESTController {
       const insertData = await this.processor.processIncomingData(collection, data, table, {
         localeContext
       });
-      const pk = collection.primaryKey;
-      const newItem = pk && pk !== 'id' && insertData[pk] !== undefined
-        ? await this.db.upsert(this.resolveWriteTarget(collection), insertData, {
-            target: [pk],
-            set: Object.fromEntries(Object.entries(insertData).filter(([k]) => k !== pk)),
-          })
-        : await this.db.insert(this.resolveWriteTarget(collection), insertData);
+      const newItem = await this.insertCollectionRecord(collection, table, insertData);
 
       // Hooks: After Create
       let finalItem = newItem;
       finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_CREATE, newItem);
       finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
+      const recordId = this.resolveRecordIdentifier(collection, finalItem);
 
       if (collection.versions !== false) {
-        await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, `Initial creation of ${collection.slug} record`);
+        await this.versioningService.createSnapshot(collection, recordId, finalItem, req.user, `Initial creation of ${collection.slug} record`);
       }
 
-      this.logger.info(`Created record in ${collection.slug} : ${finalItem.id}`);
+      this.logger.info(`Created record in ${collection.slug} : ${recordId}`);
       this.emitCollectionEvent(collection, 'created', finalItem);
       this.emitCollectionEvent(collection, 'saved', finalItem);
       
@@ -345,7 +357,6 @@ export class RESTController {
     try {
       const items = Array.isArray(req.body) ? req.body : [req.body];
       const table = QueryHelper.getVirtualTable(collection);
-      const writeTarget = this.resolveWriteTarget(collection);
       const results: any[] = [];
       const globalSummary = req.body._change_summary || `Bulk creation of ${collection.slug}`;
       const localeContext = await this.localization.getLocaleContext(req);
@@ -356,10 +367,10 @@ export class RESTController {
         const individualSummary = data._change_summary || globalSummary;
         if (data._change_summary) delete data._change_summary;
         const insertData = await this.processor.processIncomingData(collection, data, table, { localeContext });
-        const newItem = await this.db.insert(writeTarget, insertData);
+        const newItem = await this.insertCollectionRecord(collection, table, insertData);
         let finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_CREATE, newItem);
         finalItem = await this.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
-        await this.versioningService.createSnapshot(collection, finalItem.id, finalItem, req.user, individualSummary);
+        await this.versioningService.createSnapshot(collection, this.resolveRecordIdentifier(collection, finalItem), finalItem, req.user, individualSummary);
         this.emitCollectionEvent(collection, 'created', finalItem);
         this.emitCollectionEvent(collection, 'saved', finalItem);
         results.push(this.processor.filterHiddenFields(collection, finalItem, { localeContext, rawLocalized: false }));
@@ -476,7 +487,6 @@ export class RESTController {
       const items = req.body;
       if (!Array.isArray(items)) return res.status(400).json({ error: 'Payload must be an array of records' });
       const table = QueryHelper.getVirtualTable(collection);
-      const writeTarget = this.resolveWriteTarget(collection);
       const results: any[] = [];
       const localeContext = await this.localization.getLocaleContext(req as any);
       for (const item of items) {
@@ -485,8 +495,8 @@ export class RESTController {
         this.fieldGuard.assertPermalinkNotReserved(collection, itemData);
         try {
           const insertData = await this.processor.processIncomingData(collection, itemData, table, { localeContext });
-          const newItem = await this.db.insert(writeTarget, insertData);
-          results.push({ id: newItem.id, status: 'success' });
+          const newItem = await this.insertCollectionRecord(collection, table, insertData);
+          results.push({ id: this.resolveRecordIdentifier(collection, newItem), status: 'success' });
         } catch (e: any) { results.push({ item: item.name || item.title || 'unknown', status: 'error', error: e.message }); }
       }
       res.json({ total: items.length, success: results.filter(r => r.status === 'success').length, errors: results.filter(r => r.status === 'error') });
