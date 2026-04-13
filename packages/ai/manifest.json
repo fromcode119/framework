@@ -3,7 +3,7 @@
   "name": "AI Assistant Extension",
   "version": "0.1.31",
   "type": "core-extension",
-  "description": "Forge AI assistant with multi-mode operation (chat, planning, agent), MCP-based tool abstraction, and session persistence. Supports OpenAI and Ollama providers.",
+  "description": "Atlantis Intelligence assistant with multi-mode operation (chat, planning, agent), MCP-based tool abstraction, and session persistence. Supports OpenAI and Ollama providers.",
   "author": "Fromcode Core",
   "main": "dist/extension.js",
   "apiPath": "forge",
@@ -33,7 +33,7 @@
     ],
     "routes": [
       {
-        "path": "/admin/forge",
+        "path": "/admin/atlantis",
         "component": "AdminAssistantPage"
       }
     ]

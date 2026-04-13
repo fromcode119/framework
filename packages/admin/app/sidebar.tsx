@@ -415,8 +415,8 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
       <div className={`min-w-0 ${showMobileSecondaryPanel ? 'w-[45%] max-w-[18rem] min-w-[15rem] border-r border-slate-200 dark:border-slate-800' : 'w-full lg:flex-1 lg:min-h-0'} flex flex-col bg-white dark:bg-[#020617]`}>
         <div className={`p-5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
-            <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 flex-shrink-0">
-              <Zap size={18} className="text-white" fill="currentColor" />
+            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30">
+              <img src="/brand/atlantis-mark-indigo.png" alt={`${AppEnv.APP_NAME} mark`} className="h-7 w-7 rounded-lg" />
             </div>
             {!isMini && (
               <div className={`flex flex-col`}>
@@ -424,7 +424,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
                   {AppEnv.APP_NAME}
                 </span>
                 <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
-                  Admin Panel
+                  by {AppEnv.COMPANY_NAME}
                 </span>
               </div>
             )}

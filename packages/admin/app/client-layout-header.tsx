@@ -84,8 +84,8 @@ export default function ClientLayoutHeader({ onMenuClick }: ClientLayoutHeaderPr
         <button
           onClick={() => router.push(AdminConstants.ROUTES.MINIMAL)}
           className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 text-slate-700 transition-colors hover:border-cyan-400/60 hover:text-cyan-500 dark:border-slate-700 dark:text-slate-200"
-          aria-label="Open Forge"
-          title="Open Forge"
+          aria-label="Open Atlantis Intelligence"
+          title="Open Atlantis Intelligence"
         >
           <FrameworkIcons.Zap size={14} />
         </button>

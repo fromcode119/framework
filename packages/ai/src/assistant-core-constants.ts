@@ -1,5 +1,5 @@
 export class AssistantConstants {
-  static readonly SURFACE_NAME = 'Forge';
+  static readonly SURFACE_NAME = 'Atlantis Intelligence';
   
   static readonly ENDPOINTS = {
     INTEGRATION: '/system/admin/integrations/ai',
@@ -76,4 +76,3 @@ export class AssistantConstants {
 
 
 // ─── Types moved to companion file (ARC-006) ────────────────────────────────
-

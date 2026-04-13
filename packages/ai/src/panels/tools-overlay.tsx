@@ -53,7 +53,7 @@ export function ToolsOverlay({
             </button>
           </div>
         </div>
-        <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">Choose what Forge is allowed to use in this chat.</p>
+        <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">Choose what Atlantis Intelligence is allowed to use in this chat.</p>
       </div>
       <div className="max-h-64 overflow-y-auto p-1.5">
         {availableTools.length === 0 ? (

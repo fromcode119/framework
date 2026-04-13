@@ -33,7 +33,7 @@ export function HistoryPanel({
   const sidebarContent = (
     <div className="flex h-full w-full flex-col p-4">
       <div className="mb-4 flex h-12 items-center justify-between">
-        <span className="text-base font-bold tracking-tight text-[var(--text-main)]">Forge</span>
+        <span className="text-base font-bold tracking-tight text-[var(--text-main)]">Atlantis Intelligence</span>
         <div className="flex items-center gap-1.5">
           <button
             type="button"

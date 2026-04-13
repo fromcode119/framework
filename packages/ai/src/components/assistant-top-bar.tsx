@@ -23,9 +23,9 @@ export function AssistantTopBar({
     <div className="fixed right-4 top-4 z-40 flex justify-end sm:right-6 sm:top-6">
       <div className="flex max-w-[92vw] items-center gap-2 rounded-xl border border-slate-200/85 bg-white/92 p-1.5 shadow-[0_8px_28px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-950/78 dark:shadow-[0_12px_32px_rgba(2,6,23,0.62)]">
         <div className="inline-flex h-8 items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-900/70">
-          <button type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-slate-900 px-2 text-[10px] font-semibold text-white transition dark:bg-white/18" title="Forge mode">
+          <button type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-slate-900 px-2 text-[10px] font-semibold text-white transition dark:bg-white/18" title="Atlantis Intelligence mode">
             <FrameworkIcons.Home size={11} />
-            <span>Forge</span>
+            <span>Atlantis</span>
           </button>
           <button type="button" onClick={openAdvancedWorkspace} className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[10px] font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white" title="Open advanced admin">
             <FrameworkIcons.Settings size={11} />

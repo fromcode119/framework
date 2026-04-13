@@ -15,7 +15,7 @@ interface AssistantSimpleTopBarProps {
 }
 
 export function AssistantSimpleTopBar({
-  sessionTitle = 'Forge AI',
+  sessionTitle = 'Atlantis Intelligence',
   historyCount = 0,
   onBackToAdmin,
   onHistoryToggle,
@@ -44,6 +44,10 @@ export function AssistantSimpleTopBar({
         >
           <FrameworkIcons.Menu size={14} />
         </button>
+        <div className="hidden rounded-full border border-white/40 bg-white/40 px-3 py-1 text-xs font-semibold text-[var(--text-main)] shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/40 sm:inline-flex">
+          {sessionTitle}
+          {historyCount > 0 ? ` • ${historyCount}` : ''}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

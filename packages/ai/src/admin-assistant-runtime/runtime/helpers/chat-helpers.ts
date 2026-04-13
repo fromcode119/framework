@@ -102,7 +102,7 @@ export class ChatHelpers {
    *   intent: { kind: 'chat', confidence: 0.9 },
    *   workspaceSummary: 'Collections: posts, pages'
    * });
-   * // => "You are Forge Assistant.\nChat naturally..."
+   * // => "You are Atlantis Intelligence.\nChat naturally..."
    */
  static buildSystemPrompt(input: {
     profile: AssistantPromptProfile;
@@ -111,7 +111,7 @@ export class ChatHelpers {
     workspaceSummary: string;
   }): string {
     const base = [
-      'You are Forge Assistant.',
+      'You are Atlantis Intelligence.',
       'Chat naturally when the user is chatting or asking factual questions.',
       'Do not force staging, planning, or approval language unless the user asked to change data/files.',
       'If a target is missing for an action, ask one focused clarification and stop.',

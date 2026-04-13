@@ -13,6 +13,8 @@ import { NotificationHooks } from '@/components/use-notification';
 import { AppEnv } from '@/lib/env';
 import { AuthUtils } from '@/lib/auth-utils';
 
+const loginInputClassName = 'bg-white text-slate-900 placeholder:text-slate-400 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:border-slate-700';
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -129,13 +131,24 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-600/30 mb-6 transform hover:scale-110 transition-transform">
-            <FrameworkIcons.Zap size={32} className="text-white" fill="currentColor" />
+          <div className="mb-6 inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-white px-5 py-4 shadow-xl shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30">
+            <img
+              src="/brand/atlantis-logo-slate.png"
+              alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
+              className="h-auto w-[220px] dark:hidden"
+            />
+            <img
+              src="/brand/atlantis-logo-white.png"
+              alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
+              className="hidden h-auto w-[220px] dark:block"
+            />
           </div>
           <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
             Welcome to {AppEnv.APP_NAME}
           </h1>
-          <p className="text-slate-500 font-medium">Please enter your credentials to continue</p>
+          <p className="font-medium text-slate-500 dark:text-slate-300">
+            Sign in to manage your {AppEnv.APP_NAME} workspace powered by {AppEnv.COMPANY_NAME}.
+          </p>
         </div>
 
         <div className="p-8 rounded-3xl border shadow-2xl bg-white border-slate-200 dark:bg-[#0f172a] dark:border-slate-800 dark:shadow-black/40">
@@ -160,17 +173,18 @@ export default function LoginPage() {
                   setRecoveryCode('');
                   setTwoFactorMethod('totp');
                 }
-              }}
-              error={fieldErrors.email}
-              className="group"
-            />
-            
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Password</label>
-                <button type="button" onClick={handleForgotPassword} className="text-xs font-semibold text-indigo-500 hover:text-indigo-400">Forgot?</button>
-              </div>
-              <Input 
+               }}
+               error={fieldErrors.email}
+               className="group"
+               inputClassName={loginInputClassName}
+             />
+             
+             <div className="space-y-1">
+               <div className="flex items-center justify-between">
+                 <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">Password</label>
+                 <button type="button" onClick={handleForgotPassword} className="text-xs font-semibold text-indigo-500 hover:text-indigo-400">Forgot?</button>
+               </div>
+               <Input 
                 placeholder="••••••••"
                 type="password"
                 required
@@ -184,10 +198,11 @@ export default function LoginPage() {
                     setRecoveryCode('');
                     setTwoFactorMethod('totp');
                   }
-                }}
-                error={fieldErrors.password}
-              />
-            </div>
+                 }}
+                 error={fieldErrors.password}
+                 inputClassName={loginInputClassName}
+               />
+             </div>
 
             {requiresTwoFactor ? (
               <div className="space-y-3">
@@ -218,22 +233,24 @@ export default function LoginPage() {
                     type="text"
                     required
                     autoComplete="one-time-code"
-                    value={totpToken}
-                    onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    error={fieldErrors.totpToken}
-                  />
-                ) : (
-                  <Input
+                     value={totpToken}
+                     onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                     error={fieldErrors.totpToken}
+                     inputClassName={loginInputClassName}
+                   />
+                 ) : (
+                   <Input
                     label="Recovery Code"
                     placeholder="ABCDE-12345"
                     type="text"
                     required
-                    value={recoveryCode}
-                    onChange={(e) => setRecoveryCode(e.target.value.toUpperCase())}
-                    error={fieldErrors.recoveryCode}
-                  />
-                )}
-              </div>
+                     value={recoveryCode}
+                     onChange={(e) => setRecoveryCode(e.target.value.toUpperCase())}
+                     error={fieldErrors.recoveryCode}
+                     inputClassName={loginInputClassName}
+                   />
+                 )}
+               </div>
             ) : null}
 
             <div className="flex items-center justify-between py-2">
