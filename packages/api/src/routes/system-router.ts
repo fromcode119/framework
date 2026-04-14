@@ -4,6 +4,9 @@ import { PluginManager, ThemeManager } from '@fromcode119/core';
 import { RouteConstants } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest-controller';
 import { SystemController } from '../controllers/system-controller';
+import { SystemBackupController } from '../controllers/system-backup-controller';
+import { SystemBackupRepository } from '../repositories/system-backup-repository';
+import { SystemBackupService } from '../services/system-backup-service';
 
 /**
  * System management router.
@@ -24,6 +27,7 @@ import { SystemController } from '../controllers/system-controller';
  */
 export class SystemRouter extends BaseRouter {
   private controller: SystemController;
+  private backupController: SystemBackupController;
   private auth: AuthManager;
 
   constructor(
@@ -35,6 +39,9 @@ export class SystemRouter extends BaseRouter {
     super();
     this.auth = auth;
     this.controller = new SystemController(manager, themeManager, restController, auth);
+    const backupRepository = new SystemBackupRepository((manager as any).db);
+    const backupService = new SystemBackupService(backupRepository);
+    this.backupController = new SystemBackupController(backupService);
   }
 
   protected registerRoutes(): void {
@@ -78,6 +85,20 @@ export class SystemRouter extends BaseRouter {
       this.bind(this.controller.getLogs.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.ADMIN_AUDIT, this.auth.requirePermission('system:audit'), 
       this.bind(this.controller.getAuditLogs.bind(this.controller)));
+
+    // Backup management
+    this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS, this.auth.requirePermission('system:backup:view'),
+      this.bind(this.backupController.listBackups.bind(this.backupController)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM, this.auth.requirePermission('system:backup:manage'),
+      this.bind(this.backupController.createSystemBackup.bind(this.backupController)));
+    this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_DOWNLOAD, this.auth.requirePermission('system:backup:view'),
+      this.bind(this.backupController.downloadBackup.bind(this.backupController)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_PREVIEW, this.auth.requirePermission('system:backup:restore'),
+      this.bind(this.backupController.previewRestore.bind(this.backupController)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_EXECUTE, this.auth.requirePermission('system:backup:restore'),
+      this.bind(this.backupController.executeRestore.bind(this.backupController)));
+    this.delete(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID, this.auth.requirePermission('system:backup:manage'),
+      this.bind(this.backupController.deleteBackup.bind(this.backupController)));
     
     // System settings
     this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 

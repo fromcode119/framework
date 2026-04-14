@@ -59,6 +59,8 @@ npm run dev:local
 
 🛡️ **Kernel Security Loop** — Real-time threat detection, plugin sandboxing with cryptographic signature verification, and comprehensive audit logging built into the kernel.
 
+📦 **Backups + Site Transfer** — Managed system backups, constrained restore preview and execution, and a repository-root site-transfer bundle command are available from the framework-owned operations surface.
+
 🏪 **Plugin Marketplace** — Install plugins from the built-in marketplace. Every team can host their own private marketplace. Plugins and core are upgradable in place without breaking changes.
 
 � **Built-in i18n** — Multi-language support is a first-class kernel feature. Localize content, admin UI labels, and plugin data without external libraries.

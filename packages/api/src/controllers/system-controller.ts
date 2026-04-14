@@ -11,6 +11,7 @@ import { ShortcodeService } from '../services/shortcode-service';
 import { SystemService } from '../services/system-service';
 import { UserManagementService } from '../services/user-management-service';
 import { ResolutionService } from '../services/resolution-service';
+import { ResolvedDocResponseService } from '../services/resolved-doc-response-service';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { createHash, randomBytes } from 'crypto';
@@ -534,7 +535,7 @@ export class SystemController {
       });
 
       if (!result) return res.status(404).json({ error: 'Not found' });
-      res.json(result);
+      res.json(ResolvedDocResponseService.normalizeResult(result));
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import { ServerApiUtils } from './server-api';
 import { QueryParamUtils } from './query-param-utils';
+import { ResolvedContentShape } from './resolved-content-shape';
 import type { SearchParams, LocaleStrategy, ResolvedDocResult } from './dynamic-page-resolver.types';
 
 const readSettingsMap = cache(async (): Promise<Map<string, string>> => {
@@ -115,7 +116,7 @@ export class DynamicPageResolver {
     return {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
-      doc: (result?.doc as Record<string, unknown> | null) || null,
+      doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
     };
   }
 
@@ -158,7 +159,40 @@ export class DynamicPageResolver {
     if (QueryParamUtils.isPreviewMode(searchParams)) query.set('preview', '1');
 
     const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemResolvePath(query)) as Record<string, any>;
-    return result?.doc || null;
+    return ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null);
+  }
+
+  static async resolveBySlugResult(
+    slug: string,
+    locale: string,
+    fallbackLocale: string,
+    searchParams?: SearchParams,
+  ): Promise<ResolvedDocResult | null> {
+    const query = new URLSearchParams();
+    query.set('slug', slug);
+    if (locale) query.set('locale', locale);
+    if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
+    if (QueryParamUtils.isPreviewMode(searchParams)) query.set('preview', '1');
+
+    const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemResolvePath(query)) as Record<string, unknown>;
+    return {
+      type: String(result?.type || '').trim(),
+      plugin: String(result?.plugin || '').trim(),
+      doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
+    };
+  }
+
+  private static isHomeCandidate(result: ResolvedDocResult | null): boolean {
+    if (!result?.doc) {
+      return false;
+    }
+
+    return Boolean(
+      ResolvedContentShape.resolveSlug(result.doc)
+      || ResolvedContentShape.resolveTitle(result.doc)
+      || ResolvedContentShape.resolveLayoutName(result.doc)
+      || ResolvedContentShape.hasRenderableContent(result.doc)
+    );
   }
 
   static async resolveHomeTarget(
@@ -180,15 +214,19 @@ export class DynamicPageResolver {
       if (collectionSlug && recordId) {
         const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 }));
         const doc = ServerApiUtils.extractFirstDoc(result);
-        if (doc) return { content: doc, forcedLayout: null };
+        if (doc) return { content: ResolvedContentShape.normalize(doc as Record<string, unknown>), forcedLayout: null };
       }
     }
 
-    const byRoot = await DynamicPageResolver.resolveBySlug('/', locale, fallbackLocale, searchParams);
-    if (byRoot) return { content: byRoot, forcedLayout: null };
+    const byRoot = await DynamicPageResolver.resolveBySlugResult('/', locale, fallbackLocale, searchParams);
+    if (DynamicPageResolver.isHomeCandidate(byRoot)) {
+      return { content: byRoot?.doc || null, forcedLayout: null };
+    }
 
-    const byHome = await DynamicPageResolver.resolveBySlug('home', locale, fallbackLocale, searchParams);
-    if (byHome) return { content: byHome, forcedLayout: null };
+    const byHome = await DynamicPageResolver.resolveBySlugResult('home', locale, fallbackLocale, searchParams);
+    if (DynamicPageResolver.isHomeCandidate(byHome)) {
+      return { content: byHome?.doc || null, forcedLayout: null };
+    }
 
     return { content: null, forcedLayout: null };
   }

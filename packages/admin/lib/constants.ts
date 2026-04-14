@@ -85,6 +85,12 @@ export class AdminConstants {
   SYSTEM: {
     HEALTH: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.HEALTH),
     SETTINGS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS),
+    BACKUPS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUPS),
+    BACKUP: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP, { id })),
+    BACKUP_CREATE_SYSTEM: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_CREATE_SYSTEM),
+    BACKUP_DOWNLOAD: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_DOWNLOAD, { id })),
+    BACKUP_RESTORE_PREVIEW: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_RESTORE_PREVIEW, { id })),
+    BACKUP_RESTORE_EXECUTE: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_RESTORE_EXECUTE, { id })),
     STATS: {
       COLLECTIONS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_STATS),
       SECURITY: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SECURITY),

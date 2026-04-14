@@ -1,5 +1,6 @@
 import { CoercionUtils } from '@fromcode119/core/client';
 import { RenderableContentTransformerRegistry } from '@fromcode119/react';
+import { ResolvedContentShape } from './resolved-content-shape';
 
 /**
  * Utilities for rendering content blocks and resolving display metadata.
@@ -39,7 +40,7 @@ export class ContentRenderingUtils {
    * Handles direct content and delegates plugin-specific adaptation to registered transformers.
    */
   static buildRenderableContent(content: any): any {
-    const directContent = content?.content ?? content?.contentBlocks ?? null;
+    const directContent = ResolvedContentShape.resolveContent((content as Record<string, unknown> | null) || null);
     const hasStringContent = typeof directContent === 'string' && directContent.trim().length > 0;
     const hasStructuredContent = Array.isArray(directContent)
       ? directContent.length > 0

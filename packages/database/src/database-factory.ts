@@ -1,5 +1,9 @@
 import type { IDatabaseManager, DatabaseDriverCreator } from './types';
 import { TableResolver } from './table-resolver';
+import type { DatabaseDialectDefinition } from './dialects/database-dialect-definition.interfaces';
+import type { DatabaseDialectResolver } from './dialects/database-dialect-resolver.interfaces';
+import { DatabaseDialectDefinitionLoader } from './dialects/database-dialect-definition-loader';
+import { DatabaseDialectRegistry } from './dialects/database-dialect-registry';
 
 /**
  * Universal Database Factory.
@@ -13,6 +17,18 @@ export class DatabaseFactory {
     this.drivers.set(protocol, creator);
   }
 
+  static registerDialectDefinition(definition: DatabaseDialectDefinition): void {
+    DatabaseDialectRegistry.registerDefinition(definition);
+  }
+
+  static registerDialectResolver(resolver: DatabaseDialectResolver): void {
+    DatabaseDialectRegistry.registerResolver(resolver);
+  }
+
+  static createBackupHandler(connection: string): ReturnType<typeof DatabaseDialectRegistry.resolveBackupHandler> {
+    return DatabaseDialectRegistry.resolveBackupHandler(connection);
+  }
+
   static create(connection: string): IDatabaseManager {
     if (!connection) {
         throw new Error('Database connection string (DATABASE_URL) is missing. Please check your environment configuration.');
@@ -23,26 +39,13 @@ export class DatabaseFactory {
       this.registerDefaults();
     }
 
-    // Resolve protocol from connection string
-    let protocol = 'postgres';
-    let processedConn = connection;
-
-    if (connection.includes('://')) {
-        const url = new URL(connection);
-        protocol = url.protocol.replace(':', '');
-    } else if (connection.endsWith('.db') || connection === ':memory:') {
-        protocol = 'sqlite';
-    } else if (connection.startsWith('file:')) {
-        protocol = 'sqlite';
-    }
-
-    // Map postgresql -> postgres for convenience
-    const aliasProtocol = protocol === 'postgresql' ? 'postgres' : protocol;
+    const aliasProtocol = this.resolveDialect(connection);
+    const processedConn = connection;
     const creator = this.drivers.get(aliasProtocol);
 
     if (!creator) {
       const available = Array.from(this.drivers.keys()).join(', ');
-      throw new Error(`Unsupported database dialect "${protocol}" for connection string. Available: ${available}`);
+      throw new Error(`Unsupported database dialect "${aliasProtocol}" for connection string. Available: ${available}`);
     }
 
     const manager = creator(processedConn);
@@ -66,26 +69,21 @@ export class DatabaseFactory {
     });
   }
 
+  static resolveDialect(connection: string): string {
+    return DatabaseDialectRegistry.resolve(connection);
+  }
+
   private static registerDefaults() {
     if (typeof window !== 'undefined') {
       return;
     }
 
-    this.register('postgres', (conn) => {
-      const { PostgresDatabaseManager } = require('./dialects/postgres-database-manager');
-      return new PostgresDatabaseManager(conn);
-    });
-    this.register('postgresql', (conn) => {
-      const { PostgresDatabaseManager } = require('./dialects/postgres-database-manager');
-      return new PostgresDatabaseManager(conn);
-    });
-    this.register('mysql', (conn) => {
-      const { MysqlDatabaseManager } = require('./dialects/mysql-database-manager');
-      return new MysqlDatabaseManager(conn);
-    });
-    this.register('sqlite', (conn) => {
-      const { SqliteDatabaseManager } = require('./dialects/sqlite-database-manager');
-      return new SqliteDatabaseManager(conn);
-    });
+    for (const definition of DatabaseDialectDefinitionLoader.load()) {
+      for (const protocol of definition.protocols) {
+        if (!this.drivers.has(protocol)) {
+          this.register(protocol, definition.createManager.bind(definition));
+        }
+      }
+    }
   }
 }

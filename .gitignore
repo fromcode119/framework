@@ -68,6 +68,11 @@ public/uploads/
 !packages/admin/components/plugins
 !packages/admin/components/themes
 /uploads/
+
+# Database files
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+
+# Backups
+/backups/

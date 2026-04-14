@@ -126,6 +126,17 @@ export class ProjectPaths {
 
   }
 
+  static getRepositoryRoot(): string {
+      return ProjectPaths.getProjectRoot();
+
+  }
+
+  static getRepositoryArtifactsDir(subDir?: string): string {
+      const artifactsRoot = path.resolve(ProjectPaths.getRepositoryRoot(), 'artifacts');
+      return subDir ? path.join(artifactsRoot, subDir) : artifactsRoot;
+
+  }
+
   // ---------------------------------------------------------------------------
   // Private static helpers (implementation details — not part of public API)
   // ---------------------------------------------------------------------------
