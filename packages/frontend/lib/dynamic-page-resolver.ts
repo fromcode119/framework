@@ -1,32 +1,14 @@
-import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
+import { FrontendPublicSettings } from './frontend-public-settings';
 import { ServerApiUtils } from './server-api';
 import { QueryParamUtils } from './query-param-utils';
 import { ResolvedContentShape } from './resolved-content-shape';
 import type { SearchParams, LocaleStrategy, ResolvedDocResult } from './dynamic-page-resolver.types';
 
-const readSettingsMap = cache(async (): Promise<Map<string, string>> => {
-  const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSettingsCollectionPath(500)) as Record<string, any>;
-  const docs = Array.isArray(result?.docs)
-    ? result.docs
-    : Array.isArray(result)
-      ? result
-      : [];
-
-  const map = new Map<string, string>();
-  for (const doc of docs) {
-    const key = String(doc?.key || '').trim();
-    if (!key) continue;
-    map.set(key, String(doc?.value ?? '').trim());
-  }
-  return map;
-});
-
 export class DynamicPageResolver {
   static async readSettingValue(key: string): Promise<string> {
-    const map = await readSettingsMap();
-    return String(map.get(key) || '').trim();
+    return FrontendPublicSettings.readSettingValue(key);
   }
 
   static async getLocaleRoutingConfig(): Promise<{ strategy: LocaleStrategy; enabledLocales: Set<string> }> {

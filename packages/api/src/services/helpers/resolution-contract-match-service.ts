@@ -1,5 +1,5 @@
 import type { Collection, ResolvedPluginDefaultPageContract } from '@fromcode119/core';
-import { RESTController } from '../../controllers/rest-controller';
+import { RESTController } from '../../controllers/rest/rest-controller';
 import { ResolutionContractPathService } from './resolution-contract-path-service';
 
 export class ResolutionContractMatchService {

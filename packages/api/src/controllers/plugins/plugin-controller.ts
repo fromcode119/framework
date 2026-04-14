@@ -52,9 +52,9 @@ export class PluginController {
     const { enabled, force, recursive } = req.body;
     try {
       if (enabled) {
-        await this.manager.enable(slug, { 
-          force: CoercionUtils.toBoolean(force), 
-          recursive: CoercionUtils.toBoolean(recursive) 
+        await this.manager.enable(slug, {
+          force: CoercionUtils.toBoolean(force),
+          recursive: CoercionUtils.toBoolean(recursive)
         });
       } else {
         await this.manager.disable(slug);
@@ -65,7 +65,7 @@ export class PluginController {
         try {
           const json = err.message.replace('DEPENDENCY_ISSUES: ', '');
           const issues = JSON.parse(json);
-          return res.status(409).json({ 
+          return res.status(409).json({
             code: 'DEPENDENCY_REQUIRED',
             message: 'One or more required plugins are missing or inactive.',
             issues,
@@ -74,7 +74,7 @@ export class PluginController {
         } catch (e) {}
       }
 
-      const status = err.message.toLowerCase().includes('not found') || 
+      const status = err.message.toLowerCase().includes('not found') ||
                      err.message.toLowerCase().includes('missing dependency') ||
                      err.message.toLowerCase().includes('incompatible') ? 400 : 500;
       this.logger.error(`Toggle failed for plugin "${slug}": ${err.message}`);
@@ -115,11 +115,10 @@ export class PluginController {
       await this.manager.delete(slug);
       res.json({ success: true });
     } catch (err: any) {
-      // Differentiate between validation errors (400) and actual server crashes (500)
-      const isValidationError = err.message.toLowerCase().includes('cannot delete') || 
+      const isValidationError = err.message.toLowerCase().includes('cannot delete') ||
                                err.message.toLowerCase().includes('required by') ||
                                err.message.toLowerCase().includes('not found');
-      
+
       const status = isValidationError ? 400 : 500;
       this.logger.error(`Delete failed for plugin "${slug}": ${err.message}`);
       res.status(status).json({ error: err.message });
@@ -129,10 +128,10 @@ export class PluginController {
   async marketplace(req: Request, res: Response) {
     try {
       const plugins = await this.manager.marketplace.fetchCatalog();
-      res.json({ plugins }); // Admin UI expects { plugins: [...] }
+      res.json({ plugins });
     } catch (err: any) {
       this.logger.error(`Marketplace error: ${err.message}`);
-      res.status(503).json({ 
+      res.status(503).json({
         error: 'Marketplace currently unavailable.',
         message: err.message
       });
@@ -142,11 +141,10 @@ export class PluginController {
   async install(req: Request, res: Response) {
     const { slug } = req.params;
     this.logger.info(`Installation request received for plugin: ${slug}`);
-    
+
     try {
       const manifest = await this.manager.installOrUpdateFromMarketplace(slug);
-      
-      // Attempt to enable if not already active
+
       const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
       if (plugin && plugin.state !== 'active') {
         try {
@@ -167,7 +165,7 @@ export class PluginController {
     const { slug } = req.params;
     const db = (this.manager as any).db;
     const { systemLogs } = require('@fromcode119/database');
-    
+
     try {
       const logs = await db.find(systemLogs, {
         where: db.eq(systemLogs.pluginSlug, slug),
@@ -184,9 +182,7 @@ export class PluginController {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     try {
       const manifest = await this.manager.installFromZip(req.file.path);
-      // Discover newly added plugin files
       await this.manager.discoverPlugins();
-      // Try to auto-enable
       try {
         await this.manager.enable(manifest.slug);
       } catch (enableErr: any) {
@@ -218,18 +214,23 @@ export class PluginController {
     if (!plugin || !plugin.path || plugin.state !== 'active') {
       return res.status(404).json({ error: 'Not found or disabled' });
     }
+
     const filePath = (req.params as any)[0];
-    const absolutePath = path.resolve(plugin.path, 'ui', filePath);
-    if (fs.existsSync(absolutePath)) {
+    const abs = path.resolve(plugin.path, 'ui', filePath);
+    if (!abs.startsWith(path.resolve(plugin.path, 'ui'))) {
+      return res.status(400).json({ error: 'Invalid path' });
+    }
+
+    if (fs.existsSync(abs)) {
       if (process.env.NODE_ENV !== 'production') {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
       }
-      res.sendFile(absolutePath);
-    } else {
-      res.status(404).end();
+      return res.sendFile(abs);
     }
+
+    return res.status(404).json({ error: 'Asset not found' });
   }
 
   private inspectPluginArchive(filePath: string) {
@@ -262,49 +263,21 @@ export class PluginController {
     }
 
     const existing = this.manager.getPlugins().find((plugin: any) => plugin?.manifest?.slug === slug);
-    const dependencies = Object.keys(manifest?.dependencies || {});
-    const peerDependencies = Object.keys(manifest?.peerDependencies || {});
-    const hasUiBundle = entries.some((entry) => {
-      if (entry.isDirectory) return false;
-      const normalized = entry.entryName.replace(/\\/g, '/').toLowerCase();
-      return normalized.endsWith('/ui/bundle.js') || normalized === 'ui/bundle.js';
-    });
 
     return {
       slug,
       name: String(manifest?.name || slug),
-      version: String(manifest?.version || '0.0.0'),
+      version: String(manifest?.version || ''),
       description: String(manifest?.description || ''),
-      files: entries.filter((entry) => !entry.isDirectory).length,
-      hasUiBundle,
-      dependencies,
-      peerDependencies,
-      existing: existing
-        ? {
-            installed: true,
-            version: String(existing?.manifest?.version || ''),
-            state: String(existing?.state || 'inactive'),
-          }
-        : { installed: false },
+      author: String(manifest?.author || ''),
+      hasUiBundle: entries.some((entry) => !entry.isDirectory && entry.entryName.replace(/\\/g, '/').includes('/ui/')),
+      hasServerCode: entries.some((entry) => !entry.isDirectory && /(^|\/)index\.(js|ts)$/i.test(entry.entryName.replace(/\\/g, '/'))),
+      existingVersion: existing?.manifest?.version || null,
+      action: existing ? 'update' : 'install',
     };
   }
 
   private isZipArchive(filePath: string): boolean {
-    const ext = path.extname(filePath).toLowerCase();
-    if (ext === '.zip') return true;
-    if (ext === '.tar' || ext === '.tgz' || ext === '.gz') return false;
-
-    try {
-      const fd = fs.openSync(filePath, 'r');
-      try {
-        const header = Buffer.alloc(4);
-        const bytesRead = fs.readSync(fd, header, 0, 4, 0);
-        return bytesRead >= 2 && header[0] === 0x50 && header[1] === 0x4b;
-      } finally {
-        fs.closeSync(fd);
-      }
-    } catch {
-      return false;
-    }
+    return path.extname(filePath).toLowerCase() === '.zip';
   }
 }

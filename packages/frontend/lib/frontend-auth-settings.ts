@@ -1,5 +1,4 @@
-import { cache } from 'react';
-import { ServerApiUtils } from './server-api';
+import { FrontendPublicSettings } from './frontend-public-settings';
 
 export class FrontendAuthUtils {
   static async isFrontendAuthEnabled(): Promise<boolean> {
@@ -24,27 +23,7 @@ export class FrontendAuthUtils {
     return fallback;
   }
 
-  // React cache is kept at module level (required by Next.js caching semantics)
-  // but wrapped as a private static accessor to keep the public API clean.
-  private static readonly settingsMapCache = cache(async () => {
-    const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSettingsCollectionPath(500)) as Record<string, any>;
-    const docs = Array.isArray(result?.docs)
-      ? result.docs
-      : Array.isArray(result)
-        ? result
-        : [];
-
-    const map = new Map<string, string>();
-    for (const doc of docs) {
-      const key = String(doc?.key || '').trim();
-      if (!key) continue;
-      map.set(key, String(doc?.value ?? '').trim());
-    }
-    return map;
-  });
-
   private static async readSettingValue(key: string): Promise<string> {
-    const map = await FrontendAuthUtils.settingsMapCache();
-    return String(map.get(key) || '').trim();
+    return FrontendPublicSettings.readSettingValue(key);
   }
 }

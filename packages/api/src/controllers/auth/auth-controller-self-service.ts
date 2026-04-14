@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSecurity } from './auth-controller-security';
-import { SystemTwoFactorService } from '../system-2fa-service';
+import { SystemTwoFactorService } from '../system/system-2fa-service';
 import { AuthProfileService } from '../../services/auth-profile-service';
 import { UserManagementService } from '../../services/user-management-service';
 

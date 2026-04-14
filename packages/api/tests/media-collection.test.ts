@@ -1,4 +1,4 @@
-import { RESTController } from '../src/controllers/rest-controller';
+import { RESTController } from '../src/controllers/rest/rest-controller';
 import { MediaCollection } from '@fromcode119/media';
 
 describe('Media Collection REST', () => {

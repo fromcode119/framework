@@ -12,6 +12,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { NotificationHooks } from '@/components/use-notification';
 import { Loader } from '@/components/ui/loader';
+import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { LocalizationPageUtils } from './localization-page-utils';
 import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 
@@ -64,10 +65,11 @@ export default function LocalizationSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
-        const docs = response.docs || [];
+        const response = await AdminSystemSettingsClient.getAll();
         const map = new Map<string, string>();
-        docs.forEach((doc: any) => map.set(String(doc.key), String(doc.value ?? '')));
+        Object.entries(response || {}).forEach(([key, value]) => {
+          map.set(String(key), typeof value === 'string' ? value : JSON.stringify(value));
+        });
 
         let parsedLocales = LocalizationPageUtils.parseLocales(map.get('localization_locales'));
         if (!parsedLocales.length) {
@@ -186,26 +188,14 @@ export default function LocalizationSettingsPage() {
       const nextAdminDefault = pickDefault(adminDefaultLocale);
       const nextFrontendDefault = pickDefault(frontendDefaultLocale);
 
-      await Promise.all([
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('localization_locales'), {
-          value: JSON.stringify(cleaned.map(({ id, ...rest }) => rest))
-        }),
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('enabled_locales'), {
-          value: enabledCodes.join(',')
-        }),
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('default_locale'), {
-          value: nextDefaultLocale
-        }),
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('admin_default_locale'), {
-          value: nextAdminDefault
-        }),
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('frontend_default_locale'), {
-          value: nextFrontendDefault
-        }),
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('locale_url_strategy'), {
-          value: localeUrlStrategy
-        })
-      ]);
+      await AdminSystemSettingsClient.update({
+        localization_locales: cleaned.map(({ id, ...rest }) => rest),
+        enabled_locales: enabledCodes.join(','),
+        default_locale: nextDefaultLocale,
+        admin_default_locale: nextAdminDefault,
+        frontend_default_locale: nextFrontendDefault,
+        locale_url_strategy: localeUrlStrategy,
+      });
 
       setLocales(cleaned);
       setDefaultLocale(nextDefaultLocale);

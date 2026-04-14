@@ -1,5 +1,5 @@
 
-import { PluginSettingsController } from '../src/controllers/plugin-settings-controller';
+import { PluginSettingsController } from '../src/controllers/plugins/plugin-settings-controller';
 
 describe('plugin-settings-controller', () => {
   let controller: PluginSettingsController;
