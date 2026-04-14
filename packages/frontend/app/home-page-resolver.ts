@@ -1,5 +1,6 @@
 import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import { cookies } from 'next/headers';
+import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { ServerApiUtils } from '@/lib/server-api';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import type { ResolvedDocResult } from '@/lib/dynamic-page-resolver.types';
@@ -82,8 +83,21 @@ export class HomePageResolver {
     return {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
-      doc: (result?.doc as Record<string, unknown> | null) || null,
+      doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
     };
+  }
+
+  private static isHomeCandidate(result: ResolvedDocResult | null): boolean {
+    if (!result?.doc) {
+      return false;
+    }
+
+    return Boolean(
+      ResolvedContentShape.resolveSlug(result.doc)
+      || ResolvedContentShape.resolveTitle(result.doc)
+      || ResolvedContentShape.resolveLayoutName(result.doc)
+      || ResolvedContentShape.hasRenderableContent(result.doc)
+    );
   }
 
   private static async resolveHomeTarget(locale: string, fallbackLocale: string): Promise<HomeTargetResolution> {
@@ -105,13 +119,14 @@ export class HomePageResolver {
         );
         const doc = ServerApiUtils.extractFirstDoc(result);
         if (doc) {
+          const normalizedDoc = ResolvedContentShape.normalize(doc as Record<string, unknown>);
           return {
-            content: doc,
+            content: normalizedDoc,
             forcedLayout: null,
             resolution: {
-              type: this.resolveCollectionTargetType(doc as Record<string, unknown>, collectionSlug),
+              type: this.resolveCollectionTargetType(normalizedDoc || {}, collectionSlug),
               plugin: '',
-              doc: doc as Record<string, unknown>,
+              doc: normalizedDoc,
             },
           };
         }
@@ -119,13 +134,13 @@ export class HomePageResolver {
     }
 
     const byRoot = await this.resolveBySlugResult('/', locale, fallbackLocale);
-    if (byRoot?.doc) {
-      return { content: byRoot.doc, forcedLayout: null, resolution: byRoot };
+    if (this.isHomeCandidate(byRoot)) {
+      return { content: byRoot?.doc || null, forcedLayout: null, resolution: byRoot };
     }
 
     const byHome = await this.resolveBySlugResult('home', locale, fallbackLocale);
-    if (byHome?.doc) {
-      return { content: byHome.doc, forcedLayout: null, resolution: byHome };
+    if (this.isHomeCandidate(byHome)) {
+      return { content: byHome?.doc || null, forcedLayout: null, resolution: byHome };
     }
 
     return { content: null, forcedLayout: null, resolution: null };

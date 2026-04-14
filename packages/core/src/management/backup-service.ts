@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import * as tar from 'tar';
 import AdmZip from 'adm-zip';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { DatabaseFactory } from '@fromcode119/database';
 import { ProjectPaths } from '../config/paths';
-
-const execAsync = promisify(exec);
+import type { CreateSystemBackupOptions, CreateSystemBackupResult } from './backup-service.interfaces';
+import type { BackupSectionKey } from './backup-service.types';
+import { BackupArchivePathService } from './helpers/backup-archive-path-service';
 
 /**
  * Backup Service
@@ -16,6 +16,10 @@ const execAsync = promisify(exec);
 export class BackupService {
   private static getBackupsDir(): string {
     return path.resolve(ProjectPaths.getProjectRoot(), 'backups');
+  }
+
+  static getBackupsDirectory(subDir?: string): string {
+    return subDir ? path.join(this.getBackupsDir(), subDir) : this.getBackupsDir();
   }
 
   /**
@@ -73,15 +77,15 @@ export class BackupService {
       throw new Error(`Backup file does not exist: ${backupPath}`);
     }
 
-    // Ensure target parent exists
-    if (!fs.existsSync(path.dirname(targetDir))) {
-        fs.mkdirSync(path.dirname(targetDir), { recursive: true });
+    const extractionDirectory = await BackupArchivePathService.resolveRestoreDirectory(backupPath, targetDir);
+    if (!fs.existsSync(extractionDirectory)) {
+        fs.mkdirSync(extractionDirectory, { recursive: true });
     }
 
     // Extraction will overwrite existing files
     await tar.extract({
       file: backupPath,
-      cwd: path.dirname(targetDir),
+      cwd: extractionDirectory,
     });
   }
 
@@ -151,90 +155,191 @@ export class BackupService {
 
     const backupsPath = this.ensureBackupsDir('database');
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    
-    if (dbUrl.startsWith('postgres') || dbUrl.startsWith('postgresql')) {
-      const dumpPath = path.join(backupsPath, `db-dump-${timestamp}.sql`);
-      try {
-        // Use pg_dump if available. We assume it's in the PATH (installed in Dockerfile)
-        await execAsync(`pg_dump "${dbUrl}" > "${dumpPath}"`);
-        return dumpPath;
-      } catch (err: any) {
-        console.error(`[BackupService] PostgreSQL dump failed: ${err.message}`);
-        // If pg_dump fails, we might still want to proceed with other backups
-        return null;
-      }
-    } else if (dbUrl.includes('.db') || dbUrl.startsWith('sqlite')) {
-      // Handle SQLite
-      const sqlitePath = dbUrl.startsWith('sqlite://') ? dbUrl.replace('sqlite://', '') : dbUrl;
-      const absPath = path.isAbsolute(sqlitePath) ? sqlitePath : path.resolve(ProjectPaths.getProjectRoot(), sqlitePath);
-      
-      if (fs.existsSync(absPath)) {
-        const dumpPath = path.join(backupsPath, `db-copy-${timestamp}.db`);
-        fs.copyFileSync(absPath, dumpPath);
-        return dumpPath;
-      }
+    const projectRoot = ProjectPaths.getProjectRoot();
+
+    const backupHandler = DatabaseFactory.createBackupHandler(dbUrl);
+    if (!backupHandler) {
+      return null;
     }
 
-    return null;
+    return await backupHandler.createBackup(dbUrl, { backupsPath, timestamp, projectRoot });
   }
 
   /**
    * Creates a full system backup
    * @returns The path to the created backup file
    */
-  static async createSystemBackup(): Promise<string> {
+  static async createSystemBackup(options: CreateSystemBackupOptions = {}): Promise<string> {
+    const result = await this.createSystemBackupBundle(options);
+    return result.backupPath;
+  }
+
+  static async createSystemBackupBundle(options: CreateSystemBackupOptions = {}): Promise<CreateSystemBackupResult> {
     const backupsPath = this.ensureBackupsDir('system');
     const rootDir = ProjectPaths.getProjectRoot();
-    
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFileName = `system-${timestamp}.tar.gz`;
     const backupPath = path.join(backupsPath, backupFileName);
+    const requestedSections = this.resolveRequestedSections(options.sections);
 
-    // 1. First, create a database dump
-    let dbDumpPath: string | null = null;
-    try {
-      dbDumpPath = await this.backupDatabase();
-    } catch (e) {
-      console.warn('[BackupService] Database backup failed, proceeding with files only.');
+    if (this.isDatabaseOnlyRequest(requestedSections)) {
+      return await this.createDatabaseOnlyBackup(requestedSections);
     }
 
-    // 2. List of things to backup (essentially everything except node_modules and backups)
-    const items = fs.readdirSync(rootDir);
-    const toBackup = items.filter(item => 
-      item !== 'node_modules' && 
-      item !== 'backups' && 
-      !item.startsWith('.') &&
-      !item.startsWith('tmp-')
-    );
+    const rootEntries = this.collectSystemEntries(rootDir, requestedSections, options.excludePaths);
+    const databaseEntry = await this.prepareDatabaseEntry(rootDir, requestedSections, timestamp);
+    const toBackup = databaseEntry.tempDbFile ? [...rootEntries, databaseEntry.tempDbFile] : rootEntries;
+    const includedSections = this.resolveIncludedSections(requestedSections, rootEntries, databaseEntry.tempDbFile);
 
-    // 3. If we have a DB dump, copy it to a temporary location in root so it's included in the tarball
-    let tempDbFile: string | null = null;
-    if (dbDumpPath && fs.existsSync(dbDumpPath)) {
-      tempDbFile = `database-backup-${timestamp}${path.extname(dbDumpPath)}`;
-      fs.copyFileSync(dbDumpPath, path.join(rootDir, tempDbFile));
-      toBackup.push(tempDbFile);
+    if (!toBackup.length) {
+      throw new Error('Select at least one backup section that is available in this workspace.');
     }
 
-    // 4. Create the tarball
     try {
       await tar.create(
         {
+          filter: (entryPath) => !BackupArchivePathService.isArchivePathExcluded(String(entryPath || ''), options.excludePaths),
           gzip: true,
           file: backupPath,
           cwd: rootDir,
         },
-        toBackup
+        toBackup,
       );
     } finally {
-      // 5. Cleanup the temporary file in root
-      if (tempDbFile && fs.existsSync(path.join(rootDir, tempDbFile))) {
-        fs.unlinkSync(path.join(rootDir, tempDbFile));
-      }
+      this.cleanupTemporaryDatabaseEntry(rootDir, databaseEntry.tempDbFile);
     }
 
     this.cleanupOld('system', 'system', 5);
 
-    return backupPath;
+    return {
+      backupPath,
+      requestedSections,
+      includedSections,
+      warnings: databaseEntry.warnings,
+    };
+  }
+
+  private static isDatabaseOnlyRequest(requestedSections: BackupSectionKey[]): boolean {
+    return requestedSections.length === 1 && requestedSections[0] === 'database';
+  }
+
+  private static async createDatabaseOnlyBackup(requestedSections: BackupSectionKey[]): Promise<CreateSystemBackupResult> {
+    const backupPath = await this.backupDatabase();
+    if (!backupPath || !fs.existsSync(backupPath)) {
+      throw new Error('Database backup was requested, but no database snapshot is available in this environment.');
+    }
+
+    this.cleanupDatabaseOld(5);
+
+    return {
+      backupPath,
+      requestedSections,
+      includedSections: ['database'],
+      warnings: [],
+    };
+  }
+
+  private static resolveRequestedSections(sections?: BackupSectionKey[]): BackupSectionKey[] {
+    const allowedSections: BackupSectionKey[] = ['core', 'database', 'plugins', 'themes'];
+    if (sections === undefined) {
+      return [...allowedSections];
+    }
+
+    return Array.from(new Set(
+      sections.filter((section): section is BackupSectionKey => allowedSections.includes(section)),
+    ));
+  }
+
+  private static collectSystemEntries(
+    rootDir: string,
+    requestedSections: BackupSectionKey[],
+    excludePaths?: string[],
+  ): string[] {
+    return fs.readdirSync(rootDir).filter((item) => {
+      if (
+        item === 'node_modules' ||
+        item === 'backups' ||
+        item.startsWith('.') ||
+        item.startsWith('tmp-') ||
+        BackupArchivePathService.isTopLevelEntryExcluded(item, excludePaths)
+      ) {
+        return false;
+      }
+
+      if (item === 'plugins') {
+        return requestedSections.includes('plugins');
+      }
+      if (item === 'themes') {
+        return requestedSections.includes('themes');
+      }
+      return requestedSections.includes('core');
+    });
+  }
+
+  private static async prepareDatabaseEntry(
+    rootDir: string,
+    requestedSections: BackupSectionKey[],
+    timestamp: string,
+  ): Promise<{ tempDbFile: string | null; warnings: string[] }> {
+    if (!requestedSections.includes('database')) {
+      return { tempDbFile: null, warnings: [] };
+    }
+
+    try {
+      const dbDumpPath = await this.backupDatabase();
+      if (!dbDumpPath || !fs.existsSync(dbDumpPath)) {
+        return {
+          tempDbFile: null,
+          warnings: ['Database backup was requested, but no database snapshot was available in this environment.'],
+        };
+      }
+
+      const tempDbFile = `database-backup-${timestamp}${path.extname(dbDumpPath)}`;
+      fs.copyFileSync(dbDumpPath, path.join(rootDir, tempDbFile));
+      return { tempDbFile, warnings: [] };
+    } catch {
+      console.warn('[BackupService] Database backup failed, proceeding without a database snapshot.');
+      return {
+        tempDbFile: null,
+        warnings: ['Database backup failed, so the archive contains files only.'],
+      };
+    }
+  }
+
+  private static resolveIncludedSections(
+    requestedSections: BackupSectionKey[],
+    rootEntries: string[],
+    tempDbFile: string | null,
+  ): BackupSectionKey[] {
+    const includesCoreFiles = rootEntries.some((entry) => entry !== 'plugins' && entry !== 'themes');
+    const includedSections: BackupSectionKey[] = [];
+
+    if (requestedSections.includes('core') && includesCoreFiles) {
+      includedSections.push('core');
+    }
+    if (requestedSections.includes('database') && Boolean(tempDbFile)) {
+      includedSections.push('database');
+    }
+    if (requestedSections.includes('plugins') && rootEntries.includes('plugins')) {
+      includedSections.push('plugins');
+    }
+    if (requestedSections.includes('themes') && rootEntries.includes('themes')) {
+      includedSections.push('themes');
+    }
+
+    return includedSections;
+  }
+
+  private static cleanupTemporaryDatabaseEntry(rootDir: string, tempDbFile: string | null): void {
+    if (!tempDbFile) {
+      return;
+    }
+
+    const temporaryPath = path.join(rootDir, tempDbFile);
+    if (fs.existsSync(temporaryPath)) {
+      fs.unlinkSync(temporaryPath);
+    }
   }
 
   /**
@@ -262,4 +367,31 @@ export class BackupService {
       });
     }
   }
+
+  private static cleanupDatabaseOld(keep: number = 5): void {
+    const dir = path.join(this.getBackupsDir(), 'database');
+    if (!fs.existsSync(dir)) return;
+
+    const files = fs.readdirSync(dir)
+      .filter((fileName) =>
+        (fileName.startsWith('db-dump-') && fileName.endsWith('.sql'))
+        || (fileName.startsWith('db-copy-') && fileName.endsWith('.db')),
+      )
+      .map((fileName) => ({
+        name: fileName,
+        time: fs.statSync(path.join(dir, fileName)).mtime.getTime(),
+      }))
+      .sort((left, right) => right.time - left.time);
+
+    if (files.length > keep) {
+      files.slice(keep).forEach((file) => {
+        try {
+          fs.unlinkSync(path.join(dir, file.name));
+        } catch {
+          // Ignore errors during cleanup.
+        }
+      });
+    }
+  }
+
 }

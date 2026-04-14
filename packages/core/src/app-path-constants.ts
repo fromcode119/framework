@@ -64,6 +64,7 @@ export class AppPathConstants {
       ROUTING: '/settings/routing',
       SECURITY: '/settings/security',
       INFRASTRUCTURE: '/settings/infrastructure',
+      BACKUPS: '/settings/backups',
       UPDATES: '/settings/updates',
       FRAMEWORK: '/settings/framework',
     },

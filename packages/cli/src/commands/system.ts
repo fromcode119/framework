@@ -3,10 +3,13 @@ import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs-extra';
 import { CliUtils } from '../utils';
+import { SiteTransferBundleCommandService } from '../services/site-transfer-bundle-command-service';
 
 
 export class SystemCommands {
   static registerSystemCommands(program: Command) {
+    const system = program.command('system').description('System operations');
+
     program
       .command('version')
       .description('Show system version information')
@@ -41,6 +44,31 @@ export class SystemCommands {
         console.log(`- Node Version: ${process.version}`);
         console.log(`- Memory Usage: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);
         console.log(`- Architecture: ${process.arch}`);
+      });
+
+    system
+      .command('site-transfer-bundle')
+      .description('Create a repository-root site transfer bundle for backup migration workflows')
+      .option('--output <dir>', 'Override the bundle output directory')
+      .option('--label <label>', 'Optional bundle label')
+      .option('--include-uploads', 'Include public/uploads in the generated system snapshot')
+      .option('--include-public', 'Include the public directory in the generated system snapshot')
+      .option('--include-secrets', 'Include secrets in the generated system snapshot (unsafe)')
+      .option('--skip-checksum', 'Skip SHA256 checksum generation for staged artifacts')
+      .action(async (options) => {
+        if (options.includeSecrets) {
+          console.log(chalk.yellow('Warning: --include-secrets is unsafe and will include secret material in the bundle.'));
+        }
+
+        const commandService = new SiteTransferBundleCommandService();
+        await commandService.execute({
+          outputDir: options.output,
+          label: options.label,
+          includeUploads: Boolean(options.includeUploads),
+          includePublic: Boolean(options.includePublic),
+          includeSecrets: Boolean(options.includeSecrets),
+          skipChecksum: Boolean(options.skipChecksum),
+        });
       });
   }
 }

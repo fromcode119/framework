@@ -123,6 +123,28 @@ export { PluginSignatureService } from './security/plugin-signature-service';
 
 // Management (Server-only)
 export { BackupService } from './management/backup-service';
+export type { CreateSystemBackupOptions } from './management/backup-service.interfaces';
+export type { BackupSectionKey } from './management/backup-service.types';
+export { BackupCatalogService } from './management/backup-catalog-service';
+export type {
+  BackupCatalogGroup,
+  BackupCatalogItem,
+  BackupCatalogResolvedItem,
+} from './management/backup-catalog-service.types';
+export { BackupRestoreGuardService } from './management/backup-restore-guard-service';
+export type {
+  RestoreExecutionInput,
+  RestoreExecutionResult,
+  RestorePreviewInput,
+  RestoreTargetResolution,
+} from './management/backup-restore-guard-service.interfaces';
+export type { RestoreTargetKind } from './management/backup-restore-guard-service.types';
+export { SiteTransferBundleService } from './management/site-transfer-bundle-service';
+export type {
+  SiteTransferBundleManifest,
+  SiteTransferBundleOptions,
+  SiteTransferBundleResult,
+} from './management/site-transfer-bundle-service.types';
 export {
   ManifestValidator,
   PluginManifestSchema,

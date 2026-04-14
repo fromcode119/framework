@@ -6,7 +6,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "test": "tsx --test src/site-transfer-bundle.test.ts"
   },
   "dependencies": {
     "@fromcode119/core": "*",

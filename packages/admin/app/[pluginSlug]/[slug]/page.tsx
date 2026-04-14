@@ -22,8 +22,10 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
 
   const collection = AdminCollectionUtils.resolveCollection(collections as any, pluginSlug, slug);
   const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}`;
+  const activePlugin = plugins.find((plugin: any) => plugin.slug === pluginSlug);
   const hasPageSlot = !!(slots?.[pageSlot] && slots[pageSlot].length > 0);
-  const shouldRedirectToPluginSettings = !collection && slug === 'settings';
+  const hasDeclaredPageSlot = Boolean(activePlugin?.admin?.slots?.some((entry: any) => entry?.slot === pageSlot));
+  const shouldRedirectToPluginSettings = isReady && !hasPageSlot && !hasDeclaredPageSlot && !collection && slug === 'settings';
 
   useEffect(() => {
     if (!shouldRedirectToPluginSettings) return;

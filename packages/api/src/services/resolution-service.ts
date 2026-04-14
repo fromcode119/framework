@@ -69,14 +69,13 @@ export class ResolutionService {
       if (collection.slug.startsWith('_') || collection.system) continue;
       try {
         const hasCustom = collection.fields.some(f => f.name === 'customPermalink');
-        const hasPath = collection.fields.some(f => f.name === 'path');
         const hasSlug = collection.fields.some(f => f.name === 'slug');
 
-        if (hasCustom || hasPath) {
+        if (hasCustom) {
           for (const candidate of pathCandidates) {
             const results: any = await this.restController.find(collection, {
               query: withLocale({
-                [hasCustom ? 'customPermalink' : 'path']: candidate,
+                customPermalink: candidate,
                 limit: 1,
                 preview: options.preview ? '1' : '0'
               }),
