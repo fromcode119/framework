@@ -10,6 +10,7 @@ import { AdminApi } from '@/lib/api';
 import { NotificationHooks } from '@/components/use-notification';
 import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
+import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { RoutingPageUtils } from './routing-page-utils';
 import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 
@@ -56,17 +57,13 @@ export default function RoutingPage() {
     const fetchSettings = async () => {
       try {
         const [settingsResponse, frontendMeta, collectionStats] = await Promise.all([
-          AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE),
+          AdminSystemSettingsClient.getAll(),
           AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.FRONTEND).catch(() => null),
           AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.COLLECTIONS).catch(() => [])
         ]);
 
-        const docs = settingsResponse.docs || [];
-        const foundPermalink = docs.find((s: any) => s.key === 'permalink_structure');
-        const foundHomeTarget = docs.find((s: any) => s.key === 'routing_home_target');
-
-        if (foundPermalink?.value) setStructure(foundPermalink.value);
-        if (foundHomeTarget?.value) setHomeTarget(String(foundHomeTarget.value));
+        if (settingsResponse?.permalink_structure) setStructure(String(settingsResponse.permalink_structure));
+        if (settingsResponse?.routing_home_target) setHomeTarget(String(settingsResponse.routing_home_target));
         setFrontendMeta(frontendMeta);
         setAvailableCollections(Array.isArray(collectionStats) ? collectionStats : []);
       } finally {
@@ -267,14 +264,10 @@ export default function RoutingPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await Promise.all([
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('permalink_structure'), {
-          value: structure
-        }),
-        AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('routing_home_target'), {
-          value: homeTarget
-        })
-      ]);
+      await AdminSystemSettingsClient.update({
+        permalink_structure: structure,
+        routing_home_target: homeTarget,
+      });
 
       registerSettings({
         permalink_structure: structure,

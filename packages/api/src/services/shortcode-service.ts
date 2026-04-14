@@ -1,5 +1,5 @@
 import { Collection, HookManager, PluginManager, CoreServices } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest-controller';
+import { RESTController } from '../controllers/rest/rest-controller';
 import type { ShortcodeDefinition } from './shortcode-service.interfaces';
 
 export class ShortcodeService {

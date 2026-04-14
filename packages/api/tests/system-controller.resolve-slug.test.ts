@@ -1,7 +1,7 @@
-import { SystemController } from '../src/controllers/system-controller';
+import { SystemController } from '../src/controllers/system/system-controller';
 
 describe('SystemController.resolveSlug', () => {
-  it('returns a canonical resolved doc shape from legacy fields', async () => {
+  it('delegates slug resolution through the runtime controller', async () => {
     const manager: any = {
       hooks: { on: jest.fn() },
       email: {},
@@ -20,22 +20,7 @@ describe('SystemController.resolveSlug', () => {
       status: jest.fn().mockReturnThis(),
     };
 
-    (controller as any).resolution = {
-      resolveSlug: jest.fn().mockResolvedValue({
-        type: 'pages',
-        plugin: 'system',
-        doc: {
-          id: 1,
-          slug: 'home',
-          pageTemplate: 'LandingPage',
-          contentBlocks: [{ type: 'hero' }],
-        },
-      }),
-    };
-
-    await controller.resolveSlug(req, res);
-
-    expect(res.json).toHaveBeenCalledWith({
+    const expected = {
       type: 'pages',
       plugin: 'system',
       doc: {
@@ -46,6 +31,17 @@ describe('SystemController.resolveSlug', () => {
         themeLayout: 'LandingPage',
         content: [{ type: 'hero' }],
       },
-    });
+    };
+
+    (controller as any).runtimeController = {
+      resolveSlug: jest.fn().mockImplementation(async (_req: any, runtimeRes: any) => {
+        runtimeRes.json(expected);
+      }),
+    };
+
+    await controller.resolveSlug(req, res);
+
+    expect((controller as any).runtimeController.resolveSlug).toHaveBeenCalledWith(req, res);
+    expect(res.json).toHaveBeenCalledWith(expected);
   });
 });

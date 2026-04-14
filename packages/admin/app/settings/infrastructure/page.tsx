@@ -6,10 +6,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
-import { AdminApi } from '@/lib/api';
 import { NotificationHooks } from '@/components/use-notification';
-import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
+import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 
 export default function InfrastructureSettingsPage() {
   const { theme } = ThemeHooks.useTheme();
@@ -20,10 +19,8 @@ export default function InfrastructureSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
-        const docs = response.docs || [];
-        const found = docs.find((s: any) => s.key === 'maintenance_mode');
-        if (found) setMaintenance(found.value === 'true');
+        const response = await AdminSystemSettingsClient.getAll();
+        setMaintenance(response?.maintenance_mode === true || response?.maintenance_mode === 'true');
       } finally {
         setIsLoading(false);
       }
@@ -34,9 +31,7 @@ export default function InfrastructureSettingsPage() {
   const toggleMaintenance = async (val: boolean) => {
     setMaintenance(val);
     try {
-      await AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS('maintenance_mode'), {
-        value: val ? 'true' : 'false'
-      });
+      await AdminSystemSettingsClient.update({ maintenance_mode: val });
       addNotification({ title: 'System Updated', message: `Maintenance mode is now ${val ? 'active' : 'inactive'}.`, type: 'info' });
     } catch {
       addNotification({ title: 'Error', message: 'Failed to toggle mode.', type: 'error' });

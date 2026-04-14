@@ -2,9 +2,9 @@ import { BaseRouter } from '../routers/base-router';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager } from '@fromcode119/core';
 import { RouteConstants } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest-controller';
-import { SystemController } from '../controllers/system-controller';
-import { SystemBackupController } from '../controllers/system-backup-controller';
+import { RESTController } from '../controllers/rest/rest-controller';
+import { SystemController } from '../controllers/system/system-controller';
+import { SystemBackupController } from '../controllers/system/system-backup-controller';
 import { SystemBackupRepository } from '../repositories/system-backup-repository';
 import { SystemBackupService } from '../services/system-backup-service';
 

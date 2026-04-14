@@ -47,7 +47,7 @@ export class ThemeController {
       }
 
       const themes = await this.manager.getMarketplaceThemes();
-      const pkg = themes.find((t: any) => 
+      const pkg = themes.find((t: any) =>
         t.slug === slug && (!version || t.version === version)
       );
       if (!pkg) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
@@ -163,7 +163,7 @@ export class ThemeController {
       ? (this.manager as any).getThemeDirectory(slug)
       : path.resolve((this.manager as any).themesRoot, slug);
     const absolutePath = path.resolve(themeDir, 'ui', filePath);
-    
+
     if (fs.existsSync(absolutePath)) {
       if (process.env.NODE_ENV !== 'production') {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -221,108 +221,25 @@ export class ThemeController {
           normalized.startsWith('bundled-plugins/')
         );
       })
-      .map((entry) => entry.entryName.replace(/\\/g, '/'));
-
-    const declaredBundled = Array.isArray(manifest?.bundledPlugins)
-      ? manifest.bundledPlugins
-          .filter((item: any) => typeof item === 'string')
-          .map((item: string) => item.trim())
-          .filter((item: string) => item.length > 0)
-      : [];
-
-    const normalizedBundledPaths = new Set<string>();
-    for (const declared of declaredBundled) {
-      const normalizedDeclared = path.posix.normalize(declared).replace(/^\.?\//, '');
-      normalizedBundledPaths.add(`${themeRoot}${normalizedDeclared}`);
-      normalizedBundledPaths.add(normalizedDeclared);
-    }
-    for (const zipPath of bundledZipEntries) normalizedBundledPaths.add(zipPath);
-
-    const bundledPlugins = Array.from(normalizedBundledPaths)
-      .filter((entry) => entry.toLowerCase().endsWith('.zip'))
-      .sort()
-      .map((archivePath) => {
-        const matchedEntry = entries.find(
-          (entry) => !entry.isDirectory && entry.entryName.replace(/\\/g, '/') === archivePath
-        );
-        if (!matchedEntry) {
-          return {
-            archive: archivePath,
-            source: 'manifest',
-          };
-        }
-
-        const nested = this.inspectNestedPluginArchive(matchedEntry.getData(), archivePath);
-        return {
-          archive: archivePath,
-          source: declaredBundled.some((declared) => archivePath.endsWith(path.posix.normalize(declared).replace(/^\.?\//, '')))
-            ? 'manifest'
-            : 'directory',
-          ...nested,
-        };
-      });
+      .map((entry) => ({
+        name: entry.entryName.replace(/\\/g, '/').slice(themeRoot.length),
+        size: entry.header.size,
+      }));
 
     return {
       slug,
       name: String(manifest?.name || slug),
-      version: String(manifest?.version || '0.0.0'),
+      version: String(manifest?.version || ''),
       description: String(manifest?.description || ''),
-      files: entries.filter((entry) => !entry.isDirectory).length,
-      dependencies: Object.keys(manifest?.dependencies || {}),
-      bundledPlugins,
-      existing: existing
-        ? {
-            installed: true,
-            version: String(existing?.version || ''),
-            state: String(existing?.state || 'inactive'),
-          }
-        : { installed: false },
+      author: String(manifest?.author || ''),
+      hasUiBundle: entries.some((entry) => !entry.isDirectory && entry.entryName.replace(/\\/g, '/').includes('/ui/')),
+      bundledPlugins: bundledZipEntries,
+      existingVersion: existing?.version || null,
+      action: existing ? 'update' : 'install',
     };
   }
 
-  private inspectNestedPluginArchive(buffer: Buffer, archive: string) {
-    try {
-      const zip = new AdmZip(buffer);
-      const entries = zip.getEntries();
-      const manifestEntry = entries.find((entry) =>
-        !entry.isDirectory && entry.entryName.toLowerCase().endsWith('/manifest.json')
-      ) || entries.find((entry) =>
-        !entry.isDirectory && entry.entryName.toLowerCase() === 'manifest.json'
-      );
-      if (!manifestEntry) return {};
-
-      const parsed = JSON.parse(manifestEntry.getData().toString('utf8'));
-      const slug = String(parsed?.slug || '').trim();
-      const version = String(parsed?.version || '').trim();
-      const name = String(parsed?.name || '').trim();
-
-      return {
-        pluginSlug: slug || undefined,
-        pluginName: name || undefined,
-        pluginVersion: version || undefined,
-      };
-    } catch {
-      this.logger.warn(`Failed to inspect bundled plugin archive ${archive}`);
-      return {};
-    }
-  }
-
   private isZipArchive(filePath: string): boolean {
-    const ext = path.extname(filePath).toLowerCase();
-    if (ext === '.zip') return true;
-    if (ext === '.tar' || ext === '.tgz' || ext === '.gz') return false;
-
-    try {
-      const fd = fs.openSync(filePath, 'r');
-      try {
-        const header = Buffer.alloc(4);
-        const bytesRead = fs.readSync(fd, header, 0, 4, 0);
-        return bytesRead >= 2 && header[0] === 0x50 && header[1] === 0x4b;
-      } finally {
-        fs.closeSync(fd);
-      }
-    } catch {
-      return false;
-    }
+    return path.extname(filePath).toLowerCase() === '.zip';
   }
 }

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import type { RestoreTargetKind } from '@fromcode119/core';
-import { SystemBackupService } from '../services/system-backup-service';
+import { SystemBackupService } from '../../services/system-backup-service';
 
 export class SystemBackupController {
   constructor(private readonly service: SystemBackupService) {}

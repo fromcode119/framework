@@ -12,6 +12,7 @@ import { AdminApi } from '@/lib/api';
 import { NotificationHooks } from '@/components/use-notification';
 import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
+import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
@@ -38,7 +39,6 @@ export default function GeneralSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingTelemetryTest, setIsSendingTelemetryTest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [existingSettingKeys, setExistingSettingKeys] = useState<Set<string>>(new Set());
   const [settings, setSettings] = useState<Record<string, any>>({
     platform_name: '',
     email_notifications: true,
@@ -51,17 +51,15 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await AdminApi.get(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE);
-        const docs = response.docs || [];
         const newSettings = { ...settings };
-        docs.forEach((s: any) => {
-          if (settings.hasOwnProperty(s.key)) {
-            newSettings[s.key] = ['email_notifications', 'frontend_auth_enabled', 'frontend_registration_enabled'].includes(s.key)
-              ? s.value === 'true'
-              : s.value;
+        const response = await AdminSystemSettingsClient.getAll();
+        Object.entries(response || {}).forEach(([key, value]) => {
+          if (settings.hasOwnProperty(key)) {
+            newSettings[key] = ['email_notifications', 'frontend_auth_enabled', 'frontend_registration_enabled'].includes(key)
+              ? value === true || value === 'true'
+              : value;
           }
         });
-        setExistingSettingKeys(new Set(docs.map((s: any) => String(s?.key || '').trim()).filter(Boolean)));
         setSettings(newSettings);
       } finally {
         setIsLoading(false);
@@ -73,28 +71,13 @@ export default function GeneralSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const entries = Object.entries(settings).map(([key, value]) => {
-        const serialized = typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value ?? '').trim();
-        return { key, serialized };
-      });
-
-      const upserts = entries
-        .filter(({ serialized }) => serialized !== '')
-        .map(({ key, serialized }) => {
-          const payload = { value: serialized };
-          if (existingSettingKeys.has(key)) {
-            return AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS(key), payload);
-          }
-          return AdminApi.post(AdminConstants.ENDPOINTS.COLLECTIONS.SETTINGS_BASE, { key, ...payload });
-        });
-
-      await Promise.all(upserts);
-      setExistingSettingKeys((prev) => {
-        const next = new Set(prev);
-        for (const { key, serialized } of entries) {
-          if (serialized !== '') next.add(key);
-        }
-        return next;
+      await AdminSystemSettingsClient.update({
+        platform_name: String(settings.platform_name ?? '').trim(),
+        email_notifications: Boolean(settings.email_notifications),
+        frontend_url: String(settings.frontend_url ?? '').trim(),
+        timezone: String(settings.timezone ?? '').trim(),
+        frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
+        frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
       });
 
       // Update global context

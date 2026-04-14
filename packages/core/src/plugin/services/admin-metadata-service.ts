@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { LoadedPlugin, Collection } from '../../types';
 import { Logger } from '../../logging';
 import { CoreServices } from '../../services';
@@ -49,8 +51,8 @@ export class AdminMetadataService {
           config: p.manifest.config || {},
           ui: {
             ...(p.manifest.ui || {}),
-            entryUrl: p.manifest.ui?.entry ? this.pluginUiAssetPath(p.manifest.slug, p.manifest.ui.entry) : undefined,
-            cssUrls: p.manifest.ui?.css ? p.manifest.ui.css.map(css => this.pluginUiAssetPath(p.manifest.slug, css)) : [],
+            entryUrl: p.manifest.ui?.entry ? this.pluginUiAssetPath(p, p.manifest.ui.entry) : undefined,
+            cssUrls: p.manifest.ui?.css ? p.manifest.ui.css.map(css => this.pluginUiAssetPath(p, css)) : [],
             headInjections: []
           }
         };
@@ -286,7 +288,32 @@ export class AdminMetadataService {
     this.logger.warn(`[admin-secondary-panel] REJECTED ${JSON.stringify(rejection)}`);
   }
 
-  private pluginUiAssetPath(slug: string, asset: string): string {
-    return ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug }).replace('*', asset.replace(/^\/+/, ''));
+  private pluginUiAssetPath(plugin: LoadedPlugin, asset: string): string {
+    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug: plugin.manifest.slug }).replace('*', asset.replace(/^\/+/, ''));
+    const assetVersion = this.resolvePluginUiAssetVersion(plugin, asset);
+    if (!assetVersion) {
+      return basePath;
+    }
+
+    const separator = basePath.includes('?') ? '&' : '?';
+    return `${basePath}${separator}v=${assetVersion}`;
+  }
+
+  private resolvePluginUiAssetVersion(plugin: LoadedPlugin, asset: string): string | null {
+    const pluginPath = String(plugin.path || '').trim();
+    if (!pluginPath) {
+      return null;
+    }
+
+    const absolutePath = path.resolve(pluginPath, 'ui', asset.replace(/^\/+/, ''));
+    if (!fs.existsSync(absolutePath)) {
+      return null;
+    }
+
+    try {
+      return String(Math.trunc(fs.statSync(absolutePath).mtimeMs));
+    } catch {
+      return null;
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { RESTController } from '../src/controllers/rest-controller';
+import { RESTController } from '../src/controllers/rest/rest-controller';
 
 describe('rest-controller', () => {
   let controller: RESTController;
@@ -45,7 +45,7 @@ describe('rest-controller', () => {
     mockDb.findOne.mockResolvedValue({ id: '1', title: 'Old Title' });
     mockDb.update.mockResolvedValue({ id: '1', title: 'New Title' });
     
-    const req: any = { params: { id: '1' }, body: { title: 'New Title' } };
+    const req: any = { params: { id: '1' }, body: { title: 'New Title' }, user: { roles: ['admin'] } };
     const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
 
     await controller.update(mockCollection, req, res);
@@ -58,7 +58,7 @@ describe('rest-controller', () => {
     mockDb.dialect = 'sqlite';
     mockDb.insert.mockResolvedValue({ id: 1, title: 'Hello' });
 
-    const req: any = { body: { title: 'Hello' }, query: {} };
+    const req: any = { body: { title: 'Hello' }, query: {}, user: { roles: ['admin'] } };
     const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
 
     await controller.create(mockCollection, req, res);
@@ -93,5 +93,43 @@ describe('rest-controller', () => {
         page: 3
       })
     );
+  });
+
+  it('blocks anonymous reads of system collections', async () => {
+    const systemCollection: any = {
+      slug: 'settings',
+      system: true,
+      fields: [{ name: 'key', type: 'text' }]
+    };
+    const req: any = { query: {} };
+    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await controller.find(systemCollection, req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(mockDb.find).not.toHaveBeenCalled();
+  });
+
+  it('blocks anonymous writes for generic collections', async () => {
+    const req: any = { body: { title: 'Hello' }, query: {} };
+    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await controller.create(mockCollection, req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(mockDb.insert).not.toHaveBeenCalled();
+  });
+
+  it('allows public reads for non-system collections', async () => {
+    mockDb.find.mockResolvedValue([{ id: 1, title: 'Hello' }]);
+    mockDb.count.mockResolvedValue(1);
+
+    const req: any = { query: {} };
+    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await controller.find(mockCollection, req, res);
+
+    expect(mockDb.find).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalledWith(401);
   });
 });

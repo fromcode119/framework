@@ -1,3 +1,6 @@
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { describe, expect, it } from 'vitest';
 import { AppPathConstants } from '../../app-path-constants';
 import type { LoadedPlugin } from '../../types';
@@ -76,5 +79,43 @@ describe('AdminMetadataService', () => {
     expect(settingsItems).toHaveLength(1);
     expect(settingsItems[0]?.label).toBe('Settings');
     expect(usersItem?.children).toBeUndefined();
+  });
+
+  it('adds a file version query to plugin ui asset urls', () => {
+    const pluginRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-admin-metadata-'));
+    const uiRoot = path.join(pluginRoot, 'ui');
+    fs.mkdirSync(uiRoot, { recursive: true });
+
+    const bundlePath = path.join(uiRoot, 'bundle.js');
+    const cssPath = path.join(uiRoot, 'theme.css');
+    fs.writeFileSync(bundlePath, 'console.log("bundle");');
+    fs.writeFileSync(cssPath, 'body { color: black; }');
+
+    const plugin = {
+      instanceId: 'cms-1',
+      state: 'active',
+      path: pluginRoot,
+      manifest: {
+        slug: 'cms',
+        namespace: 'org.fromcode',
+        name: 'CMS',
+        version: '1.0.0',
+        category: 'content',
+        admin: {},
+        ui: {
+          entry: 'bundle.js',
+          css: ['theme.css'],
+        },
+      },
+    } as LoadedPlugin;
+
+    const result = service.getAdminMetadata([plugin], new Map(), {}, []);
+    const metadata = result.plugins[0]?.ui;
+
+    expect(metadata?.entryUrl).toMatch(/^\/plugins\/cms\/ui\/bundle\.js\?v=\d+$/);
+    expect(metadata?.cssUrls).toHaveLength(1);
+    expect(metadata?.cssUrls?.[0]).toMatch(/^\/plugins\/cms\/ui\/theme\.css\?v=\d+$/);
+
+    fs.rmSync(pluginRoot, { recursive: true, force: true });
   });
 });

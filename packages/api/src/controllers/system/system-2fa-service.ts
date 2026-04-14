@@ -6,8 +6,8 @@ import { createHash, randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { users } from '@fromcode119/database';
-import { AuthUtils } from '../utils/auth';
-import { UserManagementService } from '../services/user-management-service';
+import { AuthUtils } from '../../utils/auth';
+import { UserManagementService } from '../../services/user-management-service';
 
 export class SystemTwoFactorService {
   constructor(
@@ -126,8 +126,6 @@ export class SystemTwoFactorService {
     return { success: true, message: '2FA disabled successfully' };
   }
 
-  // --- Private helpers ---
-
   private getRecoveryCodesKey(userId: number) { return `user:${userId}:2fa_recovery_codes`; }
 
   private generateRecoveryCodes(count: number = 10): string[] {
@@ -200,6 +198,6 @@ export class SystemTwoFactorService {
         text: `${options.title}\n\n${details.join('\n')}`,
         html: `<p>${options.title}</p>${details.length > 0 ? `<ul>${details.map((l) => `<li>${l}</li>`).join('')}</ul>` : ''}`,
       });
-    } catch { /* best-effort */ }
+    } catch {}
   }
 }

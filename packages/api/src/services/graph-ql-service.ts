@@ -13,7 +13,7 @@ import {
 } from 'graphql';
 import { Collection, Field, FieldType } from '@fromcode119/core';
 import { PluginManager } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest-controller';
+import { RESTController } from '../controllers/rest/rest-controller';
 
 export class GraphQLService {
   private typeCache: Map<string, GraphQLObjectType> = new Map();

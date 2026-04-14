@@ -53,6 +53,20 @@ describe('System E2E / Integration', () => {
         expect(res.status).not.toBe(500);
     });
 
+    it('should not expose system settings collection anonymously', async () => {
+        const res = await request(server.app)
+            .get('/api/v1/collections/settings');
+
+        expect([401, 403, 503]).toContain(res.status);
+    });
+
+    it('should not expose users collection anonymously', async () => {
+        const res = await request(server.app)
+            .get('/api/v1/collections/users');
+
+        expect([401, 403, 503]).toContain(res.status);
+    });
+
     it('should return 401 or 503 for unauthorized access to plugins', async () => {
         const res = await request(server.app).get('/api/v1/plugins');
         expect([401, 503]).toContain(res.status);

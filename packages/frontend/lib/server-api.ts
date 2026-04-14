@@ -14,12 +14,6 @@ export class ServerApiUtils {
     return SystemConstants.API_PATH.SYSTEM.FRONTEND;
   }
 
-  static buildSettingsCollectionPath(limit = 500): string {
-    const query = new URLSearchParams();
-    query.set('limit', String(limit));
-    return `${SystemConstants.API_PATH.COLLECTIONS.SETTINGS}?${query.toString()}`;
-  }
-
   static buildCollectionLookupPath(
     collectionSlug: string,
     options: { id?: string; limit?: number } = {}
