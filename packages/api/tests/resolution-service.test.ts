@@ -326,4 +326,83 @@ describe('ResolutionService default page contract routing', () => {
 
     expect(result).toBeNull();
   });
+
+  it('does not let path-only analytics records hijack public URLs', async () => {
+    const restController = {
+      find: jest.fn().mockImplementation((collection: any, options: any) => {
+        if (collection.slug === 'pages' && options?.query?.slug === 'courses/21-dni-kurs-za-finansovo-izobilie') {
+          return Promise.resolve({ docs: [] });
+        }
+
+        if (collection.slug === 'lms-courses' && options?.query?.slug === '21-dni-kurs-za-finansovo-izobilie') {
+          return Promise.resolve({ docs: [{ id: 21, slug: '21-dni-kurs-za-finansovo-izobilie', title: '21-дневен курс' }] });
+        }
+
+        return Promise.resolve({ docs: [] });
+      }),
+    };
+    const manager: any = {
+      db: { find: jest.fn().mockResolvedValue([]) },
+      getPlugins: jest.fn().mockReturnValue([
+        { state: 'active', manifest: { slug: 'analytics' } },
+        { state: 'active', manifest: { slug: 'lms' } },
+      ]),
+      registeredCollections: new Map([
+        [
+          'analytics-events',
+          {
+            pluginSlug: 'analytics',
+            collection: {
+              slug: 'analytics-events',
+              shortSlug: 'site-events',
+              fields: [{ name: 'path' }],
+            },
+          },
+        ],
+        [
+          'courses',
+          {
+            pluginSlug: 'lms',
+            collection: {
+              slug: 'lms-courses',
+              shortSlug: 'courses',
+              fields: [{ name: 'slug' }],
+            },
+          },
+        ],
+      ]),
+    };
+    const themeManager: any = {
+      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+    };
+
+    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      defaultPageContractResolution: {
+        resolveAll: jest.fn().mockReturnValue([
+          {
+            install: true,
+            status: 'ready',
+            materializationMode: 'singleton-document',
+            effectiveSlug: '/courses/:slug',
+            effectiveAliases: [],
+            recordCollection: 'courses',
+            pluginSlug: 'lms',
+          },
+        ]),
+      },
+    } as any);
+
+    const service = new ResolutionService(manager, themeManager, restController as any);
+    const result = await service.resolveSlug('/courses/21-dni-kurs-za-finansovo-izobilie', {});
+
+    expect(result).toEqual({
+      type: 'courses',
+      plugin: 'lms',
+      doc: { id: 21, slug: '21-dni-kurs-za-finansovo-izobilie', title: '21-дневен курс' },
+    });
+    expect(restController.find).not.toHaveBeenCalledWith(
+      expect.objectContaining({ slug: 'analytics-events' }),
+      expect.objectContaining({ query: expect.objectContaining({ path: '/courses/21-dni-kurs-za-finansovo-izobilie' }) }),
+    );
+  });
 });

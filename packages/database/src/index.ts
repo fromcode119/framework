@@ -18,6 +18,9 @@ export type { PhysicalTableReference } from './physical-table-name-utils.interfa
 export { BaseMigration } from './base-migration';
 export * from './naming-strategy';
 export { DatabaseFactory } from './database-factory';
+export type { DatabaseBackupContext, DatabaseBackupHandler } from './dialects/database-backup.interfaces';
+export type { DatabaseDialectDefinition } from './dialects/database-dialect-definition.interfaces';
+export type { DatabaseDialectResolver } from './dialects/database-dialect-resolver.interfaces';
 
 // Drizzle ORM re-exports
 export { sql, and, or, eq, ne, gt, gte, lt, lte, inArray, notInArray, isNull, isNotNull, exists, notExists, between, notBetween, like, notLike, ilike, notIlike, not, asc, desc, count, avg, sum, min, max, relations, extractTablesRelationalConfig } from 'drizzle-orm';

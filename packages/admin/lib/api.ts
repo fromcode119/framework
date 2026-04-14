@@ -107,18 +107,7 @@ export class AdminApi {
   static async upload(path: string, formData: FormData, options?: RequestInit): Promise<any> {
     AdminApi.clearGetCaches();
     const url = AdminApi.getURL(path);
-    const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
-    const csrfToken = AdminApi.browserState.readCookie(CookieConstants.AUTH_CSRF);
-    const headers: Record<string, string> = {
-      'X-Framework-Client': 'admin-ui',
-      'X-Requested-With': 'XMLHttpRequest',
-      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-      ...(options?.headers as any),
-    };
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+    const headers = AdminApi.buildHeaders(options, { isJson: false });
 
     const response = await fetch(url, {
       ...options,
@@ -131,25 +120,78 @@ export class AdminApi {
     return AdminApi.parseResponse(response, url);
   }
 
-  private static async request(path: string, options: RequestInit = {}): Promise<any> {
-    const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
-    const csrfToken = AdminApi.browserState.readCookie(CookieConstants.AUTH_CSRF);
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'X-Framework-Client': 'admin-ui',
-      'X-Requested-With': 'XMLHttpRequest',
-      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-      ...(options.headers as any),
-    };
-
-    if (token && !headers.Authorization) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
+  static async download(
+    path: string,
+    options?: RequestInit,
+    onProgress?: (state: { loadedBytes: number; totalBytes: number | null; percent: number | null }) => void,
+  ): Promise<{ blob: Blob; filename: string }> {
     const url = AdminApi.getURL(path);
     const response = await fetch(url, {
       ...options,
-      headers,
+      method: 'GET',
+      headers: AdminApi.buildHeaders(options, { isJson: false }),
+      credentials: 'include',
+    });
+
+    AdminApi.handleUnauthorized(response, url);
+
+    if (!response.ok) {
+      await AdminApi.parseResponse(response, url);
+    }
+
+    const filename = AdminApi.resolveDownloadFilename(response, path);
+    const totalBytes = AdminApi.readContentLength(response.headers.get('content-length'));
+    if (!response.body) {
+      const blob = await response.blob();
+      onProgress?.({
+        loadedBytes: blob.size,
+        totalBytes: totalBytes ?? blob.size,
+        percent: 100,
+      });
+      return { blob, filename };
+    }
+
+    const reader = response.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let loadedBytes = 0;
+    onProgress?.({ loadedBytes, totalBytes, percent: totalBytes === 0 ? 100 : 0 });
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      if (!value) {
+        continue;
+      }
+
+      chunks.push(value);
+      loadedBytes += value.byteLength;
+      onProgress?.({
+        loadedBytes,
+        totalBytes,
+        percent: totalBytes ? Math.min(99, Math.round((loadedBytes / totalBytes) * 100)) : null,
+      });
+    }
+
+    const blob = new Blob(chunks);
+    onProgress?.({
+      loadedBytes: blob.size,
+      totalBytes: totalBytes ?? blob.size,
+      percent: 100,
+    });
+
+    return {
+      blob,
+      filename,
+    };
+  }
+
+  private static async request(path: string, options: RequestInit = {}): Promise<any> {
+    const url = AdminApi.getURL(path);
+    const response = await fetch(url, {
+      ...options,
+      headers: AdminApi.buildHeaders(options),
       credentials: 'include',
     });
 
@@ -211,5 +253,48 @@ export class AdminApi {
   private static clearGetCaches(): void {
     AdminApi.cachedGetResponses.clear();
     AdminApi.cachedGetErrors.clear();
+  }
+
+  private static buildHeaders(options?: RequestInit, config?: { isJson?: boolean }): Record<string, string> {
+    const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
+    const csrfToken = AdminApi.browserState.readCookie(CookieConstants.AUTH_CSRF);
+    const headers: Record<string, string> = {
+      ...(config?.isJson === false ? {} : { 'Content-Type': 'application/json' }),
+      'X-Framework-Client': 'admin-ui',
+      'X-Requested-With': 'XMLHttpRequest',
+      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      ...(options?.headers as any),
+    };
+
+    if (token && !headers.Authorization) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    return headers;
+  }
+
+  private static resolveDownloadFilename(response: Response, path: string): string {
+    const contentDisposition = response.headers.get('content-disposition') || '';
+    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utf8Match?.[1]) {
+      try {
+        return decodeURIComponent(utf8Match[1]);
+      } catch {
+        return utf8Match[1];
+      }
+    }
+
+    const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+    if (filenameMatch?.[1]) {
+      return filenameMatch[1];
+    }
+
+    const segments = String(path || '').split('/').filter(Boolean);
+    return segments[segments.length - 2] || 'backup-download';
+  }
+
+  private static readContentLength(value: string | null): number | null {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
   }
 }

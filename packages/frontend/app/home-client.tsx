@@ -4,6 +4,7 @@ import React from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
 import { RouteConstants } from '@fromcode119/core/client';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
+import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 
 const ADMIN_BASE_PATH = RouteConstants.SEGMENTS.ADMIN_BASE;
 
@@ -263,22 +264,19 @@ function renderContent(content: any) {
 
 export default function HomeClient({ initialContent, forcedLayout }: HomeClientProps) {
   const { themeLayouts } = ContextHooks.usePlugins();
+  const normalizedContent = ResolvedContentShape.normalize((initialContent as Record<string, unknown> | null) || null);
 
-  if (initialContent) {
-    const selectedLayoutName =
-      initialContent?.themeLayout ||
-      initialContent?.pageTemplate ||
-      initialContent?.page_template ||
-      'DefaultLayout';
+  if (normalizedContent) {
+    const selectedLayoutName = ResolvedContentShape.resolveLayoutName(normalizedContent) || 'DefaultLayout';
     const LayoutComponent =
       themeLayouts?.[selectedLayoutName] ||
       themeLayouts?.DefaultLayout ||
       (({ children }: any) => <>{children}</>);
-    const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, initialContent);
+    const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, normalizedContent);
 
     return (
-      <LayoutComponent page={initialContent}>
-        {!shouldBypassDefaultContent ? renderContent(initialContent) : null}
+      <LayoutComponent page={normalizedContent}>
+        {!shouldBypassDefaultContent ? renderContent(normalizedContent) : null}
       </LayoutComponent>
     );
   }
