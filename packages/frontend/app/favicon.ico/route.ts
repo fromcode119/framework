@@ -1,15 +1,18 @@
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { NextResponse } from 'next/server';
+import { ThemeFaviconRouteResolver } from '@/lib/theme/theme-favicon-route-resolver';
 
 export async function GET() {
-  const iconPath = path.join(process.cwd(), 'public', 'favicon.ico');
-  const icon = await readFile(iconPath);
+  const resolvedIcon = await ThemeFaviconRouteResolver.resolve();
+  if (!resolvedIcon) {
+    return new NextResponse(null, { status: 404 });
+  }
+  const icon = await readFile(resolvedIcon.filePath);
 
   return new NextResponse(icon, {
     status: 200,
     headers: {
-      'Content-Type': 'image/x-icon',
+      'Content-Type': resolvedIcon.contentType,
       'Cache-Control': 'public, max-age=86400',
     }
   });

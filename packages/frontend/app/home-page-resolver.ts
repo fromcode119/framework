@@ -1,6 +1,7 @@
 import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import { cookies } from 'next/headers';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
+import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
 import { ServerApiUtils } from '@/lib/server-api';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import type { ResolvedDocResult } from '@/lib/dynamic-page-resolver.types';
@@ -17,28 +18,7 @@ export class HomePageResolver {
   }
 
   private static async readSettingValue(key: string): Promise<string> {
-    const map = await this.readSettingsMap();
-    return String(map.get(key) || '').trim();
-  }
-
-  private static async readSettingsMap(): Promise<Map<string, string>> {
-    const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSettingsCollectionPath(500)) as Record<string, unknown>;
-    const docs = Array.isArray(result?.docs)
-      ? result.docs
-      : Array.isArray(result)
-        ? result
-        : [];
-
-    const map = new Map<string, string>();
-    for (const doc of docs) {
-      const row = doc as Record<string, unknown>;
-      const key = String(row?.key || '').trim();
-      if (!key) {
-        continue;
-      }
-      map.set(key, String(row?.value ?? '').trim());
-    }
-    return map;
+    return FrontendPublicSettings.readSettingValue(key);
   }
 
   private static async getLocaleUrlStrategy(): Promise<LocaleUrlStrategy> {

@@ -6,7 +6,7 @@ import {
   SystemConstants,
   type Collection,
 } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest-controller';
+import { RESTController } from '../controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from './helpers/resolution-contract-match-service';
 
 export class ResolutionService {

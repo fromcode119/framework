@@ -1,6 +1,6 @@
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '../../routers/base-router';
 import { PluginManager } from '@fromcode119/core';
-import { PluginController } from '../controllers/plugin-controller';
+import { PluginController } from '../../controllers/plugins/plugin-controller';
 import { RouteConstants } from '@fromcode119/core';
 
 export class PluginAssetRouter extends BaseRouter {
