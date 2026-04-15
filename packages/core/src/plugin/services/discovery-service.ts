@@ -386,7 +386,7 @@ export class DiscoveryService {
           await BackupService.restore(filePath, tempDir);
         } catch (error: any) {
           if (String(error?.message || '').includes('TAR_BAD_ARCHIVE')) {
-            throw new Error('Unsupported archive format. Upload a .zip plugin package.');
+            throw new Error('Unsupported archive format. Upload a .zip or .tar.gz plugin package.');
           }
           throw error;
         }

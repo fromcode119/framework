@@ -102,27 +102,65 @@ export class SystemBackupHooks {
       const formData = new FormData();
       formData.append('backup', file);
       setIsImporting(true);
-      setImportProgress({ percent: 0, label: `Preparing archive upload... 0 B of ${SystemBackupPageUtils.formatBytes(file.size)}` });
+      setImportProgress({
+        percent: 0,
+        label: SystemBackupPageUtils.getImportUploadLabel(0, file.size, 0),
+      });
+      let lastLoadedBytes = 0;
+      let stallTimer: number | null = null;
+      const clearStallTimer = () => {
+        if (stallTimer !== null) {
+          window.clearTimeout(stallTimer);
+          stallTimer = null;
+        }
+      };
+      const scheduleStallNotice = (loadedBytes: number, percent: number) => {
+        clearStallTimer();
+        stallTimer = window.setTimeout(() => {
+          setImportProgress((current) => {
+            if (!current || current.percent >= 96) {
+              return current;
+            }
+            return {
+              percent,
+              label: SystemBackupPageUtils.getImportUploadLabel(loadedBytes, file.size, percent, true),
+            };
+          });
+        }, 4000);
+      };
       try {
         const response = await AdminApi.upload(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT, formData, {
           onProgress: (state) => {
-            const percent = state.percent === null ? 0 : Math.min(95, state.percent);
             const totalBytes = state.totalBytes ?? file.size;
+            lastLoadedBytes = state.loadedBytes;
+            const percent = SystemBackupPageUtils.normalizeUploadPercent(state.loadedBytes, totalBytes, state.percent);
             setImportProgress({
               percent,
-              label: `${SystemBackupPageUtils.getImportProgressLabel(percent)} ${SystemBackupPageUtils.formatBytes(state.loadedBytes)} of ${SystemBackupPageUtils.formatBytes(totalBytes)}`,
+              label: SystemBackupPageUtils.getImportUploadLabel(state.loadedBytes, totalBytes, percent),
             });
+            scheduleStallNotice(state.loadedBytes, percent);
           },
         }) as SystemBackupMutationResponseView;
+        clearStallTimer();
         setImportProgress({ percent: 96, label: 'Upload finished. Saving archive and refreshing inventory...' });
         await refreshBackups();
         setImportProgress({ percent: 100, label: `${response.backup.displayName} imported successfully.` });
         window.setTimeout(() => setImportProgress(null), 1600);
         return response;
       } catch (error) {
-        setImportProgress(null);
+        clearStallTimer();
+        if (lastLoadedBytes > 0) {
+          setImportProgress({
+            percent: 0,
+            label: `Upload stopped after ${SystemBackupPageUtils.formatBytes(lastLoadedBytes)}. ${SystemBackupPageUtils.toErrorMessage(error)}`,
+          });
+          window.setTimeout(() => setImportProgress(null), 2600);
+        } else {
+          setImportProgress(null);
+        }
         throw error;
       } finally {
+        clearStallTimer();
         setIsImporting(false);
       }
     }, [refreshBackups]);

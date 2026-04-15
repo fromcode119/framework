@@ -39,6 +39,11 @@ export class InstalledPluginsPageController {
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const isSupportedArchive = (file?: File | null): boolean => {
+      const normalized = String(file?.name || '').trim().toLowerCase();
+      return normalized.endsWith('.zip') || normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz');
+    };
+
     const fetchPlugins = async () => {
       setLoading(true);
       try {
@@ -67,8 +72,8 @@ export class InstalledPluginsPageController {
 
     const uploadPluginFile = async (file?: File | null) => {
       if (!file) return;
-      if (!file.name.toLowerCase().endsWith('.zip')) {
-        notify('error', 'Upload Failed', 'Only .zip plugin packages are supported.');
+      if (!isSupportedArchive(file)) {
+        notify('error', 'Upload Failed', 'Only .zip or .tar.gz plugin packages are supported.');
         return;
       }
 
@@ -89,8 +94,8 @@ export class InstalledPluginsPageController {
 
     const inspectPluginFile = async (file?: File | null) => {
       if (!file) return;
-      if (!file.name.toLowerCase().endsWith('.zip')) {
-        notify('error', 'Upload Failed', 'Only .zip plugin packages are supported.');
+      if (!isSupportedArchive(file)) {
+        notify('error', 'Upload Failed', 'Only .zip or .tar.gz plugin packages are supported.');
         return;
       }
 
