@@ -11,6 +11,8 @@ import type {
 } from './installed-themes-page.interfaces';
 
 export class InstalledThemesPageController {
+  private static readonly ARCHIVE_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
+
   static useModel(): InstalledThemesPageModel {
     const { theme } = ThemeHooks.useTheme();
     const { notify } = NotificationHooks.useNotify();
@@ -21,7 +23,7 @@ export class InstalledThemesPageController {
     const [isUploading, setIsUploading] = useState(false);
     const [isInspectingUpload, setIsInspectingUpload] = useState(false);
     const [isDropActive, setIsDropActive] = useState(false);
-    const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null);
+    const [pendingUploadId, setPendingUploadId] = useState<string | null>(null);
     const [showUploadPreview, setShowUploadPreview] = useState(false);
     const [uploadPreviewTitle, setUploadPreviewTitle] = useState('');
     const [uploadPreviewDescription, setUploadPreviewDescription] = useState('');
@@ -52,19 +54,39 @@ export class InstalledThemesPageController {
       }
     };
 
-    const uploadThemeFile = async (file?: File | null) => {
-      if (!file) return;
-      if (!isSupportedArchive(file)) {
-        notify('error', 'Upload Failed', 'Only .zip or .tar.gz theme packages are supported.');
-        return;
+    const stageThemeFile = async (file: File): Promise<string> => {
+      const estimatedChunkSize = InstalledThemesPageController.ARCHIVE_CHUNK_SIZE_BYTES;
+      const estimatedTotalChunks = Math.max(1, Math.ceil(file.size / estimatedChunkSize));
+      const session = await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.UPLOAD_SESSION, {
+        originalFilename: file.name,
+        totalSizeBytes: file.size,
+        totalChunks: estimatedTotalChunks,
+      }) as { uploadId?: string; chunkSizeBytes?: number; totalChunks?: number };
+      const uploadId = String(session?.uploadId || '').trim();
+      if (!uploadId) {
+        throw new Error('Upload session could not be created.');
       }
+      const chunkSizeBytes = Math.max(1, Number(session?.chunkSizeBytes || estimatedChunkSize));
+      const totalChunks = Math.max(1, Number(session?.totalChunks || estimatedTotalChunks));
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
+        const chunkStart = chunkIndex * chunkSizeBytes;
+        const chunkEnd = Math.min(file.size, chunkStart + chunkSizeBytes);
+        const formData = new FormData();
+        formData.append('chunk', file.slice(chunkStart, chunkEnd), `${file.name}.part-${chunkIndex}`);
+        formData.append('uploadId', uploadId);
+        formData.append('chunkIndex', String(chunkIndex));
+        formData.append('totalChunks', String(totalChunks));
+        await AdminApi.upload(AdminConstants.ENDPOINTS.THEMES.UPLOAD_CHUNK, formData);
+      }
+      return uploadId;
+    };
+
+    const uploadThemeFile = async (uploadId?: string | null) => {
+      if (!uploadId) return;
 
       setIsUploading(true);
-      const formData = new FormData();
-      formData.append('theme', file);
-
       try {
-        await AdminApi.upload(AdminConstants.ENDPOINTS.THEMES.UPLOAD, formData);
+        await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.UPLOAD_COMPLETE, { uploadId });
         notify('success', 'Upload Successful', 'Theme uploaded successfully.');
         await fetchThemes();
         triggerRefresh();
@@ -83,11 +105,10 @@ export class InstalledThemesPageController {
       }
 
       setIsInspectingUpload(true);
-      const formData = new FormData();
-      formData.append('theme', file);
 
       try {
-        const response = await AdminApi.upload(AdminConstants.ENDPOINTS.THEMES.UPLOAD_INSPECT, formData);
+        const uploadId = await stageThemeFile(file);
+        const response = await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.UPLOAD_SESSION_INSPECT, { uploadId });
         const info = (response as any)?.info || {};
         const dependencies = Array.isArray(info.dependencies) ? info.dependencies : [];
         const bundled = Array.isArray(info.bundledPlugins) ? info.bundledPlugins : [];
@@ -117,9 +138,10 @@ export class InstalledThemesPageController {
               : ['This theme is not currently installed.'],
           },
         ]);
-        setPendingUploadFile(file);
+        setPendingUploadId(uploadId);
         setShowUploadPreview(true);
       } catch (error: any) {
+        setPendingUploadId(null);
         notify('error', 'Inspect Failed', error.message || 'Could not inspect theme package.');
       } finally {
         setIsInspectingUpload(false);
@@ -134,13 +156,13 @@ export class InstalledThemesPageController {
       closeUploadPreview: () => {
         if (isUploading) return;
         setShowUploadPreview(false);
-        setPendingUploadFile(null);
+        setPendingUploadId(null);
       },
       confirmUploadPreview: async () => {
-        if (!pendingUploadFile) return;
-        await uploadThemeFile(pendingUploadFile);
+        if (!pendingUploadId) return;
+        await uploadThemeFile(pendingUploadId);
         setShowUploadPreview(false);
-        setPendingUploadFile(null);
+        setPendingUploadId(null);
       },
       fileInputRef,
       handleDragLeave: (event) => {

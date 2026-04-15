@@ -30,6 +30,7 @@ export class SystemRouter extends BaseRouter {
   private backupController: SystemBackupController;
   private auth: AuthManager;
   private upload: multer.Multer;
+  private chunkUpload: multer.Multer;
 
   constructor(
     manager: PluginManager,
@@ -40,6 +41,7 @@ export class SystemRouter extends BaseRouter {
     super();
     this.auth = auth;
     this.upload = multer({ dest: '/tmp/system-backup-uploads' });
+    this.chunkUpload = multer({ dest: '/tmp/system-backup-upload-chunks' });
     this.controller = new SystemController(manager, themeManager, restController, auth);
     const backupRepository = new SystemBackupRepository((manager as any).db);
     const backupService = new SystemBackupService(backupRepository);
@@ -93,6 +95,12 @@ export class SystemRouter extends BaseRouter {
       this.bind(this.backupController.listBackups.bind(this.backupController)));
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM, this.auth.requirePermission('system:backup:manage'),
       this.bind(this.backupController.createSystemBackup.bind(this.backupController)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_SESSION, this.auth.requirePermission('system:backup:manage'),
+      this.bind(this.backupController.startImportSession.bind(this.backupController)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_CHUNK, this.auth.requirePermission('system:backup:manage'), this.chunkUpload.single('chunk'),
+      this.bind(this.backupController.uploadImportChunk.bind(this.backupController)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_COMPLETE, this.auth.requirePermission('system:backup:manage'),
+      this.bind(this.backupController.completeImport.bind(this.backupController)));
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT, this.auth.requirePermission('system:backup:manage'), this.upload.single('backup'),
       this.bind(this.backupController.importBackup.bind(this.backupController)));
     this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_DOWNLOAD, this.auth.requirePermission('system:backup:view'),

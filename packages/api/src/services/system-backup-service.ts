@@ -9,6 +9,8 @@ import {
 } from '@fromcode119/core';
 import { SystemBackupRepository } from '../repositories/system-backup-repository';
 import type {
+  BackupImportChunkResponse,
+  BackupImportSessionResponse,
   CreateSystemBackupRequest,
   RestoreExecuteResponse,
   RestorePreviewResponse,
@@ -60,6 +62,48 @@ export class SystemBackupService {
 
   async importBackup(actor: Record<string, unknown>, uploadedFilePath: string, originalFilename: string): Promise<SystemBackupMutationResponse> {
     const backupPath = BackupImportService.importArchive(uploadedFilePath, originalFilename);
+    const backup = this.toCatalogItem(this.catalog.resolveByPath(backupPath));
+    await this.repository.recordOperation({
+      action: 'backup.import',
+      resource: backup.filename,
+      status: 'allowed',
+      metadata: actor,
+    });
+    return {
+      success: true,
+      backup,
+      selection: {
+        requestedSections: [],
+        includedSections: [],
+        warnings: [],
+      },
+    };
+  }
+
+  async startBackupImportSession(originalFilename: string, totalSizeBytes: number, totalChunks: number): Promise<BackupImportSessionResponse> {
+    const session = BackupImportService.startChunkedImport(originalFilename, totalSizeBytes, totalChunks);
+    return {
+      success: true,
+      uploadId: session.uploadId,
+      chunkSizeBytes: session.chunkSizeBytes,
+      totalChunks: session.totalChunks,
+      originalFilename: session.originalFilename,
+    };
+  }
+
+  async uploadBackupImportChunk(uploadId: string, uploadedChunkPath: string, chunkIndex: number, totalChunks: number): Promise<BackupImportChunkResponse> {
+    const result = BackupImportService.appendChunk(uploadId, uploadedChunkPath, chunkIndex, totalChunks);
+    return {
+      success: true,
+      uploadId: result.uploadId,
+      receivedChunks: result.receivedChunks,
+      totalChunks: result.totalChunks,
+      complete: result.complete,
+    };
+  }
+
+  async completeBackupImport(actor: Record<string, unknown>, uploadId: string): Promise<SystemBackupMutationResponse> {
+    const backupPath = BackupImportService.completeChunkedImport(uploadId);
     const backup = this.toCatalogItem(this.catalog.resolveByPath(backupPath));
     await this.repository.recordOperation({
       action: 'backup.import',

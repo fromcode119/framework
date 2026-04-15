@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ThemeManager, Logger } from '@fromcode119/core';
+import { ArchiveUploadSessionService, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -7,6 +7,8 @@ import AdmZip from 'adm-zip';
 import { BackupService } from '@fromcode119/core';
 
 export class ThemeController {
+  private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
+
   private logger = new Logger({ namespace: 'theme-controller' });
 
   constructor(private manager: ThemeManager) {}
@@ -86,6 +88,61 @@ export class ThemeController {
       res.status(400).json({ error: err.message || 'Invalid theme archive' });
     } finally {
       if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    }
+  }
+
+  async startUploadSession(req: Request, res: Response) {
+    try {
+      const payload = this.readUploadSessionRequest(req.body);
+      res.status(201).json({
+        success: true,
+        ...ArchiveUploadSessionService.startSession(
+          payload.originalFilename,
+          payload.totalSizeBytes,
+          payload.totalChunks,
+          ThemeController.ALLOWED_ARCHIVE_EXTENSIONS,
+        ),
+      });
+    } catch (err: any) {
+      res.status(err?.statusCode || 400).json({ error: err.message || 'Could not start upload session.' });
+    }
+  }
+
+  async uploadChunk(req: any, res: Response) {
+    try {
+      const payload = this.readChunkUploadRequest(req);
+      const result = ArchiveUploadSessionService.appendChunk(payload.uploadId, payload.filePath, payload.chunkIndex, payload.totalChunks);
+      res.status(201).json({ success: true, ...result });
+    } catch (err: any) {
+      res.status(err?.statusCode || 400).json({ error: err.message || 'Could not upload theme package chunk.' });
+    }
+  }
+
+  async inspectStagedUpload(req: Request, res: Response) {
+    try {
+      const uploadId = this.readUploadId(req.body);
+      const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
+      const info = await this.inspectThemeArchive(uploadedArchive.filePath, uploadedArchive.originalFilename);
+      res.json({ success: true, uploadId, info });
+    } catch (err: any) {
+      res.status(err?.statusCode || 400).json({ error: err.message || 'Invalid theme archive' });
+    }
+  }
+
+  async completeStagedUpload(req: Request, res: Response) {
+    let uploadId = '';
+    try {
+      uploadId = this.readUploadId(req.body);
+      const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
+      const manifest = await this.manager.installFromZip(uploadedArchive.filePath);
+      res.json({ success: true, manifest });
+    } catch (err: any) {
+      this.logger.error(`Failed to upload theme: ${err.message}`);
+      res.status(err?.statusCode || 500).json({ error: err.message || 'Could not install theme package.' });
+    } finally {
+      if (uploadId) {
+        ArchiveUploadSessionService.discardSession(uploadId);
+      }
     }
   }
 
@@ -227,6 +284,7 @@ export class ThemeController {
         version: String(manifest?.version || ''),
         description: String(manifest?.description || ''),
         author: String(manifest?.author || ''),
+        dependencies: this.formatDependencyMap(manifest?.dependencies),
         hasUiBundle: this.directoryContainsSegment(themeRoot, 'ui'),
         bundledPlugins: bundledEntries,
         existingVersion: existing?.version || null,
@@ -307,6 +365,73 @@ export class ThemeController {
       }
     }
     return false;
+  }
+
+  private formatDependencyMap(value: unknown): string[] {
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+    return Object.entries(value as Record<string, unknown>)
+      .map(([dependency, version]) => {
+        const normalizedDependency = String(dependency || '').trim();
+        const normalizedVersion = String(version || '').trim();
+        if (!normalizedDependency) {
+          return '';
+        }
+        return normalizedVersion ? `${normalizedDependency} (${normalizedVersion})` : normalizedDependency;
+      })
+      .filter(Boolean);
+  }
+
+  private readUploadSessionRequest(body: unknown): { originalFilename: string; totalSizeBytes: number; totalChunks: number } {
+    if (!body || typeof body !== 'object') {
+      throw new Error('Upload session payload is required.');
+    }
+    const originalFilename = String((body as { originalFilename?: unknown }).originalFilename || '').trim();
+    const totalSizeBytes = Number((body as { totalSizeBytes?: unknown }).totalSizeBytes || 0);
+    const totalChunks = Number((body as { totalChunks?: unknown }).totalChunks || 0);
+    if (!originalFilename) {
+      throw new Error('originalFilename is required.');
+    }
+    if (!Number.isFinite(totalSizeBytes) || totalSizeBytes <= 0) {
+      throw new Error('totalSizeBytes must be greater than zero.');
+    }
+    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
+      throw new Error('totalChunks must be a positive integer.');
+    }
+    return { originalFilename, totalSizeBytes, totalChunks };
+  }
+
+  private readChunkUploadRequest(req: Request): { uploadId: string; filePath: string; chunkIndex: number; totalChunks: number } {
+    const uploadRequest = req as Request & {
+      file?: { path?: unknown };
+      body?: { uploadId?: unknown; chunkIndex?: unknown; totalChunks?: unknown };
+    };
+    const uploadId = String(uploadRequest.body?.uploadId || '').trim();
+    const filePath = String(uploadRequest.file?.path || '').trim();
+    const chunkIndex = Number(uploadRequest.body?.chunkIndex || -1);
+    const totalChunks = Number(uploadRequest.body?.totalChunks || 0);
+    if (!uploadId) {
+      throw new Error('uploadId is required.');
+    }
+    if (!filePath) {
+      throw new Error('chunk file is required.');
+    }
+    if (!Number.isInteger(chunkIndex) || chunkIndex < 0) {
+      throw new Error('chunkIndex must be a non-negative integer.');
+    }
+    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
+      throw new Error('totalChunks must be a positive integer.');
+    }
+    return { uploadId, filePath, chunkIndex, totalChunks };
+  }
+
+  private readUploadId(body: unknown): string {
+    const uploadId = String((body as { uploadId?: unknown } | null | undefined)?.uploadId || '').trim();
+    if (!uploadId) {
+      throw new Error('uploadId is required.');
+    }
+    return uploadId;
   }
 
   private isZipArchive(filePath: string, originalFilename?: string): boolean {

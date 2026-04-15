@@ -2,11 +2,13 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { BackupService, PluginManager, Logger } from '@fromcode119/core';
+import { ArchiveUploadSessionService, BackupService, PluginManager, Logger } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
 import AdmZip from 'adm-zip';
 
 export class PluginController {
+  private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
+
   private logger = new Logger({ namespace: 'plugin-controller' });
 
   constructor(private manager: PluginManager) {}
@@ -209,6 +211,66 @@ export class PluginController {
     }
   }
 
+  async startUploadSession(req: Request, res: Response) {
+    try {
+      const payload = this.readUploadSessionRequest(req.body);
+      res.status(201).json({
+        success: true,
+        ...ArchiveUploadSessionService.startSession(
+          payload.originalFilename,
+          payload.totalSizeBytes,
+          payload.totalChunks,
+          PluginController.ALLOWED_ARCHIVE_EXTENSIONS,
+        ),
+      });
+    } catch (err: any) {
+      res.status(err?.statusCode || 400).json({ error: err.message || 'Could not start upload session.' });
+    }
+  }
+
+  async uploadChunk(req: any, res: Response) {
+    try {
+      const payload = this.readChunkUploadRequest(req);
+      const result = ArchiveUploadSessionService.appendChunk(payload.uploadId, payload.filePath, payload.chunkIndex, payload.totalChunks);
+      res.status(201).json({ success: true, ...result });
+    } catch (err: any) {
+      res.status(err?.statusCode || 400).json({ error: err.message || 'Could not upload plugin package chunk.' });
+    }
+  }
+
+  async inspectStagedUpload(req: Request, res: Response) {
+    try {
+      const uploadId = this.readUploadId(req.body);
+      const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
+      const info = await this.inspectPluginArchive(uploadedArchive.filePath, uploadedArchive.originalFilename);
+      res.json({ success: true, uploadId, info });
+    } catch (err: any) {
+      res.status(err?.statusCode || 400).json({ error: err.message || 'Invalid plugin archive' });
+    }
+  }
+
+  async completeStagedUpload(req: Request, res: Response) {
+    let uploadId = '';
+    try {
+      uploadId = this.readUploadId(req.body);
+      const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
+      const manifest = await this.manager.installFromZip(uploadedArchive.filePath);
+      await this.manager.discoverPlugins();
+      try {
+        await this.manager.enable(manifest.slug);
+      } catch (enableErr: any) {
+        this.logger.warn(`Uploaded plugin ${manifest.slug} failed to auto-enable: ${enableErr.message}`);
+      }
+      res.json({ success: true, manifest });
+    } catch (err: any) {
+      res.status(err?.statusCode || 500).json({ error: err.message || 'Could not install plugin package.' });
+    } finally {
+      if (uploadId) {
+        ArchiveUploadSessionService.discardSession(uploadId);
+      }
+    }
+  }
+
   async serveAssets(req: Request, res: Response) {
     const { slug } = req.params;
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
@@ -262,6 +324,9 @@ export class PluginController {
         version: String(manifest?.version || ''),
         description: String(manifest?.description || ''),
         author: String(manifest?.author || ''),
+        files: this.countFiles(extractedDir),
+        dependencies: this.formatDependencyMap(manifest?.dependencies),
+        peerDependencies: this.formatDependencyMap(manifest?.peerDependencies),
         hasUiBundle: this.directoryContainsSegment(extractedDir, 'ui'),
         hasServerCode: this.directoryContainsFilePattern(extractedDir, /(^|\/)index\.(js|ts)$/i),
         existingVersion: existing?.manifest?.version || null,
@@ -336,6 +401,86 @@ export class PluginController {
       }
     }
     return false;
+  }
+
+  private countFiles(rootDir: string): number {
+    let count = 0;
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      const absolutePath = path.join(rootDir, entry.name);
+      if (entry.isDirectory()) {
+        count += this.countFiles(absolutePath);
+      } else if (entry.isFile()) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  private formatDependencyMap(value: unknown): string[] {
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+    return Object.entries(value as Record<string, unknown>)
+      .map(([dependency, version]) => {
+        const normalizedDependency = String(dependency || '').trim();
+        const normalizedVersion = String(version || '').trim();
+        if (!normalizedDependency) {
+          return '';
+        }
+        return normalizedVersion ? `${normalizedDependency} (${normalizedVersion})` : normalizedDependency;
+      })
+      .filter(Boolean);
+  }
+
+  private readUploadSessionRequest(body: unknown): { originalFilename: string; totalSizeBytes: number; totalChunks: number } {
+    if (!body || typeof body !== 'object') {
+      throw new Error('Upload session payload is required.');
+    }
+    const originalFilename = String((body as { originalFilename?: unknown }).originalFilename || '').trim();
+    const totalSizeBytes = Number((body as { totalSizeBytes?: unknown }).totalSizeBytes || 0);
+    const totalChunks = Number((body as { totalChunks?: unknown }).totalChunks || 0);
+    if (!originalFilename) {
+      throw new Error('originalFilename is required.');
+    }
+    if (!Number.isFinite(totalSizeBytes) || totalSizeBytes <= 0) {
+      throw new Error('totalSizeBytes must be greater than zero.');
+    }
+    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
+      throw new Error('totalChunks must be a positive integer.');
+    }
+    return { originalFilename, totalSizeBytes, totalChunks };
+  }
+
+  private readChunkUploadRequest(req: Request): { uploadId: string; filePath: string; chunkIndex: number; totalChunks: number } {
+    const uploadRequest = req as Request & {
+      file?: { path?: unknown };
+      body?: { uploadId?: unknown; chunkIndex?: unknown; totalChunks?: unknown };
+    };
+    const uploadId = String(uploadRequest.body?.uploadId || '').trim();
+    const filePath = String(uploadRequest.file?.path || '').trim();
+    const chunkIndex = Number(uploadRequest.body?.chunkIndex || -1);
+    const totalChunks = Number(uploadRequest.body?.totalChunks || 0);
+    if (!uploadId) {
+      throw new Error('uploadId is required.');
+    }
+    if (!filePath) {
+      throw new Error('chunk file is required.');
+    }
+    if (!Number.isInteger(chunkIndex) || chunkIndex < 0) {
+      throw new Error('chunkIndex must be a non-negative integer.');
+    }
+    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
+      throw new Error('totalChunks must be a positive integer.');
+    }
+    return { uploadId, filePath, chunkIndex, totalChunks };
+  }
+
+  private readUploadId(body: unknown): string {
+    const uploadId = String((body as { uploadId?: unknown } | null | undefined)?.uploadId || '').trim();
+    if (!uploadId) {
+      throw new Error('uploadId is required.');
+    }
+    return uploadId;
   }
 
   private isZipArchive(filePath: string, originalFilename?: string): boolean {

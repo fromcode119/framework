@@ -26,6 +26,22 @@ export type SystemBackupMutationResponse = {
   selection: SystemBackupSelection;
 };
 
+export type BackupImportSessionResponse = {
+  success: true;
+  uploadId: string;
+  chunkSizeBytes: number;
+  totalChunks: number;
+  originalFilename: string;
+};
+
+export type BackupImportChunkResponse = {
+  success: true;
+  uploadId: string;
+  receivedChunks: number;
+  totalChunks: number;
+  complete: boolean;
+};
+
 export type RestorePreviewResponse = {
   backup: BackupCatalogItem;
   targetKind: RestoreTargetKind;
