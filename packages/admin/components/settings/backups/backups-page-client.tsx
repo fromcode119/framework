@@ -48,10 +48,12 @@ export function BackupsPageClient({}: BackupsPageClientProps) {
           capabilities={controller.backupState.capabilities}
           createSections={controller.createSections}
           isCreating={controller.backupState.isCreating}
+          isImporting={controller.backupState.isImporting}
           createProgress={controller.backupState.createProgress}
           onToggleSection={controller.toggleCreateSection}
           onApplyPreset={controller.applyCreatePreset}
           onCreate={controller.handleCreate}
+          onImport={controller.handleImport}
         />
 
         <BackupListCard

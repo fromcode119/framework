@@ -21,6 +21,15 @@ export class SystemBackupController {
     }
   }
 
+  async importBackup(req: Request, res: Response): Promise<void> {
+    try {
+      const uploadedBackup = this.readUploadedBackup(req);
+      res.status(201).json(await this.service.importBackup(this.resolveActor(req), uploadedBackup.filePath, uploadedBackup.originalFilename));
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
   async downloadBackup(req: Request, res: Response): Promise<void> {
     try {
       const result = await this.service.resolveDownload(String(req.params.id || ''), this.resolveActor(req));
@@ -130,6 +139,21 @@ export class SystemBackupController {
     }
 
     return sections as ('core' | 'database' | 'plugins' | 'themes')[];
+  }
+
+  private readUploadedBackup(req: Request): { filePath: string; originalFilename: string } {
+    const uploadRequest = req as Request & {
+      file?: { path?: unknown; originalname?: unknown };
+    };
+    const filePath = String(uploadRequest.file?.path || '').trim();
+    if (!filePath) {
+      throw new Error('backup file is required.');
+    }
+
+    return {
+      filePath,
+      originalFilename: String(uploadRequest.file?.originalname || 'imported-backup.tar.gz').trim(),
+    };
   }
 
   private handleError(res: Response, error: unknown): void {

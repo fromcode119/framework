@@ -73,6 +73,7 @@ export interface SystemBackupHookState {
   isLoading: boolean;
   isRefreshing: boolean;
   isCreating: boolean;
+  isImporting: boolean;
   createProgress: BackupProgressView | null;
   downloadProgress: BackupDownloadProgressView | null;
   activeDeleteId: string;
@@ -80,6 +81,7 @@ export interface SystemBackupHookState {
   activeRestoreId: string;
   refreshBackups(options?: { initial?: boolean }): Promise<SystemBackupListResponseView>;
   createSystemBackup(request: { sections: ('core' | 'database' | 'plugins' | 'themes')[] }): Promise<SystemBackupMutationResponseView>;
+  importBackup(file: File): Promise<SystemBackupMutationResponseView>;
   deleteBackup(id: string): Promise<SystemBackupMutationResponseView>;
   downloadBackup(id: string): Promise<string>;
   previewRestore(id: string, targetKind: string): Promise<RestorePreviewResponseView>;
@@ -95,6 +97,7 @@ export interface BackupsPageControllerState {
   restoreState: RestoreDialogState;
   handleRefresh(): Promise<void>;
   handleCreate(): Promise<void>;
+  handleImport(file: File): Promise<void>;
   handleDelete(): Promise<void>;
   handleDownload(id: string): Promise<void>;
   toggleCreateSection(value: 'core' | 'database' | 'plugins' | 'themes'): void;
@@ -132,10 +135,12 @@ export interface BackupCreateCardProps {
   capabilities: SystemBackupCapabilities;
   createSections: ('core' | 'database' | 'plugins' | 'themes')[];
   isCreating: boolean;
+  isImporting: boolean;
   createProgress: BackupProgressView | null;
   onToggleSection(value: 'core' | 'database' | 'plugins' | 'themes'): void;
   onApplyPreset(value: 'full' | 'core-db' | 'plugins-only' | 'themes-only'): void;
   onCreate(): Promise<void>;
+  onImport(file: File): Promise<void>;
 }
 
 export interface RestoreDialogState {

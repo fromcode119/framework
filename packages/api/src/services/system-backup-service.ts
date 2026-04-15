@@ -6,6 +6,7 @@ import {
   type BackupCatalogItem,
   type RestoreTargetKind,
 } from '@fromcode119/core';
+import { BackupImportService } from '@fromcode119/core/management/backup-import-service';
 import { SystemBackupRepository } from '../repositories/system-backup-repository';
 import type {
   CreateSystemBackupRequest,
@@ -53,6 +54,26 @@ export class SystemBackupService {
         requestedSections: result.requestedSections,
         includedSections: result.includedSections,
         warnings: result.warnings,
+      },
+    };
+  }
+
+  async importBackup(actor: Record<string, unknown>, uploadedFilePath: string, originalFilename: string): Promise<SystemBackupMutationResponse> {
+    const backupPath = BackupImportService.importArchive(uploadedFilePath, originalFilename);
+    const backup = this.toCatalogItem(this.catalog.resolveByPath(backupPath));
+    await this.repository.recordOperation({
+      action: 'backup.import',
+      resource: backup.filename,
+      status: 'allowed',
+      metadata: actor,
+    });
+    return {
+      success: true,
+      backup,
+      selection: {
+        requestedSections: [],
+        includedSections: [],
+        warnings: [],
       },
     };
   }

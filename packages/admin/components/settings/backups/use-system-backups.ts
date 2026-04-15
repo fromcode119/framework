@@ -22,6 +22,7 @@ export class SystemBackupHooks {
     const [isLoading, setIsLoading] = React.useState(true);
     const [isRefreshing, setIsRefreshing] = React.useState(false);
     const [isCreating, setIsCreating] = React.useState(false);
+    const [isImporting, setIsImporting] = React.useState(false);
     const [createProgress, setCreateProgress] = React.useState<BackupProgressView | null>(null);
     const [downloadProgress, setDownloadProgress] = React.useState<BackupDownloadProgressView | null>(null);
     const [activeDeleteId, setActiveDeleteId] = React.useState('');
@@ -89,6 +90,23 @@ export class SystemBackupHooks {
       } finally {
         window.clearInterval(progressTimer);
         setIsCreating(false);
+      }
+    }, [refreshBackups]);
+
+    const importBackup = React.useCallback(async (file: File): Promise<SystemBackupMutationResponseView> => {
+      if (!(file instanceof File)) {
+        throw new Error('Choose a backup archive to import.');
+      }
+
+      const formData = new FormData();
+      formData.append('backup', file);
+      setIsImporting(true);
+      try {
+        const response = await AdminApi.upload(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT, formData) as SystemBackupMutationResponseView;
+        await refreshBackups();
+        return response;
+      } finally {
+        setIsImporting(false);
       }
     }, [refreshBackups]);
 
@@ -178,6 +196,7 @@ export class SystemBackupHooks {
       isLoading,
       isRefreshing,
       isCreating,
+      isImporting,
       createProgress,
       downloadProgress,
       activeDeleteId,
@@ -185,6 +204,7 @@ export class SystemBackupHooks {
       activeRestoreId,
       refreshBackups,
       createSystemBackup,
+      importBackup,
       deleteBackup,
       downloadBackup,
       previewRestore,
