@@ -62,6 +62,7 @@ export type { BrowserCookieOptions } from './clients';
 export { RouteUtils } from './route-utils';
 export { UrlUtils } from './url-utils';
 export { ApplicationUrlUtils } from './application-url-utils';
+export { RuntimeLocationUtils } from './runtime-location-utils';
 export { PublicAssetUrlUtils } from './public-asset-url-utils';
 export { ApiVersionUtils } from './api-version';
 export { LocalizationUtils } from './localization';

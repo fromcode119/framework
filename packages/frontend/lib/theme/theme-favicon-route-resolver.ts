@@ -18,14 +18,45 @@ export class ThemeFaviconRouteResolver {
   ];
 
   static async resolve(): Promise<{ filePath: string; contentType: string } | null> {
-    const themeSlug = await ThemeFaviconRouteResolver.resolveActiveThemeSlug();
-    if (!themeSlug) {
-      return null;
+    try {
+      const themeSlug = await ThemeFaviconRouteResolver.resolveActiveThemeSlug();
+      const resolvedThemeIcon = themeSlug
+        ? ThemeFaviconRouteResolver.resolveThemeIcon(themeSlug)
+        : null;
+      if (resolvedThemeIcon) {
+        return resolvedThemeIcon;
+      }
+    } catch (error) {
+      console.warn('[ThemeFaviconRouteResolver] Failed to resolve theme favicon:', error);
     }
 
+    return ThemeFaviconRouteResolver.resolveFrameworkFallback();
+  }
+
+  private static resolveThemeIcon(themeSlug: string): { filePath: string; contentType: string } | null {
     const themeRoot = path.join(ProjectPaths.getThemesDir(), themeSlug);
     for (const candidate of ThemeFaviconRouteResolver.THEME_FAVICON_CANDIDATES) {
       const filePath = path.join(themeRoot, candidate);
+      if (!existsSync(filePath)) {
+        continue;
+      }
+
+      return {
+        filePath,
+        contentType: ThemeFaviconRouteResolver.resolveContentType(filePath),
+      };
+    }
+
+    return null;
+  }
+
+  private static resolveFrameworkFallback(): { filePath: string; contentType: string } | null {
+    const fallbackCandidates = [
+      path.join(ProjectPaths.getPackagesDir(), 'frontend', 'public', 'brand', 'atlantis-mark-indigo.png'),
+      path.join(ProjectPaths.getPackagesDir(), 'frontend', 'public', 'brand', 'atlantis-mark-indigo.svg'),
+    ];
+
+    for (const filePath of fallbackCandidates) {
       if (!existsSync(filePath)) {
         continue;
       }
