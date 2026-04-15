@@ -1,8 +1,7 @@
 import { BaseRouter } from '../routers/base-router';
 import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, ThemeManager } from '@fromcode119/core';
-import { RouteConstants } from '@fromcode119/core/route-constants';
+import { PluginManager, ThemeManager, RouteConstants } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest/rest-controller';
 import { SystemController } from '../controllers/system/system-controller';
 import { SystemBackupController } from '../controllers/system/system-backup-controller';

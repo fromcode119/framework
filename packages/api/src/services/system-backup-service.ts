@@ -1,12 +1,12 @@
 import fs from 'fs';
 import {
   BackupCatalogService,
+  BackupImportService,
   BackupRestoreGuardService,
   BackupService,
   type BackupCatalogItem,
   type RestoreTargetKind,
 } from '@fromcode119/core';
-import { BackupImportService } from '@fromcode119/core/management/backup-import-service';
 import { SystemBackupRepository } from '../repositories/system-backup-repository';
 import type {
   CreateSystemBackupRequest,
