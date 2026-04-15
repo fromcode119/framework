@@ -69,6 +69,7 @@ export class RouteConstants {
   ADMIN_AUDIT: '/admin/audit',
   ADMIN_BACKUPS: '/admin/backups',
   ADMIN_BACKUPS_CREATE_SYSTEM: '/admin/backups/system',
+  ADMIN_BACKUPS_IMPORT: '/admin/backups/import',
   ADMIN_BACKUPS_ID: '/admin/backups/:id',
   ADMIN_BACKUPS_ID_DOWNLOAD: '/admin/backups/:id/download',
   ADMIN_BACKUPS_ID_RESTORE_PREVIEW: '/admin/backups/:id/restore/preview',

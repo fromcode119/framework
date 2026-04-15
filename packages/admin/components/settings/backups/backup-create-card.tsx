@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { ThemeHooks } from '@/components/use-theme';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,12 +12,25 @@ export function BackupCreateCard({
   capabilities,
   createSections,
   isCreating,
+  isImporting,
   createProgress,
   onToggleSection,
   onApplyPreset,
   onCreate,
+  onImport,
 }: BackupCreateCardProps) {
   const { theme } = ThemeHooks.useTheme();
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) {
+      return;
+    }
+
+    void onImport(file);
+  }, [onImport]);
 
   return (
     <Card className="border-0 rounded-[2rem] p-0 overflow-hidden shadow-[0_24px_64px_-24px_rgba(15,23,42,0.18)] dark:ring-1 dark:ring-white/5">
@@ -29,14 +43,33 @@ export function BackupCreateCard({
             </p>
           </div>
 
-          <Button
-            className="rounded-xl px-5 uppercase tracking-[0.16em]"
-            icon={<FrameworkIcons.Plus size={14} />}
-            onClick={() => void onCreate()}
-            disabled={!capabilities.canManage || !createSections.length || isCreating}
-          >
-            {isCreating ? 'Creating Backup...' : 'Create Backup'}
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept=".tar.gz,.sql,.db"
+              onChange={handleFileChange}
+            />
+            <Button
+              variant="secondary"
+              className="rounded-xl px-5 uppercase tracking-[0.16em]"
+              icon={<FrameworkIcons.Upload size={14} />}
+              isLoading={isImporting}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={!capabilities.canManage || isCreating || isImporting}
+            >
+              {isImporting ? 'Importing Backup...' : 'Import Backup'}
+            </Button>
+            <Button
+              className="rounded-xl px-5 uppercase tracking-[0.16em]"
+              icon={<FrameworkIcons.Plus size={14} />}
+              onClick={() => void onCreate()}
+              disabled={!capabilities.canManage || !createSections.length || isCreating || isImporting}
+            >
+              {isCreating ? 'Creating Backup...' : 'Create Backup'}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -113,6 +146,9 @@ export function BackupCreateCard({
               System backup is the archive you can download and later use for restore or transfer. The selection above decides whether it contains core files, database state, plugins, themes, or any combination of them.
             </p>
           </div>
+          <p className="mt-4 text-xs text-slate-500">
+            Import accepts exported .tar.gz archives and database-only .sql or .db backups, then indexes them into managed backups for download or restore.
+          </p>
 
           {createProgress ? (
             <div className="mt-5 space-y-2">
