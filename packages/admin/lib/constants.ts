@@ -88,6 +88,7 @@ export class AdminConstants {
     BACKUPS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUPS),
     BACKUP: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP, { id })),
     BACKUP_CREATE_SYSTEM: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_CREATE_SYSTEM),
+    BACKUP_IMPORT: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_IMPORT),
     BACKUP_DOWNLOAD: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_DOWNLOAD, { id })),
     BACKUP_RESTORE_PREVIEW: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_RESTORE_PREVIEW, { id })),
     BACKUP_RESTORE_EXECUTE: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_RESTORE_EXECUTE, { id })),

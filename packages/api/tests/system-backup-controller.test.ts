@@ -1,4 +1,4 @@
-import { SystemBackupController } from '../src/controllers/system-backup-controller';
+import { SystemBackupController } from '../src/controllers/system/system-backup-controller';
 
 describe('SystemBackupController', () => {
   it('returns list payloads from the service', async () => {
@@ -63,6 +63,40 @@ describe('SystemBackupController', () => {
       { sections: ['core', 'themes'] },
     );
     expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  it('passes uploaded backup files into import requests', async () => {
+    const service = {
+      importBackup: jest.fn().mockResolvedValue({ success: true, backup: { id: '1' }, selection: { requestedSections: [], includedSections: [], warnings: [] } }),
+    } as any;
+    const controller = new SystemBackupController(service);
+    const res = createResponse();
+
+    await controller.importBackup({
+      file: { path: '/tmp/uploaded-backup.tar.gz', originalname: 'system-2026-04-15.tar.gz' },
+      user: { roles: ['admin'], permissions: ['*'] },
+    } as any, res as any);
+
+    expect(service.importBackup).toHaveBeenCalledWith(
+      expect.any(Object),
+      '/tmp/uploaded-backup.tar.gz',
+      'system-2026-04-15.tar.gz',
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  it('rejects import requests without an uploaded backup file', async () => {
+    const service = {
+      importBackup: jest.fn(),
+    } as any;
+    const controller = new SystemBackupController(service);
+    const res = createResponse();
+
+    await controller.importBackup({ user: { roles: ['admin'], permissions: ['*'] } } as any, res as any);
+
+    expect(service.importBackup).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'backup file is required.' });
   });
 });
 

@@ -14,7 +14,7 @@ export class BackupsPageControllerHooks {
   static useController(): BackupsPageControllerState {
     const { addNotification } = NotificationHooks.useNotification();
     const backupState = SystemBackupHooks.useBackups();
-    const [createSections, setCreateSections] = React.useState<'core' | 'database' | 'plugins' | 'themes'[]>(SystemBackupPageUtils.createDefaultSections());
+    const [createSections, setCreateSections] = React.useState<('core' | 'database' | 'plugins' | 'themes')[]>(SystemBackupPageUtils.createDefaultSections());
     const [deleteCandidate, setDeleteCandidate] = React.useState<BackupCatalogItemView | null>(null);
     const [restoreState, setRestoreState] = React.useState<RestoreDialogState>(SystemBackupPageUtils.createInitialRestoreState());
 
@@ -53,7 +53,7 @@ export class BackupsPageControllerHooks {
         });
         if (response.selection.warnings.length) {
           addNotification({
-            type: 'warning',
+            type: 'error',
             title: 'Backup Completed With Warnings',
             message: response.selection.warnings.join(' '),
           });
@@ -66,6 +66,23 @@ export class BackupsPageControllerHooks {
         });
       }
     }, [addNotification, backupState, createSections]);
+
+    const handleImport = React.useCallback(async (file: File) => {
+      try {
+        const response = await backupState.importBackup(file);
+        addNotification({
+          type: 'success',
+          title: 'Backup Imported',
+          message: `${response.backup.displayName} is now available in managed backups.`,
+        });
+      } catch (error) {
+        addNotification({
+          type: 'error',
+          title: 'Import Failed',
+          message: SystemBackupPageUtils.toErrorMessage(error),
+        });
+      }
+    }, [addNotification, backupState]);
 
     const toggleCreateSection = React.useCallback((value: 'core' | 'database' | 'plugins' | 'themes') => {
       setCreateSections((current) => SystemBackupPageUtils.toggleSection(current, value));
@@ -196,6 +213,7 @@ export class BackupsPageControllerHooks {
       restoreState,
       handleRefresh,
       handleCreate,
+      handleImport,
       handleDelete,
       handleDownload,
       toggleCreateSection,

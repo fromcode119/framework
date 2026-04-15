@@ -1,7 +1,8 @@
 import { BaseRouter } from '../routers/base-router';
+import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager } from '@fromcode119/core';
-import { RouteConstants } from '@fromcode119/core';
+import { RouteConstants } from '@fromcode119/core/route-constants';
 import { RESTController } from '../controllers/rest/rest-controller';
 import { SystemController } from '../controllers/system/system-controller';
 import { SystemBackupController } from '../controllers/system/system-backup-controller';
@@ -29,6 +30,7 @@ export class SystemRouter extends BaseRouter {
   private controller: SystemController;
   private backupController: SystemBackupController;
   private auth: AuthManager;
+  private upload: multer.Multer;
 
   constructor(
     manager: PluginManager,
@@ -38,6 +40,7 @@ export class SystemRouter extends BaseRouter {
   ) {
     super();
     this.auth = auth;
+    this.upload = multer({ dest: '/tmp/system-backup-uploads' });
     this.controller = new SystemController(manager, themeManager, restController, auth);
     const backupRepository = new SystemBackupRepository((manager as any).db);
     const backupService = new SystemBackupService(backupRepository);
@@ -91,6 +94,8 @@ export class SystemRouter extends BaseRouter {
       this.bind(this.backupController.listBackups.bind(this.backupController)));
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM, this.auth.requirePermission('system:backup:manage'),
       this.bind(this.backupController.createSystemBackup.bind(this.backupController)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT, this.auth.requirePermission('system:backup:manage'), this.upload.single('backup'),
+      this.bind(this.backupController.importBackup.bind(this.backupController)));
     this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_DOWNLOAD, this.auth.requirePermission('system:backup:view'),
       this.bind(this.backupController.downloadBackup.bind(this.backupController)));
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_PREVIEW, this.auth.requirePermission('system:backup:restore'),
