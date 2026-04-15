@@ -7,6 +7,7 @@ export default defineConfig({
   root: frameworkRoot,
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, 'packages/frontend'),
       '@/lib/admin-services': path.resolve(__dirname, 'packages/admin/lib/admin-services.ts'),
       '@fromcode119/core/client': path.resolve(__dirname, 'packages/core/src/client.ts'),
       '@fromcode119/react': path.resolve(__dirname, 'packages/react/src/index.ts'),

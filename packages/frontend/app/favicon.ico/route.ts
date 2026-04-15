@@ -5,14 +5,9 @@ import { ServerApiUtils } from '@/lib/server-api';
 export async function GET(request: Request) {
   try {
     const resolvedIcon = await ThemeFaviconRouteResolver.resolve();
-    const internalApiBaseUrl = String(
-      process.env.INTERNAL_API_URL || process.env.API_URL || ServerApiUtils.buildFrontendApiBaseUrl(),
-    )
-      .trim()
-      .replace(/\/+$/, '');
 
     for (const assetPath of resolvedIcon.themeAssetPaths) {
-      const assetResponse = await fetch(`${internalApiBaseUrl}${assetPath}`, { cache: 'no-store' });
+      const assetResponse = await ServerApiUtils.serverFetchInternalResponse(assetPath);
       if (!assetResponse?.ok) {
         continue;
       }
