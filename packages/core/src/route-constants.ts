@@ -147,6 +147,7 @@ export class RouteConstants {
   THEMES_SLUG_INSTALL: '/:slug/install',
   THEMES_SLUG_CONFIG: '/:slug/config',
   THEMES_SLUG_CHECK_UPDATE: '/:slug/check-update',
+  THEMES_SLUG_PUBLIC_WILDCARD: '/:slug/public/*',
   THEMES_SLUG_UI_WILDCARD: '/:slug/ui/*',
   THEMES_SLUG: '/:slug',
 
