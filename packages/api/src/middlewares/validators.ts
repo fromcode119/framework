@@ -1,4 +1,4 @@
-import type { ValidatorFunction } from './validation-middleware.types';
+import type { ValidatorFunction } from './validation/validation-middleware.types';
 
 /**
  * Quick validator helpers for common validation patterns.

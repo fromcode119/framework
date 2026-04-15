@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { CookieConstants, Logger } from '@fromcode119/core';
-import { RequestCookieService } from '../services/request-cookie-service';
+import { RequestCookieService } from '../services/request/request-cookie-service';
 import { ApiUrlUtils } from '../utils/url';
 import { WebhookRouteUtils } from '../utils/webhook-route-utils';
 import { BaseMiddleware } from './base-middleware';

@@ -1,0 +1,1 @@
+export type ValidatorFunction = (data: any) => boolean | Promise<boolean>;
