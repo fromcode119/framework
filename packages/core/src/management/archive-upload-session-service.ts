@@ -1,55 +1,27 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import crypto from 'crypto';
 import { BackupOperationError } from './backup-operation-error';
-import { BackupService } from './backup-service';
 
-export class BackupImportService {
-  private static readonly DEFAULT_FILENAME = 'imported-backup.tar.gz';
+export class ArchiveUploadSessionService {
   private static readonly DEFAULT_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
-  private static readonly SESSION_ROOT = path.join(os.tmpdir(), 'fromcode-backup-import-sessions');
+  private static readonly SESSION_ROOT = path.join(os.tmpdir(), 'fromcode-archive-upload-sessions');
   private static readonly SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
-  static importArchive(tempPath: string, originalFilename: string): string {
-    if (!tempPath || !fs.existsSync(tempPath) || !fs.statSync(tempPath).isFile()) {
-      throw new BackupOperationError(400, 'Uploaded backup archive is missing.');
-    }
-
-    const sanitizedFilename = this.sanitizeFilename(originalFilename);
-    const extension = this.resolveSupportedExtension(sanitizedFilename);
-    if (!extension) {
-      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, or .db backup.');
-    }
-
-    const targetDirectory = BackupService.getBackupsDirectory(this.resolveTargetSubdirectory(extension));
-    fs.mkdirSync(targetDirectory, { recursive: true });
-
-    const targetPath = this.resolveUniqueDestinationPath(targetDirectory, sanitizedFilename, extension);
-    try {
-      fs.copyFileSync(tempPath, targetPath);
-    } finally {
-      if (fs.existsSync(tempPath)) {
-        fs.unlinkSync(tempPath);
-      }
-    }
-
-    return targetPath;
-  }
-
-  static startChunkedImport(originalFilename: string, totalSizeBytes: number, totalChunks: number): {
+  static startSession(originalFilename: string, totalSizeBytes: number, totalChunks: number, allowedExtensions: string[]): {
     uploadId: string;
     chunkSizeBytes: number;
     totalChunks: number;
     originalFilename: string;
   } {
     const sanitizedFilename = this.sanitizeFilename(originalFilename);
-    const extension = this.resolveSupportedExtension(sanitizedFilename);
-    if (!extension) {
-      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, or .db backup.');
+    const normalizedAllowedExtensions = this.normalizeAllowedExtensions(allowedExtensions);
+    if (!this.isAllowedExtension(sanitizedFilename, normalizedAllowedExtensions)) {
+      throw new BackupOperationError(400, `Unsupported archive format. Upload one of: ${normalizedAllowedExtensions.join(', ')}.`);
     }
     if (!Number.isFinite(totalSizeBytes) || totalSizeBytes <= 0) {
-      throw new BackupOperationError(400, 'Backup size must be greater than zero.');
+      throw new BackupOperationError(400, 'Archive size must be greater than zero.');
     }
     if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
       throw new BackupOperationError(400, 'Chunk count must be a positive integer.');
@@ -65,6 +37,7 @@ export class BackupImportService {
         originalFilename: sanitizedFilename,
         totalSizeBytes,
         totalChunks,
+        allowedExtensions: normalizedAllowedExtensions,
         createdAt: new Date().toISOString(),
       }),
       'utf8',
@@ -113,47 +86,55 @@ export class BackupImportService {
     };
   }
 
-  static completeChunkedImport(uploadId: string): string {
+  static resolveUploadedArchive(uploadId: string): { filePath: string; originalFilename: string } {
     const metadata = this.readSessionMetadata(uploadId);
     const receivedChunks = this.countReceivedChunks(uploadId);
     if (receivedChunks !== metadata.totalChunks) {
       throw new BackupOperationError(409, `Upload is incomplete. Received ${receivedChunks} of ${metadata.totalChunks} chunks.`);
     }
 
-    const extension = this.resolveSupportedExtension(metadata.originalFilename);
-    if (!extension) {
-      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, or .db backup.');
+    return {
+      filePath: this.ensureAssembledFile(uploadId, metadata.originalFilename),
+      originalFilename: metadata.originalFilename,
+    };
+  }
+
+  static discardSession(uploadId: string): void {
+    const sessionDirectory = this.resolveSessionDirectory(uploadId);
+    if (fs.existsSync(sessionDirectory)) {
+      fs.rmSync(sessionDirectory, { recursive: true, force: true });
+    }
+  }
+
+  private static ensureAssembledFile(uploadId: string, originalFilename: string): string {
+    const assembledPath = path.join(this.resolveSessionDirectory(uploadId), `assembled${path.extname(originalFilename) || '.bin'}`);
+    if (fs.existsSync(assembledPath)) {
+      return assembledPath;
     }
 
-    const assembledPath = path.join(this.resolveSessionDirectory(uploadId), `assembled${extension}`);
-    try {
-      if (fs.existsSync(assembledPath)) {
-        fs.unlinkSync(assembledPath);
-      }
-      for (let chunkIndex = 0; chunkIndex < metadata.totalChunks; chunkIndex += 1) {
-        fs.appendFileSync(assembledPath, fs.readFileSync(this.resolveChunkPath(uploadId, chunkIndex)));
-      }
-      return this.importArchive(assembledPath, metadata.originalFilename);
-    } finally {
-      this.removeSession(uploadId);
+    const metadata = this.readSessionMetadata(uploadId);
+    for (let chunkIndex = 0; chunkIndex < metadata.totalChunks; chunkIndex += 1) {
+      fs.appendFileSync(assembledPath, fs.readFileSync(this.resolveChunkPath(uploadId, chunkIndex)));
     }
+    return assembledPath;
   }
 
   private static sanitizeFilename(value: string): string {
-    const rawFilename = path.basename(String(value || '').trim()) || BackupImportService.DEFAULT_FILENAME;
+    const rawFilename = path.basename(String(value || '').trim()) || 'uploaded-archive.bin';
     return rawFilename.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-');
   }
 
-  private static resolveSupportedExtension(filename: string): '.tar.gz' | '.sql' | '.db' | null {
-    const lowerCaseFilename = filename.toLowerCase();
-    if (lowerCaseFilename.endsWith('.tar.gz')) return '.tar.gz';
-    if (lowerCaseFilename.endsWith('.sql')) return '.sql';
-    if (lowerCaseFilename.endsWith('.db')) return '.db';
-    return null;
+  private static normalizeAllowedExtensions(allowedExtensions: string[]): string[] {
+    const normalized = Array.from(new Set((allowedExtensions || []).map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean)));
+    if (!normalized.length) {
+      throw new BackupOperationError(500, 'Archive upload session has no allowed extensions configured.');
+    }
+    return normalized;
   }
 
-  private static resolveTargetSubdirectory(extension: '.tar.gz' | '.sql' | '.db'): 'system' | 'database' {
-    return extension === '.sql' || extension === '.db' ? 'database' : 'system';
+  private static isAllowedExtension(filename: string, allowedExtensions: string[]): boolean {
+    const lowerCaseFilename = filename.toLowerCase();
+    return allowedExtensions.some((extension) => lowerCaseFilename.endsWith(extension));
   }
 
   private static resolveSessionDirectory(uploadId: string): string {
@@ -177,11 +158,12 @@ export class BackupImportService {
     originalFilename: string;
     totalSizeBytes: number;
     totalChunks: number;
+    allowedExtensions: string[];
     createdAt: string;
   } {
     const metadataPath = this.resolveMetadataPath(String(uploadId || '').trim());
     if (!fs.existsSync(metadataPath)) {
-      throw new BackupOperationError(404, 'Backup upload session was not found or has expired.');
+      throw new BackupOperationError(404, 'Archive upload session was not found or has expired.');
     }
 
     try {
@@ -191,10 +173,11 @@ export class BackupImportService {
         originalFilename: String(metadata?.originalFilename || '').trim(),
         totalSizeBytes: Number(metadata?.totalSizeBytes || 0),
         totalChunks: Number(metadata?.totalChunks || 0),
+        allowedExtensions: this.normalizeAllowedExtensions(Array.isArray(metadata?.allowedExtensions) ? metadata.allowedExtensions : []),
         createdAt: String(metadata?.createdAt || '').trim(),
       };
     } catch {
-      throw new BackupOperationError(500, 'Backup upload session metadata is invalid.');
+      throw new BackupOperationError(500, 'Archive upload session metadata is invalid.');
     }
   }
 
@@ -204,13 +187,6 @@ export class BackupImportService {
       return 0;
     }
     return fs.readdirSync(chunkDirectory).filter((entry) => entry.endsWith('.part')).length;
-  }
-
-  private static removeSession(uploadId: string): void {
-    const sessionDirectory = this.resolveSessionDirectory(uploadId);
-    if (fs.existsSync(sessionDirectory)) {
-      fs.rmSync(sessionDirectory, { recursive: true, force: true });
-    }
   }
 
   private static pruneExpiredSessions(): void {
@@ -230,23 +206,5 @@ export class BackupImportService {
         fs.rmSync(sessionDirectory, { recursive: true, force: true });
       }
     }
-  }
-
-  private static resolveUniqueDestinationPath(directoryPath: string, filename: string, extension: '.tar.gz' | '.sql' | '.db'): string {
-    const basename = filename.slice(0, filename.length - extension.length) || 'imported-backup';
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    let candidatePath = path.join(directoryPath, `${basename}${extension}`);
-    if (!fs.existsSync(candidatePath)) {
-      return candidatePath;
-    }
-
-    candidatePath = path.join(directoryPath, `${basename}-${timestamp}${extension}`);
-    let counter = 1;
-    while (fs.existsSync(candidatePath)) {
-      candidatePath = path.join(directoryPath, `${basename}-${timestamp}-${counter}${extension}`);
-      counter += 1;
-    }
-
-    return candidatePath;
   }
 }

@@ -8,6 +8,7 @@ import { RouteConstants } from '@fromcode119/core';
 export class PluginRouter extends BaseRouter {
   private controller: PluginController;
   private upload: multer.Multer;
+  private chunkUpload: multer.Multer;
 
   constructor(
     private manager: PluginManager,
@@ -16,6 +17,7 @@ export class PluginRouter extends BaseRouter {
     super();
     this.controller = new PluginController(manager);
     this.upload = multer({ dest: '/tmp/plugin-uploads' });
+    this.chunkUpload = multer({ dest: '/tmp/plugin-upload-chunks' });
   }
 
   protected registerRoutes(): void {
@@ -29,7 +31,11 @@ export class PluginRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.bind(this.controller.marketplace.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.PLUGINS_INSTALL, this.auth.guard(['admin']), this.bind(this.controller.install.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_LOGS, this.auth.guard(['admin']), this.bind(this.controller.logs.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION, this.auth.guard(['admin']), this.bind(this.controller.startUploadSession.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_CHUNK, this.auth.guard(['admin']), this.chunkUpload.single('chunk'), this.bind(this.controller.uploadChunk.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION_INSPECT, this.auth.guard(['admin']), this.bind(this.controller.inspectStagedUpload.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_INSPECT, this.auth.guard(['admin']), this.upload.single('plugin'), this.bind(this.controller.inspectUpload.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_COMPLETE, this.auth.guard(['admin']), this.bind(this.controller.completeStagedUpload.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD, this.auth.guard(['admin']), this.upload.single('plugin'), this.bind(this.controller.upload.bind(this.controller)));
   }
 }

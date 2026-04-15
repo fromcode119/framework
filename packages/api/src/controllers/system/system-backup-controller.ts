@@ -30,6 +30,36 @@ export class SystemBackupController {
     }
   }
 
+  async startImportSession(req: Request, res: Response): Promise<void> {
+    try {
+      const payload = this.readImportSessionRequest(req.body);
+      res.status(201).json(await this.service.startBackupImportSession(payload.originalFilename, payload.totalSizeBytes, payload.totalChunks));
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  async uploadImportChunk(req: Request, res: Response): Promise<void> {
+    try {
+      const payload = this.readImportChunkRequest(req);
+      res.status(201).json(await this.service.uploadBackupImportChunk(payload.uploadId, payload.filePath, payload.chunkIndex, payload.totalChunks));
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  async completeImport(req: Request, res: Response): Promise<void> {
+    try {
+      const uploadId = String(req.body?.uploadId || '').trim();
+      if (!uploadId) {
+        throw new Error('uploadId is required.');
+      }
+      res.status(201).json(await this.service.completeBackupImport(this.resolveActor(req), uploadId));
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
   async downloadBackup(req: Request, res: Response): Promise<void> {
     try {
       const result = await this.service.resolveDownload(String(req.params.id || ''), this.resolveActor(req));
@@ -154,6 +184,49 @@ export class SystemBackupController {
       filePath,
       originalFilename: String(uploadRequest.file?.originalname || 'imported-backup.tar.gz').trim(),
     };
+  }
+
+  private readImportSessionRequest(body: unknown): { originalFilename: string; totalSizeBytes: number; totalChunks: number } {
+    if (!body || typeof body !== 'object') {
+      throw new Error('Import session payload is required.');
+    }
+    const originalFilename = String((body as { originalFilename?: unknown }).originalFilename || '').trim();
+    const totalSizeBytes = Number((body as { totalSizeBytes?: unknown }).totalSizeBytes || 0);
+    const totalChunks = Number((body as { totalChunks?: unknown }).totalChunks || 0);
+    if (!originalFilename) {
+      throw new Error('originalFilename is required.');
+    }
+    if (!Number.isFinite(totalSizeBytes) || totalSizeBytes <= 0) {
+      throw new Error('totalSizeBytes must be greater than zero.');
+    }
+    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
+      throw new Error('totalChunks must be a positive integer.');
+    }
+    return { originalFilename, totalSizeBytes, totalChunks };
+  }
+
+  private readImportChunkRequest(req: Request): { uploadId: string; filePath: string; chunkIndex: number; totalChunks: number } {
+    const uploadRequest = req as Request & {
+      file?: { path?: unknown };
+      body?: { uploadId?: unknown; chunkIndex?: unknown; totalChunks?: unknown };
+    };
+    const uploadId = String(uploadRequest.body?.uploadId || '').trim();
+    const filePath = String(uploadRequest.file?.path || '').trim();
+    const chunkIndex = Number(uploadRequest.body?.chunkIndex || -1);
+    const totalChunks = Number(uploadRequest.body?.totalChunks || 0);
+    if (!uploadId) {
+      throw new Error('uploadId is required.');
+    }
+    if (!filePath) {
+      throw new Error('chunk file is required.');
+    }
+    if (!Number.isInteger(chunkIndex) || chunkIndex < 0) {
+      throw new Error('chunkIndex must be a non-negative integer.');
+    }
+    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
+      throw new Error('totalChunks must be a positive integer.');
+    }
+    return { uploadId, filePath, chunkIndex, totalChunks };
   }
 
   private handleError(res: Response, error: unknown): void {

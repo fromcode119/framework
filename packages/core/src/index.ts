@@ -125,6 +125,7 @@ export { PluginSignatureService } from './security/plugin-signature-service';
 // Management (Server-only)
 export { BackupService } from './management/backup-service';
 export { BackupImportService } from './management/backup-import-service';
+export { ArchiveUploadSessionService } from './management/archive-upload-session-service';
 export type { CreateSystemBackupOptions } from './management/backup-service.interfaces';
 export type { BackupSectionKey } from './management/backup-service.types';
 export { BackupCatalogService } from './management/backup-catalog-service';
