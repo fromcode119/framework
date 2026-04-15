@@ -102,31 +102,27 @@ export class SystemBackupHooks {
       const formData = new FormData();
       formData.append('backup', file);
       setIsImporting(true);
-      setImportProgress({ percent: 8, label: SystemBackupPageUtils.getImportProgressLabel(8) });
-      const progressTimer = window.setInterval(() => {
-        setImportProgress((current) => {
-          if (!current) {
-            return current;
-          }
-          const nextPercent = SystemBackupPageUtils.getNextImportProgressPercent(current.percent);
-          return {
-            percent: nextPercent,
-            label: SystemBackupPageUtils.getImportProgressLabel(nextPercent),
-          };
-        });
-      }, 420);
+      setImportProgress({ percent: 0, label: `Preparing archive upload... 0 B of ${SystemBackupPageUtils.formatBytes(file.size)}` });
       try {
-        const response = await AdminApi.upload(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT, formData) as SystemBackupMutationResponseView;
-        setImportProgress({ percent: 92, label: SystemBackupPageUtils.getImportProgressLabel(92) });
+        const response = await AdminApi.upload(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT, formData, {
+          onProgress: (state) => {
+            const percent = state.percent === null ? 0 : Math.min(95, state.percent);
+            const totalBytes = state.totalBytes ?? file.size;
+            setImportProgress({
+              percent,
+              label: `${SystemBackupPageUtils.getImportProgressLabel(percent)} ${SystemBackupPageUtils.formatBytes(state.loadedBytes)} of ${SystemBackupPageUtils.formatBytes(totalBytes)}`,
+            });
+          },
+        }) as SystemBackupMutationResponseView;
+        setImportProgress({ percent: 96, label: 'Upload finished. Saving archive and refreshing inventory...' });
         await refreshBackups();
-        setImportProgress({ percent: 100, label: `${response.backup.displayName} imported and indexed.` });
+        setImportProgress({ percent: 100, label: `${response.backup.displayName} imported successfully.` });
         window.setTimeout(() => setImportProgress(null), 1600);
         return response;
       } catch (error) {
         setImportProgress(null);
         throw error;
       } finally {
-        window.clearInterval(progressTimer);
         setIsImporting(false);
       }
     }, [refreshBackups]);
