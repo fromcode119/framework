@@ -104,10 +104,20 @@ export class AdminApi {
     return AdminApi.request(path, { ...options, method: 'DELETE' });
   }
 
-  static async upload(path: string, formData: FormData, options?: RequestInit): Promise<any> {
+  static async upload(
+    path: string,
+    formData: FormData,
+    options?: RequestInit & {
+      onProgress?: (state: { loadedBytes: number; totalBytes: number | null; percent: number | null }) => void;
+    },
+  ): Promise<any> {
     AdminApi.clearGetCaches();
     const url = AdminApi.getURL(path);
     const headers = AdminApi.buildHeaders(options, { isJson: false });
+
+    if (typeof XMLHttpRequest !== 'undefined' && options?.onProgress) {
+      return AdminApi.uploadWithProgress(url, formData, headers, options.onProgress);
+    }
 
     const response = await fetch(url, {
       ...options,
@@ -174,7 +184,7 @@ export class AdminApi {
       });
     }
 
-    const blob = new Blob(chunks);
+    const blob = new Blob(chunks as BlobPart[]);
     onProgress?.({
       loadedBytes: blob.size,
       totalBytes: totalBytes ?? blob.size,
@@ -199,8 +209,51 @@ export class AdminApi {
     return AdminApi.parseResponse(response, url);
   }
 
+  private static uploadWithProgress(
+    url: string,
+    formData: FormData,
+    headers: Record<string, string>,
+    onProgress: (state: { loadedBytes: number; totalBytes: number | null; percent: number | null }) => void,
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.withCredentials = true;
+
+      for (const [key, value] of Object.entries(headers)) {
+        xhr.setRequestHeader(key, value);
+      }
+
+      xhr.upload.onprogress = (event) => {
+        const totalBytes = event.lengthComputable ? event.total : null;
+        onProgress({
+          loadedBytes: event.loaded,
+          totalBytes,
+          percent: totalBytes ? Math.round((event.loaded / totalBytes) * 100) : null,
+        });
+      };
+
+      xhr.onerror = () => reject(new Error('Network request failed'));
+
+      xhr.onload = () => {
+        AdminApi.handleUnauthorizedStatus(xhr.status, url);
+        try {
+          resolve(AdminApi.parseXhrResponse(xhr, url));
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      xhr.send(formData);
+    });
+  }
+
   private static handleUnauthorized(response: Response, url: string): void {
-    const shouldPurge = response.status === 401;
+    AdminApi.handleUnauthorizedStatus(response.status, url);
+  }
+
+  private static handleUnauthorizedStatus(status: number, url: string): void {
+    const shouldPurge = status === 401;
 
     if (!shouldPurge) {
       return;
@@ -215,9 +268,27 @@ export class AdminApi {
       return;
     }
 
-    console.warn(`[API] ${response.status} auth failure detected. Purging session.`);
+    console.warn(`[API] ${status} auth failure detected. Purging session.`);
     AuthUtils.purgeAuth();
     window.location.href = AdminConstants.ADMIN_URLS.AUTH.LOGIN_SESSION_EXPIRED();
+  }
+
+  private static parseXhrResponse(xhr: XMLHttpRequest, url: string): any {
+    const contentType = xhr.getResponseHeader('content-type') || '';
+    const rawBody = typeof xhr.responseText === 'string' ? xhr.responseText : '';
+    const body = contentType.includes('application/json') && rawBody ? JSON.parse(rawBody) : null;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      return body;
+    }
+
+    const message = body?.error || body?.message || rawBody.trim() || `HTTP error! status: ${xhr.status}`;
+    const errObj = new Error(message) as any;
+    errObj.status = xhr.status;
+    errObj.data = body;
+    errObj.raw = rawBody;
+    errObj.url = url;
+    throw errObj;
   }
 
   private static async parseResponse(response: Response, url: string): Promise<any> {
