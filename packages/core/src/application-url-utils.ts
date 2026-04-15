@@ -191,6 +191,36 @@ export class ApplicationUrlUtils {
     );
   }
 
+  static translateBaseUrlToApp(value: unknown, targetApp: string): string {
+    const parsed = ApplicationUrlUtils.parseAbsoluteUrl(value);
+    if (!parsed) {
+      return '';
+    }
+
+    const normalizedTargetApp = String(targetApp || '').trim().toLowerCase();
+    const normalizedBaseUrl = ApplicationUrlUtils.normalizeBaseUrlCandidate(parsed);
+    if (!normalizedTargetApp || ApplicationUrlUtils.isLoopbackCandidate(parsed)) {
+      return normalizedBaseUrl;
+    }
+
+    const currentApp = ApplicationUrlUtils.detectHostRole(parsed);
+    if (!currentApp || currentApp === normalizedTargetApp) {
+      return normalizedBaseUrl;
+    }
+
+    const nextHostname = parsed.hostname.replace(
+      new RegExp(`^${currentApp}(?=\\.|$)`, 'i'),
+      normalizedTargetApp,
+    );
+    if (!nextHostname || nextHostname === parsed.hostname) {
+      return normalizedBaseUrl;
+    }
+
+    return UrlUtils.trimTrailingSlash(
+      `${parsed.protocol}//${nextHostname}${parsed.port ? `:${parsed.port}` : ''}${parsed.pathname || ''}`,
+    );
+  }
+
   static detectHostRole(value: URL | unknown): string {
     const parsed = value instanceof URL ? value : ApplicationUrlUtils.parseAbsoluteUrl(value);
     if (!parsed) {
