@@ -8,6 +8,8 @@ import { FrameworkIcons } from '@/lib/icons';
 import type { BackupCreateCardProps } from './backups-page-client.interfaces';
 import { SystemBackupPageUtils } from './system-backup-page-utils';
 
+const BACKUP_IMPORT_ACCEPT = '.tar.gz,.gz,application/gzip,application/x-gzip,.sql,.db';
+
 export function BackupCreateCard({
   capabilities,
   createSections,
@@ -21,16 +23,64 @@ export function BackupCreateCard({
 }: BackupCreateCardProps) {
   const { theme } = ThemeHooks.useTheme();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isDropActive, setIsDropActive] = React.useState(false);
+  const [importError, setImportError] = React.useState('');
 
-  const handleFileChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
+  const handleImportFile = React.useCallback((file: File | null) => {
     if (!file) {
       return;
     }
 
+    const normalizedName = String(file.name || '').trim().toLowerCase();
+    const isSupportedArchive = normalizedName.endsWith('.tar.gz') || normalizedName.endsWith('.sql') || normalizedName.endsWith('.db');
+    if (!isSupportedArchive) {
+      setImportError('Choose a .tar.gz, .sql, or .db backup archive.');
+      return;
+    }
+
+    setImportError('');
     void onImport(file);
   }, [onImport]);
+
+  const handleUploadClick = React.useCallback(() => {
+    if (!capabilities.canManage || isCreating || isImporting) {
+      return;
+    }
+
+    fileInputRef.current?.click();
+  }, [capabilities.canManage, isCreating, isImporting]);
+
+  const handleFileChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    handleImportFile(file || null);
+  }, [handleImportFile]);
+
+  const handleDragOver = React.useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (!capabilities.canManage || isCreating || isImporting) {
+      return;
+    }
+
+    setIsDropActive(true);
+  }, [capabilities.canManage, isCreating, isImporting]);
+
+  const handleDragLeave = React.useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setIsDropActive(false);
+    }
+  }, []);
+
+  const handleDrop = React.useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDropActive(false);
+    if (!capabilities.canManage || isCreating || isImporting) {
+      return;
+    }
+
+    handleImportFile(event.dataTransfer.files?.[0] || null);
+  }, [capabilities.canManage, handleImportFile, isCreating, isImporting]);
 
   return (
     <Card className="border-0 rounded-[2rem] p-0 overflow-hidden shadow-[0_24px_64px_-24px_rgba(15,23,42,0.18)] dark:ring-1 dark:ring-white/5">
@@ -48,7 +98,7 @@ export function BackupCreateCard({
               ref={fileInputRef}
               type="file"
               className="hidden"
-              accept=".tar.gz,.sql,.db"
+              accept={BACKUP_IMPORT_ACCEPT}
               onChange={handleFileChange}
             />
             <Button
@@ -56,7 +106,7 @@ export function BackupCreateCard({
               className="rounded-xl px-5 uppercase tracking-[0.16em]"
               icon={<FrameworkIcons.Upload size={14} />}
               isLoading={isImporting}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleUploadClick}
               disabled={!capabilities.canManage || isCreating || isImporting}
             >
               {isImporting ? 'Importing Backup...' : 'Import Backup'}
@@ -88,6 +138,56 @@ export function BackupCreateCard({
             Themes Only
           </Button>
         </div>
+
+        <div
+          onClick={handleUploadClick}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`cursor-pointer rounded-[1.5rem] border-2 border-dashed px-6 py-5 transition-all ${!capabilities.canManage || isCreating || isImporting
+            ? theme === 'dark'
+              ? 'cursor-not-allowed border-slate-800 bg-slate-950/20 opacity-70'
+              : 'cursor-not-allowed border-slate-200 bg-slate-50/50 opacity-70'
+            : isDropActive
+              ? theme === 'dark'
+                ? 'border-indigo-400 bg-indigo-500/10'
+                : 'border-indigo-500 bg-indigo-50'
+              : theme === 'dark'
+                ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500'
+                : 'border-slate-200 bg-white hover:border-slate-300'}`}
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3">
+              <FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} />
+              <div>
+                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>
+                  Drag and drop a backup `.tar.gz`, `.sql`, or `.db` here, or click to browse.
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Imported archives are indexed into managed backups and can then be restored from the existing workflow.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleUploadClick();
+              }}
+              disabled={!capabilities.canManage || isCreating || isImporting}
+              className="flex items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-all shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50"
+            >
+              {isImporting ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Upload size={16} />}
+              <span>{isImporting ? 'Importing...' : 'Choose Backup'}</span>
+            </button>
+          </div>
+        </div>
+
+        {importError ? (
+          <div className={`rounded-[1.25rem] border px-4 py-3 text-sm ${theme === 'dark' ? 'border-rose-500/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50/80 text-rose-700'}`}>
+            {importError}
+          </div>
+        ) : null}
 
         <div className="grid gap-4 lg:grid-cols-2">
           {SystemBackupPageUtils.getSectionOptions().map((option) => {
