@@ -15,6 +15,8 @@ import type {
 import { SystemBackupPageUtils } from './system-backup-page-utils';
 
 export class SystemBackupHooks {
+  private static readonly BACKUP_IMPORT_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
+
   static useBackups(): SystemBackupHookState {
     const [groups, setGroups] = React.useState<SystemBackupListResponseView['groups']>([]);
     const [capabilities, setCapabilities] = React.useState(SystemBackupPageUtils.createEmptyListResponse().capabilities);
@@ -99,8 +101,6 @@ export class SystemBackupHooks {
         throw new Error('Choose a backup archive to import.');
       }
 
-      const formData = new FormData();
-      formData.append('backup', file);
       setIsImporting(true);
       setImportProgress({
         percent: 0,
@@ -129,17 +129,44 @@ export class SystemBackupHooks {
         }, 4000);
       };
       try {
-        const response = await AdminApi.upload(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT, formData, {
-          onProgress: (state) => {
-            const totalBytes = state.totalBytes ?? file.size;
-            lastLoadedBytes = state.loadedBytes;
-            const percent = SystemBackupPageUtils.normalizeUploadPercent(state.loadedBytes, totalBytes, state.percent);
-            setImportProgress({
-              percent,
-              label: SystemBackupPageUtils.getImportUploadLabel(state.loadedBytes, totalBytes, percent),
-            });
-            scheduleStallNotice(state.loadedBytes, percent);
-          },
+        const estimatedChunkSize = SystemBackupHooks.BACKUP_IMPORT_CHUNK_SIZE_BYTES;
+        const estimatedTotalChunks = Math.max(1, Math.ceil(file.size / estimatedChunkSize));
+        const session = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT_SESSION, {
+          originalFilename: file.name,
+          totalSizeBytes: file.size,
+          totalChunks: estimatedTotalChunks,
+        }) as { uploadId: string; chunkSizeBytes?: number; totalChunks?: number };
+        const chunkSizeBytes = Math.max(1, Number(session?.chunkSizeBytes || estimatedChunkSize));
+        const totalChunks = Math.max(1, Number(session?.totalChunks || estimatedTotalChunks));
+        let uploadedBytes = 0;
+
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
+          const chunkStart = chunkIndex * chunkSizeBytes;
+          const chunkEnd = Math.min(file.size, chunkStart + chunkSizeBytes);
+          const formData = new FormData();
+          formData.append('chunk', file.slice(chunkStart, chunkEnd), `${file.name}.part-${chunkIndex}`);
+          formData.append('uploadId', String(session.uploadId || ''));
+          formData.append('chunkIndex', String(chunkIndex));
+          formData.append('totalChunks', String(totalChunks));
+
+          await AdminApi.upload(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT_CHUNK, formData, {
+            onProgress: (state) => {
+              const loadedBytes = Math.min(file.size, uploadedBytes + state.loadedBytes);
+              lastLoadedBytes = loadedBytes;
+              const percent = SystemBackupPageUtils.normalizeUploadPercent(loadedBytes, file.size, file.size ? (loadedBytes / file.size) * 100 : 0);
+              setImportProgress({
+                percent,
+                label: SystemBackupPageUtils.getImportUploadLabel(loadedBytes, file.size, percent),
+              });
+              scheduleStallNotice(loadedBytes, percent);
+            },
+          });
+
+          uploadedBytes = chunkEnd;
+        }
+
+        const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT_COMPLETE, {
+          uploadId: String(session.uploadId || ''),
         }) as SystemBackupMutationResponseView;
         clearStallTimer();
         setImportProgress({ percent: 96, label: 'Upload finished. Saving archive and refreshing inventory...' });

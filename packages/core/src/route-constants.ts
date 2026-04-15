@@ -70,6 +70,9 @@ export class RouteConstants {
   ADMIN_BACKUPS: '/admin/backups',
   ADMIN_BACKUPS_CREATE_SYSTEM: '/admin/backups/system',
   ADMIN_BACKUPS_IMPORT: '/admin/backups/import',
+  ADMIN_BACKUPS_IMPORT_SESSION: '/admin/backups/import/session',
+  ADMIN_BACKUPS_IMPORT_CHUNK: '/admin/backups/import/chunk',
+  ADMIN_BACKUPS_IMPORT_COMPLETE: '/admin/backups/import/complete',
   ADMIN_BACKUPS_ID: '/admin/backups/:id',
   ADMIN_BACKUPS_ID_DOWNLOAD: '/admin/backups/:id/download',
   ADMIN_BACKUPS_ID_RESTORE_PREVIEW: '/admin/backups/:id/restore/preview',
@@ -103,7 +106,11 @@ export class RouteConstants {
   // ── Plugins ──────────────────────────────────────────────────────────────
   PLUGINS_MARKETPLACE: '/marketplace',
   PLUGINS_INSTALL: '/install/:slug',
+  PLUGINS_UPLOAD_SESSION: '/upload/session',
+  PLUGINS_UPLOAD_CHUNK: '/upload/chunk',
+  PLUGINS_UPLOAD_SESSION_INSPECT: '/upload/session/inspect',
   PLUGINS_UPLOAD_INSPECT: '/upload/inspect',
+  PLUGINS_UPLOAD_COMPLETE: '/upload/complete',
   PLUGINS_UPLOAD: '/upload',
   PLUGINS_SLUG_TOGGLE: '/:slug/toggle',
   PLUGINS_SLUG_CONFIG: '/:slug/config',
@@ -140,7 +147,11 @@ export class RouteConstants {
   GLOBAL_COLLECTIONS_SLUG_SUGGESTIONS_FIELD: '/collections/:slug/suggestions/:field',
 
   // ── Themes ──────────────────────────────────────────────────────────────
+  THEMES_UPLOAD_SESSION: '/upload/session',
+  THEMES_UPLOAD_CHUNK: '/upload/chunk',
+  THEMES_UPLOAD_SESSION_INSPECT: '/upload/session/inspect',
   THEMES_UPLOAD_INSPECT: '/upload/inspect',
+  THEMES_UPLOAD_COMPLETE: '/upload/complete',
   THEMES_UPLOAD: '/upload',
   THEMES_SLUG_ACTIVATE: '/:slug/activate',
   THEMES_SLUG_DISABLE: '/:slug/disable',
