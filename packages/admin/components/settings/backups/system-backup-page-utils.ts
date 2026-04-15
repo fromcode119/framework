@@ -199,14 +199,8 @@ export class SystemBackupPageUtils {
   static getImportProgressLabel(percent: number): string {
     if (percent < 20) return 'Preparing archive upload...';
     if (percent < 55) return 'Uploading backup archive...';
-    if (percent < 85) return 'Waiting for server to index the archive...';
-    if (percent < 100) return 'Refreshing backup inventory...';
+    if (percent < 100) return 'Upload finished. Finalizing backup import...';
     return 'Backup import complete.';
-  }
-
-  static getNextImportProgressPercent(currentPercent: number): number {
-    if (currentPercent >= 84) return 84;
-    return Math.min(currentPercent + 7, 84);
   }
 
   static getDownloadProgressLabel(progress: BackupDownloadProgressView): string {
