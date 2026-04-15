@@ -50,6 +50,7 @@ export function BackupsPageClient({}: BackupsPageClientProps) {
           isCreating={controller.backupState.isCreating}
           isImporting={controller.backupState.isImporting}
           createProgress={controller.backupState.createProgress}
+          importProgress={controller.backupState.importProgress}
           onToggleSection={controller.toggleCreateSection}
           onApplyPreset={controller.applyCreatePreset}
           onCreate={controller.handleCreate}

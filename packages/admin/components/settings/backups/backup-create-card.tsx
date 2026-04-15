@@ -16,6 +16,7 @@ export function BackupCreateCard({
   isCreating,
   isImporting,
   createProgress,
+  importProgress,
   onToggleSection,
   onApplyPreset,
   onCreate,
@@ -249,6 +250,21 @@ export function BackupCreateCard({
           <p className="mt-4 text-xs text-slate-500">
             Import accepts exported .tar.gz archives and database-only .sql or .db backups, then indexes them into managed backups for download or restore.
           </p>
+
+          {importProgress ? (
+            <div className="mt-5 space-y-2">
+              <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-500">
+                <span>{importProgress.label}</span>
+                <span>{importProgress.percent}%</span>
+              </div>
+              <div className={`h-2 overflow-hidden rounded-full ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+                  style={{ width: `${importProgress.percent}%` }}
+                />
+              </div>
+            </div>
+          ) : null}
 
           {createProgress ? (
             <div className="mt-5 space-y-2">
