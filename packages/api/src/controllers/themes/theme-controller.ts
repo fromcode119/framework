@@ -153,16 +153,31 @@ export class ThemeController {
     }
   }
 
+  async servePublicAssets(req: Request, res: Response) {
+    this.serveAssetDirectory(req, res, 'public');
+  }
+
   async serveAssets(req: Request, res: Response) {
+    this.serveAssetDirectory(req, res, 'ui');
+  }
+
+  private serveAssetDirectory(req: Request, res: Response, directory: 'public' | 'ui') {
     const { slug } = req.params;
     const theme = this.manager.getThemes().find(t => t.slug === slug);
     if (!theme) return res.status(404).end();
 
-    const filePath = (req.params as any)[0];
-    const themeDir = (this.manager as any).getThemeDirectory
-      ? (this.manager as any).getThemeDirectory(slug)
-      : path.resolve((this.manager as any).themesRoot, slug);
-    const absolutePath = path.resolve(themeDir, 'ui', filePath);
+    const requestedPath = String((req.params as any)[0] || '').trim();
+    if (!requestedPath) {
+      return res.status(404).end();
+    }
+
+    const themeDir = this.manager.getThemeDirectory(slug);
+    const assetRoot = path.resolve(themeDir, directory);
+    const absolutePath = path.resolve(assetRoot, requestedPath);
+
+    if (!absolutePath.startsWith(`${assetRoot}${path.sep}`) && absolutePath !== assetRoot) {
+      return res.status(404).end();
+    }
 
     if (fs.existsSync(absolutePath)) {
       if (process.env.NODE_ENV !== 'production') {
@@ -171,9 +186,10 @@ export class ThemeController {
         res.setHeader('Expires', '0');
       }
       res.sendFile(absolutePath);
-    } else {
-      res.status(404).end();
+      return;
     }
+
+    res.status(404).end();
   }
 
   private inspectThemeArchive(filePath: string) {

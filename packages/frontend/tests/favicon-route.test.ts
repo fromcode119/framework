@@ -1,82 +1,89 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('node:fs', () => ({
-  existsSync: vi.fn(),
-}));
-
-vi.mock('node:fs/promises', () => ({
-  readFile: vi.fn(),
-}));
-
-import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
-import { ProjectPaths } from '@fromcode119/core';
 import { GET } from '../app/favicon.ico/route';
 import { ServerApiUtils } from '../lib/server-api';
 
 describe('favicon route', () => {
+  const originalInternalApiUrl = process.env.INTERNAL_API_URL;
+
   afterEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
+    process.env.INTERNAL_API_URL = originalInternalApiUrl;
   });
 
+  function createResponse(body: string, contentType: string, status = 200): Response {
+    return new Response(body, {
+      status,
+      headers: {
+        'content-type': contentType,
+      },
+    });
+  }
+
   it('serves the active theme favicon from theme public assets', async () => {
+    process.env.INTERNAL_API_URL = 'http://api:3000';
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'vselenskiportal88' },
     });
-    vi.spyOn(ProjectPaths, 'getThemesDir').mockReturnValue('/repo/themes');
-    vi.mocked(existsSync).mockImplementation((candidate) => String(candidate) === '/repo/themes/vselenskiportal88/public/favicon.ico');
-    vi.mocked(readFile).mockResolvedValue(Buffer.from('ico'));
+    vi.stubGlobal('fetch', vi.fn(async (input) => {
+      if (String(input) === 'http://api:3000/api/v1/themes/vselenskiportal88/public/favicon.ico') {
+        return createResponse('ico', 'image/x-icon');
+      }
+      return createResponse('', 'text/plain', 404);
+    }));
 
-    const response = await GET();
+    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/x-icon');
-    expect(readFile).toHaveBeenCalledWith('/repo/themes/vselenskiportal88/public/favicon.ico');
   });
 
-  it('returns 404 when the active theme has no favicon asset', async () => {
+  it('falls back to the framework favicon when the active theme has no favicon asset', async () => {
+    process.env.INTERNAL_API_URL = 'http://api:3000';
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'snapbilt-theme' },
     });
-    vi.spyOn(ProjectPaths, 'getThemesDir').mockReturnValue('/repo/themes');
-    vi.spyOn(ProjectPaths, 'getPackagesDir').mockReturnValue('/repo/packages');
-    vi.mocked(existsSync).mockImplementation((candidate) => String(candidate) === '/repo/packages/frontend/public/brand/atlantis-mark-indigo.png');
-    vi.mocked(readFile).mockResolvedValue(Buffer.from('fallback'));
+    vi.stubGlobal('fetch', vi.fn(async (input) => {
+      if (String(input).startsWith('http://api:3000/api/v1/themes/snapbilt-theme/public/')) {
+        return createResponse('', 'text/plain', 404);
+      }
+      if (String(input) === 'http://frontend.framework.local/brand/atlantis-mark-indigo.png') {
+        return createResponse('fallback', 'image/png');
+      }
+      return createResponse('', 'text/plain', 404);
+    }));
 
-    const response = await GET();
+    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(200);
-    expect(readFile).toHaveBeenCalledWith('/repo/packages/frontend/public/brand/atlantis-mark-indigo.png');
+    expect(response.headers.get('content-type')).toBe('image/png');
   });
 
   it('returns 204 when no theme or framework favicon is available', async () => {
+    process.env.INTERNAL_API_URL = 'http://api:3000';
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'snapbilt-theme' },
     });
-    vi.spyOn(ProjectPaths, 'getThemesDir').mockReturnValue('/repo/themes');
-    vi.spyOn(ProjectPaths, 'getPackagesDir').mockReturnValue('/repo/packages');
-    vi.mocked(existsSync).mockReturnValue(false);
+    vi.stubGlobal('fetch', vi.fn(async () => createResponse('', 'text/plain', 404)));
 
-    const response = await GET();
+    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(204);
-    expect(readFile).not.toHaveBeenCalled();
   });
 
   it('falls back to the framework favicon when theme resolution throws', async () => {
+    process.env.INTERNAL_API_URL = 'http://api:3000';
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockRejectedValue(new Error('metadata unavailable'));
-    vi.spyOn(ProjectPaths, 'getPackagesDir').mockReturnValue('/repo/packages');
-    vi.mocked(existsSync).mockImplementation((candidate) => String(candidate) === '/repo/packages/frontend/public/brand/atlantis-mark-indigo.png');
-    vi.mocked(readFile).mockResolvedValue(Buffer.from('fallback'));
+    vi.stubGlobal('fetch', vi.fn(async () => createResponse('fallback', 'image/png')));
 
-    const response = await GET();
+    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(200);
-    expect(readFile).toHaveBeenCalledWith('/repo/packages/frontend/public/brand/atlantis-mark-indigo.png');
+    expect(response.headers.get('content-type')).toBe('image/png');
   });
 });
