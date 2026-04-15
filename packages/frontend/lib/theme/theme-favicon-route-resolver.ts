@@ -28,7 +28,7 @@ export class ThemeFaviconRouteResolver {
 
   private static buildThemeAssetPaths(themeSlug: string): string[] {
     return ThemeFaviconRouteResolver.THEME_FAVICON_CANDIDATES.map((candidate) =>
-      ApiPathUtils.themePath(themeSlug, `public/${candidate}`),
+      ApiPathUtils.themePublicAssetPath(themeSlug, candidate),
     );
   }
 

@@ -5,6 +5,14 @@ const SERVER_FETCH_TIMEOUT_MS = Number(process.env.SERVER_FETCH_TIMEOUT_MS || 12
 const DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';
 
 export class ServerApiUtils {
+  static buildInternalApiBaseUrl(): string {
+    return String(
+      process.env.INTERNAL_API_URL || process.env.API_URL || ServerApiUtils.buildFrontendApiBaseUrl(),
+    )
+      .trim()
+      .replace(/\/+$/, '');
+  }
+
   static buildSystemResolvePath(query: URLSearchParams | string): string {
     const queryString = typeof query === 'string' ? query : query.toString();
     return `${SystemConstants.API_PATH.SYSTEM.RESOLVE}?${queryString}`;
@@ -157,6 +165,37 @@ export class ServerApiUtils {
       }
     }
     return null;
+  }
+
+  static async serverFetchInternalResponse(path: string, requestInit?: RequestInit): Promise<Response | null> {
+    const requestPath = ServerApiUtils.AdminUrlUtils(path);
+    if (!requestPath) {
+      if (DEBUG_SERVER_FETCH) {
+        console.warn(`[frontend] Skipping internal response fetch due to invalid path: ${String(path)}`);
+      }
+      return null;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(`${ServerApiUtils.buildInternalApiBaseUrl()}${requestPath}`, {
+        ...requestInit,
+        cache: requestInit?.cache ?? 'no-store',
+        signal: controller.signal,
+      });
+      return response;
+    } catch (error) {
+      if (ServerApiUtils.isAbortError(error)) {
+        if (DEBUG_SERVER_FETCH) console.warn(`[frontend] Internal response fetch timed out for ${requestPath}`);
+      } else {
+        console.error(`[frontend] Failed to fetch internal response ${requestPath}: ${ServerApiUtils.describeError(error)}`);
+      }
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   // --- Private helpers ---
