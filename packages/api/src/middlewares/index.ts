@@ -26,6 +26,6 @@ export {
 // Validation
 export { 
   ValidationMiddleware, 
-} from './validation-middleware';
+} from './validation/validation-middleware';
 
 export { Validators } from './validators';

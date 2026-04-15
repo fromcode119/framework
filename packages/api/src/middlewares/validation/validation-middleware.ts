@@ -1,37 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import type { ValidationOptions } from './validation-middleware.interfaces';
-import { BaseMiddleware } from './base-middleware';
-
-/**
- * Validation middleware for request data validation.
- * 
- * Supports validation of:
- * - Request body
- * - Query parameters
- * - Route parameters
- * - Request headers
- * 
- * @example
- * ```typescript
- * // Using a custom validator function
- * const validator = new ValidationMiddleware({
- *   body: (data) => {
- *     if (!data.email) throw new Error('Email is required');
- *     if (!data.password) throw new Error('Password is required');
- *     return true;
- *   }
- * });
- * router.post('/login', validator.middleware(), loginHandler);
- * 
- * // Using Zod schema (if available)
- * import { z } from 'zod';
- * const loginSchema = z.object({
- *   email: z.string().email(),
- *   password: z.string().min(8)
- * });
- * const validator = ValidationMiddleware.fromZod({ body: loginSchema });
- * ```
- */
+import { BaseMiddleware } from '../base-middleware';
 
 export class ValidationMiddleware extends BaseMiddleware {
   constructor(private options: ValidationOptions) {
@@ -40,22 +9,18 @@ export class ValidationMiddleware extends BaseMiddleware {
 
   async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Validate body
       if (this.options.body && req.body) {
         await this.options.body(req.body);
       }
 
-      // Validate query
       if (this.options.query && req.query) {
         await this.options.query(req.query);
       }
 
-      // Validate params
       if (this.options.params && req.params) {
         await this.options.params(req.params);
       }
 
-      // Validate headers
       if (this.options.headers && req.headers) {
         await this.options.headers(req.headers);
       }
@@ -68,9 +33,6 @@ export class ValidationMiddleware extends BaseMiddleware {
     }
   }
 
-  /**
-   * Default error formatter.
-   */
   private defaultFormatter(err: Error): { error: string; details?: any } {
     return {
       error: 'Validation Error',
@@ -78,19 +40,6 @@ export class ValidationMiddleware extends BaseMiddleware {
     };
   }
 
-  /**
-   * Create validation middleware from Zod schemas.
-   * Requires Zod to be installed: npm install zod
-   * 
-   * @example
-   * ```typescript
-   * import { z } from 'zod';
-   * const validator = ValidationMiddleware.fromZod({
-   *   body: z.object({ email: z.string().email() }),
-   *   query: z.object({ page: z.string().optional() })
-   * });
-   * ```
-   */
   static fromZod(schemas: {
     body?: any;
     query?: any;
@@ -127,10 +76,8 @@ export class ValidationMiddleware extends BaseMiddleware {
       };
     }
 
-    // Custom Zod error formatter
     options.formatError = (err: any) => {
       if (err.errors && Array.isArray(err.errors)) {
-        // Zod validation error
         return {
           error: 'Validation Error',
           details: err.errors.map((e: any) => ({
@@ -148,18 +95,6 @@ export class ValidationMiddleware extends BaseMiddleware {
     return new ValidationMiddleware(options);
   }
 
-  /**
-   * Create validation middleware from Yup schemas.
-   * Requires Yup to be installed: npm install yup
-   * 
-   * @example
-   * ```typescript
-   * import * as yup from 'yup';
-   * const validator = ValidationMiddleware.fromYup({
-   *   body: yup.object({ email: yup.string().email().required() })
-   * });
-   * ```
-   */
   static fromYup(schemas: {
     body?: any;
     query?: any;
@@ -196,10 +131,8 @@ export class ValidationMiddleware extends BaseMiddleware {
       };
     }
 
-    // Custom Yup error formatter
     options.formatError = (err: any) => {
       if (err.inner && Array.isArray(err.inner)) {
-        // Yup validation error
         return {
           error: 'Validation Error',
           details: err.inner.map((e: any) => ({
@@ -216,6 +149,4 @@ export class ValidationMiddleware extends BaseMiddleware {
 
     return new ValidationMiddleware(options);
   }
-
 }
-
