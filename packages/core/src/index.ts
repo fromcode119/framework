@@ -40,6 +40,7 @@ export { ClientRuntimeConstants } from './client-runtime-constants';
 export { CookieConstants } from './cookie-constants';
 export { AppPathConstants } from './app-path-constants';
 export { RequestSurfaceUtils } from './request-surface-utils';
+export { RuntimeLocationUtils } from './runtime-location-utils';
 export { RuntimeConstants } from './runtime-constants';
 export { RouteConstants } from './route-constants';
 export { PublicRouteConstants } from './public-route-constants';
