@@ -28,6 +28,11 @@ export class InstalledThemesPageController {
     const [uploadPreviewSections, setUploadPreviewSections] = useState<UploadPreviewSection[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const isSupportedArchive = (file?: File | null): boolean => {
+      const normalized = String(file?.name || '').trim().toLowerCase();
+      return normalized.endsWith('.zip') || normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz');
+    };
+
     const fetchThemes = async () => {
       setLoading(true);
       try {
@@ -49,8 +54,8 @@ export class InstalledThemesPageController {
 
     const uploadThemeFile = async (file?: File | null) => {
       if (!file) return;
-      if (!file.name.toLowerCase().endsWith('.zip')) {
-        notify('error', 'Upload Failed', 'Only .zip theme packages are supported.');
+      if (!isSupportedArchive(file)) {
+        notify('error', 'Upload Failed', 'Only .zip or .tar.gz theme packages are supported.');
         return;
       }
 
@@ -72,8 +77,8 @@ export class InstalledThemesPageController {
 
     const inspectThemeFile = async (file?: File | null) => {
       if (!file) return;
-      if (!file.name.toLowerCase().endsWith('.zip')) {
-        notify('error', 'Upload Failed', 'Only .zip theme packages are supported.');
+      if (!isSupportedArchive(file)) {
+        notify('error', 'Upload Failed', 'Only .zip or .tar.gz theme packages are supported.');
         return;
       }
 

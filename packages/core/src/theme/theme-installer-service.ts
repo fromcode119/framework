@@ -53,7 +53,7 @@ export class ThemeInstallerService {
         try {
           await BackupService.restore(filePath, tempDir);
         } catch (error: any) {
-          if (String(error?.message || '').includes('TAR_BAD_ARCHIVE')) throw new Error('Unsupported archive format. Upload a .zip theme package.');
+          if (String(error?.message || '').includes('TAR_BAD_ARCHIVE')) throw new Error('Unsupported archive format. Upload a .zip or .tar.gz theme package.');
           throw error;
         }
       }
@@ -127,7 +127,7 @@ export class ThemeInstallerService {
     let installedOrUpdated = false;
     for (const archivePath of archivePaths) {
       try {
-        const archiveManifest = this.readBundledPluginManifest(archivePath);
+        const archiveManifest = await this.readBundledPluginManifest(archivePath);
         if (archiveManifest?.slug) {
           const existing = this.pluginManager.plugins.get(archiveManifest.slug);
           if (existing) {
@@ -153,7 +153,9 @@ export class ThemeInstallerService {
 
   getBundledPluginArchivePaths(manifest: ThemeManifest, themePath: string): string[] {
     const archives = new Set<string>();
-    const addArchive = (p: string) => { if (fs.existsSync(p) && fs.statSync(p).isFile() && p.toLowerCase().endsWith('.zip')) archives.add(p); };
+    const addArchive = (p: string) => {
+      if (fs.existsSync(p) && fs.statSync(p).isFile() && this.isSupportedPluginArchive(p)) archives.add(p);
+    };
     const declared = (manifest as any).bundledPlugins;
     if (Array.isArray(declared)) {
       for (const entry of declared) {
@@ -165,7 +167,7 @@ export class ThemeInstallerService {
       }
     }
     for (const dirName of ['plugins', 'bundled-plugins']) {
-      for (const zipPath of this.collectZipFiles(path.join(themePath, dirName))) addArchive(zipPath);
+      for (const archivePath of this.collectPluginArchiveFiles(path.join(themePath, dirName))) addArchive(archivePath);
     }
     return Array.from(archives);
   }
@@ -189,31 +191,51 @@ export class ThemeInstallerService {
     } catch { return false; }
   }
 
-  private collectZipFiles(rootDir: string): string[] {
+  private collectPluginArchiveFiles(rootDir: string): string[] {
     if (!fs.existsSync(rootDir) || !fs.statSync(rootDir).isDirectory()) return [];
     const files: string[] = [];
     for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
       if (entry.name.startsWith('.')) continue;
       const abs = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) files.push(...this.collectZipFiles(abs));
-      else if (entry.isFile() && abs.toLowerCase().endsWith('.zip')) files.push(abs);
+      if (entry.isDirectory()) files.push(...this.collectPluginArchiveFiles(abs));
+      else if (entry.isFile() && this.isSupportedPluginArchive(abs)) files.push(abs);
     }
     return files;
   }
 
-  private readBundledPluginManifest(archivePath: string): { slug: string; version?: string } | null {
+  private async readBundledPluginManifest(archivePath: string): Promise<{ slug: string; version?: string } | null> {
     try {
-      if (!this.isZipArchive(archivePath)) return null;
-      const zip = new AdmZip(archivePath);
-      for (const entry of zip.getEntries()) {
-        if (entry.isDirectory || !entry.entryName.toLowerCase().endsWith('manifest.json')) continue;
-        const parsed = JSON.parse(entry.getData().toString('utf8'));
+      if (this.isZipArchive(archivePath)) {
+        const zip = new AdmZip(archivePath);
+        for (const entry of zip.getEntries()) {
+          if (entry.isDirectory || !entry.entryName.toLowerCase().endsWith('manifest.json')) continue;
+          const parsed = JSON.parse(entry.getData().toString('utf8'));
+          const slug = String(parsed?.slug || '').trim();
+          const version = String(parsed?.version || '').trim();
+          if (slug) return { slug, version: version || undefined };
+        }
+        return null;
+      }
+
+      if (!this.isSupportedPluginArchive(archivePath)) return null;
+      const tempDir = fs.mkdtempSync(path.join(path.dirname(archivePath), '.bundled-plugin-manifest-'));
+      try {
+        await BackupService.restore(archivePath, tempDir);
+        const manifestDir = this.findThemeManifestDir(tempDir);
+        if (!manifestDir) return null;
+        const parsed = JSON.parse(fs.readFileSync(path.join(manifestDir, 'manifest.json'), 'utf8'));
         const slug = String(parsed?.slug || '').trim();
         const version = String(parsed?.version || '').trim();
-        if (slug) return { slug, version: version || undefined };
+        return slug ? { slug, version: version || undefined } : null;
+      } finally {
+        fs.rmSync(tempDir, { recursive: true, force: true });
       }
-      return null;
     } catch { return null; }
+  }
+
+  private isSupportedPluginArchive(filePath: string): boolean {
+    const normalized = filePath.toLowerCase();
+    return normalized.endsWith('.zip') || normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz');
   }
 
   moveDir(src: string, dest: string) {

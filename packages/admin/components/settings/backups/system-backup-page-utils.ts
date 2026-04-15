@@ -203,6 +203,45 @@ export class SystemBackupPageUtils {
     return 'Backup import complete.';
   }
 
+  static getImportUploadLabel(
+    loadedBytes: number,
+    totalBytes: number,
+    percent: number,
+    stalled = false,
+  ): string {
+    const bytesLabel = `${this.formatBytes(loadedBytes)} of ${this.formatBytes(totalBytes)}`;
+    if (loadedBytes <= 0) {
+      return `Preparing archive upload... ${bytesLabel}`;
+    }
+    if (percent >= 99) {
+      return `Upload finished. Finalizing backup import... ${bytesLabel}`;
+    }
+    if (stalled) {
+      return `Uploading backup archive... ${bytesLabel}. Progress updates may pause for large files.`;
+    }
+    return `Uploading backup archive... ${bytesLabel}`;
+  }
+
+  static normalizeUploadPercent(loadedBytes: number, totalBytes: number | null, rawPercent: number | null): number {
+    if (loadedBytes <= 0) {
+      return 0;
+    }
+    if (typeof rawPercent === 'number' && Number.isFinite(rawPercent)) {
+      return Math.min(95, Math.max(0.1, Number(rawPercent.toFixed(1))));
+    }
+    if (!totalBytes || totalBytes <= 0) {
+      return 0.1;
+    }
+    return Math.min(95, Math.max(0.1, Number(((loadedBytes / totalBytes) * 100).toFixed(1))));
+  }
+
+  static formatProgressPercent(percent: number): string {
+    if (!Number.isFinite(percent) || percent <= 0) {
+      return '0%';
+    }
+    return Number.isInteger(percent) ? `${percent}%` : `${percent.toFixed(1)}%`;
+  }
+
   static getDownloadProgressLabel(progress: BackupDownloadProgressView): string {
     if (progress.percent === null) {
       return `Downloading ${this.formatBytes(progress.loadedBytes)}...`;
