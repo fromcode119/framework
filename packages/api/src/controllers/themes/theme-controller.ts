@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import { ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import AdmZip from 'adm-zip';
+import { BackupService } from '@fromcode119/core';
 
 export class ThemeController {
   private logger = new Logger({ namespace: 'theme-controller' });
@@ -78,7 +80,7 @@ export class ThemeController {
     if (!req.file) return res.status(400).json({ error: 'No file' });
 
     try {
-      const info = this.inspectThemeArchive(req.file.path);
+      const info = await this.inspectThemeArchive(req.file.path, req.file.originalname);
       res.json({ success: true, info });
     } catch (err: any) {
       res.status(400).json({ error: err.message || 'Invalid theme archive' });
@@ -192,70 +194,137 @@ export class ThemeController {
     res.status(404).end();
   }
 
-  private inspectThemeArchive(filePath: string) {
-    if (!this.isZipArchive(filePath)) {
-      throw new Error('Unsupported archive format. Upload a .zip theme package.');
-    }
-
-    const zip = new AdmZip(filePath);
-    const entries = zip.getEntries();
-    const themeEntry = entries.find((entry) =>
-      !entry.isDirectory && entry.entryName.toLowerCase().endsWith('/theme.json')
-    ) || entries.find((entry) =>
-      !entry.isDirectory && entry.entryName.toLowerCase() === 'theme.json'
-    );
-
-    if (!themeEntry) {
-      throw new Error('Invalid theme package: theme.json not found.');
-    }
-
-    let manifest: any;
+  private async inspectThemeArchive(filePath: string, originalFilename?: string) {
+    const extractedDir = await this.extractArchiveToTemporaryDirectory(filePath, originalFilename);
     try {
-      manifest = JSON.parse(themeEntry.getData().toString('utf8'));
-    } catch {
-      throw new Error('Invalid theme package: theme.json is not valid JSON.');
-    }
+      const themeEntry = this.findManifestPath(extractedDir, 'theme.json');
+      if (!themeEntry) {
+        throw new Error('Invalid theme package: theme.json not found.');
+      }
 
-    const slug = String(manifest?.slug || '').trim().toLowerCase();
-    if (!slug) {
-      throw new Error('Invalid theme package: missing "slug" in theme.json.');
-    }
+      let manifest: any;
+      try {
+        manifest = JSON.parse(fs.readFileSync(themeEntry, 'utf8'));
+      } catch {
+        throw new Error('Invalid theme package: theme.json is not valid JSON.');
+      }
 
-    const existing = this.manager.getThemes().find((theme: any) => theme?.slug === slug);
-    const themeManifestPath = themeEntry.entryName.replace(/\\/g, '/');
-    const themeRoot = themeManifestPath.includes('/') ? themeManifestPath.slice(0, themeManifestPath.lastIndexOf('/') + 1) : '';
+      const slug = String(manifest?.slug || '').trim().toLowerCase();
+      if (!slug) {
+        throw new Error('Invalid theme package: missing "slug" in theme.json.');
+      }
 
-    const bundledZipEntries = entries
-      .filter((entry) => {
-        if (entry.isDirectory) return false;
-        const normalized = entry.entryName.replace(/\\/g, '/').toLowerCase();
-        if (!normalized.endsWith('.zip')) return false;
-        return (
-          normalized.includes('/plugins/') ||
-          normalized.includes('/bundled-plugins/') ||
-          normalized.startsWith('plugins/') ||
-          normalized.startsWith('bundled-plugins/')
-        );
-      })
-      .map((entry) => ({
-        name: entry.entryName.replace(/\\/g, '/').slice(themeRoot.length),
-        size: entry.header.size,
+      const existing = this.manager.getThemes().find((theme: any) => theme?.slug === slug);
+      const themeRoot = path.dirname(themeEntry);
+      const bundledEntries = this.collectBundledPluginArchives(themeRoot).map((archivePath) => ({
+        name: path.relative(themeRoot, archivePath).replace(/\\/g, '/'),
+        size: fs.statSync(archivePath).size,
       }));
 
-    return {
-      slug,
-      name: String(manifest?.name || slug),
-      version: String(manifest?.version || ''),
-      description: String(manifest?.description || ''),
-      author: String(manifest?.author || ''),
-      hasUiBundle: entries.some((entry) => !entry.isDirectory && entry.entryName.replace(/\\/g, '/').includes('/ui/')),
-      bundledPlugins: bundledZipEntries,
-      existingVersion: existing?.version || null,
-      action: existing ? 'update' : 'install',
-    };
+      return {
+        slug,
+        name: String(manifest?.name || slug),
+        version: String(manifest?.version || ''),
+        description: String(manifest?.description || ''),
+        author: String(manifest?.author || ''),
+        hasUiBundle: this.directoryContainsSegment(themeRoot, 'ui'),
+        bundledPlugins: bundledEntries,
+        existingVersion: existing?.version || null,
+        action: existing ? 'update' : 'install',
+      };
+    } finally {
+      fs.rmSync(extractedDir, { recursive: true, force: true });
+    }
   }
 
-  private isZipArchive(filePath: string): boolean {
-    return path.extname(filePath).toLowerCase() === '.zip';
+  private async extractArchiveToTemporaryDirectory(filePath: string, originalFilename?: string): Promise<string> {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-theme-inspect-'));
+    try {
+      if (this.isZipArchive(filePath, originalFilename)) {
+        new AdmZip(filePath).extractAllTo(tempDir, true);
+      } else if (this.isTarArchive(filePath, originalFilename)) {
+        await BackupService.restore(filePath, tempDir);
+      } else {
+        throw new Error('Unsupported archive format. Upload a .zip or .tar.gz theme package.');
+      }
+      return tempDir;
+    } catch (error) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+      throw error;
+    }
+  }
+
+  private findManifestPath(rootDir: string, filename: string): string | null {
+    const directPath = path.join(rootDir, filename);
+    if (fs.existsSync(directPath)) {
+      return directPath;
+    }
+
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const found = this.findManifestPath(path.join(rootDir, entry.name), filename);
+      if (found) {
+        return found;
+      }
+    }
+
+    return null;
+  }
+
+  private collectBundledPluginArchives(rootDir: string): string[] {
+    const results: string[] = [];
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      if (entry.name.startsWith('.')) {
+        continue;
+      }
+      const absolutePath = path.join(rootDir, entry.name);
+      if (entry.isDirectory()) {
+        results.push(...this.collectBundledPluginArchives(absolutePath));
+        continue;
+      }
+      if (!entry.isFile()) {
+        continue;
+      }
+      const normalized = absolutePath.replace(/\\/g, '/').toLowerCase();
+      const isBundledDirectory = normalized.includes('/plugins/') || normalized.includes('/bundled-plugins/');
+      const isArchive = normalized.endsWith('.zip') || normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz');
+      if (isBundledDirectory && isArchive) {
+        results.push(absolutePath);
+      }
+    }
+    return results;
+  }
+
+  private directoryContainsSegment(rootDir: string, segment: string): boolean {
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      const absolutePath = path.join(rootDir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === segment || this.directoryContainsSegment(absolutePath, segment)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private isZipArchive(filePath: string, originalFilename?: string): boolean {
+    const normalizedOriginalName = String(originalFilename || '').trim().toLowerCase();
+    if (normalizedOriginalName.endsWith('.zip')) {
+      return true;
+    }
+
+    try {
+      const header = fs.readFileSync(filePath).subarray(0, 4);
+      return header.length >= 2 && header[0] === 0x50 && header[1] === 0x4b;
+    } catch {
+      return false;
+    }
+  }
+
+  private isTarArchive(filePath: string, originalFilename?: string): boolean {
+    const normalizedOriginalName = String(originalFilename || '').trim().toLowerCase();
+    return normalizedOriginalName.endsWith('.tar.gz') || normalizedOriginalName.endsWith('.tgz') || normalizedOriginalName.endsWith('.tar') || !this.isZipArchive(filePath, originalFilename);
   }
 }

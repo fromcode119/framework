@@ -255,7 +255,7 @@ export function BackupCreateCard({
             <div className="mt-5 space-y-2">
               <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-500">
                 <span>{importProgress.label}</span>
-                <span>{importProgress.percent}%</span>
+                <span>{SystemBackupPageUtils.formatProgressPercent(importProgress.percent)}</span>
               </div>
               <div className={`h-2 overflow-hidden rounded-full ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
                 <div
@@ -270,7 +270,7 @@ export function BackupCreateCard({
             <div className="mt-5 space-y-2">
               <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-500">
                 <span>{createProgress.label}</span>
-                <span>{createProgress.percent}%</span>
+                <span>{SystemBackupPageUtils.formatProgressPercent(createProgress.percent)}</span>
               </div>
               <div className={`h-2 overflow-hidden rounded-full ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
                 <div

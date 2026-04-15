@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
-import { PluginManager, Logger } from '@fromcode119/core';
+import { BackupService, PluginManager, Logger } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
 import AdmZip from 'adm-zip';
 
@@ -199,7 +200,7 @@ export class PluginController {
   async inspectUpload(req: any, res: Response) {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     try {
-      const info = this.inspectPluginArchive(req.file.path);
+      const info = await this.inspectPluginArchive(req.file.path, req.file.originalname);
       res.json({ success: true, info });
     } catch (err: any) {
       res.status(400).json({ error: err.message || 'Invalid plugin archive' });
@@ -233,51 +234,126 @@ export class PluginController {
     return res.status(404).json({ error: 'Asset not found' });
   }
 
-  private inspectPluginArchive(filePath: string) {
-    if (!this.isZipArchive(filePath)) {
-      throw new Error('Unsupported archive format. Upload a .zip plugin package.');
-    }
-
-    const zip = new AdmZip(filePath);
-    const entries = zip.getEntries();
-    const manifestEntry = entries.find((entry) =>
-      !entry.isDirectory && entry.entryName.toLowerCase().endsWith('/manifest.json')
-    ) || entries.find((entry) =>
-      !entry.isDirectory && entry.entryName.toLowerCase() === 'manifest.json'
-    );
-
-    if (!manifestEntry) {
-      throw new Error('Invalid plugin package: manifest.json not found.');
-    }
-
-    let manifest: any;
+  private async inspectPluginArchive(filePath: string, originalFilename?: string) {
+    const extractedDir = await this.extractArchiveToTemporaryDirectory(filePath, originalFilename, 'plugin');
     try {
-      manifest = JSON.parse(manifestEntry.getData().toString('utf8'));
-    } catch {
-      throw new Error('Invalid plugin package: manifest.json is not valid JSON.');
+      const manifestPath = this.findManifestPath(extractedDir, 'manifest.json');
+      if (!manifestPath) {
+        throw new Error('Invalid plugin package: manifest.json not found.');
+      }
+
+      let manifest: any;
+      try {
+        manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      } catch {
+        throw new Error('Invalid plugin package: manifest.json is not valid JSON.');
+      }
+
+      const slug = String(manifest?.slug || '').trim().toLowerCase();
+      if (!slug) {
+        throw new Error('Invalid plugin package: missing "slug" in manifest.json.');
+      }
+
+      const existing = this.manager.getPlugins().find((plugin: any) => plugin?.manifest?.slug === slug);
+
+      return {
+        slug,
+        name: String(manifest?.name || slug),
+        version: String(manifest?.version || ''),
+        description: String(manifest?.description || ''),
+        author: String(manifest?.author || ''),
+        hasUiBundle: this.directoryContainsSegment(extractedDir, 'ui'),
+        hasServerCode: this.directoryContainsFilePattern(extractedDir, /(^|\/)index\.(js|ts)$/i),
+        existingVersion: existing?.manifest?.version || null,
+        action: existing ? 'update' : 'install',
+      };
+    } finally {
+      fs.rmSync(extractedDir, { recursive: true, force: true });
     }
-
-    const slug = String(manifest?.slug || '').trim().toLowerCase();
-    if (!slug) {
-      throw new Error('Invalid plugin package: missing "slug" in manifest.json.');
-    }
-
-    const existing = this.manager.getPlugins().find((plugin: any) => plugin?.manifest?.slug === slug);
-
-    return {
-      slug,
-      name: String(manifest?.name || slug),
-      version: String(manifest?.version || ''),
-      description: String(manifest?.description || ''),
-      author: String(manifest?.author || ''),
-      hasUiBundle: entries.some((entry) => !entry.isDirectory && entry.entryName.replace(/\\/g, '/').includes('/ui/')),
-      hasServerCode: entries.some((entry) => !entry.isDirectory && /(^|\/)index\.(js|ts)$/i.test(entry.entryName.replace(/\\/g, '/'))),
-      existingVersion: existing?.manifest?.version || null,
-      action: existing ? 'update' : 'install',
-    };
   }
 
-  private isZipArchive(filePath: string): boolean {
-    return path.extname(filePath).toLowerCase() === '.zip';
+  private async extractArchiveToTemporaryDirectory(filePath: string, originalFilename: string | undefined, type: 'plugin' | 'theme'): Promise<string> {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `fromcode-${type}-inspect-`));
+    try {
+      if (this.isZipArchive(filePath, originalFilename)) {
+        new AdmZip(filePath).extractAllTo(tempDir, true);
+      } else if (this.isTarArchive(filePath, originalFilename)) {
+        await BackupService.restore(filePath, tempDir);
+      } else {
+        throw new Error(`Unsupported archive format. Upload a .zip or .tar.gz ${type} package.`);
+      }
+      return tempDir;
+    } catch (error) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+      throw error;
+    }
+  }
+
+  private findManifestPath(rootDir: string, filename: string): string | null {
+    const directPath = path.join(rootDir, filename);
+    if (fs.existsSync(directPath)) {
+      return directPath;
+    }
+
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const found = this.findManifestPath(path.join(rootDir, entry.name), filename);
+      if (found) {
+        return found;
+      }
+    }
+
+    return null;
+  }
+
+  private directoryContainsSegment(rootDir: string, segment: string): boolean {
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      const absolutePath = path.join(rootDir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === segment || this.directoryContainsSegment(absolutePath, segment)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private directoryContainsFilePattern(rootDir: string, pattern: RegExp): boolean {
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      const absolutePath = path.join(rootDir, entry.name);
+      if (entry.isDirectory()) {
+        if (this.directoryContainsFilePattern(absolutePath, pattern)) {
+          return true;
+        }
+        continue;
+      }
+
+      const normalizedPath = absolutePath.replace(/\\/g, '/');
+      if (pattern.test(normalizedPath)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private isZipArchive(filePath: string, originalFilename?: string): boolean {
+    const normalizedOriginalName = String(originalFilename || '').trim().toLowerCase();
+    if (normalizedOriginalName.endsWith('.zip')) {
+      return true;
+    }
+
+    try {
+      const header = fs.readFileSync(filePath).subarray(0, 4);
+      return header.length >= 2 && header[0] === 0x50 && header[1] === 0x4b;
+    } catch {
+      return false;
+    }
+  }
+
+  private isTarArchive(filePath: string, originalFilename?: string): boolean {
+    const normalizedOriginalName = String(originalFilename || '').trim().toLowerCase();
+    return normalizedOriginalName.endsWith('.tar.gz') || normalizedOriginalName.endsWith('.tgz') || normalizedOriginalName.endsWith('.tar') || !this.isZipArchive(filePath, originalFilename);
   }
 }
