@@ -1,4 +1,4 @@
-import { SecurityMiddleware } from '../src/middlewares/security';
+import { CSRFMiddleware } from '../src/middlewares/csrf-middleware';
 import { CookieConstants } from '../../core/src/cookie-constants';
 import { Request, Response, NextFunction } from 'express';
 
@@ -6,8 +6,10 @@ describe('CSRF Middleware Security Scenarios', () => {
     let req: any;
     let res: any;
     let next: NextFunction;
+    let csrfMiddleware: CSRFMiddleware;
 
     beforeEach(() => {
+        csrfMiddleware = new CSRFMiddleware();
         req = {
             method: 'POST',
             path: '/api/v1/test',
@@ -27,14 +29,14 @@ describe('CSRF Middleware Security Scenarios', () => {
 
     it('should allow GET requests without CSRF check', () => {
         req.method = 'GET';
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
     });
 
     it('should block POST requests without CSRF header', () => {
         req.headers.cookie = `${CookieConstants.AUTH_CSRF}=valid-token`;
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         expect(res.status).toHaveBeenCalledWith(403);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
             message: 'Invalid CSRF token'
@@ -44,14 +46,14 @@ describe('CSRF Middleware Security Scenarios', () => {
     it('should block POST requests with mismatched CSRF header', () => {
         req.headers.cookie = `${CookieConstants.AUTH_CSRF}=valid-token`;
         req.headers['x-csrf-token'] = 'invalid-token';
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         expect(res.status).toHaveBeenCalledWith(403);
     });
 
     it('should allow POST requests with matching CSRF header', () => {
         req.headers.cookie = `${CookieConstants.AUTH_CSRF}=valid-token`;
         req.headers['x-csrf-token'] = 'valid-token';
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         expect(next).toHaveBeenCalled();
     });
 
@@ -63,7 +65,7 @@ describe('CSRF Middleware Security Scenarios', () => {
         req.headers.cookie = `${CookieConstants.AUTH_CSRF}=${otherToken}; ${CookieConstants.AUTH_CSRF}=${matchingToken}`;
         req.headers['x-csrf-token'] = matchingToken;
         
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
@@ -76,14 +78,14 @@ describe('CSRF Middleware Security Scenarios', () => {
         req.headers.cookie = `${CookieConstants.AUTH_CSRF}=${matchingToken}; ${CookieConstants.AUTH_CSRF}=${otherToken}`;
         req.headers['x-csrf-token'] = matchingToken;
         
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         
         expect(next).toHaveBeenCalled();
     });
 
     it('should generate a new CSRF cookie if none exists', () => {
         req.method = 'GET';
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         
         expect(res.cookie).toHaveBeenCalledWith(CookieConstants.AUTH_CSRF, expect.any(String), expect.objectContaining({
             httpOnly: false,
@@ -95,7 +97,7 @@ describe('CSRF Middleware Security Scenarios', () => {
     it('should set the domain correctly on the fresh CSRF cookie if hostname is a subdomain', () => {
         req.method = 'GET';
         req.hostname = 'admin.framework.local';
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         
         expect(res.cookie).toHaveBeenCalledWith(CookieConstants.AUTH_CSRF, expect.any(String), expect.objectContaining({
             domain: '.framework.local'
@@ -105,13 +107,13 @@ describe('CSRF Middleware Security Scenarios', () => {
     it('should skip CSRF check for Authorization header (stateless/safe from CSRF)', () => {
         req.headers.authorization = 'Bearer some-token';
         // No cookie, no header
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         expect(next).toHaveBeenCalled();
     });
     
     it('should skip CSRF check for API Key header', () => {
         req.headers['x-api-key'] = 'some-key';
-        SecurityMiddleware.csrfMiddleware(req, res, next);
+        void csrfMiddleware.handle(req, res, next);
         expect(next).toHaveBeenCalled();
     });
 });

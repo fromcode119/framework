@@ -4,8 +4,8 @@ import express from 'express';
 import { CookieConstants, Logger, PluginManager, RequestContextUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { ApiConfig } from '../config/api-config';
-import { RequestCookieService } from '../services/request-cookie-service';
-import { RequestLocaleService } from '../services/request-locale-service';
+import { RequestCookieService } from '../services/request/request-cookie-service';
+import { RequestLocaleService } from '../services/request/request-locale-service';
 import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
 
 export class ServerMiddlewareSetup {
