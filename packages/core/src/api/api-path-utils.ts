@@ -98,11 +98,20 @@ export class ApiPathUtils {
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
 
+  static themePublicAssetPath(slug: string, asset = ''): string {
+    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.PUBLIC, { slug }).replace(/\/\*$/, '');
+    return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
+  }
+
   static pluginUiAssetUrl(baseUrl: string, slug: string, asset: string): string {
     return ApiPathUtils.absoluteUrl(baseUrl, ApiPathUtils.pluginUiAssetPath(slug, asset));
   }
 
   static themeUiAssetUrl(baseUrl: string, slug: string, asset: string): string {
     return ApiPathUtils.absoluteUrl(baseUrl, ApiPathUtils.themeUiAssetPath(slug, asset));
+  }
+
+  static themePublicAssetUrl(baseUrl: string, slug: string, asset: string): string {
+    return ApiPathUtils.absoluteUrl(baseUrl, ApiPathUtils.themePublicAssetPath(slug, asset));
   }
 }

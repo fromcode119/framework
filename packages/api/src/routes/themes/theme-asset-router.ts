@@ -12,6 +12,7 @@ export class ThemeAssetRouter extends BaseRouter {
   }
 
   protected registerRoutes(): void {
+    this.get(RouteConstants.SEGMENTS.THEMES_SLUG_PUBLIC_WILDCARD, this.bind(this.controller.servePublicAssets.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_UI_WILDCARD, this.bind(this.controller.serveAssets.bind(this.controller)));
   }
 }
