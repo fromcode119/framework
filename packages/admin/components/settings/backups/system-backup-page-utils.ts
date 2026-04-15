@@ -196,6 +196,19 @@ export class SystemBackupPageUtils {
     return Math.min(currentPercent + 9, 84);
   }
 
+  static getImportProgressLabel(percent: number): string {
+    if (percent < 20) return 'Preparing archive upload...';
+    if (percent < 55) return 'Uploading backup archive...';
+    if (percent < 85) return 'Waiting for server to index the archive...';
+    if (percent < 100) return 'Refreshing backup inventory...';
+    return 'Backup import complete.';
+  }
+
+  static getNextImportProgressPercent(currentPercent: number): number {
+    if (currentPercent >= 84) return 84;
+    return Math.min(currentPercent + 7, 84);
+  }
+
   static getDownloadProgressLabel(progress: BackupDownloadProgressView): string {
     if (progress.percent === null) {
       return `Downloading ${this.formatBytes(progress.loadedBytes)}...`;
@@ -219,7 +232,7 @@ export class SystemBackupPageUtils {
     id: string,
     onProgress?: (state: { loadedBytes: number; totalBytes: number | null; percent: number | null }) => void,
   ): Promise<string> {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return '';
     const { blob, filename } = await AdminApi.download(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(id), undefined, onProgress);
     const objectUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');

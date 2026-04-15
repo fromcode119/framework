@@ -75,6 +75,7 @@ export interface SystemBackupHookState {
   isCreating: boolean;
   isImporting: boolean;
   createProgress: BackupProgressView | null;
+  importProgress: BackupProgressView | null;
   downloadProgress: BackupDownloadProgressView | null;
   activeDeleteId: string;
   activePreviewId: string;
@@ -137,6 +138,7 @@ export interface BackupCreateCardProps {
   isCreating: boolean;
   isImporting: boolean;
   createProgress: BackupProgressView | null;
+  importProgress: BackupProgressView | null;
   onToggleSection(value: 'core' | 'database' | 'plugins' | 'themes'): void;
   onApplyPreset(value: 'full' | 'core-db' | 'plugins-only' | 'themes-only'): void;
   onCreate(): Promise<void>;

@@ -24,6 +24,7 @@ export class SystemBackupHooks {
     const [isCreating, setIsCreating] = React.useState(false);
     const [isImporting, setIsImporting] = React.useState(false);
     const [createProgress, setCreateProgress] = React.useState<BackupProgressView | null>(null);
+    const [importProgress, setImportProgress] = React.useState<BackupProgressView | null>(null);
     const [downloadProgress, setDownloadProgress] = React.useState<BackupDownloadProgressView | null>(null);
     const [activeDeleteId, setActiveDeleteId] = React.useState('');
     const [activePreviewId, setActivePreviewId] = React.useState('');
@@ -101,11 +102,31 @@ export class SystemBackupHooks {
       const formData = new FormData();
       formData.append('backup', file);
       setIsImporting(true);
+      setImportProgress({ percent: 8, label: SystemBackupPageUtils.getImportProgressLabel(8) });
+      const progressTimer = window.setInterval(() => {
+        setImportProgress((current) => {
+          if (!current) {
+            return current;
+          }
+          const nextPercent = SystemBackupPageUtils.getNextImportProgressPercent(current.percent);
+          return {
+            percent: nextPercent,
+            label: SystemBackupPageUtils.getImportProgressLabel(nextPercent),
+          };
+        });
+      }, 420);
       try {
         const response = await AdminApi.upload(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_IMPORT, formData) as SystemBackupMutationResponseView;
+        setImportProgress({ percent: 92, label: SystemBackupPageUtils.getImportProgressLabel(92) });
         await refreshBackups();
+        setImportProgress({ percent: 100, label: `${response.backup.displayName} imported and indexed.` });
+        window.setTimeout(() => setImportProgress(null), 1600);
         return response;
+      } catch (error) {
+        setImportProgress(null);
+        throw error;
       } finally {
+        window.clearInterval(progressTimer);
         setIsImporting(false);
       }
     }, [refreshBackups]);
@@ -198,6 +219,7 @@ export class SystemBackupHooks {
       isCreating,
       isImporting,
       createProgress,
+      importProgress,
       downloadProgress,
       activeDeleteId,
       activePreviewId,
