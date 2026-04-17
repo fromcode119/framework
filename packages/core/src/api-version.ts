@@ -9,6 +9,7 @@ import { ApplicationUrlUtils } from './application-url-utils';
  */
 export class ApiVersionUtils {
   static readonly DEFAULT_API_BASE_PATH = '/api';
+  static readonly DEFAULT_API_VERSION = 'v1';
 
   static get API_BASE_PATH(): string {
     return ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.API_APP)
@@ -21,7 +22,7 @@ export class ApiVersionUtils {
       process.env.NEXT_PUBLIC_API_VERSION ||
         process.env.API_VERSION_PREFIX ||
         process.env.DEFAULT_API_VERSION ||
-        ''
+        ApiVersionUtils.DEFAULT_API_VERSION
     ).trim();
   }
 

@@ -55,6 +55,7 @@ export class AdminConstants {
     LIST: AdminConstants.v(SystemConstants.API_PATH.PLUGINS.BASE),
     ACTIVE: AdminConstants.v(SystemConstants.API_PATH.PLUGINS.ACTIVE),
     MARKETPLACE: AdminConstants.v(SystemConstants.API_PATH.PLUGINS.MARKETPLACE),
+    INSTALL_OPERATION: (operationId: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_INSTALL_OPERATION, { operationId }),
     UPLOAD_SESSION: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION),
     UPLOAD_CHUNK: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPLOAD_CHUNK),
     UPLOAD_SESSION_INSPECT: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION_INSPECT),

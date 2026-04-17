@@ -1,0 +1,1 @@
+export type PluginHealthStatus = 'ok' | 'degraded' | 'error';

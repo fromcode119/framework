@@ -237,10 +237,12 @@ export class SandboxManager {
     await ivmContext.evalClosure(`
       globalThis.api = {
         get: (path, cb) => _api_register.apply(undefined, ['get', path, cb], { arguments: { reference: true } }),
+        health: (cb) => _api_register.apply(undefined, ['get', '/health', cb], { arguments: { reference: true } }),
         post: (path, cb) => _api_register.apply(undefined, ['post', path, cb], { arguments: { reference: true } }),
         put: (path, cb) => _api_register.apply(undefined, ['put', path, cb], { arguments: { reference: true } }),
         delete: (path, cb) => _api_register.apply(undefined, ['delete', path, cb], { arguments: { reference: true } }),
-        patch: (path, cb) => _api_register.apply(undefined, ['patch', path, cb], { arguments: { reference: true } })
+        patch: (path, cb) => _api_register.apply(undefined, ['patch', path, cb], { arguments: { reference: true } }),
+        status: (cb) => _api_register.apply(undefined, ['get', '/status', cb], { arguments: { reference: true } })
       };
     `, [], { arguments: { reference: true } });
 

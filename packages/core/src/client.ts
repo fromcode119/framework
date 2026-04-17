@@ -84,6 +84,9 @@ export type {
 export { RuntimeBridge } from './runtime-bridge';
 export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
 export { PluginDefinitionUtils } from './plugin-definition-utils';
+export { PluginHealthResponseBuilder } from './plugin-health-response';
+export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse } from './plugin-health-response.interfaces';
+export type { PluginHealthStatus } from './plugin-health-response.types';
 export { Plugins } from './plugins';
 export { PluginsFacade } from './plugins-facade';
 export { NamespacedPluginsFacade } from './namespaced-plugins-facade';

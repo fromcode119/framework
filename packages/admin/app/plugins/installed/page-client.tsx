@@ -30,6 +30,7 @@ export default function InstalledPluginsPageClient() {
       isInspectingUpload={model.isInspectingUpload}
       isUploading={model.isUploading}
       loading={model.loading}
+      operationStatus={model.operationStatus}
       markImageError={model.markImageError}
       onDeleteConfirm={model.onDeleteConfirm}
       onDeletePrompt={model.onDeletePrompt}

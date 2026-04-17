@@ -58,6 +58,37 @@ export class DiscoveryService {
     }
   }
 
+  private shouldUseNativeImport(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+      return false;
+    }
+
+    const code = 'code' in error ? String((error as { code?: unknown }).code || '') : '';
+    const message = 'message' in error ? String((error as { message?: unknown }).message || '') : '';
+
+    return code === 'ERR_REQUIRE_ESM'
+      || message.includes('Must use import to load ES Module')
+      || message.includes('require() of ES Module');
+  }
+
+  private async nativeImportModule(filePath: string): Promise<any> {
+    const { pathToFileURL } = await import('url');
+    const importModule = new Function('specifier', 'return import(specifier);');
+    return importModule(pathToFileURL(filePath).href);
+  }
+
+  private async loadPluginModule(indexPath: string): Promise<any> {
+    try {
+      return require(indexPath);
+    } catch (error: any) {
+      if (!this.shouldUseNativeImport(error)) {
+        throw error;
+      }
+
+      return this.nativeImportModule(indexPath);
+    }
+  }
+
   public async discoverPlugins(
     existingPlugins: Map<string, LoadedPlugin>,
     installedState: Record<string, { sandboxConfig?: any }> = {}
@@ -158,16 +189,7 @@ export class DiscoveryService {
 
                 // Always load plugin module so lifecycle hooks remain available.
                 // Sandbox mode controls runtime isolation policy, not module metadata availability.
-                let rawModule: any;
-                try {
-                  // Prefer absolute filesystem path imports for CJS/TSX compatibility.
-                  rawModule = await import(indexPath);
-                } catch (pathImportErr: any) {
-                  // Fallback to file URL import for strict ESM environments.
-                  const { pathToFileURL } = await import('url');
-                  const fileUrl = pathToFileURL(indexPath).href;
-                  rawModule = await import(fileUrl);
-                }
+                const rawModule = await this.loadPluginModule(indexPath);
                 const pluginModule = (rawModule && rawModule.default)
                   ? { ...rawModule.default, ...rawModule }
                   : rawModule;

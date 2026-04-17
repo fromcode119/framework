@@ -8,15 +8,13 @@ import { Logger } from '../logging';
 import { I18nManager } from '../i18n/i18n-manager';
 import { DatabaseFactory, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';
-import { BackupService } from '../management/backup-service';
 import { MigrationCoordinator } from '../management/migration-coordinator';
 import { RecordVersions } from '../collections/record-versions';
 import { AuditManager } from '../security/audit-manager';
 import { SecurityMonitor } from '../security/security-monitor';
 import { MarketplaceCatalogService } from '../marketplace/marketplace-catalog-service';
-import * as path from 'path';
-import * as fs from 'fs';
 import { PluginContextFactory } from './context';
+import type { PluginInstallProgressReporter } from './plugin-installation.interfaces';
 import type { PluginManagerInterface } from './context/utils.interfaces';
 import { CoreExtensionManager } from '../extensions/extension-manager';
 import { ProjectPaths } from '../config/paths';
@@ -35,7 +33,9 @@ import { PluginRegistry } from '@fromcode119/plugins';
 import { IntegrationManager } from '../integrations';
 import { PluginTelemetryService } from './services/plugin-telemetry-service';
 import { PluginScaffoldService } from './services/plugin-scaffold-service';
-import { AdminSecondaryPanelAllowlistEntry } from './services/admin-secondary-panel.interfaces';
+import { PluginAdminRuntimeService } from './services/plugin-admin-runtime-service';
+import { PluginInstallationService } from './services/plugin-installation-service';
+import { PluginRuntimeStateService } from './services/plugin-runtime-state-service';
 
 export class PluginManager implements PluginManagerInterface {
   public audit: AuditManager;
@@ -73,6 +73,9 @@ export class PluginManager implements PluginManagerInterface {
   private workflow: WorkflowService;
   private telemetry!: PluginTelemetryService;
   private scaffold!: PluginScaffoldService;
+  private adminRuntime: PluginAdminRuntimeService;
+  private installation: PluginInstallationService;
+  private runtimeState: PluginRuntimeStateService;
   public get storage() { return this.integrations.storage; }
   public get email() { return this.integrations.email; }
   public get cache() { return this.integrations.cache; }
@@ -111,6 +114,35 @@ export class PluginManager implements PluginManagerInterface {
     this.marketplace = new MarketplaceCatalogService(this.discovery);
     this.admin = new AdminMetadataService();
     this.lifecycle = new LifecycleService(this, this.registry, this.discovery, this.schemaManager);
+    this.adminRuntime = new PluginAdminRuntimeService(
+      this.logger,
+      this.db,
+      this.admin,
+      this.lifecycle,
+      this.runtime,
+      this.security,
+      this.plugins,
+      this.registeredCollections,
+    );
+    this.runtimeState = new PluginRuntimeStateService(
+      this.logger,
+      this.db,
+      this.registry,
+      this.plugins,
+      this.headInjections,
+      this.registeredCollections,
+      this.pluginSettings,
+    );
+    this.installation = new PluginInstallationService(
+      this.logger,
+      this.marketplace,
+      this.discovery,
+      this.migrationManager,
+      this.plugins,
+      this.pluginsRoot,
+      this.discoverPlugins.bind(this),
+      (slug) => this.enable(slug),
+    );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)
     this.telemetry = new PluginTelemetryService(this.db, () => this.email);
@@ -235,27 +267,18 @@ export class PluginManager implements PluginManagerInterface {
     await this.installOrUpdateFromMarketplace(slug);
   }
 
-  async installOrUpdateFromMarketplace(slug: string): Promise<PluginManifest> {
-    const pkg = await this.marketplace.getPluginInfo(slug);
-    if (!pkg) throw new Error(`Plugin "${slug}" not found in marketplace.`);
+  async installOrUpdateFromMarketplace(
+    slug: string,
+    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
+  ): Promise<PluginManifest> {
+    return this.installation.installOrUpdateFromMarketplace(slug, options);
+  }
 
-    const existing = this.plugins.get(slug);
-    if (existing && existing.path) {
-      this.logger.info(`Creating backup for ${slug} before update...`);
-      await BackupService.create(slug, existing.path, 'plugins');
-    }
-
-    const manifest = await this.marketplace.downloadAndInstall(slug);
-    
-    // Refresh discovery
-    await this.discoverPlugins();
-    
-    // Auto-enable if it was previously active (or if it's new, we'll let the controller decide)
-    if (existing?.state === 'active') {
-      await this.enable(slug);
-    }
-    
-    return manifest;
+  async installUploadedPluginArchive(
+    filePath: string,
+    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
+  ): Promise<PluginManifest> {
+    return this.installation.installUploadedPluginArchive(filePath, options);
   }
 
   /**
@@ -322,104 +345,54 @@ export class PluginManager implements PluginManagerInterface {
   }
 
     async savePluginConfig(slug: string, config: any) {
-    await this.registry.savePluginConfig(slug, config);
-    const plugin = this.plugins.get(slug);
-    if (plugin) {
-      plugin.manifest.config = config;
-    }
+    await this.runtimeState.savePluginConfig(slug, config);
   }
 
   async saveSandboxConfig(slug: string, config: any) {
-    const { systemPlugins, eq } = require('@fromcode119/database');
-    const isExplicitlyDisabled = config === false || (config && typeof config === 'object' && config.enabled === false);
-    const normalizedConfig = isExplicitlyDisabled
-      ? false
-      : (config && typeof config === 'object'
-          ? Object.fromEntries(Object.entries(config).filter(([key]) => key !== 'enabled'))
-          : {});
-
-    await (this.db as any).update(systemPlugins, { slug }, { 
-      sandboxConfig: normalizedConfig 
-    });
-    
-    const plugin = this.plugins.get(slug);
-    if (plugin) {
-      // Update manifest representation
-      if (normalizedConfig === false) {
-        plugin.manifest.sandbox = false;
-      } else {
-        if (!plugin.manifest.sandbox || typeof plugin.manifest.sandbox === 'boolean') {
-          plugin.manifest.sandbox = normalizedConfig;
-        } else {
-          plugin.manifest.sandbox = { ...plugin.manifest.sandbox, ...normalizedConfig };
-        }
-      }
-    }
-    
-    this.logger.info(`Sandbox configuration updated for plugin: ${slug}`);
+    await this.runtimeState.saveSandboxConfig(slug, config);
   }
 
   public getHeadInjections(slug: string): any[] {
-    return this.headInjections.get(slug.toLowerCase()) || [];
+    return this.runtimeState.getHeadInjections(slug);
   }
 
   getCollections() {
-    return Array.from(this.registeredCollections.values()).map(c => c.collection);
+    return this.runtimeState.getCollections();
   }
 
   getCollection(slug: string) {
-    const entry = this.registeredCollections.get(slug);
-    if (entry) return entry;
-
-    // Case-insensitive fallback
-    const lowerSlug = slug.toLowerCase();
-    for (const [key, val] of this.registeredCollections.entries()) {
-      if (key.toLowerCase() === lowerSlug) return val;
-    }
-    
-    return undefined;
+    return this.runtimeState.getCollection(slug);
   }
 
   public registerPluginSettings(pluginSlug: string, schema: any): void {
-    this.pluginSettings.set(pluginSlug.toLowerCase(), schema);
-    this.logger.info(`Settings registered for plugin: ${pluginSlug}`);
+    this.runtimeState.registerPluginSettings(pluginSlug, schema);
   }
 
   public getPluginSettings(pluginSlug: string): any | undefined {
-    return this.pluginSettings.get(pluginSlug.toLowerCase());
+    return this.runtimeState.getPluginSettings(pluginSlug);
   }
 
   public getAllPluginSettings(): Map<string, any> {
-    return new Map(this.pluginSettings);
+    return this.runtimeState.getAllPluginSettings();
   }
 
   async installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest> {
     return this.discovery.installFromZip(filePath);
   }
 
+  async finalizeInstalledPlugin(
+    slug: string,
+    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
+  ): Promise<void> {
+    await this.installation.finalizeInstalledPlugin(slug, options);
+  }
+
   async disableWithError(slug: string, message: string): Promise<void> {
-    const plugin = this.plugins.get(slug);
-    if (plugin) {
-      plugin.state = 'error';
-      await this.db.update(SystemConstants.TABLE.PLUGINS, { slug }, { state: 'error', health_status: 'error', updated_at: new Date() });
-    }
+    await this.runtimeState.disableWithError(slug);
   }
 
   public async getSecuritySummary() {
-    const all = this.getPlugins();
-    const active = all.filter((p) => p.state === 'active');
-    const isSandboxed = (p: LoadedPlugin) => p.manifest?.sandbox !== false;
-    const mismatch = active.filter(isSandboxed).filter((p) => !p.isSandboxed);
-    const sandbox = await this.lifecycle.getSandboxStats();
-    const mem = process.memoryUsage();
-    return {
-      sandbox,
-      hostMemory: { rssBytes: mem.rss, heapTotalBytes: mem.heapTotal, heapUsedBytes: mem.heapUsed, externalBytes: mem.external, arrayBuffersBytes: mem.arrayBuffers || 0, dbNetworkBuffersEstimateBytes: mem.arrayBuffers || 0, otherNonIsolateAllocationsEstimateBytes: Math.max(0, mem.rss - Number(sandbox?.heap?.used_heap_size || 0)) },
-      monitor: await this.security.getSecurityStats(),
-      pluginIsolation: { totalPlugins: all.length, activePlugins: active.length, sandboxConfiguredPlugins: all.filter(isSandboxed).length, sandboxActivePlugins: active.filter(isSandboxed).length, sandboxRuntimeActivePlugins: active.filter((p) => !!p.isSandboxed).length, sandboxPolicyRuntimeMismatchPlugins: mismatch.length, sandboxPolicyRuntimeMismatchSlugs: mismatch.map((p) => p.manifest.slug), unsandboxedActivePlugins: active.filter((p) => !isSandboxed(p)).length, unsandboxedActivePluginSlugs: active.filter((p) => !isSandboxed(p)).map((p) => p.manifest.slug) },
-      integrityEnforced: true,
-      signatureEnforced: !!process.env.REQUIRE_SIGNATURES
-    };
+    return this.adminRuntime.getSecuritySummary();
   }
 
   /** Returns plugins in topological order based on their dependencies. */
@@ -433,45 +406,13 @@ export class PluginManager implements PluginManagerInterface {
     }
   }
 
-  getRuntimeModules() { return this.runtime.getModules(this.getPlugins().filter(p => p.state === 'active')); }
+  getRuntimeModules() { return this.adminRuntime.getRuntimeModules(); }
   async getAdminMetadata() {
-    const allowlistEntries = await this.getSecondaryPanelAllowlistEntries();
-    return this.admin.getAdminMetadata(
-      this.getSortedPlugins(), 
-      this.registeredCollections, 
-      this.getRuntimeModules(),
-      allowlistEntries,
-    ); 
-  }
-
-  private async getSecondaryPanelAllowlistEntries(): Promise<AdminSecondaryPanelAllowlistEntry[]> {
-    try {
-      const records = await (this.db as any).find(SystemConstants.TABLE.META);
-      const row = (records || []).find((entry: any) => String(entry?.key || '') === 'admin.secondaryPanel.allowlist.v1');
-      if (!row || row.value === null || row.value === undefined) {
-        return [];
-      }
-      const parsed = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      this.logger.warn(`[secondary-panel] Failed to load allowlist: ${error instanceof Error ? error.message : String(error)}`);
-      return [];
-    }
+    return this.adminRuntime.getAdminMetadata(() => this.getSortedPlugins());
   }
 
   getImportMap() {
-    const modules = this.getRuntimeModules();
-    const imports: Record<string, string> = {};
-    
-    Object.entries(modules).forEach(([name, mod]: [string, any]) => {
-       if (mod.url) {
-         imports[name] = mod.url;
-       } else if (mod.source) {
-         imports[name] = `data:text/javascript;base64,${mod.source}`;
-       }
-    });
-
-    return { imports };
+    return this.adminRuntime.getImportMap();
   }
 
   // Rest of the methods...

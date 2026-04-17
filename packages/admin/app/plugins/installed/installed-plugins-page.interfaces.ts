@@ -2,10 +2,12 @@ import type { RefObject } from 'react';
 import type { LoadedPlugin } from '@fromcode119/core/client';
 import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';
 import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
+import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
 
 export interface InstalledPluginMarketplaceItem {
   slug: string;
   version: string;
+  dependencies?: Record<string, string>;
 }
 
 export interface InstalledPluginCardProps {
@@ -41,6 +43,7 @@ export interface InstalledPluginsViewProps {
   isInspectingUpload: boolean;
   isUploading: boolean;
   loading: boolean;
+  operationStatus: PluginInstallOperation | null;
   markImageError: (slug: string) => void;
   onDeleteConfirm: () => Promise<void>;
   onDeletePrompt: (slug: string) => void;
@@ -80,6 +83,7 @@ export interface InstalledPluginsPageModel {
   isInspectingUpload: boolean;
   isUploading: boolean;
   loading: boolean;
+  operationStatus: PluginInstallOperation | null;
   markImageError: (slug: string) => void;
   onDeleteConfirm: () => Promise<void>;
   onDeletePrompt: (slug: string) => void;

@@ -4,6 +4,8 @@ import type { LoadedPlugin } from '@fromcode119/core/client';
 import { ThemeHooks } from '@/components/use-theme';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
+import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
+import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
 import { NotificationHooks } from '@/components/use-notification';
 import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';
 import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
@@ -38,6 +40,7 @@ export class InstalledPluginsPageController {
     const [uploadPreviewTitle, setUploadPreviewTitle] = useState('');
     const [uploadPreviewDescription, setUploadPreviewDescription] = useState('');
     const [uploadPreviewSections, setUploadPreviewSections] = useState<UploadPreviewSection[]>([]);
+    const [operationStatus, setOperationStatus] = useState<PluginInstallOperation | null>(null);
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -104,12 +107,14 @@ export class InstalledPluginsPageController {
 
       setIsUploading(true);
       try {
-        await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.UPLOAD_COMPLETE, { uploadId });
+        const operationId = await PluginInstallOperationService.startArchiveInstall(uploadId);
+        await PluginInstallOperationService.waitForCompletion(operationId, setOperationStatus);
         notify('success', 'Upload Successful', 'Plugin uploaded successfully.');
         await fetchPlugins();
       } catch (error: any) {
         notify('error', 'Upload Failed', error.message);
       } finally {
+        setOperationStatus(null);
         setIsUploading(false);
       }
     };
@@ -289,15 +294,18 @@ export class InstalledPluginsPageController {
           for (const issue of missing) {
             notify('info', 'Dependency Install', `Downloading ${issue.slug} from marketplace...`);
             try {
-              await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(issue.slug), {});
+              const { operationId } = await PluginInstallOperationService.startMarketplaceInstall(issue.slug);
+              await PluginInstallOperationService.waitForCompletion(operationId, setOperationStatus);
             } catch (error: any) {
               notify('error', 'Auto-Install Failed', `Could not install ${issue.slug}: ${error.message}`);
+              setOperationStatus(null);
               return;
             }
           }
         }
         await handleToggle(targetPlugin, false, { recursive, force });
       },
+      operationStatus,
       uploadPreviewDescription,
       uploadPreviewSections,
       uploadPreviewTitle,

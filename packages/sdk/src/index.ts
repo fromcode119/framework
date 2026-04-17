@@ -82,6 +82,8 @@ export type {
   ShortcodeCatalogResponse,
 } from '@fromcode119/core/client';
 export { PluginDefinitionUtils } from '@fromcode119/core/client';
+export { PluginHealthResponseBuilder } from '@fromcode119/core/client';
+export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse, PluginHealthStatus } from '@fromcode119/core/client';
 export { Plugins } from '@fromcode119/core/client';
 export { PluginsFacade } from '@fromcode119/core/client';
 export { NamespacedPluginsFacade } from '@fromcode119/core/client';
