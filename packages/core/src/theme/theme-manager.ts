@@ -134,14 +134,22 @@ export class ThemeManager {
   async activateTheme(slug: string) {
     const manifest = this.themes.get(slug);
     if (!manifest) throw new Error(`Theme "${slug}" not found.`);
+
+    const timestamp = new Date();
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: new Date() });
-    } else {
-      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: 'active', created_at: new Date(), updated_at: new Date() });
+    const activeThemeRow = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: 'active' });
+
+    if (activeThemeRow && activeThemeRow.slug !== slug) {
+      await this.db.update(SystemConstants.TABLE.THEMES, { slug: activeThemeRow.slug }, { state: 'inactive', updated_at: timestamp });
     }
-    await this.db.update(SystemConstants.TABLE.THEMES, {}, { state: 'inactive' });
-    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active' });
+
+    if (existing) {
+      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: timestamp });
+    } else {
+      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: 'active', created_at: timestamp, updated_at: timestamp });
+    }
+
+    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: timestamp });
     this.activeTheme = slug;
     this.logger.info(`Theme "${slug}" activated.`);
   }
