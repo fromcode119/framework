@@ -106,14 +106,48 @@ export class PluginStateService {
   async writeLog(level: string, message: string, pluginSlug?: string, context?: any) {
     try {
       await this.db.insert(SystemConstants.TABLE.LOGS, {
-        level,
-        message,
-        plugin_slug: pluginSlug,
-        context: context || null,
+        level: PluginStateService.sanitizeLogText(level) || 'INFO',
+        message: PluginStateService.sanitizeLogText(message) || '',
+        plugin_slug: PluginStateService.sanitizeLogText(pluginSlug),
+        context: PluginStateService.sanitizeLogContext(context),
         timestamp: new Date()
       });
     } catch (err) {
       this.logger.error('Failed to write log to DB', err);
     }
+  }
+
+  private static sanitizeLogText(value: unknown): string | null {
+    const normalized = String(value ?? '');
+    if (!normalized) {
+      return null;
+    }
+
+    return normalized.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  }
+
+  private static sanitizeLogContext(value: unknown): unknown {
+    if (value == null) {
+      return null;
+    }
+
+    if (typeof value === 'string') {
+      return PluginStateService.sanitizeLogText(value);
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((entry) => PluginStateService.sanitizeLogContext(entry));
+    }
+
+    if (typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+          key,
+          PluginStateService.sanitizeLogContext(entry),
+        ]),
+      );
+    }
+
+    return value;
   }
 }
