@@ -58,19 +58,31 @@ export class SystemAdminController {
   async updateSettings(req: Request, res: Response) {
     try {
       const payload = req.body;
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return res.status(400).json({ error: 'Settings payload must be an object.' });
+      }
+
+      const timestamp = new Date();
+
       for (const [key, value] of Object.entries(payload)) {
-        await this.runtime.db.upsert(SystemConstants.TABLE.META, {
+        const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
+        const existing = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
+
+        if (existing) {
+          await this.runtime.db.update(SystemConstants.TABLE.META, { key }, {
+            value: serializedValue,
+            updated_at: timestamp,
+          });
+          continue;
+        }
+
+        await this.runtime.db.insert(SystemConstants.TABLE.META, {
           key,
-          value: typeof value === 'string' ? value : JSON.stringify(value),
-          updated_at: new Date(),
-        }, {
-          target: 'key',
-          set: {
-            value: typeof value === 'string' ? value : JSON.stringify(value),
-            updated_at: new Date(),
-          },
+          value: serializedValue,
+          updated_at: timestamp,
         });
       }
+
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
