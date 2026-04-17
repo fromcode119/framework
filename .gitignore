@@ -16,6 +16,8 @@ packages/*/src/**/*.js
 packages/*/src/**/*.js.map
 packages/*/src/**/*.d.ts
 packages/*/src/**/*.d.ts.map
+!packages/sdk/src/react/react-shim.d.ts
+!packages/sdk/src/admin/admin-components-shim.d.ts
 **/bundle.js
 **/bundle.js.map
 **/ui/*.css
