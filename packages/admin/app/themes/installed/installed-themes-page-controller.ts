@@ -9,6 +9,7 @@ import type {
   InstalledThemeManifest,
   InstalledThemesPageModel,
 } from './installed-themes-page.interfaces';
+import { InstalledThemesUploadService } from './installed-themes-upload-service';
 
 export class InstalledThemesPageController {
   private static readonly ARCHIVE_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
@@ -24,15 +25,17 @@ export class InstalledThemesPageController {
     const [isInspectingUpload, setIsInspectingUpload] = useState(false);
     const [isDropActive, setIsDropActive] = useState(false);
     const [pendingUploadId, setPendingUploadId] = useState<string | null>(null);
+    const [uploadProgressLabel, setUploadProgressLabel] = useState<string | null>(null);
+    const [uploadProgressPercent, setUploadProgressPercent] = useState<number | null>(null);
     const [showUploadPreview, setShowUploadPreview] = useState(false);
     const [uploadPreviewTitle, setUploadPreviewTitle] = useState('');
     const [uploadPreviewDescription, setUploadPreviewDescription] = useState('');
     const [uploadPreviewSections, setUploadPreviewSections] = useState<UploadPreviewSection[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const isSupportedArchive = (file?: File | null): boolean => {
-      const normalized = String(file?.name || '').trim().toLowerCase();
-      return normalized.endsWith('.zip') || normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz');
+    const clearUploadProgress = () => {
+      setUploadProgressLabel(null);
+      setUploadProgressPercent(null);
     };
 
     const fetchThemes = async () => {
@@ -54,33 +57,6 @@ export class InstalledThemesPageController {
       }
     };
 
-    const stageThemeFile = async (file: File): Promise<string> => {
-      const estimatedChunkSize = InstalledThemesPageController.ARCHIVE_CHUNK_SIZE_BYTES;
-      const estimatedTotalChunks = Math.max(1, Math.ceil(file.size / estimatedChunkSize));
-      const session = await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.UPLOAD_SESSION, {
-        originalFilename: file.name,
-        totalSizeBytes: file.size,
-        totalChunks: estimatedTotalChunks,
-      }) as { uploadId?: string; chunkSizeBytes?: number; totalChunks?: number };
-      const uploadId = String(session?.uploadId || '').trim();
-      if (!uploadId) {
-        throw new Error('Upload session could not be created.');
-      }
-      const chunkSizeBytes = Math.max(1, Number(session?.chunkSizeBytes || estimatedChunkSize));
-      const totalChunks = Math.max(1, Number(session?.totalChunks || estimatedTotalChunks));
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
-        const chunkStart = chunkIndex * chunkSizeBytes;
-        const chunkEnd = Math.min(file.size, chunkStart + chunkSizeBytes);
-        const formData = new FormData();
-        formData.append('chunk', file.slice(chunkStart, chunkEnd), `${file.name}.part-${chunkIndex}`);
-        formData.append('uploadId', uploadId);
-        formData.append('chunkIndex', String(chunkIndex));
-        formData.append('totalChunks', String(totalChunks));
-        await AdminApi.upload(AdminConstants.ENDPOINTS.THEMES.UPLOAD_CHUNK, formData);
-      }
-      return uploadId;
-    };
-
     const uploadThemeFile = async (uploadId?: string | null) => {
       if (!uploadId) return;
 
@@ -94,12 +70,13 @@ export class InstalledThemesPageController {
         notify('error', 'Upload Failed', error.message);
       } finally {
         setIsUploading(false);
+        clearUploadProgress();
       }
     };
 
     const inspectThemeFile = async (file?: File | null) => {
       if (!file) return;
-      if (!isSupportedArchive(file)) {
+      if (!InstalledThemesUploadService.isSupportedArchive(file)) {
         notify('error', 'Upload Failed', 'Only .zip or .tar.gz theme packages are supported.');
         return;
       }
@@ -107,42 +84,24 @@ export class InstalledThemesPageController {
       setIsInspectingUpload(true);
 
       try {
-        const uploadId = await stageThemeFile(file);
+        const uploadId = await InstalledThemesUploadService.stageArchive(file, {
+          chunkSizeBytes: InstalledThemesPageController.ARCHIVE_CHUNK_SIZE_BYTES,
+          onProgress: (label, percent) => {
+            setUploadProgressLabel(label);
+            setUploadProgressPercent(percent);
+          },
+        });
         const response = await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.UPLOAD_SESSION_INSPECT, { uploadId });
         const info = (response as any)?.info || {};
-        const dependencies = Array.isArray(info.dependencies) ? info.dependencies : [];
-        const bundled = Array.isArray(info.bundledPlugins) ? info.bundledPlugins : [];
-        const existing = info.existing || { installed: false };
         setUploadPreviewTitle(`Install theme "${info.name || info.slug || 'package'}"?`);
         setUploadPreviewDescription('Review theme contents before continuing.');
-        setUploadPreviewSections([
-          { title: 'Summary', items: [`Name: ${info.name || 'Unknown'}`, `Slug: ${info.slug || 'Unknown'}`, `Version: ${info.version || 'Unknown'}`, `Files: ${info.files ?? 'Unknown'}`] },
-          {
-            title: 'Bundled Plugins',
-            items: bundled.length
-              ? bundled.map((plugin: any) => {
-                if (plugin?.pluginSlug) {
-                  const version = plugin?.pluginVersion ? ` v${plugin.pluginVersion}` : '';
-                  const name = plugin?.pluginName ? `${plugin.pluginName} (${plugin.pluginSlug})` : plugin.pluginSlug;
-                  return `${name}${version} from ${plugin.archive}`;
-                }
-                return plugin?.archive || 'Unknown bundled plugin archive';
-              })
-              : ['No bundled plugin archives detected'],
-          },
-          { title: 'Required Marketplace Plugins', items: dependencies.length ? dependencies : ['No required marketplace plugins'] },
-          {
-            title: 'Install Impact',
-            items: existing.installed
-              ? [`This will replace installed theme "${info.slug}".`, `Current version: ${existing.version || 'Unknown'} (${existing.state || 'unknown'})`, `Incoming version: ${info.version || 'Unknown'}`]
-              : ['This theme is not currently installed.'],
-          },
-        ]);
+        setUploadPreviewSections(InstalledThemesUploadService.buildPreviewSections(info));
         setPendingUploadId(uploadId);
         setShowUploadPreview(true);
       } catch (error: any) {
         setPendingUploadId(null);
         notify('error', 'Inspect Failed', error.message || 'Could not inspect theme package.');
+        clearUploadProgress();
       } finally {
         setIsInspectingUpload(false);
       }
@@ -157,6 +116,7 @@ export class InstalledThemesPageController {
         if (isUploading) return;
         setShowUploadPreview(false);
         setPendingUploadId(null);
+        clearUploadProgress();
       },
       confirmUploadPreview: async () => {
         if (!pendingUploadId) return;
@@ -245,6 +205,8 @@ export class InstalledThemesPageController {
       showUploadPreview,
       themes,
       themeMode: theme,
+      uploadProgressLabel,
+      uploadProgressPercent,
       uploadPreviewDescription,
       uploadPreviewSections,
       uploadPreviewTitle,
