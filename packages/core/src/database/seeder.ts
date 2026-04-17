@@ -21,12 +21,14 @@ export class Seeder {
     
     try {
       let loadedModule: any;
+      const cacheBustedUrl = await this.buildCacheBustedFileUrl(absolutePath);
       try {
         // Keep require first for commonjs and ts-node/tsx hook scenarios.
+        this.clearRequireCache(absolutePath);
         loadedModule = require(absolutePath);
       } catch (requireErr: any) {
         this.logger.warn(`require() failed for seed file, trying dynamic import: ${requireErr.message}`);
-        loadedModule = await import(pathToFileURL(absolutePath).href);
+        loadedModule = await import(cacheBustedUrl);
       }
 
       const resolved = this.resolver.resolveCallable(loadedModule);
@@ -38,5 +40,27 @@ export class Seeder {
       this.logger.error(`Seed failed${suffix}: ${err.message}`);
       throw err;
     }
+  }
+
+  private clearRequireCache(absolutePath: string): void {
+    try {
+      const resolvedPath = require.resolve(absolutePath);
+      delete require.cache[resolvedPath];
+    } catch {
+      // Ignore unresolved entries. This only affects require()-loaded seeds.
+    }
+  }
+
+  private async buildCacheBustedFileUrl(absolutePath: string): Promise<string> {
+    const fileUrl = pathToFileURL(absolutePath);
+
+    try {
+      const stat = await fs.promises.stat(absolutePath);
+      fileUrl.searchParams.set('mtime', String(Math.trunc(Number(stat.mtimeMs || Date.now()))));
+    } catch {
+      fileUrl.searchParams.set('ts', String(Date.now()));
+    }
+
+    return fileUrl.href;
   }
 }
