@@ -107,13 +107,13 @@ export class ThemeInstallerService {
     if (!seeds) return;
     const themePath = this.resolveThemeDirectory(manifest.slug);
     const seedPath = path.resolve(themePath, seeds);
-    if (fs.existsSync(seedPath)) {
-      this.logger.info(`Executing seeds for theme "${manifest.slug}" from ${seedPath}...`);
-      try { await this.seeder.seed(seedPath); }
-      catch (err: any) { this.logger.error(`Failed to execute seeds for theme "${manifest.slug}": ${err.message}`); throw err; }
-    } else {
-      this.logger.warn(`Seed file specified in manifest not found: ${seedPath}`);
+    if (!fs.existsSync(seedPath)) {
+      throw new Error(`Theme "${manifest.slug}" declares seeds at "${seeds}", but the file was not found at ${seedPath}.`);
     }
+
+    this.logger.info(`Executing seeds for theme "${manifest.slug}" from ${seedPath}...`);
+    try { await this.seeder.seed(seedPath); }
+    catch (err: any) { this.logger.error(`Failed to execute seeds for theme "${manifest.slug}": ${err.message}`); throw err; }
   }
 
   // --- Private file helpers ---
