@@ -59,10 +59,16 @@ export class SystemAdminController {
     try {
       const payload = req.body;
       for (const [key, value] of Object.entries(payload)) {
-        await (this.runtime.db as any).findAndUpsert(SystemConstants.TABLE.META, { key }, {
+        await this.runtime.db.upsert(SystemConstants.TABLE.META, {
           key,
           value: typeof value === 'string' ? value : JSON.stringify(value),
-          updatedAt: new Date(),
+          updated_at: new Date(),
+        }, {
+          target: 'key',
+          set: {
+            value: typeof value === 'string' ? value : JSON.stringify(value),
+            updated_at: new Date(),
+          },
         });
       }
       res.json({ success: true });
