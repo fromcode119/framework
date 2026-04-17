@@ -3,9 +3,10 @@
 # Environment variables are injected via Coolify dashboard or a .env file at repo root.
 # All paths are relative to the repo root (project-directory) — required for Coolify compatibility.
 # Set COMPOSE_PROFILES=single-domain in Coolify only when you want the gateway service.
-# Set EXTERNAL_PROXY_NETWORK to the actual Coolify proxy network name.
-# On Coolify hosts, the shared proxy network is typically `coolify` unless
-# overridden explicitly by the environment.
+# Set EXTERNAL_PROXY_NETWORK to the actual Coolify ingress network name.
+# On Coolify, prefer the per-resource network (`COOLIFY_RESOURCE_UUID`) so the
+# proxy can reach the services without joining the global `coolify` network,
+# which can cause hostname collisions (for example `redis`).
 
 services:
   gateway:
@@ -164,7 +165,7 @@ services:
 networks:
   framework:
   proxy:
-    name: ${EXTERNAL_PROXY_NETWORK:-coolify}
+    name: ${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}
     external: true
 
 volumes:
