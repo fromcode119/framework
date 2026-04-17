@@ -82,35 +82,59 @@ export class PluginRegistry {
       collection: (name: string) => {
         if (!this.db) throw new Error(`Database not initialized in PluginRegistry. Cannot access @${slug}/${name}`);
         const resolvedTable = this.resolveEntity(`@${slug}/${name}`);
+
+        const normalizeWhere = (value: any) => NamingStrategy.normalizeWhereClause(value);
+        const normalizeRecord = (value: any) => NamingStrategy.normalizeRecord(value);
+        const isEmptyRecord = (value: any) =>
+          NamingStrategy.isPlainObject(value) && Object.keys(value).length === 0;
         
         return {
           find: (opts: any) => this.db!.find(resolvedTable, NamingStrategy.normalizeFindOptions(opts)),
-          findOne: (where: any) => this.db!.findOne(resolvedTable, NamingStrategy.normalizeWhereClause(where)),
-          insert: (data: any) => this.db!.insert(resolvedTable, NamingStrategy.normalizeRecord(data)),
-          update: (where: any, data: any) => this.db!.update(resolvedTable, NamingStrategy.normalizeWhereClause(where), NamingStrategy.normalizeRecord(data)),
-          delete: (where: any) => this.db!.delete(resolvedTable, NamingStrategy.normalizeWhereClause(where)),
-          count: (where: any) => this.db!.count(resolvedTable, { where: NamingStrategy.normalizeWhereClause(where) }),
+          findOne: (where: any) => this.db!.findOne(resolvedTable, normalizeWhere(where)),
+          insert: (data: any) => this.db!.insert(resolvedTable, normalizeRecord(data)),
+          update: async (where: any, data: any) => {
+            const normalizedWhere = normalizeWhere(where);
+            const normalizedRecord = normalizeRecord(data);
+
+            // Treat empty updates as a no-op so compatibility filters in seeds and
+            // plugin utilities do not fail the whole operation after stripping
+            // unsupported fields for an older schema variant.
+            if (isEmptyRecord(normalizedRecord)) {
+              return this.db!.findOne(resolvedTable, normalizedWhere);
+            }
+
+            return this.db!.update(resolvedTable, normalizedWhere, normalizedRecord);
+          },
+          delete: (where: any) => this.db!.delete(resolvedTable, normalizeWhere(where)),
+          count: (where: any) => this.db!.count(resolvedTable, { where: normalizeWhere(where) }),
           
           // Helper methods
           firstOrCreate: async (where: any, data: any) => {
-            const existing = await this.db!.findOne(resolvedTable, NamingStrategy.normalizeWhereClause(where));
+            const normalizedWhere = normalizeWhere(where);
+            const normalizedRecord = normalizeRecord(data);
+            const existing = await this.db!.findOne(resolvedTable, normalizedWhere);
             if (existing) return { record: existing, created: false };
-            const created = await this.db!.insert(resolvedTable, NamingStrategy.normalizeRecord(data));
+            const created = await this.db!.insert(resolvedTable, normalizedRecord);
             return { record: created, created: true };
           },
           
           updateOrCreate: async (where: any, data: any) => {
-            const existing = await this.db!.findOne(resolvedTable, NamingStrategy.normalizeWhereClause(where));
+            const normalizedWhere = normalizeWhere(where);
+            const normalizedRecord = normalizeRecord(data);
+            const existing = await this.db!.findOne(resolvedTable, normalizedWhere);
             if (existing) {
-              const updated = await this.db!.update(resolvedTable, NamingStrategy.normalizeWhereClause(where), NamingStrategy.normalizeRecord(data));
+              if (isEmptyRecord(normalizedRecord)) {
+                return { record: existing, created: false };
+              }
+              const updated = await this.db!.update(resolvedTable, normalizedWhere, normalizedRecord);
               return { record: updated, created: false };
             }
-            const created = await this.db!.insert(resolvedTable, NamingStrategy.normalizeRecord(data));
+            const created = await this.db!.insert(resolvedTable, normalizedRecord);
             return { record: created, created: true };
           },
           
           findOrFail: async (where: any) => {
-            const record = await this.db!.findOne(resolvedTable, NamingStrategy.normalizeWhereClause(where));
+            const record = await this.db!.findOne(resolvedTable, normalizeWhere(where));
             if (!record) throw new Error(`Record not found in ${resolvedTable} with criteria: ${JSON.stringify(where)}`);
             return record;
           },
