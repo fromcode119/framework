@@ -38,6 +38,8 @@ export interface InstalledThemesViewProps {
   showUploadPreview: boolean;
   themes: InstalledThemeManifest[];
   themeMode: string;
+  uploadProgressLabel: string | null;
+  uploadProgressPercent: number | null;
   uploadPreviewDescription: string;
   uploadPreviewSections: UploadPreviewSection[];
   uploadPreviewTitle: string;
@@ -64,6 +66,8 @@ export interface InstalledThemesPageModel {
   showUploadPreview: boolean;
   themes: InstalledThemeManifest[];
   themeMode: string;
+  uploadProgressLabel: string | null;
+  uploadProgressPercent: number | null;
   uploadPreviewDescription: string;
   uploadPreviewSections: UploadPreviewSection[];
   uploadPreviewTitle: string;

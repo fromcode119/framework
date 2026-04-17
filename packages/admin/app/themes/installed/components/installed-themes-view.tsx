@@ -25,6 +25,8 @@ export default function InstalledThemesView({
   showUploadPreview,
   themes,
   themeMode,
+  uploadProgressLabel,
+  uploadProgressPercent,
   uploadPreviewDescription,
   uploadPreviewSections,
   uploadPreviewTitle,
@@ -42,6 +44,19 @@ export default function InstalledThemesView({
           <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><p className={`text-sm font-medium ${themeMode === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>Drag and drop theme `.zip` or `.tar.gz` here, or click to upload.</p></div>
           <button type="button" onClick={(event) => { event.stopPropagation(); handleUploadClick(); }} disabled={isUploading || isInspectingUpload} className="flex items-center justify-center gap-3 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold uppercase tracking-wider text-[11px] transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] disabled:opacity-50">{isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{isInspectingUpload ? 'Inspecting...' : 'Upload Theme (.zip/.tar.gz)'}</span></button>
         </div>
+        {uploadProgressLabel ? (
+          <div className="mt-4 space-y-2">
+            <div className={`h-2 overflow-hidden rounded-full ${themeMode === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
+              <div
+                className="h-full rounded-full bg-indigo-600 transition-all duration-200"
+                style={{ width: `${Math.max(4, Math.min(uploadProgressPercent ?? 0, 100))}%` }}
+              />
+            </div>
+            <p className={`text-xs font-medium ${themeMode === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+              {uploadProgressLabel}
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 min-[1400px]:grid-cols-3 gap-6">

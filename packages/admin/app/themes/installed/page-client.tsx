@@ -27,6 +27,8 @@ export default function InstalledThemesPageClient() {
       showUploadPreview={model.showUploadPreview}
       themes={model.themes}
       themeMode={model.themeMode}
+      uploadProgressLabel={model.uploadProgressLabel}
+      uploadProgressPercent={model.uploadProgressPercent}
       uploadPreviewDescription={model.uploadPreviewDescription}
       uploadPreviewSections={model.uploadPreviewSections}
       uploadPreviewTitle={model.uploadPreviewTitle}
