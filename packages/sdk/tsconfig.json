@@ -21,6 +21,7 @@
   },
   "include": ["src/**/*"],
   "references": [
+    { "path": "../database" },
     { "path": "../core" },
     { "path": "../marketplace-client" }
   ]
