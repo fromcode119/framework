@@ -5,11 +5,13 @@ import path from 'path';
 import { ArchiveUploadSessionService, BackupService, PluginManager, Logger } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
 import AdmZip from 'adm-zip';
+import { PluginInstallOperationService } from '../../services/plugin-install-operation-service';
 
 export class PluginController {
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'plugin-controller' });
+  private operations = PluginInstallOperationService.getInstance();
 
   constructor(private manager: PluginManager) {}
 
@@ -146,22 +148,36 @@ export class PluginController {
     this.logger.info(`Installation request received for plugin: ${slug}`);
 
     try {
-      const manifest = await this.manager.installOrUpdateFromMarketplace(slug);
-
-      const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
-      if (plugin && plugin.state !== 'active') {
-        try {
-          await this.manager.enable(slug);
-        } catch (enableErr: any) {
-          this.logger.warn(`Plugin ${slug} installed but failed to auto-enable: ${enableErr.message}`);
-        }
+      const marketplacePlugin = await this.manager.marketplace.getPluginInfo(slug);
+      if (!marketplacePlugin) {
+        return res.status(404).json({ error: `Plugin "${slug}" not found in marketplace.` });
       }
 
-      res.json({ success: true, manifest });
+      const operation = this.operations.start(slug, 'marketplace install', async (reportProgress) => {
+        await this.manager.installOrUpdateFromMarketplace(slug, {
+          enable: true,
+          progressReporter: reportProgress,
+        });
+      });
+
+      res.status(202).json({
+        success: true,
+        operationId: operation.id,
+        dependencies: Object.keys(marketplacePlugin.dependencies || {}),
+      });
     } catch (err: any) {
       this.logger.error(`Failed to install plugin ${slug}: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
+  }
+
+  async installOperation(req: Request, res: Response) {
+    const operation = this.operations.get(String(req.params.operationId || ''));
+    if (!operation) {
+      return res.status(404).json({ error: 'Plugin install operation not found.' });
+    }
+
+    res.json({ success: true, operation });
   }
 
   async logs(req: Request, res: Response) {
@@ -184,14 +200,20 @@ export class PluginController {
   async upload(req: any, res: Response) {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     try {
-      const manifest = await this.manager.installFromZip(req.file.path);
-      await this.manager.discoverPlugins();
-      try {
-        await this.manager.enable(manifest.slug);
-      } catch (enableErr: any) {
-        this.logger.warn(`Uploaded plugin ${manifest.slug} failed to auto-enable: ${enableErr.message}`);
-      }
-      res.json({ success: true });
+      const detachedArchivePath = this.createDetachedArchiveCopy(req.file.path, req.file.originalname);
+      const operation = this.operations.start('upload', 'archive install', async (reportProgress) => {
+        try {
+          await this.manager.installUploadedPluginArchive(detachedArchivePath, {
+            enable: true,
+            progressReporter: reportProgress,
+          });
+        } finally {
+          if (fs.existsSync(detachedArchivePath)) {
+            fs.unlinkSync(detachedArchivePath);
+          }
+        }
+      });
+      res.status(202).json({ success: true, operationId: operation.id });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     } finally {
@@ -254,14 +276,20 @@ export class PluginController {
     try {
       uploadId = this.readUploadId(req.body);
       const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
-      const manifest = await this.manager.installFromZip(uploadedArchive.filePath);
-      await this.manager.discoverPlugins();
-      try {
-        await this.manager.enable(manifest.slug);
-      } catch (enableErr: any) {
-        this.logger.warn(`Uploaded plugin ${manifest.slug} failed to auto-enable: ${enableErr.message}`);
-      }
-      res.json({ success: true, manifest });
+      const detachedArchivePath = this.createDetachedArchiveCopy(uploadedArchive.filePath, uploadedArchive.originalFilename);
+      const operation = this.operations.start('upload', 'archive install', async (reportProgress) => {
+        try {
+          await this.manager.installUploadedPluginArchive(detachedArchivePath, {
+            enable: true,
+            progressReporter: reportProgress,
+          });
+        } finally {
+          if (fs.existsSync(detachedArchivePath)) {
+            fs.unlinkSync(detachedArchivePath);
+          }
+        }
+      });
+      res.status(202).json({ success: true, operationId: operation.id });
     } catch (err: any) {
       res.status(err?.statusCode || 500).json({ error: err.message || 'Could not install plugin package.' });
     } finally {
@@ -430,6 +458,13 @@ export class PluginController {
         return normalizedVersion ? `${normalizedDependency} (${normalizedVersion})` : normalizedDependency;
       })
       .filter(Boolean);
+  }
+
+  private createDetachedArchiveCopy(sourceFilePath: string, originalFilename?: string): string {
+    const extension = path.extname(String(originalFilename || sourceFilePath || '').trim()) || '.bin';
+    const detachedPath = path.join(os.tmpdir(), `fromcode-plugin-install-${Date.now()}-${Math.random().toString(16).slice(2)}${extension}`);
+    fs.copyFileSync(sourceFilePath, detachedPath);
+    return detachedPath;
   }
 
   private readUploadSessionRequest(body: unknown): { originalFilename: string; totalSizeBytes: number; totalChunks: number } {

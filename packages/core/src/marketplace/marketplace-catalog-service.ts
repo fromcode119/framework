@@ -5,6 +5,7 @@ import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-c
 import path from 'path';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
+import type { PluginInstallProgressReporter } from '../plugin/plugin-installation.interfaces';
 
 export class MarketplaceCatalogService {
   private logger = new Logger({ namespace: 'marketplace' });
@@ -70,7 +71,7 @@ export class MarketplaceCatalogService {
   /**
    * Download and install a plugin from the marketplace, including its dependencies
    */
-  public async downloadAndInstall(slug: string, visited: Set<string> = new Set()): Promise<PluginManifest> {
+  public async downloadAndInstall(slug: string, visited: Set<string> = new Set(), progressReporter?: PluginInstallProgressReporter): Promise<PluginManifest> {
     if (!this.client) {
       throw new Error('Marketplace is disabled.');
     }
@@ -91,12 +92,24 @@ export class MarketplaceCatalogService {
       throw new Error(`Plugin "${slug}" not found in marketplace catalog.`);
     }
 
+    progressReporter?.({
+      phase: 'resolving-marketplace-package',
+      message: `Preparing marketplace package "${slug}"...`,
+      pluginSlug: slug,
+    });
+
     // 1. Resolve and install dependencies first
     if (plugin.dependencies && Object.keys(plugin.dependencies).length > 0) {
       this.logger.info(`Installing dependencies for ${slug}: ${Object.keys(plugin.dependencies).join(', ')}`);
       for (const depSlug of Object.keys(plugin.dependencies)) {
         try {
-          await this.downloadAndInstall(depSlug, visited);
+          progressReporter?.({
+            phase: 'installing-dependency',
+            message: `Installing dependency "${depSlug}" required by "${slug}"...`,
+            pluginSlug: slug,
+            dependencySlug: depSlug,
+          });
+          await this.downloadAndInstall(depSlug, visited, progressReporter);
         } catch (err: any) {
           this.logger.error(`Dependency "${depSlug}" failed for "${slug}": ${err.message}`);
           throw new Error(`Failed to install dependency "${depSlug}" for plugin "${slug}": ${err.message}`);
@@ -118,6 +131,11 @@ export class MarketplaceCatalogService {
 
     try {
       this.logger.debug(`Downloading from ${downloadUrl}...`);
+      progressReporter?.({
+        phase: 'downloading-package',
+        message: `Downloading "${slug}" from marketplace...`,
+        pluginSlug: slug,
+      });
       const response = await fetch(downloadUrl);
       
       if (!response.ok) {
@@ -132,6 +150,11 @@ export class MarketplaceCatalogService {
       // @ts-ignore - native fetch body is not exactly same as node streams but pipeline handles it in Node 18+
       await pipeline(response.body, fileStream);
 
+      progressReporter?.({
+        phase: 'extracting-package',
+        message: `Extracting "${slug}" package...`,
+        pluginSlug: slug,
+      });
       const manifest = await this.discovery.installFromZip(tempZipPath);
       this.manifestCache.set(slug, manifest);
       this.logger.info(`Successfully installed plugin: ${slug} (v${manifest.version})`);

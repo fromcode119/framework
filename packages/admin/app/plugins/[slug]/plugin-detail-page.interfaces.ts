@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
 import type { LoadedPlugin } from '@fromcode119/core/client';
 import type { PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form.interfaces';
+import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
 
 export type PluginDetailTab = 'overview' | 'settings' | 'permissions' | 'resources';
 
@@ -14,6 +15,7 @@ export interface PluginLogEntry {
 export interface PluginMarketplaceItem {
   slug: string;
   version: string;
+  dependencies?: Record<string, string>;
   changelog?: string[];
 }
 
@@ -86,6 +88,7 @@ export interface PluginDetailViewProps {
   isDeleting: boolean;
   isSaving: boolean;
   isUpdating: boolean;
+  installOperation: PluginInstallOperation | null;
   loadingLogs: boolean;
   logs: PluginLogEntry[];
   marketplaceItem: PluginMarketplaceItem | null;
@@ -123,6 +126,7 @@ export interface PluginDetailPageModel {
   isDeleting: boolean;
   isSaving: boolean;
   isUpdating: boolean;
+  installOperation: PluginInstallOperation | null;
   loading: boolean;
   loadingLogs: boolean;
   logs: PluginLogEntry[];

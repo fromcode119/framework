@@ -1,6 +1,7 @@
 import type { LoadedPlugin } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
+import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import type {
   PluginDetailTab,
   PluginLogEntry,
@@ -54,8 +55,8 @@ export class PluginDetailPageService {
     return { ...PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS };
   }
 
-  static async updatePlugin(slug: string): Promise<void> {
-    await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug));
+  static async updatePlugin(slug: string): Promise<{ operationId: string; dependencies: string[] }> {
+    return PluginInstallOperationService.startMarketplaceInstall(slug);
   }
 
   static async togglePlugin(slug: string, enabled: boolean): Promise<void> {

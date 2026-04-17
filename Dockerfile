@@ -56,7 +56,11 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 # ===================================
 FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
+ARG NEXT_PUBLIC_API_VERSION=v1
+ARG API_VERSION_PREFIX=v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_VERSION=$NEXT_PUBLIC_API_VERSION
+ENV API_VERSION_PREFIX=$API_VERSION_PREFIX
 # Verify @fromcode119 workspace symlinks were created by npm install
 RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode119/ && echo "--- Node version ---" && node --version
 # Five separate RUN steps so each process fully releases memory before the
@@ -71,25 +75,31 @@ RUN ./node_modules/.bin/tsc -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:api FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:api OK ==="
 
-# Step 2: Build React package required by the AI extension.
+# Step 2: Build SDK package used by plugin backend entrypoints at runtime.
+RUN npm run build --workspace=@fromcode119/sdk > /tmp/build-sdk.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-sdk.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:sdk FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:sdk OK ==="
+
+# Step 3: Build React package required by the AI extension.
 RUN npm run build --workspace=@fromcode119/react > /tmp/build-react.log 2>&1; ec=$?; \
     tail -80 /tmp/build-react.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:react FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:react OK ==="
 
-# Step 3: Build AI extension.
+# Step 4: Build AI extension.
 RUN npm run build --workspace=@fromcode119/ai > /tmp/build-ai.log 2>&1; ec=$?; \
     tail -80 /tmp/build-ai.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:ai FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:ai OK ==="
 
-# Step 4: Build admin UI
+# Step 5: Build admin UI
 RUN npm run build:admin > /tmp/build-admin.log 2>&1; ec=$?; \
     tail -80 /tmp/build-admin.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:admin FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:admin OK ==="
 
-# Step 5: Build frontend
+# Step 6: Build frontend
 RUN npm run build:frontend > /tmp/build-frontend.log 2>&1; ec=$?; \
     tail -80 /tmp/build-frontend.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:frontend FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \

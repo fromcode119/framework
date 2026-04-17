@@ -26,7 +26,8 @@ export class ReactExportSourceBuilder {
   ];
 
   static buildReactExportSource(bridge: Record<string, unknown>, reactModuleAccessor: string): string {
-    const reactBridgeAccessor = `${reactModuleAccessor} || window.Fromcode`;
+    const scopedReactModuleAccessor = `(${reactModuleAccessor})`;
+    const reactBridgeAccessor = `${scopedReactModuleAccessor} || window.Fromcode`;
     return (
       Object.keys(bridge)
         .filter((key) => {
@@ -37,22 +38,23 @@ export class ReactExportSourceBuilder {
         })
         // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
         // when this data URL module is evaluated (e.g. timing race during bundle load).
-        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
+        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
         .join('\n') +
-      ReactExportSourceBuilder.buildGroupedExports(reactModuleAccessor) +
+      ReactExportSourceBuilder.buildGroupedExports(scopedReactModuleAccessor) +
       `export default ${reactBridgeAccessor};`
     );
   }
 
   static buildSdkReactExportSource(reactModuleAccessor: string): string {
-    const reactBridgeAccessor = `${reactModuleAccessor} || window.Fromcode`;
+    const scopedReactModuleAccessor = `(${reactModuleAccessor})`;
+    const reactBridgeAccessor = `${scopedReactModuleAccessor} || window.Fromcode`;
     return (
       ReactExportSourceBuilder.SDK_REACT_EXPORT_KEYS
         // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
         // when this data URL module is evaluated (e.g. timing race during bundle load).
-        .map((key) => `export const ${key} = ${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
+        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
         .join('\n') +
-      ReactExportSourceBuilder.buildGroupedExports(reactModuleAccessor) +
+      ReactExportSourceBuilder.buildGroupedExports(scopedReactModuleAccessor) +
       `export default ${reactBridgeAccessor};`
     );
   }

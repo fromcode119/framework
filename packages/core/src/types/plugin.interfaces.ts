@@ -2,15 +2,18 @@ import { IDatabaseManager, IMediaManager, IEmailManager, ICacheManager } from '.
 import { Collection, PluginSettingsSchema } from './schema.interfaces';
 import { PluginManifest, MiddlewareConfig } from './manifests.interfaces';
 import { PluginCapability } from './enums.enums';
+import type { PluginHealthProbeResult } from '../plugin-health-route-handler.interfaces';
 
 export interface PluginContext {
   readonly db: IDatabaseManager;
   readonly api: {
     get(path: string, ...handlers: any[]): void;
+    health(probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>): void;
     post(path: string, ...handlers: any[]): void;
     put(path: string, ...handlers: any[]): void;
     delete(path: string, ...handlers: any[]): void;
     patch(path: string, ...handlers: any[]): void;
+    status(probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>): void;
     use(path: string, ...handlers: any[]): void;
     registerMiddleware(config: MiddlewareConfig): void;
   };

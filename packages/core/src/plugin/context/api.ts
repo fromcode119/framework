@@ -1,6 +1,9 @@
 import { LoadedPlugin, MiddlewareConfig } from '../../types';
 import { Logger } from '../../logging';
+import { PluginHealthRouteHandler } from '../../plugin-health-route-handler';
+import { RouteConstants } from '../../route-constants';
 import type { PluginManagerInterface } from './utils.interfaces';
+import type { PluginHealthProbeResult } from '../../plugin-health-route-handler.interfaces';
 import { ContextSecurityProxy } from './utils';
 import { RateLimiter } from '../../security/rate-limiter';
 
@@ -63,10 +66,22 @@ export class ApiContextProxy {
 
       return {
         get: createApiWrapper('get'),
+        health: (probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>) => {
+          createApiWrapper('get')(
+            RouteConstants.SEGMENTS.HEALTH,
+            PluginHealthRouteHandler.createForPlugin(plugin.manifest, probe),
+          );
+        },
         post: createApiWrapper('post'),
         put: createApiWrapper('put'),
         delete: createApiWrapper('delete'),
         patch: createApiWrapper('patch'),
+        status: (probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>) => {
+          createApiWrapper('get')(
+            RouteConstants.SEGMENTS.STATUS,
+            PluginHealthRouteHandler.createForPlugin(plugin.manifest, probe),
+          );
+        },
         use: createApiWrapper('use'),
         registerMiddleware: (config: MiddlewareConfig) => {
           if (!hasCapability('api')) {

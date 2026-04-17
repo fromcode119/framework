@@ -38,8 +38,10 @@ npm run dev:local
 1. In Coolify, create a new **Docker Compose** resource from public repository `https://github.com/fromcode119/framework`
 2. Set **Docker Compose Location** to `deploy/docker-compose.full-stack.yml`
 3. Set required environment variables: `API_URL`, `POSTGRES_PASSWORD`, `JWT_SECRET`, `POSTGRES_USER`, `POSTGRES_DB`
-4. Add a GitHub webhook: repo → Settings → Webhooks → Payload URL from Coolify → `application/json` → push event
-5. Deploy
+4. Set `EXTERNAL_PROXY_NETWORK` to the actual Coolify proxy network name on your server. Do not rely on `docker_web` unless your host really uses that network name.
+5. If you want the single-domain gateway service enabled, set `COMPOSE_PROFILES=single-domain`. Leave it unset when you want the API, admin, and frontend exposed separately.
+6. Add a GitHub webhook: repo → Settings → Webhooks → Payload URL from Coolify → `application/json` → push event
+7. Deploy
 
 ---
 
@@ -194,22 +196,29 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
 #### 2. Create a new service
 
 1. Go to your Coolify dashboard → **New Resource** → **Docker Compose**
-2. Point it to the `docker-compose.yml` at the repo root
+2. Point it to `deploy/docker-compose.full-stack.yml`
 3. Set all required **Environment Variables** in the Coolify dashboard
+4. Set `EXTERNAL_PROXY_NETWORK` to the actual Coolify proxy network name on the host
+5. Set `COMPOSE_PROFILES=single-domain` only if you want the gateway service enabled
 
-#### 3. Set the deployment mode
+#### 3. Choose the routing shape
 
-Configure `DEPLOYMENT_MODE` in Coolify environment variables:
+Use the compose profile to decide whether Coolify runs the single-domain gateway:
 
-| Mode | Value | What runs |
-|------|-------|-----------|
-| Full Stack | `full` | API + Admin + Frontend |
-| API + Admin | `api-admin` | API + Admin only |
-| API Only | `api` | Bare API — headless |
+| Mode | Env | What runs |
+|------|-----|-----------|
+| Single domain | `COMPOSE_PROFILES=single-domain` | Gateway + API + Admin + Frontend |
+| Split services | unset `COMPOSE_PROFILES` | API + Admin + Frontend without gateway |
 
 #### 4. Deploy
 
 Click **Deploy** in Coolify. Fromcode will install plugin dependencies, run migrations, and start. Coolify handles zero-downtime rolling updates and automatic TLS provisioning.
+
+#### 5. Notes for proxy networking
+
+- The full-stack compose file joins an external proxy network using `EXTERNAL_PROXY_NETWORK`.
+- The default fallback is `docker_web` for existing local/server setups, but Coolify commonly uses a different network name.
+- If the proxy network name is wrong, containers will start but Coolify routing will not attach correctly.
 
 </details>
 
