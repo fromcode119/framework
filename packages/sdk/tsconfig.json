@@ -6,6 +6,7 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
+      "@/*": ["../admin/*"],
       "@fromcode119/core": ["../core/src"],
       "@fromcode119/core/client": ["../core/src/client.ts"],
       "@fromcode119/core/*": ["../core/src/*"],
