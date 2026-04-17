@@ -43,6 +43,8 @@ export default function InstalledPluginsView({
   targetPlugin,
   theme,
   toggleDependencies,
+  uploadProgressLabel,
+  uploadProgressPercent,
   uploadPreviewDescription,
   uploadPreviewSections,
   uploadPreviewTitle,
@@ -62,6 +64,19 @@ export default function InstalledPluginsView({
           </div>
           <div onClick={handleUploadClick} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} className={`cursor-pointer rounded-2xl border-2 border-dashed px-6 py-5 transition-all ${isDropActive ? (theme === 'dark' ? 'border-indigo-400 bg-indigo-500/10' : 'border-indigo-500 bg-indigo-50') : (theme === 'dark' ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')}`}>
             <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>Drag and drop plugin `.zip` or `.tar.gz` here, or click to upload.</p></div>
+            {uploadProgressLabel ? (
+              <div className="mt-4 space-y-2">
+                <div className={`h-2 overflow-hidden rounded-full ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div
+                    className="h-full rounded-full bg-indigo-600 transition-all duration-200"
+                    style={{ width: `${Math.max(4, Math.min(uploadProgressPercent ?? 0, 100))}%` }}
+                  />
+                </div>
+                <p className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {uploadProgressLabel}
+                </p>
+              </div>
+            ) : null}
           </div>
           <div className="grid grid-cols-1 gap-6">
             {filteredPlugins.length === 0 ? <div className="col-span-full py-20 text-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800"><div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow"><FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" /></div><h3 className={`text-xl font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>No plugins found</h3><p className="text-slate-500 font-medium">Try a different search term or upload a new plugin.</p></div> : filteredPlugins.map((plugin) => <InstalledPluginCard key={plugin.manifest.slug} hasImageError={imageErrors[plugin.manifest.slug] ?? false} hasUpdate={hasPluginUpdate(plugin)} isDark={theme === 'dark'} onDelete={onDeletePrompt} onImageError={markImageError} onToggle={handleToggle} plugin={plugin} />)}

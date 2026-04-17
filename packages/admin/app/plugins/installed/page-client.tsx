@@ -42,6 +42,8 @@ export default function InstalledPluginsPageClient() {
       targetPlugin={model.targetPlugin}
       theme={model.theme}
       toggleDependencies={model.toggleDependencies}
+      uploadProgressLabel={model.uploadProgressLabel}
+      uploadProgressPercent={model.uploadProgressPercent}
       uploadPreviewDescription={model.uploadPreviewDescription}
       uploadPreviewSections={model.uploadPreviewSections}
       uploadPreviewTitle={model.uploadPreviewTitle}

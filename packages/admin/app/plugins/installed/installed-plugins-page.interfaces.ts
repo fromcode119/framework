@@ -55,6 +55,8 @@ export interface InstalledPluginsViewProps {
   targetPlugin: string | null;
   theme: string;
   toggleDependencies: (recursive: boolean, force: boolean) => Promise<void>;
+  uploadProgressLabel: string | null;
+  uploadProgressPercent: number | null;
   uploadPreviewDescription: string;
   uploadPreviewSections: UploadPreviewSection[];
   uploadPreviewTitle: string;
@@ -95,6 +97,8 @@ export interface InstalledPluginsPageModel {
   targetPlugin: string | null;
   theme: string;
   toggleDependencies: (recursive: boolean, force: boolean) => Promise<void>;
+  uploadProgressLabel: string | null;
+  uploadProgressPercent: number | null;
   uploadPreviewDescription: string;
   uploadPreviewSections: UploadPreviewSection[];
   uploadPreviewTitle: string;

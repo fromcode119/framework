@@ -13,6 +13,7 @@ import type {
   InstalledPluginMarketplaceItem,
   InstalledPluginsPageModel,
 } from './installed-plugins-page.interfaces';
+import { InstalledPluginsUploadService } from './installed-plugins-upload-service';
 
 export class InstalledPluginsPageController {
   private static readonly ARCHIVE_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
@@ -36,6 +37,8 @@ export class InstalledPluginsPageController {
     const [isInspectingUpload, setIsInspectingUpload] = useState(false);
     const [isDropActive, setIsDropActive] = useState(false);
     const [pendingUploadId, setPendingUploadId] = useState<string | null>(null);
+    const [uploadProgressLabel, setUploadProgressLabel] = useState<string | null>(null);
+    const [uploadProgressPercent, setUploadProgressPercent] = useState<number | null>(null);
     const [showUploadPreview, setShowUploadPreview] = useState(false);
     const [uploadPreviewTitle, setUploadPreviewTitle] = useState('');
     const [uploadPreviewDescription, setUploadPreviewDescription] = useState('');
@@ -44,9 +47,9 @@ export class InstalledPluginsPageController {
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const isSupportedArchive = (file?: File | null): boolean => {
-      const normalized = String(file?.name || '').trim().toLowerCase();
-      return normalized.endsWith('.zip') || normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz');
+    const clearUploadProgress = () => {
+      setUploadProgressLabel(null);
+      setUploadProgressPercent(null);
     };
 
     const fetchPlugins = async () => {
@@ -75,33 +78,6 @@ export class InstalledPluginsPageController {
       }
     };
 
-    const stagePluginFile = async (file: File): Promise<string> => {
-      const estimatedChunkSize = InstalledPluginsPageController.ARCHIVE_CHUNK_SIZE_BYTES;
-      const estimatedTotalChunks = Math.max(1, Math.ceil(file.size / estimatedChunkSize));
-      const session = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.UPLOAD_SESSION, {
-        originalFilename: file.name,
-        totalSizeBytes: file.size,
-        totalChunks: estimatedTotalChunks,
-      }) as { uploadId?: string; chunkSizeBytes?: number; totalChunks?: number };
-      const uploadId = String(session?.uploadId || '').trim();
-      if (!uploadId) {
-        throw new Error('Upload session could not be created.');
-      }
-      const chunkSizeBytes = Math.max(1, Number(session?.chunkSizeBytes || estimatedChunkSize));
-      const totalChunks = Math.max(1, Number(session?.totalChunks || estimatedTotalChunks));
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
-        const chunkStart = chunkIndex * chunkSizeBytes;
-        const chunkEnd = Math.min(file.size, chunkStart + chunkSizeBytes);
-        const formData = new FormData();
-        formData.append('chunk', file.slice(chunkStart, chunkEnd), `${file.name}.part-${chunkIndex}`);
-        formData.append('uploadId', uploadId);
-        formData.append('chunkIndex', String(chunkIndex));
-        formData.append('totalChunks', String(totalChunks));
-        await AdminApi.upload(AdminConstants.ENDPOINTS.PLUGINS.UPLOAD_CHUNK, formData);
-      }
-      return uploadId;
-    };
-
     const uploadPluginFile = async (uploadId?: string | null) => {
       if (!uploadId) return;
 
@@ -116,12 +92,13 @@ export class InstalledPluginsPageController {
       } finally {
         setOperationStatus(null);
         setIsUploading(false);
+        clearUploadProgress();
       }
     };
 
     const inspectPluginFile = async (file?: File | null) => {
       if (!file) return;
-      if (!isSupportedArchive(file)) {
+      if (!InstalledPluginsUploadService.isSupportedArchive(file)) {
         notify('error', 'Upload Failed', 'Only .zip or .tar.gz plugin packages are supported.');
         return;
       }
@@ -129,31 +106,25 @@ export class InstalledPluginsPageController {
       setIsInspectingUpload(true);
 
       try {
-        const uploadId = await stagePluginFile(file);
+        const uploadId = await InstalledPluginsUploadService.stageArchive(file, {
+          chunkSizeBytes: InstalledPluginsPageController.ARCHIVE_CHUNK_SIZE_BYTES,
+          onProgress: (label, percent) => {
+            setUploadProgressLabel(label);
+            setUploadProgressPercent(percent);
+          },
+        });
         const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.UPLOAD_SESSION_INSPECT, { uploadId });
         const info = (response as any)?.info || {};
-        const dependencies = Array.isArray(info.dependencies) ? info.dependencies : [];
-        const peerDependencies = Array.isArray(info.peerDependencies) ? info.peerDependencies : [];
-        const existing = info.existing || { installed: false };
 
         setUploadPreviewTitle(`Install plugin "${info.name || info.slug || 'package'}"?`);
         setUploadPreviewDescription('Review package contents before continuing.');
-        setUploadPreviewSections([
-          { title: 'Summary', items: [`Name: ${info.name || 'Unknown'}`, `Slug: ${info.slug || 'Unknown'}`, `Version: ${info.version || 'Unknown'}`, `Files: ${info.files ?? 'Unknown'}`, `UI bundle: ${info.hasUiBundle ? 'Yes' : 'No'}`] },
-          { title: 'Dependencies', items: dependencies.length ? dependencies : ['No required plugin dependencies'] },
-          { title: 'Peer Dependencies', items: peerDependencies.length ? peerDependencies : ['No peer dependencies'] },
-          {
-            title: 'Install Impact',
-            items: existing.installed
-              ? [`This will replace installed plugin "${info.slug}".`, `Current version: ${existing.version || 'Unknown'} (${existing.state || 'unknown'})`, `Incoming version: ${info.version || 'Unknown'}`]
-              : ['This plugin is not currently installed.'],
-          },
-        ]);
+        setUploadPreviewSections(InstalledPluginsUploadService.buildPreviewSections(info));
         setPendingUploadId(uploadId);
         setShowUploadPreview(true);
       } catch (error: any) {
         setPendingUploadId(null);
         notify('error', 'Inspect Failed', error.message || 'Could not inspect plugin package.');
+        clearUploadProgress();
       } finally {
         setIsInspectingUpload(false);
       }
@@ -227,6 +198,7 @@ export class InstalledPluginsPageController {
         if (isUploading) return;
         setShowUploadPreview(false);
         setPendingUploadId(null);
+        clearUploadProgress();
       },
       confirmUploadPreview: async () => {
         if (!pendingUploadId) return;
@@ -306,6 +278,8 @@ export class InstalledPluginsPageController {
         await handleToggle(targetPlugin, false, { recursive, force });
       },
       operationStatus,
+      uploadProgressLabel,
+      uploadProgressPercent,
       uploadPreviewDescription,
       uploadPreviewSections,
       uploadPreviewTitle,
