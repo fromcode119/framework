@@ -170,13 +170,15 @@ export class RuntimeService {
         }
       }
 
+      const scopedGlobalObject = `(${globalObject})`;
+
       const exports = (config.keys || [])
-        .map((key: string) => `export const ${key} = ${globalObject} ? ${globalObject}['${key}'] : undefined;`)
+        .map((key: string) => `export const ${key} = ${scopedGlobalObject} ? ${scopedGlobalObject}['${key}'] : undefined;`)
         .join('\n');
 
       source = (this.templates['lib'] || '')
         .replace('{{EXPORTS}}', exports)
-        .replace(/{{SCOPE}}/g, globalObject);
+        .replace(/{{SCOPE}}/g, scopedGlobalObject);
     }
 
     if (!source) return null;

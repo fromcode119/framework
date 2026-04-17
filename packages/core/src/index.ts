@@ -1,5 +1,6 @@
 // Types (includes all plugin/schema types moved from @fromcode119/sdk)
 export * from './types';
+export type { PluginInstallProgress, PluginInstallProgressReporter } from './plugin/plugin-installation.interfaces';
 export { RecordVersions } from './collections/record-versions';
 
 // Core Classes (Server-only)
@@ -84,7 +85,14 @@ export { ShortcodeUtils } from './shortcodes';
 export type { RenderShortcodesPayload, RenderShortcodesResponse, ShortcodeCatalogItem, ShortcodeCatalogResponse } from './shortcodes.types';
 export { RuntimeBridge } from './runtime-bridge';
 export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
+export { BasePluginRouter } from './base/base-plugin-router';
+export type { BasePluginRouterOptions } from './base/base-plugin-router.interfaces';
 export { PluginDefinitionUtils } from './plugin-definition-utils';
+export { PluginHealthResponseBuilder } from './plugin-health-response';
+export { PluginHealthRouteHandler } from './plugin-health-route-handler';
+export type { PluginHealthProbeResult, PluginHealthRouteHandlerOptions } from './plugin-health-route-handler.interfaces';
+export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse } from './plugin-health-response.interfaces';
+export type { PluginHealthStatus } from './plugin-health-response.types';
 export { Plugins } from './plugins';
 export { PluginsFacade } from './plugins-facade';
 export { NamespacedPluginsFacade } from './namespaced-plugins-facade';

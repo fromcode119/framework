@@ -17,9 +17,9 @@ export class AdminExportSourceBuilder {
       return true;
     });
     const adminModuleAccessor =
-      `window.${args.RuntimeConstants.GLOBALS.MODULES} && ` +
+      `(window.${args.RuntimeConstants.GLOBALS.MODULES} && ` +
       `(window.${args.RuntimeConstants.GLOBALS.MODULES}['${args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS}'] || ` +
-      `window.${args.RuntimeConstants.GLOBALS.MODULES}['${args.RuntimeConstants.MODULE_NAMES.ADMIN}'])`;
+      `window.${args.RuntimeConstants.GLOBALS.MODULES}['${args.RuntimeConstants.MODULE_NAMES.ADMIN}']))`;
     return (
       adminExportKeys
         .map((key) => `export const ${key} = ${adminModuleAccessor} ? ${adminModuleAccessor}.${key} : undefined;`)

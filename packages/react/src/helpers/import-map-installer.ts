@@ -72,7 +72,7 @@ export class ImportMapInstaller {
     if (!currentClientModules) return;
     Object.entries(currentClientModules).forEach(([name, mod]) => {
       runtimeRegistry[name] = mod;
-      const runtimeModuleAccessor = `window.${args.RuntimeConstants.GLOBALS.MODULES} && window.${args.RuntimeConstants.GLOBALS.MODULES}[${JSON.stringify(name)}]`;
+      const runtimeModuleAccessor = `(window.${args.RuntimeConstants.GLOBALS.MODULES} && window.${args.RuntimeConstants.GLOBALS.MODULES}[${JSON.stringify(name)}])`;
       const keys =
         name === args.RuntimeConstants.MODULE_NAMES.ADMIN || name === args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS
           ? Array.from(

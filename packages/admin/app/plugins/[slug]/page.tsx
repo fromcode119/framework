@@ -26,6 +26,7 @@ export default function PluginDetailPage({ params }: { params: Promise<{ slug: s
       isDeleting={model.isDeleting}
       isSaving={model.isSaving}
       isUpdating={model.isUpdating}
+      installOperation={model.installOperation}
       loadingLogs={model.loadingLogs}
       logs={model.logs}
       marketplaceItem={model.marketplaceItem}

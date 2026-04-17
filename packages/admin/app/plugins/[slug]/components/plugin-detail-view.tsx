@@ -1,6 +1,7 @@
 "use client";
 
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Loader } from '@/components/ui/loader';
 import PluginSettingsForm from '@/components/plugins/plugin-settings-form';
 import PluginDetailHeader from './plugin-detail-header';
 import PluginDetailOverview from './plugin-detail-overview';
@@ -16,6 +17,7 @@ export default function PluginDetailView({
   isDeleting,
   isSaving,
   isUpdating,
+  installOperation,
   loadingLogs,
   logs,
   marketplaceItem,
@@ -43,6 +45,7 @@ export default function PluginDetailView({
 }: PluginDetailViewProps) {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      {isUpdating && installOperation ? <Loader fullPage label={installOperation.message} /> : null}
       <PluginDetailHeader activeTab={activeTab} isSaving={isSaving} isUpdating={isUpdating} marketplaceItem={marketplaceItem} onSaveSandbox={onSaveSandbox} onUpdate={onUpdate} plugin={plugin} theme={theme} />
       <PluginDetailTabs activeTab={activeTab} onTabChange={onTabChange} theme={theme} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">

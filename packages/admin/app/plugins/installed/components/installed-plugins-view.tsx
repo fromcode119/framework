@@ -31,6 +31,7 @@ export default function InstalledPluginsView({
   isInspectingUpload,
   isUploading,
   loading,
+  operationStatus,
   markImageError,
   onDeleteConfirm,
   onDeletePrompt,
@@ -48,6 +49,7 @@ export default function InstalledPluginsView({
 }: InstalledPluginsViewProps) {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      {operationStatus && (isUploading || isActivating) ? <Loader fullPage label={operationStatus.message} /> : null}
       {loading ? <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Synchronizing Global Marketplace Catalog" /></div> : (
         <>
           <div className="flex flex-col md:flex-row gap-6">

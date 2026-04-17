@@ -5,6 +5,8 @@ import { ThemeHooks } from '@/components/use-theme';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { NotificationHooks } from '@/components/use-notification';
 import type { PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form.interfaces';
+import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
+import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
 import type {
   PluginDetailPageModel,
   PluginDetailTab,
@@ -25,6 +27,7 @@ export class PluginDetailPageController {
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [installOperation, setInstallOperation] = useState<PluginInstallOperation | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [settingsDirty, setSettingsDirty] = useState(false);
@@ -93,13 +96,18 @@ export class PluginDetailPageController {
       if (!plugin) return;
       setIsUpdating(true);
       try {
-        await PluginDetailPageService.updatePlugin(plugin.manifest.slug);
+        const result = await PluginDetailPageService.updatePlugin(plugin.manifest.slug);
+        if (result.dependencies.length > 0) {
+          notify('info', 'Update Dependencies', `This update also requires: ${result.dependencies.join(', ')}`);
+        }
+        await PluginInstallOperationService.waitForCompletion(result.operationId, setInstallOperation);
         notify('success', 'Update Complete', `${plugin.manifest.name} has been updated to the latest version.`);
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Update error:', error);
         notify('error', 'Update Failed', error.message || 'Update failed');
       } finally {
+        setInstallOperation(null);
         setIsUpdating(false);
       }
     };
@@ -176,6 +184,7 @@ export class PluginDetailPageController {
       handleTabChange,
       handleToggle,
       handleUpdate,
+      installOperation,
       isDeleting,
       isSaving,
       isUpdating,

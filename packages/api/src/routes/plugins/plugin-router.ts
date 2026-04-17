@@ -30,6 +30,7 @@ export class PluginRouter extends BaseRouter {
     this.delete(RouteConstants.SEGMENTS.PLUGINS_SLUG, this.auth.guard(['admin']), this.bind(this.controller.delete.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.bind(this.controller.marketplace.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.PLUGINS_INSTALL, this.auth.guard(['admin']), this.bind(this.controller.install.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.PLUGINS_INSTALL_OPERATION, this.auth.guard(['admin']), this.bind(this.controller.installOperation.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_LOGS, this.auth.guard(['admin']), this.bind(this.controller.logs.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION, this.auth.guard(['admin']), this.bind(this.controller.startUploadSession.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_CHUNK, this.auth.guard(['admin']), this.chunkUpload.single('chunk'), this.bind(this.controller.uploadChunk.bind(this.controller)));

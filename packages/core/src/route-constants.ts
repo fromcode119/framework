@@ -106,6 +106,7 @@ export class RouteConstants {
   // ── Plugins ──────────────────────────────────────────────────────────────
   PLUGINS_MARKETPLACE: '/marketplace',
   PLUGINS_INSTALL: '/install/:slug',
+  PLUGINS_INSTALL_OPERATION: '/install-operations/:operationId',
   PLUGINS_UPLOAD_SESSION: '/upload/session',
   PLUGINS_UPLOAD_CHUNK: '/upload/chunk',
   PLUGINS_UPLOAD_SESSION_INSPECT: '/upload/session/inspect',

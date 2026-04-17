@@ -1,4 +1,7 @@
 import express, { Router, RequestHandler, Request, Response, NextFunction } from 'express';
+import { PluginHealthRouteHandler } from '../plugin-health-route-handler';
+import type { PluginHealthRouteHandlerOptions } from '../plugin-health-route-handler.interfaces';
+import { RouteConstants } from '../route-constants';
 
 /**
  * Base class for all API routers.
@@ -44,6 +47,7 @@ export abstract class BaseRouter {
     }
     if (!this._routesRegistered) {
       this._routesRegistered = true;
+      this.registerBaseRoutes();
       this.registerRoutes();
     }
     return this._router!;
@@ -52,6 +56,13 @@ export abstract class BaseRouter {
   constructor() {
     // Router is initialized lazily via the 'router' getter above.
     // No setup needed here.
+  }
+
+  /**
+   * Register framework-owned routes before subclass routes.
+   */
+  protected registerBaseRoutes(): void {
+    // Subclasses may override.
   }
 
   /**
@@ -65,6 +76,34 @@ export abstract class BaseRouter {
    */
   protected get(path: string, ...handlers: RequestHandler[]): void {
     this.router.get(path, ...handlers);
+  }
+
+  /**
+   * Register the standard plugin health route.
+   */
+  protected health(...handlers: RequestHandler[]): void {
+    this.get(RouteConstants.SEGMENTS.HEALTH, ...handlers);
+  }
+
+  /**
+   * Register the standard plugin status route.
+   */
+  protected status(...handlers: RequestHandler[]): void {
+    this.get(RouteConstants.SEGMENTS.STATUS, ...handlers);
+  }
+
+  /**
+   * Register the standard plugin health route using a framework-owned handler.
+   */
+  protected healthCheck(options: PluginHealthRouteHandlerOptions): void {
+    this.health(PluginHealthRouteHandler.create(options));
+  }
+
+  /**
+   * Register the standard plugin status route using a framework-owned handler.
+   */
+  protected statusCheck(options: PluginHealthRouteHandlerOptions): void {
+    this.status(PluginHealthRouteHandler.create(options));
   }
 
   /**
