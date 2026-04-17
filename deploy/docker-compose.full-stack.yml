@@ -4,6 +4,8 @@
 # All paths are relative to the repo root (project-directory) — required for Coolify compatibility.
 # Set COMPOSE_PROFILES=single-domain in Coolify only when you want the gateway service.
 # Set EXTERNAL_PROXY_NETWORK to the actual Coolify proxy network name.
+# On Coolify hosts, the shared proxy network is typically `coolify` unless
+# overridden explicitly by the environment.
 
 services:
   gateway:
@@ -162,7 +164,7 @@ services:
 networks:
   framework:
   proxy:
-    name: ${EXTERNAL_PROXY_NETWORK:-docker_web}
+    name: ${EXTERNAL_PROXY_NETWORK:-coolify}
     external: true
 
 volumes:
