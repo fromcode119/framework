@@ -32,6 +32,7 @@ export class RequestSurfaceUtils {
       RouteConstants.SEGMENTS.PLUGINS,
       RouteConstants.SEGMENTS.THEMES,
       RouteConstants.SEGMENTS.MEDIA,
+      SystemConstants.STORAGE.DEFAULT_PUBLIC_URL,
       RouteConstants.SEGMENTS.VERSIONS,
       RequestSurfaceUtils.ADMIN_API_BASE_PATH,
     ];
