@@ -1,6 +1,9 @@
-export const jsx = window.React.createElement;
-export const jsxs = window.React.createElement;
-export const jsxDEV = window.React.createElement;
+const createRuntimeElement = (type, props, key) =>
+  window.React.createElement(type, key === undefined ? props : { ...(props || {}), key });
+
+export const jsx = createRuntimeElement;
+export const jsxs = createRuntimeElement;
+export const jsxDEV = createRuntimeElement;
 export const Fragment = window.React.Fragment;
 
 export default { jsx, jsxs, jsxDEV, Fragment };
