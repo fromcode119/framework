@@ -2,6 +2,7 @@ import { LocalizationService } from './localization-service';
 import { ContentService } from './content-service';
 import { MenuService } from './menu-service';
 import { CollectionService } from './collection-service';
+import { CollectionWriteCompatibilityService } from './collection-write-compatibility-service';
 import { CollectionIdentityService } from './collection-identity-service';
 import { PluginDefaultPageBackfillService } from './default-page-contract/plugin-default-page-backfill-service';
 import { PluginDefaultPageDiagnosticService } from './default-page-contract/plugin-default-page-diagnostic-service';
@@ -47,6 +48,7 @@ export class CoreServices {
   private _content: ContentService | null = null;
   private _menu: MenuService | null = null;
   private _collection: CollectionService | null = null;
+  private _collectionWriteCompatibility: CollectionWriteCompatibilityService | null = null;
   private _collectionIdentity: CollectionIdentityService | null = null;
   private _defaultPageContracts: PluginDefaultPageContractRegistryService | null = null;
   private _defaultPageContractResolution: PluginDefaultPageContractResolutionService | null = null;
@@ -107,6 +109,13 @@ export class CoreServices {
       this._collection = new CollectionService();
     }
     return this._collection;
+  }
+
+  get collectionWriteCompatibility(): CollectionWriteCompatibilityService {
+    if (!this._collectionWriteCompatibility) {
+      this._collectionWriteCompatibility = new CollectionWriteCompatibilityService(this.collection);
+    }
+    return this._collectionWriteCompatibility;
   }
 
   get collectionIdentity(): CollectionIdentityService {
