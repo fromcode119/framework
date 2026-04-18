@@ -4,6 +4,7 @@ import { LocalizationService } from '../localization-service';
 import { ContentService } from '../content-service';
 import { MenuService } from '../menu-service';
 import { CollectionService } from '../collection-service';
+import { CollectionWriteCompatibilityService } from '../collection-write-compatibility-service';
 import { PluginDefaultPageBackfillService } from '../default-page-contract/plugin-default-page-backfill-service';
 import { PluginDefaultPageDiagnosticService } from '../default-page-contract/plugin-default-page-diagnostic-service';
 import { PluginDefaultPageMaterializationService } from '../default-page-contract/plugin-default-page-materialization-service';
@@ -54,6 +55,12 @@ describe('CoreServices', () => {
       const services = CoreServices.getInstance();
       const collection = services.collection;
       expect(collection).toBeInstanceOf(CollectionService);
+    });
+
+    it('creates collection write compatibility service on first access', () => {
+      const services = CoreServices.getInstance();
+      const compatibility = services.collectionWriteCompatibility;
+      expect(compatibility).toBeInstanceOf(CollectionWriteCompatibilityService);
     });
 
     it('creates default page contract registry service on first access', () => {
@@ -173,6 +180,7 @@ describe('CoreServices', () => {
       expect(services.content).toBeDefined();
       expect(services.menu).toBeDefined();
       expect(services.collection).toBeDefined();
+      expect(services.collectionWriteCompatibility).toBeDefined();
     });
   });
 
@@ -195,6 +203,11 @@ describe('CoreServices', () => {
     it('collection service has correct name', () => {
       const services = CoreServices.getInstance();
       expect(services.collection.serviceName).toBe('CollectionService');
+    });
+
+    it('collection write compatibility service has correct name', () => {
+      const services = CoreServices.getInstance();
+      expect(services.collectionWriteCompatibility.serviceName).toBe('CollectionWriteCompatibilityService');
     });
   });
 
@@ -269,6 +282,7 @@ describe('CoreServices', () => {
       const content1 = services1.content;
       const menu1 = services1.menu;
       const collection1 = services1.collection;
+      const compatibility1 = services1.collectionWriteCompatibility;
       
       CoreServices.reset();
       
@@ -277,6 +291,7 @@ describe('CoreServices', () => {
       const content2 = services2.content;
       const menu2 = services2.menu;
       const collection2 = services2.collection;
+      const compatibility2 = services2.collectionWriteCompatibility;
       const defaultPageContracts1 = services1.defaultPageContracts;
       const defaultPageContracts2 = services2.defaultPageContracts;
       const defaultPageContractResolution1 = services1.defaultPageContractResolution;
@@ -293,6 +308,7 @@ describe('CoreServices', () => {
       expect(content1).not.toBe(content2);
       expect(menu1).not.toBe(menu2);
       expect(collection1).not.toBe(collection2);
+      expect(compatibility1).not.toBe(compatibility2);
       expect(defaultPageContracts1).not.toBe(defaultPageContracts2);
       expect(defaultPageContractResolution1).not.toBe(defaultPageContractResolution2);
       expect(defaultPageBackfill1).not.toBe(defaultPageBackfill2);
@@ -305,12 +321,14 @@ describe('CoreServices', () => {
       
       // Access services in different order
       const collection = services.collection;
+      const compatibility = services.collectionWriteCompatibility;
       const localization = services.localization;
       const menu = services.menu;
       const content = services.content;
       
       // All should be valid
       expect(collection).toBeInstanceOf(CollectionService);
+      expect(compatibility).toBeInstanceOf(CollectionWriteCompatibilityService);
       expect(localization).toBeInstanceOf(LocalizationService);
       expect(menu).toBeInstanceOf(MenuService);
       expect(content).toBeInstanceOf(ContentService);

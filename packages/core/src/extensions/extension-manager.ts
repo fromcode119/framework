@@ -72,9 +72,17 @@ export class CoreExtensionManager {
         // Re-import ProjectPaths to get fresh path resolution
         const { ProjectPaths } = await import('../config/paths');
         this.packagesRoot = ProjectPaths.getPackagesDir();
-        this.logger.info(`Using packages directory: ${this.packagesRoot}`);
       }
       
+      // If still not found, log a warning and exit discovery gracefully
+      if (!fs.existsSync(this.packagesRoot)) {
+        this.logger.warn(`Packages directory not found at ${this.packagesRoot}. Skipping core extension discovery.`);
+        this.logger.info(`Discovered 0 core extensions`);
+        return;
+      }
+
+      this.logger.info(`Using packages directory: ${this.packagesRoot}`);
+
       // Scan packages directory for manifest.json files
       const packageDirs = fs.readdirSync(this.packagesRoot, { withFileTypes: true });
       
