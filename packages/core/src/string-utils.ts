@@ -8,6 +8,26 @@
  */
 export class StringUtils {
   /**
+   * Convert camelCase / mixed strings to snake_case.
+   */
+  static toSnakeCase(value: unknown): string {
+    return String(value ?? '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toLowerCase();
+  }
+
+  /**
+   * Convert snake_case strings to camelCase.
+   */
+  static toCamelCase(value: unknown): string {
+    return String(value ?? '')
+      .toLowerCase()
+      .replace(/_([a-z0-9])/g, (_, part) => String(part).toUpperCase());
+  }
+
+  /**
    * Convert text to a URL-safe slug.
    * Strips accents, lowercases, replaces whitespace/special chars with hyphens.
    */

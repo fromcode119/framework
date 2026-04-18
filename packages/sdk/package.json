@@ -55,7 +55,8 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode119/core": "*"
+    "@fromcode119/core": "*",
+    "@fromcode119/media": "*"
   },
   "peerDependencies": {
     "express": ">=4.0.0",

@@ -9,4 +9,6 @@ export { ProjectPaths } from '@fromcode119/core';
 export { IntegrationManager } from '@fromcode119/core';
 export { RequestContextUtils } from '@fromcode119/core';
 export { PluginRegistry } from '@fromcode119/plugins';
+export { MediaImageOptimizer } from '@fromcode119/media';
 export type { RequestStore } from '@fromcode119/core';
+export type { MediaImageOptimizationOptions, MediaImageOptimizationResult } from '@fromcode119/media';
