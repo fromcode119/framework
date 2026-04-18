@@ -30,9 +30,9 @@ export class ImportMapInstaller {
       'react-dom':
         'data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = window.ReactDOM;',
       'react/jsx-runtime':
-        'data:application/javascript,export const jsx = window.React.createElement; export const jsxs = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsx, jsxs, Fragment };',
+        'data:application/javascript,const __fcJsx = (type, props, key) => window.React.createElement(type, key === undefined ? props : { ...(props || {}), key }); export const jsx = __fcJsx; export const jsxs = __fcJsx; export const Fragment = window.React.Fragment; export default { jsx, jsxs, Fragment };',
       'react/jsx-dev-runtime':
-        'data:application/javascript,export const jsxDEV = window.React.createElement; export const Fragment = window.React.Fragment; export default { jsxDEV, Fragment };',
+        'data:application/javascript,const __fcJsxDEV = (type, props, key) => window.React.createElement(type, key === undefined ? props : { ...(props || {}), key }); export const jsxDEV = __fcJsxDEV; export const Fragment = window.React.Fragment; export default { jsxDEV, Fragment };',
       'lucide-react':
         'data:application/javascript,' +
         encodeURIComponent(
