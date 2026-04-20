@@ -8,6 +8,8 @@ import { DiscoveryService } from './discovery-service';
 import { MarketplaceCatalogService } from '../../marketplace/marketplace-catalog-service';
 import type { LoadedPlugin, PluginManifest } from '../../types';
 import type { PluginInstallProgressReporter } from '../plugin-installation.interfaces';
+import { PluginStateService } from './plugin-state-service';
+import { PluginRuntimeRestartService } from './plugin-runtime-restart-service';
 
 export class PluginInstallationService {
   constructor(
@@ -15,6 +17,8 @@ export class PluginInstallationService {
     private readonly marketplace: MarketplaceCatalogService,
     private readonly discovery: DiscoveryService,
     private readonly migrationManager: MigrationManager,
+    private readonly registry: PluginStateService,
+    private readonly runtimeRestart: PluginRuntimeRestartService,
     private readonly plugins: Map<string, LoadedPlugin>,
     private readonly pluginsRoot: string,
     private readonly discoverPlugins: () => Promise<void>,
@@ -82,6 +86,7 @@ export class PluginInstallationService {
     slug: string,
     options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
   ): Promise<void> {
+    const existingPlugin = this.plugins.get(slug);
     const manifestPath = path.join(this.pluginsRoot, slug, 'manifest.json');
     if (!fs.existsSync(manifestPath)) {
       throw new Error(`Installed plugin manifest not found for "${slug}".`);
@@ -90,6 +95,30 @@ export class PluginInstallationService {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as PluginManifest;
     const pluginPath = path.dirname(manifestPath);
     await this.runPluginMigrations(slug, pluginPath, manifest, options.progressReporter);
+
+    if (existingPlugin && existingPlugin.state !== 'error') {
+      const desiredState = options.enable === true
+        ? 'active'
+        : options.enable === false
+          ? 'inactive'
+          : existingPlugin.state;
+
+      await this.registry.savePluginState(
+        slug,
+        desiredState,
+        existingPlugin.approvedCapabilities,
+        manifest.version,
+      );
+
+      options.progressReporter?.({
+        phase: 'restart-required',
+        message: `Plugin "${slug}" was replaced. Scheduling API restart so the new runtime code is loaded.`,
+        pluginSlug: slug,
+      });
+
+      this.runtimeRestart.scheduleRestart(`Plugin "${slug}" was replaced on disk.`);
+      return;
+    }
 
     options.progressReporter?.({
       phase: 'refreshing-plugin-registry',
