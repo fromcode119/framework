@@ -36,6 +36,7 @@ import { PluginScaffoldService } from './services/plugin-scaffold-service';
 import { PluginAdminRuntimeService } from './services/plugin-admin-runtime-service';
 import { PluginInstallationService } from './services/plugin-installation-service';
 import { PluginRuntimeStateService } from './services/plugin-runtime-state-service';
+import { PluginRuntimeRestartService } from './services/plugin-runtime-restart-service';
 
 export class PluginManager implements PluginManagerInterface {
   public audit: AuditManager;
@@ -138,6 +139,8 @@ export class PluginManager implements PluginManagerInterface {
       this.marketplace,
       this.discovery,
       this.migrationManager,
+      this.registry,
+      new PluginRuntimeRestartService(this.logger),
       this.plugins,
       this.pluginsRoot,
       this.discoverPlugins.bind(this),
