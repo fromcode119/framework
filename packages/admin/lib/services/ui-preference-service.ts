@@ -1,5 +1,6 @@
 import { BrowserStateClient, ClientRuntimeConstants } from '@fromcode119/core/client';
 import { BaseService } from './base-service';
+import { AppEnv } from '../env';
 
 export class UiPreferenceService extends BaseService {
   private static readonly THEME_KEY = 'theme';
@@ -54,6 +55,10 @@ export class UiPreferenceService extends BaseService {
   }
 
   readAdvancedMode(): boolean {
+    if (!AppEnv.AI_ENABLED) {
+      return true;
+    }
+
     return this.browserState.readLocalString(UiPreferenceService.ADVANCED_MODE_KEY) === 'true';
   }
 
