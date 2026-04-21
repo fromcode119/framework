@@ -1,3 +1,5 @@
+import { AppEnv } from './env';
+
 export type AdminExtensionBridge = {
   registerSlotComponent: (slotName: string, component: any, pluginSlug?: string, priority?: number) => void;
   registerMenuItem: (item: {
@@ -19,6 +21,10 @@ export type AdminExtensionModule = {
  * Attempts to load AI admin extension, failing gracefully if unavailable
  */
 async function loadAiExtension(): Promise<AdminExtensionModule> {
+  if (!AppEnv.AI_ENABLED) {
+    return {};
+  }
+
   try {
     const aiAdmin = (await import('@fromcode119/ai/admin')) as {
       registerAdminExtension?: unknown;
