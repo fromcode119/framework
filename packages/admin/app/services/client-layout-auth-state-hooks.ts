@@ -7,6 +7,7 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import { AuthUtils } from '@/lib/auth-utils';
 import { RuntimeConstants } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
+import { AppEnv } from '@/lib/env';
 
 const adminServices = AdminServices.getInstance();
 const INITIALIZATION_STATUS_TTL_MS = 5000;
@@ -132,7 +133,7 @@ export class ClientLayoutAuthStateHooks {
     }, [user, isInitialized, isAuthPage, isAuthLoading, router]);
 
     React.useEffect(() => {
-      if (isAuthPage || !user || isInitialized !== true || isAdvancedMode) {
+      if (isAuthPage || !user || isInitialized !== true || !AppEnv.AI_ENABLED || isAdvancedMode) {
         return;
       }
 
