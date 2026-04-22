@@ -1,6 +1,7 @@
 import type { MarketplaceData } from './marketplace-client.interfaces';
 import { MarketplaceClientConstants } from './marketplace-client-constants';
 import { MarketplaceClientLogger } from './marketplace-client-logger';
+import { MarketplaceUrlService } from './marketplace-url-service';
 
 export class MarketplaceClient {
   private marketplaceUrl: string;
@@ -12,7 +13,7 @@ export class MarketplaceClient {
     this.disabled = MarketplaceClient.isMarketplaceDisabled(raw);
     this.marketplaceUrl = this.disabled
       ? ''
-      : (raw || MarketplaceClientConstants.DEFAULT_MARKETPLACE_URL);
+      : MarketplaceUrlService.resolveCatalogUrl(raw || MarketplaceClientConstants.DEFAULT_MARKETPLACE_API_URL);
     this.fetchTimeoutMs = MarketplaceClient.parseFetchTimeoutMs(process.env.MARKETPLACE_FETCH_TIMEOUT_MS);
   }
 
@@ -104,8 +105,7 @@ export class MarketplaceClient {
       throw new Error(`ZIP file not found: ${zipPath}`);
     }
 
-    const marketplaceBase = this.marketplaceUrl.substring(0, this.marketplaceUrl.lastIndexOf('/'));
-    const publishUrl = `${marketplaceBase}/api/plugins/publish`;
+    const publishUrl = `${this.getMarketplaceApiBaseUrl()}${MarketplaceClientConstants.SUBMIT_PATH}`;
 
     MarketplaceClientLogger.info(`[MarketplaceClient] Uploading ${path.basename(zipPath)} to ${publishUrl}...`);
 
@@ -123,8 +123,12 @@ export class MarketplaceClient {
     if (url.startsWith('http')) return url;
     if (!this.marketplaceUrl.startsWith('http')) return url;
 
-    const baseUrl = this.marketplaceUrl.substring(0, this.marketplaceUrl.lastIndexOf('/'));
+    const baseUrl = this.getMarketplaceApiBaseUrl();
     return new URL(url, baseUrl + '/').toString();
+  }
+
+  private getMarketplaceApiBaseUrl(): string {
+    return MarketplaceUrlService.resolveApiBaseUrl(this.marketplaceUrl);
   }
 
   private static isMarketplaceDisabled(value: string): boolean {

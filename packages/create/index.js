@@ -191,7 +191,7 @@ const envContent = [
   'NODE_ENV=development',
   localMode
     ? 'MARKETPLACE_URL=off'
-    : '# MARKETPLACE_URL=https://marketplace.fromcode.com/marketplace.json',
+    : '# MARKETPLACE_URL=https://marketplace.fromcode.com',
   '',
 ].join('\n');
 

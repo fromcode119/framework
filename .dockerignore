@@ -8,6 +8,7 @@ packages/**/.next
 .git
 .github
 *.log
+.env.local
 docker-compose.yml
 Dockerfile
 README.md

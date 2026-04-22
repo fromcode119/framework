@@ -7,7 +7,9 @@ import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { AuthHooks } from '@/components/use-auth';
 import { AdminApi } from '@/lib/api';
+import { MarketplacePublisherConstants } from '@/lib/marketplace-publisher-constants';
 import { StringUtils } from '@fromcode119/core/client';
+import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
 
 const PublisherPortal = () => {
     const { theme } = ThemeHooks.useTheme();
@@ -31,9 +33,8 @@ const PublisherPortal = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const rawUrl = process.env.NEXT_PUBLIC_MARKETPLACE_URL || 'https://marketplace.fromcode.com';
-            const MARKETPLACE_URL = rawUrl.replace('/marketplace.json', '').replace('/registry.json', '');
-            const submitUrl = `${MARKETPLACE_URL}/submit`;
+            const marketplaceApiUrl = MarketplaceUrlService.resolveApiBaseUrl(process.env.NEXT_PUBLIC_MARKETPLACE_URL);
+            const submitUrl = `${marketplaceApiUrl}${MarketplacePublisherConstants.SUBMIT_PATH}`;
             
             const formattedData = {
                 ...formData,

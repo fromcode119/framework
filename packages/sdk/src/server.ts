@@ -1,6 +1,8 @@
 // Server-only SDK exports — for use in plugin API route files only.
 // Never import from this path in React components or client-side code.
 // These exports transitively depend on express, fs, path, or server-only @fromcode119/* packages.
+export { APIServer } from '@fromcode119/api';
+export { AuthManager } from '@fromcode119/auth';
 export { 
   BasePluginRouter, 
   BaseRouter, 

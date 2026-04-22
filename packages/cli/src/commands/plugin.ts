@@ -6,6 +6,7 @@ import archiver from 'archiver';
 import { spawn } from 'child_process';
 import * as esbuild from 'esbuild';
 import { PluginManifest } from '@fromcode119/core';
+import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import { CliUtils } from '../utils';
 import { PluginDependencyCommandService } from '../services/plugin-dependency-command-service';
 
@@ -197,8 +198,9 @@ if (typeof window !== 'undefined' && (window as any).Fromcode) {
           if (result.success) {
             console.log(chalk.green(`✔ Plugin ${slug} published successfully!`));
 
-            const baseUrl = process.env.MARKETPLACE_URL?.replace('/marketplace.json', '') || 'https://marketplace.fromcode.com';
-            console.log(chalk.gray(`Access it at: ${baseUrl}/plugins/${slug}`));
+            const marketplaceApiUrl = MarketplaceUrlService.resolveApiBaseUrl(process.env.MARKETPLACE_URL);
+            const marketplacePublicUrl = MarketplaceUrlService.resolvePublicBaseUrl(process.env.MARKETPLACE_URL);
+            console.log(chalk.gray(`Access it at: ${marketplacePublicUrl}/plugins/${slug}`));
           } else {
             throw new Error(result.message || 'Upload failed');
           }

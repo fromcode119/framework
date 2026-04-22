@@ -55,6 +55,8 @@
     "dev": "tsc -w"
   },
   "dependencies": {
+    "@fromcode119/api": "*",
+    "@fromcode119/auth": "*",
     "@fromcode119/core": "*",
     "@fromcode119/media": "*"
   },

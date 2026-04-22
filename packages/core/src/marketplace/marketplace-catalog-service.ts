@@ -2,6 +2,7 @@ import { Logger } from '../logging';
 import { PluginManifest } from '../types';
 import { DiscoveryService } from '../plugin/services/discovery-service';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
+import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import path from 'path';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
@@ -23,9 +24,9 @@ export class MarketplaceCatalogService {
       return;
     }
 
-    this.marketplaceUrl = !raw || normalized === 'undefined' || normalized === 'null'
-      ? 'https://marketplace.fromcode.com/marketplace.json'
-      : raw;
+    this.marketplaceUrl = MarketplaceUrlService.resolveCatalogUrl(
+      !raw || normalized === 'undefined' || normalized === 'null' ? undefined : raw,
+    );
     this.client = new MarketplaceClient(this.marketplaceUrl);
   }
 

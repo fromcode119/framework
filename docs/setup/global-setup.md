@@ -38,7 +38,7 @@ Important variables to review:
 - `CORS_ALLOWED_DOMAINS=framework.local,api.framework.local,admin.framework.local`
 - `PLUGINS_DIR=/app/plugins`
 - `THEMES_DIR=/app/themes`
-- `MARKETPLACE_URL=http://marketplace.framework.local/marketplace.json`
+- `MARKETPLACE_URL=http://marketplace.framework.local`
 
 If you use shared plugin/theme folders outside `framework/Source`, set:
 

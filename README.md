@@ -325,7 +325,7 @@ POSTGRES_DB=fromcode
 | `RATE_LIMIT_MAX` | `100` | Max requests per window |
 | `PLUGINS_DIR` | `./plugins` | Path to plugins directory |
 | `THEMES_DIR` | `./themes` | Path to themes directory |
-| `MARKETPLACE_URL` | `https://marketplace.fromcode.com/marketplace.json` | Plugin marketplace feed |
+| `MARKETPLACE_URL` | `https://marketplace.fromcode.com` | Plugin marketplace site URL |
 
 </details>
 
