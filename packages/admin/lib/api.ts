@@ -11,6 +11,7 @@ export class AdminApi {
   private static readonly cachedGetErrors = new Map<string, { expiresAt: number; error: any }>();
   private static readonly GET_RESPONSE_TTL_MS = 5000;
   private static readonly GET_ERROR_TTL_MS = 15000;
+  private static sessionExpiryVerificationPromise: Promise<void> | null = null;
 
   static getBaseUrl(): string {
     return AdminConstants.API_BASE_URL;
@@ -127,6 +128,7 @@ export class AdminApi {
       credentials: 'include',
     });
 
+    AdminApi.handleUnauthorized(response, url, options?.method || 'POST');
     return AdminApi.parseResponse(response, url);
   }
 
@@ -143,7 +145,7 @@ export class AdminApi {
       credentials: 'include',
     });
 
-    AdminApi.handleUnauthorized(response, url);
+    AdminApi.handleUnauthorized(response, url, options?.method || 'GET');
 
     if (!response.ok) {
       await AdminApi.parseResponse(response, url);
@@ -236,7 +238,7 @@ export class AdminApi {
       xhr.onerror = () => reject(new Error('Network request failed'));
 
       xhr.onload = () => {
-        AdminApi.handleUnauthorizedStatus(xhr.status, url);
+        AdminApi.handleUnauthorizedStatus(xhr.status, url, 'POST');
         try {
           resolve(AdminApi.parseXhrResponse(xhr, url));
         } catch (error) {
@@ -248,11 +250,11 @@ export class AdminApi {
     });
   }
 
-  private static handleUnauthorized(response: Response, url: string): void {
-    AdminApi.handleUnauthorizedStatus(response.status, url);
+  private static handleUnauthorized(response: Response, url: string, method: string = 'GET'): void {
+    AdminApi.handleUnauthorizedStatus(response.status, url, method);
   }
 
-  private static handleUnauthorizedStatus(status: number, url: string): void {
+  private static handleUnauthorizedStatus(status: number, url: string, method: string = 'GET'): void {
     const shouldPurge = status === 401;
 
     if (!shouldPurge) {
@@ -267,8 +269,44 @@ export class AdminApi {
     if (AdminPathUtils.stripBase(window.location.pathname) === AdminConstants.ROUTES.AUTH.LOGIN) {
       return;
     }
+    if (url.includes(AdminConstants.ENDPOINTS.AUTH.SECURITY) || String(method || 'GET').toUpperCase() !== 'GET') {
+      AdminApi.redirectToExpiredSession(url, status);
+      return;
+    }
 
-    console.warn(`[API] ${status} auth failure detected. Purging session.`);
+    void AdminApi.verifySessionExpiry(url, status);
+  }
+
+  private static async verifySessionExpiry(url: string, status: number): Promise<void> {
+    if (AdminApi.sessionExpiryVerificationPromise) {
+      return AdminApi.sessionExpiryVerificationPromise;
+    }
+
+    AdminApi.sessionExpiryVerificationPromise = (async () => {
+      try {
+        const response = await fetch(AdminApi.getURL(AdminConstants.ENDPOINTS.AUTH.SECURITY), {
+          method: 'GET',
+          headers: AdminApi.buildHeaders(undefined),
+          credentials: 'include',
+        });
+
+        if (response.status !== 401) {
+          return;
+        }
+      } catch {
+        return;
+      } finally {
+        AdminApi.sessionExpiryVerificationPromise = null;
+      }
+
+      AdminApi.redirectToExpiredSession(url, status);
+    })();
+
+    return AdminApi.sessionExpiryVerificationPromise;
+  }
+
+  private static redirectToExpiredSession(url: string, status: number): void {
+    console.warn(`[API] ${status} auth failure confirmed for ${url}. Purging session.`);
     AuthUtils.purgeAuth();
     window.location.href = AdminConstants.ADMIN_URLS.AUTH.LOGIN_SESSION_EXPIRED();
   }
