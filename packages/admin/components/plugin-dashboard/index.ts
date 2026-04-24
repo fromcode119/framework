@@ -3,3 +3,5 @@ export * from './plugin-overview-card';
 export * from './plugin-chart-card';
 export * from './plugin-empty-state';
 export * from './plugin-stats-list';
+export * from './section-card';
+export * from './day-range-toggle';

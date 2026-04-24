@@ -2,3 +2,4 @@
 // has stable declarations available. The emitted JS still re-exports the package.
 // @ts-ignore
 export * from '@fromcode119/react';
+export { useAsyncData } from './use-async-data';
