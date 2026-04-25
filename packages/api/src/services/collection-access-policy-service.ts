@@ -14,6 +14,10 @@ export class CollectionAccessPolicyService {
     }
 
     if (collection.system) {
+      if (this.isAdmin(req?.user)) {
+        return {};
+      }
+
       this.throwAuthError(req, `Authentication is required to read system collection "${collection.slug}".`);
     }
 

@@ -45,7 +45,7 @@ export class ImportMapInstaller {
       '@fromcode119/admin/components': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
       '@fromcode119/admin': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
       '@fromcode119/sdk': 'data:application/javascript,' + encodeURIComponent(sources.sdkExportSource),
-      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(sources.sdkReactExportSource),
+      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(sources.reactExportSource),
       '@fromcode119/sdk/admin': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
     };
   }
@@ -70,6 +70,7 @@ export class ImportMapInstaller {
   ): void {
     const currentClientModules = args.runtimeModules;
     if (!currentClientModules) return;
+    let adminModuleSource: string | null = null;
     Object.entries(currentClientModules).forEach(([name, mod]) => {
       runtimeRegistry[name] = mod;
       const runtimeModuleAccessor = `(window.${args.RuntimeConstants.GLOBALS.MODULES} && window.${args.RuntimeConstants.GLOBALS.MODULES}[${JSON.stringify(name)}])`;
@@ -82,13 +83,20 @@ export class ImportMapInstaller {
               ]),
             )
           : Object.keys(mod || {});
-      imports[name] =
+      const source =
         'data:application/javascript,' +
         encodeURIComponent(
           keys
             .map((key) => `export const ${key} = ${runtimeModuleAccessor} ? ${runtimeModuleAccessor}.${key} : undefined;`)
             .join('\n') + `\nexport default ${runtimeModuleAccessor};`,
         );
+      imports[name] = source;
+      if (name === args.RuntimeConstants.MODULE_NAMES.ADMIN || name === args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS) {
+        adminModuleSource = source;
+      }
     });
+    if (adminModuleSource) {
+      imports['@fromcode119/sdk/admin'] = adminModuleSource;
+    }
   }
 }

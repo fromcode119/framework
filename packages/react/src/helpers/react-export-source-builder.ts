@@ -23,6 +23,7 @@ export class ReactExportSourceBuilder {
     'RootFramework',
     'CollectionQueryUtils',
     'BrowserLocalization',
+    'AsyncDataController',
   ];
 
   static buildReactExportSource(bridge: Record<string, unknown>, reactModuleAccessor: string): string {

@@ -29,3 +29,4 @@ export { RootFramework } from './root-framework';
 export { SystemShortcodes } from './system-shortcodes';
 export { CollectionQueryUtils } from './collection-queries';
 export { BrowserLocalization } from './browser-localization';
+export { AsyncDataController } from './async-data-controller';

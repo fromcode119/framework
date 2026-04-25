@@ -1,4 +1,5 @@
 import type { RuntimeBridgeInstallArgs } from '../context-runtime-bridge.interfaces';
+import { AsyncDataController } from '../async-data-controller';
 import {
   AdminGlobalClient,
   AdminResourceClient,
@@ -106,6 +107,7 @@ export class BridgeObjectBuilder {
       ContextBridge,
       ContextHooks,
       SystemShortcodes,
+      AsyncDataController,
       PluginsProvider: args.PluginsProvider,
       CollectionQueryUtils: args.CollectionQueryUtils,
       BrowserLocalization: args.BrowserLocalization,

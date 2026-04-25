@@ -110,6 +110,41 @@ describe('rest-controller', () => {
     expect(mockDb.find).not.toHaveBeenCalled();
   });
 
+  it('allows admin reads of system collections', async () => {
+    const systemCollection: any = {
+      slug: 'users',
+      system: true,
+      fields: [{ name: 'email', type: 'text' }]
+    };
+
+    mockDb.find.mockResolvedValue([{ id: 1, email: 'admin@example.com' }]);
+    mockDb.count.mockResolvedValue(1);
+
+    const req: any = { query: {}, user: { roles: ['admin'] } };
+    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await controller.find(systemCollection, req, res);
+
+    expect(mockDb.find).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalledWith(401);
+    expect(res.status).not.toHaveBeenCalledWith(403);
+  });
+
+  it('blocks non-admin reads of system collections', async () => {
+    const systemCollection: any = {
+      slug: 'users',
+      system: true,
+      fields: [{ name: 'email', type: 'text' }]
+    };
+    const req: any = { query: {}, user: { roles: ['editor'] } };
+    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await controller.find(systemCollection, req, res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(mockDb.find).not.toHaveBeenCalled();
+  });
+
   it('blocks anonymous writes for generic collections', async () => {
     const req: any = { body: { title: 'Hello' }, query: {} };
     const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };

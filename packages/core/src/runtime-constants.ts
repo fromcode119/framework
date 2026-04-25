@@ -39,6 +39,6 @@ export class RuntimeConstants {
     'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
     'NotificationContext', 'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
-    'AdminServices', 'EditPageSectionNav',
+    'AdminServices', 'EditPageSectionNav', 'SectionCard', 'DayRangeToggle',
   ] as const;
 }
