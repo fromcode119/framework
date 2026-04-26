@@ -113,6 +113,9 @@ export default function MarketplacePage() {
             const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);
             const hasUpdate = installed && plugin.version !== (installed.manifest?.version || installed.version);
             const hasImageError = imageErrors[plugin.slug];
+            const isFeatured = Boolean(plugin.isFeatured);
+            const isVerified = Boolean(plugin.isVerified);
+            const isTrending = Boolean(plugin.isTrending);
 
             return (
               <Card 
@@ -135,7 +138,7 @@ export default function MarketplacePage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      {plugin.isFeatured && (
+                      {isFeatured && (
                         <Badge variant="blue" className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
                           Featured
                         </Badge>
@@ -151,7 +154,7 @@ export default function MarketplacePage() {
                        <h3 className={`text-xl font-bold tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-2 min-h-[4rem] flex-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                         {plugin.name}
                       </h3>
-                      {plugin.isVerified && (
+                      {isVerified && (
                         <div className="bg-emerald-500/10 p-1.5 rounded-full text-emerald-500" title="Verified Publisher">
                           <FrameworkIcons.Shield size={18} fill="currentColor" className="opacity-80" />
                         </div>
@@ -172,12 +175,12 @@ export default function MarketplacePage() {
                        <FrameworkIcons.User size={12} className="text-indigo-500/70" />
                        <span className="truncate flex items-center gap-1">
                         {plugin.author || 'Official Developer'}
-                        {plugin.isVerified && (
+                        {isVerified && (
                           <FrameworkIcons.Check size={10} className="text-emerald-500" strokeWidth={3} />
                         )}
                        </span>
                      </div>
-                     {plugin.isTrending && (
+                     {isTrending && (
                        <>
                          <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                          <div className="flex items-center gap-1.5 text-rose-500">
