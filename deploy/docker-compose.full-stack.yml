@@ -31,9 +31,12 @@ services:
     ports:
       - ${GATEWAY_PORT:-80}:3000
     networks:
-      - framework
       - proxy
+      - framework
     labels:
+      # The gateway is attached to both the public ingress network and the
+      # private framework network. Pin Traefik to the ingress network so it
+      # never picks the internal one and hangs external HTTPS requests.
       - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
@@ -74,8 +77,6 @@ services:
     networks:
       - framework
       - proxy
-    labels:
-      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
       resources:
@@ -105,8 +106,6 @@ services:
     networks:
       - framework
       - proxy
-    labels:
-      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
       resources:
@@ -136,8 +135,6 @@ services:
     networks:
       - framework
       - proxy
-    labels:
-      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
       resources:
