@@ -33,6 +33,8 @@ services:
     networks:
       - framework
       - proxy
+    labels:
+      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
       resources:
@@ -72,6 +74,8 @@ services:
     networks:
       - framework
       - proxy
+    labels:
+      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
       resources:
@@ -101,6 +105,8 @@ services:
     networks:
       - framework
       - proxy
+    labels:
+      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
       resources:
@@ -130,6 +136,8 @@ services:
     networks:
       - framework
       - proxy
+    labels:
+      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-${COOLIFY_RESOURCE_UUID:-coolify}}"
     restart: unless-stopped
     deploy:
       resources:
