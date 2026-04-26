@@ -172,7 +172,7 @@ export class ApiConfig {
         SAVE_CONFIG: (slug: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.CONFIG, { slug })),
         DELETE: (slug: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.DELETE, { slug })),
         MARKETPLACE: withVersion(SystemConstants.API_PATH.PLUGINS.MARKETPLACE),
-        INSTALL: (slug: string) => withVersion(`${SystemConstants.API_PATH.PLUGINS.INSTALL}/${slug}`),
+        INSTALL: (slug: string) => withVersion(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.INSTALL, { slug })),
         UI: SystemConstants.API_PATH.PLUGINS.UI,
       },
       system: {
