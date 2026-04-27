@@ -16,7 +16,7 @@ export default function MarketplacePage() {
   const router = useRouter();
   const { theme } = ThemeHooks.useTheme();
   const { notify } = NotificationHooks.useNotify();
-  const { triggerRefresh } = ContextHooks.usePlugins();
+  const { triggerRefresh, refreshVersion } = ContextHooks.usePlugins();
   const [plugins, setPlugins] = useState<PluginEntry[]>([]);
   const [installedPlugins, setInstalledPlugins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +52,7 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [refreshVersion]);
 
   const handleInstall = async (e: React.MouseEvent, slug: string) => {
     e.stopPropagation();
@@ -64,11 +64,28 @@ export default function MarketplacePage() {
       notify('info', 'Installation Started', `Downloading and staging ${slug}...`);
       const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug), {});
       console.log('[Marketplace] Install response:', response);
+      if (response?.manifest?.slug) {
+        setInstalledPlugins((current) => {
+          const existingIndex = current.findIndex((plugin) => (plugin.manifest?.slug || plugin.slug) === response.manifest.slug);
+          const nextPlugin = {
+            ...(existingIndex >= 0 ? current[existingIndex] : {}),
+            slug: response.manifest.slug,
+            version: response.manifest.version,
+            manifest: response.manifest,
+          };
+
+          if (existingIndex < 0) {
+            return [...current, nextPlugin];
+          }
+
+          return current.map((plugin, index) => index === existingIndex ? nextPlugin : plugin);
+        });
+      }
       notify('success', 'Installation Complete', `Plugin "${slug}" installed successfully.`);
-      
-      // Refresh both the local marketplace state and the global plugin context
-      await fetchData();
       triggerRefresh();
+      window.setTimeout(() => {
+        void fetchData();
+      }, 3000);
     } catch (err: any) {
       console.error('[Marketplace] Installation failed:', err);
       notify('error', 'Installation Failed', err.message || 'Failed to install plugin');
