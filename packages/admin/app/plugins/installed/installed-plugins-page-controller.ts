@@ -183,6 +183,7 @@ export class InstalledPluginsPageController {
       (plugin.manifest.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (plugin.manifest.slug?.toLowerCase() || '').includes(searchQuery.toLowerCase()),
     );
+    const failedPluginsCount = plugins.filter((plugin) => plugin.state === 'error' || Boolean(plugin.error)).length;
     const deleteConfirmDescription = `This will permanently remove ${pluginToDelete} and all its data.${plugins.find((plugin) => plugin.manifest.slug === pluginToDelete)?.state === 'active' ? " Since it's currently active, we'll deactivate it first." : ''}`;
 
     return {
@@ -208,6 +209,7 @@ export class InstalledPluginsPageController {
       },
       deleteConfirmDescription,
       dependencyIssues,
+      failedPluginsCount,
       fileInputRef,
       filteredPlugins,
       handleDragLeave: (event) => {

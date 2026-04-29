@@ -14,6 +14,7 @@ export default function InstalledPluginsPageClient() {
       confirmUploadPreview={model.confirmUploadPreview}
       deleteConfirmDescription={model.deleteConfirmDescription}
       dependencyIssues={model.dependencyIssues}
+      failedPluginsCount={model.failedPluginsCount}
       filteredPlugins={model.filteredPlugins}
       fileInputRef={model.fileInputRef}
       handleDragLeave={model.handleDragLeave}

@@ -9,6 +9,10 @@ import { AdminConstants } from '@/lib/constants';
 import type { InstalledPluginCardProps } from '../installed-plugins-page.interfaces';
 
 export default function InstalledPluginCard({ hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin }: InstalledPluginCardProps) {
+  const hasRuntimeError = Boolean(plugin.error) || plugin.state === 'error';
+  const statusLabel = hasRuntimeError ? 'Error' : plugin.state === 'active' ? 'Active' : 'Inactive';
+  const statusVariant = hasRuntimeError ? 'danger' : plugin.state === 'active' ? 'success' : 'gray';
+
   return (
     <Card className={`group flex flex-col md:flex-row border-0 relative transition-all duration-700 overflow-hidden rounded-3xl ${isDark ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-xl shadow-slate-200/50 hover:shadow-indigo-500/10'}`}>
       <div className="p-6 flex flex-col md:flex-row flex-1 items-center gap-8 relative">
@@ -17,7 +21,7 @@ export default function InstalledPluginCard({ hasImageError, hasUpdate, isDark, 
         </div>
         <div className="flex-1 space-y-2 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-3">
-            <Badge variant={plugin.state === 'active' ? 'success' : 'gray'} className="flex-shrink-0">{plugin.state === 'active' ? 'Active' : 'Inactive'}</Badge>
+            <Badge variant={statusVariant} className="flex-shrink-0">{statusLabel}</Badge>
             {plugin.healthStatus && plugin.healthStatus !== 'healthy' && <Badge variant={plugin.healthStatus === 'error' ? 'danger' : 'amber'} className="animate-pulse flex items-center gap-1.5"><FrameworkIcons.Zap size={10} />{plugin.healthStatus === 'error' ? 'Security Alert' : 'Heuristic Warning'}</Badge>}
             {hasUpdate && <Link href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.manifest.slug)} className="flex items-center gap-2 px-2 py-0.5 bg-amber-500 text-white rounded-lg animate-pulse no-underline shadow-md shadow-amber-500/20"><FrameworkIcons.Loader size={8} className="animate-spin" /><span className="text-[8px] font-semibold uppercase tracking-wider leading-none">Update</span></Link>}
           </div>
@@ -25,6 +29,17 @@ export default function InstalledPluginCard({ hasImageError, hasUpdate, isDark, 
             <Link href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)}><h3 className={`text-2xl font-semibold tracking-tighter transition-colors duration-300 group-hover:text-indigo-500 ${isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.manifest.name}</h3></Link>
             <p className={`text-[13px] leading-snug font-medium line-clamp-1 transition-colors duration-300 ${isDark ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>{plugin.manifest.description || `Manage and configure your ${plugin.manifest.name} tools.`}</p>
           </div>
+          {plugin.error ? (
+            <div className={`rounded-2xl border px-4 py-3 text-left ${isDark ? 'border-rose-500/20 bg-rose-500/10 text-rose-200' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+              <div className="flex items-start gap-3">
+                <FrameworkIcons.Alert size={16} className="mt-0.5 flex-shrink-0 text-rose-500" />
+                <div className="min-w-0">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-rose-500">Startup Error</div>
+                  <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-relaxed">{plugin.error}</p>
+                </div>
+              </div>
+            </div>
+          ) : null}
           <div className={`flex items-center justify-center md:justify-start gap-4 text-[9px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-500/80'}`}>
             <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border shadow-sm transition-colors ${isDark ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-100 text-slate-600'}`}>
               <FrameworkIcons.Shield size={10} className="text-indigo-500" />

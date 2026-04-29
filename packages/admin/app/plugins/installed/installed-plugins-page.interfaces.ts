@@ -27,6 +27,7 @@ export interface InstalledPluginsViewProps {
   confirmUploadPreview: () => Promise<void>;
   deleteConfirmDescription: string;
   dependencyIssues: DependencyIssue[];
+  failedPluginsCount: number;
   filteredPlugins: LoadedPlugin[];
   fileInputRef: RefObject<HTMLInputElement | null>;
   handleDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;
@@ -69,6 +70,7 @@ export interface InstalledPluginsPageModel {
   confirmUploadPreview: () => Promise<void>;
   deleteConfirmDescription: string;
   dependencyIssues: DependencyIssue[];
+  failedPluginsCount: number;
   filteredPlugins: LoadedPlugin[];
   fileInputRef: RefObject<HTMLInputElement | null>;
   handleDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;

@@ -15,6 +15,7 @@ export default function InstalledPluginsView({
   confirmUploadPreview,
   deleteConfirmDescription,
   dependencyIssues,
+  failedPluginsCount,
   filteredPlugins,
   fileInputRef,
   handleDragLeave,
@@ -54,6 +55,21 @@ export default function InstalledPluginsView({
       {operationStatus && (isUploading || isActivating) ? <Loader fullPage label={operationStatus.message} /> : null}
       {loading ? <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Synchronizing Global Marketplace Catalog" /></div> : (
         <>
+          {failedPluginsCount > 0 ? (
+            <div className={`rounded-3xl border px-6 py-4 ${theme === 'dark' ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+              <div className="flex items-start gap-3">
+                <div className={`rounded-2xl p-3 ${theme === 'dark' ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
+                  <FrameworkIcons.Alert size={18} />
+                </div>
+                <div>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-500">Plugin Failures Detected</h3>
+                  <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === 'dark' ? 'text-rose-100/90' : 'text-rose-700'}`}>
+                    {failedPluginsCount} installed {failedPluginsCount === 1 ? 'plugin has' : 'plugins have'} startup or initialization errors. Open the plugin detail page to see the full boot failure.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
           <div className="flex flex-col md:flex-row gap-6">
             <div className="relative flex-1 group">
               <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={16} />
