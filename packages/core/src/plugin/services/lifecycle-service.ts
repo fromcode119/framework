@@ -118,6 +118,7 @@ export class LifecycleService {
       if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
     } catch (err: any) {
       this.logger.error(`Error during onInit for plugin "${slug}": ${err.message}`, err.stack);
+      throw new Error(`Plugin "${slug}" failed during onInit: ${err.message}`);
     }
 
     await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
