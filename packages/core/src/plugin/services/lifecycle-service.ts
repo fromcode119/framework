@@ -15,6 +15,7 @@ import { ManifestValidator } from '../../management/manifest';
 import { SandboxManager } from '../../security/sandbox-manager';
 import { IntegrityService } from '../../security/integrity-service';
 import { Seeder } from '../../database/seeder';
+import { CoreServices } from '../../services/core-services';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -117,6 +118,7 @@ export class LifecycleService {
     try {
       if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
     } catch (err: any) {
+      this.rollbackFailedRegistration(loadedPlugin);
       this.logger.error(`Error during onInit for plugin "${slug}": ${err.message}`, err.stack);
       throw new Error(`Plugin "${slug}" failed during onInit: ${err.message}`);
     }
@@ -294,6 +296,25 @@ export class LifecycleService {
       for (const { collection } of pluginCollections) {
         await this.schemaManager.syncCollection(collection);
       }
+    }
+  }
+
+  private rollbackFailedRegistration(plugin: LoadedPlugin): void {
+    this.manager.plugins.delete(plugin.manifest.slug);
+    this.manager.headInjections.delete(plugin.manifest.slug);
+
+    for (const [collectionSlug, entry] of this.manager.registeredCollections.entries()) {
+      if (entry.pluginSlug === plugin.manifest.slug) {
+        this.manager.registeredCollections.delete(collectionSlug);
+      }
+    }
+
+    const pluginNamespace = String(plugin.manifest.namespace || '').trim();
+    if (pluginNamespace) {
+      CoreServices.getInstance().defaultPageContracts.unregisterByPlugin(
+        pluginNamespace,
+        plugin.manifest.slug,
+      );
     }
   }
 }

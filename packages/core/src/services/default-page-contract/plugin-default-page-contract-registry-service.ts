@@ -37,6 +37,17 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
     });
   }
 
+  unregisterByPlugin(namespace: string, pluginSlug: string): void {
+    const expectedNamespace = this.normalizeRequiredString(namespace, 'namespace');
+    const expectedPluginSlug = this.normalizeRequiredString(pluginSlug, 'pluginSlug');
+
+    for (const [canonicalKey, entry] of this.entries.entries()) {
+      if (entry.namespace === expectedNamespace && entry.pluginSlug === expectedPluginSlug) {
+        this.entries.delete(canonicalKey);
+      }
+    }
+  }
+
   clear(): void {
     this.entries.clear();
   }
