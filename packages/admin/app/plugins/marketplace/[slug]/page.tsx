@@ -13,6 +13,7 @@ import { ContextHooks } from '@fromcode119/react';
 import type { PluginEntry } from '@fromcode119/core/client';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
+import { PluginRuntimeWaitService } from '@/lib/plugin-runtime-wait-service';
 
 export default function MarketplaceDetailPage() {
   const { slug } = useParams();
@@ -73,6 +74,7 @@ export default function MarketplaceDetailPage() {
     if (!plugin) return;
     try {
       setInstalling(true);
+      const isUpdate = Boolean(installedPlugin);
       notify('info', 'Installation Started', `Downloading and staging ${pluginSlug} v${plugin.version}...`);
       await AdminApi.post(`${AdminConstants.ENDPOINTS.PLUGINS.INSTALL(pluginSlug)}?version=${plugin.version}`, {});
       // Optimistically reflect the newly installed version so users do not need a manual refresh.
@@ -82,6 +84,23 @@ export default function MarketplaceDetailPage() {
         version: plugin.version,
         state: current?.state || 'active'
       }));
+
+      if (isUpdate) {
+        notify('info', 'Framework Restarting', `Plugin "${pluginSlug}" was updated. Waiting for the framework API to restart...`);
+        const recovered = await PluginRuntimeWaitService.waitForFrameworkRecovery();
+        if (triggerRefresh) {
+          await Promise.resolve(triggerRefresh());
+        }
+        await fetchData();
+
+        if (recovered) {
+          notify('success', 'Update Complete', `Plugin "${pluginSlug}" v${plugin.version} was updated and the framework is back online.`);
+        } else {
+          notify('info', 'Update Applied', `Plugin "${pluginSlug}" v${plugin.version} was updated, but the framework is still restarting or slow to recover.`);
+        }
+        return;
+      }
+
       if (triggerRefresh) {
         await Promise.resolve(triggerRefresh());
       }
