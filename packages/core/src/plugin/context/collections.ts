@@ -1,4 +1,4 @@
-import { Collection, LoadedPlugin , Field } from '../../types';
+import { Collection, CollectionInput, DeepReadonly, LoadedPlugin , Field } from '../../types';
 import { Logger } from '../../logging';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { ContextSecurityProxy } from './utils';
@@ -8,6 +8,53 @@ import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-nam
 
 
 export class CollectionsContextProxy {
+  private static cloneFields(fields: ReadonlyArray<Field | DeepReadonly<Field>>): Field[] {
+      return [...fields].map((field) => {
+        const mutableField = { ...field } as Field;
+        mutableField.options = Array.isArray(field.options)
+          ? field.options.map((option) => ({ ...option }))
+          : field.options as Field['options'];
+        mutableField.relationTo = Array.isArray(field.relationTo)
+          ? [...field.relationTo]
+          : field.relationTo as Field['relationTo'];
+        mutableField.fields = Array.isArray(field.fields)
+          ? CollectionsContextProxy.cloneFields(field.fields)
+          : field.fields as Field['fields'];
+        mutableField.admin = field.admin ? { ...field.admin } : field.admin as Field['admin'];
+        return mutableField;
+      });
+  }
+
+  private static cloneHooks(collection: CollectionInput): Collection['hooks'] {
+      if (!collection.hooks) {
+        return undefined;
+      }
+
+      return {
+        beforeChange: collection.hooks.beforeChange ? [...collection.hooks.beforeChange] : undefined,
+        afterChange: collection.hooks.afterChange ? [...collection.hooks.afterChange] : undefined,
+        beforeDelete: collection.hooks.beforeDelete ? [...collection.hooks.beforeDelete] : undefined,
+        afterDelete: collection.hooks.afterDelete ? [...collection.hooks.afterDelete] : undefined,
+      };
+  }
+
+  private static cloneAdmin(collection: CollectionInput): Collection['admin'] {
+      if (!collection.admin) {
+        return undefined;
+      }
+
+      return {
+        ...collection.admin,
+        defaultColumns: collection.admin.defaultColumns ? [...collection.admin.defaultColumns] : undefined,
+        tabs: collection.admin.tabs
+          ? collection.admin.tabs.map((tab) => ({ ...tab }))
+          : undefined,
+        sections: collection.admin.sections
+          ? collection.admin.sections.map((section) => ({ ...section }))
+          : undefined,
+      };
+  }
+
   static createCollectionsProxy(
   plugin: LoadedPlugin,
   manager: PluginManagerInterface,
@@ -17,7 +64,7 @@ export class CollectionsContextProxy {
       const { hasCapability, handleViolation } = security;
 
       return {
-        register: (collection: Collection) => {
+        register: (collection: CollectionInput) => {
           if (!hasCapability('database') && !hasCapability('content')) {
             handleViolation('content');
           }
@@ -50,6 +97,10 @@ export class CollectionsContextProxy {
 
           const modifiedCollection: Collection = {
             ...collection,
+            access: collection.access ? { ...collection.access } : undefined,
+            hooks: CollectionsContextProxy.cloneHooks(collection),
+            admin: CollectionsContextProxy.cloneAdmin(collection),
+            fields: CollectionsContextProxy.cloneFields(collection.fields),
             slug: prefixedSlug,
             shortSlug,
             unprefixedSlug: inputSlug,

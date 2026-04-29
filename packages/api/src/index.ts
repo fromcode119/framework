@@ -168,7 +168,10 @@ export class APIServer {
       limit: jsonBodyLimit,
       verify: (req: any, _res, buf, encoding) => {
         if (WebhookRouteUtils.isWebhookPath(String(req?.path || ''))) {
-          req.rawBody = buf.toString((encoding as BufferEncoding) || 'utf8');
+          // Keep the raw buffer untouched — Stripe (and any HMAC verifier) requires
+          // the original bytes. The decoded string is provided as a convenience.
+          req.rawBody = Buffer.from(buf);
+          req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
         }
       }
     }));

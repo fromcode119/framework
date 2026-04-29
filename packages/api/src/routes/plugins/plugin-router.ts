@@ -1,5 +1,8 @@
 import { BaseRouter } from '../../routers/base-router';
 import multer from 'multer';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { PluginController } from '../../controllers/plugins/plugin-controller';
@@ -16,8 +19,10 @@ export class PluginRouter extends BaseRouter {
   ) {
     super();
     this.controller = new PluginController(manager);
-    this.upload = multer({ dest: '/tmp/plugin-uploads' });
-    this.chunkUpload = multer({ dest: '/tmp/plugin-upload-chunks' });
+    const uploadsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-uploads-'));
+    const chunkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-upload-chunks-'));
+    this.upload = multer({ dest: uploadsDir });
+    this.chunkUpload = multer({ dest: chunkDir });
   }
 
   protected registerRoutes(): void {

@@ -1,3 +1,4 @@
+import { ApplicationUrlUtils } from '@fromcode119/core';
 import { Request } from 'express';
 
 export class ApiUrlUtils {
@@ -74,8 +75,28 @@ export class ApiUrlUtils {
         }
 
         const normalizedPath = value.startsWith('/') ? value : `/${value}`;
-        const origin = ApiUrlUtils.getRequestOrigin(req);
+        const origin = ApiUrlUtils.resolveApiPublicOrigin(req);
         return origin ? `${origin}${normalizedPath}` : normalizedPath;
+
+  }
+
+  static resolveApiPublicOrigin(req: Request): string {
+        const configuredApiBaseUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(
+            ApplicationUrlUtils.API_APP,
+        );
+        if (configuredApiBaseUrl) {
+            return configuredApiBaseUrl;
+        }
+
+        const requestOrigin = ApiUrlUtils.getRequestOrigin(req);
+        if (!requestOrigin) {
+            return '';
+        }
+
+        return ApplicationUrlUtils.translateBaseUrlToApp(
+            requestOrigin,
+            ApplicationUrlUtils.API_APP,
+        ) || requestOrigin;
 
   }
 

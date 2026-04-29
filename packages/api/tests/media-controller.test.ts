@@ -96,4 +96,51 @@ describe('media-controller.listFiles', () => {
       ])
     );
   });
+
+  it('returns api-host media urls when the request comes through the admin host', async () => {
+    const mockFiles = [
+      {
+        id: 3,
+        filename: 'file.jpg',
+        originalName: 'file.jpg',
+        mimeType: 'image/jpeg',
+        fileSize: 123,
+        path: 'uploads/file.jpg',
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
+    const mockDb = {
+      find: jest.fn().mockResolvedValue(mockFiles),
+      desc: jest.fn().mockReturnValue('desc_order'),
+      asc: jest.fn().mockReturnValue('asc_order'),
+    } as any;
+
+    const controller = new MediaController({ db: mockDb } as any, {
+      driver: { getUrl: () => '/uploads/file.jpg' },
+    } as any);
+
+    const req = {
+      query: {},
+      protocol: 'http',
+      get: jest.fn((header: string) => {
+        if (header === 'x-forwarded-host') return 'admin.framework.local';
+        if (header === 'x-forwarded-proto') return 'http';
+        return undefined;
+      }),
+    } as any;
+
+    const res = buildResponse();
+    await controller.listFiles(req, res as any);
+
+    expect(res.status).not.toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          url: 'http://api.framework.local/uploads/file.jpg',
+          filename: 'file.jpg',
+        }),
+      ]),
+    );
+  });
 });

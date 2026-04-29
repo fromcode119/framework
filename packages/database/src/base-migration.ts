@@ -1,6 +1,15 @@
 import type { IDatabaseManager, ISchemaField, ISchemaCollection } from './types';
 import { TableResolver } from './table-resolver';
 
+const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+function assertSafeIdentifier(value: string, kind: string): string {
+  if (typeof value !== 'string' || !IDENTIFIER_PATTERN.test(value)) {
+    throw new Error(`Refusing unsafe SQL identifier for ${kind}: ${String(value)}`);
+  }
+  return value;
+}
+
 /**
  * Abstract base class for plugin migrations.
  *
@@ -133,10 +142,15 @@ export abstract class BaseMigration {
     columns: Array<string | { name: string; order?: 'ASC' | 'DESC' }>,
     options?: { unique?: boolean },
   ): Promise<void> {
-    const table = TableResolver.resolve(tableName);
+    const table = assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
+    assertSafeIdentifier(indexName, 'index');
     const unique = options?.unique ? 'UNIQUE ' : '';
     const cols = columns
-      .map((c) => (typeof c === 'string' ? `"${c}"` : c.order ? `"${c.name}" ${c.order}` : `"${c.name}"`))
+      .map((c) => {
+        if (typeof c === 'string') return `"${assertSafeIdentifier(c, 'column')}"`;
+        const colName = assertSafeIdentifier(c.name, 'column');
+        return c.order === 'ASC' || c.order === 'DESC' ? `"${colName}" ${c.order}` : `"${colName}"`;
+      })
       .join(', ');
     await db.execute(
       `CREATE ${unique}INDEX IF NOT EXISTS "${indexName}" ON "${table}" (${cols})`,
@@ -156,7 +170,7 @@ export abstract class BaseMigration {
     db: IDatabaseManager,
     tableName: string,
   ): Promise<void> {
-    const table = TableResolver.resolve(tableName);
+    const table = assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
     await db.execute(`DROP TABLE IF EXISTS "${table}"`);
   }
 
@@ -177,12 +191,13 @@ export abstract class BaseMigration {
     tableName: string,
     column: string,
   ): Promise<void> {
-    const table = TableResolver.resolve(tableName);
+    const table = assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
+    const safeColumn = assertSafeIdentifier(column, 'column');
     try {
-      await db.execute(`ALTER TABLE "${table}" DROP COLUMN IF EXISTS "${column}"`);
+      await db.execute(`ALTER TABLE "${table}" DROP COLUMN IF EXISTS "${safeColumn}"`);
     } catch {
       try {
-        await db.execute(`ALTER TABLE "${table}" DROP COLUMN "${column}"`);
+        await db.execute(`ALTER TABLE "${table}" DROP COLUMN "${safeColumn}"`);
       } catch {
         // Column does not exist — nothing to drop.
       }

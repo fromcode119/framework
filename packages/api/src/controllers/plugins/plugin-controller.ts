@@ -2,9 +2,8 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { ArchiveUploadSessionService, BackupService, PluginManager, Logger } from '@fromcode119/core';
+import { ArchiveUploadSessionService, BackupService, PluginManager, Logger, SafeArchive } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
-import AdmZip from 'adm-zip';
 import { PluginInstallOperationService } from '../../services/plugin-install-operation-service';
 
 export class PluginController {
@@ -369,7 +368,7 @@ export class PluginController {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `fromcode-${type}-inspect-`));
     try {
       if (this.isZipArchive(filePath, originalFilename)) {
-        new AdmZip(filePath).extractAllTo(tempDir, true);
+        SafeArchive.extractZip(filePath, tempDir);
       } else if (this.isTarArchive(filePath, originalFilename)) {
         await BackupService.restore(filePath, tempDir);
       } else {

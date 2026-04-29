@@ -8,24 +8,28 @@ import type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
  */
 export class RuntimeBridge {
   static resolveApiBaseUrl(options: { fallbackHost?: string } = {}): string {
-    const fallbackBaseUrl = ApplicationUrlUtils.normalizeBaseUrlCandidate(options.fallbackHost, { stripApiPath: true });
+    const fallbackBaseUrl = RuntimeBridge.normalizeApiBaseUrlCandidate(options.fallbackHost);
 
     if (typeof window === 'undefined') {
-      return ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true })
+      return RuntimeBridge.normalizeApiBaseUrlCandidate(
+        ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true }),
+      )
         || fallbackBaseUrl;
     }
 
-    const fromBridge = ApplicationUrlUtils.normalizeBaseUrlCandidate((window as any)?.FROMCODE_API_URL, { stripApiPath: true });
+    const fromBridge = RuntimeBridge.normalizeApiBaseUrlCandidate((window as any)?.FROMCODE_API_URL);
     if (fromBridge) return fromBridge;
 
-    const fromGlobal = ApplicationUrlUtils.normalizeBaseUrlCandidate((window as any)?.Fromcode?.apiUrl, { stripApiPath: true });
+    const fromGlobal = RuntimeBridge.normalizeApiBaseUrlCandidate((window as any)?.Fromcode?.apiUrl);
     if (fromGlobal) return fromGlobal;
 
     const runtimeBridge = RuntimeBridge.getBridge<any>();
-    const fromRuntimeBridge = ApplicationUrlUtils.normalizeBaseUrlCandidate(runtimeBridge?.apiUrl, { stripApiPath: true });
+    const fromRuntimeBridge = RuntimeBridge.normalizeApiBaseUrlCandidate(runtimeBridge?.apiUrl);
     if (fromRuntimeBridge) return fromRuntimeBridge;
 
-    const fromEnv = ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true });
+    const fromEnv = RuntimeBridge.normalizeApiBaseUrlCandidate(
+      ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true }),
+    );
     if (fromEnv) return fromEnv;
 
     return ApplicationUrlUtils.inferBrowserBaseUrl(ApplicationUrlUtils.API_APP) || fallbackBaseUrl;
@@ -70,5 +74,35 @@ export class RuntimeBridge {
     }
 
     return metadata;
+  }
+
+  private static normalizeApiBaseUrlCandidate(value: unknown): string {
+    const normalized = ApplicationUrlUtils.normalizeBaseUrlCandidate(value, { stripApiPath: true });
+    if (!normalized) {
+      return '';
+    }
+
+    const translated = ApplicationUrlUtils.translateBaseUrlToApp(normalized, ApplicationUrlUtils.API_APP);
+    if (translated && translated !== normalized) {
+      return translated;
+    }
+
+    const parsed = ApplicationUrlUtils.parseAbsoluteUrl(normalized);
+    if (!parsed || ApplicationUrlUtils.isLoopbackCandidate(parsed)) {
+      return normalized;
+    }
+
+    const hostname = parsed.hostname;
+    for (const app of [ApplicationUrlUtils.ADMIN_APP, ApplicationUrlUtils.FRONTEND_APP]) {
+      if (hostname === app || hostname.startsWith(`${app}.`)) {
+        const nextHostname = hostname.replace(
+          new RegExp(`^${app}(?=\\.|$)`, 'i'),
+          ApplicationUrlUtils.API_APP,
+        );
+        return `${parsed.protocol}//${nextHostname}${parsed.port ? `:${parsed.port}` : ''}`;
+      }
+    }
+
+    return normalized;
   }
 }

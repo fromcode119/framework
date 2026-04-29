@@ -1,5 +1,8 @@
 import { BaseRouter } from '../routers/base-router';
 import multer from 'multer';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager, RouteConstants } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest/rest-controller';
@@ -40,8 +43,10 @@ export class SystemRouter extends BaseRouter {
   ) {
     super();
     this.auth = auth;
-    this.upload = multer({ dest: '/tmp/system-backup-uploads' });
-    this.chunkUpload = multer({ dest: '/tmp/system-backup-upload-chunks' });
+    const uploadsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-system-backup-'));
+    const chunkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-system-backup-chunks-'));
+    this.upload = multer({ dest: uploadsDir });
+    this.chunkUpload = multer({ dest: chunkDir });
     this.controller = new SystemController(manager, themeManager, restController, auth);
     const backupRepository = new SystemBackupRepository((manager as any).db);
     const backupService = new SystemBackupService(backupRepository);

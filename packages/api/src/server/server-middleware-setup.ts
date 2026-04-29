@@ -52,12 +52,11 @@ export class ServerMiddlewareSetup {
       if (isPublicSystemRoute) return next();
 
       this.logger.warn(`Maintenance: BLOCKED request to ${req.path} from ${req.user?.email || 'Guest'}`);
-      if (req.headers.origin) {
-        res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client, X-CSRF-Token, X-Reset-Context');
-      }
+      // CORS headers (including Allow-Origin / Allow-Credentials) are set by the
+      // upstream `cors(corsOptions)` middleware, which validates the origin against
+      // the configured allowlist. Reflecting `req.headers.origin` here with
+      // credentials would bypass that allowlist and turn maintenance responses into
+      // a credential-leak vector.
       res.status(503).json({ error: 'Service Unavailable', message: 'System is currently undergoing maintenance. Please try again later.' });
     });
 
@@ -75,7 +74,10 @@ export class ServerMiddlewareSetup {
         req.url.includes(probeRoutes.READY) ||
         req.url.includes(ApiConfig.getInstance().routes.system.HEALTH) ||
         req.url.includes(ApiConfig.getInstance().routes.system.STATUS);
-      if (!isNoise) this.logger.debug(`${req.method} ${req.url} - User: ${req.user ? req.user.email : 'None'} - HasToken: ${hasToken} - Cookies: ${JSON.stringify(req.cookies || {})}`);
+      if (!isNoise) {
+        const cookieNames = Object.keys(req.cookies || {});
+        this.logger.debug(`${req.method} ${req.url} - User: ${req.user ? req.user.email : 'None'} - HasToken: ${hasToken} - CookieNames: ${cookieNames.join(',') || 'none'}`);
+      }
       if (!req.user && hasToken && !isNoise) this.logger.warn(`Token present but user not authenticated for ${req.url}. Possibly expired or invalid format.`);
       next();
     });

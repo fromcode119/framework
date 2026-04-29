@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import * as tar from 'tar';
-import AdmZip from 'adm-zip';
 import { DatabaseFactory } from '@fromcode119/database';
 import { ProjectPaths } from '../config/paths';
+import { SafeArchive } from '../security/safe-archive';
 import type { CreateSystemBackupOptions, CreateSystemBackupResult } from './backup-service.interfaces';
 import type { BackupSectionKey } from './backup-service.types';
 import { BackupArchivePathService } from './helpers/backup-archive-path-service';
@@ -128,8 +128,7 @@ export class BackupService {
 
       // Extract to target
       if (isZip) {
-        const zip = new AdmZip(tempFile);
-        zip.extractAllTo(targetDir, true);
+        SafeArchive.extractZip(tempFile, targetDir);
       } else {
         await tar.extract({
           file: tempFile,

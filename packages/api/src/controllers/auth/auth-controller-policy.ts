@@ -12,7 +12,7 @@ import type {
 export class AuthControllerPolicy extends AuthControllerInfrastructure {
   protected async issueLoginSession(req: Request, res: Response, user: any) {
     const roles = this.readRoles(user);
-    const jti = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    const jti = randomUUID();
     const userResponse = {
       id: String(user.id),
       email: this.normalizeEmail(user.email),

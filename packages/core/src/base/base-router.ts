@@ -54,8 +54,7 @@ export abstract class BaseRouter {
   }
 
   constructor() {
-    // Router is initialized lazily via the 'router' getter above.
-    // No setup needed here.
+    this.bindPrototypeMethods();
   }
 
   /**
@@ -154,16 +153,14 @@ export abstract class BaseRouter {
 
   /**
    * Wraps a controller method as an Express RequestHandler with automatic
-   * async error propagation. The method must be bound to its controller
-   * instance (via `.bind(controller)`) so that 'this' is correctly resolved.
+   * async error propagation.
    *
    * @example
-   * // In controller — regular async method:
+   * // In router — regular router method:
    * async getFoo(req: Request, res: Response): Promise<void> {
    *   res.json(await this.service.getFoo());
    * }
-   * // In router — use .bind() to preserve 'this':
-   * this.get('/foo', this.bind(this.controller.getFoo.bind(this.controller)));
+   * this.get('/foo', this.getFoo);
    */
   protected bind(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -179,5 +176,35 @@ export abstract class BaseRouter {
         next(err);
       }
     };
+  }
+
+  private bindPrototypeMethods(): void {
+    let prototype = Object.getPrototypeOf(this) as object | null;
+
+    while (prototype && prototype !== BaseRouter.prototype && prototype !== Object.prototype) {
+      for (const propertyName of Object.getOwnPropertyNames(prototype)) {
+        if (propertyName === 'constructor') {
+          continue;
+        }
+
+        const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
+        if (!descriptor || typeof descriptor.value !== 'function') {
+          continue;
+        }
+
+        const instanceMethod = Reflect.get(this, propertyName);
+        if (typeof instanceMethod !== 'function') {
+          continue;
+        }
+
+        Object.defineProperty(this, propertyName, {
+          value: instanceMethod.bind(this),
+          configurable: true,
+          writable: true,
+        });
+      }
+
+      prototype = Object.getPrototypeOf(prototype) as object | null;
+    }
   }
 }

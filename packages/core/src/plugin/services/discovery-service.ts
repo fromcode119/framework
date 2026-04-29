@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import semver from 'semver';
-import AdmZip from 'adm-zip';
 import { Logger } from '../../logging';
 import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
 import { BackupService } from '../../management/backup-service';
+import { SafeArchive } from '../../security/safe-archive';
 import { z } from 'zod';
 import Module from 'module';
 import { ProjectPaths } from '../../config/paths';
@@ -401,8 +401,7 @@ export class DiscoveryService {
 
     try {
       if (this.isZipArchive(filePath)) {
-        const zip = new AdmZip(filePath);
-        zip.extractAllTo(tempDir, true);
+        SafeArchive.extractZip(filePath, tempDir);
       } else {
         try {
           await BackupService.restore(filePath, tempDir);

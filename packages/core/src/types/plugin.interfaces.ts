@@ -1,5 +1,5 @@
 import { IDatabaseManager, IMediaManager, IEmailManager, ICacheManager } from './managers.interfaces';
-import { Collection, PluginSettingsSchema } from './schema.interfaces';
+import { Collection, CollectionInput, PluginSettingsSchema } from './schema.interfaces';
 import { PluginManifest, MiddlewareConfig } from './manifests.interfaces';
 import { PluginCapability } from './enums.enums';
 import type { PluginHealthProbeResult } from '../plugin-health-route-handler.interfaces';
@@ -107,7 +107,7 @@ export interface PluginContext {
 
   // Content Management
   readonly collections: {
-    register(collection: Collection): void;
+    register(collection: CollectionInput): void;
     extend(targetPlugin: string, targetCollection: string, extensions: Partial<Collection>): void;
   };
 

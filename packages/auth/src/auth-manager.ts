@@ -34,7 +34,7 @@ export class AuthManager {
   }
 
   async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
+    return bcrypt.hash(password, 12);
   }
 
   async comparePassword(password: string, hash: string): Promise<boolean> {
@@ -46,7 +46,7 @@ export class AuthManager {
       ...user,
       jti: user.jti || randomUUID(),
     };
-    return jwt.sign(payload, this.secret, { expiresIn: options.expiresIn ?? '15m' });
+    return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: options.expiresIn ?? '15m' });
   }
 
   async generateRefreshToken(user: User): Promise<string> {
@@ -55,12 +55,12 @@ export class AuthManager {
       jti: user.jti || randomUUID(),
       type: 'refresh'
     };
-    return jwt.sign(payload, this.secret, { expiresIn: '7d' });
+    return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: '7d' });
   }
 
   async verifyToken(token: string): Promise<User> {
     try {
-      const decoded = jwt.verify(token, this.secret) as any;
+      const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
 
       if (decoded.type === 'refresh') {
         throw new Error('Cannot use refresh token as access token');
@@ -79,7 +79,7 @@ export class AuthManager {
 
   async verifyRefreshToken(token: string): Promise<{ id: string, jti: string }> {
     try {
-      const decoded = jwt.verify(token, this.secret) as any;
+      const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
       if (decoded.type !== 'refresh') throw new Error('Invalid refresh token');
       return { id: decoded.id, jti: decoded.jti };
     } catch {
@@ -150,7 +150,7 @@ export class AuthManager {
           const user = await this.verifyToken(t);
           if (user) {
             req.user = user;
-            this.logger.debug(`Session validated using token candidate (${t.substring(0, 10)}...) for ${req.url || 'unknown'}`);
+            this.logger.debug(`Session validated for ${req.url || 'unknown'}`);
             break;
           }
         } catch (err: any) {

@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { IDatabaseManager, users, systemRoles, systemUsersToRoles, systemRolesToPermissions } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger } from '@fromcode119/core';
@@ -94,9 +95,10 @@ export class UserManagementService {
     if (userId) {
       await this.db.update(users, { id: userId }, updateData);
     } else {
+      const initialPassword = data.password || randomBytes(24).toString('hex');
       const newUser = await this.db.insert(users, {
           email: data.email,
-          password: await this.auth.hashPassword(data.password || 'change-me-123'),
+          password: await this.auth.hashPassword(initialPassword),
           firstName: data.firstName,
           lastName: data.lastName
       });

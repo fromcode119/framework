@@ -102,6 +102,7 @@ export * from './data-sources';
 // ── Shared Utilities ──────────────────────────────────────────────────────────
 export * from './utils';
 export { EnvConfig } from './config/env';
+export { SafeArchive } from './security/safe-archive';
 export { ProjectPaths } from './config/paths';
 
 // Integrations

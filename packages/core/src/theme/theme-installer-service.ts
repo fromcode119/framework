@@ -6,6 +6,7 @@ import AdmZip from 'adm-zip';
 import { Logger } from '../logging';
 import { ThemeManifest } from '../types';
 import { BackupService } from '../management/backup-service';
+import { SafeArchive } from '../security/safe-archive';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { Seeder } from '../database/seeder';
 
@@ -48,7 +49,7 @@ export class ThemeInstallerService {
     fs.mkdirSync(tempDir, { recursive: true });
     try {
       if (this.isZipArchive(filePath)) {
-        new AdmZip(filePath).extractAllTo(tempDir, true);
+        SafeArchive.extractZip(filePath, tempDir);
       } else {
         try {
           await BackupService.restore(filePath, tempDir);

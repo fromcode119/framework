@@ -7,8 +7,9 @@ import type { Request, Response, NextFunction, RequestHandler } from 'express';
  * call the service layer, and format the response.
  * They do NOT contain business logic (that belongs in services).
  *
- * Controller methods MUST be arrow function class fields (not regular methods)
- * to preserve the correct 'this' binding when passed as route handlers:
+ * Controller methods may use normal prototype syntax. BaseController binds
+ * subclass methods once during construction so they can be passed directly
+ * to routers without losing `this`.
  *
  * @example
  * ```typescript
@@ -17,18 +18,19 @@ import type { Request, Response, NextFunction, RequestHandler } from 'express';
  *     super();
  *   }
  *
- *   // ✅ Arrow function — 'this' is always the controller instance
- *   listOrders = async (req: Request, res: Response): Promise<void> => {
+ *   // ✅ Regular method — auto-bound by BaseController
+ *   async listOrders(req: Request, res: Response): Promise<void> {
  *     const orders = await this.service.listOrders(req.query);
  *     res.json(orders);
- *   };
- *
- *   // ❌ Regular method — 'this' is lost when passed to router.get()
- *   // async listOrders(req: Request, res: Response) { ... }
+ *   }
  * }
  * ```
  */
 export abstract class BaseController {
+  constructor() {
+    this.bindPrototypeMethods();
+  }
+
   /**
    * Wraps a controller method as an Express RequestHandler.
    * Automatically propagates async errors to Express's next() handler.
@@ -68,5 +70,35 @@ export abstract class BaseController {
    */
   protected notFound(res: Response, resource = 'Resource'): void {
     this.sendError(res, 404, `${resource} not found`);
+  }
+
+  private bindPrototypeMethods(): void {
+    let prototype = Object.getPrototypeOf(this) as object | null;
+
+    while (prototype && prototype !== BaseController.prototype && prototype !== Object.prototype) {
+      for (const propertyName of Object.getOwnPropertyNames(prototype)) {
+        if (propertyName === 'constructor') {
+          continue;
+        }
+
+        const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
+        if (!descriptor || typeof descriptor.value !== 'function') {
+          continue;
+        }
+
+        const instanceMethod = Reflect.get(this, propertyName);
+        if (typeof instanceMethod !== 'function') {
+          continue;
+        }
+
+        Object.defineProperty(this, propertyName, {
+          value: instanceMethod.bind(this),
+          configurable: true,
+          writable: true,
+        });
+      }
+
+      prototype = Object.getPrototypeOf(prototype) as object | null;
+    }
   }
 }

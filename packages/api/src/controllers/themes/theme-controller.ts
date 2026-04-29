@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { ArchiveUploadSessionService, ThemeManager, Logger } from '@fromcode119/core';
+import { ArchiveUploadSessionService, ThemeManager, Logger, SafeArchive } from '@fromcode119/core';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import AdmZip from 'adm-zip';
 import { BackupService } from '@fromcode119/core';
 
 export class ThemeController {
@@ -299,7 +298,7 @@ export class ThemeController {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-theme-inspect-'));
     try {
       if (this.isZipArchive(filePath, originalFilename)) {
-        new AdmZip(filePath).extractAllTo(tempDir, true);
+        SafeArchive.extractZip(filePath, tempDir);
       } else if (this.isTarArchive(filePath, originalFilename)) {
         await BackupService.restore(filePath, tempDir);
       } else {
