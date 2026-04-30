@@ -4,6 +4,12 @@ const { NextConfigEnv } = require('../../config/next-config-env');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Tell SWC to respect .browserslistrc so it skips polyfills for
+    // Array.prototype.at/flat/flatMap, Object.fromEntries/hasOwn, etc.
+    // that are already native in Chrome/Firefox/Edge ≥ 90.
+    browsersListForSwc: true,
+  },
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages
   // are replaced with no-op stubs via webpack aliases below, so no external resolution needed.
   transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk'],

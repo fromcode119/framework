@@ -67,8 +67,13 @@ export class LocalStorageDriver implements StorageDriver {
     return newFilename;
   }
 
+  async read(filepath: string): Promise<Buffer> {
+    const fullPath = path.join(this.uploadDir, this.normalizePublicFilePath(filepath));
+    return fs.readFile(fullPath);
+  }
+
   async delete(filepath: string): Promise<void> {
-    const fullPath = path.join(this.uploadDir, filepath);
+    const fullPath = path.join(this.uploadDir, this.normalizePublicFilePath(filepath));
     await fs.unlink(fullPath);
   }
 

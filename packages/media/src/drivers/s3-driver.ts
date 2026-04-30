@@ -1,6 +1,6 @@
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { StorageDriver } from '../index';
 
@@ -47,6 +47,18 @@ export class S3StorageDriver implements StorageDriver {
 
         await upload.done();
         return newFilename;
+    }
+
+    async read(filepath: string): Promise<Buffer> {
+        const response = await this.client.send(new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: filepath
+        }));
+        const chunks: Uint8Array[] = [];
+        for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+            chunks.push(chunk);
+        }
+        return Buffer.concat(chunks);
     }
 
     async delete(filepath: string): Promise<void> {

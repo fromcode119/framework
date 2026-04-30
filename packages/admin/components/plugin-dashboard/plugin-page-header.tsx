@@ -24,15 +24,17 @@ export const PluginPageHeader = ({
 }: PluginPageHeaderProps) => {
   return (
     <div className="sticky top-0 z-30 border-b backdrop-blur-3xl transition-all duration-300 bg-white/80 border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:bg-slate-950/80 dark:border-slate-800/50 dark:shadow-2xl dark:shadow-black/20 -mx-8 -mt-8 px-8 py-8 mb-8">
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between md:gap-6">
         <div className="flex-1 min-w-0">
           <PageHeading
             title={title}
             subtitle={subtitle}
             icon={
               icon ? (
-                <div className="h-11 w-11 rounded-full flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:border dark:border-indigo-500/20">
-                  {icon}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-transform hover:rotate-0 dark:border dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 sm:h-11 sm:w-11 md:-rotate-3">
+                  <span className="flex h-5 w-5 items-center justify-center [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0">
+                    {icon}
+                  </span>
                 </div>
               ) : undefined
             }
@@ -42,7 +44,7 @@ export const PluginPageHeader = ({
           />
         </div>
         {actions && (
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-wrap items-center gap-3 md:w-auto md:justify-end">
             {actions}
           </div>
         )}

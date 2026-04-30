@@ -3,6 +3,8 @@ import sharp from 'sharp';
 import type {
   MediaImageOptimizationOptions,
   MediaImageOptimizationResult,
+  MediaWebPConversionOptions,
+  MediaWebPConversionResult,
 } from './media-image-optimizer.interfaces';
 
 export class MediaImageOptimizer {
@@ -78,6 +80,31 @@ export class MediaImageOptimizer {
       height: usingOptimizedBuffer ? optimized.info.height : originalMetadata.height,
       mimeType,
       optimized: usingOptimizedBuffer,
+    };
+  }
+
+  static async convertToWebP(
+    file: Buffer,
+    options: MediaWebPConversionOptions = {},
+  ): Promise<MediaWebPConversionResult> {
+    const maxWidth = options.maxWidth ?? 1600;
+    const maxHeight = options.maxHeight ?? 1600;
+    const quality = options.quality ?? 74;
+
+    const pipeline = sharp(file, { animated: false })
+      .rotate()
+      .resize(maxWidth, maxHeight, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality, effort: 6 });
+
+    const result = await pipeline.toBuffer({ resolveWithObject: true });
+
+    return {
+      buffer: result.data,
+      width: result.info.width,
+      height: result.info.height,
+      mimeType: 'image/webp',
+      originalSize: file.length,
+      convertedSize: result.data.length,
     };
   }
 

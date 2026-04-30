@@ -43,6 +43,7 @@ export class MediaRouter extends BaseRouter {
     this.get('/', this.auth.guard(['admin', 'user']), this.bind(this.controller.listFiles.bind(this.controller)));
     this.patch(RouteConstants.SEGMENTS.MEDIA_ID, this.auth.guard(['admin']), this.bind(this.controller.updateFile.bind(this.controller)));
     this.delete(RouteConstants.SEGMENTS.MEDIA_ID, this.auth.guard(['admin']), this.bind(this.controller.deleteFile.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.MEDIA_ID_OPTIMIZE, this.auth.guard(['admin']), this.bind(this.controller.optimizeImage.bind(this.controller)));
     
     // Folder management
     this.get(RouteConstants.SEGMENTS.MEDIA_FOLDERS, this.auth.guard(['admin', 'user']), this.bind(this.controller.listFolders.bind(this.controller)));

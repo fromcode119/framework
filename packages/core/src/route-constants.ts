@@ -170,6 +170,7 @@ export class RouteConstants {
   MEDIA_FOLDERS_ID: '/folders/:id',
   MEDIA_FOLDERS_ID_PATH: '/folders/:id/path',
   MEDIA_ID: '/:id',
+  MEDIA_ID_OPTIMIZE: '/:id/optimize',
   // MEDIA_BASE: '/' is implicitly handled by the router mount point or just ''
   } as const;
 }

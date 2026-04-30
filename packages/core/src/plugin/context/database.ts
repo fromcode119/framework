@@ -1,4 +1,5 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
+import { NamingStrategy } from '@fromcode119/database';
 import { sql, eq, and, or } from 'drizzle-orm';
 import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from './utils.interfaces';
@@ -7,7 +8,18 @@ import { RateLimiter } from '../../security/rate-limiter';
 
 const dbLimiter = new RateLimiter(5000, 60000);
 
+// Plugins read with the schema's camelCase field names. Raw-SQL paths in
+// the dialects return rows keyed by snake_case DB columns; convert top-level
+// keys here so plugin code can stick to one canonical name.
+const ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update']);
+
 export class DatabaseContextProxy {
+  private static denormalizeResult(result: any): any { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (result == null) return result;
+    if (Array.isArray(result)) return result.map((row) => NamingStrategy.denormalizeRecord(row));
+    return NamingStrategy.denormalizeRecord(result);
+  }
+
   static createDatabaseProxy(
   plugin: LoadedPlugin,
   manager: PluginManagerInterface,
@@ -49,6 +61,18 @@ export class DatabaseContextProxy {
           if (prop === 'eq') return eq;
           if (prop === 'and') return and;
           if (prop === 'or') return or;
+
+          if (typeof prop === 'string' && ROW_RETURNING_METHODS.has(prop)) {
+            const fn = (target as any)[prop];
+            if (typeof fn !== 'function') return fn;
+            return function (this: any, ...args: any[]) {
+              const out = fn.apply(this, args);
+              if (out && typeof out.then === 'function') {
+                return out.then(DatabaseContextProxy.denormalizeResult);
+              }
+              return DatabaseContextProxy.denormalizeResult(out);
+            };
+          }
 
           return (target as any)[prop];
         }

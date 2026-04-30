@@ -18,14 +18,14 @@ export const PageHeading = ({
   icon,
   badge,
   className = '',
-  titleClassName = 'text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic',
+  titleClassName = 'text-3xl sm:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic',
   subtitleClassName = 'text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight opacity-80 mt-3'
 }: PageHeadingProps) => {
   return (
     <div className={className}>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {icon}
-        <h1 className={titleClassName}>{title}</h1>
+        <h1 className={`min-w-0 ${titleClassName}`}>{title}</h1>
         {badge}
       </div>
       {subtitle ? <p className={subtitleClassName}>{subtitle}</p> : null}

@@ -29,7 +29,8 @@ const {
   Loader,
   External,
   Alert,
-  Edit
+  Edit,
+  Zap,
 } = FrameworkIcons;
 
 interface MediaFolder {
@@ -47,6 +48,10 @@ interface MediaItem {
   width?: number;
   height?: number;
   url: string;
+  optimizedUrl?: string | null;
+  optimizedSize?: number | null;
+  optimizedWidth?: number | null;
+  optimizedHeight?: number | null;
   folderId: number | null;
   createdAt: string;
 }
@@ -75,6 +80,7 @@ export default function MediaPage() {
   const [editingFolder, setEditingFolder] = useState<MediaFolder | null>(null);
   const [movingItem, setMovingItem] = useState<{ id: number; type: 'file' | 'folder' } | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [optimizingId, setOptimizingId] = useState<number | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepthRef = useRef(0);
@@ -270,6 +276,26 @@ export default function MediaPage() {
       console.error('Delete failed:', err);
     } finally {
       setIsActionLoading(false);
+    }
+  };
+
+  const handleOptimize = async (item: MediaItem) => {
+    setOptimizingId(item.id);
+    setError(null);
+    try {
+      const result = await AdminApi.post(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${item.id}/optimize`, {});
+      setItems(prev => prev.map(i => i.id === item.id ? {
+        ...i,
+        optimizedUrl: result.optimizedUrl,
+        optimizedSize: result.optimizedSize,
+        optimizedWidth: result.optimizedWidth,
+        optimizedHeight: result.optimizedHeight,
+      } : i));
+    } catch (err: any) {
+      console.error('Optimize failed:', err);
+      setError(err?.message || 'Failed to optimize image');
+    } finally {
+      setOptimizingId(null);
     }
   };
 
@@ -525,6 +551,16 @@ export default function MediaPage() {
                         >
                           <Download size={18} />
                         </a>
+                        {['image/jpeg', 'image/jpg', 'image/png'].includes(item.mimeType) && (
+                          <button
+                            onClick={() => handleOptimize(item)}
+                            disabled={optimizingId === item.id}
+                            title={item.optimizedUrl ? `Optimized · ${AdminServices.getInstance().formatter.formatSize(item.optimizedSize ?? 0)}` : 'Convert to WebP'}
+                            className="p-2 bg-white rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-60"
+                          >
+                            {optimizingId === item.id ? <Loader size={18} className="animate-spin" /> : <Zap size={18} />}
+                          </button>
+                        )}
                         <button 
                           onClick={() => {
                             setMovingItem({ id: item.id, type: 'file' });
@@ -551,9 +587,14 @@ export default function MediaPage() {
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-[10px] text-slate-500 font-medium tracking-wide">{AdminServices.getInstance().formatter.formatSize(item.fileSize)}</span>
-                      <Badge variant="gray" className="text-[10px]">
-                        {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        {item.optimizedUrl && (
+                          <Badge variant="success" className="text-[10px]">WebP</Badge>
+                        )}
+                        <Badge variant="gray" className="text-[10px]">
+                          {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -568,10 +609,25 @@ export default function MediaPage() {
                    </div>
                    <div className="flex-1 min-w-0">
                       <div className={`font-semibold text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{item.originalName}</div>
-                      <div className="text-[10px] text-slate-500 font-medium">{AdminServices.getInstance().formatter.formatSize(item.fileSize)} • {item.mimeType}</div>
+                      <div className="text-[10px] text-slate-500 font-medium">
+                        {AdminServices.getInstance().formatter.formatSize(item.fileSize)} • {item.mimeType}
+                        {item.optimizedUrl && item.optimizedSize && (
+                          <span className="ml-2 text-emerald-500">→ WebP {AdminServices.getInstance().formatter.formatSize(item.optimizedSize)}</span>
+                        )}
+                      </div>
                    </div>
                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <a href={mediaUrl} download className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500"><Download size={16} /></a>
+                      {['image/jpeg', 'image/jpg', 'image/png'].includes(item.mimeType) && (
+                        <button
+                          onClick={() => handleOptimize(item)}
+                          disabled={optimizingId === item.id}
+                          title={item.optimizedUrl ? 'Re-optimize to WebP' : 'Convert to WebP'}
+                          className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg text-emerald-500 disabled:opacity-60"
+                        >
+                          {optimizingId === item.id ? <Loader size={16} className="animate-spin" /> : <Zap size={16} />}
+                        </button>
+                      )}
                       <button 
                         onClick={() => {
                           setMovingItem({ id: item.id, type: 'file' });

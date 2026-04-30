@@ -1,6 +1,7 @@
 import path from 'path';
 import type { StorageDriver } from './storage-factory.interfaces';
 import { MediaImageOptimizer } from './media-image-optimizer';
+import type { MediaWebPConversionOptions } from './media-image-optimizer.interfaces';
 
 export class MediaManager {
   public driver: StorageDriver;
@@ -45,6 +46,35 @@ export class MediaManager {
       size: payload.length,
       mimeType,
       provider: this.driver.provider
+    };
+  }
+
+  /**
+   * Reads an existing stored file, converts it to WebP, and saves the result
+   * alongside the original. The original is never modified.
+   *
+   * @param originalPath - Stored path of the original file (as in the DB `path` column)
+   * @param options - Optional resize/quality settings
+   * @returns Stored path, URL, dimensions, and byte sizes of the WebP variant
+   */
+  async createWebPVariant(
+    originalPath: string,
+    options?: MediaWebPConversionOptions,
+  ): Promise<{ path: string; url: string; width: number; height: number; size: number; originalSize: number }> {
+    const original = await this.driver.read(originalPath);
+    const result = await MediaImageOptimizer.convertToWebP(original, options);
+
+    const baseName = path.basename(originalPath, path.extname(originalPath));
+    const webpFilename = `${baseName}.webp`;
+    const savedPath = await this.driver.save(result.buffer, webpFilename);
+
+    return {
+      path: savedPath,
+      url: this.driver.getUrl(savedPath),
+      width: result.width,
+      height: result.height,
+      size: result.convertedSize,
+      originalSize: result.originalSize,
     };
   }
 

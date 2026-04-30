@@ -112,6 +112,10 @@ export class MediaController {
                 caption: true,
                 path: true,
                 folderId: true,
+                optimizedPath: true,
+                optimizedSize: true,
+                optimizedWidth: true,
+                optimizedHeight: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -138,7 +142,10 @@ export class MediaController {
       res.json(
         files.map((f: any) => ({
           ...f,
-          url: ApiUrlUtils.resolvePublicUrl(req, this.mediaManager.driver.getUrl(f.path))
+          url: ApiUrlUtils.resolvePublicUrl(req, this.mediaManager.driver.getUrl(f.path)),
+          optimizedUrl: f.optimizedPath
+            ? ApiUrlUtils.resolvePublicUrl(req, this.mediaManager.driver.getUrl(f.optimizedPath))
+            : null,
         }))
       );
     } catch (err: any) {
@@ -302,10 +309,61 @@ export class MediaController {
       if (!file) return res.status(404).json({ error: 'File not found' });
 
       await this.mediaManager.remove(file.path);
+      if (file.optimizedPath) {
+        try { await this.mediaManager.remove(file.optimizedPath); } catch { /* ignore if missing */ }
+      }
       await this.db.delete(media, { id: Number(id) });
       
       res.json({ success: true });
     } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async optimizeImage(req: Request, res: Response) {
+    const { id } = req.params;
+    try {
+      const file: any = await this.db.findOne(media, { id: Number(id) });
+      if (!file) return res.status(404).json({ error: 'File not found' });
+
+      const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!supportedTypes.includes(file.mimeType)) {
+        return res.status(400).json({ error: 'Only JPEG and PNG images can be optimized to WebP' });
+      }
+
+      const variant = await this.mediaManager.createWebPVariant(file.path, {
+        maxWidth: Number(req.body?.maxWidth) || undefined,
+        maxHeight: Number(req.body?.maxHeight) || undefined,
+        quality: Number(req.body?.quality) || undefined,
+      });
+
+      if (file.optimizedPath && file.optimizedPath !== variant.path) {
+        try { await this.mediaManager.remove(file.optimizedPath); } catch { /* ignore if missing */ }
+      }
+
+      await this.db.update(media, { id: Number(id) }, {
+        optimizedPath: variant.path,
+        optimizedSize: variant.size,
+        optimizedWidth: variant.width,
+        optimizedHeight: variant.height,
+      });
+
+      const savedBytes = variant.originalSize - variant.size;
+      const savedPercent = Math.round((savedBytes / variant.originalSize) * 100);
+
+      res.json({
+        id: Number(id),
+        optimizedUrl: ApiUrlUtils.resolvePublicUrl(req as Request, variant.url),
+        optimizedPath: variant.path,
+        optimizedSize: variant.size,
+        optimizedWidth: variant.width,
+        optimizedHeight: variant.height,
+        originalSize: variant.originalSize,
+        savedBytes,
+        savedPercent,
+      });
+    } catch (err: any) {
+      this.logger.error(`Optimize image error: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
   }

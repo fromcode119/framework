@@ -100,10 +100,22 @@ export default function PluginLoader() {
     };
 
     // Load plugin runtime modules after import map is registered.
+    // Plugins with loadStrategy "idle" are deferred until the browser is idle.
     pluginList.forEach((plugin: any) => {
       if (!plugin?.ui?.entry) return;
       const moduleUrl = ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, plugin.ui.entry);
-      void loadModule(`plugin:${plugin.slug}:${plugin.ui.entry}`, moduleUrl);
+      const key = `plugin:${plugin.slug}:${plugin.ui.entry}`;
+      const strategy = String(plugin?.ui?.loadStrategy || 'eager').trim();
+
+      if (strategy === 'idle') {
+        if (typeof requestIdleCallback !== 'undefined') {
+          requestIdleCallback(() => void loadModule(key, moduleUrl), { timeout: 5000 });
+        } else {
+          setTimeout(() => void loadModule(key, moduleUrl), 2000);
+        }
+      } else {
+        void loadModule(key, moduleUrl);
+      }
     });
 
     // Ensure plugin-provided CSS is mounted (idempotent).
