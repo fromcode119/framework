@@ -6,6 +6,8 @@ import path from 'path';
 import { BackupService } from '@fromcode119/core';
 
 export class ThemeController {
+  private static readonly PRODUCTION_ASSET_CACHE_HEADER = 'public, max-age=2592000';
+
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'theme-controller' });
@@ -242,8 +244,14 @@ export class ThemeController {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
+        res.sendFile(absolutePath);
+      } else {
+        res.sendFile(absolutePath, {
+          headers: {
+            'Cache-Control': ThemeController.PRODUCTION_ASSET_CACHE_HEADER,
+          },
+        });
       }
-      res.sendFile(absolutePath);
       return;
     }
 

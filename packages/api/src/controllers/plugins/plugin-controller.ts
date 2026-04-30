@@ -7,6 +7,8 @@ import { CoercionUtils } from '@fromcode119/core';
 import { PluginInstallOperationService } from '../../services/plugin-install-operation-service';
 
 export class PluginController {
+  private static readonly PRODUCTION_ASSET_CACHE_HEADER = 'public, max-age=2592000';
+
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'plugin-controller' });
@@ -316,8 +318,14 @@ export class PluginController {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
+        return res.sendFile(abs);
+      } else {
+        return res.sendFile(abs, {
+          headers: {
+            'Cache-Control': PluginController.PRODUCTION_ASSET_CACHE_HEADER,
+          },
+        });
       }
-      return res.sendFile(abs);
     }
 
     return res.status(404).json({ error: 'Asset not found' });

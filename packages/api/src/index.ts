@@ -157,9 +157,13 @@ export class APIServer {
     // Must follow the active local storage config so saved files and served files share the same root.
     const uploadsConfig = this.resolveLocalUploadsConfig(this.mediaManager);
     this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);
-    this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir));
+    this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir, {
+      maxAge: '30d',
+    }));
     if (uploadsConfig.publicPath !== ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL) {
-      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir));
+      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir, {
+        maxAge: '30d',
+      }));
     }
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';

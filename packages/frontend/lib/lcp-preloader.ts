@@ -14,6 +14,14 @@ export class LcpPreloader {
     if (!content) return null;
 
     const blocks = Array.isArray(content.content) ? content.content : [];
+
+    // Check for hero block with a custom CMS-configured logo
+    const heroBlock = blocks.find((b: any) => b?.type === 'hero');
+    if (heroBlock) {
+      const logoUrl = String(heroBlock?.data?.logo || '').trim();
+      if (logoUrl) return logoUrl;
+    }
+
     const productBlock = blocks.find(
       (b: any) => b?.type === 'product' && (b?.data?.productSlug || b?.content?.productSlug),
     ) as Record<string, any> | undefined;

@@ -112,6 +112,17 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async headers() {
+    return [
+      {
+        // Override Next.js force-dynamic's `no-store` header to allow bfcache.
+        // `private, no-cache` lets the browser use bfcache (back/forward navigation)
+        // while still revalidating with the server on normal navigations.
+        source: '/(.*)',
+        headers: [{ key: 'Cache-Control', value: 'private, no-cache' }],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

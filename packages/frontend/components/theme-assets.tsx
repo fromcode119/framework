@@ -33,20 +33,34 @@ export default async function ThemeAssets() {
       return null;
     }
 
-    const apiUrl = ServerApiUtils.buildPublicApiBaseUrl();
-    const entryUrl = String(theme.ui?.entry || '').trim()
-      ? (String(theme.ui.entry).startsWith('http') ? String(theme.ui.entry) : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, String(theme.ui.entry)))
+    const rawEntryUrl = String(theme.ui?.entry || '').trim();
+    const absoluteEntryUrl = rawEntryUrl.startsWith('http') ? rawEntryUrl : '';
+    const derivedApiUrl = absoluteEntryUrl ? new URL(absoluteEntryUrl).origin : '';
+    const apiUrl = derivedApiUrl || ServerApiUtils.buildPublicApiBaseUrl();
+    const entryUrl = rawEntryUrl
+      ? (absoluteEntryUrl || ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, rawEntryUrl))
       : '';
 
     const headLinks = Array.isArray(theme.ui?.headLinks)
       ? theme.ui.headLinks.map((link: Record<string, string>, i: number) => {
           if (!link?.rel || !link?.href) return null;
-          const props: Record<string, string> = { rel: link.rel, href: link.href };
+          const href = link.href.startsWith('http') ? link.href : `${apiUrl}${link.href}`;
+          if (link.rel === 'preload') {
+            preload(href, {
+              as: (link.as || 'fetch') as Parameters<typeof preload>[1]['as'],
+              type: link.type,
+              crossOrigin: link.crossOrigin,
+              fetchPriority: link.fetchPriority as 'high' | 'low' | 'auto' | undefined,
+            } as Parameters<typeof preload>[1]);
+            return null;
+          }
+          const props: Record<string, string> = { rel: link.rel, href };
           if (link.crossOrigin) props.crossOrigin = link.crossOrigin;
           if (link.as) props.as = link.as;
           if (link.type) props.type = link.type;
           if (link.media) props.media = link.media;
           if (link.precedence) props.precedence = link.precedence;
+          if (link.fetchPriority) props.fetchPriority = link.fetchPriority;
           return <link key={`hl-${i}`} {...props} />;
         })
       : [];
@@ -80,26 +94,11 @@ export default async function ThemeAssets() {
         })
       : [];
 
-    const eagerPlugins = Array.isArray(config?.plugins)
-      ? (config.plugins as Array<Record<string, any>>).filter((p) => {
-          const strategy = String(p?.ui?.loadStrategy || 'eager').trim();
-          return strategy === 'eager' && p?.ui?.entry;
-        })
-      : [];
-
-    // Use react-dom preload() to emit deduplicated :HL hints without creating
-    // duplicate <link> elements (React 19 would otherwise hoist the JSX <link>
-    // AND keep it inline, resulting in each preload appearing twice in the HTML).
+    // Use react-dom preload() to emit deduplicated resource hints without
+    // creating duplicate <link> elements.
     if (entryUrl) {
       preload(entryUrl, { as: 'script', fetchPriority: 'high' } as Parameters<typeof preload>[1]);
     }
-    eagerPlugins.forEach((plugin) => {
-      const pluginEntry = String(plugin.ui.entry);
-      const pluginUrl = pluginEntry.startsWith('http')
-        ? pluginEntry
-        : `${apiUrl}/api/v1/plugins/${String(plugin.slug)}/ui/${pluginEntry}`;
-      preload(pluginUrl, { as: 'script', crossOrigin: 'anonymous' } as Parameters<typeof preload>[1]);
-    });
 
     return (
       <>
