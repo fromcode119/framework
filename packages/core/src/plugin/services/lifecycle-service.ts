@@ -15,12 +15,13 @@ import { ManifestValidator } from '../../management/manifest';
 import { SandboxManager } from '../../security/sandbox-manager';
 import { IntegrityService } from '../../security/integrity-service';
 import { Seeder } from '../../database/seeder';
-import { CoreServices } from '../../services/core-services';
+import { PluginFailureIsolationService } from './plugin-failure-isolation-service';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
   private sandbox?: SandboxManager;
   private seeder: Seeder;
+  private failureIsolation: PluginFailureIsolationService;
 
   constructor(
     private manager: PluginManagerInterface,
@@ -29,6 +30,7 @@ export class LifecycleService {
     private schemaManager: SchemaManager
   ) {
     this.seeder = new Seeder(manager.db);
+    this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
     try {
       this.sandbox = new SandboxManager();
     } catch (e) {
@@ -97,7 +99,6 @@ export class LifecycleService {
       healthStatus: saved?.healthStatus || 'healthy'
     };
 
-    // Override manifest sandbox config with database-stored values if they exist
     const hasSavedSandboxConfig = !!saved && Object.prototype.hasOwnProperty.call(saved, 'sandboxConfig') && saved.sandboxConfig !== undefined;
     if (hasSavedSandboxConfig) {
       if (saved!.sandboxConfig === false) {
@@ -112,22 +113,27 @@ export class LifecycleService {
     loadedPlugin.manifest.config = await this.registry.getPluginConfig(slug);
     this.manager.plugins.set(slug, loadedPlugin);
     
-    // Discovery-phase initialization: keep this in host context for all plugins.
-    // Existing plugins rely on onInit() to register collections/settings/routes.
     const ctx = (this.manager as any).createContext(loadedPlugin);
     try {
       if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
     } catch (err: any) {
-      this.rollbackFailedRegistration(loadedPlugin);
+      this.failureIsolation.rollbackPartialRegistration(loadedPlugin);
+      await this.failureIsolation.markPluginError(loadedPlugin, err.message);
       this.logger.error(`Error during onInit for plugin "${slug}": ${err.message}`, err.stack);
       throw new Error(`Plugin "${slug}" failed during onInit: ${err.message}`);
     }
 
-    await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
-
     if (state === 'active') {
-      await this.enable(slug);
+      try {
+        await this.enable(slug);
+      } catch (err: any) {
+        await this.failureIsolation.markPluginError(loadedPlugin, err.message);
+        throw err;
+      }
+      return;
     }
+
+    await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
   }
 
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}): Promise<void> {
@@ -141,7 +147,6 @@ export class LifecycleService {
       return;
     }
 
-    // Dependency Validation
     if (!options.force) {
       const issues = this.discovery.checkDependencies(plugin.manifest, this.manager.plugins, { checkActive: true });
       
@@ -152,14 +157,12 @@ export class LifecycleService {
               this.logger.info(`Recursively enabling dependency "${issue.slug}" for "${slug}"...`);
               await this.enable(issue.slug, options);
             } else if (issue.type === 'missing') {
-              // Check if we can download it? For now, just throw.
               throw new Error(`Dependency "${issue.slug}" is missing and required by "${slug}".`);
             } else if (issue.type === 'incompatible') {
               throw new Error(`Incompatible dependency: "${slug}" requires "${issue.slug}" version "${issue.expected}", but found "${issue.actual}".`);
             }
           }
         } else {
-          // We throw a structured error message that the controller can catch
           throw new Error(`DEPENDENCY_ISSUES: ${JSON.stringify(issues)}`);
         }
       }
@@ -169,17 +172,13 @@ export class LifecycleService {
     
     try {
       plugin.state = 'loading';
-      
       if (plugin.isSandboxed && plugin.entryPath && this.sandbox) {
         this.logger.info(`Initializing sandbox for "${slug}"...`);
         await this.sandbox.initPluginContext(slug, ctx, plugin.manifest);
-        // Compatibility mode: keep plugin lifecycle execution in host context.
-        // The current plugin model is module-based and depends on host context registration.
         if (plugin.onEnable) await plugin.onEnable(ctx);
       } else {
         if (plugin.onEnable) await plugin.onEnable(ctx);
       }
-      
       await this.syncPluginCollections(slug);
       await this.runSeeds(slug);
 
@@ -190,8 +189,8 @@ export class LifecycleService {
       await this.registry.savePluginState(slug, 'active', currentCaps, plugin.manifest.version);
       await this.registry.writeLog('INFO', `Plugin "${slug}" successfully enabled.`, slug);
     } catch (error) {
-      plugin.state = 'error';
-      await this.registry.writeLog('ERROR', `Initialization failed for "${slug}": ${error}`, slug);
+      const message = error instanceof Error ? error.message : String(error);
+      await this.failureIsolation.markPluginError(plugin, message);
       throw error;
     }
   }
@@ -296,25 +295,6 @@ export class LifecycleService {
       for (const { collection } of pluginCollections) {
         await this.schemaManager.syncCollection(collection);
       }
-    }
-  }
-
-  private rollbackFailedRegistration(plugin: LoadedPlugin): void {
-    this.manager.plugins.delete(plugin.manifest.slug);
-    this.manager.headInjections.delete(plugin.manifest.slug);
-
-    for (const [collectionSlug, entry] of this.manager.registeredCollections.entries()) {
-      if (entry.pluginSlug === plugin.manifest.slug) {
-        this.manager.registeredCollections.delete(collectionSlug);
-      }
-    }
-
-    const pluginNamespace = String(plugin.manifest.namespace || '').trim();
-    if (pluginNamespace) {
-      CoreServices.getInstance().defaultPageContracts.unregisterByPlugin(
-        pluginNamespace,
-        plugin.manifest.slug,
-      );
     }
   }
 }
