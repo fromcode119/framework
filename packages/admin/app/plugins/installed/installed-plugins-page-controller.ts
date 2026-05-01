@@ -6,6 +6,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
+import { VersionComparisonService } from '@/lib/version-comparison-service';
 import { NotificationHooks } from '@/components/use-notification';
 import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';
 import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
@@ -233,7 +234,10 @@ export class InstalledPluginsPageController {
         await inspectPluginFile(file);
         if (fileInputRef.current) fileInputRef.current.value = '';
       },
-      hasPluginUpdate: (plugin) => marketplaceData.some((entry) => entry.slug === plugin.manifest.slug && entry.version !== plugin.manifest.version),
+      hasPluginUpdate: (plugin) => marketplaceData.some((entry) =>
+        entry.slug === plugin.manifest.slug &&
+        VersionComparisonService.isGreater(entry.version, plugin.manifest.version)
+      ),
       handleToggle,
       handleUploadClick: () => {
         if (isUploading || isInspectingUpload) return;

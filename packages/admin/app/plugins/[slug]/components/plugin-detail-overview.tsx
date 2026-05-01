@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
+import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailOverviewProps } from '../plugin-detail-page.interfaces';
 
 export default function PluginDetailOverview({
@@ -15,7 +16,7 @@ export default function PluginDetailOverview({
   plugin,
   theme,
 }: PluginDetailOverviewProps) {
-  const hasUpdate = marketplaceItem?.version && marketplaceItem.version !== plugin.manifest.version;
+  const hasUpdate = Boolean(marketplaceItem?.version && VersionComparisonService.isGreater(marketplaceItem.version, plugin.manifest.version));
 
   return (
     <>

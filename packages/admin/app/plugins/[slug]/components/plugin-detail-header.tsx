@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminConstants } from '@/lib/constants';
+import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailHeaderProps } from '../plugin-detail-page.interfaces';
 
 export default function PluginDetailHeader({
@@ -17,7 +18,7 @@ export default function PluginDetailHeader({
   plugin,
   theme,
 }: PluginDetailHeaderProps) {
-  const hasUpdate = marketplaceItem?.version && marketplaceItem.version !== plugin.manifest.version;
+  const hasUpdate = Boolean(marketplaceItem?.version && VersionComparisonService.isGreater(marketplaceItem.version, plugin.manifest.version));
 
   return (
     <div className="flex items-center gap-6">

@@ -9,6 +9,7 @@ import { FrameworkIcons } from '@/lib/icons';
 import { ThemeHooks } from '../use-theme';
 import { NotificationHooks } from '../use-notification';
 import { ContextHooks } from '@fromcode119/react';
+import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 import { useRouter } from 'next/navigation';
 import type { PluginEntry } from '@fromcode119/core/client';
@@ -101,7 +102,8 @@ const Marketplace: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {marketplacePlugins.map(plugin => {
           const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);
-          const hasUpdate = installed && plugin.version !== installed.version;
+          const installedVersion = installed ? (installed.manifest?.version || installed.version) : null;
+          const hasUpdate = Boolean(installed && VersionComparisonService.isGreater(plugin.version, installedVersion));
           const hasImageError = imageErrors[plugin.slug];
 
           return (

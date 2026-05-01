@@ -14,6 +14,7 @@ import type { PluginEntry } from '@fromcode119/core/client';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
 import { PluginRuntimeWaitService } from '@/lib/plugin-runtime-wait-service';
+import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 export default function MarketplaceDetailPage() {
   const { slug } = useParams();
@@ -46,7 +47,7 @@ export default function MarketplaceDetailPage() {
         setError('Plugin not found in marketplace.');
       } else {
         // Sort descending
-        versions.sort((a: any, b: any) => b.version.localeCompare(a.version));
+        versions.sort((a: any, b: any) => VersionComparisonService.isGreater(a.version, b.version) ? -1 : (VersionComparisonService.isSame(a.version, b.version) ? 0 : 1));
         setAllVersions(versions);
         
         const current = selectedVersion ? (versions.find((v: any) => v.version === selectedVersion) || versions[0]) : versions[0];
@@ -141,7 +142,7 @@ export default function MarketplaceDetailPage() {
   }
 
   const installedVersion = installedPlugin?.manifest?.version || installedPlugin?.version || null;
-  const hasUpdate = Boolean(installedVersion && plugin.version !== installedVersion);
+  const hasUpdate = Boolean(installedVersion && VersionComparisonService.isGreater(plugin.version, installedVersion));
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">

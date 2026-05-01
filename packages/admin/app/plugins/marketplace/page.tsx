@@ -12,6 +12,7 @@ import { ContextHooks } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import type { PluginEntry } from '@fromcode119/core/client';
 import { PluginRuntimeWaitService } from '@/lib/plugin-runtime-wait-service';
+import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 export default function MarketplacePage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function MarketplacePage() {
       // Group by slug to show only latest
       const grouped: Record<string, PluginEntry> = {};
       rawPlugins.forEach((p: PluginEntry) => {
-        if (!grouped[p.slug] || p.version > grouped[p.slug].version) {
+        if (!grouped[p.slug] || VersionComparisonService.isGreater(p.version, grouped[p.slug].version)) {
           grouped[p.slug] = p;
         }
       });
@@ -144,7 +145,8 @@ export default function MarketplacePage() {
         ) : (
           filtered.map(plugin => {
             const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);
-            const hasUpdate = installed && plugin.version !== (installed.manifest?.version || installed.version);
+            const installedVersion = installed ? (installed.manifest?.version || installed.version) : null;
+            const hasUpdate = Boolean(installed && VersionComparisonService.isGreater(plugin.version, installedVersion));
             const hasImageError = imageErrors[plugin.slug];
             const isFeatured = Boolean(plugin.isFeatured);
             const isVerified = Boolean(plugin.isVerified);
