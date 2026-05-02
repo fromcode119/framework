@@ -6,6 +6,7 @@ import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';
 import { ProjectPaths } from '../config/paths';
+import { SafeArchive } from '../security/safe-archive';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
@@ -90,23 +91,76 @@ export class SystemUpdateService {
     }
 
     const rootDir = ProjectPaths.getProjectRoot();
-    const tempDir = path.resolve(rootDir, `.tmp-system-update-${Date.now()}`);
-    fs.mkdirSync(tempDir, { recursive: true });
+    const tempDir = this.createTemporaryUpdateDirectory(rootDir);
 
     try {
       await BackupService.downloadAndExtract(downloadUrl, tempDir);
-      
-      this.logger.info(`Applying update files to system root: ${rootDir}`);
-      this.moveDir(tempDir, rootDir);
-      
-      this.logger.info(`Framework Core successfully updated to v${status.latest}. A system restart may be required.`);
-      return { success: true, version: status.latest };
+      return await this.applyPreparedUpdate(tempDir, rootDir, status.latest);
     } catch (err: any) {
       this.logger.error(`Update failed: ${err.message}`);
       throw err;
     } finally {
       if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
     }
+  }
+
+  static async applyArchive(filePath: string) {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Core update archive does not exist: ${filePath}`);
+    }
+
+    const rootDir = ProjectPaths.getProjectRoot();
+    this.logger.info(`Starting local Framework Core update from archive: ${filePath}`);
+
+    try {
+      this.logger.info('Creating pre-update system backup...');
+      const backupPath = await BackupService.createSystemBackup();
+      this.logger.info(`Backup created at: ${backupPath}`);
+    } catch (err: any) {
+      this.logger.error(`Backup failed: ${err.message}. Aborting update for safety.`);
+      throw new Error(`Pre-update backup failed: ${err.message}`);
+    }
+
+    const tempDir = this.createTemporaryUpdateDirectory(rootDir);
+
+    try {
+      await this.extractArchiveToDirectory(filePath, tempDir);
+      return await this.applyPreparedUpdate(tempDir, rootDir);
+    } catch (err: any) {
+      this.logger.error(`Local core archive update failed: ${err.message}`);
+      throw err;
+    } finally {
+      if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+
+  private static createTemporaryUpdateDirectory(rootDir: string): string {
+    const tempDir = path.resolve(rootDir, `.tmp-system-update-${Date.now()}`);
+    fs.mkdirSync(tempDir, { recursive: true });
+    return tempDir;
+  }
+
+  private static async applyPreparedUpdate(tempDir: string, rootDir: string, version?: string) {
+    this.logger.info(`Applying update files to system root: ${rootDir}`);
+    this.moveDir(tempDir, rootDir);
+    const resolvedVersion = version || this.resolveInstalledVersion();
+    this.logger.info(`Framework Core successfully updated to v${resolvedVersion}. A system restart may be required.`);
+    return { success: true, version: resolvedVersion };
+  }
+
+  private static async extractArchiveToDirectory(filePath: string, targetDir: string): Promise<void> {
+    const normalized = filePath.toLowerCase();
+    if (normalized.endsWith('.zip')) {
+      SafeArchive.extractZip(filePath, targetDir);
+      return;
+    }
+
+    if (normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz')) {
+      await BackupService.restore(filePath, targetDir);
+      return;
+    }
+
+    throw new Error('Unsupported core archive format. Upload a .zip or .tar.gz core package.');
   }
 
   private static moveDir(src: string, dest: string) {

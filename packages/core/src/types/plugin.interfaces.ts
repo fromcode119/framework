@@ -105,6 +105,12 @@ export interface PluginContext {
     on(event: string, handler: (payload: any) => void | Promise<void>): void;
   };
 
+  readonly extensions: {
+    installArchive(
+      input: { filePath: string; type: 'plugin' | 'theme' | 'core'; enable?: boolean; activate?: boolean }
+    ): Promise<any>;
+  };
+
   // Content Management
   readonly collections: {
     register(collection: CollectionInput): void;

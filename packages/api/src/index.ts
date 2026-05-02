@@ -15,6 +15,7 @@ import {
   EnvConfig,
   HookAdapterFactory,
   QueueAdapterFactory,
+  SystemUpdateService,
 } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
@@ -453,6 +454,16 @@ export class APIServer {
     await manager.init();
 
     const themeManager = new ThemeManager((manager as any).db);
+    manager.setThemeArchiveInstaller(async (filePath: string, options?: { activate?: boolean }) => {
+      const manifest = await themeManager.installFromZip(filePath);
+      if (options?.activate !== false) {
+        await themeManager.activateTheme(manifest.slug);
+      }
+      return manifest;
+    });
+    manager.setCoreArchiveInstaller(async (filePath: string) => {
+      return SystemUpdateService.applyArchive(filePath);
+    });
     await themeManager.init();
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {

@@ -77,6 +77,8 @@ export class PluginManager implements PluginManagerInterface {
   private adminRuntime: PluginAdminRuntimeService;
   private installation: PluginInstallationService;
   private runtimeState: PluginRuntimeStateService;
+  private themeArchiveInstaller: ((filePath: string, options?: { activate?: boolean }) => Promise<any>) | null = null;
+  private coreArchiveInstaller: ((filePath: string) => Promise<any>) | null = null;
   public get storage() { return this.integrations.storage; }
   public get email() { return this.integrations.email; }
   public get cache() { return this.integrations.cache; }
@@ -282,6 +284,38 @@ export class PluginManager implements PluginManagerInterface {
     options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
   ): Promise<PluginManifest> {
     return this.installation.installUploadedPluginArchive(filePath, options);
+  }
+
+  setThemeArchiveInstaller(installer: (filePath: string, options?: { activate?: boolean }) => Promise<any>): void {
+    this.themeArchiveInstaller = installer;
+  }
+
+  setCoreArchiveInstaller(installer: (filePath: string) => Promise<any>): void {
+    this.coreArchiveInstaller = installer;
+  }
+
+  async installExtensionArchive(
+    filePath: string,
+    type: 'plugin' | 'theme' | 'core',
+    options: { enable?: boolean; activate?: boolean } = {},
+  ): Promise<any> {
+    if (type === 'core') {
+      if (!this.coreArchiveInstaller) {
+        throw new Error('Core archive installer is not configured.');
+      }
+
+      return this.coreArchiveInstaller(filePath);
+    }
+
+    if (type === 'theme') {
+      if (!this.themeArchiveInstaller) {
+        throw new Error('Theme archive installer is not configured.');
+      }
+
+      return this.themeArchiveInstaller(filePath, { activate: options.activate });
+    }
+
+    return this.installUploadedPluginArchive(filePath, { enable: options.enable });
   }
 
   /**

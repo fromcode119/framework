@@ -31,6 +31,11 @@ export interface PluginManagerInterface {
   installFromZip(filePath: string, pluginsRoot?: string): Promise<any>;
   writeLog(level: string, message: string, pluginSlug?: string, context?: any): Promise<void>;
   disableWithError(slug: string, message: string): Promise<void>;
+  installExtensionArchive(
+    filePath: string,
+    type: 'plugin' | 'theme' | 'core',
+    options?: { enable?: boolean; activate?: boolean }
+  ): Promise<any>;
   emit(event: string, payload: any): void;
   getImportMap(): { imports: Record<string, string> };
   getRuntimeModules(): Record<string, any>;

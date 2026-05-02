@@ -139,6 +139,18 @@ export class PluginContextFactory {
             manager.hooks.on(event, handler);
           }
         },
+        extensions: {
+          installArchive: async (input: { filePath: string; type: 'plugin' | 'theme' | 'core'; enable?: boolean; activate?: boolean }) => {
+            if (!security.hasCapability('extensions:manage')) {
+              security.handleViolation('extensions:manage');
+            }
+
+            return manager.installExtensionArchive(input.filePath, input.type, {
+              activate: input.activate,
+              enable: input.enable,
+            });
+          }
+        },
         users: UsersContextProxy.createUsersProxy(plugin, manager),
         meta: MetaContextProxy.createMetaProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager),

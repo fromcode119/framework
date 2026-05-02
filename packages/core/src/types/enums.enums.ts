@@ -7,6 +7,7 @@ export enum PluginCapability {
   FILESYSTEM_WRITE = 'filesystem:write',
   NETWORK = 'network',
   PLUGINS = 'plugins:interact',
+  EXTENSIONS_MANAGE = 'extensions:manage',
   HOOKS = 'hooks',
   EMAIL = 'email',
   CACHE = 'cache',
