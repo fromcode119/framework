@@ -1,16 +1,29 @@
 # FROMCODE FRAMEWORK DOCKERFILE
 # Based on framework-plan.md Section 12.1
 
-FROM node:22-alpine AS base
+ARG NODE_BASE_IMAGE=public.ecr.aws/docker/library/node:22-bookworm-slim
+FROM ${NODE_BASE_IMAGE} AS base
 
-# Install dependencies for native modules (better-sqlite3) and postgres
-RUN apk add --no-cache \
-    postgresql-client \
-    python3 \
-    make \
-    g++ \
-    gcc \
-    libc-dev
+# Install dependencies for native modules (better-sqlite3) and postgres.
+# Support both Alpine and Debian-based Node images so builds can override the base tag.
+RUN if command -v apk >/dev/null 2>&1; then \
+            apk add --no-cache \
+                postgresql-client \
+                python3 \
+                make \
+                g++ \
+                gcc \
+                libc-dev; \
+        elif command -v apt-get >/dev/null 2>&1; then \
+            apt-get update && apt-get install -y --no-install-recommends \
+                postgresql-client \
+                python3 \
+                build-essential \
+            && rm -rf /var/lib/apt/lists/*; \
+        else \
+            echo "Unsupported base image package manager" >&2; \
+            exit 1; \
+        fi
 
 WORKDIR /app
 

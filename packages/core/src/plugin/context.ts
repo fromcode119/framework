@@ -126,10 +126,6 @@ export class PluginContextFactory {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
             return manager.plugins.get(slug)?.state === 'active';
           },
-          getAPI: (slug: string) => {
-            if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
-            return manager.plugins.get(slug)?.publicAPI;
-          },
           emit: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.emit(event, payload);

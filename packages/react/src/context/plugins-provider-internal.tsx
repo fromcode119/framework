@@ -3,6 +3,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {
+  ApiPathUtils,
+  ApiScopeClient,
   ApiVersionUtils,
   BrowserStateClient,
   CollectionUtils,
@@ -95,11 +97,9 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
   const { api, getFrontendMetadata, loadConfig, resolveContent } = apiRuntime;
   const {
     emit,
-    getAPI,
     getPluginApi,
     hasPluginApi,
     on,
-    registerAPI,
     registerCollection,
     registerContentTransformer,
     registerFieldComponent,
@@ -169,7 +169,6 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       collections,
       emit,
       fieldComponents,
-      getAPI,
       getFrontendMetadata,
       getPluginApi,
       hasPluginApi,
@@ -194,7 +193,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       translations,
       triggerRefresh,
     };
-  }, [activeTheme, api, apiUrl, collections, emit, fieldComponents, getAPI, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, plugins, refreshVersion, resolveContent, runtimeModules, secondaryPanel, serverRuntimeModules, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
+  }, [activeTheme, api, apiUrl, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, plugins, refreshVersion, resolveContent, runtimeModules, secondaryPanel, serverRuntimeModules, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
 
   const stableT = React.useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
   const stableLoadConfig = React.useCallback((path?: string) => {
@@ -210,6 +209,19 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     patch: (path: string, body?: any, options?: any) => api.patch(path, body, options),
     delete: (path: string, options?: any) => api.delete(path, options),
   }), [api]);
+
+  React.useEffect(() => {
+    plugins.forEach((plugin: any) => {
+      const namespace = String(plugin?.namespace || '').trim();
+      const slug = String(plugin?.slug || '').trim();
+      if (!namespace || !slug || hasPluginApi(namespace, slug)) {
+        return;
+      }
+
+      const client = new ApiScopeClient(stableApiBridge, ApiPathUtils.pluginPath(slug));
+      registerPluginApi(namespace, slug, client);
+    });
+  }, [hasPluginApi, plugins, registerPluginApi, stableApiBridge]);
 
   ContextRuntimeBridge.setupGlobalStubs({
     ReactRef: React,
@@ -238,8 +250,6 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       registerPlugins,
       registerTheme,
       registerSettings,
-      registerAPI,
-      getAPI,
       registerPluginApi,
       getPluginApi,
       hasPluginApi,
@@ -253,7 +263,6 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       setLocale,
       usePlugins: ContextBridgeHooks.usePluginsBridgeHook,
       useTranslation: ContextBridgeHooks.useTranslationBridgeHook,
-      usePluginAPI: ContextBridgeHooks.usePluginApiBridgeHook,
       usePluginState: ContextBridgeHooks.usePluginStateBridgeHook,
       useSystemShortcodes: SystemShortcodes.useSystemShortcodes,
       CollectionQueryUtils,
@@ -284,7 +293,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       runtimeModules,
       stabilityRef,
     });
-  }, [apiUrl, emit, getAPI, getPluginApi, hasPluginApi, isReady, on, providerClass, registerAPI, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, runtimeModules, setPluginState, stableApiBridge, stableGetFrontendMetadata, stableLoadConfig, stableT]);
+  }, [apiUrl, emit, getPluginApi, hasPluginApi, isReady, on, providerClass, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, runtimeModules, setPluginState, stableApiBridge, stableGetFrontendMetadata, stableLoadConfig, stableT]);
 
   const value = React.useMemo<PluginContextValue>(() => ({
     slots,
@@ -308,8 +317,6 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     t,
     emit,
     on,
-    registerAPI,
-    getAPI,
     registerPluginApi,
     getPluginApi,
     hasPluginApi,
@@ -329,7 +336,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     getFrontendMetadata,
     resolveContent,
     api,
-  }), [activeTheme, api, collections, emit, fieldComponents, getAPI, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, pluginState, plugins, refreshVersion, registerAPI, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, resolveContent, secondaryPanel, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
+  }), [activeTheme, api, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, pluginState, plugins, refreshVersion, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, resolveContent, secondaryPanel, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
 
   return (
     <PluginContextRegistry.Context.Provider value={value}>

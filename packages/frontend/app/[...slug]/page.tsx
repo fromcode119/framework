@@ -5,7 +5,6 @@ import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
-import { LcpPreloader } from '@/lib/lcp-preloader';
 import type { SearchParams, MaybePromise } from '@/lib/dynamic-page-resolver.types';
 
 export const dynamic = 'force-dynamic';
@@ -98,24 +97,12 @@ export default async function DynamicContentPage({
   if (!slug) {
     const { content } = await DynamicPageResolver.resolveHomeTarget(locale, fallbackLocale, resolvedSearchParams);
     if (!content) notFound();
-    const lcpImageUrl = await LcpPreloader.preloadForContent(content as Record<string, unknown>);
-    return (
-      <>
-        {lcpImageUrl ? <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" /> : null}
-        <DynamicContentClient content={content} lcpImageUrl={lcpImageUrl} />
-      </>
-    );
+    return <DynamicContentClient content={content} />;
   }
 
   const content = await DynamicPageResolver.resolveDocWithPermalinkFallback(slug, resolvedSearchParams, locale, routingConfig.strategy);
   if (content) {
-    const lcpImageUrl = await LcpPreloader.preloadForContent(content as Record<string, unknown>);
-    return (
-      <>
-        {lcpImageUrl ? <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" /> : null}
-        <DynamicContentClient content={content} lcpImageUrl={lcpImageUrl} />
-      </>
-    );
+    return <DynamicContentClient content={content} />;
   }
 
   notFound();

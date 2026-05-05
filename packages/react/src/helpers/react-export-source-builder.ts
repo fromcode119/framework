@@ -24,6 +24,13 @@ export class ReactExportSourceBuilder {
     'CollectionQueryUtils',
     'BrowserLocalization',
     'AsyncDataController',
+    'LazyComponentLoaderService',
+    'LazyLoadClass',
+  ];
+
+  private static readonly REQUIRED_REACT_EXPORT_KEYS: readonly string[] = [
+    'LazyComponentLoaderService',
+    'LazyLoadClass',
   ];
 
   static buildReactExportSource(bridge: Record<string, unknown>, reactModuleAccessor: string): string {
@@ -41,6 +48,7 @@ export class ReactExportSourceBuilder {
         // when this data URL module is evaluated (e.g. timing race during bundle load).
         .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
         .join('\n') +
+      ReactExportSourceBuilder.buildRequiredExports(scopedReactModuleAccessor) +
       ReactExportSourceBuilder.buildGroupedExports(scopedReactModuleAccessor) +
       `export default ${reactBridgeAccessor};`
     );
@@ -72,5 +80,11 @@ export class ReactExportSourceBuilder {
       `export const ContextHooks = ${R} ? ${R}.ContextHooks : (window.Fromcode && window.Fromcode.ContextHooks);\n` +
       `export const SystemShortcodes = ${R} ? ${R}.SystemShortcodes : (window.Fromcode && window.Fromcode.SystemShortcodes);\n`
     );
+  }
+
+  private static buildRequiredExports(reactModuleAccessor: string): string {
+    return ReactExportSourceBuilder.REQUIRED_REACT_EXPORT_KEYS
+      .map((key) => `\nexport const ${key} = ((${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : null) ?? (window.Fromcode && window.Fromcode.${key}));`)
+      .join('');
   }
 }

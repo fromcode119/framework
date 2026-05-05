@@ -62,6 +62,8 @@ import {
 } from '@fromcode119/core/client';
 import { ContextBridge } from '../context-bridge';
 import { ContextHooks } from '../context-hooks';
+import { LazyComponentLoaderService } from '../lazy-component-loader-service';
+import { LazyLoadClass } from '../lazy-load-class';
 import { SystemShortcodes } from '../system-shortcodes';
 
 export class BridgeObjectBuilder {
@@ -108,6 +110,8 @@ export class BridgeObjectBuilder {
       ContextHooks,
       SystemShortcodes,
       AsyncDataController,
+      LazyComponentLoaderService,
+      LazyLoadClass,
       PluginsProvider: args.PluginsProvider,
       CollectionQueryUtils: args.CollectionQueryUtils,
       BrowserLocalization: args.BrowserLocalization,

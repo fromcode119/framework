@@ -7,7 +7,10 @@ import * as SharedComponents from '@/components';
 import { AdminConstants } from '@/lib/constants';
 import type { ClientLayoutChildrenProps } from './client-layout.types';
 import ClientLayoutShell from './client-layout-shell';
+import { AdminThemeEntryScriptGuardService } from './services/admin-theme-entry-script-guard-service';
 import { ClientLayoutRuntimeService } from './services/client-layout-runtime-service';
+
+AdminThemeEntryScriptGuardService.install();
 
 export default function ClientLayout({ children }: ClientLayoutChildrenProps) {
   const runtimeModules = React.useMemo(() => {

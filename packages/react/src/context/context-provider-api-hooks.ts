@@ -205,6 +205,34 @@ export class ContextProviderApiHooks {
       delete: (path: string, options?: any) => apiFetch(path, { ...options, method: 'DELETE' }),
     }), [apiFetch, getBaseURL]);
 
+    const loadThemeEntry = React.useCallback(async (baseUrl: string, theme: any) => {
+      const themeSlug = String(theme?.slug || '').trim();
+      const themeEntry = String(theme?.ui?.entry || '').trim();
+      if (!themeSlug || !themeEntry || typeof document === 'undefined') {
+        return;
+      }
+
+      const entryUrl = themeEntry.startsWith('http')
+        ? themeEntry
+        : ApiPathUtils.themeUiAssetUrl(baseUrl, themeSlug, themeEntry);
+      const registry = ((window as any).__fromcodeLoadedThemeEntries ||= new Set<string>()) as Set<string>;
+      if (registry.has(entryUrl)) {
+        return;
+      }
+
+      const preloadSelector = `link[rel="modulepreload"][href="${entryUrl}"]`;
+      if (!document.head.querySelector(preloadSelector)) {
+        const preloadLink = document.createElement('link');
+        preloadLink.rel = 'modulepreload';
+        preloadLink.href = entryUrl;
+        preloadLink.setAttribute('data-theme-entry-preload', entryUrl);
+        document.head.appendChild(preloadLink);
+      }
+
+      await import(/* webpackIgnore: true */ entryUrl);
+      registry.add(entryUrl);
+    }, []);
+
     const resolveContent = React.useCallback(async (slug: string) => {
       try {
         const normalizedSlug = (slug || '').trim();
@@ -321,19 +349,10 @@ export class ContextProviderApiHooks {
               });
             }
 
-            if (theme.ui?.entry) {
-              const entryUrl = theme.ui.entry.startsWith('http')
-                ? theme.ui.entry
-                : ApiPathUtils.themeUiAssetUrl(base, theme.slug, theme.ui.entry);
-              if (!document.querySelector(`script[data-theme-entry="${entryUrl}"]`)) {
-                (window as any).React = React;
-                (window as any).ReactDOM = ReactDOM;
-                const script = document.createElement('script');
-                script.src = entryUrl;
-                script.setAttribute('data-theme-entry', entryUrl);
-                script.onerror = (error) => console.warn('[Fromcode] Failed to load theme bundle:', error);
-                document.head.appendChild(script);
-              }
+            try {
+              await loadThemeEntry(base, theme);
+            } catch (error) {
+              console.warn('[Fromcode] Failed to load theme bundle:', error);
             }
           }
 
@@ -352,6 +371,7 @@ export class ContextProviderApiHooks {
     }, [
       apiFetch,
       getBaseURL,
+      loadThemeEntry,
       inFlightConfigLoadsRef,
       loadedConfigPathsRef,
       setActiveTheme,

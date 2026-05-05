@@ -23,6 +23,37 @@ const REACT_RUNTIME_EXPORT_KEYS = [
   'SystemShortcodes',
 ] as const;
 
+const REACT_BROWSER_RUNTIME_EXPORT_KEYS = [
+  'useState',
+  'useEffect',
+  'useMemo',
+  'useCallback',
+  'useContext',
+  'createContext',
+  'useRef',
+  'useReducer',
+  'useLayoutEffect',
+  'useInsertionEffect',
+  'useImperativeHandle',
+  'useDebugValue',
+  'forwardRef',
+  'version',
+  'memo',
+  'Suspense',
+  'Fragment',
+  'Children',
+  'Component',
+  'PureComponent',
+  'createElement',
+  'cloneElement',
+  'isValidElement',
+  'startTransition',
+  'useTransition',
+  'useDeferredValue',
+  'useId',
+  'useSyncExternalStore',
+] as const;
+
 // SDK constants and utility classes available to plugin sandboxes.
 // Plugin code uses class methods: CoercionUtils.toNumber(), StringUtils.slugify(), etc.
 const SDK_RUNTIME_EXPORT_KEYS = [
@@ -70,7 +101,7 @@ export class RuntimeService {
     // Standard UI libraries - Discovery allows version-agnostic export mapping
     this.registry.set('react', {
       type: 'lib',
-      keys: this.discoverModuleKeys('react') || ['useState', 'useEffect', 'useMemo', 'useCallback', 'useContext', 'createContext', 'useRef', 'useLayoutEffect', 'useImperativeHandle', 'useDebugValue', 'forwardRef', 'version', 'memo', 'Suspense', 'Fragment']
+      keys: mergeModuleKeys(this.discoverModuleKeys('react'), REACT_BROWSER_RUNTIME_EXPORT_KEYS)
     });
     this.registry.set('react-dom', {
       type: 'lib',
@@ -189,7 +220,11 @@ export class RuntimeService {
     const modules: Record<string, any> = {};
 
     // 1. From registry (System defaults)
+    // Client-handled modules (react, lucide-react, @fromcode119/* etc.) are always provided
+    // via hardcoded data: URLs in ImportMapInstaller.buildStaticImports — skip them entirely
+    // to avoid sending 2.9 MB of unused bridge source on every /system/frontend request.
     for (const [name, config] of this.registry.entries()) {
+      if (RuntimeConstants.CLIENT_HANDLED_MODULES.has(name)) continue;
       modules[name] = { 
         ...config,
         source: this.generateBridgeSource(name, config)
@@ -202,6 +237,7 @@ export class RuntimeService {
 
       if (Array.isArray(p.manifest.runtimeModules)) {
         p.manifest.runtimeModules.forEach(name => {
+          if (RuntimeConstants.CLIENT_HANDLED_MODULES.has(name)) return;
           if (!modules[name]) {
             const config: RuntimeModuleConfig = { keys: [], type: 'lib' };
             modules[name] = { ...config, source: this.generateBridgeSource(name, config) };
@@ -209,6 +245,7 @@ export class RuntimeService {
         });
       } else {
         Object.entries(p.manifest.runtimeModules).forEach(([name, val]) => {
+          if (RuntimeConstants.CLIENT_HANDLED_MODULES.has(name)) return;
           // If the module already exists in our registry, don't overwrite it with a generic one
           if (modules[name] && typeof val === 'string' && modules[name].type === val) {
              return;

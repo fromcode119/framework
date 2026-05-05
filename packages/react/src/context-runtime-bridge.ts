@@ -6,6 +6,7 @@ import { BridgeObjectBuilder } from './helpers/bridge-object-builder';
 import { ImportMapInstaller } from './helpers/import-map-installer';
 import { ReactExportSourceBuilder } from './helpers/react-export-source-builder';
 import { SdkExportSourceBuilder } from './helpers/sdk-export-source-builder';
+import { LazyLoadClass } from './lazy-load-class';
 
 export class ContextRuntimeBridge {
   static setupGlobalStubs(args: GlobalStubSetupArgs): void {
@@ -44,8 +45,6 @@ export class ContextRuntimeBridge {
         registerCollection: queueMethod('collection'),
         registerTheme: queueMethod('theme'),
         registerSettings: queueMethod('settings'),
-        registerAPI: queueMethod('api'),
-        getAPI: () => undefined,
         emit: queueMethod('emit'),
         on: queueMethod('on'),
       };
@@ -55,7 +54,6 @@ export class ContextRuntimeBridge {
       fc.ContextHooks = {
         usePlugins: () => ({ data: [], isLoading: false }),
         useTranslation: () => ({ t: (k: string) => k }),
-        usePluginAPI: () => ({}),
         usePluginState: () => [null, () => {}],
         useSystemShortcodes: () => ({}),
       };
@@ -83,6 +81,10 @@ export class ContextRuntimeBridge {
     runtimeRegistry['@fromcode119/sdk/react'] = bridge;
 
     (window as any).Fromcode = bridge;
+    // Write LazyLoadClass to window.Fromcode (a global) so webpack cannot tree-shake it.
+    // bridge.LazyLoadClass is skipped here because property assignments on a local var
+    // that escapes via window can be elided by webpack's object-property analysis.
+    (window as any).Fromcode.LazyLoadClass = LazyLoadClass;
     (window as any).getIcon = args.getIcon;
     (window as any).FrameworkIcons = args.FrameworkIcons;
     (window as any).FrameworkIconRegistry = args.FrameworkIconRegistry;

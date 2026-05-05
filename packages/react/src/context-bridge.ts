@@ -49,14 +49,6 @@ export class ContextBridge {
     return ContextBridge._args?.registerSettings?.(...args);
   }
 
-  static registerAPI(...args: any[]): any {
-    return ContextBridge._args?.registerAPI?.(...args);
-  }
-
-  static getAPI(...args: any[]): any {
-    return ContextBridge._args?.getAPI?.(...args);
-  }
-
   static registerPluginApi(...args: any[]): any {
     return ContextBridge._args?.registerPluginApi?.(...args);
   }

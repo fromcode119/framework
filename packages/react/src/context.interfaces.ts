@@ -93,8 +93,6 @@ export interface PluginContextValue {
   t: (key: string, params?: Record<string, any>, defaultValue?: string) => string;
   emit: (event: string, data: any) => void;
   on: (event: string, handler: (data: any) => void) => () => void;
-  registerAPI: (slug: string, api: any) => void;
-  getAPI: (slug: string) => any;
   registerPluginApi: (namespace: string, slug: string, api: any) => void;
   getPluginApi: (namespace: string, slug: string) => any;
   hasPluginApi: (namespace: string, slug: string) => boolean;

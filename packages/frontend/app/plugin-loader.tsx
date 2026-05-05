@@ -31,19 +31,6 @@ export default function PluginLoader() {
         document.head.appendChild(link);
       });
 
-      const themeEntry = String(theme?.ui?.entry || '').trim();
-      if (themeEntry) {
-        const entryUrl = themeEntry.startsWith('http') ? themeEntry : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, themeEntry);
-        if (!document.querySelector(`script[data-theme-entry="${entryUrl}"]`)) {
-          (window as any).React = React;
-          (window as any).ReactDOM = ReactDOM;
-          const script = document.createElement('script');
-          script.src = entryUrl;
-          script.setAttribute('data-theme-entry', entryUrl);
-          script.onerror = (err) => console.warn('[frontend] Failed to load theme bundle:', err);
-          document.head.appendChild(script);
-        }
-      }
     }
 
     // Plugin/theme ESM bundles import bare specifiers (e.g. @fromcode119/react).
@@ -51,12 +38,26 @@ export default function PluginLoader() {
     // registry entry is populated. The script tag is created synchronously inside
     // installRuntimeBridge(), but we double-check the registry to guard against any
     // edge-case where the tag was created before the bridge object was written.
+    const importMapScript = document.getElementById('fc-runtime-import-map') as HTMLScriptElement | null;
+    const importMapText = String(importMapScript?.textContent || '');
     const importMapReady =
-      !!document.getElementById('fc-runtime-import-map') &&
-      !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/react'];
+      !!importMapScript &&
+      importMapText.includes('"react"') &&
+      importMapText.includes('useInsertionEffect') &&
+      importMapText.includes('useSyncExternalStore') &&
+      importMapText.includes('@fromcode119/sdk/react') &&
+      !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/react'] &&
+      !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/sdk/react'];
     if (!importMapReady) {
+      // Primary trigger: event dispatched by ImportMapInstaller when import map is written.
+      const handler = () => setRetryTick((v) => v + 1);
+      window.addEventListener('fromcode:import-map-ready', handler, { once: true });
+      // Fallback poll every 50ms in case the event was already fired before this effect ran.
       const timer = window.setTimeout(() => setRetryTick((v) => v + 1), 50);
-      return () => window.clearTimeout(timer);
+      return () => {
+        window.clearTimeout(timer);
+        window.removeEventListener('fromcode:import-map-ready', handler);
+      };
     }
 
     for (const plugin of pluginList) {
@@ -99,13 +100,34 @@ export default function PluginLoader() {
       }
     };
 
+    // Load active theme runtime after import map is registered.
+    if (theme?.slug) {
+      const themeEntry = String(theme?.ui?.entry || '').trim();
+      if (themeEntry) {
+        const themeEntryUrl = themeEntry.startsWith('http')
+          ? themeEntry
+          : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, themeEntry);
+        const themeModuleKey = `theme:${theme.slug}:${themeEntry}`;
+        void loadModule(themeModuleKey, themeEntryUrl);
+      }
+    }
+
     // Load plugin runtime modules after import map is registered.
+    // Only load plugins with the 'frontend' capability — admin-only plugins have no
+    // frontend-visible slots and should not bloat the public page JS payload.
     // Plugins with loadStrategy "idle" are deferred until the browser is idle.
+    // Plugins with loadStrategy "none" are skipped entirely on the frontend.
     pluginList.forEach((plugin: any) => {
       if (!plugin?.ui?.entry) return;
-      const moduleUrl = ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, plugin.ui.entry);
-      const key = `plugin:${plugin.slug}:${plugin.ui.entry}`;
+      const caps: string[] = Array.isArray(plugin.capabilities) ? plugin.capabilities : [];
+      if (caps.length > 0 && !caps.includes('frontend')) return;
+
+      const entryFile = String(plugin.ui.frontendEntry || plugin.ui.entry).trim();
+      const moduleUrl = ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, entryFile);
+      const key = `plugin:${plugin.slug}:${entryFile}`;
       const strategy = String(plugin?.ui?.loadStrategy || 'eager').trim();
+
+      if (strategy === 'none') return;
 
       if (strategy === 'idle') {
         if (typeof requestIdleCallback !== 'undefined') {

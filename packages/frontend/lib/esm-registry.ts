@@ -66,13 +66,17 @@ export class EsmRegistry {
         .map((key) => `export const ${key} = ${bridge}.${key};`)
         .join('\n') +
       `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
+    const sdkReactExportSource =
+      `export const { FrameworkIcons, FrameworkIconRegistry, PluginsProvider, ContextHooks, ContextBridge, Slot, Override, RootFramework, SystemShortcodes, CollectionQueryUtils, BrowserLocalization, AsyncDataController, LazyComponentLoaderService } = ${reactModuleAccessor} || window.Fromcode || {};` +
+      `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
 
     return {
       imports: {
-        "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, Fragment, Profiler, StrictMode, Children, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, Component, PureComponent, version } = window.React;",
+        "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, Fragment, Profiler, StrictMode, Children, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Component, PureComponent, version } = window.React;",
         "react-dom": "data:application/javascript,const rd = window.ReactDOM || window.ReactDom; export default rd; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = rd;",
         "@fromcode119/react": `data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, usePluginAPI, PluginsProvider, getIcon, createProxyIcon, FrameworkIcons, FrameworkIconRegistry, IconNames, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, emit, on, CliUtils, RuntimeBridge } = ${bridge}; export default ${reactModuleAccessor} || window.Fromcode;`,
         "@fromcode119/sdk": `data:application/javascript,${encodeURIComponent(sdkExportSource)}`,
+        "@fromcode119/sdk/react": `data:application/javascript,${encodeURIComponent(sdkReactExportSource)}`,
         "@fromcode119/admin": `data:application/javascript,export default ${adminModuleAccessor} || window.Fromcode;`,
         "@fromcode119/admin/components": `data:application/javascript,export default ${adminModuleAccessor} || window.Fromcode;`,
         "react/jsx-runtime": "data:application/javascript,const __fcJsx = (type, props, key) => window.React.createElement(type, key === undefined ? props : { ...(props || {}), key }); export const jsx = __fcJsx; export const jsxs = __fcJsx; export const Fragment = window.React.Fragment; export default { jsx, jsxs, Fragment };",

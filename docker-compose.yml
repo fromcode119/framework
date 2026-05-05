@@ -49,6 +49,7 @@ services:
       dockerfile: Dockerfile
       target: api-only
       args:
+        - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
         - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
@@ -78,8 +79,8 @@ services:
     volumes:
       - ./data:/app/data
       - ./public/uploads:/app/public/uploads
-      - ${SHARED_PLUGINS_DIR:-./plugins}:/app/plugins
-      - ${SHARED_THEMES_DIR:-./themes}:/app/themes
+      - ${SHARED_PLUGINS_DIR:-../../plugins}:/app/plugins
+      - ${SHARED_THEMES_DIR:-../../themes}:/app/themes
     networks:
       - framework
       - proxy
@@ -102,6 +103,7 @@ services:
       dockerfile: Dockerfile
       target: admin-only
       args:
+        - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
         - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
         - NEXT_PUBLIC_ADMIN_AI_ENABLED=${NEXT_PUBLIC_ADMIN_AI_ENABLED:-false}
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
@@ -141,6 +143,7 @@ services:
       dockerfile: Dockerfile
       target: frontend-only
       args:
+        - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
         - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}

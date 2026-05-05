@@ -33,6 +33,26 @@ export class RuntimeConstants {
     'UrlUtils',
   ] as const;
 
+  /**
+   * Modules always provided by the client-side runtime (hardcoded data: URLs in buildStaticImports).
+   * The server must NOT include bridge source for these — it is never used and wastes bandwidth.
+   */
+  static readonly CLIENT_HANDLED_MODULES = new Set([
+    'react',
+    'react-dom',
+    'react-dom/client',
+    'react-jsx',
+    'react/jsx-runtime',
+    'react/jsx-dev-runtime',
+    'lucide-react',
+    '@fromcode119/react',
+    '@fromcode119/sdk',
+    '@fromcode119/sdk/react',
+    '@fromcode119/sdk/admin',
+    '@fromcode119/admin',
+    '@fromcode119/admin/components',
+  ]);
+
   static readonly ADMIN_RUNTIME_EXPORT_KEYS = [
     'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch',
     'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker',

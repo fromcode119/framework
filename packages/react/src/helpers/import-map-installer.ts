@@ -1,5 +1,8 @@
 import type { RuntimeBridgeInstallArgs } from '../context-runtime-bridge.interfaces';
 import type { ImportMapSources } from './import-map-installer.interfaces';
+import { RuntimeConstants } from '@fromcode119/core';
+
+const RESERVED_IMPORT_NAMES = RuntimeConstants.CLIENT_HANDLED_MODULES;
 
 export class ImportMapInstaller {
   static install(
@@ -18,6 +21,9 @@ export class ImportMapInstaller {
       document.head.appendChild(script);
     }
     script.textContent = JSON.stringify({ imports });
+    // Signal plugin-loaders that the import map is ready so they can start
+    // loading theme/plugin bundles without waiting for the 50ms poll interval.
+    window.dispatchEvent(new CustomEvent('fromcode:import-map-ready'));
   }
 
   private static buildStaticImports(
@@ -26,7 +32,7 @@ export class ImportMapInstaller {
   ): Record<string, string> {
     return {
       react:
-        'data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = window.React;',
+        'data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = window.React;',
       'react-dom':
         'data:application/javascript,export default window.ReactDOM; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = window.ReactDOM;',
       'react/jsx-runtime':
@@ -45,7 +51,7 @@ export class ImportMapInstaller {
       '@fromcode119/admin/components': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
       '@fromcode119/admin': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
       '@fromcode119/sdk': 'data:application/javascript,' + encodeURIComponent(sources.sdkExportSource),
-      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(sources.reactExportSource),
+      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(sources.sdkReactExportSource),
       '@fromcode119/sdk/admin': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
     };
   }
@@ -55,6 +61,9 @@ export class ImportMapInstaller {
     if (!currentServerModules) return;
     const base = (args.stabilityRef.current as any).apiUrl || (window as any).FROMCODE_API_URL || '';
     Object.entries(currentServerModules).forEach(([name, config]: [string, any]) => {
+      if (RESERVED_IMPORT_NAMES.has(name)) {
+        return;
+      }
       if (config.url) {
         imports[name] = config.url.startsWith('/') ? `${base}${config.url}` : config.url;
       } else if (config.source) {
@@ -72,6 +81,10 @@ export class ImportMapInstaller {
     if (!currentClientModules) return;
     let adminModuleSource: string | null = null;
     Object.entries(currentClientModules).forEach(([name, mod]) => {
+      // Never allow runtime client modules to override reserved framework import names.
+      if (RESERVED_IMPORT_NAMES.has(name)) {
+        return;
+      }
       runtimeRegistry[name] = mod;
       const runtimeModuleAccessor = `(window.${args.RuntimeConstants.GLOBALS.MODULES} && window.${args.RuntimeConstants.GLOBALS.MODULES}[${JSON.stringify(name)}])`;
       const keys =

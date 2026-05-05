@@ -30,3 +30,5 @@ export { SystemShortcodes } from './system-shortcodes';
 export { CollectionQueryUtils } from './collection-queries';
 export { BrowserLocalization } from './browser-localization';
 export { AsyncDataController } from './async-data-controller';
+export { LazyComponentLoaderService } from './lazy-component-loader-service';
+export { LazyLoadClass } from './lazy-load-class';

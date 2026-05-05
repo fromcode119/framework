@@ -100,7 +100,6 @@ export interface PluginContext {
     has(namespace: string, slug: string): boolean;
     get(namespace: string, slug: string): any;
     isEnabled(slug: string): boolean;
-    getAPI(slug: string): any;
     emit(event: string, payload: any): void;
     on(event: string, handler: (payload: any) => void | Promise<void>): void;
   };

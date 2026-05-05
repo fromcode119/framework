@@ -47,15 +47,6 @@ export class ContextProviderRegistrationHooks {
       return getPluginApi(namespace, slug) !== undefined;
     }, [getPluginApi]);
 
-    const registerAPI = React.useCallback((slug: string, api: any) => {
-      pluginAPIs[slug] = api;
-      registerPluginApi('org.fromcode', slug, api);
-    }, [pluginAPIs, registerPluginApi]);
-
-    const getAPI = React.useCallback((slug: string) => {
-      return getPluginApi('org.fromcode', slug) ?? pluginAPIs[slug];
-    }, [getPluginApi, pluginAPIs]);
-
     const setPluginState = React.useCallback((pluginSlug: string, key: string, value: any) => {
       setPluginStateInternal((prev) => ({
         ...prev,
@@ -303,11 +294,9 @@ export class ContextProviderRegistrationHooks {
 
     return {
       emit,
-      getAPI,
       getPluginApi,
       hasPluginApi,
       on,
-      registerAPI,
       registerCollection,
       registerContentTransformer,
       registerFieldComponent,

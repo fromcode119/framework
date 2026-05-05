@@ -23,8 +23,6 @@ export interface RuntimeBridgeInstallArgs {
   registerPlugins: (...args: any[]) => void;
   registerTheme: (...args: any[]) => void;
   registerSettings: (...args: any[]) => void;
-  registerAPI: (...args: any[]) => void;
-  getAPI: (...args: any[]) => any;
   registerPluginApi: (...args: any[]) => void;
   getPluginApi: (...args: any[]) => any;
   hasPluginApi: (...args: any[]) => boolean;
@@ -38,7 +36,6 @@ export interface RuntimeBridgeInstallArgs {
   setLocale: (...args: any[]) => void;
   usePlugins: (...args: any[]) => any;
   useTranslation: (...args: any[]) => any;
-  usePluginAPI: (...args: any[]) => any;
   usePluginState: (...args: any[]) => any;
   useSystemShortcodes: (...args: any[]) => any;
   CollectionQueryUtils: any;

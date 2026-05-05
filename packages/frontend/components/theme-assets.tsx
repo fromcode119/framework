@@ -1,4 +1,4 @@
-import { preload } from 'react-dom';
+import { preconnect, preload } from 'react-dom';
 import { ServerApiUtils } from '@/lib/server-api';
 import { ApiPathUtils } from '@fromcode119/core/client';
 
@@ -41,6 +41,19 @@ export default async function ThemeAssets() {
       ? (absoluteEntryUrl || ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, rawEntryUrl))
       : '';
 
+    // Tell browser to preconnect to API origin early — reduces DNS+TCP overhead
+    // for all API calls (plugin bundles, theme JS, images, endpoints).
+    if (apiUrl) {
+      preconnect(apiUrl, { crossOrigin: 'anonymous' });
+    }
+
+    // NOTE: No explicit preload for entryUrl here.
+    // React 19 intercepts all <link rel="preload|modulepreload"> elements and converts
+    // them to :HL RSC directives that omit crossOrigin for script resources. This causes
+    // the browser to fetch bundle.js twice: once as no-CORS (preload) and once as CORS
+    // (import()). Removing the preload avoids the double-download at the cost of ~100ms
+    // earlier fetch. The bundle is fetched once via import() in plugin-loader.tsx.
+
     const headLinks = Array.isArray(theme.ui?.headLinks)
       ? theme.ui.headLinks.map((link: Record<string, string>, i: number) => {
           if (!link?.rel || !link?.href) return null;
@@ -54,6 +67,8 @@ export default async function ThemeAssets() {
             } as Parameters<typeof preload>[1]);
             return null;
           }
+          // External stylesheets (e.g. Google Fonts) are injected via DOM script below — not here
+          if (link.rel === 'stylesheet' && href.startsWith('https://')) return null;
           const props: Record<string, string> = { rel: link.rel, href };
           if (link.crossOrigin) props.crossOrigin = link.crossOrigin;
           if (link.as) props.as = link.as;
@@ -63,6 +78,13 @@ export default async function ThemeAssets() {
           if (link.fetchPriority) props.fetchPriority = link.fetchPriority;
           return <link key={`hl-${i}`} {...props} />;
         })
+      : [];
+
+    // Collect external stylesheets for non-blocking injection via DOM script (media="print" trick)
+    const externalStylesheets = Array.isArray(theme.ui?.headLinks)
+      ? theme.ui.headLinks
+          .filter((link: Record<string, string>) => link?.rel === 'stylesheet' && link?.href?.startsWith('https://'))
+          .map((link: Record<string, string>) => link.href)
       : [];
 
     // Fetch theme CSS server-side and inline as <style> to eliminate render-blocking
@@ -94,18 +116,27 @@ export default async function ThemeAssets() {
         })
       : [];
 
-    // Use react-dom preload() to emit deduplicated resource hints without
-    // creating duplicate <link> elements.
-    if (entryUrl) {
-      preload(entryUrl, { as: 'script', fetchPriority: 'high' } as Parameters<typeof preload>[1]);
-    }
-
     return (
       <>
         {headLinks}
         {fallbackCssLinks}
         {inlinedCss ? <style data-theme={theme.slug} dangerouslySetInnerHTML={{ __html: inlinedCss }} /> : null}
         {entryUrl ? <meta name="fromcode:theme-entry" content={entryUrl} /> : null}
+        {entryUrl ? (
+          // Use an inline script to insert the modulepreload link and non-blocking external
+          // stylesheets (Google Fonts) so React 19's resource-hoisting cannot interfere.
+          // modulepreload: bypasses crossOrigin stripping that would cause credentials-mode mismatch.
+          // stylesheets: media="print" trick defers rendering until after fonts load — no FCP penalty.
+          <script dangerouslySetInnerHTML={{ __html:
+            `(function(){var l=document.createElement('link');l.rel='modulepreload';l.href=${JSON.stringify(entryUrl)};document.head.appendChild(l);${
+              externalStylesheets.length > 0
+                ? externalStylesheets.map((href: string) =>
+                    `var f=document.createElement('link');f.rel='stylesheet';f.href=${JSON.stringify(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`
+                  ).join('')
+                : ''
+            }})();`
+          }} />
+        ) : null}
       </>
     );
   } catch (error) {

@@ -14,7 +14,7 @@ export class SystemAdminController {
       if (frontendMeta?.activeTheme) {
         metadata.activeTheme = {
           ...frontendMeta.activeTheme,
-          ui: { ...(frontendMeta.activeTheme.ui || {}), css: [] },
+          ui: { ...(frontendMeta.activeTheme.ui || {}), css: [], entry: undefined },
         };
       }
       if (frontendMeta?.runtimeModules) {
@@ -96,6 +96,7 @@ export class SystemAdminController {
     const plugins = this.runtime.manager.getSortedPlugins(
       this.runtime.manager.getPlugins().filter((plugin: any) => plugin.state === 'active')
     ).map((plugin: any) => ({
+      namespace: plugin.manifest.namespace,
       slug: plugin.manifest.slug,
       version: plugin.manifest.version,
       name: plugin.manifest.name,
@@ -106,12 +107,12 @@ export class SystemAdminController {
       },
     }));
 
+    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=300');
     res.json({
       ...metadata,
       menu: Array.isArray(adminMetadata?.menu)
         ? adminMetadata.menu
         : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),
-      secondaryPanel: adminMetadata?.secondaryPanel || this.runtime.buildDefaultSecondaryPanel(),
       plugins,
       publicSettings,
     });
