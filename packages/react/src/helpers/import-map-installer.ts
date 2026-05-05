@@ -1,6 +1,6 @@
 import type { RuntimeBridgeInstallArgs } from '../context-runtime-bridge.interfaces';
 import type { ImportMapSources } from './import-map-installer.interfaces';
-import { RuntimeConstants } from '@fromcode119/core';
+import { RuntimeConstants } from '@fromcode119/core/client';
 
 const RESERVED_IMPORT_NAMES = RuntimeConstants.CLIENT_HANDLED_MODULES;
 

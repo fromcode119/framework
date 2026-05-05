@@ -27,7 +27,7 @@ const nextConfig = {
     resolveAlias: {
       '@fromcode119/react': '../react/src',
       '@fromcode119/react/*': '../react/src/*',
-      '@fromcode119/core': '../core/src',
+      '@fromcode119/core': '../core/src/client.ts',
       '@fromcode119/core/*': '../core/src/*',
       '@fromcode119/sdk': '../sdk/src',
       '@fromcode119/sdk/*': '../sdk/src/*',
@@ -116,7 +116,7 @@ const nextConfig = {
     config.resolve.alias['async_hooks'] = path.resolve(__dirname, './webpack/async-hooks-stub.js');
 
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
-    config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/index.ts');
+    config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/client.ts');
     config.resolve.alias['@fromcode119/core/client$'] = path.resolve(__dirname, '../core/src/client.ts');
     config.resolve.alias['@fromcode119/sdk$'] = path.resolve(__dirname, '../sdk/src/index.ts');
     config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
