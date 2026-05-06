@@ -122,6 +122,17 @@ export default async function ThemeAssets() {
       ? `window.__FROMCODE_PAGE_PREFETCH__=${ThemeDataPrefetcher.safeSerialize(prefetchData)};`
       : null;
 
+    const prefetchApis = Array.isArray(theme.ui?.prefetchApis) ? theme.ui.prefetchApis : [];
+    const lcpPreload = ThemeDataPrefetcher.extractLcpImageUrl(prefetchData, prefetchApis, apiUrl);
+    if (lcpPreload) {
+      preload(lcpPreload.href, {
+        as: 'image',
+        fetchPriority: 'high',
+        ...(lcpPreload.imageSrcSet ? { imageSrcSet: lcpPreload.imageSrcSet } : {}),
+        ...(lcpPreload.imageSizes ? { imageSizes: lcpPreload.imageSizes } : {}),
+      });
+    }
+
     return (
       <>
         {headLinks}

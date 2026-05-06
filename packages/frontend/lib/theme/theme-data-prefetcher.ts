@@ -1,11 +1,7 @@
 import { ServerApiUtils } from '../server-api';
+import type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefetcher.interfaces';
 
-interface ThemePrefetchApiEntry {
-  key: string;
-  pluginSlug: string;
-  path?: string;
-  query?: Record<string, string>;
-}
+export type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefetcher.interfaces';
 
 /**
  * Fetches plugin data server-side based on theme.json `ui.prefetchApis` config
@@ -61,10 +57,69 @@ export class ThemeDataPrefetcher {
     return results;
   }
 
+  /**
+   * Extracts LCP image URL from prefetched API data based on the `lcp` config
+   * in each `prefetchApis` entry. Returns null when no match is found.
+   *
+   * Used by ThemeAssets to inject `<link rel="preload" as="image">` in `<head>`,
+   * eliminating the resource load delay caused by waiting for JS to render.
+   *
+   * @example theme.json lcp config
+   * ```json
+   * "lcp": {
+   *   "imagePath": "items.0.imageUrl",
+   *   "urlTemplate": "/api/v1/plugins/cms/img?src={value}&w={width}&q=60",
+   *   "widths": [360, 520, 680, 800],
+   *   "sizes": "(max-width: 48em) 100vw, (max-width: 62em) 92vw, 50vw"
+   * }
+   * ```
+   */
+  static extractLcpImageUrl(
+    prefetchData: Record<string, unknown>,
+    apis: ThemePrefetchApiEntry[],
+    publicApiBase: string,
+  ): LcpImagePreload | null {
+    for (const entry of apis) {
+      const lcp = entry.lcp;
+      if (!lcp?.imagePath || !lcp?.urlTemplate) continue;
+      const data = prefetchData[entry.key];
+      if (!data) continue;
+      const rawValue = ThemeDataPrefetcher.getNestedValue(data, lcp.imagePath);
+      if (!rawValue || typeof rawValue !== 'string') continue;
+
+      const encodedValue = encodeURIComponent(rawValue);
+      const buildUrl = (w: number): string => {
+        const path = lcp.urlTemplate.replace('{value}', encodedValue).replace('{width}', String(w));
+        return path.startsWith('http') ? path : `${publicApiBase}${path}`;
+      };
+
+      if (lcp.widths?.length) {
+        const imageSrcSet = lcp.widths.map((w) => `${buildUrl(w)} ${w}w`).join(', ');
+        const largest = lcp.widths[lcp.widths.length - 1];
+        return { href: buildUrl(largest), imageSrcSet, imageSizes: lcp.sizes };
+      }
+
+      return { href: buildUrl(lcp.defaultWidth ?? 680) };
+    }
+    return null;
+  }
+
   static safeSerialize(data: Record<string, unknown>): string {
     return JSON.stringify(data)
       .replace(/</g, '\\u003c')
       .replace(/>/g, '\\u003e')
       .replace(/&/g, '\\u0026');
+  }
+
+  private static getNestedValue(obj: unknown, path: string): unknown {
+    return path.split('.').reduce((current: unknown, key: string) => {
+      if (current === null || current === undefined) return undefined;
+      if (Array.isArray(current)) {
+        const idx = parseInt(key, 10);
+        return !isNaN(idx) && idx >= 0 ? current[idx] : undefined;
+      }
+      if (typeof current === 'object') return (current as Record<string, unknown>)[key];
+      return undefined;
+    }, obj);
   }
 }
