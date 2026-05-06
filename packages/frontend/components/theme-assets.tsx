@@ -1,5 +1,6 @@
 import { preconnect, preload } from 'react-dom';
 import { ServerApiUtils } from '@/lib/server-api';
+import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import { ApiPathUtils } from '@fromcode119/core/client';
 
 /**
@@ -116,11 +117,17 @@ export default async function ThemeAssets() {
         })
       : [];
 
+    const prefetchData = await ThemeDataPrefetcher.prefetch(theme);
+    const prefetchScript = Object.keys(prefetchData).length > 0
+      ? `window.__FROMCODE_PAGE_PREFETCH__=${ThemeDataPrefetcher.safeSerialize(prefetchData)};`
+      : null;
+
     return (
       <>
         {headLinks}
         {fallbackCssLinks}
         {inlinedCss ? <style data-theme={theme.slug} dangerouslySetInnerHTML={{ __html: inlinedCss }} /> : null}
+        {prefetchScript ? <script dangerouslySetInnerHTML={{ __html: prefetchScript }} /> : null}
         {entryUrl ? <meta name="fromcode:theme-entry" content={entryUrl} /> : null}
         {entryUrl ? (
           // Use an inline script to insert the modulepreload link and non-blocking external
