@@ -1,4 +1,4 @@
-import { IDatabaseManager } from '@fromcode119/database';
+import { IDatabaseManager, NamingStrategy } from '@fromcode119/database';
 import { Collection, Logger } from '@fromcode119/core';
 
 export class SuggestionService {
@@ -17,10 +17,11 @@ export class SuggestionService {
 
       const tableName = collection.tableName || collection.slug;
       const search = String(q || '').trim().toLowerCase();
+      const physicalField = SuggestionService.toPhysicalColumnName(field);
 
       if (config && (config.type === 'json' || config.admin?.component === 'TagField' || config.admin?.component === 'Tags')) {
         const rows = await this.db.find(tableName, {
-          columns: { [field]: true },
+          columns: { [physicalField]: true },
           limit: 300
           // Note: JSON/tags fields are stored as serialized arrays — LIKE on the raw
           // JSON string is unreliable, so search filtering is done in JS below.
@@ -39,7 +40,7 @@ export class SuggestionService {
         };
 
         for (const row of rows) {
-          const raw = row[field];
+          const raw = row[field] ?? row[physicalField];
           if (raw === null || raw === undefined) continue;
 
           if (Array.isArray(raw)) {
@@ -71,15 +72,16 @@ export class SuggestionService {
       } else {
         const isUserSearch = collection.slug === 'users' && (field === 'username' || field === 'email');
         const labelFieldName = collection.admin?.useAsTitle || field;
+        const physicalLabelFieldName = SuggestionService.toPhysicalColumnName(labelFieldName);
 
-        const columnsToFetch: Record<string, boolean> = { [field]: true };
-        if (labelFieldName !== field) columnsToFetch[labelFieldName] = true;
+        const columnsToFetch: Record<string, boolean> = { [physicalField]: true };
+        if (labelFieldName !== field) columnsToFetch[physicalLabelFieldName] = true;
         if (isUserSearch) {
           columnsToFetch['username'] = true;
           columnsToFetch['email'] = true;
         }
 
-        const searchColumns = isUserSearch ? ['username', 'email'] : [field];
+        const searchColumns = isUserSearch ? ['username', 'email'] : [physicalField];
 
         const rows = await this.db.find(tableName, {
           columns: columnsToFetch,
@@ -91,14 +93,14 @@ export class SuggestionService {
         const out: Array<{ label: string; value: string }> = [];
 
         for (const row of rows) {
-          const value = row[field];
+          const value = row[field] ?? row[physicalField];
           if (value === null || value === undefined) continue;
 
           const strValue = String(value);
           if (seen.has(strValue)) continue;
           seen.add(strValue);
 
-          const label = row[labelFieldName] ?? strValue;
+          const label = row[labelFieldName] ?? row[physicalLabelFieldName] ?? strValue;
           out.push({ label: String(label), value: strValue });
         }
 
@@ -108,5 +110,9 @@ export class SuggestionService {
       this.logger.error(`Suggestions error in ${collection.slug} for ${field}:`, err);
       throw err;
     }
+  }
+
+  private static toPhysicalColumnName(field: string): string {
+    return NamingStrategy.toSnakeCase(String(field || '').trim());
   }
 }

@@ -6,7 +6,7 @@ type EmailSender = Pick<EmailManager, 'send'>;
 import { MediaManager, StorageFactory } from '@fromcode119/media';
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
 import { Logger } from '../logging';
-import { EmailIntegrationDefinition } from './providers/email-provider';
+import { EmailIntegrationDefinition } from './providers/email-integration-definition';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';
 import { SsoIntegrationDefinition } from './providers/sso-provider';
@@ -77,8 +77,8 @@ export class IntegrationManager {
    * Should be called after database migrations are complete
    */
   async initialize() {
-    // Refresh all core integrations from stored or env config
-    await this.refreshAll(false);
+    // After migrations complete, stored integration settings should override env defaults.
+    await this.refreshAll(true);
   }
 
   /**
@@ -225,12 +225,12 @@ export class IntegrationManager {
             ? {
                 provider: active.providerKey,
                 source: active.source,
-                config: active.config
+                config: this.registry.sanitizeResolvedConfig(summary.key, active.providerKey, active.config)
               }
             : null,
           stored,
           storedProviders,
-          storedProfiles,
+          storedProfiles: this.sanitizeStoredProfiles(summary.key, storedProfiles),
           activeProfileId: storedProfiles?.activeProfileId || null
         };
       })
@@ -258,12 +258,12 @@ export class IntegrationManager {
         ? {
             provider: active.providerKey,
             source: active.source,
-            config: active.config
+            config: this.registry.sanitizeResolvedConfig(normalizedType, active.providerKey, active.config)
           }
         : null,
       stored,
       storedProviders,
-      storedProfiles,
+      storedProfiles: this.sanitizeStoredProfiles(normalizedType, storedProfiles),
       activeProfileId: storedProfiles?.activeProfileId || null
     };
   }
@@ -286,77 +286,37 @@ export class IntegrationManager {
   ) {
     const normalizedType = this.normalizeKey(type);
     await this.registry.updateStoredConfig(normalizedType, provider, config || {}, options);
-
-    // Refresh if it's a core integration
-    if (normalizedType === 'email') await this.refreshEmail(true);
-    else if (normalizedType === 'storage') await this.refreshStorage(true);
-    else if (normalizedType === 'cache') await this.refreshCache(true);
-    else {
-      // Clear instance so it re-instantiates with new config on next get()
-      this.instances.delete(normalizedType);
-    }
-
-    return this.getConfig(normalizedType);
+    return this.refreshTypeAndGetConfig(normalizedType);
   }
 
   async setProviderEnabled(type: string, providerId: string, enabled: boolean) {
     const normalizedType = this.normalizeKey(type);
     await this.registry.setProviderEnabled(normalizedType, providerId, enabled);
-
-    if (normalizedType === 'email') await this.refreshEmail(true);
-    else if (normalizedType === 'storage') await this.refreshStorage(true);
-    else if (normalizedType === 'cache') await this.refreshCache(true);
-    else this.instances.delete(normalizedType);
-
-    return this.getConfig(normalizedType);
+    return this.refreshTypeAndGetConfig(normalizedType);
   }
 
   async removeProvider(type: string, providerId: string) {
     const normalizedType = this.normalizeKey(type);
     await this.registry.removeProvider(normalizedType, providerId);
-
-    if (normalizedType === 'email') await this.refreshEmail(true);
-    else if (normalizedType === 'storage') await this.refreshStorage(true);
-    else if (normalizedType === 'cache') await this.refreshCache(true);
-    else this.instances.delete(normalizedType);
-
-    return this.getConfig(normalizedType);
+    return this.refreshTypeAndGetConfig(normalizedType);
   }
 
   async activateProfile(type: string, profileId: string) {
     const normalizedType = this.normalizeKey(type);
     await this.registry.setActiveProfile(normalizedType, profileId);
-
-    if (normalizedType === 'email') await this.refreshEmail(true);
-    else if (normalizedType === 'storage') await this.refreshStorage(true);
-    else if (normalizedType === 'cache') await this.refreshCache(true);
-    else this.instances.delete(normalizedType);
-
-    return this.getConfig(normalizedType);
+    return this.refreshTypeAndGetConfig(normalizedType);
   }
 
   async renameProfile(type: string, profileId: string, profileName: string) {
     const normalizedType = this.normalizeKey(type);
     await this.registry.renameProfile(normalizedType, profileId, profileName);
-
-    if (normalizedType === 'email') await this.refreshEmail(true);
-    else if (normalizedType === 'storage') await this.refreshStorage(true);
-    else if (normalizedType === 'cache') await this.refreshCache(true);
-    else this.instances.delete(normalizedType);
-
-    return this.getConfig(normalizedType);
+    return this.refreshTypeAndGetConfig(normalizedType);
   }
 
   async deleteProfile(type: string, profileId: string) {
     const normalizedType = this.normalizeKey(type);
     await this.registry.deleteProfile(normalizedType, profileId);
-
-    if (normalizedType === 'email') await this.refreshEmail(true);
-    else if (normalizedType === 'storage') await this.refreshStorage(true);
-    else if (normalizedType === 'cache') await this.refreshCache(true);
-    else this.instances.delete(normalizedType);
-
-    return this.getConfig(normalizedType);
+    return this.refreshTypeAndGetConfig(normalizedType);
   }
 
   /**
@@ -364,5 +324,41 @@ export class IntegrationManager {
    */
   private normalizeKey(type: string) {
     return CoreServices.getInstance().content.sanitizeKey(type);
+  }
+
+  private async refreshTypeAndGetConfig(normalizedType: string) {
+    await this.refreshType(normalizedType);
+    return this.getConfig(normalizedType);
+  }
+
+  private async refreshType(normalizedType: string) {
+    if (normalizedType === 'email') {
+      await this.refreshEmail(true);
+      return;
+    }
+    if (normalizedType === 'storage') {
+      await this.refreshStorage(true);
+      return;
+    }
+    if (normalizedType === 'cache') {
+      await this.refreshCache(true);
+      return;
+    }
+
+    this.instances.delete(normalizedType);
+  }
+
+  private sanitizeStoredProfiles(typeKey: string, storedProfiles: any) {
+    if (!storedProfiles?.profiles?.length) {
+      return storedProfiles;
+    }
+
+    return {
+      ...storedProfiles,
+      profiles: storedProfiles.profiles.map((profile: any) => ({
+        ...profile,
+        config: this.registry.sanitizeResolvedConfig(typeKey, String(profile?.providerKey || ''), profile?.config || {}),
+      })),
+    };
   }
 }

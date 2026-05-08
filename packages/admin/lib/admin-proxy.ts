@@ -20,12 +20,12 @@ export class AdminProxy {
       // Setting "/admin/..." when basePath="/admin" would cause "/admin/admin/...".
       url.pathname = route.startsWith('/') ? route : `/${route}`;
       url.search = '';
-      return NextResponse.redirect(url);
+      return AdminProxy.applyNoStoreHeaders(NextResponse.redirect(url));
     };
 
     // Allow setup page always to prevent loops during fresh installs
     if (pathname === AdminConstants.ROUTES.AUTH.SETUP) {
-      return NextResponse.next();
+      return AdminProxy.applyNoStoreHeaders(NextResponse.next());
     }
 
     // If no token and not on a public auth page, redirect to login
@@ -36,10 +36,18 @@ export class AdminProxy {
     // Keep login reachable even when a stale/invalid token cookie exists.
     // The client auth flow decides whether to continue to dashboard or prompt re-auth.
     if (pathname === AdminConstants.ROUTES.AUTH.LOGIN) {
-      return NextResponse.next();
+      return AdminProxy.applyNoStoreHeaders(NextResponse.next());
     }
 
-    return NextResponse.next();
+    return AdminProxy.applyNoStoreHeaders(NextResponse.next());
+  }
+
+  private static applyNoStoreHeaders(response: NextResponse): NextResponse {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+    return response;
   }
 
   private static normalizeBasePath(value: string): string {

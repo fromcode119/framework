@@ -92,7 +92,17 @@ export interface PluginContext {
     namespace: string;
     version: string;
     dataDir: string;
+    rootDir: string;
     config: Record<string, any>;
+  };
+
+  readonly paths: {
+    frameworkRoot: string;
+    pluginsRoot: string;
+    themesRoot: string;
+    currentPluginRoot: string;
+    resolveActiveThemeSlug(): Promise<string | null>;
+    resolveActiveThemeRoot(): Promise<string | null>;
   };
   
   readonly plugins: {

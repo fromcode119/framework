@@ -95,6 +95,7 @@ export * from './data-sources';
 
 // ── Shared Utilities ──────────────────────────────────────────────────────────
 export { CoreServices } from './services/core-services';
+export { AutocompleteOptionService } from './services/autocomplete-option-service';
 export { CollectionIdentityService } from './services/collection-identity-service';
 export { MediaRelationService } from './services/media-relation-service';
 export { TypeUtils } from './utils/type-utils';

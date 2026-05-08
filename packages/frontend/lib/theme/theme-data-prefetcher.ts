@@ -1,3 +1,4 @@
+import { ApiVersionUtils } from '@fromcode119/core/client';
 import { ServerApiUtils } from '../server-api';
 import type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefetcher.interfaces';
 
@@ -42,7 +43,7 @@ export class ThemeDataPrefetcher {
           typeof entry.query === 'object' && entry.query !== null ? entry.query : {},
         );
         const apiPath = ServerApiUtils.buildPluginPath(pluginSlug, entry.path || '', query);
-        const url = `${internalBase}${apiPath}`;
+        const url = `${internalBase}${ApiVersionUtils.prefix()}${apiPath}`;
         try {
           const response = await fetch(url, {
             next: { revalidate: ThemeDataPrefetcher.CACHE_REVALIDATE_SECONDS },
@@ -87,7 +88,17 @@ export class ThemeDataPrefetcher {
       const rawValue = ThemeDataPrefetcher.getNestedValue(data, lcp.imagePath);
       if (!rawValue || typeof rawValue !== 'string') continue;
 
-      const encodedValue = encodeURIComponent(rawValue);
+      // If rawValue is a full URL (e.g. http://api.internal/uploads/file.webp),
+      // extract just the pathname so the encoded value matches what the browser
+      // actually requests via the CMS image API.
+      let uploadPath = rawValue;
+      try {
+        const parsed = new URL(rawValue);
+        uploadPath = parsed.pathname;
+      } catch {
+        // not a full URL, use as-is
+      }
+      const encodedValue = encodeURIComponent(uploadPath);
       const buildUrl = (w: number): string => {
         const path = lcp.urlTemplate.replace('{value}', encodedValue).replace('{width}', String(w));
         return path.startsWith('http') ? path : `${publicApiBase}${path}`;

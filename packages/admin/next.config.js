@@ -90,6 +90,35 @@ const nextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf)).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+          {
+            key: 'Surrogate-Control',
+            value: 'no-store',
+          },
+          {
+            key: 'X-Fromcode-Admin-No-Store',
+            value: '1',
+          },
+        ],
+      },
+    ];
+  },
   webpack: (config, { isServer, dev }) => {
     // Force aliasing of @ to handle cases where the package is inside node_modules
     config.resolve.alias['@'] = path.resolve(__dirname);

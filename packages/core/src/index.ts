@@ -170,6 +170,7 @@ export { SystemUpdateService } from './management/system-update-service';
 
 // Base Classes for Plugin Development
 export { BaseRepository, BaseService, BaseController } from './base';
+export { AutocompleteOptionService } from './services/autocomplete-option-service';
 export { BaseRouter } from './base/base-router';
 export { CollectionIdentityService } from './services/collection-identity-service';
 export { MediaRelationService } from './services/media-relation-service';

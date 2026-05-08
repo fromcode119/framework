@@ -124,6 +124,23 @@ export class ThemeManager {
     }
   }
 
+  private loadThemeManifestFromDisk(slug: string): ThemeManifest | null {
+    try {
+      const themeDirectory = this.resolveThemeDirectory(slug);
+      const manifestPath = path.join(themeDirectory, 'theme.json');
+      if (!fs.existsSync(manifestPath)) {
+        return null;
+      }
+
+      const manifest: ThemeManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      this.themes.set(manifest.slug, manifest);
+      return manifest;
+    } catch (error) {
+      this.logger.warn(`Failed to refresh theme manifest for ${slug}: ${(error as Error).message}`);
+      return null;
+    }
+  }
+
   private async loadActiveTheme() {
     try {
       const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: 'active' });
@@ -221,7 +238,7 @@ export class ThemeManager {
 
   getActiveThemeManifest(): ThemeManifest | null {
     if (!this.activeTheme) return null;
-    return this.themes.get(this.activeTheme) || null;
+    return this.loadThemeManifestFromDisk(this.activeTheme) || this.themes.get(this.activeTheme) || null;
   }
 
   getThemes(): (ThemeManifest & { state: 'active' | 'inactive' })[] {
