@@ -212,8 +212,16 @@ export class PluginSettingsController {
           }
           break;
         case 'select':
-          if (Array.isArray(field.options) && !field.options.some((option: any) => option?.value === value)) {
-            errors[field.name] = 'Must be a valid option';
+          if (Array.isArray(field.options)) {
+            const optionValues = new Set(field.options.map((option: any) => option?.value));
+            const isMultiple = field?.admin?.multiple === true;
+            if (isMultiple) {
+              if (!Array.isArray(value) || value.some((entry) => !optionValues.has(entry))) {
+                errors[field.name] = 'Must be a valid option';
+              }
+            } else if (!optionValues.has(value)) {
+              errors[field.name] = 'Must be a valid option';
+            }
           }
           break;
         default:

@@ -71,6 +71,8 @@ services:
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
+      - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
+      - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
     depends_on:
       - db
       - redis

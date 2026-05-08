@@ -1,0 +1,1 @@
+export type IntegrationFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'password';

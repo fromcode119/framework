@@ -100,6 +100,36 @@ describe('plugin-settings-controller', () => {
         errors: { count: 'Must be at least 10' }
       });
     });
+
+    it('accepts valid multiselect select values', async () => {
+      mockPluginManager.getPluginSettings.mockReturnValue({
+        fields: [
+          {
+            name: 'enabled_payment_methods',
+            type: 'select',
+            options: [
+              { label: 'Stripe', value: 'stripe' },
+              { label: 'Bank Transfer', value: 'bank_transfer' },
+              { label: 'Cash on Delivery', value: 'cash_on_delivery' },
+            ],
+            admin: { multiple: true },
+          }
+        ]
+      });
+
+      const req: any = {
+        params: { slug: 'test-plugin' },
+        body: { enabled_payment_methods: ['stripe', 'bank_transfer', 'cash_on_delivery'] }
+      };
+      const res: any = { json: jest.fn() };
+
+      await controller.updateSettings(req, res);
+
+      expect(mockPluginManager.savePluginConfig).toHaveBeenCalledWith('test-plugin', expect.objectContaining({
+        settings: { enabled_payment_methods: ['stripe', 'bank_transfer', 'cash_on_delivery'] }
+      }));
+      expect(res.json).toHaveBeenCalledWith({ success: true, settings: { enabled_payment_methods: ['stripe', 'bank_transfer', 'cash_on_delivery'] } });
+    });
   });
 
   describe('resetSettings', () => {

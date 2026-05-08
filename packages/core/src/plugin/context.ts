@@ -19,6 +19,7 @@ import { MetaContextProxy } from './context/meta';
 import { RolesContextProxy } from './context/roles';
 import { PluginsFacade } from '../plugins-facade';
 import { PluginsManagerResolver } from '../plugins-manager-resolver';
+import { PluginPathContextProxy } from './context/paths';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -29,6 +30,7 @@ export class PluginContextFactory {
       const pluginLogger = rootLogger.child(plugin.manifest.slug);
       const security = ContextSecurityProxy.createSecurityHelpers(plugin, manager, rootLogger);
       const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(manager.plugins));
+      const pathContext = new PluginPathContextProxy(plugin, manager);
 
       const context: PluginContext = {
         db: DatabaseContextProxy.createDatabaseProxy(plugin, manager, security) as any,
@@ -107,8 +109,10 @@ export class PluginContextFactory {
           namespace: String(plugin.manifest.namespace || '').trim(),
           version: plugin.manifest.version,
           dataDir: `./data/plugins/${plugin.manifest.slug}`,
+          rootDir: pathContext.currentPluginRoot,
           config: plugin.manifest.config || {},
         },
+        paths: pathContext,
         plugins: {
           namespace: (namespace: string) => {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');

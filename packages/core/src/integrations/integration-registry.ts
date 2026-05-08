@@ -6,9 +6,9 @@
  */
 
 import { Logger } from '../logging';
-import { SystemConstants } from '../constants';
 import { CoreServices } from '../services';
 import { IntegrationProfileService } from './integration-profile-service';
+import { IntegrationStoredProviderService } from './integration-stored-provider-service';
 import {
   IntegrationTypeDefinition,
   IntegrationProviderDefinition,
@@ -23,10 +23,12 @@ export class IntegrationRegistry {
   private readonly types = new Map<string, IntegrationTypeRuntime<any>>();
   private readonly logger: Logger;
   private readonly profileService: IntegrationProfileService;
+  private readonly storedProviderService: IntegrationStoredProviderService;
 
   constructor(private readonly db: any, logger?: Logger) {
     this.logger = logger || new Logger({ namespace: 'integration-registry' });
     this.profileService = new IntegrationProfileService(db, this.logger, this.types);
+    this.storedProviderService = new IntegrationStoredProviderService(db, this.logger, this.types, this.profileService);
   }
 
   // ---------------------------------------------------------------------------
@@ -148,7 +150,7 @@ export class IntegrationRegistry {
     }
 
     const preferStored = options.preferStored !== false;
-    const storedProviders = preferStored ? await this.readStoredProvidersConfig(normalizedType) : null;
+    const storedProviders = preferStored ? await this.storedProviderService.readStoredProvidersInternal(normalizedType) : null;
     const storedProfiles = preferStored ? await this.readStoredProfilesConfig(normalizedType) : null;
     const envCandidate = runtime.definition.resolveFromEnv?.() || null;
 
@@ -159,9 +161,10 @@ export class IntegrationRegistry {
         if (!entry?.providerKey || !runtime.providers.has(entry.providerKey)) continue;
         const provider = runtime.providers.get(entry.providerKey);
         if (!provider) continue;
+        const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, entry.config || {});
         const normalizedConfig = provider.normalizeConfig
-          ? provider.normalizeConfig(entry.config || {})
-          : entry.config || {};
+          ? provider.normalizeConfig(resolvedConfig)
+          : resolvedConfig;
         resolvedFromStored.push({ type: normalizedType, providerKey: entry.providerKey, provider, config: normalizedConfig, source: 'stored' });
       }
       if (resolvedFromStored.length) return resolvedFromStored;
@@ -172,9 +175,10 @@ export class IntegrationRegistry {
       if (activeProfile?.providerKey && runtime.providers.has(activeProfile.providerKey)) {
         const provider = runtime.providers.get(activeProfile.providerKey);
         if (provider) {
+          const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, activeProfile.config || {});
           const normalizedConfig = provider.normalizeConfig
-            ? provider.normalizeConfig(activeProfile.config || {})
-            : activeProfile.config || {};
+            ? provider.normalizeConfig(resolvedConfig)
+            : resolvedConfig;
           return [{ type: normalizedType, providerKey: activeProfile.providerKey, provider, config: normalizedConfig, source: 'stored' }];
         }
       } else if (activeProfile?.providerKey) {
@@ -235,7 +239,8 @@ export class IntegrationRegistry {
     if (!provider) {
       throw new Error(`Integration "${normalizedType}" provider "${normalizedProvider}" is not registered`);
     }
-    const normalizedConfig = provider.normalizeConfig ? provider.normalizeConfig(config || {}) : config || {};
+    const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, config || {});
+    const normalizedConfig = provider.normalizeConfig ? provider.normalizeConfig(resolvedConfig) : resolvedConfig;
     this.profileService.validateProviderConfig(normalizedType, provider, normalizedConfig);
     const instance = await provider.create(normalizedConfig, options.context);
     return { instance, resolved: { type: normalizedType, providerKey: normalizedProvider, provider, config: normalizedConfig, source: 'stored' } };
@@ -271,44 +276,7 @@ export class IntegrationRegistry {
       providerName?: string;
     } = {},
   ) {
-    const normalizedType = this.normalize(typeKey);
-    const runtime = this.types.get(normalizedType);
-    if (!runtime) throw new Error(`Integration type "${normalizedType}" is not registered`);
-    const normalizedProvider = this.normalize(providerKey);
-    const provider = runtime.providers.get(normalizedProvider);
-    if (!provider) throw new Error(`Integration "${normalizedType}" provider "${normalizedProvider}" is not registered`);
-
-    const normalizedConfig = provider.normalizeConfig ? provider.normalizeConfig(config || {}) : config || {};
-    this.profileService.validateProviderConfig(typeKey, provider, normalizedConfig);
-
-    const nowIso = new Date().toISOString();
-    const existingProviders = (await this.readStoredProvidersConfig(normalizedType)) || [];
-    const normalizedProviderId = this.profileService.normalize(String(options.providerId || ''));
-    const existing = normalizedProviderId ? existingProviders.find((e) => e.id === normalizedProviderId) : null;
-    const nextEnabled = options.enabled === undefined ? true : !!options.enabled;
-    const providerId = existing?.id || normalizedProviderId || `${normalizedProvider}-${Date.now().toString(36)}`;
-    const providerName = String(options.providerName || '').trim() || existing?.name || provider.label;
-
-    const nextEntry: IntegrationStoredProvider = {
-      id: providerId, name: providerName, providerKey: normalizedProvider,
-      config: normalizedConfig, enabled: options.makeActive ? true : nextEnabled,
-      createdAt: existing?.createdAt || nowIso, updatedAt: nowIso,
-    };
-
-    const nextProvidersBase = existing
-      ? existingProviders.map((e) => (e.id === existing.id ? nextEntry : e))
-      : existingProviders.concat(nextEntry);
-
-    let nextProviders = nextProvidersBase;
-    if (options.makeActive) {
-      const enforceSingleActive = normalizedType !== 'email';
-      const remaining = nextProvidersBase
-        .filter((e) => e.id !== nextEntry.id)
-        .map((e) => enforceSingleActive ? { ...e, enabled: false, updatedAt: nowIso } : e);
-      nextProviders = [nextEntry, ...remaining];
-    }
-
-    await this.writeStoredProviders(normalizedType, nextProviders);
+    await this.storedProviderService.updateStoredConfig(typeKey, providerKey, config, options);
   }
 
   async setActiveProfile(typeKey: string, profileId: string) {
@@ -324,17 +292,22 @@ export class IntegrationRegistry {
   }
 
   async readStoredConfig(typeKey: string): Promise<{ providerKey: string; config: Record<string, any> } | null> {
-    const normalizedType = this.normalize(typeKey);
-    const storedProviders = await this.readStoredProvidersInternal(normalizedType);
-    if (storedProviders?.length) {
-      const selected = storedProviders.find((e) => e.enabled !== false) || storedProviders[0];
-      if (selected?.providerKey) return { providerKey: selected.providerKey, config: selected.config || {} };
+    const storedProviderConfig = await this.storedProviderService.readStoredConfig(typeKey);
+    if (storedProviderConfig) {
+      return storedProviderConfig;
     }
+
+    const normalizedType = this.normalize(typeKey);
     const storedProfiles = await this.profileService.readStoredProfiles(normalizedType);
     if (storedProfiles?.profiles?.length) {
       const activeProfile =
         storedProfiles.profiles.find((p) => p.id === storedProfiles.activeProfileId) || storedProfiles.profiles[0];
-      if (activeProfile?.providerKey) return { providerKey: activeProfile.providerKey, config: activeProfile.config || {} };
+      if (activeProfile?.providerKey) {
+        return {
+          providerKey: activeProfile.providerKey,
+          config: this.storedProviderService.sanitizeResolvedConfig(normalizedType, activeProfile.providerKey, activeProfile.config || {}),
+        };
+      }
     }
     return null;
   }
@@ -344,96 +317,19 @@ export class IntegrationRegistry {
   }
 
   async readStoredProvidersConfig(typeKey: string): Promise<IntegrationStoredProvider[] | null> {
-    return this.readStoredProvidersInternal(this.normalize(typeKey));
+    return this.storedProviderService.readStoredProvidersConfig(typeKey);
+  }
+
+  sanitizeResolvedConfig(typeKey: string, providerKey: string, config: Record<string, any> = {}): Record<string, any> {
+    return this.storedProviderService.sanitizeResolvedConfig(typeKey, providerKey, config);
   }
 
   async setProviderEnabled(typeKey: string, providerId: string, enabled: boolean) {
-    const normalizedType = this.normalize(typeKey);
-    const normalizedProviderId = this.profileService.normalize(providerId);
-    if (!normalizedProviderId) throw new Error(`Provider id is required for integration "${normalizedType}".`);
-    const providers = (await this.readStoredProvidersInternal(normalizedType)) || [];
-    const existing = providers.find((e) => e.id === normalizedProviderId);
-    if (!existing) throw new Error(`Provider "${normalizedProviderId}" was not found for integration "${normalizedType}".`);
-    const nowIso = new Date().toISOString();
-    const nextProviders = providers.map((e) =>
-      e.id === normalizedProviderId ? { ...e, enabled: !!enabled, updatedAt: nowIso } : e,
-    );
-    await this.writeStoredProviders(normalizedType, nextProviders);
+    await this.storedProviderService.setProviderEnabled(typeKey, providerId, enabled);
   }
 
   async removeProvider(typeKey: string, providerId: string) {
-    const normalizedType = this.normalize(typeKey);
-    const normalizedProviderId = this.profileService.normalize(providerId);
-    if (!normalizedProviderId) throw new Error(`Provider id is required for integration "${normalizedType}".`);
-    const providers = (await this.readStoredProvidersInternal(normalizedType)) || [];
-    const nextProviders = providers.filter((e) => e.id !== normalizedProviderId);
-    if (nextProviders.length === providers.length) throw new Error(`Provider "${normalizedProviderId}" was not found for integration "${normalizedType}".`);
-    if (!nextProviders.length) throw new Error(`Integration "${normalizedType}" requires at least one provider.`);
-    await this.writeStoredProviders(normalizedType, nextProviders);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Private provider storage helpers
-  // ---------------------------------------------------------------------------
-
-  private async readStoredProvidersInternal(typeKey: string): Promise<IntegrationStoredProvider[] | null> {
-    const normalizedType = this.profileService.normalize(typeKey);
-    const runtime = this.types.get(normalizedType);
-    if (!runtime) return null;
-
-    try {
-      const providersRow = await this.db.findOne(
-        SystemConstants.TABLE.META,
-        { key: this.profileService.getProvidersSettingKey(normalizedType) },
-      );
-      const raw = String(providersRow?.value || '').trim();
-      if (raw) {
-        const parsed = this.profileService.safeParseJson(raw, []);
-        const source = Array.isArray(parsed?.providers) ? parsed.providers : Array.isArray(parsed) ? parsed : [];
-        const normalized = source
-          .map((entry: any, index: number) => ({
-            id: this.profileService.normalize(String(entry?.id || `${entry?.providerKey || entry?.provider || 'provider'}-${index + 1}`)),
-            name: String(entry?.name || '').trim() || undefined,
-            providerKey: this.profileService.normalize(String(entry?.providerKey || entry?.provider || '')),
-            config: entry?.config && typeof entry.config === 'object' ? entry.config : {},
-            enabled: entry?.enabled === undefined ? true : !!entry.enabled,
-            createdAt: entry?.createdAt || undefined,
-            updatedAt: entry?.updatedAt || undefined,
-          }))
-          .filter((e: IntegrationStoredProvider) => !!e.id && !!e.providerKey && runtime.providers.has(e.providerKey));
-        if (normalized.length) return normalized;
-      }
-    } catch (error: any) {
-      this.logger.warn(`Failed to read integration providers for "${normalizedType}": ${error?.message || String(error)}`);
-    }
-    return null;
-  }
-
-  private async writeStoredProviders(typeKey: string, providers: IntegrationStoredProvider[]) {
-    const normalizedType = this.profileService.normalize(typeKey);
-    const runtime = this.types.get(normalizedType);
-    if (!runtime) throw new Error(`Integration type "${normalizedType}" is not registered`);
-
-    const normalizedProviders = (providers || [])
-      .map((entry, index) => ({
-        id: this.profileService.normalize(String(entry?.id || `${entry?.providerKey || 'provider'}-${index + 1}`)),
-        name: String(entry?.name || '').trim() || undefined,
-        providerKey: this.profileService.normalize(String(entry?.providerKey || '')),
-        config: entry?.config && typeof entry.config === 'object' ? entry.config : {},
-        enabled: entry?.enabled === undefined ? true : !!entry.enabled,
-        createdAt: entry?.createdAt,
-        updatedAt: entry?.updatedAt,
-      }))
-      .filter((e) => !!e.id && !!e.providerKey && runtime.providers.has(e.providerKey));
-
-    if (!normalizedProviders.length) throw new Error(`Integration "${normalizedType}" requires at least one valid provider.`);
-
-    await this.profileService.upsertMeta({
-      key: this.profileService.getProvidersSettingKey(normalizedType),
-      value: JSON.stringify({ providers: normalizedProviders }),
-      group: 'integrations',
-      description: `Provider configurations for ${normalizedType} integration.`,
-    });
+    await this.storedProviderService.removeProvider(typeKey, providerId);
   }
 
   private normalize(value: string) {
