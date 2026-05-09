@@ -170,6 +170,7 @@ export class ThemeManager {
     await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: timestamp });
     this.activeTheme = slug;
     this.logger.info(`Theme "${slug}" activated.`);
+    this.pluginManager?.emit?.('theme:activated', { slug, manifest });
   }
 
   async disableTheme(slug: string) {
@@ -187,6 +188,7 @@ export class ThemeManager {
     }
 
     this.logger.info(`Theme "${slug}" disabled.`);
+    this.pluginManager?.emit?.('theme:deactivated', { slug });
   }
 
   async resetTheme(slug: string, options?: { runSeeds?: boolean; resetConfig?: boolean }) {

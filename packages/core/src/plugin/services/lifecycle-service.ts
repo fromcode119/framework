@@ -119,14 +119,18 @@ export class LifecycleService {
     this.manager.plugins.set(slug, loadedPlugin);
 
     const isFreshInstall = !saved;
+    const isVersionUpdate = !isFreshInstall && saved.version && saved.version !== plugin.manifest.version;
     const ctx = (this.manager as any).createContext(loadedPlugin);
     try {
       if (isFreshInstall && loadedPlugin.onInstall) await loadedPlugin.onInstall(ctx);
+      if (isVersionUpdate && loadedPlugin.onUpdate) {
+        await loadedPlugin.onUpdate(ctx, { oldVersion: saved.version, newVersion: plugin.manifest.version });
+      }
       if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
     } catch (err: any) {
       this.failureIsolation.rollbackPartialRegistration(loadedPlugin);
       await this.failureIsolation.markPluginError(loadedPlugin, err.message);
-      const hook = isFreshInstall ? 'onInstall/onInit' : 'onInit';
+      const hook = isFreshInstall ? 'onInstall/onInit' : isVersionUpdate ? 'onUpdate/onInit' : 'onInit';
       this.logger.error(`Error during ${hook} for plugin "${slug}": ${err.message}`, err.stack);
       throw new Error(`Plugin "${slug}" failed during ${hook}: ${err.message}`);
     }
@@ -187,6 +191,7 @@ export class LifecycleService {
       } else {
         if (plugin.onEnable) await plugin.onEnable(ctx);
       }
+      await this.autoDiscoverCollections(plugin, ctx);
       await this.syncPluginCollections(slug);
       await this.runSeeds(slug);
 
@@ -303,6 +308,24 @@ export class LifecycleService {
       }
     } catch (e) {
       this.logger.warn(`Failed to remove plugin files for "${slug}": ${(e as Error).message}`);
+    }
+  }
+
+  private async autoDiscoverCollections(plugin: LoadedPlugin, ctx: any): Promise<void> {
+    if (!plugin.path) return;
+    const collectionsDir = path.join(plugin.path, 'collections');
+    if (!fs.existsSync(collectionsDir)) return;
+    const files = fs.readdirSync(collectionsDir).filter(f => f.endsWith('.json'));
+    for (const file of files) {
+      try {
+        const raw = JSON.parse(fs.readFileSync(path.join(collectionsDir, file), 'utf8'));
+        if (raw?.slug && Array.isArray(raw?.fields)) {
+          ctx.collections.register(raw);
+          this.logger.debug(`Auto-discovered collection "${raw.slug}" from ${file} in plugin "${plugin.manifest.slug}"`);
+        }
+      } catch (err: any) {
+        this.logger.warn(`Failed to auto-load collection from "${file}" in plugin "${plugin.manifest.slug}": ${err.message}`);
+      }
     }
   }
 

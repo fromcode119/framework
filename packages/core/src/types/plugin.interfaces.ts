@@ -180,6 +180,7 @@ export interface FromcodePlugin {
   manifest: PluginManifest;
   onInstall?: (ctx: PluginContext) => Promise<void>;
   onInit?: (ctx: PluginContext) => Promise<void>;
+  onUpdate?: (ctx: PluginContext, info: { oldVersion: string; newVersion: string }) => Promise<void>;
   onEnable?: (ctx: PluginContext) => Promise<void>;
   onDisable?: (ctx: PluginContext) => Promise<void>;
   onUninstall?: (ctx: PluginContext) => Promise<void>;
