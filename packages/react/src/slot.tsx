@@ -1,22 +1,21 @@
 "use client";
 
 import React from 'react';
-import { PluginsProvider } from './context';
-import type { PluginContextValue, SlotComponent } from './context.interfaces';
+import { SlotsContext } from './context/slots-context';
+import type { SlotComponent } from './context.interfaces';
 import type { SlotProps } from './slot.interfaces';
 
 export class Slot extends React.Component<SlotProps> {
-  static contextType = PluginsProvider.PluginContext;
-
-  declare context: PluginContextValue | null;
-
   render(): React.ReactNode {
-    const components = this.context?.slots[this.props.name] || [];
-    if (components.length === 0) {
-      return <>{this.props.fallback}</>;
-    }
-
-    return <>{components.map(this.renderSlotComponent.bind(this))}</>;
+    return (
+      <SlotsContext.Context.Consumer>
+        {(slots) => {
+          const components = slots[this.props.name] || [];
+          if (components.length === 0) return <>{this.props.fallback}</>;
+          return <>{components.map((item, index) => this.renderSlotComponent(item, index))}</>;
+        }}
+      </SlotsContext.Context.Consumer>
+    );
   }
 
   private renderSlotComponent(item: SlotComponent, index: number): React.ReactNode {

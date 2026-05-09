@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { PluginContextRegistry } from '../plugin-context';
 import { ContextHooksPluginStateService } from './context-hooks-plugin-state-service';
 import { ContextHooksSdkService } from './context-hooks-sdk-service';
@@ -81,5 +81,26 @@ export class ContextHooks {
   static usePluginState(pluginSlug: string, key?: string) {
     const { pluginState, setPluginState } = ContextHooks.usePlugins();
     return ContextHooksPluginStateService.usePluginState(pluginState, setPluginState, pluginSlug, key);
+  }
+
+  static useCollectionData<T = any>(slug: string): { items: T[]; loading: boolean; error: Error | null } {
+    const { api } = ContextHooks.usePlugins();
+    const apiRef = useRef(api);
+    useEffect(() => { apiRef.current = api; });
+
+    const [items, setItems] = useState<T[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+      let cancelled = false;
+      setLoading(true);
+      apiRef.current.get(`/api/v1/${slug}`)
+        .then((data: any) => { if (!cancelled) { setItems(data?.docs ?? []); setLoading(false); } })
+        .catch((err: any) => { if (!cancelled) { setError(err instanceof Error ? err : new Error(String(err))); setLoading(false); } });
+      return () => { cancelled = true; };
+    }, [slug]);
+
+    return { items, loading, error };
   }
 }

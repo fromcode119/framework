@@ -32,6 +32,8 @@ import { ContextBridgeHooks } from './context-bridge-hooks';
 import { ContextProviderApiHooks } from './context-provider-api-hooks';
 import { ContextProviderRegistrationHooks } from './context-provider-registration-hooks';
 import { ContextProviderStateService } from './context-provider-state-service';
+import { OverridesContext } from './overrides-context';
+import { SlotsContext } from './slots-context';
 import type { PluginsProviderInternalProps } from './plugins-provider.types';
 
 function PluginsProviderInternalComponent({ children, apiUrl, clientType, providerClass, runtimeModules }: PluginsProviderInternalProps) {
@@ -202,13 +204,13 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
   }, []);
   const stableGetFrontendMetadata = React.useCallback((...args: any[]) => (stabilityRef.current.getFrontendMetadata as any)(...args), []);
   const stableApiBridge = React.useMemo(() => ({
-    getBaseUrl: () => api.getBaseUrl(),
-    get: (path: string, options?: any) => api.get(path, options),
-    post: (path: string, body?: any, options?: any) => api.post(path, body, options),
-    put: (path: string, body?: any, options?: any) => api.put(path, body, options),
-    patch: (path: string, body?: any, options?: any) => api.patch(path, body, options),
-    delete: (path: string, options?: any) => api.delete(path, options),
-  }), [api]);
+    getBaseUrl: () => (stabilityRef.current.api as typeof api).getBaseUrl(),
+    get: (path: string, options?: any) => (stabilityRef.current.api as typeof api).get(path, options),
+    post: (path: string, body?: any, options?: any) => (stabilityRef.current.api as typeof api).post(path, body, options),
+    put: (path: string, body?: any, options?: any) => (stabilityRef.current.api as typeof api).put(path, body, options),
+    patch: (path: string, body?: any, options?: any) => (stabilityRef.current.api as typeof api).patch(path, body, options),
+    delete: (path: string, options?: any) => (stabilityRef.current.api as typeof api).delete(path, options),
+  }), []); // stable: delegates through stabilityRef so api changes don't recreate this object
 
   React.useEffect(() => {
     plugins.forEach((plugin: any) => {
@@ -221,7 +223,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       const client = new ApiScopeClient(stableApiBridge, ApiPathUtils.pluginPath(slug));
       registerPluginApi(namespace, slug, client);
     });
-  }, [hasPluginApi, plugins, registerPluginApi, stableApiBridge]);
+  }, [hasPluginApi, plugins, registerPluginApi]);
 
   ContextRuntimeBridge.setupGlobalStubs({
     ReactRef: React,
@@ -339,9 +341,13 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
   }), [activeTheme, api, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, pluginState, plugins, refreshVersion, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, resolveContent, secondaryPanel, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
 
   return (
-    <PluginContextRegistry.Context.Provider value={value}>
-      {children}
-    </PluginContextRegistry.Context.Provider>
+    <SlotsContext.Context.Provider value={slots}>
+      <OverridesContext.Context.Provider value={overrides}>
+        <PluginContextRegistry.Context.Provider value={value}>
+          {children}
+        </PluginContextRegistry.Context.Provider>
+      </OverridesContext.Context.Provider>
+    </SlotsContext.Context.Provider>
   );
 }
 

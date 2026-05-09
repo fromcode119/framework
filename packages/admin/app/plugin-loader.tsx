@@ -5,7 +5,7 @@ import { ContextHooks } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AuthHooks } from '@/components/use-auth';
-import { RuntimeConstants } from '@fromcode119/core/client';
+import { GlobalReadinessService } from '@/lib/global-readiness-service';
 import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 
 const METADATA_RETRY_COOLDOWN_MS = 15000;
@@ -109,6 +109,7 @@ export default function PluginLoader() {
     if (typeof window === 'undefined' || isAuthLoading || !user) return;
 
     let cancelled = false;
+    const abortController = new AbortController();
 
     async function loadPlugins() {
       if (!isReady) {
@@ -116,58 +117,11 @@ export default function PluginLoader() {
         return;
       }
 
-      const resolveAdminComponentsModule = () => {
-        const runtimeRegistry = (window as any)?.[RuntimeConstants.GLOBALS.MODULES] || {};
-        return runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] || runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN] || null;
-      };
-
-      // Small delay to ensure GlobalInitializer has run
-      // and window.FrameworkIcons, window.React, window.ReactDOM are available.
-      // Also wait for the runtime import map to be installed so that plugin ESM bundles
-      // can resolve bare specifiers like @fromcode119/sdk/react.
-      let retryCount = 0;
-      while (
-        (!(window as any).FrameworkIcons || 
-         !(window as any).React || 
-         !(window as any).Lucide ||
-         !(window as any).Fromcode ||
-         !resolveAdminComponentsModule() ||
-         typeof resolveAdminComponentsModule()?.Select === 'undefined' ||
-         !document.getElementById('fc-runtime-import-map') ||
-         !(window as any).__fromcodeRuntimeModules?.['@fromcode119/react']) && 
-        retryCount < 200 &&
-        !cancelled
-      ) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-        retryCount++;
-      }
-
-      if (cancelled) return;
-
-      const adminComponentsModule = resolveAdminComponentsModule();
-
-      if (
-        !(window as any).FrameworkIcons ||
-        !(window as any).React ||
-        !(window as any).Lucide ||
-        !(window as any).Fromcode ||
-        !adminComponentsModule ||
-        typeof adminComponentsModule.Select === 'undefined' ||
-        !document.getElementById('fc-runtime-import-map') ||
-        !(window as any).__fromcodeRuntimeModules?.['@fromcode119/react']
-      ) {
-        console.error("[Admin] Required globals not found on window. Plugin loading aborted.", {
-          icons: !!(window as any).FrameworkIcons,
-          react: !!(window as any).React,
-          lucide: !!(window as any).Lucide,
-          bridge: !!(window as any).Fromcode,
-          adminBridge: !!adminComponentsModule,
-          select: typeof adminComponentsModule?.Select !== 'undefined',
-          importMap: !!document.getElementById('fc-runtime-import-map'),
-          reactBridge: !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/react'],
-        });
-        // Schedule a single deduplicated retry. The module-level guard prevents
-        // multiple timers from accumulating across rapid re-renders.
+      try {
+        await GlobalReadinessService.waitForReady(abortController.signal);
+      } catch (err) {
+        if (abortController.signal.aborted) return;
+        console.error('[Admin] Required globals not ready. Scheduling retry.', err);
         if (!globalRetryTimerId) {
           globalRetryTimerId = setTimeout(() => {
             globalRetryTimerId = null;
@@ -176,6 +130,8 @@ export default function PluginLoader() {
         }
         return;
       }
+
+      if (cancelled) return;
 
       try {
         const shouldReuseContextMetadata = refreshVersion === 0 && Array.isArray(registeredPlugins) && registeredPlugins.length > 0;
@@ -305,6 +261,7 @@ export default function PluginLoader() {
 
     return () => {
       cancelled = true;
+      abortController.abort();
       if (globalRetryTimerId) {
         clearTimeout(globalRetryTimerId);
         globalRetryTimerId = null;
