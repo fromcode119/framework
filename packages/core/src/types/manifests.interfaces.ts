@@ -6,6 +6,7 @@ export interface MiddlewareConfig {
   priority?: number;
   stage: MiddlewareStage;
   handler: (req: any, res: any, next: (err?: any) => void) => void;
+  pluginSlug?: string;
 }
 
 export interface ThemeManifest {

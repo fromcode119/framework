@@ -67,10 +67,15 @@ export class LifecycleService {
     }
 
     if (PluginSignatureService.isEnforced()) {
-      const isValid = PluginSignatureService.verify(plugin.manifest, plugin.manifest.signature || '', '');
+      const publicKey = process.env.PLUGIN_SIGNING_PUBLIC_KEY || '';
+      const isValid = PluginSignatureService.verify(plugin.manifest, plugin.manifest.signature || '', publicKey);
       if (!isValid) {
         throw new Error(`Security Violation: Invalid signature for plugin "${slug}"`);
       }
+    }
+
+    if (process.env.NODE_ENV === 'production' && !plugin.manifest.checksum && !plugin.manifest.signature) {
+      this.logger.warn(`Plugin "${slug}" has no checksum or signature — integrity cannot be verified.`);
     }
 
     this.discovery.validateDependencies(plugin.manifest, this.manager.plugins);
@@ -112,15 +117,18 @@ export class LifecycleService {
 
     loadedPlugin.manifest.config = await this.registry.getPluginConfig(slug);
     this.manager.plugins.set(slug, loadedPlugin);
-    
+
+    const isFreshInstall = !saved;
     const ctx = (this.manager as any).createContext(loadedPlugin);
     try {
+      if (isFreshInstall && loadedPlugin.onInstall) await loadedPlugin.onInstall(ctx);
       if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
     } catch (err: any) {
       this.failureIsolation.rollbackPartialRegistration(loadedPlugin);
       await this.failureIsolation.markPluginError(loadedPlugin, err.message);
-      this.logger.error(`Error during onInit for plugin "${slug}": ${err.message}`, err.stack);
-      throw new Error(`Plugin "${slug}" failed during onInit: ${err.message}`);
+      const hook = isFreshInstall ? 'onInstall/onInit' : 'onInit';
+      this.logger.error(`Error during ${hook} for plugin "${slug}": ${err.message}`, err.stack);
+      throw new Error(`Plugin "${slug}" failed during ${hook}: ${err.message}`);
     }
 
     if (state === 'active') {
@@ -237,6 +245,7 @@ export class LifecycleService {
         if (plugin.onDisable) await plugin.onDisable(ctx);
       }
       plugin.state = 'inactive';
+      this.manager.middlewares.unregisterByPlugin(slug);
       if (options.persistState !== false) {
         await this.registry.savePluginState(slug, 'inactive', undefined, plugin.manifest.version);
         await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);
@@ -249,18 +258,28 @@ export class LifecycleService {
   async delete(slug: string): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (plugin) {
-      const dependents = Array.from(this.manager.plugins.values()).filter(p => 
+      const dependents = Array.from(this.manager.plugins.values()).filter(p =>
         p.manifest.dependencies && p.manifest.dependencies[slug]
       );
       if (dependents.length > 0) {
         throw new Error(`Cannot delete plugin "${slug}" because it is required by: ${dependents.map(p => p.manifest.slug).join(', ')}`);
       }
       if (plugin.state === 'active') await this.disable(slug);
+
+      if (plugin.onUninstall) {
+        const ctx = (this.manager as any).createContext(plugin);
+        try {
+          await plugin.onUninstall(ctx);
+        } catch (err: any) {
+          this.logger.error(`Error during onUninstall for plugin "${slug}": ${err.message}`);
+        }
+      }
     }
 
     await this.manager.db.delete(SystemConstants.TABLE.PLUGINS, { slug });
     const pluginPath = plugin?.path;
     this.manager.plugins.delete(slug);
+    this.manager.middlewares.unregisterByPlugin(slug);
 
     if (pluginPath) {
       try {
@@ -268,7 +287,9 @@ export class LifecycleService {
         const indexPath = path.resolve(pluginPath, manifest.main || 'index.js');
         const resolved = require.resolve(indexPath);
         if (require.cache[resolved]) delete require.cache[resolved];
-      } catch (e) {}
+      } catch (e) {
+        this.logger.warn(`Failed to clear require cache for plugin "${slug}": ${(e as Error).message}`);
+      }
     }
 
     for (const [colSlug, entry] of this.manager.registeredCollections.entries()) {
@@ -276,11 +297,13 @@ export class LifecycleService {
     }
 
     try {
-        const targetPath = pluginPath;
-        if (targetPath && fs.existsSync(targetPath)) {
-            fs.rmSync(targetPath, { recursive: true, force: true });
-        }
-    } catch (e) {}
+      const targetPath = pluginPath;
+      if (targetPath && fs.existsSync(targetPath)) {
+        fs.rmSync(targetPath, { recursive: true, force: true });
+      }
+    } catch (e) {
+      this.logger.warn(`Failed to remove plugin files for "${slug}": ${(e as Error).message}`);
+    }
   }
 
   private async syncPluginCollections(pluginSlug: string) {
