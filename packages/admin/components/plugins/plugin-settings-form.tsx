@@ -10,6 +10,8 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import type { PluginSettingsFormHandle, PluginSettingsFormProps } from './plugin-settings-form.interfaces';
 
+const SAVED_SECRET_MASK = '__FROMCODE_SAVED_SECRET__';
+
 function PluginSettingsFormComponent({
   pluginSlug,
   formId,
@@ -22,6 +24,7 @@ function PluginSettingsFormComponent({
   const [saving, setSaving] = useState(false);
   const [schema, setSchema] = useState<any>(null);
   const [settings, setSettings] = useState<Record<string, any>>({});
+  const [savedSecretFields, setSavedSecretFields] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Record<string, string | string[]>>({});
   const [activeTab, setActiveTab] = useState<string>('');
   const [isDirty, setIsDirty] = useState(false);
@@ -52,10 +55,21 @@ function PluginSettingsFormComponent({
       ]);
 
       const nextSchema = schemaRes;
-      const nextSettings = settingsRes.settings || {};
+      const rawSettings: Record<string, any> = settingsRes.settings || {};
+      const nextSavedSecrets = new Set<string>();
+      const nextSettings: Record<string, any> = {};
+      for (const [key, value] of Object.entries(rawSettings)) {
+        if (value === SAVED_SECRET_MASK) {
+          nextSavedSecrets.add(key);
+          nextSettings[key] = '';
+        } else {
+          nextSettings[key] = value;
+        }
+      }
 
       setSchema(nextSchema);
       setSettings(nextSettings);
+      setSavedSecretFields(nextSavedSecrets);
       
       if (nextSchema.tabs && nextSchema.tabs.length > 0) {
         setActiveTab(nextSchema.tabs[0].id);
@@ -79,7 +93,13 @@ function PluginSettingsFormComponent({
     setStatus(null);
     
     try {
-      await AdminApi.put(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settings);
+      const settingsToSend: Record<string, any> = { ...settings };
+      for (const key of savedSecretFields) {
+        if (settingsToSend[key] === '' || settingsToSend[key] == null) {
+          settingsToSend[key] = SAVED_SECRET_MASK;
+        }
+      }
+      await AdminApi.put(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settingsToSend);
       setIsDirty(false);
       setStatus({ type: 'success', message: 'Settings saved successfully!' });
       triggerRefresh();
@@ -152,7 +172,15 @@ function PluginSettingsFormComponent({
       [fieldName]: value,
     }));
     setIsDirty(true);
-    
+
+    if (savedSecretFields.has(fieldName) && value !== '') {
+      setSavedSecretFields(prev => {
+        const next = new Set(prev);
+        next.delete(fieldName);
+        return next;
+      });
+    }
+
     // Clear error for this field
     if (errors[fieldName]) {
       setErrors(prev => {
@@ -263,17 +291,23 @@ function PluginSettingsFormComponent({
         theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
       }`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {visibleFields.map((field: any) => (
-            <FieldRenderer
-              key={field.name}
-              field={field}
-              value={settings[field.name]}
-              onChange={(value) => handleFieldChange(field.name, value)}
-              theme={theme}
-              collectionSlug={`settings-${pluginSlug}`}
-              errors={errors[field.name] ? (Array.isArray(errors[field.name]) ? (errors[field.name] as string[]) : [errors[field.name] as string]) : undefined}
-            />
-          ))}
+          {visibleFields.map((field: any) => {
+            const hasSavedSecret = field.type === 'password' && savedSecretFields.has(field.name);
+            const resolvedField = hasSavedSecret
+              ? { ...field, admin: { ...(field.admin || {}), description: 'Saved securely — leave blank to keep the current secret.' } }
+              : field;
+            return (
+              <FieldRenderer
+                key={field.name}
+                field={resolvedField}
+                value={settings[field.name]}
+                onChange={(value) => handleFieldChange(field.name, value)}
+                theme={theme}
+                collectionSlug={`settings-${pluginSlug}`}
+                errors={errors[field.name] ? (Array.isArray(errors[field.name]) ? (errors[field.name] as string[]) : [errors[field.name] as string]) : undefined}
+              />
+            );
+          })}
         </div>
       </div>
 

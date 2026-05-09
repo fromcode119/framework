@@ -108,6 +108,7 @@ export { ProjectPaths } from './config/paths';
 // Integrations
 export { IntegrationManager } from './integrations/integration-manager';
 export { IntegrationRegistry } from './integrations/integration-registry';
+export { IntegrationSecretService } from './integrations/integration-secret-service';
 export type { IntegrationTypeDefinition } from './integrations/integration-registry.interfaces';
 export type { PluginApiResolver } from './plugin-api-resolver.interfaces';
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PluginManager, Logger } from '@fromcode119/core';
+import { PluginManager, Logger, IntegrationSecretService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 export class PluginSettingsController {
@@ -24,8 +24,9 @@ export class PluginSettingsController {
 
     const defaults = this.getDefaults(schema.fields || []);
     const merged = { ...defaults, ...storedSettings };
+    const masked = this.maskPasswordFields(merged, schema.fields || []);
 
-    res.json({ settings: merged });
+    res.json({ settings: masked });
   }
 
   async updateSettings(req: Request, res: Response) {
@@ -55,9 +56,10 @@ export class PluginSettingsController {
 
     const oldSettings = plugin.manifest.config?.settings || {};
     const currentConfig = plugin.manifest.config || {};
+    const settingsToSave = this.encryptPasswordFields(newSettings, oldSettings, schema?.fields || []);
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
-      settings: newSettings
+      settings: settingsToSave
     });
 
     if (schema && schema.onSave) {
@@ -74,7 +76,7 @@ export class PluginSettingsController {
       newSettings,
     });
 
-    res.json({ success: true, settings: newSettings });
+    res.json({ success: true, settings: this.maskPasswordFields(settingsToSave, schema?.fields || []) });
   }
 
   async getSchema(req: Request, res: Response) {
@@ -124,14 +126,16 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin not found' });
     }
 
+    const schema = await this.getEffectiveSchema(slug);
     const settings = plugin.manifest.config?.settings || {};
+    const exportable = this.stripPasswordFields(settings, schema?.fields || []);
 
     res.setHeader('Content-Type', 'application/json');
     res.setHeader(
       'Content-Disposition',
       `attachment; filename="${slug}-settings-${Date.now()}.json"`
     );
-    res.send(JSON.stringify(settings, null, 2));
+    res.send(JSON.stringify(exportable, null, 2));
   }
 
   async importSettings(req: Request, res: Response) {
@@ -152,12 +156,57 @@ export class PluginSettingsController {
     }
 
     const currentConfig = plugin.manifest.config || {};
+    const existingSettings = plugin.manifest.config?.settings || {};
+    const settingsToSave = this.encryptPasswordFields(importedSettings, existingSettings, schema?.fields || []);
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
-      settings: importedSettings
+      settings: settingsToSave
     });
 
     res.json({ success: true, imported: Object.keys(importedSettings).length });
+  }
+
+  private getPasswordFieldNames(fields: any[]): Set<string> {
+    return new Set(fields.filter(f => f.type === 'password').map(f => f.name));
+  }
+
+  private maskPasswordFields(settings: Record<string, any>, fields: any[]): Record<string, any> {
+    const passwordFields = this.getPasswordFieldNames(fields);
+    const result = { ...settings };
+    for (const key of passwordFields) {
+      if (key in result) {
+        result[key] = IntegrationSecretService.maskIfPresent(result[key]);
+      }
+    }
+    return result;
+  }
+
+  private encryptPasswordFields(
+    newSettings: Record<string, any>,
+    existingSettings: Record<string, any>,
+    fields: any[]
+  ): Record<string, any> {
+    const passwordFields = this.getPasswordFieldNames(fields);
+    const result = { ...newSettings };
+    for (const key of passwordFields) {
+      const incoming = result[key];
+      if (!incoming || IntegrationSecretService.isSavedSecretMask(incoming)) {
+        // Preserve existing encrypted value
+        result[key] = existingSettings[key] ?? '';
+      } else if (!IntegrationSecretService.isEncryptedValue(incoming)) {
+        result[key] = IntegrationSecretService.encrypt(String(incoming));
+      }
+    }
+    return result;
+  }
+
+  private stripPasswordFields(settings: Record<string, any>, fields: any[]): Record<string, any> {
+    const passwordFields = this.getPasswordFieldNames(fields);
+    const result = { ...settings };
+    for (const key of passwordFields) {
+      result[key] = '';
+    }
+    return result;
   }
 
   private getDefaults(fields: any[]): Record<string, any> {
