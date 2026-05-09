@@ -126,6 +126,7 @@ export { PluginStateService } from './plugin/services/plugin-state-service';
 export { MarketplaceCatalogService } from './marketplace/marketplace-catalog-service';
 export { RuntimeService } from './plugin/services/runtime-service';
 export { LifecycleService } from './plugin/services/lifecycle-service';
+export { MiddlewareManager } from './plugin/services/middleware-manager';
 export { AdminMetadataService } from './plugin/services/admin-metadata-service';
 
 // Security (Server-only)
