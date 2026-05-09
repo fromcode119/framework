@@ -1,4 +1,5 @@
 import { ThemeManifest, IDatabaseManager } from '../types';
+import { ManifestNormalizer } from '../manifest-normalizer';
 import { SystemConstants } from '../constants';
 import path from 'path';
 import fs from 'fs';
@@ -114,7 +115,7 @@ export class ThemeManager {
       const manifestPath = path.join(themePath, 'theme.json');
       if (fs.existsSync(manifestPath)) {
         try {
-          const manifest: ThemeManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
           this.themes.set(manifest.slug, manifest);
           this.logger.info(`Discovered theme: ${manifest.slug} v${manifest.version}`);
         } catch (e) {
@@ -132,7 +133,7 @@ export class ThemeManager {
         return null;
       }
 
-      const manifest: ThemeManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
       this.themes.set(manifest.slug, manifest);
       return manifest;
     } catch (error) {
