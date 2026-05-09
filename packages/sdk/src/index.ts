@@ -83,9 +83,6 @@ export type {
 } from '@fromcode119/core/client';
 export { PluginDefinitionUtils } from '@fromcode119/core/client';
 export type { PluginManifestInput, ThemeManifestInput } from '@fromcode119/core/client';
-export { definePlugin } from '@fromcode119/core/client';
-export { defineTheme } from '@fromcode119/core/client';
-export type { PluginModule, ThemeModule } from '@fromcode119/core/client';
 export { PluginHealthResponseBuilder } from '@fromcode119/core/client';
 export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse, PluginHealthStatus } from '@fromcode119/core/client';
 export { Plugins } from '@fromcode119/core/client';
