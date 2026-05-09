@@ -90,6 +90,9 @@ export type { BasePluginRouterOptions } from './base/base-plugin-router.interfac
 export { PluginDefinitionUtils } from './plugin-definition-utils';
 export { ManifestNormalizer } from './manifest-normalizer';
 export type { PluginManifestInput, ThemeManifestInput } from './manifest-normalizer.types';
+export { definePlugin } from './define-plugin';
+export { defineTheme } from './define-theme';
+export type { PluginModule, ThemeModule } from './plugin-module.types';
 export { PluginHealthResponseBuilder } from './plugin-health-response';
 export { PluginHealthRouteHandler } from './plugin-health-route-handler';
 export type { PluginHealthProbeResult, PluginHealthRouteHandlerOptions } from './plugin-health-route-handler.interfaces';

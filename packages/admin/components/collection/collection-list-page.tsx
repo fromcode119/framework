@@ -34,7 +34,7 @@ const adminServices = AdminServices.getInstance();
 
 
 const RelationshipCellValue: React.FC<{ relationTo?: string | string[]; raw: any }> = ({ relationTo, raw }) => {
-  const { collections } = ContextHooks.usePlugins();
+  const collections = ContextHooks.useCollections();
   const [resolved, setResolved] = useState<Record<string, string>>({});
   const relationSlugs = useMemo(
     () => CollectionKeyUtils.resolveSourceSlugs(relationTo, collections || []),
@@ -138,7 +138,8 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { collections, settings } = ContextHooks.usePlugins();
+  const collections = ContextHooks.useCollections();
+  const settings = ContextHooks.useGlobalSettings();
   const { theme } = ThemeHooks.useTheme();
   const [data, setData] = useState<any[]>([]);
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});

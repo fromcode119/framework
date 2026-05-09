@@ -22,7 +22,7 @@ interface PermalinkInputProps {
 }
 
 export const PermalinkInput = ({ value, onChange, placeholder, disabled, id, slug, collection, pluginSettings }: PermalinkInputProps) => {
-  const { settings } = ContextHooks.usePlugins();
+  const settings = ContextHooks.useGlobalSettings();
   const [isEditing, setIsEditing] = useState(false);
   const [useAbsolutePath, setUseAbsolutePath] = useState(false);
 

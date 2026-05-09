@@ -12,7 +12,7 @@ const { Info = () => null, Package = () => null } = (FrameworkIcons || {}) as an
 export default function DynamicPluginPage({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = use(params);
   const { pathname, segments: effectivePath } = AdminPathUtils.resolveCatchAll(path);
-  const { menuItems } = ContextHooks.usePlugins();
+  const menuItems = ContextHooks.useMenuItems();
   const { theme } = ThemeHooks.useTheme();
 
   // Find the most specific matching menu item

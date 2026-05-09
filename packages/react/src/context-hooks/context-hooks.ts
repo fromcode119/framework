@@ -1,5 +1,8 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { CollectionsContext } from '../context/collections-context';
+import { MenuContext } from '../context/menu-context';
 import { PluginStateContext } from '../context/plugin-state-context';
+import { SettingsContext } from '../context/settings-context';
 import { TranslationContext } from '../context/translation-context';
 import { PluginContextRegistry } from '../plugin-context';
 import { ContextHooksPluginStateService } from './context-hooks-plugin-state-service';
@@ -77,6 +80,18 @@ export class ContextHooks {
   static useSettings() {
     const sdk = ContextHooks.useSdk();
     return useMemo(() => sdk.getSettings(), [sdk]);
+  }
+
+  static useCollections() {
+    return useContext(CollectionsContext.Context);
+  }
+
+  static useMenuItems() {
+    return useContext(MenuContext.Context);
+  }
+
+  static useGlobalSettings() {
+    return useContext(SettingsContext.Context);
   }
 
   static usePluginState(pluginSlug: string, key?: string) {

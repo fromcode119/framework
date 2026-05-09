@@ -42,7 +42,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const { pluginSlug, slug, id } = use(params);
   const router = useRouter();
   const { theme } = ThemeHooks.useTheme();
-  const { collections, settings } = ContextHooks.usePlugins();
+  const collections = ContextHooks.useCollections();
+  const settings = ContextHooks.useGlobalSettings();
 
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
   

@@ -32,8 +32,11 @@ import { ContextBridgeHooks } from './context-bridge-hooks';
 import { ContextProviderApiHooks } from './context-provider-api-hooks';
 import { ContextProviderRegistrationHooks } from './context-provider-registration-hooks';
 import { ContextProviderStateService } from './context-provider-state-service';
+import { CollectionsContext } from './collections-context';
+import { MenuContext } from './menu-context';
 import { OverridesContext } from './overrides-context';
 import { PluginStateContext } from './plugin-state-context';
+import { SettingsContext } from './settings-context';
 import { SlotsContext } from './slots-context';
 import { TranslationContext } from './translation-context';
 import type { PluginsProviderInternalProps } from './plugins-provider.types';
@@ -350,9 +353,15 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       <OverridesContext.Context.Provider value={overrides}>
         <TranslationContext.Context.Provider value={translationValue}>
           <PluginStateContext.Context.Provider value={pluginStateValue}>
-            <PluginContextRegistry.Context.Provider value={value}>
-              {children}
-            </PluginContextRegistry.Context.Provider>
+            <CollectionsContext.Context.Provider value={collections}>
+              <MenuContext.Context.Provider value={menuItems}>
+                <SettingsContext.Context.Provider value={settings}>
+                  <PluginContextRegistry.Context.Provider value={value}>
+                    {children}
+                  </PluginContextRegistry.Context.Provider>
+                </SettingsContext.Context.Provider>
+              </MenuContext.Context.Provider>
+            </CollectionsContext.Context.Provider>
           </PluginStateContext.Context.Provider>
         </TranslationContext.Context.Provider>
       </OverridesContext.Context.Provider>
