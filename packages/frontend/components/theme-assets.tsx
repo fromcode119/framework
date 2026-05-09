@@ -34,6 +34,8 @@ export default async function ThemeAssets() {
       return null;
     }
 
+    const cssVariables = typeof config?.cssVariables === 'string' ? config.cssVariables : '';
+
     const rawEntryUrl = String(theme.ui?.entry || '').trim();
     const absoluteEntryUrl = rawEntryUrl.startsWith('http') ? rawEntryUrl : '';
     const derivedApiUrl = absoluteEntryUrl ? new URL(absoluteEntryUrl).origin : '';
@@ -137,6 +139,7 @@ export default async function ThemeAssets() {
       <>
         {headLinks}
         {fallbackCssLinks}
+        {cssVariables ? <style id="fc-theme-variables" dangerouslySetInnerHTML={{ __html: cssVariables }} /> : null}
         {inlinedCss ? <style data-theme={theme.slug} dangerouslySetInnerHTML={{ __html: inlinedCss }} /> : null}
         {prefetchScript ? <script dangerouslySetInnerHTML={{ __html: prefetchScript }} /> : null}
         {entryUrl ? <meta name="fromcode:theme-entry" content={entryUrl} /> : null}
