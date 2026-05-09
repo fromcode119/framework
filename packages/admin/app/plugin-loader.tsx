@@ -10,6 +10,9 @@ import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 
 const METADATA_RETRY_COOLDOWN_MS = 15000;
 
+const loadedPluginEntryUrls = new Set<string>();
+const loadedPluginCssUrls = new Set<string>();
+
 let metadataBootstrapPromise: Promise<void> | null = null;
 let metadataBootstrapError: unknown = null;
 let metadataBootstrapRetryAfter = 0;
@@ -176,70 +179,30 @@ export default function PluginLoader() {
             }
           }
 
+          // Pass 1: add all modulepreload and CSS links before any dynamic import
           for (const plugin of plugins) {
-            // Load UI entry points if defined (Phase 4)
             const entryUrl = plugin.ui?.entryUrl;
             if (entryUrl) {
               const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
               const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
-              
-              // 1. Module Preload (only if it doesn't exist)
-              if (!document.querySelector(`link[href="${src}"][rel="modulepreload"]`)) {
-                // Remove old reloads
-                const oldPreloads = document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`);
-                oldPreloads.forEach(el => el.remove());
-
+              if (!loadedPluginEntryUrls.has(src)) {
+                document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`).forEach(el => el.remove());
                 const link = document.createElement('link');
                 link.rel = 'modulepreload';
                 link.href = src;
                 link.setAttribute('data-plugin', plugin.slug);
                 document.head.appendChild(link);
               }
-
-              // 2. Dynamic Import to handle both side-effects and structured exports (slots)
-              import(/* webpackIgnore: true */ src).then(module => {
-                if (module.init) module.init();
-                
-                // If the module exports a "slots" object, register them automatically
-                if (module.slots) {
-                  Object.entries(module.slots).forEach(([slotName, config]: [string, any]) => {
-                    const component = typeof config === 'function' ? config : config.component;
-                    const priority = config.priority || 0;
-                    registerSlotComponent(slotName, component, plugin.slug, priority);
-                  });
-                }
-              }).catch(err => {
-                console.warn(`[Admin] Failed to dynamic import plugin ${plugin.slug}:`, err);
-                
-                // Fallback: regular script tag if import fails (legacy or side-effect only)
-                if (!document.querySelector(`script[src="${src}"]`)) {
-                   // Remove old reloads
-                   const oldScripts = document.querySelectorAll(`script[data-plugin="${plugin.slug}"][data-type="ui-entry"]`);
-                   oldScripts.forEach(el => el.remove());
-
-                  const script = document.createElement('script');
-                  script.type = 'module';
-                  script.src = src;
-                  script.async = true;
-                  script.setAttribute('data-plugin', plugin.slug);
-                  script.setAttribute('data-type', 'ui-entry');
-                  document.body.appendChild(script);
-                }
-              });
             }
 
-            // Load CSS if defined
             if (plugin.ui?.cssUrls) {
               plugin.ui.cssUrls.forEach((cssUrl, index) => {
                 const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
                 const href = `${AdminConstants.API_BASE_URL}${cssUrl}${cacheBreaker}`;
                 console.debug(`[Admin] Loading plugin CSS from: ${href}`);
-                
-                if (!document.querySelector(`link[href="${href}"]`)) {
-                  // Remove old CSS versions
-                  const oldCSS = document.querySelectorAll(`link[rel="stylesheet"][data-plugin="${plugin.slug}"][data-index="${index}"]`);
-                  oldCSS.forEach(el => el.remove());
-
+                if (!loadedPluginCssUrls.has(href)) {
+                  loadedPluginCssUrls.add(href);
+                  document.querySelectorAll(`link[rel="stylesheet"][data-plugin="${plugin.slug}"][data-index="${index}"]`).forEach(el => el.remove());
                   const link = document.createElement('link');
                   link.rel = 'stylesheet';
                   link.href = href;
@@ -249,6 +212,39 @@ export default function PluginLoader() {
                 }
               });
             }
+          }
+
+          // Pass 2: fire all dynamic imports concurrently
+          for (const plugin of plugins) {
+            const entryUrl = plugin.ui?.entryUrl;
+            if (!entryUrl) continue;
+            const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
+            const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
+            if (loadedPluginEntryUrls.has(src)) continue;
+            loadedPluginEntryUrls.add(src);
+
+            import(/* webpackIgnore: true */ src).then(module => {
+              if (module.init) module.init();
+              if (module.slots) {
+                Object.entries(module.slots).forEach(([slotName, config]: [string, any]) => {
+                  const component = typeof config === 'function' ? config : config.component;
+                  const priority = config.priority || 0;
+                  registerSlotComponent(slotName, component, plugin.slug, priority);
+                });
+              }
+            }).catch(err => {
+              console.warn(`[Admin] Failed to dynamic import plugin ${plugin.slug}:`, err);
+              if (!document.querySelector(`script[src="${src}"]`)) {
+                document.querySelectorAll(`script[data-plugin="${plugin.slug}"][data-type="ui-entry"]`).forEach(el => el.remove());
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.src = src;
+                script.async = true;
+                script.setAttribute('data-plugin', plugin.slug);
+                script.setAttribute('data-type', 'ui-entry');
+                document.body.appendChild(script);
+              }
+            });
           }
         }
 
