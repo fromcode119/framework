@@ -84,10 +84,7 @@ export type {
 export { RuntimeBridge } from './runtime-bridge';
 export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
 export { PluginDefinitionUtils } from './plugin-definition-utils';
-export { ThemeDefinitionUtils } from './theme-definition-utils';
-export { ManifestNormalizer } from './manifest-normalizer';
 export type { PluginManifestInput, ThemeManifestInput } from './manifest-normalizer.types';
-export type { FromcodeTheme } from './types/theme.interfaces';
 export { PluginHealthResponseBuilder } from './plugin-health-response';
 export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse } from './plugin-health-response.interfaces';
 export type { PluginHealthStatus } from './plugin-health-response.types';

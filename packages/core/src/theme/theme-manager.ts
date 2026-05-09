@@ -115,7 +115,7 @@ export class ThemeManager {
       const manifestPath = path.join(themePath, 'theme.json');
       if (fs.existsSync(manifestPath)) {
         try {
-          const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
+          const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themePath);
           this.themes.set(manifest.slug, manifest);
           this.logger.info(`Discovered theme: ${manifest.slug} v${manifest.version}`);
         } catch (e) {
@@ -133,7 +133,7 @@ export class ThemeManager {
         return null;
       }
 
-      const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
+      const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themeDirectory);
       this.themes.set(manifest.slug, manifest);
       return manifest;
     } catch (error) {

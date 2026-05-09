@@ -134,7 +134,7 @@ export class DiscoveryService {
           let manifest: any;
           try {
             const manifestContent = fs.readFileSync(manifestPath, 'utf8');
-            manifest = ManifestNormalizer.plugin(JSON.parse(manifestContent));
+            manifest = ManifestNormalizer.plugin(JSON.parse(manifestContent), pluginPath);
 
             // Normalize slug to lowercase early to avoid casing issues throughout the system
             if (manifest.slug) {
