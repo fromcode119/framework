@@ -1,4 +1,6 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { PluginStateContext } from '../context/plugin-state-context';
+import { TranslationContext } from '../context/translation-context';
 import { PluginContextRegistry } from '../plugin-context';
 import { ContextHooksPluginStateService } from './context-hooks-plugin-state-service';
 import { ContextHooksSdkService } from './context-hooks-sdk-service';
@@ -14,8 +16,7 @@ export class ContextHooks {
   }
 
   static useTranslation() {
-    const { t, locale, setLocale } = ContextHooks.usePlugins();
-    return { t, locale, setLocale };
+    return useContext(TranslationContext.Context);
   }
 
   static useAPI() {
@@ -79,7 +80,7 @@ export class ContextHooks {
   }
 
   static usePluginState(pluginSlug: string, key?: string) {
-    const { pluginState, setPluginState } = ContextHooks.usePlugins();
+    const { pluginState, setPluginState } = useContext(PluginStateContext.Context);
     return ContextHooksPluginStateService.usePluginState(pluginState, setPluginState, pluginSlug, key);
   }
 

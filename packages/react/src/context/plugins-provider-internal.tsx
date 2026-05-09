@@ -33,7 +33,9 @@ import { ContextProviderApiHooks } from './context-provider-api-hooks';
 import { ContextProviderRegistrationHooks } from './context-provider-registration-hooks';
 import { ContextProviderStateService } from './context-provider-state-service';
 import { OverridesContext } from './overrides-context';
+import { PluginStateContext } from './plugin-state-context';
 import { SlotsContext } from './slots-context';
+import { TranslationContext } from './translation-context';
 import type { PluginsProviderInternalProps } from './plugins-provider.types';
 
 function PluginsProviderInternalComponent({ children, apiUrl, clientType, providerClass, runtimeModules }: PluginsProviderInternalProps) {
@@ -340,12 +342,19 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     api,
   }), [activeTheme, api, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, pluginState, plugins, refreshVersion, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, resolveContent, secondaryPanel, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
 
+  const translationValue = React.useMemo(() => ({ t, locale, setLocale }), [t, locale]);
+  const pluginStateValue = React.useMemo(() => ({ pluginState, setPluginState }), [pluginState, setPluginState]);
+
   return (
     <SlotsContext.Context.Provider value={slots}>
       <OverridesContext.Context.Provider value={overrides}>
-        <PluginContextRegistry.Context.Provider value={value}>
-          {children}
-        </PluginContextRegistry.Context.Provider>
+        <TranslationContext.Context.Provider value={translationValue}>
+          <PluginStateContext.Context.Provider value={pluginStateValue}>
+            <PluginContextRegistry.Context.Provider value={value}>
+              {children}
+            </PluginContextRegistry.Context.Provider>
+          </PluginStateContext.Context.Provider>
+        </TranslationContext.Context.Provider>
       </OverridesContext.Context.Provider>
     </SlotsContext.Context.Provider>
   );
