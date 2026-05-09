@@ -26,7 +26,8 @@ export class ThemeManager extends React.Component<ThemeManagerProps> {
     const root = document.documentElement;
     const themeVariables = this.context?.themeVariables || {};
     Object.entries(themeVariables).forEach(([key, value]) => {
-      root.style.setProperty(`--theme-${key}`, value);
+      const cssKey = key.startsWith('--') ? key : `--theme-${key}`;
+      root.style.setProperty(cssKey, value);
     });
   }
 }

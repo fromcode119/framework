@@ -50,8 +50,8 @@ export interface ThemeManifest {
     required?: boolean;
   }[];
   runtimeModules?: Record<string, string | { keys?: string[], type?: 'icon' | 'lib', url?: string }>;
-  ui: {
-    entry: string;
+  ui?: {
+    entry?: string;
     css?: string[];
   };
 }

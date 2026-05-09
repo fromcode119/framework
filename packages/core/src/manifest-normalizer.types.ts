@@ -5,8 +5,7 @@ export type PluginManifestInput = Omit<PluginManifest, 'version' | 'category'> &
   category?: string;
 };
 
-export type ThemeManifestInput = Omit<ThemeManifest, 'version' | 'layouts' | 'ui'> & {
+export type ThemeManifestInput = Omit<ThemeManifest, 'version' | 'layouts'> & {
   version?: string;
   layouts?: ThemeManifest['layouts'];
-  ui?: ThemeManifest['ui'];
 };

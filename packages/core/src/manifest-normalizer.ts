@@ -17,7 +17,6 @@ export class ManifestNormalizer {
     const version = input.version ?? ManifestNormalizer.readPackageVersion(basePath) ?? '1.0.0';
     return {
       layouts: [],
-      ui: { entry: 'dist/index.js' },
       ...input,
       version,
     } as ThemeManifest;

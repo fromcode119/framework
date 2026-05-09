@@ -266,7 +266,7 @@ export class ThemeManager {
 
   private generateCssVariables(variables: Record<string, string>): string {
     const lines = Object.entries(variables).map(([key, value]) => {
-      const cssKey = `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+      const cssKey = key.startsWith('--') ? key : `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
       return `${cssKey}: ${value};`;
     });
     return `:root {\n  ${lines.join('\n  ')}\n}`;
