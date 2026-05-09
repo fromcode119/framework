@@ -2,7 +2,7 @@ import { Logger } from '../logging';
 import { SystemConstants } from '../constants';
 import { CoreServices } from '../services';
 import { IntegrationProfileService } from './integration-profile-service';
-import { IntegrationSecretService } from './integration-secret-service';
+import { SecretService as IntegrationSecretService } from '../security/secret-service';
 import {
   IntegrationProviderDefinition,
   IntegrationStoredProvider,

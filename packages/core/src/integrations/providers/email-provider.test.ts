@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { IntegrationStoredProviderService } from '../integration-stored-provider-service';
-import { IntegrationSecretService } from '../integration-secret-service';
+import { SecretService as IntegrationSecretService } from '../../security/secret-service';
 import { EmailIntegrationDefinition } from './email-integration-definition';
 import { EmailGateway } from './email-gateway';
 

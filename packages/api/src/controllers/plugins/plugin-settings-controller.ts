@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PluginManager, Logger, IntegrationSecretService } from '@fromcode119/core';
+import { PluginManager, Logger, SecretService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 export class PluginSettingsController {
@@ -175,7 +175,7 @@ export class PluginSettingsController {
     const result = { ...settings };
     for (const key of passwordFields) {
       if (key in result) {
-        result[key] = IntegrationSecretService.maskIfPresent(result[key]);
+        result[key] = SecretService.maskIfPresent(result[key]);
       }
     }
     return result;
@@ -190,11 +190,11 @@ export class PluginSettingsController {
     const result = { ...newSettings };
     for (const key of passwordFields) {
       const incoming = result[key];
-      if (!incoming || IntegrationSecretService.isSavedSecretMask(incoming)) {
+      if (!incoming || SecretService.isSavedSecretMask(incoming)) {
         // Preserve existing encrypted value
         result[key] = existingSettings[key] ?? '';
-      } else if (!IntegrationSecretService.isEncryptedValue(incoming)) {
-        result[key] = IntegrationSecretService.encrypt(String(incoming));
+      } else if (!SecretService.isEncryptedValue(incoming)) {
+        result[key] = SecretService.encrypt(String(incoming));
       }
     }
     return result;
