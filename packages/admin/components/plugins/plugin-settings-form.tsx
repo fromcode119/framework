@@ -10,8 +10,6 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import type { PluginSettingsFormHandle, PluginSettingsFormProps } from './plugin-settings-form.interfaces';
 
-const SAVED_SECRET_MASK = '__FROMCODE_SAVED_SECRET__';
-
 function PluginSettingsFormComponent({
   pluginSlug,
   formId,
@@ -56,10 +54,13 @@ function PluginSettingsFormComponent({
 
       const nextSchema = schemaRes;
       const rawSettings: Record<string, any> = settingsRes.settings || {};
+      const passwordFields = new Set<string>(
+        (nextSchema.fields || []).filter((f: any) => f.type === 'password').map((f: any) => f.name)
+      );
       const nextSavedSecrets = new Set<string>();
       const nextSettings: Record<string, any> = {};
       for (const [key, value] of Object.entries(rawSettings)) {
-        if (value === SAVED_SECRET_MASK) {
+        if (passwordFields.has(key) && String(value || '').trim()) {
           nextSavedSecrets.add(key);
           nextSettings[key] = '';
         } else {
@@ -93,13 +94,7 @@ function PluginSettingsFormComponent({
     setStatus(null);
     
     try {
-      const settingsToSend: Record<string, any> = { ...settings };
-      for (const key of savedSecretFields) {
-        if (settingsToSend[key] === '' || settingsToSend[key] == null) {
-          settingsToSend[key] = SAVED_SECRET_MASK;
-        }
-      }
-      await AdminApi.put(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settingsToSend);
+      await AdminApi.put(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(pluginSlug), settings);
       setIsDirty(false);
       setStatus({ type: 'success', message: 'Settings saved successfully!' });
       triggerRefresh();
