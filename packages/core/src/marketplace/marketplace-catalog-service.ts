@@ -64,15 +64,20 @@ export class MarketplaceCatalogService {
   /**
    * Get detailed information for a single plugin
    */
-  public async getPluginInfo(slug: string): Promise<MarketplacePlugin | undefined> {
+  public async getPluginInfo(slug: string, version?: string): Promise<MarketplacePlugin | undefined> {
     const catalog = await this.fetchCatalog();
-    return catalog.find(p => p.slug === slug);
+    return this.resolvePluginVersion(catalog, slug, version);
   }
 
   /**
    * Download and install a plugin from the marketplace, including its dependencies
    */
-  public async downloadAndInstall(slug: string, visited: Set<string> = new Set(), progressReporter?: PluginInstallProgressReporter): Promise<PluginManifest> {
+  public async downloadAndInstall(
+    slug: string,
+    visited: Set<string> = new Set(),
+    progressReporter?: PluginInstallProgressReporter,
+    version?: string,
+  ): Promise<PluginManifest> {
     if (!this.client) {
       throw new Error('Marketplace is disabled.');
     }
@@ -88,9 +93,9 @@ export class MarketplaceCatalogService {
     }
     visited.add(slug);
 
-    const plugin = await this.getPluginInfo(slug);
+    const plugin = await this.resolvePluginVersion(await this.fetchCatalog(), slug, version);
     if (!plugin) {
-      throw new Error(`Plugin "${slug}" not found in marketplace catalog.`);
+      throw new Error(`Plugin "${slug}"${version ? ` v${version}` : ''} not found in marketplace catalog.`);
     }
 
     progressReporter?.({
@@ -168,5 +173,36 @@ export class MarketplaceCatalogService {
         fs.unlinkSync(tempZipPath);
       }
     }
+  }
+
+  private resolvePluginVersion(
+    catalog: MarketplacePlugin[],
+    slug: string,
+    version?: string,
+  ): MarketplacePlugin | undefined {
+    const matches = catalog.filter((plugin) => plugin.slug === slug);
+    if (matches.length === 0) {
+      return undefined;
+    }
+
+    const normalizedVersion = String(version || '').trim();
+    if (normalizedVersion) {
+      return matches.find((plugin) => plugin.version === normalizedVersion);
+    }
+
+    return matches.sort((left, right) => this.compareVersions(right.version, left.version))[0];
+  }
+
+  private compareVersions(left: string, right: string): number {
+    const leftParts = String(left || '').split('.').map((part) => Number(part.replace(/\D/g, '')) || 0);
+    const rightParts = String(right || '').split('.').map((part) => Number(part.replace(/\D/g, '')) || 0);
+    const maxLength = Math.max(leftParts.length, rightParts.length);
+    for (let index = 0; index < maxLength; index += 1) {
+      const diff = (leftParts[index] || 0) - (rightParts[index] || 0);
+      if (diff !== 0) {
+        return diff;
+      }
+    }
+    return 0;
   }
 }

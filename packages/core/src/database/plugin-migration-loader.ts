@@ -18,6 +18,7 @@ export class PluginMigrationLoader {
     }
 
     const files = fs.readdirSync(migrationsDir)
+      .filter((file) => !file.startsWith('.'))
       .filter((file) => !file.startsWith('index.') && !file.endsWith('.d.ts') && !file.endsWith('.map'))
       .filter((file) => file.endsWith('.ts') || file.endsWith('.js'))
       .sort((left, right) => left.localeCompare(right));

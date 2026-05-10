@@ -14,6 +14,7 @@ import { ContextHooks } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
 import type { MarketplaceTheme } from '@fromcode119/core/client';
+import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 export default function ThemeMarketplaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -45,7 +46,7 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
         
         if (versions.length > 0) {
           // Sort versions descending
-          versions.sort((a: any, b: any) => b.version.localeCompare(a.version));
+          versions.sort((a: any, b: any) => VersionComparisonService.isGreater(a.version, b.version) ? -1 : (VersionComparisonService.isSame(a.version, b.version) ? 0 : 1));
           setAllVersions(versions);
           
           // Default to latest or selected
@@ -74,10 +75,12 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
     if (!theme) return;
     setInstalling(true);
     try {
-      notify('info', 'Installation Started', `Downloading and setting up ${theme.name} v${theme.version}...`);
+      notify('info', installedTheme ? 'Update Started' : 'Installation Started', `Downloading and setting up ${theme.name} v${theme.version}...`);
       await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.INSTALL(theme.slug)}?version=${theme.version}`);
-      notify('success', 'Installation Success', `${theme.name} v${theme.version} has been installed.`);
-      triggerRefresh();
+      notify('success', installedTheme ? 'Update Complete' : 'Installation Success', `${theme.name} v${theme.version} has been installed.`);
+      if (triggerRefresh) {
+        await Promise.resolve(triggerRefresh());
+      }
       
       // Refresh local state
       const instResponse = await AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST);
@@ -101,7 +104,8 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
 
   if (!theme) return null;
 
-  const hasUpdate = installedTheme && theme.version !== installedTheme.version;
+  const installedVersion = installedTheme?.version || null;
+  const hasUpdate = Boolean(installedVersion && VersionComparisonService.isGreater(theme.version, installedVersion));
 
   // Normalize screenshots for display
   const screenshots = (theme.screenshots || []).map(s => typeof s === 'string' ? s : s.url);
@@ -339,7 +343,12 @@ export default function ThemeMarketplaceDetailPage({ params }: { params: Promise
                     </div>
 
                     <div className="w-full pb-6 mb-6 border-b border-slate-100 dark:border-white/5">
-                        <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Current Release</div>
+                        <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Installed Release</div>
+                        <div className={`text-2xl font-bold ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{installedVersion ? `v${installedVersion}` : 'Not installed'}</div>
+                    </div>
+
+                    <div className="w-full pb-6 mb-6 border-b border-slate-100 dark:border-white/5">
+                        <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Marketplace Release</div>
                         <div className={`text-2xl font-bold ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>v{theme.version}</div>
                     </div>
 

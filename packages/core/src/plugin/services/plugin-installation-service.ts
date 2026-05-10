@@ -27,11 +27,11 @@ export class PluginInstallationService {
 
   async installOrUpdateFromMarketplace(
     slug: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
+    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter; version?: string } = {},
   ): Promise<PluginManifest> {
-    const pkg = await this.marketplace.getPluginInfo(slug);
+    const pkg = await this.marketplace.getPluginInfo(slug, options.version);
     if (!pkg) {
-      throw new Error(`Plugin "${slug}" not found in marketplace.`);
+      throw new Error(`Plugin "${slug}"${options.version ? ` v${options.version}` : ''} not found in marketplace.`);
     }
 
     options.progressReporter?.({
@@ -59,7 +59,7 @@ export class PluginInstallationService {
       await BackupService.create(slug, existing.path, 'plugins');
     }
 
-    const manifest = await this.marketplace.downloadAndInstall(slug, new Set(), options.progressReporter);
+    const manifest = await this.marketplace.downloadAndInstall(slug, new Set(), options.progressReporter, options.version);
     await this.finalizeInstalledPlugin(manifest.slug, {
       enable: options.enable ?? existing?.state === 'active',
       progressReporter: options.progressReporter,

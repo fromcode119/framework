@@ -2,7 +2,7 @@ import type { LoadedPlugin } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
 import type {
   PluginDetailTab,
   PluginLogEntry,
@@ -23,8 +23,7 @@ export class PluginDetailPageService {
   }
 
   static async fetchPlugin(slug: string): Promise<LoadedPlugin | null> {
-    const data = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LIST);
-    return data.find((plugin: LoadedPlugin) => plugin.manifest?.slug === slug) ?? null;
+    return PluginVersionWaitService.fetchInstalledPlugin(slug);
   }
 
   static async fetchMarketplaceItem(slug: string): Promise<PluginMarketplaceItem | null> {
@@ -61,18 +60,7 @@ export class PluginDetailPageService {
   }
 
   static async waitForInstalledVersion(slug: string, targetVersion: string, timeoutMs = 15000): Promise<LoadedPlugin> {
-    const startedAt = Date.now();
-
-    while (Date.now() - startedAt < timeoutMs) {
-      const plugin = await PluginDetailPageService.fetchPlugin(slug);
-      if (plugin && !VersionComparisonService.isGreater(targetVersion, plugin.manifest.version)) {
-        return plugin;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-
-    throw new Error(`The plugin restart completed, but the installed version is still below ${targetVersion}. The marketplace ZIP or runtime restart is still stale.`);
+    return PluginVersionWaitService.waitForInstalledVersion(slug, targetVersion, timeoutMs);
   }
 
   static async togglePlugin(slug: string, enabled: boolean): Promise<void> {

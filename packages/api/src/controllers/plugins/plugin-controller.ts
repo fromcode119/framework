@@ -146,18 +146,20 @@ export class PluginController {
 
   async install(req: Request, res: Response) {
     const { slug } = req.params;
+    const requestedVersion = String(req.query.version || '').trim();
     this.logger.info(`Installation request received for plugin: ${slug}`);
 
     try {
-      const marketplacePlugin = await this.manager.marketplace.getPluginInfo(slug);
+      const marketplacePlugin = await this.manager.marketplace.getPluginInfo(slug, requestedVersion);
       if (!marketplacePlugin) {
-        return res.status(404).json({ error: `Plugin "${slug}" not found in marketplace.` });
+        return res.status(404).json({ error: `Plugin "${slug}"${requestedVersion ? ` v${requestedVersion}` : ''} not found in marketplace.` });
       }
 
       const operation = this.operations.start(slug, 'marketplace install', async (reportProgress) => {
         await this.manager.installOrUpdateFromMarketplace(slug, {
           enable: true,
           progressReporter: reportProgress,
+          version: requestedVersion || undefined,
         });
       });
 

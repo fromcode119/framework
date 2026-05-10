@@ -8,8 +8,12 @@ export class PluginInstallOperationService {
   private static readonly RESTART_RECOVERY_TIMEOUT_MS = 30 * 1000;
   private static readonly RESTART_RECOVERY_POLL_INTERVAL_MS = 1000;
 
-  static async startMarketplaceInstall(slug: string): Promise<{ operationId: string; dependencies: string[] }> {
-    const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug), {}) as {
+  static async startMarketplaceInstall(slug: string, version?: string): Promise<{ operationId: string; dependencies: string[] }> {
+    const normalizedVersion = String(version || '').trim();
+    const endpoint = normalizedVersion
+      ? `${AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug)}?version=${encodeURIComponent(normalizedVersion)}`
+      : AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug);
+    const response = await AdminApi.post(endpoint, {}) as {
       operationId?: string;
       dependencies?: string[];
     };

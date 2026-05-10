@@ -29,7 +29,10 @@ export class MarketplaceRouter extends BaseRouter {
     }));
 
     this.post('/install/:slug', this.asyncHandler(async (req, res) => {
-      const manifest = await this.manager.installOrUpdateFromMarketplace(req.params.slug);
+      const requestedVersion = String(req.query.version || '').trim();
+      const manifest = await this.manager.installOrUpdateFromMarketplace(req.params.slug, {
+        version: requestedVersion || undefined,
+      });
       res.json({ success: true, manifest });
     }));
   }

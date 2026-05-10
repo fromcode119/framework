@@ -274,7 +274,7 @@ export class PluginManager implements PluginManagerInterface {
 
   async installOrUpdateFromMarketplace(
     slug: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
+    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter; version?: string } = {},
   ): Promise<PluginManifest> {
     return this.installation.installOrUpdateFromMarketplace(slug, options);
   }

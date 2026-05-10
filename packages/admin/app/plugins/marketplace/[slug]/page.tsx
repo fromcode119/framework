@@ -13,7 +13,9 @@ import { ContextHooks } from '@fromcode119/react';
 import type { PluginEntry } from '@fromcode119/core/client';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Lightbox } from '@/components/ui/lightbox';
-import { PluginRuntimeWaitService } from '@/lib/plugin-runtime-wait-service';
+import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
+import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
+import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 export default function MarketplaceDetailPage() {
@@ -29,6 +31,7 @@ export default function MarketplaceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [installing, setInstalling] = useState(false);
+  const [installOperation, setInstallOperation] = useState<PluginInstallOperation | null>(null);
   
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
@@ -76,41 +79,21 @@ export default function MarketplaceDetailPage() {
     try {
       setInstalling(true);
       const isUpdate = Boolean(installedPlugin);
-      notify('info', 'Installation Started', `Downloading and staging ${pluginSlug} v${plugin.version}...`);
-      await AdminApi.post(`${AdminConstants.ENDPOINTS.PLUGINS.INSTALL(pluginSlug)}?version=${plugin.version}`, {});
-      // Optimistically reflect the newly installed version so users do not need a manual refresh.
-      setInstalledPlugin((current: any) => ({
-        ...(current || {}),
-        slug: plugin.slug,
-        version: plugin.version,
-        state: current?.state || 'active'
-      }));
-
-      if (isUpdate) {
-        notify('info', 'Framework Restarting', `Plugin "${pluginSlug}" was updated. Waiting for the framework API to restart...`);
-        const recovered = await PluginRuntimeWaitService.waitForFrameworkRecovery();
-        if (triggerRefresh) {
-          await Promise.resolve(triggerRefresh());
-        }
-        await fetchData();
-
-        if (recovered) {
-          notify('success', 'Update Complete', `Plugin "${pluginSlug}" v${plugin.version} was updated and the framework is back online.`);
-        } else {
-          notify('info', 'Update Applied', `Plugin "${pluginSlug}" v${plugin.version} was updated, but the framework is still restarting or slow to recover.`);
-        }
-        return;
-      }
-
+      notify('info', isUpdate ? 'Update Started' : 'Installation Started', `${isUpdate ? 'Updating' : 'Downloading and staging'} ${pluginSlug} v${plugin.version}...`);
+      const result = await PluginInstallOperationService.startMarketplaceInstall(pluginSlug, plugin.version);
+      await PluginInstallOperationService.waitForCompletion(result.operationId, setInstallOperation);
+      const refreshedPlugin = await PluginVersionWaitService.waitForInstalledVersion(pluginSlug, plugin.version);
+      setInstalledPlugin(refreshedPlugin);
       if (triggerRefresh) {
         await Promise.resolve(triggerRefresh());
       }
       await fetchData();
-      notify('success', 'Installation Complete', `Plugin "${pluginSlug}" v${plugin.version} installed successfully.`);
+      notify('success', isUpdate ? 'Update Complete' : 'Installation Complete', `Plugin "${pluginSlug}" v${plugin.version} is installed and active.`);
     } catch (err: any) {
       notify('error', 'Installation Failed', err.message || 'Failed to install plugin.');
     }
     finally {
+      setInstallOperation(null);
       setInstalling(false);
     }
   };
@@ -376,6 +359,11 @@ export default function MarketplaceDetailPage() {
                         >
                           {installing ? 'Updating…' : 'Apply Update Now'}
                         </button>
+                        {installOperation?.message && (
+                          <p className={`mt-3 text-[10px] font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-amber-300' : 'text-amber-700'}`}>
+                            {installOperation.message}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -395,14 +383,19 @@ export default function MarketplaceDetailPage() {
                     </div>
                   )}
                   
-                  <button className={`w-full py-4 rounded-2xl font-semibold uppercase tracking-widest text-[10px] border-2 transition-all ${
+                    <button className={`w-full py-4 rounded-2xl font-semibold uppercase tracking-widest text-[10px] border-2 transition-all ${
                     theme === 'dark' 
                       ? 'border-white/5 text-slate-500 hover:bg-white/5 hover:text-white' 
                       : 'border-slate-100 text-slate-400 hover:bg-slate-50 hover:border-slate-200 hover:text-slate-900'
                   }`}>
                      Share Extension
-                  </button>
-                </div>
+                    </button>
+                    {installOperation?.message && (
+                      <p className={`text-center text-[10px] font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-700'}`}>
+                        {installOperation.message}
+                      </p>
+                    )}
+                 </div>
 
                 <div className={`h-px ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100/60'}`} />
 
@@ -429,13 +422,19 @@ export default function MarketplaceDetailPage() {
                         {plugin.slug}
                       </span>
                    </div>
-                   <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Current Ver</span>
-                      <span className={`text-[11px] font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
-                        v{plugin.version}
-                      </span>
-                   </div>
-                </div>
+                    <div className="flex justify-between items-center">
+                       <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Current Ver</span>
+                       <span className={`text-[11px] font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
+                         {installedVersion ? `v${installedVersion}` : 'Not installed'}
+                       </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Marketplace Ver</span>
+                       <span className={`text-[11px] font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
+                         v{plugin.version}
+                       </span>
+                    </div>
+                 </div>
               </div>
            </Card>
         </div>
