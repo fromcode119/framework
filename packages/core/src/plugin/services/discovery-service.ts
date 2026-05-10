@@ -27,6 +27,7 @@ const manifestSchema = z.object({
 import type { DependencyIssue } from './discovery-service.interfaces';
 import { PluginDependencyInstallerService } from './plugin-dependency-installer-service';
 import { ManifestNormalizer } from '../../manifest-normalizer';
+import { PluginPackageValidator } from './plugin-package-validator';
 
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
@@ -421,6 +422,7 @@ export class DiscoveryService {
 
       const manifestContent = fs.readFileSync(path.join(contentDir, 'manifest.json'), 'utf8');
       const manifest: PluginManifest = JSON.parse(manifestContent);
+      PluginPackageValidator.validateInstalledPackage(contentDir, manifest);
       const targetDir = path.join(this.pluginsRoot, manifest.slug);
 
       if (fs.existsSync(targetDir)) {

@@ -19,6 +19,7 @@ export default function PluginDetailHeader({
   theme,
 }: PluginDetailHeaderProps) {
   const hasUpdate = Boolean(marketplaceItem?.version && VersionComparisonService.isGreater(marketplaceItem.version, plugin.manifest.version));
+  const marketplaceVersion = marketplaceItem?.version || null;
 
   return (
     <div className="flex items-center gap-6">
@@ -39,8 +40,16 @@ export default function PluginDetailHeader({
           <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.manifest.slug}</span>
           <span className="text-slate-500 opacity-30">•</span>
           <span className={`text-[11px] font-semibold uppercase tracking-wider ${hasUpdate ? 'text-amber-500' : 'text-slate-400'}`}>
-            Version {plugin.manifest.version}
+            Installed {plugin.manifest.version}
           </span>
+          {marketplaceVersion ? (
+            <>
+              <span className="text-slate-500 opacity-30">•</span>
+              <span className={`text-[11px] font-semibold uppercase tracking-wider ${hasUpdate ? 'text-emerald-500' : 'text-slate-400'}`}>
+                Marketplace {marketplaceVersion}
+              </span>
+            </>
+          ) : null}
           {hasUpdate && (
             <button
               onClick={onUpdate}

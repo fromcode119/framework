@@ -101,6 +101,12 @@ export class PluginDetailPageController {
           notify('info', 'Update Dependencies', `This update also requires: ${result.dependencies.join(', ')}`);
         }
         await PluginInstallOperationService.waitForCompletion(result.operationId, setInstallOperation);
+        const refreshedPlugin = marketplaceItem?.version
+          ? await PluginDetailPageService.waitForInstalledVersion(plugin.manifest.slug, marketplaceItem.version)
+          : await PluginDetailPageService.fetchPlugin(plugin.manifest.slug);
+        if (refreshedPlugin) {
+          setPlugin(refreshedPlugin);
+        }
         notify('success', 'Update Complete', `${plugin.manifest.name} has been updated to the latest version.`);
         triggerRefresh();
       } catch (error: any) {
