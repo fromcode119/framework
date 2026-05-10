@@ -2,6 +2,30 @@ import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { SystemControllerRuntime } from './system-controller-runtime';
 
+const WRITABLE_SETTINGS_KEYS = new Set<string>([
+  SystemConstants.META_KEY.MAINTENANCE_MODE,
+  SystemConstants.META_KEY.SITE_NAME,
+  SystemConstants.META_KEY.SITE_URL,
+  SystemConstants.META_KEY.FRONTEND_URL,
+  SystemConstants.META_KEY.ADMIN_URL,
+  SystemConstants.META_KEY.TIMEZONE,
+  SystemConstants.META_KEY.PLATFORM_NAME,
+  SystemConstants.META_KEY.PLATFORM_DOMAIN,
+  SystemConstants.META_KEY.TELEMETRY_ENABLED,
+  SystemConstants.META_KEY.LOCALIZATION_LOCALES,
+  SystemConstants.META_KEY.ENABLED_LOCALES,
+  SystemConstants.META_KEY.DEFAULT_LOCALE,
+  SystemConstants.META_KEY.FALLBACK_LOCALE,
+  SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE,
+  SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE,
+  SystemConstants.META_KEY.LOCALE_URL_STRATEGY,
+  SystemConstants.META_KEY.PERMALINK_STRUCTURE,
+  SystemConstants.META_KEY.ROUTING_HOME_TARGET,
+  SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED,
+  SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED,
+  SystemConstants.META_KEY.EMAIL_NOTIFICATIONS,
+]);
+
 export class SystemAdminController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
@@ -24,7 +48,9 @@ export class SystemAdminController {
       const settings = await this.runtime.db.find(SystemConstants.TABLE.META);
       const settingsMap: Record<string, any> = {};
       settings.forEach((setting: any) => {
-        settingsMap[setting.key] = setting.value;
+        if (!setting.key.startsWith('integration_')) {
+          settingsMap[setting.key] = setting.value;
+        }
       });
       metadata.settings = settingsMap;
       metadata.secondaryPanel = metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel();
@@ -60,6 +86,11 @@ export class SystemAdminController {
       const payload = req.body;
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
         return res.status(400).json({ error: 'Settings payload must be an object.' });
+      }
+
+      const unknownKeys = Object.keys(payload).filter((k) => !WRITABLE_SETTINGS_KEYS.has(k));
+      if (unknownKeys.length > 0) {
+        return res.status(400).json({ error: `Unknown or read-only settings key(s): ${unknownKeys.join(', ')}` });
       }
 
       const timestamp = new Date();

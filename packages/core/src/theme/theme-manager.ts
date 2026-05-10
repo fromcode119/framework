@@ -206,6 +206,16 @@ export class ThemeManager {
 
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
+    const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
+    if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
+    if (config.variables !== undefined) {
+      if (typeof config.variables !== 'object' || Array.isArray(config.variables)) {
+        throw new Error('Theme variables must be a plain object.');
+      }
+      for (const [key, value] of Object.entries(config.variables)) {
+        if (typeof value !== 'string') throw new Error(`Theme variable "${key}" must be a string.`);
+      }
+    }
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
     if (existing) {
       await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: JSON.stringify(config), updated_at: new Date() });
@@ -269,7 +279,9 @@ export class ThemeManager {
   private generateCssVariables(variables: Record<string, string>): string {
     const lines = Object.entries(variables).map(([key, value]) => {
       const cssKey = key.startsWith('--') ? key : `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-      return `${cssKey}: ${value};`;
+      // Strip chars that can break out of the CSS context or close the surrounding <style> tag
+      const safeValue = String(value).replace(/[<>"'\\]|\/\*/g, '');
+      return `${cssKey}: ${safeValue};`;
     });
     return `:root {\n  ${lines.join('\n  ')}\n}`;
   }

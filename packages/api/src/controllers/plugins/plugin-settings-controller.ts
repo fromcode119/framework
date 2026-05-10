@@ -107,15 +107,16 @@ export class PluginSettingsController {
     }
 
     const defaults = this.getDefaults(schema.fields || []);
+    const encryptedDefaults = this.encryptPasswordFields(defaults, {}, schema.fields || []);
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
     const currentConfig = plugin?.manifest.config || {};
 
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
-      settings: defaults
+      settings: encryptedDefaults
     });
 
-    res.json({ success: true, settings: defaults });
+    res.json({ success: true, settings: this.maskPasswordFields(encryptedDefaults, schema.fields || []) });
   }
 
   async exportSettings(req: Request, res: Response) {
@@ -148,10 +149,18 @@ export class PluginSettingsController {
     }
 
     const schema = await this.getEffectiveSchema(slug);
-    if (schema) {
-      const errors = await this.validateSettings(importedSettings, schema);
-      if (errors) {
-        return res.status(400).json({ errors });
+    if (!schema) {
+      return res.status(422).json({ error: 'Cannot import settings: plugin schema not registered. Ensure the plugin is enabled.' });
+    }
+
+    const errors = await this.validateSettings(importedSettings, schema);
+    if (errors) {
+      return res.status(400).json({ errors });
+    }
+    if (schema.validate) {
+      const customErrors = await schema.validate(importedSettings, (this.manager as any).createContext(plugin));
+      if (customErrors) {
+        return res.status(400).json({ errors: customErrors });
       }
     }
 
@@ -163,11 +172,25 @@ export class PluginSettingsController {
       settings: settingsToSave
     });
 
+    if (schema?.onSave) {
+      try {
+        await schema.onSave(existingSettings, importedSettings, (this.manager as any).createContext(plugin));
+      } catch (err: any) {
+        this.logger.error(`onSave hook failed for plugin "${slug}" during import: ${err.message}`);
+      }
+    }
+
     res.json({ success: true, imported: Object.keys(importedSettings).length });
   }
 
+  private static readonly SENSITIVE_FIELD_RE = /secret|password|api_key|private_key|access_token|auth_token|refresh_token|bearer_token|credential|passphrase/i;
+
   private getPasswordFieldNames(fields: any[]): Set<string> {
-    return new Set(fields.filter(f => f.type === 'password').map(f => f.name));
+    return new Set(
+      fields
+        .filter(f => f.type === 'password' || PluginSettingsController.SENSITIVE_FIELD_RE.test(String(f.name || '')))
+        .map(f => f.name)
+    );
   }
 
   private maskPasswordFields(settings: Record<string, any>, fields: any[]): Record<string, any> {
