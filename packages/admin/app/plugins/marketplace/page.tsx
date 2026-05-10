@@ -11,7 +11,7 @@ import { NotificationHooks } from '@/components/use-notification';
 import { ContextHooks } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import type { PluginEntry } from '@fromcode119/core/client';
-import { PluginRuntimeWaitService } from '@/lib/plugin-runtime-wait-service';
+import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 export default function MarketplacePage() {
@@ -58,54 +58,24 @@ export default function MarketplacePage() {
 
   const handleInstall = async (e: React.MouseEvent, slug: string) => {
     e.stopPropagation();
-    console.log('[Marketplace] Installing plugin:', slug);
     if (installing) return;
+
+    const isUpdate = Boolean(installedPlugins.find((p) => (p.manifest?.slug || p.slug) === slug));
 
     try {
       setInstalling(slug);
-      const existingPlugin = installedPlugins.find((plugin) => (plugin.manifest?.slug || plugin.slug) === slug);
-      const isUpdate = Boolean(existingPlugin);
-      notify('info', 'Installation Started', `Downloading and staging ${slug}...`);
-      const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug), {});
-      console.log('[Marketplace] Install response:', response);
-      if (response?.manifest?.slug) {
-        setInstalledPlugins((current) => {
-          const existingIndex = current.findIndex((plugin) => (plugin.manifest?.slug || plugin.slug) === response.manifest.slug);
-          const nextPlugin = {
-            ...(existingIndex >= 0 ? current[existingIndex] : {}),
-            slug: response.manifest.slug,
-            version: response.manifest.version,
-            manifest: response.manifest,
-          };
+      notify('info', isUpdate ? 'Updating Plugin' : 'Installing Plugin', `${isUpdate ? 'Updating' : 'Downloading and staging'} ${slug}...`);
 
-          if (existingIndex < 0) {
-            return [...current, nextPlugin];
-          }
-
-          return current.map((plugin, index) => index === existingIndex ? nextPlugin : plugin);
-        });
-      }
-
-      if (isUpdate) {
-        notify('info', 'Framework Restarting', `Plugin "${slug}" was updated. Waiting for the framework API to restart...`);
-        const recovered = await PluginRuntimeWaitService.waitForFrameworkRecovery();
-        triggerRefresh();
-        await fetchData();
-
-        if (recovered) {
-          notify('success', 'Update Complete', `Plugin "${slug}" was updated and the framework is back online.`);
-        } else {
-          notify('info', 'Update Applied', `Plugin "${slug}" was updated, but the framework is still restarting or slow to recover.`);
-        }
-        return;
-      }
+      const { operationId } = await PluginInstallOperationService.startMarketplaceInstall(slug);
+      // Wait for the background operation to fully complete (handles restart recovery internally)
+      await PluginInstallOperationService.waitForCompletion(operationId);
 
       triggerRefresh();
       await fetchData();
-      notify('success', 'Installation Complete', `Plugin "${slug}" installed successfully.`);
+      notify('success', isUpdate ? 'Update Complete' : 'Installation Complete', `Plugin "${slug}" was ${isUpdate ? 'updated' : 'installed'} successfully.`);
     } catch (err: any) {
       console.error('[Marketplace] Installation failed:', err);
-      notify('error', 'Installation Failed', err.message || 'Failed to install plugin');
+      notify('error', isUpdate ? 'Update Failed' : 'Installation Failed', err.message || `Failed to ${isUpdate ? 'update' : 'install'} plugin`);
     } finally {
       setInstalling(null);
     }
