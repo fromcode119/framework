@@ -5,7 +5,7 @@ import type { PluginInstallOperation } from './plugin-install-operation.interfac
 export class PluginInstallOperationService {
   private static readonly POLL_INTERVAL_MS = 800;
   private static readonly TIMEOUT_MS = 10 * 60 * 1000;
-  private static readonly RESTART_RECOVERY_TIMEOUT_MS = 30 * 1000;
+  private static readonly RESTART_RECOVERY_TIMEOUT_MS = 90 * 1000;
   private static readonly RESTART_RECOVERY_POLL_INTERVAL_MS = 1000;
 
   static async startMarketplaceInstall(slug: string, version?: string): Promise<{ operationId: string; dependencies: string[] }> {
