@@ -26,12 +26,15 @@ export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-  const fetchData = async () => {
+  const fetchData = async (refresh = false) => {
     setLoading(true);
     try {
+      const listUrl = refresh
+        ? `${AdminConstants.ENDPOINTS.PLUGINS.LIST}?refresh=true`
+        : AdminConstants.ENDPOINTS.PLUGINS.LIST;
       const [marketData, instData] = await Promise.all([
         AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE),
-        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LIST)
+        AdminApi.get(listUrl)
       ]);
       const rawPlugins = marketData.plugins || [];
       
@@ -71,7 +74,7 @@ export default function MarketplacePage() {
       await PluginInstallOperationService.waitForCompletion(operationId);
 
       triggerRefresh();
-      await fetchData();
+      await fetchData(true);
       notify('success', isUpdate ? 'Update Complete' : 'Installation Complete', `Plugin "${slug}" was ${isUpdate ? 'updated' : 'installed'} successfully.`);
     } catch (err: any) {
       console.error('[Marketplace] Installation failed:', err);
