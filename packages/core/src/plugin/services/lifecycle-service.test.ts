@@ -7,9 +7,9 @@ vi.mock('../../security/plugin-signature-service', () => ({ PluginSignatureServi
 vi.mock('../../management/manifest', () => ({ ManifestValidator: { validate: vi.fn() } }));
 vi.mock('../../security/plugin-permissions-service', () => ({ PluginPermissionsService: { ensure: vi.fn() } }));
 vi.mock('uuid', () => ({ v4: vi.fn().mockReturnValue('test-uuid') }));
-vi.mock('../../database/seeder', () => ({ Seeder: vi.fn(function () { this.seed = vi.fn(); }) }));
+vi.mock('../../database/seeder', () => ({ Seeder: vi.fn(function (this: any) { this.seed = vi.fn(); }) }));
 vi.mock('./plugin-failure-isolation-service', () => ({
-  PluginFailureIsolationService: vi.fn(function () {
+  PluginFailureIsolationService: vi.fn(function (this: any) {
     this.rollbackPartialRegistration = vi.fn();
     this.markPluginError = vi.fn().mockResolvedValue(undefined);
   }),

@@ -119,12 +119,13 @@ export class LifecycleService {
     this.manager.plugins.set(slug, loadedPlugin);
 
     const isFreshInstall = !saved;
-    const isVersionUpdate = !isFreshInstall && saved.version && saved.version !== plugin.manifest.version;
+    const savedVersion = saved?.version;
+    const isVersionUpdate = !isFreshInstall && !!savedVersion && savedVersion !== plugin.manifest.version;
     const ctx = (this.manager as any).createContext(loadedPlugin);
     try {
       if (isFreshInstall && loadedPlugin.onInstall) await loadedPlugin.onInstall(ctx);
-      if (isVersionUpdate && loadedPlugin.onUpdate) {
-        await loadedPlugin.onUpdate(ctx, { oldVersion: saved.version, newVersion: plugin.manifest.version });
+      if (isVersionUpdate && loadedPlugin.onUpdate && savedVersion) {
+        await loadedPlugin.onUpdate(ctx, { oldVersion: savedVersion, newVersion: plugin.manifest.version });
       }
       if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
     } catch (err: any) {

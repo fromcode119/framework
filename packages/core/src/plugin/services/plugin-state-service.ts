@@ -8,7 +8,7 @@ export class PluginStateService {
 
   constructor(private db: IDatabaseManager) {}
 
-  async loadInstalledPluginsState(): Promise<Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any }>> {
+  async loadInstalledPluginsState(): Promise<Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any; version?: string }>> {
     try {
       const result = await this.db.find(SystemConstants.TABLE.PLUGINS, {
         columns: {
@@ -16,11 +16,12 @@ export class PluginStateService {
           state: true,
           capabilities: true,
           health_status: true,
-          sandbox_config: true
+          sandbox_config: true,
+          version: true
         }
       });
 
-      const registry: Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any }> = {};
+      const registry: Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any; version?: string }> = {};
       result.forEach((row) => {
         // Use lowercase slug for the registry key to ensure case-insensitive lookup
         const slug = row.slug?.toLowerCase();
@@ -29,7 +30,8 @@ export class PluginStateService {
             state: row.state,
             approvedCapabilities: row.capabilities ? (typeof row.capabilities === 'string' ? JSON.parse(row.capabilities) : row.capabilities) : [],
             healthStatus: row.health_status || 'healthy',
-            sandboxConfig: row.sandbox_config
+            sandboxConfig: row.sandbox_config,
+            version: row.version
           };
         }
       });
