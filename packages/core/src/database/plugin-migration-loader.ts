@@ -21,6 +21,7 @@ export class PluginMigrationLoader {
       .filter((file) => !file.startsWith('.'))
       .filter((file) => !file.startsWith('index.') && !file.endsWith('.d.ts') && !file.endsWith('.map'))
       .filter((file) => file.endsWith('.ts') || file.endsWith('.js'))
+      .filter((file) => this.isLoadableFile(migrationsDir, file))
       .sort((left, right) => left.localeCompare(right));
 
     const migrations: SystemMigration[] = [];
@@ -48,6 +49,10 @@ export class PluginMigrationLoader {
           down: typeof migrationModule.down === 'function' ? migrationModule.down : undefined,
         });
       } catch (error) {
+        if (this.shouldSkipImportError(error, absolutePath)) {
+          this.logger.warn(`Skipping missing plugin migration module: ${absolutePath}`);
+          continue;
+        }
         this.logger.error(`Failed to load plugin migration ${absolutePath}: ${error instanceof Error ? error.message : String(error)}`);
         throw error;
       }
@@ -74,5 +79,30 @@ export class PluginMigrationLoader {
     }
 
     return 900000000 + fallbackIndex;
+  }
+
+  private static isLoadableFile(migrationsDir: string, file: string): boolean {
+    const absolutePath = path.resolve(migrationsDir, file);
+
+    try {
+      return fs.statSync(absolutePath).isFile();
+    } catch (error) {
+      this.logger.warn(`Skipping plugin migration entry that is not loadable: ${absolutePath}`);
+      return false;
+    }
+  }
+
+  private static shouldSkipImportError(error: unknown, absolutePath: string): boolean {
+    if (!(error instanceof Error)) {
+      return false;
+    }
+
+    const message = String(error.message || '');
+    if (!message.includes('Cannot find module')) {
+      return false;
+    }
+
+    const moduleUrl = pathToFileURL(absolutePath).href;
+    return message.includes(moduleUrl) || message.includes(absolutePath);
   }
 }

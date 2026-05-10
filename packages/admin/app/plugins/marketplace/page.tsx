@@ -12,6 +12,7 @@ import { ContextHooks } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import type { PluginEntry } from '@fromcode119/core/client';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
+import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 export default function MarketplacePage() {
@@ -59,7 +60,7 @@ export default function MarketplacePage() {
     fetchData();
   }, [refreshVersion]);
 
-  const handleInstall = async (e: React.MouseEvent, slug: string) => {
+  const handleInstall = async (e: React.MouseEvent, slug: string, targetVersion: string) => {
     e.stopPropagation();
     if (installing) return;
 
@@ -67,15 +68,18 @@ export default function MarketplacePage() {
 
     try {
       setInstalling(slug);
-      notify('info', isUpdate ? 'Updating Plugin' : 'Installing Plugin', `${isUpdate ? 'Updating' : 'Downloading and staging'} ${slug}...`);
+      notify('info', isUpdate ? 'Updating Plugin' : 'Installing Plugin', `${isUpdate ? 'Updating' : 'Downloading and staging'} ${slug} v${targetVersion}...`);
 
-      const { operationId } = await PluginInstallOperationService.startMarketplaceInstall(slug);
+      const { operationId } = await PluginInstallOperationService.startMarketplaceInstall(slug, targetVersion);
       // Wait for the background operation to fully complete (handles restart recovery internally)
       await PluginInstallOperationService.waitForCompletion(operationId);
+      await PluginVersionWaitService.waitForInstalledVersion(slug, targetVersion);
 
-      triggerRefresh();
+      if (triggerRefresh) {
+        await Promise.resolve(triggerRefresh());
+      }
       await fetchData(true);
-      notify('success', isUpdate ? 'Update Complete' : 'Installation Complete', `Plugin "${slug}" was ${isUpdate ? 'updated' : 'installed'} successfully.`);
+      notify('success', isUpdate ? 'Update Complete' : 'Installation Complete', `Plugin "${slug}" v${targetVersion} was ${isUpdate ? 'updated' : 'installed'} successfully.`);
     } catch (err: any) {
       console.error('[Marketplace] Installation failed:', err);
       notify('error', isUpdate ? 'Update Failed' : 'Installation Failed', err.message || `Failed to ${isUpdate ? 'update' : 'install'} plugin`);
@@ -173,13 +177,25 @@ export default function MarketplacePage() {
                     </p>
                   </div>
                   
-                  <div className={`flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                       <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
-                       v{plugin.version}
-                     </div>
-                     <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                     <div className="flex items-center gap-1.5 min-w-0">
+                   <div className={`flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {installed ? (
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <FrameworkIcons.Check size={12} className="text-emerald-500/80" />
+                          Installed {installedVersion}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
+                          Available
+                        </div>
+                      )}
+                      <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
+                        Marketplace {plugin.version}
+                      </div>
+                      <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      <div className="flex items-center gap-1.5 min-w-0">
                        <FrameworkIcons.User size={12} className="text-indigo-500/70" />
                        <span className="truncate flex items-center gap-1">
                         {plugin.author || 'Official Developer'}
@@ -204,7 +220,7 @@ export default function MarketplacePage() {
                   {installed && hasUpdate && (
                     <div className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100 shadow-sm'}`}>
                        <div className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                       <span className={`text-[10px] font-bold uppercase tracking-wide leading-none ${theme === 'dark' ? 'text-amber-400' : 'text-amber-700'}`}>New Update v{plugin.version}</span>
+                       <span className={`text-[10px] font-bold uppercase tracking-wide leading-none ${theme === 'dark' ? 'text-amber-400' : 'text-amber-700'}`}>Update {installedVersion} to {plugin.version}</span>
                     </div>
                   )}
 
@@ -219,7 +235,7 @@ export default function MarketplacePage() {
                       </button>
                     ) : hasUpdate ? (
                       <button 
-                        onClick={(e) => handleInstall(e, plugin.slug)}
+                        onClick={(e) => handleInstall(e, plugin.slug, plugin.version)}
                         disabled={!!installing}
                         className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all shadow-lg active:scale-[0.97] bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
@@ -228,7 +244,7 @@ export default function MarketplacePage() {
                        </button>
                     ) : (
                       <button 
-                        onClick={(e) => handleInstall(e, plugin.slug)}
+                        onClick={(e) => handleInstall(e, plugin.slug, plugin.version)}
                         disabled={!!installing}
                         className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all shadow-lg active:scale-[0.97] bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20 hover:-translate-y-1 ${installing === plugin.slug ? 'opacity-70 cursor-not-allowed' : ''}`}
                        >
