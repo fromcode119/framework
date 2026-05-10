@@ -5,10 +5,13 @@ import { ContextHooks } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AuthHooks } from '@/components/use-auth';
-import { RuntimeConstants } from '@fromcode119/core/client';
+import { GlobalReadinessService } from '@/lib/global-readiness-service';
 import type { AdminPluginMetadata } from './plugin-loader.interfaces';
 
 const METADATA_RETRY_COOLDOWN_MS = 15000;
+
+const loadedPluginEntryUrls = new Set<string>();
+const loadedPluginCssUrls = new Set<string>();
 
 let metadataBootstrapPromise: Promise<void> | null = null;
 let metadataBootstrapError: unknown = null;
@@ -109,6 +112,7 @@ export default function PluginLoader() {
     if (typeof window === 'undefined' || isAuthLoading || !user) return;
 
     let cancelled = false;
+    const abortController = new AbortController();
 
     async function loadPlugins() {
       if (!isReady) {
@@ -116,58 +120,11 @@ export default function PluginLoader() {
         return;
       }
 
-      const resolveAdminComponentsModule = () => {
-        const runtimeRegistry = (window as any)?.[RuntimeConstants.GLOBALS.MODULES] || {};
-        return runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] || runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN] || null;
-      };
-
-      // Small delay to ensure GlobalInitializer has run
-      // and window.FrameworkIcons, window.React, window.ReactDOM are available.
-      // Also wait for the runtime import map to be installed so that plugin ESM bundles
-      // can resolve bare specifiers like @fromcode119/sdk/react.
-      let retryCount = 0;
-      while (
-        (!(window as any).FrameworkIcons || 
-         !(window as any).React || 
-         !(window as any).Lucide ||
-         !(window as any).Fromcode ||
-         !resolveAdminComponentsModule() ||
-         typeof resolveAdminComponentsModule()?.Select === 'undefined' ||
-         !document.getElementById('fc-runtime-import-map') ||
-         !(window as any).__fromcodeRuntimeModules?.['@fromcode119/react']) && 
-        retryCount < 200 &&
-        !cancelled
-      ) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-        retryCount++;
-      }
-
-      if (cancelled) return;
-
-      const adminComponentsModule = resolveAdminComponentsModule();
-
-      if (
-        !(window as any).FrameworkIcons ||
-        !(window as any).React ||
-        !(window as any).Lucide ||
-        !(window as any).Fromcode ||
-        !adminComponentsModule ||
-        typeof adminComponentsModule.Select === 'undefined' ||
-        !document.getElementById('fc-runtime-import-map') ||
-        !(window as any).__fromcodeRuntimeModules?.['@fromcode119/react']
-      ) {
-        console.error("[Admin] Required globals not found on window. Plugin loading aborted.", {
-          icons: !!(window as any).FrameworkIcons,
-          react: !!(window as any).React,
-          lucide: !!(window as any).Lucide,
-          bridge: !!(window as any).Fromcode,
-          adminBridge: !!adminComponentsModule,
-          select: typeof adminComponentsModule?.Select !== 'undefined',
-          importMap: !!document.getElementById('fc-runtime-import-map'),
-          reactBridge: !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/react'],
-        });
-        // Schedule a single deduplicated retry. The module-level guard prevents
-        // multiple timers from accumulating across rapid re-renders.
+      try {
+        await GlobalReadinessService.waitForReady(abortController.signal);
+      } catch (err) {
+        if (abortController.signal.aborted) return;
+        console.error('[Admin] Required globals not ready. Scheduling retry.', err);
         if (!globalRetryTimerId) {
           globalRetryTimerId = setTimeout(() => {
             globalRetryTimerId = null;
@@ -176,6 +133,8 @@ export default function PluginLoader() {
         }
         return;
       }
+
+      if (cancelled) return;
 
       try {
         const shouldReuseContextMetadata = refreshVersion === 0 && Array.isArray(registeredPlugins) && registeredPlugins.length > 0;
@@ -220,70 +179,30 @@ export default function PluginLoader() {
             }
           }
 
+          // Pass 1: add all modulepreload and CSS links before any dynamic import
           for (const plugin of plugins) {
-            // Load UI entry points if defined (Phase 4)
             const entryUrl = plugin.ui?.entryUrl;
             if (entryUrl) {
               const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
               const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
-              
-              // 1. Module Preload (only if it doesn't exist)
-              if (!document.querySelector(`link[href="${src}"][rel="modulepreload"]`)) {
-                // Remove old reloads
-                const oldPreloads = document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`);
-                oldPreloads.forEach(el => el.remove());
-
+              if (!loadedPluginEntryUrls.has(src)) {
+                document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`).forEach(el => el.remove());
                 const link = document.createElement('link');
                 link.rel = 'modulepreload';
                 link.href = src;
                 link.setAttribute('data-plugin', plugin.slug);
                 document.head.appendChild(link);
               }
-
-              // 2. Dynamic Import to handle both side-effects and structured exports (slots)
-              import(/* webpackIgnore: true */ src).then(module => {
-                if (module.init) module.init();
-                
-                // If the module exports a "slots" object, register them automatically
-                if (module.slots) {
-                  Object.entries(module.slots).forEach(([slotName, config]: [string, any]) => {
-                    const component = typeof config === 'function' ? config : config.component;
-                    const priority = config.priority || 0;
-                    registerSlotComponent(slotName, component, plugin.slug, priority);
-                  });
-                }
-              }).catch(err => {
-                console.warn(`[Admin] Failed to dynamic import plugin ${plugin.slug}:`, err);
-                
-                // Fallback: regular script tag if import fails (legacy or side-effect only)
-                if (!document.querySelector(`script[src="${src}"]`)) {
-                   // Remove old reloads
-                   const oldScripts = document.querySelectorAll(`script[data-plugin="${plugin.slug}"][data-type="ui-entry"]`);
-                   oldScripts.forEach(el => el.remove());
-
-                  const script = document.createElement('script');
-                  script.type = 'module';
-                  script.src = src;
-                  script.async = true;
-                  script.setAttribute('data-plugin', plugin.slug);
-                  script.setAttribute('data-type', 'ui-entry');
-                  document.body.appendChild(script);
-                }
-              });
             }
 
-            // Load CSS if defined
             if (plugin.ui?.cssUrls) {
               plugin.ui.cssUrls.forEach((cssUrl, index) => {
                 const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
                 const href = `${AdminConstants.API_BASE_URL}${cssUrl}${cacheBreaker}`;
                 console.debug(`[Admin] Loading plugin CSS from: ${href}`);
-                
-                if (!document.querySelector(`link[href="${href}"]`)) {
-                  // Remove old CSS versions
-                  const oldCSS = document.querySelectorAll(`link[rel="stylesheet"][data-plugin="${plugin.slug}"][data-index="${index}"]`);
-                  oldCSS.forEach(el => el.remove());
-
+                if (!loadedPluginCssUrls.has(href)) {
+                  loadedPluginCssUrls.add(href);
+                  document.querySelectorAll(`link[rel="stylesheet"][data-plugin="${plugin.slug}"][data-index="${index}"]`).forEach(el => el.remove());
                   const link = document.createElement('link');
                   link.rel = 'stylesheet';
                   link.href = href;
@@ -293,6 +212,39 @@ export default function PluginLoader() {
                 }
               });
             }
+          }
+
+          // Pass 2: fire all dynamic imports concurrently
+          for (const plugin of plugins) {
+            const entryUrl = plugin.ui?.entryUrl;
+            if (!entryUrl) continue;
+            const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
+            const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
+            if (loadedPluginEntryUrls.has(src)) continue;
+            loadedPluginEntryUrls.add(src);
+
+            import(/* webpackIgnore: true */ src).then(module => {
+              if (module.init) module.init();
+              if (module.slots) {
+                Object.entries(module.slots).forEach(([slotName, config]: [string, any]) => {
+                  const component = typeof config === 'function' ? config : config.component;
+                  const priority = config.priority || 0;
+                  registerSlotComponent(slotName, component, plugin.slug, priority);
+                });
+              }
+            }).catch(err => {
+              console.warn(`[Admin] Failed to dynamic import plugin ${plugin.slug}:`, err);
+              if (!document.querySelector(`script[src="${src}"]`)) {
+                document.querySelectorAll(`script[data-plugin="${plugin.slug}"][data-type="ui-entry"]`).forEach(el => el.remove());
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.src = src;
+                script.async = true;
+                script.setAttribute('data-plugin', plugin.slug);
+                script.setAttribute('data-type', 'ui-entry');
+                document.body.appendChild(script);
+              }
+            });
           }
         }
 
@@ -305,6 +257,7 @@ export default function PluginLoader() {
 
     return () => {
       cancelled = true;
+      abortController.abort();
       if (globalRetryTimerId) {
         clearTimeout(globalRetryTimerId);
         globalRetryTimerId = null;

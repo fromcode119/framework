@@ -74,7 +74,9 @@ export class ThemeInstallerService {
       await this.installDependencies(installedManifest);
       return installedManifest;
     } finally {
-      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch { /* no-op */ }
+      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {
+        this.logger.warn(`Failed to clean up temp dir ${tempDir}: ${(e as Error).message}`);
+      }
     }
   }
 
@@ -231,7 +233,10 @@ export class ThemeInstallerService {
       } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }
-    } catch { return null; }
+    } catch (e) {
+      this.logger.warn(`Failed to read manifest from bundled archive "${archivePath}": ${(e as Error).message}`);
+      return null;
+    }
   }
 
   private isSupportedPluginArchive(filePath: string): boolean {
@@ -243,7 +248,7 @@ export class ThemeInstallerService {
     for (const file of fs.readdirSync(src)) {
       const s = path.join(src, file), d = path.join(dest, file);
       if (fs.statSync(s).isDirectory()) { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); this.moveDir(s, d); }
-      else { try { fs.renameSync(s, d); } catch { fs.copyFileSync(s, d); fs.unlinkSync(s); } }
+      else { try { fs.renameSync(s, d); } catch { this.logger.debug(`Cross-device move: falling back to copy+delete for ${s}`); fs.copyFileSync(s, d); fs.unlinkSync(s); } }
     }
   }
 }

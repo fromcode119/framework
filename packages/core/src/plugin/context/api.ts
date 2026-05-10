@@ -97,6 +97,7 @@ export class ApiContextProxy {
             return originalHandler(req, res, next);
           };
 
+          config.pluginSlug = plugin.manifest.slug;
           manager.middlewares.register(config);
           pluginLogger.debug(`Registered global middleware: ${config.id} (${config.stage})`);
         }

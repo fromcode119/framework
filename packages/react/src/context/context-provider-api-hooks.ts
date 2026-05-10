@@ -336,11 +336,13 @@ export class ContextProviderApiHooks {
 
             const theme = data.activeTheme;
             if (theme.ui?.css) {
+              const cssRegistry = ((window as any).__fromcodeLoadedThemeCss ||= new Set<string>()) as Set<string>;
               theme.ui.css.forEach((cssPath: string) => {
                 const fullUrl = cssPath.startsWith('http')
                   ? cssPath
                   : ApiPathUtils.themeUiAssetUrl(base, theme.slug, cssPath);
-                if (!document.querySelector(`link[href="${fullUrl}"]`)) {
+                if (!cssRegistry.has(fullUrl)) {
+                  cssRegistry.add(fullUrl);
                   const link = document.createElement('link');
                   link.rel = 'stylesheet';
                   link.href = fullUrl;

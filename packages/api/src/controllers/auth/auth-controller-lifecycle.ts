@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PluginManager } from '@fromcode119/core';
+import { PluginManager, SecretService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from './auth-controller-registration';
@@ -186,7 +186,7 @@ export class AuthControllerLifecycle extends AuthControllerRegistration {
               key: `user:${user.id}:totp_secret`
             });
 
-            if (secretRow?.value && this.verifyTOTP(secretRow.value, String(totpToken).trim())) {
+            if (secretRow?.value && this.verifyTOTP(SecretService.decrypt(secretRow.value), String(totpToken).trim())) {
               twoFactorVerified = true;
               twoFactorMethod = 'totp';
             }

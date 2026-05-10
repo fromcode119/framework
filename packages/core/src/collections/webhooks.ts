@@ -47,7 +47,7 @@ export class WebhooksCollection {
       },
       {
         name: 'secret',
-        type: 'text',
+        type: 'password',
         admin: {
           description: 'Used to sign the payload (X-Fromcode-Signature)',
         }

@@ -6,6 +6,7 @@ export interface MiddlewareConfig {
   priority?: number;
   stage: MiddlewareStage;
   handler: (req: any, res: any, next: (err?: any) => void) => void;
+  pluginSlug?: string;
 }
 
 export interface ThemeManifest {
@@ -50,8 +51,8 @@ export interface ThemeManifest {
     required?: boolean;
   }[];
   runtimeModules?: Record<string, string | { keys?: string[], type?: 'icon' | 'lib', url?: string }>;
-  ui: {
-    entry: string;
+  ui?: {
+    entry?: string;
     css?: string[];
   };
 }

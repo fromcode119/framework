@@ -1,4 +1,6 @@
 import React from 'react';
+import { PluginStateContext } from './plugin-state-context';
+import { TranslationContext } from './translation-context';
 import { PluginContextRegistry } from '../plugin-context';
 import type { PluginContextValue } from '../context.interfaces';
 
@@ -13,12 +15,11 @@ export class ContextBridgeHooks {
   }
 
   static useTranslationBridgeHook() {
-    const { t, locale, setLocale } = ContextBridgeHooks.usePluginsBridgeHook();
-    return { t, locale, setLocale };
+    return React.useContext(TranslationContext.Context);
   }
 
   static usePluginStateBridgeHook(pluginSlug: string, key?: string) {
-    const { pluginState, setPluginState } = ContextBridgeHooks.usePluginsBridgeHook();
+    const { pluginState, setPluginState } = React.useContext(PluginStateContext.Context);
     const state = pluginState[pluginSlug] || {};
 
     const setter = React.useCallback(

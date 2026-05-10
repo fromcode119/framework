@@ -14,7 +14,7 @@ interface TagFieldLocalProps {
 }
 
 export const TagFieldLocal: React.FC<TagFieldLocalProps> = ({ field, value, onChange, theme, collectionSlug }) => {
-  const { collections } = ContextHooks.usePlugins();
+  const collections = ContextHooks.useCollections();
   const isRelationshipField = field.type === 'relationship';
   const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
   const sourceCollectionSlug = React.useMemo(

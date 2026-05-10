@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { IntegrationStoredProviderService } from '../integration-stored-provider-service';
-import { IntegrationSecretService } from '../integration-secret-service';
+import { SecretService } from '../../security/secret-service';
 import { EmailIntegrationDefinition } from './email-integration-definition';
 import { EmailGateway } from './email-gateway';
 
@@ -96,7 +96,7 @@ describe('EmailIntegrationDefinition', () => {
         pass: 'secret-pass',
       });
       expect(storedConfig.user).toBe('mailer@example.com');
-      expect(storedConfig.pass).toBe(IntegrationSecretService.getSavedSecretMask());
+      expect(storedConfig.pass).toBe(SecretService.getSavedSecretMask());
     } finally {
       if (previousSecretKey === undefined) {
         delete process.env.INTEGRATION_SECRET_KEY;

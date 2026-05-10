@@ -88,6 +88,8 @@ export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
 export { BasePluginRouter } from './base/base-plugin-router';
 export type { BasePluginRouterOptions } from './base/base-plugin-router.interfaces';
 export { PluginDefinitionUtils } from './plugin-definition-utils';
+export { ManifestNormalizer } from './manifest-normalizer';
+export type { PluginManifestInput, ThemeManifestInput } from './manifest-normalizer.types';
 export { PluginHealthResponseBuilder } from './plugin-health-response';
 export { PluginHealthRouteHandler } from './plugin-health-route-handler';
 export type { PluginHealthProbeResult, PluginHealthRouteHandlerOptions } from './plugin-health-route-handler.interfaces';
@@ -108,6 +110,8 @@ export { ProjectPaths } from './config/paths';
 // Integrations
 export { IntegrationManager } from './integrations/integration-manager';
 export { IntegrationRegistry } from './integrations/integration-registry';
+export { SecretService } from './security/secret-service';
+export { IntegrationSecretService } from './integrations/integration-secret-service';
 export type { IntegrationTypeDefinition } from './integrations/integration-registry.interfaces';
 export type { PluginApiResolver } from './plugin-api-resolver.interfaces';
 
@@ -122,6 +126,7 @@ export { PluginStateService } from './plugin/services/plugin-state-service';
 export { MarketplaceCatalogService } from './marketplace/marketplace-catalog-service';
 export { RuntimeService } from './plugin/services/runtime-service';
 export { LifecycleService } from './plugin/services/lifecycle-service';
+export { MiddlewareManager } from './plugin/services/middleware-manager';
 export { AdminMetadataService } from './plugin/services/admin-metadata-service';
 
 // Security (Server-only)

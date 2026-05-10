@@ -26,6 +26,7 @@ const manifestSchema = z.object({
 
 import type { DependencyIssue } from './discovery-service.interfaces';
 import { PluginDependencyInstallerService } from './plugin-dependency-installer-service';
+import { ManifestNormalizer } from '../../manifest-normalizer';
 
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
@@ -133,8 +134,8 @@ export class DiscoveryService {
           let manifest: any;
           try {
             const manifestContent = fs.readFileSync(manifestPath, 'utf8');
-            manifest = JSON.parse(manifestContent);
-            
+            manifest = ManifestNormalizer.plugin(JSON.parse(manifestContent), pluginPath);
+
             // Normalize slug to lowercase early to avoid casing issues throughout the system
             if (manifest.slug) {
               manifest.slug = manifest.slug.toLowerCase();

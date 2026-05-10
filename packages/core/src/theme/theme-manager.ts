@@ -1,4 +1,5 @@
 import { ThemeManifest, IDatabaseManager } from '../types';
+import { ManifestNormalizer } from '../manifest-normalizer';
 import { SystemConstants } from '../constants';
 import path from 'path';
 import fs from 'fs';
@@ -114,7 +115,7 @@ export class ThemeManager {
       const manifestPath = path.join(themePath, 'theme.json');
       if (fs.existsSync(manifestPath)) {
         try {
-          const manifest: ThemeManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themePath);
           this.themes.set(manifest.slug, manifest);
           this.logger.info(`Discovered theme: ${manifest.slug} v${manifest.version}`);
         } catch (e) {
@@ -132,7 +133,7 @@ export class ThemeManager {
         return null;
       }
 
-      const manifest: ThemeManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themeDirectory);
       this.themes.set(manifest.slug, manifest);
       return manifest;
     } catch (error) {
@@ -169,6 +170,7 @@ export class ThemeManager {
     await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: timestamp });
     this.activeTheme = slug;
     this.logger.info(`Theme "${slug}" activated.`);
+    this.pluginManager?.emit?.('theme:activated', { slug, manifest });
   }
 
   async disableTheme(slug: string) {
@@ -186,6 +188,7 @@ export class ThemeManager {
     }
 
     this.logger.info(`Theme "${slug}" disabled.`);
+    this.pluginManager?.emit?.('theme:deactivated', { slug });
   }
 
   async resetTheme(slug: string, options?: { runSeeds?: boolean; resetConfig?: boolean }) {
@@ -265,7 +268,7 @@ export class ThemeManager {
 
   private generateCssVariables(variables: Record<string, string>): string {
     const lines = Object.entries(variables).map(([key, value]) => {
-      const cssKey = `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+      const cssKey = key.startsWith('--') ? key : `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
       return `${cssKey}: ${value};`;
     });
     return `:root {\n  ${lines.join('\n  ')}\n}`;

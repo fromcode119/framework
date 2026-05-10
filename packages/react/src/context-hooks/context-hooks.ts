@@ -1,4 +1,9 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { CollectionsContext } from '../context/collections-context';
+import { MenuContext } from '../context/menu-context';
+import { PluginStateContext } from '../context/plugin-state-context';
+import { SettingsContext } from '../context/settings-context';
+import { TranslationContext } from '../context/translation-context';
 import { PluginContextRegistry } from '../plugin-context';
 import { ContextHooksPluginStateService } from './context-hooks-plugin-state-service';
 import { ContextHooksSdkService } from './context-hooks-sdk-service';
@@ -14,8 +19,7 @@ export class ContextHooks {
   }
 
   static useTranslation() {
-    const { t, locale, setLocale } = ContextHooks.usePlugins();
-    return { t, locale, setLocale };
+    return useContext(TranslationContext.Context);
   }
 
   static useAPI() {
@@ -78,8 +82,41 @@ export class ContextHooks {
     return useMemo(() => sdk.getSettings(), [sdk]);
   }
 
+  static useCollections() {
+    return useContext(CollectionsContext.Context);
+  }
+
+  static useMenuItems() {
+    return useContext(MenuContext.Context);
+  }
+
+  static useGlobalSettings() {
+    return useContext(SettingsContext.Context);
+  }
+
   static usePluginState(pluginSlug: string, key?: string) {
-    const { pluginState, setPluginState } = ContextHooks.usePlugins();
+    const { pluginState, setPluginState } = useContext(PluginStateContext.Context);
     return ContextHooksPluginStateService.usePluginState(pluginState, setPluginState, pluginSlug, key);
+  }
+
+  static useCollectionData<T = any>(slug: string): { items: T[]; loading: boolean; error: Error | null } {
+    const { api } = ContextHooks.usePlugins();
+    const apiRef = useRef(api);
+    useEffect(() => { apiRef.current = api; });
+
+    const [items, setItems] = useState<T[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+      let cancelled = false;
+      setLoading(true);
+      apiRef.current.get(`/api/v1/${slug}`)
+        .then((data: any) => { if (!cancelled) { setItems(data?.docs ?? []); setLoading(false); } })
+        .catch((err: any) => { if (!cancelled) { setError(err instanceof Error ? err : new Error(String(err))); setLoading(false); } });
+      return () => { cancelled = true; };
+    }, [slug]);
+
+    return { items, loading, error };
   }
 }

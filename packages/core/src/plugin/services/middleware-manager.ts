@@ -41,6 +41,10 @@ export class MiddlewareManager {
     await run();
   }
 
+  public unregisterByPlugin(pluginSlug: string): void {
+    this.middlewares = this.middlewares.filter(m => m.pluginSlug !== pluginSlug);
+  }
+
   public clear(): void {
     this.middlewares = [];
   }

@@ -2,7 +2,7 @@ import { Logger } from '../logging';
 import { SystemConstants } from '../constants';
 import { CoreServices } from '../services';
 import { IntegrationProfileService } from './integration-profile-service';
-import { IntegrationSecretService } from './integration-secret-service';
+import { SecretService } from '../security/secret-service';
 import {
   IntegrationProviderDefinition,
   IntegrationStoredProvider,
@@ -202,7 +202,7 @@ export class IntegrationStoredProviderService {
 
     const resolvedConfig: Record<string, any> = { ...(config || {}) };
     for (const fieldName of passwordFields) {
-      resolvedConfig[fieldName] = IntegrationSecretService.decrypt(resolvedConfig[fieldName]);
+      resolvedConfig[fieldName] = SecretService.decrypt(resolvedConfig[fieldName]);
     }
     return resolvedConfig;
   }
@@ -252,7 +252,7 @@ export class IntegrationStoredProviderService {
       const incomingValue = mergedConfig[fieldName];
       const existingValue = resolvedExistingConfig[fieldName];
       const hasExistingSecret = String(existingValue || '').trim().length > 0;
-      const keepExisting = IntegrationSecretService.isSavedSecretMask(incomingValue)
+      const keepExisting = SecretService.isSavedSecretMask(incomingValue)
         || (String(incomingValue || '').trim() === '' && hasExistingSecret);
 
       if (keepExisting) {
@@ -263,7 +263,7 @@ export class IntegrationStoredProviderService {
     const storedConfig: Record<string, any> = { ...mergedConfig };
     for (const fieldName of passwordFields) {
       const secretValue = String(mergedConfig[fieldName] || '').trim();
-      storedConfig[fieldName] = secretValue ? IntegrationSecretService.encrypt(secretValue) : '';
+      storedConfig[fieldName] = secretValue ? SecretService.encrypt(secretValue) : '';
     }
 
     return storedConfig;
@@ -281,7 +281,7 @@ export class IntegrationStoredProviderService {
     const sanitizedConfig: Record<string, any> = { ...(config || {}) };
     for (const fieldName of passwordFields) {
       if (Object.prototype.hasOwnProperty.call(sanitizedConfig, fieldName)) {
-        sanitizedConfig[fieldName] = IntegrationSecretService.maskIfPresent(sanitizedConfig[fieldName]);
+        sanitizedConfig[fieldName] = SecretService.maskIfPresent(sanitizedConfig[fieldName]);
       }
     }
     return sanitizedConfig;

@@ -1,6 +1,8 @@
 import { HookManager } from '../hooks/hook-manager';
 import { Logger } from '../logging';
 import { PluginSignatureService } from '../security/plugin-signature-service';
+import { SecretService } from '../security/secret-service';
+import { HookEventUtils } from '../hook-events';
 import { WebhooksCollection } from '../collections/webhooks';
 
 export class WebhookService {
@@ -29,6 +31,13 @@ export class WebhookService {
         // Actually, a better way is to have HookManager support a middleware or a global listener.
         
         await this.refreshCache();
+
+        this.hooks.on(HookEventUtils.beforeSave(WebhooksCollection.slug), (payload: any) => {
+            if (payload?.secret && !SecretService.isEncryptedValue(payload.secret)) {
+                payload.secret = SecretService.encrypt(payload.secret);
+            }
+            return payload;
+        });
     }
 
     private async refreshCache() {
@@ -87,7 +96,8 @@ export class WebhookService {
         };
 
         if (webhook.secret) {
-            headers['X-Fromcode-Signature'] = PluginSignatureService.sign(body, webhook.secret);
+            const rawSecret = SecretService.decrypt(webhook.secret);
+            headers['X-Fromcode-Signature'] = PluginSignatureService.sign(body, rawSecret);
         }
 
         try {

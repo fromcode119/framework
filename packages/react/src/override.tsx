@@ -1,41 +1,36 @@
 "use client";
 
 import React from 'react';
-import { PluginsProvider } from './context';
-import type { PluginContextValue } from './context.interfaces';
+import { OverridesContext } from './context/overrides-context';
 import type { OverrideProps } from './override.interfaces';
 
 export class Override extends React.Component<OverrideProps> {
-  static contextType = PluginsProvider.PluginContext;
-
-  declare context: PluginContextValue | null;
-
   render(): React.ReactNode {
-    const item = this.context?.overrides[this.props.name];
-    const normalizedContent = this.getNormalizedContent();
+    return (
+      <OverridesContext.Context.Consumer>
+        {(overrides) => {
+          const item = overrides[this.props.name];
+          const normalizedContent = React.Children.toArray(this.props.children ?? this.props.fallback);
 
-    if (!item?.component) {
-      return <>{normalizedContent}</>;
-    }
+          if (!item?.component) return <>{normalizedContent}</>;
 
-    if (!Override.isValidComponent(item.component)) {
-      console.warn(`[Override] Component for override "${this.props.name}" is of invalid type: ${typeof item.component}. Skipping.`);
-      return <>{normalizedContent}</>;
-    }
+          if (!Override.isValidComponent(item.component)) {
+            console.warn(`[Override] Component for override "${this.props.name}" is of invalid type: ${typeof item.component}. Skipping.`);
+            return <>{normalizedContent}</>;
+          }
 
-    try {
-      return React.createElement(item.component, {
-        ...this.props.props,
-        key: `${item.pluginSlug}-${this.props.name}`
-      }, normalizedContent);
-    } catch (error) {
-      console.error(`[Override] Runtime error in override component "${this.props.name}":`, error);
-      return <>{normalizedContent}</>;
-    }
-  }
-
-  private getNormalizedContent(): React.ReactNode {
-    return React.Children.toArray(this.props.children ?? this.props.fallback);
+          try {
+            return React.createElement(item.component, {
+              ...this.props.props,
+              key: `${item.pluginSlug}-${this.props.name}`,
+            }, normalizedContent);
+          } catch (error) {
+            console.error(`[Override] Runtime error in override component "${this.props.name}":`, error);
+            return <>{normalizedContent}</>;
+          }
+        }}
+      </OverridesContext.Context.Consumer>
+    );
   }
 
   private static isValidComponent(component: any): boolean {

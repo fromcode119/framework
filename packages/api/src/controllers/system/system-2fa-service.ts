@@ -1,7 +1,7 @@
 /** SystemTwoFactorService — 2FA management endpoints. Extracted from SystemController (ARC-007). */
 
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/core';
+import { SystemConstants, SecretService } from '@fromcode119/core';
 import { createHash, randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
@@ -76,11 +76,12 @@ export class SystemTwoFactorService {
     const secret = speakeasy.generateSecret({ name: `Fromcode (${user.email})`, length: 32 });
     const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
     const key = `user:${userId}:totp_secret_pending`;
+    const encryptedSecret = SecretService.encrypt(secret.base32);
     const existingSecret = await this.db.findOne(SystemConstants.TABLE.META, { key });
     if (existingSecret) {
-      await this.db.update(SystemConstants.TABLE.META, { key }, { value: secret.base32 });
+      await this.db.update(SystemConstants.TABLE.META, { key }, { value: encryptedSecret });
     } else {
-      await this.db.insert(SystemConstants.TABLE.META, { key, value: secret.base32 });
+      await this.db.insert(SystemConstants.TABLE.META, { key, value: encryptedSecret });
     }
 
     return { secret: secret.base32, qrCode };
@@ -92,7 +93,8 @@ export class SystemTwoFactorService {
       throw new Error('2FA setup not initiated. Please start setup first.');
     }
 
-    const verified = speakeasy.totp.verify({ secret: secretRow.value, encoding: 'base32', token, window: 1 });
+    const totpSecret = SecretService.decrypt(secretRow.value);
+    const verified = speakeasy.totp.verify({ secret: totpSecret, encoding: 'base32', token, window: 1 });
     if (!verified) {
       throw new Error('Invalid verification code');
     }
