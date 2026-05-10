@@ -220,6 +220,10 @@ export class AuthManager {
       return false;
     }
 
+    if (/\.(?:css|js|map|png|jpe?g|gif|svg|ico|woff2?|ttf|eot)$/i.test(path)) {
+      return false;
+    }
+
     const lastSegment = path.split('/').filter(Boolean).pop() || '';
     return lastSegment !== RouteConstants.SEGMENTS.STATUS.slice(1)
       && lastSegment !== RouteConstants.SEGMENTS.HEALTH.slice(1)
