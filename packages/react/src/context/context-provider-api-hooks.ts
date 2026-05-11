@@ -11,6 +11,34 @@ import type { CollectionMetadata, SecondaryPanelState } from '../context.interfa
 import { ContextProviderStateService } from './context-provider-state-service';
 
 export class ContextProviderApiHooks {
+  private static compareThemeEntryUrls(leftUrl: string, rightUrl: string): number {
+    const leftVersion = ContextProviderApiHooks.parseThemeEntryVersion(leftUrl);
+    const rightVersion = ContextProviderApiHooks.parseThemeEntryVersion(rightUrl);
+    const maxLength = Math.max(leftVersion.length, rightVersion.length);
+
+    for (let index = 0; index < maxLength; index += 1) {
+      const leftPart = leftVersion[index] ?? 0;
+      const rightPart = rightVersion[index] ?? 0;
+      if (leftPart !== rightPart) {
+        return leftPart > rightPart ? 1 : -1;
+      }
+    }
+
+    return leftUrl.localeCompare(rightUrl);
+  }
+
+  private static parseThemeEntryVersion(url: string): number[] {
+    try {
+      const parsedUrl = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+      return String(parsedUrl.searchParams.get('v') || '')
+        .split('.')
+        .map((part) => Number(part))
+        .filter((part) => Number.isFinite(part));
+    } catch {
+      return [];
+    }
+  }
+
   static useApiRuntime(args: {
     apiUrl: string;
     clientType: 'admin-ui' | 'frontend-ui';
@@ -216,9 +244,20 @@ export class ContextProviderApiHooks {
         ? themeEntry
         : ApiPathUtils.themeUiAssetUrl(baseUrl, themeSlug, themeEntry);
       const registry = ((window as any).__fromcodeLoadedThemeEntries ||= new Set<string>()) as Set<string>;
+      const slugRegistry = ((window as any).__fromcodeLoadedThemeEntryUrls ||= new Map<string, string>()) as Map<string, string>;
+      const existingEntryUrl = slugRegistry.get(themeSlug) || '';
+      if (existingEntryUrl && existingEntryUrl !== entryUrl) {
+        const comparison = ContextProviderApiHooks.compareThemeEntryUrls(existingEntryUrl, entryUrl);
+        if (comparison >= 0) {
+          return;
+        }
+      }
       if (registry.has(entryUrl)) {
+        slugRegistry.set(themeSlug, entryUrl);
         return;
       }
+
+      slugRegistry.set(themeSlug, entryUrl);
 
       const preloadSelector = `link[rel="modulepreload"][href="${entryUrl}"]`;
       if (!document.head.querySelector(preloadSelector)) {
@@ -226,6 +265,7 @@ export class ContextProviderApiHooks {
         preloadLink.rel = 'modulepreload';
         preloadLink.href = entryUrl;
         preloadLink.setAttribute('data-theme-entry-preload', entryUrl);
+        preloadLink.setAttribute('data-theme-slug', themeSlug);
         document.head.appendChild(preloadLink);
       }
 

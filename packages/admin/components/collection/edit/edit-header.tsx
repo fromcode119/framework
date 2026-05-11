@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ interface EditHeaderProps {
   changeSummary: string;
   setChangeSummary: (val: string) => void;
   formData: any;
+  setFormData: (value: any) => void;
   getPreviewUrl: () => string;
   showPreview: boolean;
   statusOptions: { label: string; value: string }[];
@@ -40,6 +42,7 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
   changeSummary,
   setChangeSummary,
   formData,
+  setFormData,
   getPreviewUrl,
   showPreview,
   statusOptions,
@@ -133,7 +136,16 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
                 />
               </div>
             )}
-            
+
+            <Slot
+              name={`admin.collection.${slug}.edit.header.actions`}
+              props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
+            />
+            <Slot
+              name="admin.collection.edit.header.actions"
+              props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
+            />
+             
             {!hideHeaderPrimaryAction && (
               <Button 
                 className="h-10 px-6 rounded-lg font-semibold text-[10px] shadow-lg shadow-indigo-600/20" 

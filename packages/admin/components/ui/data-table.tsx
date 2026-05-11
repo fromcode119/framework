@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { FrameworkIcons } from '@/lib/icons';
 
 interface Column<T> {
@@ -83,6 +83,22 @@ export function DataTable<T extends { id: any }>({
   };
 
   const totalPages = Math.ceil(totalDocs / limit);
+  const startRecord = totalDocs > 0 ? ((page - 1) * limit) + 1 : 0;
+  const endRecord = totalDocs > 0 ? Math.min(page * limit, totalDocs) : 0;
+  const maxPageButtons = 5;
+  const windowStart = totalPages <= maxPageButtons
+    ? 1
+    : Math.min(
+        Math.max(1, page - Math.floor(maxPageButtons / 2)),
+        totalPages - maxPageButtons + 1,
+      );
+  const windowEnd = totalPages <= maxPageButtons
+    ? totalPages
+    : Math.min(totalPages, windowStart + maxPageButtons - 1);
+  const visiblePages = Array.from(
+    { length: Math.max(0, windowEnd - windowStart + 1) },
+    (_, index) => windowStart + index,
+  );
 
   return (
     <div className={`flex flex-col w-full h-full transition-all duration-300 ${loading ? 'opacity-60 pointer-events-none' : ''}`}>
@@ -206,7 +222,7 @@ export function DataTable<T extends { id: any }>({
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-8 py-5 border-t transition-all bg-slate-50/50 border-slate-100 dark:bg-slate-950/40 dark:border-slate-800/50">
           <p className="text-[12px] font-semibold text-slate-400 tracking-wide">
-            Showing <span className="text-slate-900 dark:text-white">{data.length}</span> of <span className="text-slate-900 dark:text-white">{totalDocs}</span> records
+            Showing <span className="text-slate-900 dark:text-white">{startRecord}-{endRecord}</span> of <span className="text-slate-900 dark:text-white">{totalDocs}</span> records
           </p>
           
           <div className="flex items-center gap-2">
@@ -219,24 +235,43 @@ export function DataTable<T extends { id: any }>({
             </button>
             
             <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = i + 1;
-                // Simple logic for showing pages around current page could be added here
-                return (
+              {windowStart > 1 && (
+                <>
                   <button
-                    key={pageNum}
-                    onClick={() => onPageChange?.(pageNum)}
-                    className={`h-9 w-9 text-[11px] font-bold rounded-lg transition-all ${
-                      page === pageNum 
-                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
-                        : 'bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent'
-                    }`}
+                    onClick={() => onPageChange?.(1)}
+                    className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent"
                   >
-                    {pageNum}
+                    1
                   </button>
-                );
-              })}
-              {totalPages > 5 && <span className="text-slate-400 mx-1">...</span>}
+                  {windowStart > 2 && <span className="text-slate-400 mx-1">...</span>}
+                </>
+              )}
+
+              {visiblePages.map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => onPageChange?.(pageNum)}
+                  className={`h-9 w-9 text-[11px] font-bold rounded-lg transition-all ${
+                    page === pageNum
+                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                      : 'bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+
+              {windowEnd < totalPages && (
+                <>
+                  {windowEnd < totalPages - 1 && <span className="text-slate-400 mx-1">...</span>}
+                  <button
+                    onClick={() => onPageChange?.(totalPages)}
+                    className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent"
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
             </div>
 
             <button 

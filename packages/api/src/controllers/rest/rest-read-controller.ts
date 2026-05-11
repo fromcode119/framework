@@ -60,7 +60,7 @@ export class RestReadController {
         }
       }
 
-      const total = await this.runtime.db.count(collection.tableName || collection.slug, { where: whereClause });
+      const total = await this.runtime.db.count(table, { where: whereClause });
       const result = {
         docs: this.runtime.processor.filterHiddenFields(collection, rowsResult, { localeContext, rawLocalized }),
         totalDocs: total,

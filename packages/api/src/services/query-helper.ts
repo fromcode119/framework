@@ -3,6 +3,7 @@ import { DynamicSchema, IDatabaseManager, timestamp, sql } from '@fromcode119/da
 
 export class QueryHelper {
   private static virtualTables: Map<string, any> = new Map();
+  private static readonly searchableFieldTypes = new Set(['text', 'textarea', 'select', 'number']);
 
   /**
    * Generates or retrieves a Drizzle table object for a given collection definition.
@@ -42,11 +43,14 @@ export class QueryHelper {
   public static buildWhereClause(db: IDatabaseManager, collection: Collection, table: any, filters: any, search?: string) {
     const whereChunks: any[] = [];
 
-    // Handle Search (across all text/textarea fields)
-    if (search) {
-      const searchFields = collection.fields.filter(f => f.type === 'text' || f.type === 'textarea');
-      if (searchFields.length > 0) {
-        whereChunks.push(db.or(...searchFields.map(f => db.like(table[f.name], `%${search}%`))));
+    // Handle Search across top-level scalar fields that users expect in the admin table.
+    const normalizedSearch = QueryHelper.normalizeSearch(search);
+    if (normalizedSearch) {
+      const searchClauses = collection.fields
+        .filter((field) => QueryHelper.searchableFieldTypes.has(field.type) && table[field.name])
+        .map((field) => QueryHelper.buildSearchClause(db, table[field.name], normalizedSearch));
+      if (searchClauses.length > 0) {
+        whereChunks.push(db.or(...searchClauses));
       }
     }
 
@@ -63,6 +67,14 @@ export class QueryHelper {
     });
 
     return whereChunks.length > 0 ? db.and(...whereChunks) : undefined;
+  }
+
+  private static buildSearchClause(db: IDatabaseManager, column: any, search: string) {
+    return db.like(sql`LOWER(CAST(${column} AS TEXT))`, `%${search}%`);
+  }
+
+  private static normalizeSearch(search?: string): string {
+    return String(search || '').trim().toLowerCase();
   }
 
   public static buildOrderBy(db: IDatabaseManager, collection: Collection, table: any, sort?: string) {

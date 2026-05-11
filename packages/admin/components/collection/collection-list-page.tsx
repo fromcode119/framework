@@ -405,10 +405,14 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
   // Simple debounce
   useEffect(() => {
     const timer = setTimeout(() => {
+      if (debouncedSearch === search) {
+        return;
+      }
       setDebouncedSearch(search);
+      setPage((prev) => (prev === 1 ? prev : 1));
     }, 500);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [debouncedSearch, search]);
 
   const fetchData = useCallback(async (targetPage = page) => {
     setLoading(true);

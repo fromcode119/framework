@@ -491,6 +491,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         changeSummary={changeSummary}
         setChangeSummary={setChangeSummary}
         formData={formData}
+        setFormData={setFormData}
         getPreviewUrl={getPreviewUrl}
         showPreview={showPreview}
         statusOptions={statusOptions}
