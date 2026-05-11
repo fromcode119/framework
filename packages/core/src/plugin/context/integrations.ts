@@ -21,6 +21,12 @@ export class IntegrationsContextProxy {
           handleViolation(`integration:${typeKey}`);
         }
         return manager.integrations.get(typeKey);
+      },
+      instantiateWithConfig: async (typeKey: string, providerKey: string, config?: Record<string, any>) => {
+        if (!hasCapability(`integration:${typeKey}`) && !hasCapability('integrations')) {
+          handleViolation(`integration:${typeKey}`);
+        }
+        return manager.integrations.instantiateWithConfig(typeKey, providerKey, config || {});
       }
     };
   }

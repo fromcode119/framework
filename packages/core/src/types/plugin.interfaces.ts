@@ -54,6 +54,16 @@ export interface PluginContext {
      * Resolve and instantiate an integration by its type key
      */
     get<T = any>(typeKey: string): Promise<T>;
+
+    /**
+     * Resolve and instantiate an integration from a specific provider config.
+     * Stored password fields are decrypted before provider creation.
+     */
+    instantiateWithConfig<T = any>(
+      typeKey: string,
+      providerKey: string,
+      config?: Record<string, any>
+    ): Promise<{ instance: T; resolved: any }>;
   };
 
   /**
