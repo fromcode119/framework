@@ -64,7 +64,7 @@ export class IntegrationStoredProviderService {
       : existingProviders.concat(nextEntry);
 
     let nextProviders = nextProvidersBase;
-    if (options.makeActive) {
+    if (options.makeActive && !runtime.definition.allowMultipleActiveProviders) {
       const remaining = nextProvidersBase
         .filter((entry) => entry.id !== nextEntry.id)
         .map((entry) => ({ ...entry, enabled: false, updatedAt: nowIso }));

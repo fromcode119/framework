@@ -26,6 +26,7 @@ export interface IntegrationTypeDefinition<TInstance = any> {
   label: string;
   description?: string;
   defaultProvider: string;
+  allowMultipleActiveProviders?: boolean;
   providers?: IntegrationProviderDefinition<TInstance>[];
   resolveFromEnv?: () => { provider?: string; config?: Record<string, any> } | null;
 }
