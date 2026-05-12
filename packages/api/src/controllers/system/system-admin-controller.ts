@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, SystemConstants } from '@fromcode119/core';
 import { SystemControllerRuntime } from './system-controller-runtime';
 
 const WRITABLE_SETTINGS_KEYS = new Set<string>([
@@ -8,6 +8,7 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.SITE_URL,
   SystemConstants.META_KEY.FRONTEND_URL,
   SystemConstants.META_KEY.ADMIN_URL,
+  SystemConstants.META_KEY.DOMAIN_ALIASES,
   SystemConstants.META_KEY.TIMEZONE,
   SystemConstants.META_KEY.PLATFORM_NAME,
   SystemConstants.META_KEY.PLATFORM_DOMAIN,
@@ -93,9 +94,10 @@ export class SystemAdminController {
         return res.status(400).json({ error: `Unknown or read-only settings key(s): ${unknownKeys.join(', ')}` });
       }
 
+      const preparedPayload = await this.prepareSettingsPayload(payload as Record<string, unknown>);
       const timestamp = new Date();
 
-      for (const [key, value] of Object.entries(payload)) {
+      for (const [key, value] of Object.entries(preparedPayload)) {
         const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
         const existing = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
 
@@ -118,6 +120,69 @@ export class SystemAdminController {
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  }
+
+  private async prepareSettingsPayload(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const nextPayload = { ...payload };
+    if (!this.hasPrimaryDomainChange(payload) && !(SystemConstants.META_KEY.DOMAIN_ALIASES in payload)) {
+      return nextPayload;
+    }
+
+    const currentSettings = await this.readCurrentDomainSettings();
+    const mergedAliases = ApplicationDomainSettingsUtils.mergeDomainAliasesForPrimaryChange({
+      currentAliases:
+        SystemConstants.META_KEY.DOMAIN_ALIASES in payload
+          ? payload[SystemConstants.META_KEY.DOMAIN_ALIASES]
+          : currentSettings.domainAliases,
+      previousValues: [
+        currentSettings.siteUrl,
+        currentSettings.frontendUrl,
+        currentSettings.adminUrl,
+        currentSettings.platformDomain,
+      ],
+      nextValues: [
+        nextPayload[SystemConstants.META_KEY.SITE_URL] ?? currentSettings.siteUrl,
+        nextPayload[SystemConstants.META_KEY.FRONTEND_URL] ?? currentSettings.frontendUrl,
+        nextPayload[SystemConstants.META_KEY.ADMIN_URL] ?? currentSettings.adminUrl,
+        nextPayload[SystemConstants.META_KEY.PLATFORM_DOMAIN] ?? currentSettings.platformDomain,
+      ],
+    });
+
+    if (mergedAliases.length > 0 || SystemConstants.META_KEY.DOMAIN_ALIASES in payload) {
+      nextPayload[SystemConstants.META_KEY.DOMAIN_ALIASES] = mergedAliases;
+    }
+
+    return nextPayload;
+  }
+
+  private hasPrimaryDomainChange(payload: Record<string, unknown>): boolean {
+    return [
+      SystemConstants.META_KEY.SITE_URL,
+      SystemConstants.META_KEY.FRONTEND_URL,
+      SystemConstants.META_KEY.ADMIN_URL,
+      SystemConstants.META_KEY.PLATFORM_DOMAIN,
+    ].some((key) => key in payload);
+  }
+
+  private async readCurrentDomainSettings(): Promise<Record<string, string>> {
+    const keys = [
+      SystemConstants.META_KEY.SITE_URL,
+      SystemConstants.META_KEY.FRONTEND_URL,
+      SystemConstants.META_KEY.ADMIN_URL,
+      SystemConstants.META_KEY.PLATFORM_DOMAIN,
+      SystemConstants.META_KEY.DOMAIN_ALIASES,
+    ];
+    const settings = await Promise.all(
+      keys.map((key) => this.runtime.db.findOne(SystemConstants.TABLE.META, { key })),
+    );
+
+    return {
+      siteUrl: String(settings[0]?.value || ''),
+      frontendUrl: String(settings[1]?.value || ''),
+      adminUrl: String(settings[2]?.value || ''),
+      platformDomain: String(settings[3]?.value || ''),
+      domainAliases: String(settings[4]?.value || ''),
+    };
   }
 
   async getFrontendMetadata(req: Request, res: Response) {

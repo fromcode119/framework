@@ -1,5 +1,6 @@
 import { ApiPathUtils } from './api';
 import { ApiVersionUtils } from './api-version';
+import { ApplicationHostUtils } from './application-host-utils';
 import { SystemConstants } from './constants';
 import { PublicRouteConstants } from './public-route-constants';
 import { RuntimeBridge } from './runtime-bridge';
@@ -101,6 +102,28 @@ export class PublicAssetUrlUtils {
 
     if (raw.includes('/') || raw.includes('.')) return raw;
     return '';
+  }
+
+  static appendVersion(url: any, version: any): string {
+    const normalizedUrl = String(url || '').trim();
+    const normalizedVersion = String(version || '').trim();
+    if (!normalizedUrl || !normalizedVersion) {
+      return normalizedUrl;
+    }
+
+    try {
+      const parsedUrl = new URL(
+        normalizedUrl,
+        typeof window !== 'undefined' ? window.location.origin : ApplicationHostUtils.LOCALHOST_ORIGIN,
+      );
+      if (!parsedUrl.searchParams.get('v')) {
+        parsedUrl.searchParams.set('v', normalizedVersion);
+      }
+      return parsedUrl.toString();
+    } catch {
+      const separator = normalizedUrl.includes('?') ? '&' : '?';
+      return `${normalizedUrl}${separator}v=${encodeURIComponent(normalizedVersion)}`;
+    }
   }
 
   private static isDirectUrl(value: string): boolean {

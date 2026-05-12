@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, ThemeManager, Logger, SafeArchive } from '@fromcode119/core';
+import { ApplicationHostUtils } from '@fromcode119/core';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -240,7 +241,7 @@ export class ThemeController {
     }
 
     if (fs.existsSync(absolutePath)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.shouldDisableAssetCache(req)) {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
@@ -256,6 +257,27 @@ export class ThemeController {
     }
 
     res.status(404).end();
+  }
+
+  private shouldDisableAssetCache(req: Request): boolean {
+    if (process.env.NODE_ENV !== 'production') {
+      return true;
+    }
+
+    const configuredUrls = [
+      process.env.API_URL,
+      process.env.FRONTEND_URL,
+      process.env.ADMIN_URL,
+      process.env.MARKETPLACE_URL,
+    ]
+      .map((value) => String(value || '').trim().toLowerCase())
+      .filter(Boolean);
+    if (configuredUrls.some((value) => ApplicationHostUtils.isLocalDevelopmentHostname(value))) {
+      return true;
+    }
+
+    const host = String(req.get('host') || req.get('x-forwarded-host') || '').trim().toLowerCase();
+    return ApplicationHostUtils.isLocalDevelopmentHostname(host);
   }
 
   private async inspectThemeArchive(filePath: string, originalFilename?: string) {

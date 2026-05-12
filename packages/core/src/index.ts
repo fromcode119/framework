@@ -70,6 +70,8 @@ export type { BrowserCookieOptions } from './clients';
 export { RouteUtils } from './route-utils';
 export { UrlUtils } from './url-utils';
 export { ApplicationUrlUtils } from './application-url-utils';
+export { ApplicationHostUtils } from './application-host-utils';
+export { ApplicationDomainSettingsUtils } from './application-domain-settings-utils';
 export { PublicAssetUrlUtils } from './public-asset-url-utils';
 export { ApiVersionUtils } from './api-version';
 export { LocalizationUtils } from './localization';

@@ -62,6 +62,7 @@ export type { BrowserCookieOptions } from '@fromcode119/core/client';
 export { RouteUtils } from '@fromcode119/core/client';
 export { UrlUtils } from '@fromcode119/core/client';
 export { ApplicationUrlUtils } from '@fromcode119/core/client';
+export { ApplicationHostUtils } from '@fromcode119/core/client';
 export { RuntimeLocationUtils } from '@fromcode119/core/client';
 export { PublicAssetUrlUtils } from '@fromcode119/core/client';
 export { ApiVersionUtils } from '@fromcode119/core/client';

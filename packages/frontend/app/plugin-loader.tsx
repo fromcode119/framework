@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import { ContextHooks } from '@fromcode119/react';
 import { ApiPathUtils } from '@fromcode119/core/client';
 import { FrontendApiBaseUrl } from '@/lib/api-base-url';
+import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 
 export default function PluginLoader() {
   const { plugins, activeTheme, api, isReady } = ContextHooks.usePlugins();
@@ -24,10 +25,11 @@ export default function PluginLoader() {
       const themeCss = Array.isArray(theme?.ui?.css) ? theme.ui.css : [];
       themeCss.forEach((style: string) => {
         const href = style.startsWith('http') ? style : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, style);
-        if (document.head.querySelector(`link[href="${href}"]`)) return;
+        const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, theme.version);
+        if (document.head.querySelector(`link[href="${versionedHref}"]`)) return;
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = href;
+        link.href = versionedHref;
         document.head.appendChild(link);
       });
 
@@ -107,8 +109,9 @@ export default function PluginLoader() {
         const themeEntryUrl = themeEntry.startsWith('http')
           ? themeEntry
           : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, themeEntry);
+        const versionedThemeEntryUrl = FrontendAssetVersionUrlService.appendVersion(themeEntryUrl, theme.version);
         const themeModuleKey = `theme:${theme.slug}:${themeEntry}`;
-        void loadModule(themeModuleKey, themeEntryUrl);
+        void loadModule(themeModuleKey, versionedThemeEntryUrl);
       }
     }
 
@@ -123,7 +126,10 @@ export default function PluginLoader() {
       if (caps.length > 0 && !caps.includes('frontend')) return;
 
       const entryFile = String(plugin.ui.frontendEntry || plugin.ui.entry).trim();
-      const moduleUrl = ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, entryFile);
+      const moduleUrl = FrontendAssetVersionUrlService.appendVersion(
+        ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, entryFile),
+        plugin.version || plugin.manifest?.version,
+      );
       const key = `plugin:${plugin.slug}:${entryFile}`;
       const strategy = String(plugin?.ui?.loadStrategy || 'eager').trim();
 
@@ -147,10 +153,11 @@ export default function PluginLoader() {
       const cssList = Array.isArray(css) ? css : [css];
       cssList.forEach((style: string) => {
         const href = ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, style);
-        if (document.head.querySelector(`link[href="${href}"]`)) return;
+        const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, plugin.version || plugin.manifest?.version);
+        if (document.head.querySelector(`link[href="${versionedHref}"]`)) return;
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = href;
+        link.href = versionedHref;
         document.head.appendChild(link);
       });
     });

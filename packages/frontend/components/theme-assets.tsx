@@ -1,6 +1,7 @@
 import { preconnect, preload } from 'react-dom';
 import { ServerApiUtils } from '@/lib/server-api';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
+import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 import { ApiPathUtils } from '@fromcode119/core/client';
 
 /**
@@ -43,6 +44,7 @@ export default async function ThemeAssets() {
     const entryUrl = rawEntryUrl
       ? (absoluteEntryUrl || ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, rawEntryUrl))
       : '';
+    const versionedEntryUrl = FrontendAssetVersionUrlService.appendVersion(entryUrl, theme.version);
 
     // Tell browser to preconnect to API origin early — reduces DNS+TCP overhead
     // for all API calls (plugin bundles, theme JS, images, endpoints).
@@ -100,11 +102,12 @@ export default async function ThemeAssets() {
         const internalBase = ServerApiUtils.buildInternalApiBaseUrl();
         const cssResults = await Promise.all(
           (theme.ui.css as string[]).map(async (cssPath) => {
-            const publicHref = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath);
-            const internalHref = publicHref.replace(apiUrl, internalBase);
-            const response = await fetch(internalHref, { next: { revalidate: 3600 } });
-            return response.ok ? response.text() : Promise.resolve('');
-          })
+              const publicHref = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath);
+              const versionedPublicHref = FrontendAssetVersionUrlService.appendVersion(publicHref, theme.version);
+              const internalHref = versionedPublicHref.replace(apiUrl, internalBase);
+              const response = await fetch(internalHref, { next: { revalidate: 3600 } });
+              return response.ok ? response.text() : Promise.resolve('');
+            })
         );
         inlinedCss = cssResults.join('\n');
       } catch {
@@ -115,7 +118,8 @@ export default async function ThemeAssets() {
     const fallbackCssLinks = cssLoadFailed && Array.isArray(theme.ui?.css)
       ? (theme.ui.css as string[]).map((cssPath) => {
           const href = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath);
-          return <link key={href} rel="stylesheet" href={href} />;
+          const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, theme.version);
+          return <link key={versionedHref} rel="stylesheet" href={versionedHref} />;
         })
       : [];
 
@@ -142,14 +146,14 @@ export default async function ThemeAssets() {
         {cssVariables ? <style id="fc-theme-variables" dangerouslySetInnerHTML={{ __html: cssVariables }} /> : null}
         {inlinedCss ? <style data-theme={theme.slug} dangerouslySetInnerHTML={{ __html: inlinedCss }} /> : null}
         {prefetchScript ? <script dangerouslySetInnerHTML={{ __html: prefetchScript }} /> : null}
-        {entryUrl ? <meta name="fromcode:theme-entry" content={entryUrl} /> : null}
-        {entryUrl ? (
+        {versionedEntryUrl ? <meta name="fromcode:theme-entry" content={versionedEntryUrl} /> : null}
+        {versionedEntryUrl ? (
           // Use an inline script to insert the modulepreload link and non-blocking external
           // stylesheets (Google Fonts) so React 19's resource-hoisting cannot interfere.
           // modulepreload: bypasses crossOrigin stripping that would cause credentials-mode mismatch.
           // stylesheets: media="print" trick defers rendering until after fonts load — no FCP penalty.
           <script dangerouslySetInnerHTML={{ __html:
-            `(function(){var l=document.createElement('link');l.rel='modulepreload';l.href=${JSON.stringify(entryUrl)};document.head.appendChild(l);${
+            `(function(){var l=document.createElement('link');l.rel='modulepreload';l.href=${JSON.stringify(versionedEntryUrl)};document.head.appendChild(l);${
               externalStylesheets.length > 0
                 ? externalStylesheets.map((href: string) =>
                     `var f=document.createElement('link');f.rel='stylesheet';f.href=${JSON.stringify(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`

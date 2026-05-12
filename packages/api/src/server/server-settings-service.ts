@@ -67,6 +67,7 @@ export class ServerSettingsService {
         { key: SystemConstants.META_KEY.SITE_URL, value: urlDefaults.siteUrl, description: 'Base URL for the public site.', group: 'General' },
         { key: SystemConstants.META_KEY.FRONTEND_URL, value: urlDefaults.frontendUrl, description: 'The primary URL for your frontend application.', group: 'General' },
         { key: SystemConstants.META_KEY.ADMIN_URL, value: urlDefaults.adminUrl, description: 'The primary URL for your admin dashboard.', group: 'General' },
+        { key: SystemConstants.META_KEY.DOMAIN_ALIASES, value: '[]', description: 'Additional trusted domains kept active during migrations.', group: 'General' },
         { key: SystemConstants.META_KEY.PLATFORM_DOMAIN, value: urlDefaults.platformDomain, description: 'Root domain for the entire platform setup.', group: 'General' },
         { key: SystemConstants.META_KEY.TIMEZONE, value: 'UTC', description: 'Default system timezone.', group: 'General' },
         { key: SystemConstants.META_KEY.ROUTING_HOME_TARGET, value: 'auto', description: 'Homepage route target.', group: 'Routing' },

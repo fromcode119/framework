@@ -1,58 +1,34 @@
 import express from 'express';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import * as http from 'http';
-import dotenv from 'dotenv';
 import { 
   PluginManager, 
   ThemeManager, 
   Logger, 
-  RequestContextUtils,
-  HotReloadService, 
   RecordVersions, 
   WebSocketManager, 
-  EnvConfig,
-  HookAdapterFactory,
-  QueueAdapterFactory,
-  SystemUpdateService,
 } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
-import { systemSessions, eq, and, gt } from '@fromcode119/database';
-import * as path from 'path';
-import * as fs from 'fs';
 import { RESTController } from './controllers/rest/rest-controller';
 import { ApiConfig } from './config/api-config';
-import { ApiUrlUtils } from './utils/url';
-import { AuthRouter } from './routes/auth-router';
-import { PluginAssetRouter } from './routes/plugins/plugin-asset-router';
-import { PluginRouter } from './routes/plugins/plugin-router';
-import { PluginSettingsRouter } from './routes/plugins/plugin-settings-router';
-import { ThemeRouter } from './routes/themes/theme-router';
-import { ThemeAssetRouter } from './routes/themes/theme-asset-router';
-import { MarketplaceRouter } from './routes/marketplace';
-import { SystemRouter } from './routes/system-router';
-import { MediaRouter } from './routes/media-router';
-import { VersioningRouter } from './routes/versioning';
-import { CollectionRouter } from './routes/collection-router';
-import { BaseCollectionRouter } from './routes/base-collection-router';
 import { CoreCollections } from './collections/core';
-import { SwaggerGenerator } from './swagger';
-import { CollectionMiddleware } from './middlewares/collection-middleware';
 import { CSRFMiddleware } from './middlewares/csrf-middleware';
 import { XSSMiddleware } from './middlewares/xss-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from './services/graph-ql-service';
-import { createHandler } from 'graphql-http/lib/use/express';
-import { createHash } from 'crypto';
 import {
+  ApiBootstrapService,
+  ServerCorsSetup,
   ServerAuthSetup,
+  ServerMaintenanceService,
   ServerMiddlewareSetup,
   ServerRoutesSetup,
   ServerSettingsService,
+  ServerUploadsConfigService,
 } from './server/index';
 import { PublicSystemRouteUtils } from './utils/public-system-route-utils';
 import { WebhookRouteUtils } from './utils/webhook-route-utils';
@@ -71,6 +47,8 @@ export class APIServer {
   private scheduler: SchedulerService;
   private settingsInterval?: NodeJS.Timeout;
   private settingsService!: ServerSettingsService;
+  private corsSetup!: ServerCorsSetup;
+  private maintenanceService!: ServerMaintenanceService;
   private authSetup!: ServerAuthSetup;
   private middlewareSetup!: ServerMiddlewareSetup;
   private routesSetup!: ServerRoutesSetup;
@@ -95,37 +73,12 @@ export class APIServer {
     this.graphQLService = new GraphQLService(manager, this.restController);
     this.socket = new WebSocketManager(manager.hooks);
 
-    // Initialize extracted services
     this.settingsService = new ServerSettingsService((manager as any).db, this.cache, this.settingsCache, this.logger);
+    this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger);
+    this.maintenanceService = new ServerMaintenanceService(this.manager, this.cache, this.settingsCache, this.logger);
     this.authSetup = new ServerAuthSetup(this.auth, (manager as any).db, this.logger);
-    this.middlewareSetup = new ServerMiddlewareSetup(this.app, this.auth, manager, () => this.getMaintenanceStatus(), this.logger);
-    this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, manager, themeManager, this.auth, null as any, this.restController, this.graphQLService, () => this.getMaintenanceStatus(), this.logger);
-  }
-
-  private resolveLocalUploadsConfig(mediaManager?: MediaManager): { uploadDir: string; publicUrlBase: string; publicPath: string } {
-    const frameworkRoot = (this.manager as any).projectRoot || process.cwd();
-    let uploadDir = process.env[ApiConfig.getInstance().storage.UPLOAD_DIR_ENV] || path.resolve(frameworkRoot, ApiConfig.getInstance().storage.DEFAULT_UPLOADS_SUBDIR);
-    let publicUrlBase = ApiUrlUtils.resolveStoragePublicUrlBase(process.env[ApiConfig.getInstance().storage.PUBLIC_URL_ENV]);
-
-    const driver: any = mediaManager?.driver;
-    if (driver && String(driver.provider || '').trim().toLowerCase() === 'local') {
-      const driverUploadDir = String(driver.uploadDir || '').trim();
-      const driverPublicUrlBase = String(driver.publicUrlBase || '').trim();
-      if (driverUploadDir) {
-        uploadDir = path.isAbsolute(driverUploadDir)
-          ? path.normalize(driverUploadDir)
-          : path.resolve(frameworkRoot, driverUploadDir);
-      }
-      if (driverPublicUrlBase) {
-        publicUrlBase = ApiUrlUtils.resolveStoragePublicUrlBase(driverPublicUrlBase);
-      }
-    }
-
-    return {
-      uploadDir,
-      publicUrlBase,
-      publicPath: ApiUrlUtils.resolveStoragePublicPath(publicUrlBase)
-    };
+    this.middlewareSetup = new ServerMiddlewareSetup(this.app, this.auth, manager, () => this.maintenanceService.getStatus(), this.logger);
+    this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, manager, themeManager, this.auth, null as any, this.restController, this.graphQLService, () => this.maintenanceService.getStatus(), this.logger);
   }
 
   public async initialize() {
@@ -139,24 +92,21 @@ export class APIServer {
     
     // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
     await this.setupSettingsSync();
-    this.setupCors();
+    this.corsSetup.setup();
 
     this.mediaManager = (this.manager as any).storage;
     if (!this.mediaManager) {
       this.logger.warn('Storage integration not initialized. Falling back to default LocalMediaManager.');
       const { StorageFactory } = require('@fromcode119/media');
-      const fallback = this.resolveLocalUploadsConfig(undefined);
+      const fallback = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), undefined);
       this.mediaManager = new MediaManager(
         StorageFactory.create('local', { uploadDir: fallback.uploadDir, publicUrlBase: fallback.publicUrlBase })
       );
     }
 
-    // Update routesSetup with the actual mediaManager now that it's initialized
-    this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, this.manager, this.themeManager, this.auth, this.mediaManager, this.restController, this.graphQLService, () => this.getMaintenanceStatus(), this.logger);
+    this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, this.manager, this.themeManager, this.auth, this.mediaManager, this.restController, this.graphQLService, () => this.maintenanceService.getStatus(), this.logger);
 
-    // Serve static uploads BEFORE any auth/security middleware.
-    // Must follow the active local storage config so saved files and served files share the same root.
-    const uploadsConfig = this.resolveLocalUploadsConfig(this.mediaManager);
+    const uploadsConfig = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager);
     this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);
     this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir, {
       maxAge: '30d',
@@ -252,160 +202,18 @@ export class APIServer {
 
   private async setupSettingsSync() {
     await this.settingsService.setupSettingsSync();
-    // Update settingsInterval reference for shutdown
     this.settingsInterval = (this.settingsService as any).settingsInterval;
-  }
-
-    private async refreshSettingsCache() {
-    return this.settingsService.refreshSettingsCache();
-  }
-
-  private async ensureDefaultSettings() {
-    return this.settingsService.ensureDefaultSettings();
-  }
-
-    private setupCors() {
-    const corsOptions: cors.CorsOptions = {
-      origin: (origin, callback) => {
-        // If no origin, it's not a cross-origin request (like a local script or server-to-server)
-        if (!origin) {
-          return callback(null, true);
-        }
-
-        const nodeEnv = (process.env.NODE_ENV || 'development').toLowerCase();
-        const isDevelopment = nodeEnv === 'development' || nodeEnv === 'dev' || nodeEnv === 'test';
-        
-        try {
-          const url = new URL(origin);
-          const hostname = url.hostname;
-          
-          // 1. Check development defaults
-          if (isDevelopment) {
-            if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.local') || hostname.endsWith('.test')) {
-              return callback(null, true);
-            }
-          }
-
-          // 2. Build whitelist from environment and settings
-          const envAllowed = process.env.CORS_ALLOWED_DOMAINS 
-            ? process.env.CORS_ALLOWED_DOMAINS.split(',').map(d => d.trim().toLowerCase())
-            : [];
-          
-          const allowedDomains = [
-            'localhost', 
-            '127.0.0.1', 
-            ...envAllowed
-          ];
-
-          // Add platform core domains from settings
-          const platformDomain = this.settingsCache.get(SystemConstants.META_KEY.PLATFORM_DOMAIN);
-          const adminUrl = this.settingsCache.get(SystemConstants.META_KEY.ADMIN_URL);
-          const frontendUrl = this.settingsCache.get(SystemConstants.META_KEY.FRONTEND_URL);
-
-          if (platformDomain) allowedDomains.push(platformDomain);
-          if (adminUrl) {
-            try { allowedDomains.push(new URL(adminUrl).hostname); } catch(e) {}
-          }
-          if (frontendUrl) {
-            try { allowedDomains.push(new URL(frontendUrl).hostname); } catch(e) {}
-          }
-          
-          // 3. Validate hostname against whitelist (supports exact match or subdomains)
-          const isAllowed = allowedDomains.some(domain => {
-            const lowHost = hostname.toLowerCase();
-            const lowDomain = domain.toLowerCase();
-            return lowHost === lowDomain || lowHost.endsWith(`.${lowDomain}`);
-          });
-          
-          if (isAllowed) {
-            callback(null, true);
-          } else {
-            this.logger.warn(`CORS BLOCKED: Origin "${origin}" (hostname: "${hostname}") is not in whitelist: ${allowedDomains.join(', ')}`);
-            callback(new Error('Not allowed by CORS'));
-          }
-        } catch (err) {
-          this.logger.error(`CORS Error parsing origin "${origin}": ${err}`);
-          callback(null, false);
-        }
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: [
-        'Content-Type', 
-        'Authorization', 
-        'X-Requested-With', 
-        'Accept', 
-        'Origin', 
-        'X-Framework-Client',
-        'X-CSRF-Token',
-        'X-Reset-Context',
-        'X-App-Locale',
-        'Cache-Control',
-        'Pragma'
-      ],
-      exposedHeaders: ['X-Framework-Maintenance', 'X-CSRF-Token', 'Content-Disposition']
-    };
-
-    this.app.use(cors(corsOptions));
-
-    // Explicitly handle OPTIONS for all routes to ensure preflights always pass
-    this.app.options('*', cors(corsOptions) as any);
   }
 
   private setupAuthIntegration() {
     this.authSetup.configure();
   }
 
-    private async getMaintenanceStatus(): Promise<boolean> {
-    try {
-      // 1. Try Global Cache (Redis) first - Highest Authority
-      let redisVal = await this.cache.get(`system_setting:${SystemConstants.META_KEY.MAINTENANCE_MODE}`);
-      
-      // 2. Fallback to Local Memory Map
-      let memoryVal = this.settingsCache.get(SystemConstants.META_KEY.MAINTENANCE_MODE);
-
-      let val = redisVal;
-      if (val === null || val === undefined) val = memoryVal;
-
-      // 3. Emergency DB Sync - only if both caches are empty
-      if (val === null || val === undefined) {
-        const db = (this.manager as any).db;
-        
-        const hasMetaTable = await db.tableExists(SystemConstants.TABLE.META);
-        if (!hasMetaTable) {
-           return true; // Default ON if meta table is missing (fail-safe)
-        }
-
-        const row = await db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.MAINTENANCE_MODE });
-        if (row) {
-          val = row.value;
-          this.settingsCache.set(SystemConstants.META_KEY.MAINTENANCE_MODE, row.value);
-          await this.cache.set(`system_setting:${SystemConstants.META_KEY.MAINTENANCE_MODE}`, row.value);
-        }
-      }
-
-      // If we found a value, return it
-      if (val !== null && val !== undefined) {
-        const isTrue = String(val).toLowerCase() === 'true';
-        if (isTrue) {
-          this.logger.debug(`Maintenance is ON (Redis: ${redisVal}, Memory: ${memoryVal}, Final: ${val})`);
-        }
-        return isTrue;
-      }
-
-      this.logger.warn('Could not determine maintenance status - failing closed (ON)');
-      return true; 
-    } catch (e) {
-      this.logger.error('Error determining maintenance status - failing closed (ON):', e);
-      return true;
-    }
-  }
-
   private setupMiddleware() {
     this.middlewareSetup.setup();
   }
 
-    private async setupRoutes() {
+  private async setupRoutes() {
     return this.routesSetup.setupRoutes();
   }
 
@@ -417,7 +225,7 @@ export class APIServer {
     return this.routesSetup.setupPluginCollectionProxy();
   }
 
-    start(port: number = 3000, host: string = '0.0.0.0') {
+  start(port: number = 3000, host: string = '0.0.0.0') {
     const server = http.createServer(this.app);
     const wss = this.socket.initialize(server);
 
@@ -439,76 +247,8 @@ export class APIServer {
   }
 
   static async bootstrap(): Promise<void> {
-    dotenv.config();
-    const manager = new PluginManager();
-
-    // Create a dedicated Express Router BEFORE plugin discovery so that plugin onInit
-    // hooks can call context.api.get/post/... and have their routes registered
-    // immediately on this router.  The populated router is then mounted on
-    // server.pluginRouter BEFORE server.initialize() registers the generic
-    // /:pluginSlug/:slug catch-all routes, ensuring specific plugin routes win.
-    const pluginApiRouter = express.Router();
-    manager.setApiHost(pluginApiRouter);
-
-    // Step 1: DB migrations, extensions, background workers (no plugin discovery).
-    await manager.init();
-
-    const themeManager = new ThemeManager((manager as any).db);
-    manager.setThemeArchiveInstaller(async (filePath: string, options?: { activate?: boolean }) => {
-      const manifest = await themeManager.installFromZip(filePath);
-      if (options?.activate !== false) {
-        await themeManager.activateTheme(manifest.slug);
-      }
-      return manifest;
-    });
-    manager.setCoreArchiveInstaller(async (filePath: string) => {
-      return SystemUpdateService.applyArchive(filePath);
-    });
-    await themeManager.init();
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is required to start the API server');
-    }
-    const auth = new AuthManager(jwtSecret);
-    manager.setAuth(auth);
-
-    // Step 2: Discover and initialize plugins. Their onInit hooks register routes
-    // on pluginApiRouter (apiHost) right now, before any catch-alls exist.
-    try {
-      await manager.discoverPlugins();
-      try {
-        await themeManager.ensureActiveThemeDependencies();
-      } catch (err: any) {
-        console.error('ERROR: Active theme dependency enforcement failed.', err);
-      }
-    } catch (err: any) {
-      console.error('ERROR: Initial plugin discovery failed. Check manifest files and permissions.', err);
-    }
-
-    const server = new APIServer(manager, themeManager, auth);
-
-    // Step 3: Mount the pre-populated plugin routes BEFORE server.initialize()
-    // so specific routes take precedence over catch-alls.
-    server.pluginRouter.use(pluginApiRouter);
-
-    await server.initialize();
-
-    // Step 4: Add collection catch-all routes AFTER specific plugin routes so they
-    // only match paths that no plugin registered explicitly.
-    server.setupPluginCollectionProxy();
-
-    // Step 5: Hot reload in development.
-    if (process.env.NODE_ENV === 'development') {
-      try {
-        const hotReload = new HotReloadService(manager, (manager as any).pluginsRoot);
-        hotReload.start();
-      } catch (err: any) {
-        console.warn('WARNING: Hot Reload Service failed to start:', err);
-      }
-    }
-
-    const port = parseInt(process.env.PORT || '3000', 10);
-    const host = process.env.HOST || '0.0.0.0';
-    server.start(port, host);
+    return new ApiBootstrapService().bootstrap(
+      (manager, themeManager, auth) => new APIServer(manager, themeManager, auth),
+    );
   }
 }

@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {
+  ApplicationHostUtils,
   ApiPathUtils,
   ApiVersionUtils,
   BrowserStateClient,
   CookieConstants,
+  PublicAssetUrlUtils,
   SystemConstants,
 } from '@fromcode119/core/client';
 import type { CollectionMetadata, SecondaryPanelState } from '../context.interfaces';
@@ -29,7 +31,10 @@ export class ContextProviderApiHooks {
 
   private static parseThemeEntryVersion(url: string): number[] {
     try {
-      const parsedUrl = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+      const parsedUrl = new URL(
+        url,
+        typeof window !== 'undefined' ? window.location.origin : ApplicationHostUtils.LOCALHOST_ORIGIN,
+      );
       return String(parsedUrl.searchParams.get('v') || '')
         .split('.')
         .map((part) => Number(part))
@@ -243,34 +248,35 @@ export class ContextProviderApiHooks {
       const entryUrl = themeEntry.startsWith('http')
         ? themeEntry
         : ApiPathUtils.themeUiAssetUrl(baseUrl, themeSlug, themeEntry);
+      const versionedEntryUrl = PublicAssetUrlUtils.appendVersion(entryUrl, theme?.version);
       const registry = ((window as any).__fromcodeLoadedThemeEntries ||= new Set<string>()) as Set<string>;
       const slugRegistry = ((window as any).__fromcodeLoadedThemeEntryUrls ||= new Map<string, string>()) as Map<string, string>;
       const existingEntryUrl = slugRegistry.get(themeSlug) || '';
-      if (existingEntryUrl && existingEntryUrl !== entryUrl) {
-        const comparison = ContextProviderApiHooks.compareThemeEntryUrls(existingEntryUrl, entryUrl);
+      if (existingEntryUrl && existingEntryUrl !== versionedEntryUrl) {
+        const comparison = ContextProviderApiHooks.compareThemeEntryUrls(existingEntryUrl, versionedEntryUrl);
         if (comparison >= 0) {
           return;
         }
       }
-      if (registry.has(entryUrl)) {
-        slugRegistry.set(themeSlug, entryUrl);
+      if (registry.has(versionedEntryUrl)) {
+        slugRegistry.set(themeSlug, versionedEntryUrl);
         return;
       }
 
-      slugRegistry.set(themeSlug, entryUrl);
+      slugRegistry.set(themeSlug, versionedEntryUrl);
 
-      const preloadSelector = `link[rel="modulepreload"][href="${entryUrl}"]`;
+      const preloadSelector = `link[rel="modulepreload"][href="${versionedEntryUrl}"]`;
       if (!document.head.querySelector(preloadSelector)) {
         const preloadLink = document.createElement('link');
         preloadLink.rel = 'modulepreload';
-        preloadLink.href = entryUrl;
-        preloadLink.setAttribute('data-theme-entry-preload', entryUrl);
+        preloadLink.href = versionedEntryUrl;
+        preloadLink.setAttribute('data-theme-entry-preload', versionedEntryUrl);
         preloadLink.setAttribute('data-theme-slug', themeSlug);
         document.head.appendChild(preloadLink);
       }
 
-      await import(/* webpackIgnore: true */ entryUrl);
-      registry.add(entryUrl);
+      await import(/* webpackIgnore: true */ versionedEntryUrl);
+      registry.add(versionedEntryUrl);
     }, []);
 
     const resolveContent = React.useCallback(async (slug: string) => {
@@ -381,11 +387,12 @@ export class ContextProviderApiHooks {
                 const fullUrl = cssPath.startsWith('http')
                   ? cssPath
                   : ApiPathUtils.themeUiAssetUrl(base, theme.slug, cssPath);
-                if (!cssRegistry.has(fullUrl)) {
-                  cssRegistry.add(fullUrl);
+                const versionedCssUrl = PublicAssetUrlUtils.appendVersion(fullUrl, theme?.version);
+                if (!cssRegistry.has(versionedCssUrl)) {
+                  cssRegistry.add(versionedCssUrl);
                   const link = document.createElement('link');
                   link.rel = 'stylesheet';
-                  link.href = fullUrl;
+                  link.href = versionedCssUrl;
                   document.head.appendChild(link);
                 }
               });

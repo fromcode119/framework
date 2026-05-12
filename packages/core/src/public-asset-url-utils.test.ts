@@ -19,4 +19,16 @@ describe('PublicAssetUrlUtils', () => {
       PublicAssetUrlUtils.resolveMediaUrl('cosmic-box-love.png', 'https://api.example.test'),
     ).toBe('https://api.example.test/uploads/cosmic-box-love.png');
   });
+
+  it('appends a version query to asset urls without one', () => {
+    expect(
+      PublicAssetUrlUtils.appendVersion('https://api.example.test/api/v1/themes/demo/ui/bundle.js', '1.2.3'),
+    ).toBe('https://api.example.test/api/v1/themes/demo/ui/bundle.js?v=1.2.3');
+  });
+
+  it('preserves existing version query params', () => {
+    expect(
+      PublicAssetUrlUtils.appendVersion('https://api.example.test/api/v1/themes/demo/ui/bundle.js?v=9.9.9', '1.2.3'),
+    ).toBe('https://api.example.test/api/v1/themes/demo/ui/bundle.js?v=9.9.9');
+  });
 });
