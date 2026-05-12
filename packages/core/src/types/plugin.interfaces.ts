@@ -145,6 +145,7 @@ export interface PluginContext {
 
   readonly i18n: {
     translate(key: string, params?: Record<string, any>, locale?: string): string;
+    translateOrFallback(key: string, fallback: string, params?: Record<string, any>, locale?: string): string;
     t(key: string, params?: Record<string, any>): string;
     registerTranslations(locale: string, translations: Record<string, any>): void;
   };

@@ -46,4 +46,18 @@ export class I18nManager {
       return params[paramKey] !== undefined ? String(params[paramKey]) : `{{${paramKey}}}`;
     });
   }
+
+  translateOrFallback(
+    key: string,
+    fallback: string,
+    params: Record<string, any> = {},
+    locale?: string,
+  ): string {
+    const translated = String(this.translate(key, params, locale) || '').trim();
+    if (!translated || translated === key) {
+      return String(fallback || '').trim();
+    }
+
+    return translated;
+  }
 }

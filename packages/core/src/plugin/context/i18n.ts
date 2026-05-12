@@ -16,6 +16,10 @@ export class I18nContextProxy {
           if (!hasCapability('i18n')) handleViolation('i18n');
           return manager.i18n.translate(key, params, locale);
         },
+        translateOrFallback: (key: string, fallback: string, params?: Record<string, any>, locale?: string) => {
+          if (!hasCapability('i18n')) handleViolation('i18n');
+          return manager.i18n.translateOrFallback(key, fallback, params, locale);
+        },
         t: (key: string, params?: Record<string, any>) => {
           if (!hasCapability('i18n')) handleViolation('i18n');
           return manager.i18n.translate(`${plugin.manifest.slug}.${key}`, params);
