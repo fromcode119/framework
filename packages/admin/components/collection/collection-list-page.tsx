@@ -684,7 +684,7 @@ export default function CollectionListPage({ params }: { params: Promise<{ plugi
                   pluginSettings
                 );
               };
-              const canPreview = Boolean(collection && (collection.admin as any)?.preview !== false);
+              const canPreview = AdminCollectionUtils.supportsPreview(collection);
 
               return (
                 <div className="flex items-center justify-end gap-2">

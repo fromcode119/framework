@@ -31,6 +31,8 @@ import { WebhookService } from '../webhook/webhook-service';
 import { WebhooksCollection } from '../collections/webhooks';
 import { PluginRegistry } from '@fromcode119/plugins';
 import { IntegrationManager } from '../integrations';
+import { Plugins } from '../plugins';
+import { PluginsManagerResolver } from '../plugins-manager-resolver';
 import { PluginTelemetryService } from './services/plugin-telemetry-service';
 import { PluginScaffoldService } from './services/plugin-scaffold-service';
 import { PluginAdminRuntimeService } from './services/plugin-admin-runtime-service';
@@ -107,6 +109,7 @@ export class PluginManager implements PluginManagerInterface {
 
     // Initialize Global Plugin Registry for cohesion
     PluginRegistry.setDatabase(this.db);
+    Plugins.setResolver(new PluginsManagerResolver(this.plugins));
 
     this.pluginsRoot = ProjectPaths.getPluginsDir();
 
@@ -339,6 +342,8 @@ export class PluginManager implements PluginManagerInterface {
     if (this.webhooks) {
         // Any cleanup for webhooks?
     }
+
+    Plugins.setResolver(null);
 
     this.logger.info('PluginManager shutdown complete.');
   }

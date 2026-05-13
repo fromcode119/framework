@@ -125,3 +125,31 @@ describe('generatePreviewUrl', () => {
     expect(url).toBe('http://test.com/library/my-custom-path?preview=1');
   });
 });
+
+describe('supportsPreview', () => {
+  it('returns true only for collections with a slug field', () => {
+    expect(
+      AdminCollectionUtils.supportsPreview({
+        slug: 'pages',
+        fields: [{ name: 'slug', type: 'text' }]
+      } as any)
+    ).toBe(true);
+
+    expect(
+      AdminCollectionUtils.supportsPreview({
+        slug: 'inventory',
+        fields: [{ name: 'sku', type: 'text' }]
+      } as any)
+    ).toBe(false);
+  });
+
+  it('respects explicit preview disablement', () => {
+    expect(
+      AdminCollectionUtils.supportsPreview({
+        slug: 'pages',
+        admin: { preview: false },
+        fields: [{ name: 'slug', type: 'text' }]
+      } as any)
+    ).toBe(false);
+  });
+});

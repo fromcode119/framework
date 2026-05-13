@@ -39,7 +39,7 @@ export const EditFooter: React.FC<EditFooterProps> = ({
           <div className="flex items-center gap-2.5">
             <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
             <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-              Persistence Layer // {collection.slug}
+              Persistence Layer // {collection.unprefixedSlug || collection.shortSlug || collection.slug}
             </span>
           </div>
         </div>

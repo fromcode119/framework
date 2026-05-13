@@ -6,6 +6,15 @@ const collectionIdentityService = new CollectionIdentityService();
  * Resolves the collection-specific prefix from settings.
  */
 export class AdminCollectionUtils {
+  static supportsPreview(collection?: Collection | null): boolean {
+    if (!collection || (collection.admin as any)?.preview === false) {
+      return false;
+    }
+
+    return Array.isArray((collection as any).fields)
+      && (collection as any).fields.some((field: any) => field?.name === 'slug');
+  }
+
   static getCollectionPrefix(collection: Collection, pluginSettings?: Record<string, any>): string {
     if (!pluginSettings || !collection.admin?.previewPrefixSettingsKey) return '';
     const prefixKey = collection.admin.previewPrefixSettingsKey;

@@ -460,8 +460,9 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
 
   const hasSlug = collection?.fields.some(f => f.name === 'slug');
   const hasDisablePermalink = collection?.fields.some((f: any) => f.name === 'disablePermalink');
-  const showPreview = (collection?.admin as any)?.preview !== false && !isNew;
-  const showPermalink = (collection?.admin as any)?.preview !== false && hasSlug;
+  const canPreviewCollection = AdminCollectionUtils.supportsPreview(collection);
+  const showPreview = canPreviewCollection && !isNew;
+  const showPermalink = canPreviewCollection && hasSlug;
   const isFullWidth = (collection?.admin as any)?.fullWidth === true;
   const hideFooter = (collection?.admin as any)?.hideFooter === true;
   const hasSidebarFields = sidebarFields.length > 0;

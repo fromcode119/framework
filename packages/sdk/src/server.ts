@@ -10,6 +10,7 @@ export {
   PluginHealthResponseBuilder,
   PluginHealthRouteHandler,
   PluginManager,
+  Plugins,
   ThemeManager,
   Logger,
   ProjectPaths,
