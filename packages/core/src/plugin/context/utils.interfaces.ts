@@ -18,6 +18,9 @@ export interface PluginManagerInterface {
   headInjections: Map<string, any[]>;
   schemaManager: any;
   runtime: any;
+  themeManager?: {
+    getActiveThemeManifest(): { slug: string } | null;
+  };
   getPlugins(): LoadedPlugin[];
   enable(slug: string): Promise<void>;
   disable(slug: string, options?: { persistState?: boolean }): Promise<void>;

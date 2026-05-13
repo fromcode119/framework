@@ -37,6 +37,10 @@ export class PluginPathContextProxy {
     return this.findThemePluginRoot(this.plugin.manifest.slug) || directPath;
   }
 
+  resolveCurrentPluginRoot(): string {
+    return this.currentPluginRoot;
+  }
+
   async resolveActiveThemeSlug(): Promise<string | null> {
     const activeTheme = await this.manager.db.findOne(SystemConstants.TABLE.THEMES, { state: 'active' });
     const slug = String(activeTheme?.slug || '').trim();
@@ -75,6 +79,24 @@ export class PluginPathContextProxy {
     }
 
     return null;
+  }
+
+  async readCurrentPluginTemplate(relativePath: string): Promise<string> {
+    const normalizedPath = this.normalizeRelativePath(relativePath);
+    if (!normalizedPath) {
+      return '';
+    }
+
+    const candidates = await this.resolveCurrentPluginTemplateCandidates(normalizedPath);
+    for (const candidate of candidates) {
+      if (!this.isFile(candidate)) {
+        continue;
+      }
+
+      return fs.readFileSync(candidate, 'utf8').trim();
+    }
+
+    return '';
   }
 
   private findThemePluginRoot(pluginSlug: string): string | null {
@@ -137,6 +159,31 @@ export class PluginPathContextProxy {
       return slug || null;
     } catch {
       return null;
+    }
+  }
+
+  private async resolveCurrentPluginTemplateCandidates(relativePath: string): Promise<string[]> {
+    const activeThemeRoot = await this.resolveActiveThemeRoot();
+    const candidates = [
+      activeThemeRoot
+        ? path.join(activeThemeRoot, 'templates', 'plugins', this.plugin.manifest.slug, relativePath)
+        : '',
+      path.join(this.resolveCurrentPluginRoot(), 'templates', relativePath),
+    ].filter(Boolean);
+
+    return Array.from(new Set(candidates));
+  }
+
+  private normalizeRelativePath(relativePath: string): string {
+    const normalized = path.posix.normalize(String(relativePath || '').replace(/\\/g, '/')).replace(/^\/+/, '');
+    return normalized.startsWith('..') ? '' : normalized;
+  }
+
+  private isFile(candidatePath: string): boolean {
+    try {
+      return fs.existsSync(candidatePath) && fs.statSync(candidatePath).isFile();
+    } catch {
+      return false;
     }
   }
 

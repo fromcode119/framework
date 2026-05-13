@@ -111,8 +111,10 @@ export interface PluginContext {
     pluginsRoot: string;
     themesRoot: string;
     currentPluginRoot: string;
+    resolveCurrentPluginRoot(): string;
     resolveActiveThemeSlug(): Promise<string | null>;
     resolveActiveThemeRoot(): Promise<string | null>;
+    readCurrentPluginTemplate(relativePath: string): Promise<string>;
   };
   
   readonly plugins: {
@@ -144,8 +146,19 @@ export interface PluginContext {
   };
 
   readonly i18n: {
-    translate(key: string, params?: Record<string, any>, locale?: string): string;
-    translateOrFallback(key: string, fallback: string, params?: Record<string, any>, locale?: string): string;
+    translate(
+      key: string,
+      params?: Record<string, any>,
+      locale?: string,
+      scope?: 'plugin' | 'theme' | null,
+    ): string;
+    translateOrFallback(
+      key: string,
+      fallback: string,
+      params?: Record<string, any>,
+      locale?: string,
+      scope?: 'plugin' | 'theme' | null,
+    ): string;
     t(key: string, params?: Record<string, any>): string;
     registerTranslations(locale: string, translations: Record<string, any>): void;
   };
