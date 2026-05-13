@@ -74,10 +74,11 @@ export default function PluginLoader() {
           props.src ||
           props.href ||
           props.name;
+        const target = String(injection?.target || '').trim() === 'bodyStart' ? document.body : document.head;
 
         if (uniqueKey) {
           const selector = `${tag}[id="${uniqueKey}"], ${tag}[src="${uniqueKey}"], ${tag}[href="${uniqueKey}"], ${tag}[name="${uniqueKey}"]`;
-          if (document.head.querySelector(selector)) continue;
+          if (target.querySelector(selector)) continue;
         }
 
         const element = document.createElement(tag);
@@ -86,9 +87,20 @@ export default function PluginLoader() {
           if ((key === 'src' || key === 'href') && value.startsWith('/plugins/')) {
             value = `${apiUrl}${value}`;
           }
+          if (rawValue === '' || rawValue === true) {
+            element.setAttribute(key, '');
+            return;
+          }
           element.setAttribute(key, value);
         });
-        document.head.appendChild(element);
+        if (typeof injection?.content === 'string' && injection.content.trim()) {
+          element.innerHTML = injection.content;
+        }
+        if (target === document.body && document.body.firstChild) {
+          document.body.insertBefore(element, document.body.firstChild);
+        } else {
+          target.appendChild(element);
+        }
       }
     }
 

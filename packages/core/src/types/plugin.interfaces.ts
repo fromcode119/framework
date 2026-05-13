@@ -176,7 +176,12 @@ export interface PluginContext {
   readonly t: (key: string, params?: Record<string, any>) => string;
 
   readonly ui: {
-    registerHeadInjection(injection: { tag: string; props: Record<string, any>; content?: string }): void;
+    registerHeadInjection(injection: {
+      tag: string;
+      props: Record<string, any>;
+      content?: string;
+      target?: 'head' | 'bodyStart';
+    }): void;
   };
 
   readonly runtime: {

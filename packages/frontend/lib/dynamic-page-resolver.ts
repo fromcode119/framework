@@ -1,6 +1,6 @@
-import { cookies } from 'next/headers';
-import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
+import { LocalizationUtils } from '@fromcode119/core/client';
 import { FrontendPublicSettings } from './frontend-public-settings';
+import { FrontendLocaleService } from './frontend-locale-service';
 import { ServerApiUtils } from './server-api';
 import { QueryParamUtils } from './query-param-utils';
 import { ResolvedContentShape } from './resolved-content-shape';
@@ -54,17 +54,7 @@ export class DynamicPageResolver {
     pathLocale: string | undefined,
     strategy: LocaleStrategy,
   ): Promise<string> {
-    const normalizedPathLocale = LocalizationUtils.normalizeLocaleCode(pathLocale || '');
-    if (normalizedPathLocale) return normalizedPathLocale;
-    if (strategy === 'query') {
-      const fromQuery = LocalizationUtils.normalizeLocaleCode(
-        QueryParamUtils.readSearchValue(searchParams, 'locale') || QueryParamUtils.readSearchValue(searchParams, 'lang'),
-      );
-      if (fromQuery) return fromQuery;
-    }
-    const cookieStore = await cookies();
-    const fromCookie = LocalizationUtils.normalizeLocaleCode(cookieStore.get(CookieConstants.LOCALE)?.value || '');
-    return fromCookie || '';
+    return FrontendLocaleService.resolveLocale(searchParams, pathLocale, strategy);
   }
 
   static async resolveDoc(
@@ -181,12 +171,12 @@ export class DynamicPageResolver {
     locale: string,
     fallbackLocale: string,
     searchParams?: SearchParams,
-  ): Promise<{ content: any | null; forcedLayout: string | null }> {
+  ): Promise<{ content: any | null; forcedLayout: string | null; resolution: ResolvedDocResult | null }> {
     const target = (await DynamicPageResolver.readSettingValue('routing_home_target')) || 'auto';
 
     if (target.startsWith('layout:')) {
       const forcedLayout = target.slice('layout:'.length).trim();
-      return { content: null, forcedLayout: forcedLayout || null };
+      return { content: null, forcedLayout: forcedLayout || null, resolution: null };
     }
 
     if (target.startsWith('collection:')) {
@@ -196,20 +186,23 @@ export class DynamicPageResolver {
       if (collectionSlug && recordId) {
         const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 }));
         const doc = ServerApiUtils.extractFirstDoc(result);
-        if (doc) return { content: ResolvedContentShape.normalize(doc as Record<string, unknown>), forcedLayout: null };
+        if (doc) {
+          const normalized = ResolvedContentShape.normalize(doc as Record<string, unknown>);
+          return { content: normalized, forcedLayout: null, resolution: { type: '', plugin: '', doc: normalized } };
+        }
       }
     }
 
     const byRoot = await DynamicPageResolver.resolveBySlugResult('/', locale, fallbackLocale, searchParams);
     if (DynamicPageResolver.isHomeCandidate(byRoot)) {
-      return { content: byRoot?.doc || null, forcedLayout: null };
+      return { content: byRoot?.doc || null, forcedLayout: null, resolution: byRoot };
     }
 
     const byHome = await DynamicPageResolver.resolveBySlugResult('home', locale, fallbackLocale, searchParams);
     if (DynamicPageResolver.isHomeCandidate(byHome)) {
-      return { content: byHome?.doc || null, forcedLayout: null };
+      return { content: byHome?.doc || null, forcedLayout: null, resolution: byHome };
     }
 
-    return { content: null, forcedLayout: null };
+    return { content: null, forcedLayout: null, resolution: null };
   }
 }

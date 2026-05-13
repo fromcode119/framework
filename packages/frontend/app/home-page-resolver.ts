@@ -1,5 +1,5 @@
-import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
-import { cookies } from 'next/headers';
+import { LocalizationUtils } from '@fromcode119/core/client';
+import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
 import { ServerApiUtils } from '@/lib/server-api';
@@ -30,18 +30,7 @@ export class HomePageResolver {
   }
 
   private static async resolveLocale(searchParams: SearchParams | undefined, strategy: LocaleUrlStrategy): Promise<string> {
-    if (strategy === 'query') {
-      const fromQuery = LocalizationUtils.normalizeLocaleCode(
-        QueryParamUtils.readSearchValue(searchParams, 'locale') || QueryParamUtils.readSearchValue(searchParams, 'lang')
-      );
-      if (fromQuery) {
-        return fromQuery;
-      }
-    }
-
-    const cookieStore = await cookies();
-    const fromCookie = LocalizationUtils.normalizeLocaleCode(cookieStore.get(CookieConstants.LOCALE)?.value || '');
-    return fromCookie || '';
+    return FrontendLocaleService.resolveLocale(searchParams, '', strategy);
   }
 
   private static async resolveBySlug(slug: string, locale: string, fallbackLocale: string): Promise<unknown> {

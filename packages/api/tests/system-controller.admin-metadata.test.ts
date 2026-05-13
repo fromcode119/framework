@@ -33,7 +33,7 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
     };
     const { controller } = createController(payload);
     const req: any = {};
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: jest.fn(), set: jest.fn().mockReturnThis(), status: jest.fn().mockReturnThis() };
 
     await controller.getAdminMetadata(req, res);
 
@@ -45,7 +45,7 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
   it('injects default secondaryPanel shape when field is absent', async () => {
     const { controller } = createController({ plugins: [], menu: [] });
     const req: any = {};
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: jest.fn(), set: jest.fn().mockReturnThis(), status: jest.fn().mockReturnThis() };
 
     await controller.getAdminMetadata(req, res);
 
@@ -80,6 +80,9 @@ describe('SystemController.getFrontendMetadata public settings', () => {
         find: jest.fn().mockResolvedValue([
           { key: 'routing_home_target', value: 'auto' },
           { key: 'locale_url_strategy', value: 'query' },
+          { key: 'default_locale', value: 'bg' },
+          { key: 'fallback_locale', value: 'bg' },
+          { key: 'frontend_default_locale', value: 'bg' },
           { key: 'frontend_auth_enabled', value: 'true' },
           { key: 'auth_password_history', value: '5' },
           { key: 'totp_secret_pending', value: 'secret' },
@@ -93,7 +96,7 @@ describe('SystemController.getFrontendMetadata public settings', () => {
     const auth: any = {};
     const controller = new SystemController(manager, themeManager, restController, auth);
     const req: any = {};
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: jest.fn(), set: jest.fn().mockReturnThis(), status: jest.fn().mockReturnThis() };
 
     await controller.getFrontendMetadata(req, res);
 
@@ -101,6 +104,9 @@ describe('SystemController.getFrontendMetadata public settings', () => {
       publicSettings: {
         routing_home_target: 'auto',
         locale_url_strategy: 'query',
+        default_locale: 'bg',
+        fallback_locale: 'bg',
+        frontend_default_locale: 'bg',
         frontend_auth_enabled: 'true',
       },
     }));

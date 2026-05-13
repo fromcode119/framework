@@ -65,7 +65,7 @@ export default async function ThemeAssets() {
           const href = link.href.startsWith('http') ? link.href : `${apiUrl}${link.href}`;
           if (link.rel === 'preload') {
             preload(href, {
-              as: (link.as || 'fetch') as Parameters<typeof preload>[1]['as'],
+              as: (link.as || 'fetch') as NonNullable<Parameters<typeof preload>[1]>['as'],
               type: link.type,
               crossOrigin: link.crossOrigin,
               fetchPriority: link.fetchPriority as 'high' | 'low' | 'auto' | undefined,

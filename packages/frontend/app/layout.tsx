@@ -4,6 +4,9 @@ import GlobalInitializer from "./global-initializer";
 import RootProvider from "./root-provider";
 import PluginLoader from "./plugin-loader";
 import ThemeAssets from "@/components/theme-assets";
+import { FrontendLocaleService } from '@/lib/frontend-locale-service';
+import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
+import { PluginInjectionRenderer } from '@/lib/plugin-injection-renderer';
 
 export const metadata: Metadata = {
   title: {
@@ -18,17 +21,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const routingConfig = await DynamicPageResolver.getLocaleRoutingConfig();
+  const [headElements, bodyStartElements, documentLocale] = await Promise.all([
+    PluginInjectionRenderer.loadHeadElements(),
+    PluginInjectionRenderer.loadBodyStartElements(),
+    FrontendLocaleService.resolveLocale(undefined, undefined, routingConfig.strategy),
+  ]);
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={documentLocale} suppressHydrationWarning>
       <head>
         <ThemeAssets />
+        {headElements}
       </head>
       <body>
+        {bodyStartElements}
         <GlobalInitializer />
         <RootProvider>
           <PluginLoader />
