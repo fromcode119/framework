@@ -3,13 +3,21 @@ import path from 'path';
 import { SystemConstants } from '../../constants';
 import { ProjectPaths } from '../../config/paths';
 import type { LoadedPlugin } from '../../types';
+import { PluginContextFileReader } from './plugin-context-file-reader';
 import type { PluginManagerInterface } from './utils.interfaces';
 
 export class PluginPathContextProxy {
+  private readonly fileReader: PluginContextFileReader;
+
   constructor(
     private readonly plugin: LoadedPlugin,
     private readonly manager: PluginManagerInterface,
-  ) {}
+  ) {
+    this.fileReader = new PluginContextFileReader(
+      () => this.resolveCurrentPluginRoot(),
+      () => this.resolveActiveThemeRoot(),
+    );
+  }
 
   get frameworkRoot(): string {
     return ProjectPaths.getProjectRoot();
@@ -82,21 +90,24 @@ export class PluginPathContextProxy {
   }
 
   async readCurrentPluginTemplate(relativePath: string): Promise<string> {
-    const normalizedPath = this.normalizeRelativePath(relativePath);
-    if (!normalizedPath) {
-      return '';
-    }
+    return this.readCurrentPluginText(relativePath, {
+      pluginDirectory: 'templates',
+      themeDirectory: path.posix.join('templates', 'plugins', this.plugin.manifest.slug),
+    });
+  }
 
-    const candidates = await this.resolveCurrentPluginTemplateCandidates(normalizedPath);
-    for (const candidate of candidates) {
-      if (!this.isFile(candidate)) {
-        continue;
-      }
+  async readCurrentPluginText(
+    relativePath: string,
+    options: { pluginDirectory?: string; themeDirectory?: string } = {},
+  ): Promise<string> {
+    return this.fileReader.readText(relativePath, options);
+  }
 
-      return fs.readFileSync(candidate, 'utf8').trim();
-    }
-
-    return '';
+  async readCurrentPluginJson(
+    relativePath: string,
+    options: { pluginDirectory?: string; themeDirectory?: string } = {},
+  ): Promise<Record<string, any>> {
+    return this.fileReader.readJson(relativePath, options);
   }
 
   private findThemePluginRoot(pluginSlug: string): string | null {
@@ -159,31 +170,6 @@ export class PluginPathContextProxy {
       return slug || null;
     } catch {
       return null;
-    }
-  }
-
-  private async resolveCurrentPluginTemplateCandidates(relativePath: string): Promise<string[]> {
-    const activeThemeRoot = await this.resolveActiveThemeRoot();
-    const candidates = [
-      activeThemeRoot
-        ? path.join(activeThemeRoot, 'templates', 'plugins', this.plugin.manifest.slug, relativePath)
-        : '',
-      path.join(this.resolveCurrentPluginRoot(), 'templates', relativePath),
-    ].filter(Boolean);
-
-    return Array.from(new Set(candidates));
-  }
-
-  private normalizeRelativePath(relativePath: string): string {
-    const normalized = path.posix.normalize(String(relativePath || '').replace(/\\/g, '/')).replace(/^\/+/, '');
-    return normalized.startsWith('..') ? '' : normalized;
-  }
-
-  private isFile(candidatePath: string): boolean {
-    try {
-      return fs.existsSync(candidatePath) && fs.statSync(candidatePath).isFile();
-    } catch {
-      return false;
     }
   }
 

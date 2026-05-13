@@ -4,6 +4,11 @@ import { PluginManifest, MiddlewareConfig } from './manifests.interfaces';
 import { PluginCapability } from './enums.enums';
 import type { PluginHealthProbeResult } from '../plugin-health-route-handler.interfaces';
 
+export interface PluginPathReadOptions {
+  pluginDirectory?: string;
+  themeDirectory?: string;
+}
+
 export interface PluginContext {
   readonly db: IDatabaseManager;
   readonly api: {
@@ -114,6 +119,8 @@ export interface PluginContext {
     resolveCurrentPluginRoot(): string;
     resolveActiveThemeSlug(): Promise<string | null>;
     resolveActiveThemeRoot(): Promise<string | null>;
+    readCurrentPluginText(relativePath: string, options?: PluginPathReadOptions): Promise<string>;
+    readCurrentPluginJson(relativePath: string, options?: PluginPathReadOptions): Promise<Record<string, any>>;
     readCurrentPluginTemplate(relativePath: string): Promise<string>;
   };
   
