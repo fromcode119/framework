@@ -1,4 +1,5 @@
 import { BrowserStateClient } from './clients/browser-state-client';
+import { CookieConstants } from './cookie-constants';
 import { CoercionUtils } from './coercion-utils';
 import type { NormalizeLocaleOptions, ResolveAnyStringOptions } from './localization.interfaces';
 
@@ -26,7 +27,7 @@ export class LocalizationUtils {
     const queryKeys = Array.isArray(options.queryKeys) && options.queryKeys.length
       ? options.queryKeys
       : ['locale', 'lang'];
-    const storageKey = String(options.storageKey || 'fc_locale').trim() || 'fc_locale';
+    const storageKey = String(options.storageKey || CookieConstants.LOCALE).trim() || CookieConstants.LOCALE;
     const sources = [
       ...queryKeys.map((key) => browserState.readQueryParamFromWindow(key)),
       String(settings?.frontend_default_locale || '').trim(),
