@@ -63,15 +63,25 @@ export class PluginTelemetryService {
 
   async getEmailTelemetryRecipients(): Promise<string[]> {
     const recipients = new Set<string>();
-    const envRaw = process.env.EMAIL_ALERT_TO || process.env.ALERT_EMAIL_TO || process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
-    if (envRaw) {
-      for (const item of String(envRaw).split(',')) {
-        const n = this.normalizeEmailAddress(item);
-        if (n) recipients.add(n);
-      }
+    const configuredRecipients = [
+      await this.getMetaValue(SystemConstants.META_KEY.NOTIFICATION_EMAIL),
+      await this.getMetaValue(SystemConstants.META_KEY.NOTIFICATION_EMAIL_CC),
+    ]
+      .flatMap((value) => String(value || '').split(/[,;\n]/))
+      .map((item) => this.normalizeEmailAddress(item))
+      .filter(Boolean);
+    for (const recipient of configuredRecipients) {
+      recipients.add(recipient);
     }
+    if (recipients.size > 0) {
+      return Array.from(recipients);
+    }
+
     try {
-      const users = await this.db.find('users', { columns: { email: true, roles: true }, limit: 2000 });
+      const users = await this.db.find(SystemConstants.TABLE.USERS, {
+        columns: { email: true, roles: true },
+        limit: 2000,
+      });
       for (const user of users || []) {
         const email = this.normalizeEmailAddress(user?.email);
         if (!email) continue;
@@ -180,7 +190,9 @@ export class PluginTelemetryService {
   async sendTestEmailTelemetry(triggeredBy?: { id?: string | number; email?: string; roles?: string[] }): Promise<{ sent: boolean; recipientsCount: number }> {
     if (!(await this.isEmailTelemetryEnabled())) throw new Error('Email telemetry is disabled. Enable it in Settings > General first.');
     const recipients = await this.getEmailTelemetryRecipients();
-    if (!recipients.length) throw new Error('No telemetry recipients are configured.');
+    if (!recipients.length) {
+      throw new Error('No telemetry recipients are configured. Set Notification Email in Settings > General or ensure at least one admin user exists.');
+    }
 
     const nowIso = new Date().toISOString();
     const appName = process.env.APP_NAME || 'Fromcode';

@@ -205,6 +205,12 @@ export interface PluginContext {
   readonly roles: {
     ensure(slug: string, data: { name: string; description?: string; type?: string; permissions?: any[] }): Promise<void>;
   };
+
+  readonly theme: {
+    getActiveSlug(): Promise<string | null>;
+    getActiveConfig(): Promise<Record<string, any>>;
+    getCurrentPluginSettings(): Promise<Record<string, any>>;
+  };
 }
 
 export interface FromcodePlugin {

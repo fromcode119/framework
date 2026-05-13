@@ -90,7 +90,9 @@ export class SystemConstants {
   ROUTING_HOME_TARGET: 'routing_home_target',
   FRONTEND_AUTH_ENABLED: 'frontend_auth_enabled',
   FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
-  EMAIL_NOTIFICATIONS: 'email_notifications'
+  EMAIL_NOTIFICATIONS: 'email_notifications',
+  NOTIFICATION_EMAIL: 'notification_email',
+  NOTIFICATION_EMAIL_CC: 'notification_email_cc'
   } as const;
 
   static readonly API_PATH = {

@@ -25,6 +25,8 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED,
   SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED,
   SystemConstants.META_KEY.EMAIL_NOTIFICATIONS,
+  SystemConstants.META_KEY.NOTIFICATION_EMAIL,
+  SystemConstants.META_KEY.NOTIFICATION_EMAIL_CC,
 ]);
 
 export class SystemAdminController {

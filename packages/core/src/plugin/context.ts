@@ -17,6 +17,7 @@ import { UiContextProxy } from './context/ui';
 import { UsersContextProxy } from './context/users';
 import { MetaContextProxy } from './context/meta';
 import { RolesContextProxy } from './context/roles';
+import { ThemeContextProxy } from './context/theme';
 import { PluginsFacade } from '../plugins-facade';
 import { PluginsManagerResolver } from '../plugins-manager-resolver';
 import { PluginPathContextProxy } from './context/paths';
@@ -154,6 +155,7 @@ export class PluginContextFactory {
         users: UsersContextProxy.createUsersProxy(plugin, manager),
         meta: MetaContextProxy.createMetaProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager),
+        theme: ThemeContextProxy.createThemeProxy(plugin, manager),
         collections: CollectionsContextProxy.createCollectionsProxy(plugin, manager, rootLogger, security),
         settings: SettingsContextProxy.createSettingsProxy(plugin, manager),
         i18n: I18nContextProxy.createI18nProxy(plugin, manager, security),

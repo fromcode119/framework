@@ -42,6 +42,8 @@ export default function GeneralSettingsPage() {
   const [settings, setSettings] = useState<Record<string, any>>({
     platform_name: '',
     email_notifications: true,
+    notification_email: '',
+    notification_email_cc: '',
     frontend_url: '',
     timezone: 'UTC',
     frontend_auth_enabled: true,
@@ -71,12 +73,14 @@ export default function GeneralSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await AdminSystemSettingsClient.update({
-        platform_name: String(settings.platform_name ?? '').trim(),
-        email_notifications: Boolean(settings.email_notifications),
-        frontend_url: String(settings.frontend_url ?? '').trim(),
-        timezone: String(settings.timezone ?? '').trim(),
-        frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
+        await AdminSystemSettingsClient.update({
+          platform_name: String(settings.platform_name ?? '').trim(),
+          email_notifications: Boolean(settings.email_notifications),
+          notification_email: String(settings.notification_email ?? '').trim(),
+          notification_email_cc: String(settings.notification_email_cc ?? '').trim(),
+          frontend_url: String(settings.frontend_url ?? '').trim(),
+          timezone: String(settings.timezone ?? '').trim(),
+          frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
         frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
       });
 
@@ -221,11 +225,39 @@ export default function GeneralSettingsPage() {
         </Card>
 
         <Card title="Notifications">
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Mail}
+            title="Notification Email"
+            description="Single system-wide destination for internal form and platform notifications."
+          >
+            <Input
+              value={settings.notification_email}
+              onChange={(e) => setSettings((prev) => ({ ...prev, notification_email: e.target.value }))}
+              className="w-full md:w-80 font-bold"
+              placeholder="hello@example.com"
+            />
+          </SettingRow>
+
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Users}
+            title="Notification CC Emails"
+            description="Optional global CC recipients. Separate multiple emails with commas."
+          >
+            <Input
+              value={settings.notification_email_cc}
+              onChange={(e) => setSettings((prev) => ({ ...prev, notification_email_cc: e.target.value }))}
+              className="w-full md:w-80 font-bold"
+              placeholder="ops@example.com, sales@example.com"
+            />
+          </SettingRow>
+
           <SettingRow 
             theme={theme}
             icon={FrameworkIcons.Mail} 
             title="Email Telemetry" 
-            description="Receive critical system alerts and weekly summaries via email."
+            description="Receive critical system alerts and weekly summaries via email. Telemetry uses the Notification Email and Notification CC Emails above."
           >
             <div className="flex items-center gap-3">
               <Switch

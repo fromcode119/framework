@@ -44,8 +44,13 @@ export interface SettingsTab {
   fields: string[]; // Field names
 }
 
+export interface PluginSettingsField extends Omit<Field, 'fields'> {
+  tab?: string;
+  fields?: PluginSettingsField[];
+}
+
 export interface PluginSettingsSchema {
-  fields: Field[];
+  fields: PluginSettingsField[];
   tabs?: SettingsTab[];
   
   // Optional validation function

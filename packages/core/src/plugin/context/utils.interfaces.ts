@@ -20,6 +20,7 @@ export interface PluginManagerInterface {
   runtime: any;
   themeManager?: {
     getActiveThemeManifest(): { slug: string } | null;
+    getThemeConfig(slug: string): Promise<any>;
   };
   getPlugins(): LoadedPlugin[];
   enable(slug: string): Promise<void>;
