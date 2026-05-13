@@ -9,7 +9,6 @@ import { CodeEditor } from '@/components/ui/code-editor';
 import { ArrayField } from '@/components/ui/array-field';
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminServices } from '@/lib/admin-services';
-import { LocaleRegistryUtils } from '@/lib/locale-utils';
 import { TagFieldLocal } from './tag-field-local';
 import { RelationshipSelectLocal } from './relationship-select-local';
 import { MediaRelationField } from './media-relation-field';
@@ -86,12 +85,13 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   const canRequestReadOnlyOverride = Boolean(!disabled && supportsReadOnlyOverride && isFieldReadOnly && onReadOnlyOverrideRequest);
   const isLocalizedField = Boolean(field.localized);
   const componentHandlesLocalization = isLocalizedField && Boolean(field.admin?.handlesLocalization);
+  const localization = AdminServices.getInstance().localization;
 
   const label = field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
-  const localeRegistry = React.useMemo(() => LocaleRegistryUtils.parseLocaleRegistry(settings), [settings]);
+  const localeRegistry = React.useMemo(() => localization.parseLocaleRegistry(settings), [localization, settings]);
   const defaultLocale = React.useMemo(
-    () => AdminServices.getInstance().localization.normalizeLocaleCode(settings?.default_locale || settings?.admin_default_locale || localeRegistry[0]?.code || 'en') || 'en',
-    [localeRegistry, settings]
+    () => localization.resolveAdminLocale(settings, localeRegistry),
+    [localeRegistry, localization, settings]
   );
   const [activeLocale, setActiveLocale] = React.useState(defaultLocale);
   const [isLocaleMenuOpen, setIsLocaleMenuOpen] = React.useState(false);
@@ -116,30 +116,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   }, [isLocalizedField, isLocaleMenuOpen]);
 
   const localizedMap = React.useMemo(() => {
-    const loc = AdminServices.getInstance().localization;
     if (!isLocalizedField) return null;
-    if (value && typeof value === 'object' && !Array.isArray(value) && loc.isLocaleMap(value)) {
-      const entries = Object.entries(value);
-      const normalized: Record<string, any> = {};
-      entries.forEach(([localeKey, localeValue]) => {
-        const code = loc.normalizeLocaleCode(localeKey);
-        if (code) normalized[code] = localeValue;
-      });
-      return normalized;
-    }
-    if (typeof value === 'string') {
-      const parsed = loc.tryParseLocaleJson(value);
-      if (parsed && loc.isLocaleMap(parsed)) {
-        const normalized: Record<string, any> = {};
-        Object.entries(parsed).forEach(([localeKey, localeValue]) => {
-          const code = loc.normalizeLocaleCode(localeKey);
-          if (code) normalized[code] = localeValue;
-        });
-        return normalized;
-      }
-    }
-    return { [defaultLocale]: value };
-  }, [defaultLocale, isLocalizedField, value]);
+    return localization.toLocaleMap(value, defaultLocale);
+  }, [defaultLocale, isLocalizedField, localization, value]);
 
   const currentValue = componentHandlesLocalization
     ? value

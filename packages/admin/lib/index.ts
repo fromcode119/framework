@@ -14,7 +14,6 @@ export * from './api';
 export * from './auth-utils';
 export * from './collection-utils';
 export * from './constants';
-export * from './locale-utils';
 export * from './nav-utils';
 export * from './settings';
 export * from './theme-preview-utils';

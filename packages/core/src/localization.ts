@@ -1,3 +1,4 @@
+import { BrowserStateClient } from './clients/browser-state-client';
 import { CoercionUtils } from './coercion-utils';
 import type { NormalizeLocaleOptions, ResolveAnyStringOptions } from './localization.interfaces';
 
@@ -13,6 +14,39 @@ import type { NormalizeLocaleOptions, ResolveAnyStringOptions } from './localiza
  * LocalizationUtils.resolveAnyString({ en: 'Hi' })                       // 'Hi'
  */
 export class LocalizationUtils {
+  static resolveRuntimeLocale(
+    settings: Record<string, unknown> | null | undefined,
+    options: {
+      storageKey?: string;
+      queryKeys?: string[];
+      defaultLocale?: string;
+    } = {},
+  ): string {
+    const browserState = new BrowserStateClient();
+    const queryKeys = Array.isArray(options.queryKeys) && options.queryKeys.length
+      ? options.queryKeys
+      : ['locale', 'lang'];
+    const storageKey = String(options.storageKey || 'fc_locale').trim() || 'fc_locale';
+    const sources = [
+      ...queryKeys.map((key) => browserState.readQueryParamFromWindow(key)),
+      String(settings?.frontend_default_locale || '').trim(),
+      browserState.readLocalString(storageKey),
+      browserState.readCookie(storageKey),
+      typeof document !== 'undefined' ? String(document.documentElement.lang || '').trim() : '',
+      typeof navigator !== 'undefined' ? String(navigator.language || '').trim() : '',
+      String(options.defaultLocale || '').trim(),
+    ];
+
+    for (const source of sources) {
+      const normalized = LocalizationUtils.normalizeLocaleCode(source, { short: true });
+      if (normalized) {
+        return normalized;
+      }
+    }
+
+    return '';
+  }
+
   static normalizeLocaleCode(value: unknown, options: NormalizeLocaleOptions = {}): string {
     const raw = String(value || '').trim().toLowerCase().replace(/_/g, '-');
     if (!raw) return '';

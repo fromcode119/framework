@@ -77,6 +77,52 @@ export class LocalizationService extends BaseService {
     return LocalizationUtils.normalizeLocaleCode(code);
   }
 
+  parseLocaleRegistry(settings: Record<string, unknown> | null | undefined): Array<{ code: string; label: string }> {
+    const parsed: Array<{ code: string; label: string }> = [];
+    const raw = settings?.localization_locales;
+
+    if (Array.isArray(raw)) {
+      this.ingestLocaleRegistryItems(parsed, raw);
+      return parsed;
+    }
+
+    if (typeof raw === 'string' && raw.trim()) {
+      try {
+        const items = JSON.parse(raw);
+        if (Array.isArray(items)) {
+          this.ingestLocaleRegistryItems(parsed, items);
+        }
+      } catch {
+        return parsed;
+      }
+
+      return parsed;
+    }
+
+    if (raw && typeof raw === 'object') {
+      const values = Object.values(raw);
+      if (values.length && values.every((item) => item && typeof item === 'object')) {
+        this.ingestLocaleRegistryItems(parsed, values);
+      }
+    }
+
+    return parsed;
+  }
+
+  resolveAdminLocale(
+    settings: Record<string, unknown> | null | undefined,
+    localeRegistry?: Array<{ code: string; label: string }>
+  ): string {
+    return this.resolvePreferredLocale(settings, localeRegistry, ['admin_default_locale', 'default_locale']);
+  }
+
+  resolveFrontendLocale(
+    settings: Record<string, unknown> | null | undefined,
+    localeRegistry?: Array<{ code: string; label: string }>
+  ): string {
+    return this.resolvePreferredLocale(settings, localeRegistry, ['frontend_default_locale', 'default_locale']);
+  }
+
   /**
    * Check if a value is a locale map (object with locale code keys).
    *
@@ -133,5 +179,84 @@ export class LocalizationService extends BaseService {
    */
   resolveLocalizedText(value: any, locale: string): string {
     return LocalizationUtils.resolveLabelText(value, locale);
+  }
+
+  readLocalizedValue(value: unknown, locale: string): string {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+
+    const normalizedLocale = LocalizationUtils.normalizeLocaleCode(locale, { short: true });
+    if (!normalizedLocale) {
+      return '';
+    }
+
+    const map = this.toLocaleMap(value);
+    return String(map[normalizedLocale] || '').trim();
+  }
+
+  writeLocalizedValue(currentValue: unknown, locale: string, nextValue: string): Record<string, string> {
+    const normalizedLocale = LocalizationUtils.normalizeLocaleCode(locale, { short: true });
+    const nextMap = this.toLocaleMap(currentValue, normalizedLocale);
+    if (!normalizedLocale) {
+      return nextMap;
+    }
+
+    nextMap[normalizedLocale] = String(nextValue || '');
+    return nextMap;
+  }
+
+  toLocaleMap(value: unknown, locale?: string): Record<string, string> {
+    if (LocalizationUtils.isLocaleMap(value)) {
+      return Object.entries(value as Record<string, unknown>).reduce((acc, [key, entry]) => {
+        const normalized = LocalizationUtils.normalizeLocaleCode(key, { short: true });
+        if (normalized) {
+          acc[normalized] = String(entry || '');
+        }
+        return acc;
+      }, {} as Record<string, string>);
+    }
+
+    if (typeof value === 'string' && value.trim() && locale) {
+      return { [locale]: value.trim() };
+    }
+
+    return {};
+  }
+
+  private ingestLocaleRegistryItems(target: Array<{ code: string; label: string }>, items: unknown[]): void {
+    items.forEach((item) => {
+      const code = this.normalizeLocaleCode(
+        String(
+          (item as Record<string, unknown>)?.code
+          || (item as Record<string, unknown>)?.isoCode
+          || (item as Record<string, unknown>)?.locale
+          || ''
+        )
+      );
+      if (!code || (item as Record<string, unknown>)?.enabled === false || target.some((entry) => entry.code === code)) {
+        return;
+      }
+
+      target.push({
+        code,
+        label: String((item as Record<string, unknown>)?.name || code).trim() || code.toUpperCase(),
+      });
+    });
+  }
+
+  private resolvePreferredLocale(
+    settings: Record<string, unknown> | null | undefined,
+    localeRegistry: Array<{ code: string; label: string }> | undefined,
+    keys: string[]
+  ): string {
+    for (const key of keys) {
+      const normalized = LocalizationUtils.normalizeLocaleCode(String(settings?.[key] || ''), { short: true });
+      if (normalized) {
+        return normalized;
+      }
+    }
+
+    return String(localeRegistry?.[0]?.code || '').trim();
   }
 }
