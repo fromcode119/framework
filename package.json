@@ -6,8 +6,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run check:sdk-boundary && tsc -b && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
-    "build:api": "tsc -b packages/api",
+    "build": "npm run check:sdk-boundary && tsc -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
+    "build:api": "npm run build --workspace=@fromcode119/api",
     "build:admin": "npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run build --workspace=@fromcode119/frontend",
     "audit:core-boundary": "node scripts/audit-core-boundary.mjs",

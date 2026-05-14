@@ -180,7 +180,11 @@ export class ServerApiUtils {
     const timeout = setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT_MS);
 
     try {
-      const response = await fetch(`${ServerApiUtils.buildInternalApiBaseUrl()}${requestPath}`, {
+      const baseUrl = ServerApiUtils.buildInternalApiBaseUrl();
+      const normalizedPath = requestPath.startsWith(ApiVersionUtils.prefix())
+        ? requestPath
+        : `${ApiVersionUtils.prefix()}${requestPath}`;
+      const response = await fetch(`${baseUrl}${normalizedPath}`, {
         ...requestInit,
         cache: requestInit?.cache ?? 'no-store',
         signal: controller.signal,

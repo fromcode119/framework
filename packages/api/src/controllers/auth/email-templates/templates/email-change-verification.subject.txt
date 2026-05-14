@@ -1,0 +1,1 @@
+{{appName}}: Confirm your new email

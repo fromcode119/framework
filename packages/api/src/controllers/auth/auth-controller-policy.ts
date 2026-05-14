@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { CookieConstants, SystemConstants } from '@fromcode119/core';
 import { randomUUID } from 'crypto';
-import { AuthControllerInfrastructure } from './auth-controller-infrastructure';
+import { AuthControllerInfrastructure } from './auth-controller-infrastructure/auth-controller-infrastructure';
 import type { AccountStatus } from './auth-controller.types';
 import type {
   PasswordPolicySettings,

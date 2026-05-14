@@ -11,8 +11,8 @@ import VerifyEmailVerificationCard from './verify-email-verification-card';
 import { VerifyEmailCopyService } from './verify-email-copy-service';
 export const dynamic = 'force-dynamic';
 
-export default function VerifyEmailPage() {
-  const copy = VerifyEmailCopyService.getCopy();
+export default function VerifyEmailPage({ initialLocale }: { initialLocale: string }) {
+  const copy = VerifyEmailCopyService.getCopy(initialLocale);
   const recaptchaSiteKey = String(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '').trim();
   const [token, setToken] = useState('');
   const [emailForResend, setEmailForResend] = useState('');

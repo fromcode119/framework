@@ -3,7 +3,10 @@ import { ServerApiUtils } from './server-api';
 
 export class FrontendPublicSettings {
   private static readonly settingsMapCache = cache(async (): Promise<Map<string, string>> => {
-    const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemFrontendPath()) as Record<string, unknown> | null;
+    const internalResponse = await ServerApiUtils.serverFetchInternalResponse(ServerApiUtils.buildSystemFrontendPath());
+    const result = internalResponse?.ok
+      ? await internalResponse.json() as Record<string, unknown>
+      : await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemFrontendPath()) as Record<string, unknown> | null;
     const rawSettings = result?.publicSettings as Record<string, unknown> | undefined;
     const map = new Map<string, string>();
 

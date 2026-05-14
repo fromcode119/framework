@@ -1,0 +1,12 @@
+{{greeting}}
+
+{{title}}
+{{message}}
+
+{{buttonLabel}}:
+{{verificationUrl}}
+
+{{fallbackLabel}}
+{{verificationUrl}}
+
+{{ignoreMessage}}

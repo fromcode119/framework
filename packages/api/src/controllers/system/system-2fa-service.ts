@@ -1,7 +1,7 @@
 /** SystemTwoFactorService — 2FA management endpoints. Extracted from SystemController (ARC-007). */
 
 import { Request, Response } from 'express';
-import { SystemConstants, SecretService } from '@fromcode119/core';
+import { ApplicationUrlUtils, SystemConstants, SecretService } from '@fromcode119/core';
 import { createHash, randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
@@ -192,8 +192,8 @@ export class SystemTwoFactorService {
       const user = await this.db.findOne(users, { id: options.userId });
       const recipient = AuthUtils.normalizeEmail(user?.email);
       if (!recipient) return;
-      const appName = process.env.APP_NAME || 'Fromcode';
-      const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'no-reply@fromcode.com';
+      const appName = await this.resolveFrameworkAppName();
+      const from = await this.resolveFrameworkSenderIdentity();
       const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
       await this.emailGetter().send({
         to: recipient, from, subject: `${appName}: ${options.subject}`,
@@ -201,5 +201,65 @@ export class SystemTwoFactorService {
         html: `<p>${options.title}</p>${details.length > 0 ? `<ul>${details.map((l) => `<li>${l}</li>`).join('')}</ul>` : ''}`,
       });
     } catch {}
+  }
+
+  private async resolveFrameworkAppName(): Promise<string> {
+    const platformName = await this.getMetaValue(SystemConstants.META_KEY.PLATFORM_NAME);
+    if (platformName) {
+      return platformName;
+    }
+
+    const siteName = await this.getMetaValue(SystemConstants.META_KEY.SITE_NAME);
+    if (siteName) {
+      return siteName;
+    }
+
+    return String(process.env.APP_NAME || '').trim() || 'Fromcode';
+  }
+
+  private async resolveFrameworkSenderAddress(): Promise<string> {
+    const platformDomain = await this.resolveFrameworkPlatformDomain();
+    if (platformDomain) {
+      return `no-reply@${platformDomain}`;
+    }
+
+    const envSender = String(process.env.EMAIL_FROM || process.env.SMTP_FROM || '').trim();
+    if (envSender) {
+      return envSender;
+    }
+
+    return 'no-reply@localhost';
+  }
+
+  private async resolveFrameworkSenderIdentity(): Promise<string> {
+    const appName = await this.resolveFrameworkAppName();
+    const senderAddress = await this.resolveFrameworkSenderAddress();
+    const normalizedAppName = appName.replace(/"/g, '\\"').trim();
+    if (!normalizedAppName) {
+      return senderAddress;
+    }
+
+    return `"${normalizedAppName}" <${senderAddress}>`;
+  }
+
+  private async resolveFrameworkPlatformDomain(): Promise<string> {
+    const configuredPlatformDomain = await this.getMetaValue(SystemConstants.META_KEY.PLATFORM_DOMAIN);
+    if (configuredPlatformDomain) {
+      return configuredPlatformDomain.toLowerCase();
+    }
+
+    return ApplicationUrlUtils.derivePlatformDomain(
+      await this.getMetaValue(SystemConstants.META_KEY.SITE_URL),
+      await this.getMetaValue(SystemConstants.META_KEY.FRONTEND_URL),
+      await this.getMetaValue(SystemConstants.META_KEY.ADMIN_URL),
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
+    );
+  }
+
+  private async getMetaValue(key: string): Promise<string> {
+    const row = await this.db.findOne(SystemConstants.TABLE.META, { key });
+    return String(row?.value || '').trim();
   }
 }

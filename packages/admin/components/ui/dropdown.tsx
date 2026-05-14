@@ -21,17 +21,33 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, maxHeight: 320, direction: 'down' as 'up' | 'down' });
 
   const updatePosition = () => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setCoords({
-        top: rect.bottom + 12,
-        left: rect.left,
-        width: rect.width
-      });
-    }
+    if (!triggerRef.current) return;
+
+    const gap = 12;
+    const viewportPadding = 16;
+    const minMenuHeight = 180;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const menuHeight = menuRef.current?.offsetHeight || 0;
+    const availableBelow = window.innerHeight - rect.bottom - viewportPadding;
+    const availableAbove = rect.top - viewportPadding;
+    const shouldOpenUp = menuHeight > availableBelow && availableAbove > availableBelow;
+    const maxHeight = Math.max(
+      minMenuHeight,
+      (shouldOpenUp ? availableAbove : availableBelow) - gap,
+    );
+
+    setCoords({
+      top: shouldOpenUp
+        ? Math.max(viewportPadding, rect.top - Math.min(menuHeight || maxHeight, maxHeight) - gap)
+        : Math.min(window.innerHeight - viewportPadding, rect.bottom + gap),
+      left: rect.left,
+      width: rect.width,
+      maxHeight,
+      direction: shouldOpenUp ? 'up' : 'down',
+    });
   };
 
   useLayoutEffect(() => {
@@ -82,9 +98,11 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
               right: align === 'right' ? window.innerWidth - (coords.left + coords.width) : 'auto',
               minWidth: '14rem'
             }}
-            className="w-56 max-w-[calc(100vw-2rem)] origin-top-right rounded-2xl border z-[9999] animate-in zoom-in-95 slide-in-from-top-2 duration-500 overflow-hidden 
+            className={`w-56 max-w-[calc(100vw-2rem)] rounded-2xl border z-[9999] animate-in zoom-in-95 duration-500 overflow-hidden ${
+              coords.direction === 'up' ? 'origin-bottom-right slide-in-from-bottom-2' : 'origin-top-right slide-in-from-top-2'
+            }}
               bg-white/95 backdrop-blur-2xl border-slate-200/60 shadow-slate-200/50 ring-1 ring-black/[0.02] 
-              dark:bg-slate-900/95 dark:border-white/10 dark:ring-1 dark:ring-white/10 dark:shadow-black dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)]"
+              dark:bg-slate-900/95 dark:border-white/10 dark:ring-1 dark:ring-white/10 dark:shadow-black dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)]`}
           >
             {header && (
               <div className="px-5 py-4 border-b mb-1 relative overflow-hidden border-slate-100 bg-slate-50/50 dark:border-white/5 dark:bg-white/[0.02]">
@@ -92,7 +110,7 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
                 <div className="absolute -right-4 -top-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-3xl" />
               </div>
             )}
-            <div className="p-2 space-y-0.5">
+            <div className="p-2 space-y-0.5 overflow-y-auto" style={{ maxHeight: coords.maxHeight }}>
               {items.map((item, idx) => {
                 const isLast = idx === items.length - 1;
                 const isDanger = item.variant === 'danger';

@@ -1,0 +1,6 @@
+{{greeting}}
+
+Please verify your email by opening the link below:
+{{verificationUrl}}
+
+If you did not create this account, you can ignore this message.
