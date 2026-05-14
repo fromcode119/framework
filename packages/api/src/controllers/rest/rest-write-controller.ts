@@ -173,14 +173,15 @@ export class RestWriteController {
     try {
       await this.runtime.accessPolicy.ensureDeleteAllowed(collection, req);
       const primaryKey = collection.primaryKey || 'id';
+      const recordId = this.runtime.requireRecordIdentifier(collection, req.params.id);
       const success = await this.runtime.db.delete(this.runtime.resolveWriteTarget(collection), {
-        [primaryKey]: this.runtime.parseRecordIdentifier(collection, req.params.id),
+        [primaryKey]: recordId,
       });
 
       if (success) {
         this.runtime.logger.info(`Deleted record in ${collection.slug} : ${req.params.id}`);
         this.runtime.emitCollectionEvent(collection, 'deleted', {
-          id: this.runtime.parseRecordIdentifier(collection, req.params.id),
+          id: recordId,
         });
       }
 

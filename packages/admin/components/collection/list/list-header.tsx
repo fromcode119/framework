@@ -6,7 +6,7 @@ import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
-import { CollectionListUtils } from '../collection-list-utils';
+import { CollectionListUtils } from './utils';
 
 interface CollectionListHeaderProps {
   collection: any;

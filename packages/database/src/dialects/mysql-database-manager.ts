@@ -193,13 +193,28 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     return { ...data, id: result.insertId };
   }
 
-  async delete(tableName: string, where: any): Promise<boolean> {
-    const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
-    const columns = Object.keys(normalizedWhere || {});
-    const table = this.getDynamicTable(tableName, columns);
-    
-    const conditions = this.buildWhereConditions(normalizedWhere);
-    const [result] = await this.drizzle.delete(table).where(and(...conditions));
+  async delete(tableOrName: any, where: any): Promise<boolean> {
+    if (typeof tableOrName === 'string') {
+      const normalizedWhere = await this.normalizeWhereForTable(tableOrName, where);
+      const columns = Object.keys(normalizedWhere || {});
+      const table = this.getDynamicTable(tableOrName, columns);
+      
+      const conditions = this.buildWhereConditions(normalizedWhere);
+      const [result] = await this.drizzle.delete(table).where(and(...conditions));
+      return result.affectedRows > 0;
+    }
+
+    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
+    const conditions = this.buildWhereConditions(where);
+    let query = this.drizzle.delete(tableOrName);
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
+      query = query.where(where);
+    } else {
+      throw new Error('Unsafe delete blocked: missing where clause');
+    }
+    const [result] = await query;
     return result.affectedRows > 0;
   }
 

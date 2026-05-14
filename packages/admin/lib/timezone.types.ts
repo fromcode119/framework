@@ -16,6 +16,13 @@ export type DateLocaleFormatter = (
   options?: Intl.DateTimeFormatOptions
 ) => string;
 
+export type TimezoneOption = {
+  label: string;
+  value: string;
+  group?: string;
+  section?: string;
+};
+
 export type WindowWithFromcode = Window & {
   Fromcode?: {
     locale?: string;

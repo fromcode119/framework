@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Slot } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminApi } from '@/lib/api';
@@ -14,6 +15,8 @@ import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
+import { TimezoneUtils } from '@/lib/timezone';
+import { DomainAliasesInput } from './domain-aliases-input';
 
 const SettingRow = ({ icon: Icon, title, description, children, theme }: any) => (
   <div className={`py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
@@ -45,6 +48,7 @@ export default function GeneralSettingsPage() {
     notification_email: '',
     notification_email_cc: '',
     frontend_url: '',
+    domain_aliases: [] as string[],
     timezone: 'UTC',
     frontend_auth_enabled: true,
     frontend_registration_enabled: true
@@ -56,7 +60,14 @@ export default function GeneralSettingsPage() {
         const newSettings = { ...settings };
         const response = await AdminSystemSettingsClient.getAll();
         Object.entries(response || {}).forEach(([key, value]) => {
-          if (settings.hasOwnProperty(key)) {
+          if (key === 'domain_aliases') {
+            try {
+              const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+              newSettings['domain_aliases'] = Array.isArray(parsed) ? parsed : [];
+            } catch {
+              newSettings['domain_aliases'] = [];
+            }
+          } else if (settings.hasOwnProperty(key)) {
             newSettings[key] = ['email_notifications', 'frontend_auth_enabled', 'frontend_registration_enabled'].includes(key)
               ? value === true || value === 'true'
               : value;
@@ -70,6 +81,11 @@ export default function GeneralSettingsPage() {
     fetchSettings();
   }, []);
 
+  const timezoneOptions = useMemo(
+    () => TimezoneUtils.getTimezoneOptions(String(settings.timezone ?? '').trim()),
+    [settings.timezone]
+  );
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -79,6 +95,7 @@ export default function GeneralSettingsPage() {
           notification_email: String(settings.notification_email ?? '').trim(),
           notification_email_cc: String(settings.notification_email_cc ?? '').trim(),
           frontend_url: String(settings.frontend_url ?? '').trim(),
+          domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
           timezone: String(settings.timezone ?? '').trim(),
           frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
         frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
@@ -182,6 +199,19 @@ export default function GeneralSettingsPage() {
             />
           </SettingRow>
 
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Domain Aliases"
+            description="Additional hostnames that serve your frontend. Allowed through CORS and used for multi-domain deployments."
+          >
+            <DomainAliasesInput
+              value={Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []}
+              onChange={(aliases) => setSettings((prev) => ({ ...prev, domain_aliases: aliases }))}
+              theme={theme}
+            />
+          </SettingRow>
+
           <SettingRow 
             theme={theme}
             icon={FrameworkIcons.Palette} 
@@ -206,21 +236,16 @@ export default function GeneralSettingsPage() {
             title="System Timezone" 
             description="The default timezone for content scheduling and logging."
           >
-            <select
+            <Select
               value={settings.timezone}
-              onChange={(e) => setSettings(prev => ({ ...prev, timezone: e.target.value }))}
-              className={`w-full md:w-64 h-11 rounded-xl py-2 px-4 outline-none border transition-all text-sm font-bold ${
-                theme === 'dark' 
-                  ? 'bg-slate-900 border-slate-800 text-white' 
-                  : 'bg-white border-slate-200 text-slate-900'
-              }`}
-            >
-              <option value="UTC">UTC (Universal Time)</option>
-              <option value="America/New_York">Eastern Time (ET)</option>
-              <option value="Europe/London">London (GMT/BST)</option>
-              <option value="Europe/Paris">Paris (CET/CEST)</option>
-              <option value="Asia/Tokyo">Tokyo (JST)</option>
-            </select>
+              onChange={(value) => setSettings((prev) => ({ ...prev, timezone: value }))}
+              options={timezoneOptions}
+              placeholder="Select system timezone"
+              searchable
+              theme={theme}
+              className="w-full md:w-80"
+              triggerClassName="font-bold rounded-xl"
+            />
           </SettingRow>
         </Card>
 

@@ -144,14 +144,15 @@ export class RestBulkController {
 
       const table = QueryHelper.getVirtualTable(collection);
       const primaryKey = collection.primaryKey || 'id';
+      const parsedIds = ids.map((id: any) => this.runtime.requireRecordIdentifier(collection, String(id)));
       const success = await this.runtime.db.delete(
         table,
-        this.runtime.db.inArray(table[primaryKey], ids.map((id: any) => primaryKey === 'id' ? parseInt(id, 10) : id))
+        this.runtime.db.inArray(table[primaryKey], parsedIds)
       );
 
       if (success) {
         this.runtime.emitCollectionEvent(collection, 'deleted', {
-          ids: ids.map((id: any) => primaryKey === 'id' ? parseInt(id, 10) : id),
+          ids: parsedIds,
           count: ids.length,
         });
       }

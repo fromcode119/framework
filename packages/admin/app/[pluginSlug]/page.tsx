@@ -2,7 +2,7 @@
 
 import React, { use } from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
-import CollectionListPage from '@/components/collection/collection-list-page';
+import CollectionListPage from '@/components/collection/list';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { PluginNotFound } from '@/components/plugins/plugin-not-found';
 import { Loader } from '@/components/ui/loader';

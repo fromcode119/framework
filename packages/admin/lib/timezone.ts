@@ -2,6 +2,7 @@ import type {
   ZonedDateParts,
   LocaleArg,
   DateLocaleFormatter,
+  TimezoneOption,
   WindowWithFromcode,
 } from './timezone.types';
 
@@ -64,6 +65,23 @@ export class TimezoneUtils {
       if (fromNavigator) return fromNavigator;
 
       return DEFAULT_LOCALE;
+
+  }
+
+  static getTimezoneOptions(preferred?: string): TimezoneOption[] {
+      const knownTimezones = new Set<string>(TimezoneUtils.readSupportedTimezoneValues());
+      const explicit = String(preferred || '').trim();
+      if (explicit && TimezoneUtils.isValidTimezone(explicit)) {
+        knownTimezones.add(explicit);
+      }
+
+      return Array.from(knownTimezones)
+        .sort((left, right) => left.localeCompare(right))
+        .map((timezone) => ({
+          value: timezone,
+          label: TimezoneUtils.formatTimezoneLabel(timezone),
+          group: timezone.includes('/') ? timezone.split('/')[0] : 'General'
+        }));
 
   }
 
@@ -187,6 +205,24 @@ export class TimezoneUtils {
     const direct = String(win?.Fromcode?.settings?.timezone || '').trim();
     if (direct) return direct;
     return String(win?.Fromcode?.getState?.()?.settings?.timezone || '').trim();
+  }
+
+  private static readSupportedTimezoneValues(): string[] {
+    const intlWithSupportedValues = Intl as typeof Intl & {
+      supportedValuesOf?: (key: 'timeZone') => string[];
+    };
+    const timezoneValues = intlWithSupportedValues.supportedValuesOf?.('timeZone');
+    if (Array.isArray(timezoneValues) && timezoneValues.length > 0) {
+      return timezoneValues;
+    }
+    return [DEFAULT_TIMEZONE];
+  }
+
+  private static formatTimezoneLabel(timezone: string): string {
+    return String(timezone || '')
+      .split('/')
+      .map((segment) => segment.replace(/_/g, ' '))
+      .join(' / ');
   }
 
   private static withTimezoneOption(options: Intl.DateTimeFormatOptions | undefined, timezone: string): Intl.DateTimeFormatOptions {

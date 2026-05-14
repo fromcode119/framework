@@ -57,6 +57,22 @@ export class RestControllerRuntime {
     return primaryKey === 'id' ? parseInt(id, 10) : id;
   }
 
+  requireRecordIdentifier(collection: Collection, id: string): any {
+    const primaryKey = collection.primaryKey || 'id';
+    const parsedId = this.parseRecordIdentifier(collection, id);
+    if (primaryKey === 'id') {
+      if (Number.isFinite(parsedId)) {
+        return parsedId;
+      }
+    } else if (typeof parsedId === 'string' && parsedId.trim()) {
+      return parsedId.trim();
+    }
+
+    const error = new Error(`Invalid ${primaryKey} identifier`);
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
   async insertCollectionRecord(collection: Collection, table: any, data: any): Promise<any> {
     const primaryKey = collection.primaryKey;
     if (!primaryKey || primaryKey === 'id' || data[primaryKey] === undefined) {

@@ -227,8 +227,17 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       return (result.rowCount || 0) > 0;
     }
     
+    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
     const conditions = this.buildWhereConditions(where);
-    const result = await this.drizzle.delete(tableOrName).where(and(...conditions)).returning();
+    let query = this.drizzle.delete(tableOrName);
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
+      query = query.where(where);
+    } else {
+      throw new Error('Unsafe delete blocked: missing where clause');
+    }
+    const result = await query.returning();
     return result.length > 0;
   }
 

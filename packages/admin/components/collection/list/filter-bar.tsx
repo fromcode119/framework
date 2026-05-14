@@ -3,7 +3,7 @@
 import React from 'react';
 import { FrameworkIcons } from '@/lib/icons';
 import { Select } from '@/components/ui/select';
-import { CollectionListUtils } from '../collection-list-utils';
+import { CollectionListUtils } from './utils';
 
 interface FilterBarProps {
   collection?: any;
@@ -49,8 +49,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   prettifyColumnName
 }) => {
   return (
-    <div className="flex flex-col md:flex-row items-center gap-2 flex-1 w-full min-w-0">
-      <div className="flex-1 w-full md:min-w-[200px] relative group">
+    <div className="flex flex-wrap items-start gap-2 flex-1 w-full min-w-0">
+      <div className="relative group min-w-[220px] flex-[1_1_320px] w-full">
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
           <FrameworkIcons.Search size={18} />
         </div>
@@ -68,7 +68,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       </div>
 
       {statusOptions.length > 0 && (
-        <div className="w-full md:w-44 shrink-0">
+        <div className="w-full sm:w-44 shrink-0">
           <Select
             value={statusFilter}
             onChange={(value) => {
@@ -91,11 +91,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
       )}
 
-      <div className="w-full md:w-auto relative shrink-0" ref={columnsMenuRef}>
+      <div className="w-full sm:w-auto relative shrink-0" ref={columnsMenuRef}>
         <button
           type="button"
           onClick={() => setShowColumnsMenu((prev) => !prev)}
-          className={`w-full md:w-auto h-11 px-4 rounded-xl border text-sm font-semibold inline-flex items-center justify-center gap-2 leading-none shadow-sm transition-all shrink-0 ${
+          className={`w-full sm:w-auto h-11 px-4 rounded-xl border text-sm font-semibold inline-flex items-center justify-center gap-2 leading-none shadow-sm transition-all shrink-0 ${
             theme === 'dark'
               ? 'bg-slate-900/60 border-slate-800 text-slate-200 hover:border-indigo-500/60'
               : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400'
@@ -159,33 +159,29 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         )}
       </div>
 
-      {selectFilterFields.length > 0 && (
-        <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-2">
-          {selectFilterFields.map((field: any) => (
-            <div key={field.name} className="w-full md:w-44 shrink-0">
-              <Select
-                value={fieldFilters[field.name] || 'all'}
-                onChange={(value) => {
-                  setFieldFilters((prev) => ({ ...prev, [field.name]: value }));
-                  setPage(1);
-                }}
-                theme={theme}
-                searchable={false}
-                size="md"
-                className="w-full"
-                triggerClassName="h-11 rounded-xl px-4 text-sm font-semibold"
-                options={[
-                  { label: `All ${field.label || prettifyColumnName(field.name)}`, value: 'all' },
-                  ...(field.options || []).map((option: any) => ({
-                    label: String(option?.label || option?.value || ''),
-                    value: String(option?.value || '')
-                  }))
-                ]}
-              />
-            </div>
-          ))}
+      {selectFilterFields.map((field: any) => (
+        <div key={field.name} className="w-full sm:w-44 shrink-0">
+          <Select
+            value={fieldFilters[field.name] || 'all'}
+            onChange={(value) => {
+              setFieldFilters((prev) => ({ ...prev, [field.name]: value }));
+              setPage(1);
+            }}
+            theme={theme}
+            searchable={false}
+            size="md"
+            className="w-full"
+            triggerClassName="h-11 rounded-xl px-4 text-sm font-semibold"
+            options={[
+              { label: `All ${field.label || prettifyColumnName(field.name)}`, value: 'all' },
+              ...(field.options || []).map((option: any) => ({
+                label: String(option?.label || option?.value || ''),
+                value: String(option?.value || '')
+              }))
+            ]}
+          />
         </div>
-      )}
+      ))}
     </div>
   );
 };
