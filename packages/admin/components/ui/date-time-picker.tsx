@@ -52,7 +52,7 @@ export const DateTimePicker = ({
   const utcDate = TimezoneUtils.parseDateValue(value);
   const zonedParts = TimezoneUtils.getZonedDateParts(utcDate, timezone);
   const pickerDate = zonedParts
-    ? new Date(zonedParts.year, zonedParts.month - 1, zonedParts.day)
+    ? new Date(zonedParts.year, zonedParts.month - 1, zonedParts.day, 12, 0, 0)
     : undefined;
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => pickerDate || new Date());
   const [isJumpViewOpen, setIsJumpViewOpen] = useState(false);
@@ -130,6 +130,13 @@ export const DateTimePicker = ({
 
   const commitDate = (selectedDate: Date, shouldClose: boolean) => {
     const baseTime = zonedParts || TimezoneUtils.getZonedDateParts(new Date(), timezone);
+    // CRITICAL: DayPicker creates Date objects at midnight in the browser's local timezone.
+    // The Date constructor: new Date(2026, 0, 7) creates Jan 7, 2026 at 00:00:00 local time.
+    // When we call .getFullYear(), .getMonth(), .getDate() on this Date, we get the LOCAL
+    // calendar values (2026, 0, 7), which is exactly what we want.
+    // We then pass these calendar values to zonedPartsToUtcDate with the system timezone
+    // to create the correct UTC timestamp representing that calendar day at midnight in
+    // the system timezone.
     const finalUtcDate = TimezoneUtils.zonedPartsToUtcDate({
       year: selectedDate.getFullYear(),
       month: selectedDate.getMonth() + 1,
@@ -393,8 +400,8 @@ export const DateTimePicker = ({
                       ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95' 
                       : 'text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`,
                   selected: theme === 'dark'
-                    ? "bg-indigo-500 !text-white hover:bg-indigo-500 shadow-xl shadow-indigo-500/40 ring-1 ring-indigo-400/50 scale-105"
-                    : "bg-indigo-600 !text-white hover:bg-indigo-600 shadow-xl shadow-indigo-600/30 ring-1 ring-indigo-500/50 scale-105",
+                    ? "!bg-indigo-500 !text-white hover:!bg-indigo-500 shadow-xl shadow-indigo-500/40 ring-2 ring-indigo-400/50 scale-105"
+                    : "!bg-indigo-600 !text-white hover:!bg-indigo-600 shadow-xl shadow-indigo-600/40 ring-2 ring-indigo-500/60 scale-105",
                   today: theme === 'dark'
                     ? "ring-2 ring-indigo-400/30 text-indigo-300 font-bold"
                     : "ring-2 ring-indigo-500/30 text-indigo-600 font-bold",
