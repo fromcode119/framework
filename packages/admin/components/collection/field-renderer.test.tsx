@@ -5,10 +5,12 @@ import React from 'react';
 
 // Mock usePlugins
 vi.mock('@fromcode119/react', () => ({
-  usePlugins: vi.fn(() => ({
-    collections: [],
-    fieldComponents: {}
-  })),
+  ContextHooks: {
+    usePlugins: vi.fn(() => ({
+      collections: [],
+      fieldComponents: {}
+    })),
+  },
   Slot: ({ children }: any) => <div>{children}</div>
 }));
 
@@ -18,7 +20,12 @@ vi.mock('@/lib/icons', () => {
   return {
     FrameworkIcons: {
       Alert: MockIcon,
-      Refresh: MockIcon
+      Refresh: MockIcon,
+      Lock: MockIcon,
+      Check: MockIcon,
+      Globe: MockIcon,
+      Down: MockIcon,
+      Close: MockIcon,
     }
   };
 });
@@ -150,5 +157,41 @@ describe('./field-renderer', () => {
     expect(screen.getByTestId('mock-select')).toBeInTheDocument();
     expect(screen.getByText('Yes')).toBeInTheDocument();
     expect(screen.getByText('No')).toBeInTheDocument();
+  });
+
+  it('allows requesting a password override for read-only fields by default', () => {
+    const onReadOnlyOverrideRequest = vi.fn();
+    render(
+      <FieldRenderer
+        field={{ name: 'invoiceNumber', type: 'text', label: 'Invoice Number', admin: { readOnly: true } } as any}
+        value="INV-001"
+        onChange={vi.fn()}
+        theme="light"
+        collectionSlug="invoices"
+        onReadOnlyOverrideRequest={onReadOnlyOverrideRequest}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('Override read-only field Invoice Number'));
+
+    expect(onReadOnlyOverrideRequest).toHaveBeenCalledWith({
+      name: 'invoiceNumber',
+      label: 'Invoice Number'
+    });
+  });
+
+  it('keeps read-only fields locked when the schema explicitly disables override', () => {
+    render(
+      <FieldRenderer
+        field={{ name: 'invoiceNumber', type: 'text', label: 'Invoice Number', admin: { readOnly: true, readOnlyOverride: false } } as any}
+        value="INV-001"
+        onChange={vi.fn()}
+        theme="light"
+        collectionSlug="invoices"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByLabelText('Override read-only field Invoice Number')).not.toBeInTheDocument();
   });
 });

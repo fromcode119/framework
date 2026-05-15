@@ -27,7 +27,15 @@ export class CollectionFieldGuard {
   }
 
   isReadOnlyOverrideable(field: any): boolean {
-    return Boolean(field?.admin?.readOnly && (field?.admin?.readOnlyOverride === 'password' || field?.admin?.allowReadOnlyOverride === true));
+    if (!field?.admin?.readOnly) return false;
+    if (
+      field?.admin?.readOnlyOverride === false ||
+      field?.admin?.readOnlyOverride === 'never' ||
+      field?.admin?.allowReadOnlyOverride === false
+    ) {
+      return false;
+    }
+    return true;
   }
 
   normalizeComparableValue(value: any): any {

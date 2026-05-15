@@ -78,9 +78,13 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   const fieldComponents = (plugins as any).fieldComponents || {};
   const settings = (plugins as any)?.settings || {};
   const fieldMarkedReadOnly = Boolean(field.admin?.readOnly);
+  const readOnlyOverrideDisabled =
+    field.admin?.readOnlyOverride === false ||
+    field.admin?.readOnlyOverride === 'never' ||
+    field.admin?.allowReadOnlyOverride === false;
   const supportsReadOnlyOverride =
     fieldMarkedReadOnly &&
-    Boolean(field.admin?.readOnlyOverride === 'password' || field.admin?.allowReadOnlyOverride === true);
+    !readOnlyOverrideDisabled;
   const isFieldReadOnly = Boolean(disabled || (fieldMarkedReadOnly && !readOnlyOverrideGranted));
   const canRequestReadOnlyOverride = Boolean(!disabled && supportsReadOnlyOverride && isFieldReadOnly && onReadOnlyOverrideRequest);
   const isLocalizedField = Boolean(field.localized);
