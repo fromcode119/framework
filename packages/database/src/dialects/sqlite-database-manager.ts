@@ -153,7 +153,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     const normalizedData =
       typeof tableOrName === 'string'
         ? await this.normalizeDataForTable(tableOrName, data)
-        : this.normalizeData(data);
+        : this.normalizeDataForSchemaObject(data);
 
     if (typeof tableOrName === 'string') {
       // Use raw SQL so RETURNING * returns ALL columns (including auto-generated id)
@@ -175,7 +175,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     const normalizedData =
       typeof tableOrName === 'string'
         ? await this.normalizeDataForTable(tableOrName, data)
-        : this.normalizeData(data);
+        : this.normalizeDataForSchemaObject(data);
 
     if (typeof tableOrName === 'string') {
       const normalizedWhere = await this.normalizeWhereForTable(tableOrName, where);
@@ -203,8 +203,8 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
-    const normalizedData = this.normalizeData(data);
-    const normalizedSet = this.normalizeData(options.set);
+    const normalizedData = this.normalizeDataForSchemaObject(data);
+    const normalizedSet = this.normalizeDataForSchemaObject(options.set);
     const query = this.drizzle.insert(tableOrName).values(normalizedData).onConflictDoUpdate({
       target: typeof options.target === 'string' ? (tableOrName as any)[options.target] : options.target,
       set: normalizedSet
@@ -222,6 +222,24 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
         normalized[key] = null;
       } else if (value instanceof Date) {
         normalized[key] = SqliteDateUtils.toSafeIsoDate(value);
+      } else if (typeof value === 'boolean') {
+        normalized[key] = value ? 1 : 0;
+      } else if (value !== null && typeof value === 'object') {
+        normalized[key] = JSON.stringify(value);
+      } else {
+        normalized[key] = value;
+      }
+    }
+    return normalized;
+  }
+
+  private normalizeDataForSchemaObject(data: any): any {
+    const normalized: any = {};
+    for (const [key, value] of Object.entries(data || {})) {
+      if (value === undefined) {
+        normalized[key] = null;
+      } else if (value instanceof Date) {
+        normalized[key] = value;
       } else if (typeof value === 'boolean') {
         normalized[key] = value ? 1 : 0;
       } else if (value !== null && typeof value === 'object') {

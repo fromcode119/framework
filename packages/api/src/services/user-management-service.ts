@@ -6,16 +6,6 @@ import { SystemConstants } from '@fromcode119/core';
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });
-  private toIsoUtc(date: Date): string {
-    const time = date?.getTime?.();
-    if (!Number.isFinite(Number(time))) return '';
-    const safe = new Date(Number(time));
-    const pad = (num: number, size: number = 2) => String(num).padStart(size, '0');
-    return [
-      `${safe.getUTCFullYear()}-${pad(safe.getUTCMonth() + 1)}-${pad(safe.getUTCDate())}`,
-      `${pad(safe.getUTCHours())}:${pad(safe.getUTCMinutes())}:${pad(safe.getUTCSeconds())}.${pad(safe.getUTCMilliseconds(), 3)}Z`,
-    ].join('T');
-  }
 
   constructor(
     private db: IDatabaseManager, 
@@ -78,13 +68,13 @@ export class UserManagementService {
   }
 
   async saveUser(id: number | null, data: any) {
-    const nowIso = this.toIsoUtc(new Date());
+    const now = new Date();
     const updateData: any = {
       email: data.email,
       username: data.username ?? null,
       firstName: data.firstName,
       lastName: data.lastName,
-      updatedAt: nowIso || null,
+      updatedAt: now,
     };
 
     if (data.password) {
@@ -98,10 +88,13 @@ export class UserManagementService {
       const initialPassword = data.password || randomBytes(24).toString('hex');
       const newUser = await this.db.insert(users, {
           email: data.email,
+          username: data.username ?? null,
           password: await this.auth.hashPassword(initialPassword),
           firstName: data.firstName,
-          lastName: data.lastName
-      });
+          lastName: data.lastName,
+          createdAt: now,
+          updatedAt: now,
+        });
       userId = newUser.id;
     }
 
@@ -289,11 +282,12 @@ export class UserManagementService {
   }
 
   private async upsertMeta(key: string, value: string) {
+    const now = new Date();
     const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
     if (existing) {
-      await this.db.update(SystemConstants.TABLE.META, { key }, { value });
+      await this.db.update(SystemConstants.TABLE.META, { key }, { value, updatedAt: now });
       return;
     }
-    await this.db.insert(SystemConstants.TABLE.META, { key, value });
+    await this.db.insert(SystemConstants.TABLE.META, { key, value, updatedAt: now });
   }
 }

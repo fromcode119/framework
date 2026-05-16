@@ -53,6 +53,16 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
     );
   }
 
+  // Manifest declares the slot but the plugin bundle hasn't finished registering its
+  // components yet. Show a spinner instead of flashing CollectionNotFound.
+  if (hasDeclaredPageSlot) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
   if (!collection) {
     if (shouldRedirectToPluginSettings) {
       return (

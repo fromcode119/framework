@@ -168,14 +168,16 @@ export class TimezoneUtils {
 
   static zonedPartsToUtcDate(parts: ZonedDateParts, preferredTimezone?: string): Date {
       const timeZone = TimezoneUtils.resolveSystemTimezone(preferredTimezone);
-      let targetMs = TimezoneUtils.toUtcMsFromParts(parts);
+      const desiredUtcMs = TimezoneUtils.toUtcMsFromParts(parts);
+      let targetMs = desiredUtcMs;
 
       for (let i = 0; i < 3; i += 1) {
         const current = TimezoneUtils.getZonedDateParts(new Date(targetMs), timeZone);
         if (!current) break;
-        const delta = TimezoneUtils.toUtcMsFromParts(current) - targetMs;
-        if (delta === 0) break;
-        targetMs -= delta;
+        const offsetMs = TimezoneUtils.toUtcMsFromParts(current) - targetMs;
+        const nextTargetMs = desiredUtcMs - offsetMs;
+        if (nextTargetMs === targetMs) break;
+        targetMs = nextTargetMs;
       }
 
       return new Date(targetMs);

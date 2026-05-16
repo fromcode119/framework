@@ -5,27 +5,26 @@ import { Slot, ContextHooks } from '@fromcode119/react';
 import CollectionEditPage from '@/components/collection/collection-edit-page';
 import { Loader } from '@/components/ui/loader';
 
-export default function CollectionEditRoute({ params }: { params: Promise<{ pluginSlug: string; slug: string; id: string }> }) {
+export default function CollectionEditSubRoute({ params }: { params: Promise<{ pluginSlug: string; slug: string; id: string }> }) {
   const { pluginSlug, slug, id } = use(params);
   const { slots, plugins, isReady } = ContextHooks.usePlugins();
 
-  const detailSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}.detail`;
+  const editSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}.edit`;
   const activePlugin = plugins.find((p: any) => p.slug === pluginSlug);
-  const hasDetailSlot = !!(slots?.[detailSlot] && slots[detailSlot].length > 0);
-  const hasDeclaredDetailSlot = Boolean(
-    activePlugin?.admin?.slots?.some((entry: any) => entry?.slot === detailSlot),
+  const hasEditSlot = !!(slots?.[editSlot] && slots[editSlot].length > 0);
+  const hasDeclaredEditSlot = Boolean(
+    activePlugin?.admin?.slots?.some((entry: any) => entry?.slot === editSlot),
   );
 
   if (!isReady) {
     return <div className="flex-1 flex items-center justify-center"><Loader /></div>;
   }
 
-  if (hasDetailSlot) {
-    return <Slot name={detailSlot} props={{ id, pluginSlug, entitySlug: slug }} />;
+  if (hasEditSlot) {
+    return <Slot name={editSlot} props={{ id, pluginSlug, entitySlug: slug }} />;
   }
 
-  // Manifest declares the slot but the bundle hasn't yet registered its component.
-  if (hasDeclaredDetailSlot) {
+  if (hasDeclaredEditSlot) {
     return <div className="flex-1 flex items-center justify-center"><Loader /></div>;
   }
 

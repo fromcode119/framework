@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Slot } from '@fromcode119/react';
+import { Copy } from 'lucide-react';
 
 import { FrameworkIcons } from '@/lib/icons';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
@@ -40,6 +41,7 @@ export function CollectionListRowActions({
   const previewUrl = canPreview
     ? AdminCollectionUtils.generatePreviewUrl(frontendUrl, row, collection, permalinkStructure, pluginSettings)
     : '#';
+  const duplicateHref = `/${pluginSlug}/${slug}/new?duplicateFrom=${encodeURIComponent(String(row?.id || ''))}`;
 
   return (
     <div className="ml-auto flex max-w-[16rem] flex-wrap items-center justify-end gap-2">
@@ -67,6 +69,15 @@ export function CollectionListRowActions({
         className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
       >
         <FrameworkIcons.Edit size={16} />
+      </Link>
+      <Link
+        href={duplicateHref}
+        onClick={(event) => event.stopPropagation()}
+        className={`p-2.5 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
+        title="Duplicate record"
+        aria-label="Duplicate record"
+      >
+        <Copy size={16} />
       </Link>
       <button
         onClick={(event) => onQuickEditOpen(row, event)}

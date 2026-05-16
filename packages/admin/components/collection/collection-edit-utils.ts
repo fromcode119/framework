@@ -31,6 +31,33 @@ export class CollectionEditUtils {
     return nextPayload;
   }
 
+  static buildDuplicateFormData(
+    payload: Record<string, any>,
+    fields: any[]
+  ): Record<string, any> {
+    if (!payload || typeof payload !== 'object') return payload;
+
+    const nextPayload = JSON.parse(JSON.stringify(payload));
+    delete nextPayload.id;
+    delete nextPayload.createdAt;
+    delete nextPayload.updatedAt;
+
+    if (Object.prototype.hasOwnProperty.call(nextPayload, 'slug')) {
+      nextPayload.slug = '';
+    }
+    if (Object.prototype.hasOwnProperty.call(nextPayload, 'customPermalink')) {
+      nextPayload.customPermalink = '';
+    }
+
+    (fields || []).forEach((field: any) => {
+      const fieldName = String(field?.name || '').trim();
+      if (!fieldName || !field?.unique || !(fieldName in nextPayload)) return;
+      nextPayload[fieldName] = CollectionEditUtils.resolveDuplicateFieldResetValue(field);
+    });
+
+    return nextPayload;
+  }
+
   /**
    * Revives serialized revision values by parsing JSON strings recursively.
    * 
@@ -158,5 +185,20 @@ export class CollectionEditUtils {
     });
 
     return nextPayload;
+  }
+
+  private static resolveDuplicateFieldResetValue(field: any): any {
+    switch (String(field?.type || '').trim()) {
+      case 'number':
+        return null;
+      case 'boolean':
+      case 'checkbox':
+        return false;
+      case 'relationship':
+      case 'upload':
+        return field?.hasMany ? [] : null;
+      default:
+        return '';
+    }
   }
 }

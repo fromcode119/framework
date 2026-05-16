@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, use, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Slot, ContextHooks, BrowserLocalization } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
@@ -41,6 +41,7 @@ import { CollectionEditUtils } from './collection-edit-utils';
 export default function CollectionEditPage({ params }: { params: Promise<{ pluginSlug: string; slug: string; id: string }> }) {
   const { pluginSlug, slug, id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { theme } = ThemeHooks.useTheme();
   const collections = ContextHooks.useCollections();
   const settings = ContextHooks.useGlobalSettings();
@@ -48,11 +49,12 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   const [pluginSettings, setPluginSettings] = useState<Record<string, any>>({});
   
   const isNew = id === 'new';
+  const duplicateFromId = isNew ? String(searchParams.get('duplicateFrom') || '').trim() : '';
   const collection = AdminCollectionUtils.resolveCollection(collections, pluginSlug, slug);
   const resolvedSlug = collection?.slug || slug;
 
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-  const [loading, setLoading] = useState(!isNew);
+  const [loading, setLoading] = useState(!isNew || Boolean(duplicateFromId));
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [readOnlyOverrideFields, setReadOnlyOverrideFields] = useState<Record<string, true>>({});
@@ -231,6 +233,43 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
       pluginSettings
     );
   };
+
+  useEffect(() => {
+    if (!isNew || !collection) return;
+    if (!duplicateFromId) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchDuplicateSource() {
+      setLoading(true);
+      try {
+        const entryData = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${duplicateFromId}?locale_mode=raw`);
+        if (cancelled) return;
+        setFormData(
+          CollectionEditUtils.normalizeCollectionFormData(
+            CollectionEditUtils.buildDuplicateFormData(entryData, collection?.fields || []),
+            collection?.fields || []
+          )
+        );
+        setStatus({ type: 'success', message: 'Duplicate loaded. Review the values and save to create a new record.' });
+      } catch (err: any) {
+        if (cancelled) return;
+        console.error("Failed to load duplicate source:", err);
+        setStatus({ type: 'error', message: err?.message || 'Failed to load duplicate source' });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchDuplicateSource();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [collection, duplicateFromId, isNew, resolvedSlug, setFormData]);
 
   useEffect(() => {
     if (isNew || !collection) return;
