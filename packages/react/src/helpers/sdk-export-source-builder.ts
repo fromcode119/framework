@@ -58,6 +58,7 @@ export class SdkExportSourceBuilder {
     'RecordVersions',
     'PluginCapability',
     'MiddlewareStage',
+    'InteractiveCanvas',
   ];
 
   static build(reactModuleAccessor: string): string {

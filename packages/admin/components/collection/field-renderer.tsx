@@ -286,21 +286,32 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
               Override unlocked
             </span>
           )}
-          {isFieldReadOnly && (
+          {isFieldReadOnly && (canRequestReadOnlyOverride ? (
+            <button
+              type="button"
+              onClick={requestReadOnlyOverride}
+              title={`Unlock "${label}" to edit`}
+              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[9px] font-semibold tracking-wide border transition-colors ${
+                theme === 'dark'
+                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/15'
+                  : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+              }`}
+            >
+              <FrameworkIcons.Lock size={10} />
+              Unlock edit
+            </button>
+          ) : (
             <span
-              title={canRequestReadOnlyOverride ? `Click field to override "${label}"` : undefined}
-              className={`inline-flex items-center gap-1 rounded-lg font-semibold border ${
-                canRequestReadOnlyOverride ? 'h-5 px-1.5 text-[8px] tracking-normal' : 'h-6 px-2 text-[9px] tracking-wide'
-              } ${
+              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[9px] font-semibold tracking-wide border ${
                 theme === 'dark'
                   ? 'bg-slate-900 border-slate-700 text-slate-300'
                   : 'bg-white border-slate-200 text-slate-500'
               }`}
             >
               <FrameworkIcons.Lock size={10} />
-              {canRequestReadOnlyOverride ? 'Read only' : 'Read only'}
+              Read only
             </span>
-          )}
+          ))}
           {isLocalizedField && !componentHandlesLocalization && !shouldInlineLocaleSwitcher && localeSwitcher(false)}
         </div>
       </div>
@@ -448,15 +459,19 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             value: option?.value
           }));
           const isMultiSelect = Boolean(field.admin?.multiple || (field as any).multiple);
+          const resolvedSelectValue = currentValue === undefined || currentValue === null
+            ? (field.defaultValue ?? '')
+            : currentValue;
 
           if (!isMultiSelect) {
             return wrapWithReadOnlyOverride(
               <Select
-                value={currentValue || field.defaultValue || ''}
+                value={resolvedSelectValue}
                 options={options}
                 onChange={updateValue}
                 disabled={isFieldReadOnly}
                 theme={theme}
+                clearable={Boolean(field.admin?.clearable)}
               />
             );
           }

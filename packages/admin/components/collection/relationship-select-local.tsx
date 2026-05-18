@@ -179,6 +179,7 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
       searchable
       onSearchChange={setSearch}
       theme={theme}
+      clearable={Boolean(field.admin?.clearable)}
     />
   );
 };

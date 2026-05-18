@@ -21,6 +21,7 @@ import {
   CollectionScopeClient,
   CollectionUtils,
   CoercionUtils,
+  InteractiveCanvas,
   CoreServices,
   CookieConstants,
   DataSourceConstants,
@@ -178,6 +179,7 @@ export class BridgeObjectBuilder {
       RecordVersions,
       PluginCapability,
       MiddlewareStage,
+      InteractiveCanvas,
     };
   }
 }

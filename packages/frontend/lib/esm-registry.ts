@@ -60,6 +60,8 @@ export class EsmRegistry {
       'RecordVersions',
       'PluginCapability',
       'MiddlewareStage',
+      'InteractiveCanvas',
+      'SystemAuthSession',
     ];
     const sdkExportSource =
       sdkExportKeys

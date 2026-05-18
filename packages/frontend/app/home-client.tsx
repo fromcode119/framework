@@ -248,7 +248,7 @@ function renderContent(content: any) {
 
   return (
     <div className="w-full">
-      <Slot name="frontend.content.display" props={{ content: rawContent }} />
+      <Slot name="frontend.content.display" props={{ content: rawContent, entry: content }} />
 
       {(typeof rawContent === 'string') && (
         <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">

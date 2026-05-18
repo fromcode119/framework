@@ -117,3 +117,6 @@ export { BaseController } from './base/base-controller';
 export { IntegrationRegistry } from './integrations/integration-registry';
 export type { IntegrationTypeDefinition } from './integrations/integration-registry.interfaces';
 export type { PluginApiResolver } from './plugin-api-resolver.interfaces';
+
+// ── Interactive Canvas (visual editor primitives) ─────────────────────────────
+export { InteractiveCanvas } from './interactive-canvas/interactive-canvas-context';

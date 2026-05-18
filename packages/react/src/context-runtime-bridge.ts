@@ -59,6 +59,14 @@ export class ContextRuntimeBridge {
       };
     }
 
+    if (!fc.InteractiveCanvas) {
+      fc.InteractiveCanvas = {
+        Provider: ({ children }: any) => children,
+        Wrapper: ({ children }: any) => children,
+        use: () => ({ state: { isEnabled: false, targetId: null }, toggleEnabled: () => {}, setTargetId: () => {} }),
+      };
+    }
+
     fc.getIcon = args.getIcon;
     fc.FrameworkIcons = args.FrameworkIcons;
     (window as any).FrameworkIcons = args.FrameworkIcons;
