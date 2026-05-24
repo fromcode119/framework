@@ -56,6 +56,18 @@ export class PluginDefaultPageBackfillService extends BaseService {
       return this.createBaseEntry(contract, lookupCandidates, 'blocked', 'blocked', undefined, undefined, contract.reasons);
     }
 
+    if (this.isRuntimeParameterizedContract(contract)) {
+      return this.createBaseEntry(
+        contract,
+        lookupCandidates,
+        'deferred',
+        'deferred',
+        undefined,
+        undefined,
+        this.createReasons(contract.reasons, 'parameterized-route-deferred'),
+      );
+    }
+
     if (contract.materializationMode === 'per-record-document') {
       return this.createBaseEntry(
         contract,
@@ -337,5 +349,19 @@ export class PluginDefaultPageBackfillService extends BaseService {
 
   private isSameIdentifier(left: number | string | undefined, right: number | string | undefined): boolean {
     return left !== undefined && right !== undefined && String(left) === String(right);
+  }
+
+  private isRuntimeParameterizedContract(contract: ResolvedPluginDefaultPageContract): boolean {
+    return contract.materializationMode === 'singleton-document' && this.hasPathParameters(contract.effectiveSlug);
+  }
+
+  private hasPathParameters(value: string): boolean {
+    return String(value || '')
+      .trim()
+      .split('?')[0]
+      .split('#')[0]
+      .split('/')
+      .filter(Boolean)
+      .some((segment) => segment.startsWith(':'));
   }
 }

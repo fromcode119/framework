@@ -22,6 +22,9 @@ import {
   CollectionUtils,
   CoercionUtils,
   InteractiveCanvas,
+  LiveBlocks,
+  LocalizedField,
+  PublicSettings,
   CoreServices,
   CookieConstants,
   DataSourceConstants,
@@ -37,6 +40,7 @@ import {
   NamespacedPluginsFacade,
   NumberUtils,
   PaginationUtils,
+  PluginFrontendDefaultDesignRegistrar,
   PluginCapability,
   PluginDefinitionUtils,
   Plugins,
@@ -58,6 +62,7 @@ import {
   SystemAuthClient,
   SystemAuthSession,
   SystemConstants,
+  ThemeFrontendDefaultDesignRegistrar,
   UrlUtils,
   ApiVersionUtils,
 } from '@fromcode119/core/client';
@@ -176,10 +181,15 @@ export class BridgeObjectBuilder {
       EnvConfig,
       CapabilityRegistry,
       IntegrationRegistry,
+      PluginFrontendDefaultDesignRegistrar,
+      ThemeFrontendDefaultDesignRegistrar,
       RecordVersions,
       PluginCapability,
       MiddlewareStage,
       InteractiveCanvas,
+      LiveBlocks,
+      LocalizedField,
+      PublicSettings,
     };
   }
 }

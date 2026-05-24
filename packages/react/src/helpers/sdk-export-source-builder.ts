@@ -55,10 +55,15 @@ export class SdkExportSourceBuilder {
     'EnvConfig',
     'CapabilityRegistry',
     'IntegrationRegistry',
+    'PluginFrontendDefaultDesignRegistrar',
+    'ThemeFrontendDefaultDesignRegistrar',
     'RecordVersions',
     'PluginCapability',
     'MiddlewareStage',
     'InteractiveCanvas',
+    'LiveBlocks',
+    'LocalizedField',
+    'PublicSettings',
   ];
 
   static build(reactModuleAccessor: string): string {

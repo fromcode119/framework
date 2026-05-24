@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailHeaderProps } from '../plugin-detail-page.interfaces';

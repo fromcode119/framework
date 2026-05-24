@@ -6,11 +6,11 @@ import Sidebar from './sidebar';
 import SecondarySidebar from './secondary-sidebar';
 import AdminExtensionLoader from './admin-extension-loader';
 import ClientLayoutHeader from './client-layout-header';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { AdminConstants } from '@/lib/constants';
 import { AuthUtils } from '@/lib/auth-utils';
-import type { ClientLayoutChildrenProps } from './client-layout.types';
+import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
 import { ClientLayoutAuthStateHooks } from './services/client-layout-auth-state-hooks';
 import { ClientLayoutNavigationStateHooks } from './services/client-layout-navigation-state-hooks';
 

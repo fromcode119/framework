@@ -161,4 +161,90 @@ export class LocalizationUtils {
     if (!locale) return LocalizationUtils.resolveAnyString(value);
     return LocalizationUtils.resolveLabel(value, locale);
   }
+
+  // ── Registry + per-field locale helpers ─────────────────────────────────────
+
+  /** Parse the active locale registry from a settings record. Reads
+   * `localization_locales`: accepts an array, a JSON string, or a values-only
+   * object. Returns [{code, label}] entries; skips disabled or duplicates. */
+  static parseLocaleRegistry(
+    settings: Record<string, unknown> | null | undefined,
+  ): Array<{ code: string; label: string }> {
+    const out: Array<{ code: string; label: string }> = [];
+    const raw: any = settings?.localization_locales;
+    const ingest = (items: any[]) => {
+      for (const item of items) {
+        const code = LocalizationUtils.normalizeLocaleCode(
+          String((item as any)?.code || (item as any)?.isoCode || (item as any)?.locale || ''),
+        );
+        if (!code || (item as any)?.enabled === false || out.some((e) => e.code === code)) continue;
+        out.push({ code, label: String((item as any)?.name || code).trim() || code.toUpperCase() });
+      }
+    };
+    if (Array.isArray(raw)) ingest(raw);
+    else if (typeof raw === 'string' && raw.trim()) {
+      try { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) ingest(parsed); } catch { /* noop */ }
+    } else if (raw && typeof raw === 'object') {
+      const values = Object.values(raw);
+      if (values.length && values.every((item) => item && typeof item === 'object')) ingest(values);
+    }
+    return out;
+  }
+
+  /** Resolve the default locale code for a given scope by reading settings. */
+  static resolveAdminLocale(
+    settings: Record<string, unknown> | null | undefined,
+    registry?: Array<{ code: string; label: string }>,
+  ): string {
+    return LocalizationUtils.resolvePreferredLocale(settings, registry, ['admin_default_locale', 'default_locale']);
+  }
+
+  static resolveFrontendLocale(
+    settings: Record<string, unknown> | null | undefined,
+    registry?: Array<{ code: string; label: string }>,
+  ): string {
+    return LocalizationUtils.resolvePreferredLocale(settings, registry, ['frontend_default_locale', 'default_locale']);
+  }
+
+  private static resolvePreferredLocale(
+    settings: Record<string, unknown> | null | undefined,
+    registry: Array<{ code: string; label: string }> | undefined,
+    keys: string[],
+  ): string {
+    for (const key of keys) {
+      const normalized = LocalizationUtils.normalizeLocaleCode(String(settings?.[key] || ''), { short: true });
+      if (normalized) return normalized;
+    }
+    return String(registry?.[0]?.code || '').trim();
+  }
+
+  /** Read the value for a specific locale from a possibly-localized field. */
+  static readLocalizedValue(value: unknown, locale: string): string {
+    if (typeof value === 'string') return value.trim();
+    const normalized = LocalizationUtils.normalizeLocaleCode(locale, { short: true });
+    if (!normalized) return '';
+    const map = LocalizationUtils.toLocaleMap(value);
+    return String(map[normalized] || '').trim();
+  }
+
+  /** Patch a single locale slot on a field value, returning a new locale map. */
+  static writeLocalizedValue(currentValue: unknown, locale: string, nextValue: string): Record<string, string> {
+    const normalized = LocalizationUtils.normalizeLocaleCode(locale, { short: true });
+    const nextMap = LocalizationUtils.toLocaleMap(currentValue, normalized);
+    if (!normalized) return nextMap;
+    nextMap[normalized] = String(nextValue || '');
+    return nextMap;
+  }
+
+  static toLocaleMap(value: unknown, locale?: string): Record<string, string> {
+    if (LocalizationUtils.isLocaleMap(value)) {
+      return Object.entries(value as Record<string, unknown>).reduce((acc, [key, entry]) => {
+        const normalized = LocalizationUtils.normalizeLocaleCode(key, { short: true });
+        if (normalized) acc[normalized] = String(entry || '');
+        return acc;
+      }, {} as Record<string, string>);
+    }
+    if (typeof value === 'string' && value.trim() && locale) return { [locale]: value.trim() };
+    return {};
+  }
 }

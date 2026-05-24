@@ -5,7 +5,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { useRouter } from 'next/navigation';

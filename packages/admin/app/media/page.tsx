@@ -12,7 +12,7 @@ import { PromptDialog } from '@/components/ui/prompt-dialog';
 import { MoveDialog } from '@/components/ui/move-dialog';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
 
 const { 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';

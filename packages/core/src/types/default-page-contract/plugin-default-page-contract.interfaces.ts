@@ -11,6 +11,8 @@ export interface PluginDefaultPageContract {
   recordCollection?: string;
   capability: string;
   recipe: string;
+  title?: string;
+  themeLayout?: string;
   materializationMode: PluginDefaultPageContractMaterializationMode;
   dependencies: PluginDefaultPageContractDependency[];
   adoptionHints: string[];

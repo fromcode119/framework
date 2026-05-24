@@ -4,12 +4,19 @@ import { MenuService } from './menu-service';
 import { CollectionService } from './collection-service';
 import { CollectionWriteCompatibilityService } from './collection-write-compatibility-service';
 import { CollectionIdentityService } from './collection-identity-service';
+import { EntityValueParserService } from './entity-value-parser-service';
+import { DefaultDesignDiagnosticService } from '../plugin/default-design/default-design-diagnostic-service';
+import { DefaultDesignLifecycleService } from '../plugin/default-design/default-design-lifecycle-service';
+import { DefaultDesignResolutionService } from '../plugin/default-design/default-design-resolution-service';
+import { DefaultDesignRuntimeBridgeService } from '../plugin/default-design/default-design-runtime-bridge-service';
+import { PluginDefaultDesignRegistryService } from '../plugin/default-design/plugin-default-design-registry-service';
 import { PluginDefaultPageBackfillService } from './default-page-contract/plugin-default-page-backfill-service';
 import { PluginDefaultPageDiagnosticService } from './default-page-contract/plugin-default-page-diagnostic-service';
 import { PluginDefaultPageMaterializationService } from './default-page-contract/plugin-default-page-materialization-service';
 import { PluginDefaultPageContractRegistryService } from './default-page-contract/plugin-default-page-contract-registry-service';
 import { PluginDefaultPageContractResolutionService } from './default-page-contract/plugin-default-page-contract-resolution-service';
 import { SeedPageService } from './seed-page-service';
+import { ThemeDesignOverrideRegistryService } from '../theme/theme-design-override-registry-service';
 
 /**
  * Core Services Singleton.
@@ -50,12 +57,19 @@ export class CoreServices {
   private _collection: CollectionService | null = null;
   private _collectionWriteCompatibility: CollectionWriteCompatibilityService | null = null;
   private _collectionIdentity: CollectionIdentityService | null = null;
+  private _entityValueParser: EntityValueParserService | null = null;
+  private _defaultDesignDiagnostic: DefaultDesignDiagnosticService | null = null;
+  private _defaultDesignLifecycle: DefaultDesignLifecycleService | null = null;
+  private _defaultDesignRegistry: PluginDefaultDesignRegistryService | null = null;
+  private _defaultDesignResolution: DefaultDesignResolutionService | null = null;
+  private _defaultDesignRuntimeBridge: DefaultDesignRuntimeBridgeService | null = null;
   private _defaultPageContracts: PluginDefaultPageContractRegistryService | null = null;
   private _defaultPageContractResolution: PluginDefaultPageContractResolutionService | null = null;
   private _defaultPageBackfill: PluginDefaultPageBackfillService | null = null;
   private _defaultPageDiagnostic: PluginDefaultPageDiagnosticService | null = null;
   private _defaultPageMaterialization: PluginDefaultPageMaterializationService | null = null;
   private _seedPage: SeedPageService | null = null;
+  private _themeDesignOverrides: ThemeDesignOverrideRegistryService | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -123,6 +137,70 @@ export class CoreServices {
       this._collectionIdentity = new CollectionIdentityService();
     }
     return this._collectionIdentity;
+  }
+
+  get entityValueParser(): EntityValueParserService {
+    if (!this._entityValueParser) {
+      this._entityValueParser = new EntityValueParserService();
+    }
+    return this._entityValueParser;
+  }
+
+  get defaultDesignRegistry(): PluginDefaultDesignRegistryService {
+    if (!this._defaultDesignRegistry) {
+      this._defaultDesignRegistry = new PluginDefaultDesignRegistryService();
+    }
+    return this._defaultDesignRegistry;
+  }
+
+  get themeDesignOverrides(): ThemeDesignOverrideRegistryService {
+    if (!this._themeDesignOverrides) {
+      this._themeDesignOverrides = new ThemeDesignOverrideRegistryService();
+    }
+    return this._themeDesignOverrides;
+  }
+
+  get defaultDesignResolution(): DefaultDesignResolutionService {
+    if (!this._defaultDesignResolution) {
+      this._defaultDesignResolution = new DefaultDesignResolutionService(
+        this.defaultDesignRegistry,
+        this.themeDesignOverrides,
+      );
+    }
+    return this._defaultDesignResolution;
+  }
+
+  get defaultDesignDiagnostic(): DefaultDesignDiagnosticService {
+    if (!this._defaultDesignDiagnostic) {
+      this._defaultDesignDiagnostic = new DefaultDesignDiagnosticService(
+        this.defaultDesignRegistry,
+        this.defaultDesignResolution,
+      );
+    }
+    return this._defaultDesignDiagnostic;
+  }
+
+  get defaultDesignLifecycle(): DefaultDesignLifecycleService {
+    if (!this._defaultDesignLifecycle) {
+      this._defaultDesignLifecycle = new DefaultDesignLifecycleService(
+        this.defaultDesignRegistry,
+        this.themeDesignOverrides,
+      );
+    }
+    return this._defaultDesignLifecycle;
+  }
+
+  get defaultDesignRuntimeBridge(): DefaultDesignRuntimeBridgeService {
+    if (!this._defaultDesignRuntimeBridge) {
+      this._defaultDesignRuntimeBridge = new DefaultDesignRuntimeBridgeService(
+        this.defaultDesignRegistry,
+        this.themeDesignOverrides,
+        this.defaultDesignResolution,
+        this.defaultDesignDiagnostic,
+        this.defaultDesignLifecycle,
+      );
+    }
+    return this._defaultDesignRuntimeBridge;
   }
 
   get defaultPageContracts(): PluginDefaultPageContractRegistryService {

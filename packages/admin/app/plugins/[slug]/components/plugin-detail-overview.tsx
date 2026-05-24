@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailOverviewProps } from '../plugin-detail-page.interfaces';
 

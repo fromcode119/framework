@@ -27,8 +27,12 @@ export enum MiddlewareStage {
 export type FieldType = 
   | 'text' 
   | 'textarea'
+  | 'email'
+  | 'url'
+  | 'tel'
   | 'number' 
   | 'boolean' 
+  | 'checkbox'
   | 'date' 
   | 'datetime'
   | 'select' 

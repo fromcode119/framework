@@ -12,7 +12,7 @@ import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Loader } from '@/components/ui/loader';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import { AdminApi } from '@/lib/api';
 import { IntegrationsPageUtils } from './IntegrationsPageUtils';

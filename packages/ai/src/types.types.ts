@@ -1,5 +1,3 @@
-import type { AssistantMessage } from './types.interfaces';
-
 export type AssistantRole = 'system' | 'user' | 'assistant';
 
 export type AssistantAction = {
@@ -17,14 +15,6 @@ export type AssistantTrace = {
   iteration: number;
   message?: string;
   toolCalls?: Array<{ tool?: string; input?: Record<string, any> }>;
-};
-
-export type AssistantSession = {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-  messages: AssistantMessage[];
 };
 
 export type AssistantToolOption = {

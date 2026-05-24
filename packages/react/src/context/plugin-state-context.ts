@@ -1,9 +1,5 @@
 import React from 'react';
-
-export interface PluginStateContextValue {
-  pluginState: Record<string, Record<string, any>>;
-  setPluginState: (pluginSlug: string, key: string, value: any) => void;
-}
+import type { PluginStateContextValue } from './plugin-state-context.interfaces';
 
 const defaultValue: PluginStateContextValue = {
   pluginState: {},

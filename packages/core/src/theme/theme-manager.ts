@@ -10,6 +10,7 @@ import { ProjectPaths } from '../config/paths';
 import { ThemeInstallerService } from './theme-installer-service';
 import { ThemeScaffoldService } from './theme-scaffold-service';
 import { ThemeDefaultPageContractOverrideLoader } from './theme-default-page-contract-override-loader';
+import { PluginDefaultPageMaterializationRuntimeService } from '../services/default-page-contract/plugin-default-page-materialization-runtime-service';
 import type { ThemeDefaultPageContractOverride } from '../types';
 
 export class ThemeManager {
@@ -145,7 +146,11 @@ export class ThemeManager {
   private async loadActiveTheme() {
     try {
       const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: 'active' });
-      if (row) { this.activeTheme = row.slug; this.logger.info(`Active theme set to: ${row.slug}`); }
+      if (row) {
+        this.activeTheme = row.slug;
+        this.logger.info(`Active theme set to: ${row.slug}`);
+        await this.materializeDefaultPages();
+      }
     } catch (e) { this.logger.error("Failed to load active theme from DB", e); }
   }
 
@@ -169,6 +174,7 @@ export class ThemeManager {
 
     await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: timestamp });
     this.activeTheme = slug;
+    await this.materializeDefaultPages();
     this.logger.info(`Theme "${slug}" activated.`);
     this.pluginManager?.emit?.('theme:activated', { slug, manifest });
   }
@@ -201,6 +207,9 @@ export class ThemeManager {
       if (existing) await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: null });
     }
     if (runSeeds) await this.installer.runSeeds(manifest);
+    if (this.activeTheme === slug) {
+      await this.materializeDefaultPages();
+    }
     this.logger.info(`Theme "${slug}" reset.`);
   }
 
@@ -302,6 +311,25 @@ export class ThemeManager {
 
     const themeDirectory = this.resolveThemeDirectory(manifest.slug);
     return this.overrideLoader.load(themeDirectory);
+  }
+
+  private async materializeDefaultPages(): Promise<void> {
+    if (!this.pluginManager) {
+      return;
+    }
+
+    try {
+      const service = new PluginDefaultPageMaterializationRuntimeService(
+        this.pluginManager,
+        () => this.getActiveThemeDefaultPageContractOverrides(),
+      );
+      await service.materialize();
+    } catch (error) {
+      if (PluginDefaultPageMaterializationRuntimeService.isRequiredRouteFailure(error)) {
+        throw error;
+      }
+      this.logger.warn(`Default page materialization failed after theme change: ${(error as Error).message}`);
+    }
   }
 
   private resolveThemeDirectory(slug: string): string {

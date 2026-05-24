@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import Link from 'next/link';
 
 interface User {

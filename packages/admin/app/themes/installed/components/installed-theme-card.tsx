@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import type { InstalledThemeCardProps } from '../installed-themes-page.interfaces';
 

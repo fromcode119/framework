@@ -15,6 +15,7 @@ export class ContextProviderRegistrationHooks {
     setPlugins: React.Dispatch<React.SetStateAction<any[]>>;
     setRefreshVersion: React.Dispatch<React.SetStateAction<number>>;
     setSettings: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+    setTranslations: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setSlots: React.Dispatch<React.SetStateAction<Record<string, SlotComponent[]>>>;
     setThemeLayouts: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setThemeVariables: React.Dispatch<React.SetStateAction<Record<string, string>>>;
@@ -30,6 +31,7 @@ export class ContextProviderRegistrationHooks {
       setPlugins,
       setRefreshVersion,
       setSettings,
+      setTranslations,
       setSlots,
       setThemeLayouts,
       setThemeVariables,
@@ -267,6 +269,10 @@ export class ContextProviderRegistrationHooks {
       setSettings((prev) => ({ ...prev, ...newSettings }));
     }, [setSettings]);
 
+    const registerTranslations = React.useCallback((newTranslations: Record<string, any>) => {
+      setTranslations((prev) => ({ ...prev, ...newTranslations }));
+    }, [setTranslations]);
+
     const registerTheme = React.useCallback((slug: string, config: any) => {
       if (config?.variables) {
         setThemeVariables((prev) => ({ ...prev, ...config.variables }));
@@ -305,6 +311,7 @@ export class ContextProviderRegistrationHooks {
       registerPluginApi,
       registerPlugins,
       registerSettings,
+      registerTranslations,
       registerSlotComponent,
       registerTheme,
       replaceCollections,

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeading } from '@/components/ui/page-heading';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { DataTable } from '@/components/ui/data-table';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';

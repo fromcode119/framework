@@ -28,6 +28,27 @@ export class StringUtils {
   }
 
   /**
+   * Recursively normalize object keys from snake_case to camelCase.
+   */
+  static toCamelCaseKeysDeep(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map((entry) => StringUtils.toCamelCaseKeysDeep(entry));
+    }
+
+    if (!value || typeof value !== 'object') {
+      return value;
+    }
+
+    const source = value as Record<string, unknown>;
+    const output: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(source)) {
+      const normalizedKey = String(key ?? '').replace(/_([a-z0-9])/g, (_, part) => String(part).toUpperCase());
+      output[normalizedKey] = StringUtils.toCamelCaseKeysDeep(entry);
+    }
+    return output;
+  }
+
+  /**
    * Convert text to a URL-safe slug.
    * Strips accents, lowercases, replaces whitespace/special chars with hyphens.
    */

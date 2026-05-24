@@ -9,7 +9,7 @@ import { AdminConstants } from '@/lib/constants';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { NotificationHooks } from '@/components/use-notification';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import type { MarketplaceTheme } from '@fromcode119/core/client';
 

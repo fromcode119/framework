@@ -5,6 +5,7 @@ import { Slot, ContextHooks } from '@fromcode119/react';
 import { RouteConstants } from '@fromcode119/core/client';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
+import DefaultPageDesignRenderer from './default-page-design-renderer';
 
 const ADMIN_BASE_PATH = RouteConstants.SEGMENTS.ADMIN_BASE;
 
@@ -237,6 +238,7 @@ function StarterHero() {
 
 function renderContent(content: any) {
   const rawContent = ContentRenderingUtils.buildRenderableContent(content);
+  const hasDefaultPageDesign = Boolean(content?.recipe);
   const hasStringContent = typeof rawContent === 'string' && rawContent.trim().length > 0;
   const hasStructuredContent = Array.isArray(rawContent)
     ? rawContent.length > 0
@@ -248,9 +250,13 @@ function renderContent(content: any) {
 
   return (
     <div className="w-full">
-      <Slot name="frontend.content.display" props={{ content: rawContent, entry: content }} />
+      {hasDefaultPageDesign ? (
+        <DefaultPageDesignRenderer content={rawContent} entry={content} />
+      ) : (
+        <Slot name="frontend.content.display" props={{ content: rawContent, entry: content }} />
+      )}
 
-      {(typeof rawContent === 'string') && (
+      {(!hasDefaultPageDesign && typeof rawContent === 'string') && (
         <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
           <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(content, FRAMEWORK_TITLE)}</h1>
           <div dangerouslySetInnerHTML={{ __html: rawContent || '' }} />

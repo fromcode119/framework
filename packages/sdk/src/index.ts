@@ -36,6 +36,9 @@
 // Use @fromcode119/sdk/server for server-only base classes.
 // BaseController is safe — it only uses 'import type' for express types.
 export { BaseRepository, BaseService, BaseController } from '@fromcode119/core/client';
+export { BaseEntity } from '@fromcode119/core/client';
+export { BaseEntityCollection } from '@fromcode119/core/client';
+export { EntityColumn } from '@fromcode119/core/client';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────
 export { CoercionUtils } from '@fromcode119/core/client';
@@ -69,6 +72,10 @@ export { ApiVersionUtils } from '@fromcode119/core/client';
 export { LocalizationUtils } from '@fromcode119/core/client';
 export type { NormalizeLocaleOptions, ResolveAnyStringOptions } from '@fromcode119/core/client';
 export { CollectionUtils } from '@fromcode119/core/client';
+export { EntityDefinitionUtils } from '@fromcode119/core/client';
+export { EntityValueParserService } from '@fromcode119/core/client';
+export { EntityObjectMapperService } from '@fromcode119/core/client';
+export { EntityEnumResolverService } from '@fromcode119/core/client';
 export type { CollectionListPathOptions } from '@fromcode119/core/client';
 export { HookEventUtils } from '@fromcode119/core/client';
 export type { CollectionHookPhase, CollectionHookEvents } from '@fromcode119/core/client';
@@ -121,6 +128,7 @@ export type { CapabilityMetadata } from '@fromcode119/core/client';
 // NOTE: IntegrationManager is server-only (@fromcode119/email, media, cache deps).
 // Use @fromcode119/sdk/server to access IntegrationManager in plugin server code.
 export { IntegrationRegistry } from '@fromcode119/core/client';
+export { PluginFrontendDefaultDesignRegistrar, ThemeFrontendDefaultDesignRegistrar } from '@fromcode119/core/client';
 export type { IntegrationTypeDefinition } from '@fromcode119/core/client';
 export type { PluginApiResolver } from '@fromcode119/core/client';
 export type {
@@ -132,6 +140,24 @@ export type {
   PluginDefaultPageContractRegistration,
   RegisteredPluginDefaultPageContract,
   ThemeDefaultPageContractOverride,
+  DefaultDesignDiagnosticCode,
+  DefaultDesignDiagnosticEntry,
+  DefaultDesignDiagnosticSeverity,
+  DefaultDesignOwnerIdentity,
+  DefaultDesignResolutionSource,
+  DefaultDesignResolutionStatus,
+  DefaultDesignTargetKind,
+  PluginDefaultDesignDefinition,
+  PluginDefaultDesignRegistration,
+  RegisteredPluginDefaultDesignDefinition,
+  RegisteredThemeDesignDisableDefinition,
+  RegisteredThemeDesignReplacementDefinition,
+  ResolvedDefaultDesign,
+  ThemeDesignDisableDefinition,
+  ThemeDesignOverrideRegistration,
+  ThemeDesignReplacementDefinition,
+  PluginFrontendDefaultDesignRegistrarOptions,
+  ThemeFrontendDefaultDesignRegistrarOptions,
 } from '@fromcode119/core/client';
 // RequestContextUtils / RequestStore intentionally omitted — server-only (AsyncLocalStorage),
 // must not be bundled into client-side builds. Use @fromcode119/sdk/server.
@@ -145,7 +171,24 @@ export type { Access, CandidateLookupOptions, UpsertByCandidatesOptions } from '
 
 // Field/schema definitions
 export type { Field, SettingsTab, PluginSettingsSchema } from '@fromcode119/core/client';
-export type { Collection, CollectionQueryInterface } from '@fromcode119/core/client';
+export type {
+  Collection,
+  CollectionQueryInterface,
+  EntityAdminLayout,
+  EntityApiOptions,
+  EntityDefinition,
+  EntityDerivedField,
+  EntityField,
+  EntityFieldValidationError,
+  EntityIndex,
+  EntityInputAlias,
+  EntityParseOptions,
+  EntityParseResult,
+  EntityEnumOptions,
+  EntityFieldConfig,
+  EntityFieldsConfig,
+  EntityFieldTransform,
+} from '@fromcode119/core/client';
 
 // Manifest definitions
 export type { MiddlewareConfig, PluginManifest, ThemeManifest, MenuItemManifest } from '@fromcode119/core/client';

@@ -75,6 +75,12 @@ export interface PluginDefaultPageContractPageLookupRepository {
   findPageById(pageId: number | string): Promise<PluginDefaultPageContractPageSnapshot | undefined>;
 }
 
+export interface PluginDefaultPageContractPageCreateRepository {
+  createPage(
+    payload: PluginDefaultPageContractCreatePayload,
+  ): Promise<PluginDefaultPageContractPageSnapshot | undefined>;
+}
+
 export interface PluginDefaultPageContractAssociationSnapshotRepository {
   getAssociationSnapshot(): Promise<PluginDefaultPageContractBackfillAssociationSnapshot>;
 }
@@ -100,6 +106,7 @@ export interface PluginDefaultPageContractAssociationPersistRepository {
 export interface PluginDefaultPageContractMaterializationExecutionInput {
   plan: PluginDefaultPageContractMaterializationPlan;
   pageLookupRepository: PluginDefaultPageContractPageLookupRepository;
+  pageCreateRepository: PluginDefaultPageContractPageCreateRepository;
   associationSnapshotRepository: PluginDefaultPageContractAssociationSnapshotRepository;
   associationPersistRepository: PluginDefaultPageContractAssociationPersistRepository;
 }

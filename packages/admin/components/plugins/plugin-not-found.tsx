@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { AuthHooks } from '@/components/use-auth';

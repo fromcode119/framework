@@ -12,7 +12,8 @@ export class PluginsFacade {
     return this.resolver.has(namespace, slug);
   }
 
-  get(namespace: string, slug: string): any {
-    return this.resolver.resolve(namespace, slug);
+  get<TApi = unknown>(namespace: string, slug: string): TApi | null {
+    const api = this.resolver.resolve(namespace, slug);
+    return api === null || api === undefined ? null : api as TApi;
   }
 }

@@ -8,6 +8,7 @@ import { CollectionService } from './services/collection-service';
 import { DateService } from './services/date-service';
 import { UrlService } from './services/url-service';
 import { UiPreferenceService } from './services/ui-preference-service';
+import { EntityFormDataService } from './services/entity-form-data-service';
 
 /**
  * Service Locator for Admin utilities.
@@ -54,6 +55,7 @@ export class AdminServices {
   private _date: DateService | null = null;
   private _url: UrlService | null = null;
   private _uiPreference: UiPreferenceService | null = null;
+  private _entityFormData: EntityFormDataService | null = null;
 
   private constructor() {
     // Private constructor enforces singleton pattern
@@ -164,5 +166,13 @@ export class AdminServices {
   get uiPreference(): UiPreferenceService {
     if (!this._uiPreference) this._uiPreference = new UiPreferenceService();
     return this._uiPreference;
+  }
+
+  /**
+   * Entity form data service (normalization using collection/entity metadata).
+   */
+  get entityFormData(): EntityFormDataService {
+    if (!this._entityFormData) this._entityFormData = new EntityFormDataService();
+    return this._entityFormData;
   }
 }

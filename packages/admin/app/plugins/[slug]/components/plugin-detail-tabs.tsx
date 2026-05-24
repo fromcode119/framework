@@ -1,6 +1,6 @@
 "use client";
 
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailTabsProps } from '../plugin-detail-page.interfaces';
 
 export default function PluginDetailTabs({ activeTab, onTabChange, theme }: PluginDetailTabsProps) {

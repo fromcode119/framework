@@ -25,4 +25,14 @@ export class ClientRuntimeConstants {
       COLLECTION_COLUMNS: `${ClientRuntimeConstants.STORAGE_PREFIX}columns_`,
     },
   } as const;
+
+  static readonly FRONTEND = {
+    EVENTS: {
+      LIVE_BLOCKS_CHANGED: `${ClientRuntimeConstants.EVENT_PREFIX}live-blocks`,
+      PUBLIC_SETTINGS_LOADED: `${ClientRuntimeConstants.EVENT_PREFIX}public-settings-loaded`,
+    },
+    GLOBAL_KEYS: {
+      LIVE_BLOCKS: '__fromcodeLiveBlocks',
+    },
+  } as const;
 }

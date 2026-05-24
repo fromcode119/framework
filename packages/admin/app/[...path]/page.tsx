@@ -3,7 +3,7 @@
 import React, { use } from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminPathUtils } from '@/lib/admin-path';
 import Link from 'next/link';
 

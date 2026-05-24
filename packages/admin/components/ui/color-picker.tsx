@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { HexColorPicker } from 'react-colorful';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import { ThemeHooks } from '../use-theme';
 import { UiFieldUtils } from '@/lib/ui';

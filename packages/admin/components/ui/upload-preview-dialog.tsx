@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Button } from './button';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
 

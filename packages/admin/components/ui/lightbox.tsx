@@ -2,7 +2,7 @@
 
 import React, { useEffect, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 
 interface LightboxProps {
   images: string[];

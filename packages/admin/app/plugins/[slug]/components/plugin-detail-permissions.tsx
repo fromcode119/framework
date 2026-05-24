@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailPermissionsProps } from '../plugin-detail-page.interfaces';
 
 export default function PluginDetailPermissions({ plugin, theme }: PluginDetailPermissionsProps) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 
 export default function SecurityRecommendationsCard({ isAdministrator, isDark, twoFactorEnabled }: { isAdministrator: boolean; isDark: boolean; twoFactorEnabled: boolean }) {
   return (

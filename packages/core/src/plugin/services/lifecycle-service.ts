@@ -16,6 +16,7 @@ import { SandboxManager } from '../../security/sandbox-manager';
 import { IntegrityService } from '../../security/integrity-service';
 import { Seeder } from '../../database/seeder';
 import { PluginFailureIsolationService } from './plugin-failure-isolation-service';
+import { PluginDefaultPageMaterializationRuntimeService } from '../../services/default-page-contract/plugin-default-page-materialization-runtime-service';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -195,6 +196,7 @@ export class LifecycleService {
       await this.autoDiscoverCollections(plugin, ctx);
       await this.syncPluginCollections(slug);
       await this.runSeeds(slug);
+      await this.materializeDefaultPages();
 
       plugin.state = 'active';
       const currentCaps = plugin.manifest.capabilities as string[] || [];
@@ -221,6 +223,23 @@ export class LifecycleService {
       } catch (err: any) {
         this.logger.error(`Failed to run seeds for plugin "${slug}": ${err.message}`);
       }
+    }
+  }
+
+  private async materializeDefaultPages(): Promise<void> {
+    try {
+      const service = new PluginDefaultPageMaterializationRuntimeService(
+        this.manager,
+        async () => {
+          return await (this.manager.themeManager as any)?.getActiveThemeDefaultPageContractOverrides?.() || [];
+        },
+      );
+      await service.materialize();
+    } catch (error: any) {
+      if (PluginDefaultPageMaterializationRuntimeService.isRequiredRouteFailure(error)) {
+        throw error;
+      }
+      this.logger.warn(`Default page materialization failed: ${error?.message || error}`);
     }
   }
 

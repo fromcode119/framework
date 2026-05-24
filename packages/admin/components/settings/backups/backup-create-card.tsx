@@ -4,7 +4,7 @@ import React from 'react';
 import { ThemeHooks } from '@/components/use-theme';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { BackupCreateCardProps } from './backups-page-client.interfaces';
 import { SystemBackupPageUtils } from './system-backup-page-utils';
 

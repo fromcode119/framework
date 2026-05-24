@@ -45,6 +45,7 @@ export class ContextRuntimeBridge {
         registerCollection: queueMethod('collection'),
         registerTheme: queueMethod('theme'),
         registerSettings: queueMethod('settings'),
+        registerTranslations: queueMethod('translations'),
         emit: queueMethod('emit'),
         on: queueMethod('on'),
       };
@@ -155,6 +156,9 @@ export class ContextRuntimeBridge {
             break;
           case 'settings':
             ContextBridge.registerSettings(...(item.args || [item.settings]));
+            break;
+          case 'translations':
+            ContextBridge.registerTranslations(...(item.args || [item.translations]));
             break;
           case 'emit':
             ContextBridge.emit(...(item.args || []));

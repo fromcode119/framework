@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailSidebarProps } from '../plugin-detail-page.interfaces';
 
 export default function PluginDetailSidebar({

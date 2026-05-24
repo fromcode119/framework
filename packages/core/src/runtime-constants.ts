@@ -7,6 +7,7 @@ export class RuntimeConstants {
   } as const;
 
   static readonly ADMIN_UI = ClientRuntimeConstants.ADMIN_UI;
+  static readonly FRONTEND = ClientRuntimeConstants.FRONTEND;
 
   static readonly MODULE_NAMES = {
     ADMIN: '@fromcode119/admin',

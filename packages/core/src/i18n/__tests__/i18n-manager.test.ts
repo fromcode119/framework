@@ -16,23 +16,23 @@ const bulgarianTranslations = {
 describe('I18nManager', () => {
   it('returns translated value when the key exists', () => {
     const manager = new I18nManager('en');
-    manager.registerTranslations('en', 'ecommerce', englishTranslations);
+    manager.registerTranslations('en', 'module-alpha', englishTranslations);
 
-    expect(manager.translateOrFallback('ecommerce.rowLabels.orderLabel', 'Fallback', {}, 'en')).toBe('Order');
+    expect(manager.translateOrFallback('module-alpha.rowLabels.orderLabel', 'Fallback', {}, 'en')).toBe('Order');
   });
 
   it('returns fallback when the key does not exist', () => {
     const manager = new I18nManager('en');
-    manager.registerTranslations('en', 'ecommerce', englishTranslations);
+    manager.registerTranslations('en', 'module-alpha', englishTranslations);
 
-    expect(manager.translateOrFallback('ecommerce.rowLabels.missingLabel', 'Fallback', {}, 'en')).toBe('Fallback');
+    expect(manager.translateOrFallback('module-alpha.rowLabels.missingLabel', 'Fallback', {}, 'en')).toBe('Fallback');
   });
 
   it('respects the requested locale before falling back', () => {
     const manager = new I18nManager('en');
-    manager.registerTranslations('en', 'ecommerce', englishTranslations);
-    manager.registerTranslations('bg', 'ecommerce', bulgarianTranslations);
+    manager.registerTranslations('en', 'module-alpha', englishTranslations);
+    manager.registerTranslations('bg', 'module-alpha', bulgarianTranslations);
 
-    expect(manager.translateOrFallback('ecommerce.rowLabels.orderLabel', 'Fallback', {}, 'bg')).toBe('Поръчка');
+    expect(manager.translateOrFallback('module-alpha.rowLabels.orderLabel', 'Fallback', {}, 'bg')).toBe('Поръчка');
   });
 });

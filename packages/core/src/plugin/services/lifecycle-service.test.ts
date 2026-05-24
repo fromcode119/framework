@@ -1,21 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs';
 
-vi.mock('../../security/sandbox-manager', () => ({ SandboxManager: vi.fn(() => { throw new Error('no isolated-vm'); }) }));
+vi.mock('../../security/sandbox-manager', () => ({
+  SandboxManager: vi.fn(function SandboxManager() {
+    throw new Error('no isolated-vm');
+  }),
+}));
 vi.mock('../../security/integrity-service', () => ({ IntegrityService: { verifyPluginIntegrity: vi.fn().mockResolvedValue(true) } }));
 vi.mock('../../security/plugin-signature-service', () => ({ PluginSignatureService: { isEnforced: vi.fn().mockReturnValue(false), verify: vi.fn().mockReturnValue(true) } }));
 vi.mock('../../management/manifest', () => ({ ManifestValidator: { validate: vi.fn() } }));
 vi.mock('../../security/plugin-permissions-service', () => ({ PluginPermissionsService: { ensure: vi.fn() } }));
 vi.mock('uuid', () => ({ v4: vi.fn().mockReturnValue('test-uuid') }));
-vi.mock('../../database/seeder', () => ({ Seeder: vi.fn(function (this: any) { this.seed = vi.fn(); }) }));
+vi.mock('../../database/seeder', () => ({
+  Seeder: vi.fn(class Seeder {
+    seed = vi.fn();
+  }),
+}));
 vi.mock('./plugin-failure-isolation-service', () => ({
-  PluginFailureIsolationService: vi.fn(function (this: any) {
-    this.rollbackPartialRegistration = vi.fn();
-    this.markPluginError = vi.fn().mockResolvedValue(undefined);
+  PluginFailureIsolationService: vi.fn(class PluginFailureIsolationService {
+    rollbackPartialRegistration = vi.fn();
+    markPluginError = vi.fn().mockResolvedValue(undefined);
   }),
 }));
 
 import { LifecycleService } from './lifecycle-service';
+import { CoreServices } from '../../services/core-services';
 
 const makePlugin = (overrides: Record<string, any> = {}) => ({
   manifest: { slug: 'test-plugin', name: 'Test', version: '1.0.0', category: 'general', capabilities: [] },
@@ -163,6 +172,31 @@ describe('LifecycleService.disable() — middleware cleanup', () => {
   });
 });
 
+describe('LifecycleService.enable() — required route reconciliation failures', () => {
+  it('fails plugin enable when required default-page reconciliation throws', async () => {
+    const { service, manager, registry } = buildService({ 'test-plugin': { state: 'inactive', version: '1.0.0' } });
+    const loadedPlugin = {
+      ...makePlugin(),
+      instanceId: 'x',
+      state: 'inactive',
+      path: '/plugins/test-plugin',
+      approvedCapabilities: [],
+      healthStatus: 'healthy',
+      onEnable: vi.fn().mockResolvedValue(undefined),
+    };
+    manager.plugins.set('test-plugin', loadedPlugin);
+    vi.spyOn(service as any, 'autoDiscoverCollections').mockResolvedValue(undefined);
+    vi.spyOn(service as any, 'syncPluginCollections').mockResolvedValue(undefined);
+    vi.spyOn(service as any, 'runSeeds').mockResolvedValue(undefined);
+    vi.spyOn(service as any, 'materializeDefaultPages').mockRejectedValue(
+      new Error('[PluginDefaultPageMaterializationRuntimeService] Required route reconciliation failed: org.synthetic:catalog-module:catalog-index (install-disabled, contract-not-ready)'),
+    );
+
+    await expect(service.enable('test-plugin')).rejects.toThrow('Required route reconciliation failed');
+    expect(registry.savePluginState).not.toHaveBeenCalledWith('test-plugin', 'active', expect.anything(), expect.anything());
+  });
+});
+
 describe('LifecycleService.delete() — uninstall hook and cleanup', () => {
   it('calls onUninstall before removing plugin from map', async () => {
     const { service, manager } = buildService({});
@@ -265,5 +299,112 @@ describe('LifecycleService — collections auto-discovery', () => {
     await service.enable('test-plugin');
 
     expect(existsSpy).not.toHaveBeenCalled();
+  });
+
+  it('materializes default singleton pages after enabling a plugin', async () => {
+    CoreServices.reset();
+    const { service, manager } = buildService({ 'test-plugin': { state: 'active', version: '1.0.0' } });
+    const pages: any[] = [];
+    let metaValue = '';
+    (manager.db as any).find = vi.fn(async (table: string) => {
+      if (table === 'cms_pages') {
+        return [...pages];
+      }
+      return [];
+    });
+    (manager.db as any).findOne = vi.fn(async (table: string, where: any) => {
+      if (table === 'cms_pages') {
+        return pages.find((page) => Object.entries(where || {}).every(([key, value]) => page[key] === value)) || null;
+      }
+      if (table === '_system_meta' && where?.key === 'default_page_contract_associations' && metaValue) {
+        return { key: where.key, value: metaValue };
+      }
+      return null;
+    });
+    (manager.db as any).insert = vi.fn(async (table: string, data: any) => {
+      if (table === 'cms_pages') {
+        const record = { id: pages.length + 1, ...data };
+        pages.push(record);
+        return record;
+      }
+      if (table === '_system_meta' && data?.key === 'default_page_contract_associations') {
+        metaValue = String(data.value || '');
+        return data;
+      }
+      return data;
+    });
+    (manager.db as any).update = vi.fn(async (table: string, where: any, data: any) => {
+      if (table === '_system_meta' && where?.key === 'default_page_contract_associations') {
+        metaValue = String(data.value || '');
+        return { key: where.key, value: metaValue };
+      }
+      return data;
+    });
+    (manager.db as any).count = vi.fn(async () => pages.length);
+    manager.registeredCollections.set('cms_pages', {
+      pluginSlug: 'cms',
+      collection: {
+        slug: 'cms_pages',
+        shortSlug: 'pages',
+        pluginSlug: 'cms',
+        workflow: true,
+        fields: [
+          { name: 'title', type: 'text', localized: true },
+          { name: 'slug', type: 'text' },
+          { name: 'content', type: 'json', localized: true },
+          { name: 'status', type: 'select' },
+          { name: 'publishedAt', type: 'datetime' },
+          { name: 'customPermalink', type: 'text' },
+          { name: 'disablePermalink', type: 'checkbox' },
+        ],
+      },
+    });
+    CoreServices.getInstance().defaultPageContracts.register({
+      namespace: 'org.synthetic',
+      pluginSlug: 'test-plugin',
+      contracts: [{
+        key: 'landing',
+        capability: 'content',
+        kind: 'index',
+        recipe: 'test.landing',
+        defaultSlug: '/landing',
+        title: 'Landing',
+        materializationMode: 'singleton-document',
+        required: true,
+        aliases: [],
+        adoptionHints: [],
+        dependencies: [],
+      }],
+    });
+
+    const loadedPlugin = {
+      ...makePlugin(),
+      instanceId: 'x',
+      state: 'inactive',
+      path: undefined,
+      approvedCapabilities: [],
+      healthStatus: 'healthy',
+    };
+    manager.plugins.set('test-plugin', loadedPlugin);
+
+    await service.enable('test-plugin');
+
+    expect(pages).toEqual([
+      expect.objectContaining({ slug: 'landing', customPermalink: '/landing', status: 'published', title: 'Landing' }),
+    ]);
+    expect(JSON.parse(metaValue)).toEqual({
+      byCanonicalKey: {
+        'org.synthetic:test-plugin:landing': {
+          canonicalKey: 'org.synthetic:test-plugin:landing',
+          pageId: 1,
+        },
+      },
+      byPageId: {
+        '1': {
+          canonicalKey: 'org.synthetic:test-plugin:landing',
+          pageId: 1,
+        },
+      },
+    });
   });
 });

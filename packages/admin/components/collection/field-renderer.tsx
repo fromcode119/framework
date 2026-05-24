@@ -7,7 +7,7 @@ import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { CodeEditor } from '@/components/ui/code-editor';
 import { ArrayField } from '@/components/ui/array-field';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
 import { TagFieldLocal } from './tag-field-local';
 import { RelationshipSelectLocal } from './relationship-select-local';

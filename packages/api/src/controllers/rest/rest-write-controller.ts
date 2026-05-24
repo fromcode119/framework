@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { Collection, HookEventUtils } from '@fromcode119/core';
+import { Collection, CoreServices, HookEventUtils } from '@fromcode119/core';
 import { QueryHelper } from '../../services/query-helper';
 import { RestControllerRuntime } from './rest-controller-runtime';
 
@@ -22,17 +22,19 @@ export class RestWriteController {
         overrideMeta: extracted.overrideMeta,
       });
 
+      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: 'create' });
+      if (parsed.errors.length > 0) {
+        if (!res) {
+          const error = new Error(parsed.errors.map((entry) => entry.message).join(', '));
+          (error as any).errors = parsed.errors;
+          throw error;
+        }
+        return res.status(400).json({ errors: parsed.errors });
+      }
+      data = parsed.data;
+
       data = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_CREATE, data);
       data = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_SAVE, data);
-
-      if (res) {
-        const errors = collection.fields
-          .filter((field) => field.required && !data[field.name])
-          .map((field) => `Field "${field.name}" is required`);
-        if (errors.length > 0) {
-          return res.status(400).json({ errors });
-        }
-      }
 
       this.runtime.fieldGuard.assertPermalinkNotReserved(collection, data);
       const insertData = await this.runtime.processor.processIncomingData(collection, data, table, { localeContext });
@@ -109,17 +111,19 @@ export class RestWriteController {
         overrideMeta: extracted.overrideMeta,
       });
 
+      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: 'update' });
+      if (parsed.errors.length > 0) {
+        if (!res) {
+          const error = new Error(parsed.errors.map((entry) => entry.message).join(', '));
+          (error as any).errors = parsed.errors;
+          throw error;
+        }
+        return res.status(400).json({ errors: parsed.errors });
+      }
+      data = parsed.data;
+
       data = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_UPDATE, data);
       data = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_SAVE, data);
-
-      if (res) {
-        const errors = collection.fields
-          .filter((field) => data[field.name] !== undefined && field.required && !data[field.name])
-          .map((field) => `Field "${field.name}" cannot be empty`);
-        if (errors.length > 0) {
-          return res.status(400).json({ errors });
-        }
-      }
 
       this.runtime.fieldGuard.assertPermalinkNotReserved(collection, data);
       const updateData = await this.runtime.processor.processIncomingData(collection, data, table, {

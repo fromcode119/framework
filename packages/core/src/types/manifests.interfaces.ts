@@ -1,5 +1,6 @@
 import { FieldType, PluginCapability, MiddlewareStage } from './enums.enums';
 import { Collection } from './schema.interfaces';
+import type { PluginManifestInput, ThemeManifestInput } from './manifests.types';
 
 export interface MiddlewareConfig {
   id: string;
@@ -202,3 +203,4 @@ export interface PluginManifest {
   // Collections
   collections?: string[]; // Path to collections folder or list of slugs
 }
+

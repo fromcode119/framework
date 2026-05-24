@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailResourcesProps } from '../plugin-detail-page.interfaces';
 
 export default function PluginDetailResources({ onSandboxSettingsChange, sandboxSettings, theme }: PluginDetailResourcesProps) {

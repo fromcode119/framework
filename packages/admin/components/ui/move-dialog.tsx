@@ -5,7 +5,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { Button } from './button';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 
 const { Folder, Left, Loader, Check } = FrameworkIcons;

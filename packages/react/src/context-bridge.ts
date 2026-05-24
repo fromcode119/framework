@@ -49,6 +49,10 @@ export class ContextBridge {
     return ContextBridge._args?.registerSettings?.(...args);
   }
 
+  static registerTranslations(...args: any[]): any {
+    return ContextBridge._args?.registerTranslations?.(...args);
+  }
+
   static registerPluginApi(...args: any[]): any {
     return ContextBridge._args?.registerPluginApi?.(...args);
   }

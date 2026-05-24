@@ -85,7 +85,7 @@ export type {
 export { RuntimeBridge } from './runtime-bridge';
 export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
 export { PluginDefinitionUtils } from './plugin-definition-utils';
-export type { PluginManifestInput, ThemeManifestInput } from './manifest-normalizer.types';
+export type { PluginManifestInput, ThemeManifestInput } from './types/manifests.types';
 export { PluginHealthResponseBuilder } from './plugin-health-response';
 export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse } from './plugin-health-response.interfaces';
 export type { PluginHealthStatus } from './plugin-health-response.types';
@@ -99,7 +99,24 @@ export * from './data-sources';
 export { CoreServices } from './services/core-services';
 export { AutocompleteOptionService } from './services/autocomplete-option-service';
 export { CollectionIdentityService } from './services/collection-identity-service';
+export { EntityValueParserService } from './services/entity-value-parser-service';
+export { EntityObjectMapperService } from './services/entity-object-mapper-service';
+export { EntityEnumResolverService } from './services/entity-enum-resolver-service';
 export { MediaRelationService } from './services/media-relation-service';
+export { EntityDefinitionUtils } from './entity-definition-utils';
+export { PluginDefaultDesignRegistryService } from './plugin/default-design/plugin-default-design-registry-service';
+export { DefaultDesignResolutionService } from './plugin/default-design/default-design-resolution-service';
+export { DefaultDesignDiagnosticService } from './plugin/default-design/default-design-diagnostic-service';
+export { DefaultDesignLifecycleService } from './plugin/default-design/default-design-lifecycle-service';
+export { DefaultDesignRuntimeBridgeService } from './plugin/default-design/default-design-runtime-bridge-service';
+export { PluginFrontendDefaultDesignRegistrar, ThemeFrontendDefaultDesignRegistrar } from './default-design';
+export type {
+  PluginFrontendDefaultDesignRegistrarOptions,
+  PluginFrontendDefaultDesignRegistration,
+  ThemeFrontendDefaultDesignRegistrarOptions,
+  ThemeFrontendDefaultDesignRegistration,
+} from './default-design';
+export { ThemeDesignOverrideRegistryService } from './theme/theme-design-override-registry-service';
 export { TypeUtils } from './utils/type-utils';
 
 // ── Configuration ─────────────────────────────────────────────────────────────
@@ -112,6 +129,9 @@ export { EnvConfig } from './config/env';
 export { BaseRepository } from './base/base-repository';
 export { BaseService } from './base/base-service';
 export { BaseController } from './base/base-controller';
+export { BaseEntity } from './base/base-entity';
+export { BaseEntityCollection } from './base/base-entity-collection';
+export { EntityColumn } from './entity-column';
 
 // ── Integrations (registry only — no provider implementations) ───────────────
 export { IntegrationRegistry } from './integrations/integration-registry';
@@ -120,3 +140,6 @@ export type { PluginApiResolver } from './plugin-api-resolver.interfaces';
 
 // ── Interactive Canvas (visual editor primitives) ─────────────────────────────
 export { InteractiveCanvas } from './interactive-canvas/interactive-canvas-context';
+export { LiveBlocks } from './live-blocks';
+export { LocalizedField } from './localized-field';
+export { PublicSettings } from './public-settings';

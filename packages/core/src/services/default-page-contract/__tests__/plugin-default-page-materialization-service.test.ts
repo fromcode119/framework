@@ -7,6 +7,10 @@ import type {
 import { PluginDefaultPageMaterializationService } from '../plugin-default-page-materialization-service';
 import { SeedPageService } from '../../seed-page-service';
 
+const TEST_NAMESPACE = 'org.synthetic';
+const CATALOG_CANONICAL_KEY = 'org.synthetic:catalog-module:catalog-index';
+const POLICY_CANONICAL_KEY = 'org.synthetic:policy-module:primary-policy-page';
+
 describe('PluginDefaultPageMaterializationService', () => {
   let service: PluginDefaultPageMaterializationService;
 
@@ -18,10 +22,10 @@ describe('PluginDefaultPageMaterializationService', () => {
     const plan = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
-          canonicalKey: 'org.fromcode:privacy:privacy-policy-page',
-          pluginSlug: 'privacy',
-          key: 'privacy-policy-page',
-          effectiveSlug: '/privacy-policy',
+          canonicalKey: POLICY_CANONICAL_KEY,
+          pluginSlug: 'policy-module',
+          key: 'primary-policy-page',
+          effectiveSlug: '/primary-policy',
         }),
         createResolvedContract(),
       ],
@@ -29,8 +33,8 @@ describe('PluginDefaultPageMaterializationService', () => {
     });
 
     expect(plan.entries.map((entry) => entry.canonicalKey)).toEqual([
-      'org.fromcode:ecommerce:store-index',
-      'org.fromcode:privacy:privacy-policy-page',
+      CATALOG_CANONICAL_KEY,
+      POLICY_CANONICAL_KEY,
     ]);
     expect(plan.summary.total).toBe(2);
   });
@@ -41,8 +45,8 @@ describe('PluginDefaultPageMaterializationService', () => {
       existingPages: [
         {
           id: 42,
-          slug: 'storefront',
-          customPermalink: '/shop',
+          slug: 'catalog-home',
+          customPermalink: '/catalog',
         },
       ],
     }).entries;
@@ -59,12 +63,12 @@ describe('PluginDefaultPageMaterializationService', () => {
       existingPages: [
         {
           id: 10,
-          slug: 'shop',
+          slug: 'catalog',
         },
         {
           id: 20,
           slug: 'different-slug',
-          customPermalink: '/shop',
+          customPermalink: '/catalog',
         },
       ],
     }).entries;
@@ -79,7 +83,7 @@ describe('PluginDefaultPageMaterializationService', () => {
       existingPages: [
         {
           id: 77,
-          customPermalink: '/shop/',
+          customPermalink: '/catalog/',
         },
       ],
     }).entries;
@@ -98,16 +102,16 @@ describe('PluginDefaultPageMaterializationService', () => {
     expect(entry.action).toBe('create-missing');
     expect(entry.status).toBe('ready');
     expect(entry.createPayload).toEqual({
-      canonicalKey: 'org.fromcode:ecommerce:store-index',
-      namespace: 'org.fromcode',
-      pluginSlug: 'ecommerce',
-      key: 'store-index',
-      slug: '/shop',
-      customPermalink: '/shop',
-      aliases: ['/catalog'],
-      recipe: 'ecommerce.store-index',
-      title: 'Store',
-      themeLayout: 'StoreLayout',
+      canonicalKey: CATALOG_CANONICAL_KEY,
+      namespace: TEST_NAMESPACE,
+      pluginSlug: 'catalog-module',
+      key: 'catalog-index',
+      slug: 'catalog',
+      customPermalink: '/catalog',
+      aliases: ['/browse'],
+      recipe: 'catalog-module.catalog-index',
+      title: 'Catalog',
+      themeLayout: 'CatalogLayout',
     });
   });
 
@@ -115,8 +119,8 @@ describe('PluginDefaultPageMaterializationService', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
       existingPages: [
-        { id: 1, customPermalink: '/shop' },
-        { id: 2, customPermalink: '/catalog' },
+        { id: 1, customPermalink: '/catalog' },
+        { id: 2, customPermalink: '/browse' },
       ],
     }).entries;
 
@@ -130,39 +134,39 @@ describe('PluginDefaultPageMaterializationService', () => {
       resolvedContracts: [
         createResolvedContract(),
         createResolvedContract({
-          canonicalKey: 'org.fromcode:forms:contact-page',
-          pluginSlug: 'forms',
+          canonicalKey: 'org.synthetic:contact-module:contact-page',
+          pluginSlug: 'contact-module',
           key: 'contact-page',
           kind: 'form-page',
-          capability: 'forms',
-          recipe: 'forms.contact-page',
-          effectiveRecipe: 'forms.contact-page',
-          effectiveSlug: '/shop',
+          capability: 'contact-form',
+          recipe: 'contact-module.contact-page',
+          effectiveRecipe: 'contact-module.contact-page',
+          effectiveSlug: '/catalog',
           effectiveTitle: 'Contact',
           effectiveThemeLayout: 'DefaultLayout',
           aliases: [],
           effectiveAliases: [],
-          adoptionHints: ['/shop'],
+          adoptionHints: ['/catalog'],
         }),
       ],
       existingPages: [
         {
           id: 42,
-          customPermalink: '/shop',
+          customPermalink: '/catalog',
         },
       ],
     });
 
     expect(plan.entries).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: CATALOG_CANONICAL_KEY,
         action: 'ambiguous',
         status: 'ambiguous',
         matchedPageId: undefined,
         reasons: ['matched-by-customPermalink', 'matched-page-claimed-by-multiple-contracts'],
       }),
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:forms:contact-page',
+        canonicalKey: 'org.synthetic:contact-module:contact-page',
         action: 'ambiguous',
         status: 'ambiguous',
         matchedPageId: undefined,
@@ -178,8 +182,8 @@ describe('PluginDefaultPageMaterializationService', () => {
     const plan = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
-          canonicalKey: 'org.fromcode:forms:contact-page',
-          pluginSlug: 'forms',
+          canonicalKey: 'org.synthetic:contact-module:contact-page',
+          pluginSlug: 'contact-module',
           key: 'contact-page',
           kind: 'form-page',
           effectiveSlug: '/contact',
@@ -188,11 +192,11 @@ describe('PluginDefaultPageMaterializationService', () => {
           reasons: ['install-disabled'],
         }),
         createResolvedContract({
-          canonicalKey: 'org.fromcode:privacy:cookies-policy-page',
-          pluginSlug: 'privacy',
-          key: 'cookies-policy-page',
+          canonicalKey: 'org.synthetic:policy-module:secondary-policy-page',
+          pluginSlug: 'policy-module',
+          key: 'secondary-policy-page',
           kind: 'policy',
-          effectiveSlug: '/cookies-policy',
+          effectiveSlug: '/secondary-policy',
           effectiveAliases: [],
           status: 'blocked',
           reasons: ['compliance-disabled'],
@@ -211,8 +215,8 @@ describe('PluginDefaultPageMaterializationService', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
-          canonicalKey: 'org.fromcode:lms:course-detail',
-          pluginSlug: 'lms',
+          canonicalKey: 'org.synthetic:learning-module:course-detail',
+          pluginSlug: 'learning-module',
           key: 'course-detail',
           kind: 'detail',
           effectiveSlug: '/courses',
@@ -226,6 +230,30 @@ describe('PluginDefaultPageMaterializationService', () => {
     expect(entry.action).toBe('deferred');
     expect(entry.status).toBe('deferred');
     expect(entry.createPayload).toBeUndefined();
+  });
+
+  it('defers parameterized singleton routes instead of planning literal placeholder pages', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [
+        createResolvedContract({
+          canonicalKey: 'org.synthetic:catalog-module:catalog-detail',
+          pluginSlug: 'catalog-module',
+          key: 'catalog-detail',
+          kind: 'detail',
+          effectiveSlug: '/catalog/:slug',
+          effectiveAliases: ['/browse/:slug'],
+          adoptionHints: ['/catalog/:slug'],
+          recordCollection: 'catalog',
+        }),
+      ],
+      existingPages: [{ id: 44, customPermalink: '/catalog/:slug' }],
+    }).entries;
+
+    expect(entry.action).toBe('deferred');
+    expect(entry.status).toBe('deferred');
+    expect(entry.matchedPageId).toBeUndefined();
+    expect(entry.createPayload).toBeUndefined();
+    expect(entry.reasons).toEqual(['parameterized-route-deferred']);
   });
 
   it('never creates payloads for adopt-only contracts', () => {
@@ -249,8 +277,8 @@ describe('PluginDefaultPageMaterializationService', () => {
     const existingPages: PluginDefaultPageContractPageSnapshot[] = [
       {
         id: 5,
-        slug: 'shop',
-        customPermalink: '/shop',
+        slug: 'catalog',
+        customPermalink: '/catalog',
       },
     ];
     const plan = service.createPlan({ resolvedContracts, existingPages });
@@ -263,8 +291,8 @@ describe('PluginDefaultPageMaterializationService', () => {
     expect(existingPages).toEqual([
       {
         id: 5,
-        slug: 'shop',
-        customPermalink: '/shop',
+        slug: 'catalog',
+        customPermalink: '/catalog',
       },
     ]);
   });
@@ -272,9 +300,9 @@ describe('PluginDefaultPageMaterializationService', () => {
   it('produces stable summary counts for actions and statuses', () => {
     const plan = service.createPlan({
       resolvedContracts: [
-        createResolvedContract({ canonicalKey: 'org.fromcode:ecommerce:store-a', key: 'store-a', effectiveSlug: '/a' }),
-        createResolvedContract({ canonicalKey: 'org.fromcode:ecommerce:store-b', key: 'store-b', effectiveSlug: '/b', status: 'skipped', reasons: ['install-disabled'] }),
-        createResolvedContract({ canonicalKey: 'org.fromcode:ecommerce:store-c', key: 'store-c', effectiveSlug: '/c', materializationMode: 'adopt-only' }),
+        createResolvedContract({ canonicalKey: 'org.synthetic:catalog-module:page-a', key: 'page-a', effectiveSlug: '/a' }),
+        createResolvedContract({ canonicalKey: 'org.synthetic:catalog-module:page-b', key: 'page-b', effectiveSlug: '/b', status: 'skipped', reasons: ['install-disabled'] }),
+        createResolvedContract({ canonicalKey: 'org.synthetic:catalog-module:page-c', key: 'page-c', effectiveSlug: '/c', materializationMode: 'adopt-only' }),
       ],
       existingPages: [{ id: 1, customPermalink: '/a' }],
     });
@@ -302,24 +330,24 @@ describe('PluginDefaultPageMaterializationService', () => {
 
 function createResolvedContract(overrides: Partial<ResolvedPluginDefaultPageContract> = {}): ResolvedPluginDefaultPageContract {
   return {
-    key: 'store-index',
+    key: 'catalog-index',
     kind: 'index',
-    defaultSlug: '/shop',
+    defaultSlug: '/catalog',
     capability: 'catalog',
-    recipe: 'ecommerce.store-index',
+    recipe: 'catalog-module.catalog-index',
     materializationMode: 'singleton-document',
     dependencies: ['search'],
-    adoptionHints: ['/shop'],
-    aliases: ['/catalog'],
+    adoptionHints: ['/catalog'],
+    aliases: ['/browse'],
     required: true,
-    namespace: 'org.fromcode',
-    pluginSlug: 'ecommerce',
-    canonicalKey: 'org.fromcode:ecommerce:store-index',
-    effectiveAliases: ['/catalog'],
-    effectiveRecipe: 'ecommerce.store-index',
-    effectiveSlug: '/shop',
-    effectiveThemeLayout: 'StoreLayout',
-    effectiveTitle: 'Store',
+    namespace: TEST_NAMESPACE,
+    pluginSlug: 'catalog-module',
+    canonicalKey: CATALOG_CANONICAL_KEY,
+    effectiveAliases: ['/browse'],
+    effectiveRecipe: 'catalog-module.catalog-index',
+    effectiveSlug: '/catalog',
+    effectiveThemeLayout: 'CatalogLayout',
+    effectiveTitle: 'Catalog',
     install: true,
     prerequisiteReady: true,
     provenance: {

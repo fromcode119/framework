@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Button } from './button';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from './root-framework';
 import { ThemeHooks } from '@/components/use-theme';
 import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';

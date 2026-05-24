@@ -4,7 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeHooks } from '@/components/use-theme';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 
 export default function PluginsLayout({ children }: { children: React.ReactNode }) {

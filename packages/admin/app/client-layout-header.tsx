@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 import { ThemeHooks } from '@/components/use-theme';
 import { AuthHooks } from '@/components/use-auth';
 import { Dropdown } from '@/components/ui/dropdown';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { AppEnv } from '@/lib/env';
-import type { ClientLayoutHeaderProps } from './client-layout.types';
+import type { ClientLayoutHeaderProps } from './client-layout.interfaces';
 
 const {
   Menu = () => null,

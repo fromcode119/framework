@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ColorPicker } from '@/components/ui/color-picker';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Select } from '@/components/ui/select';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';

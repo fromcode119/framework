@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
 import { CollectionListUtils } from './collection-list-utils';
 

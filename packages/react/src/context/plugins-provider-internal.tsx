@@ -96,6 +96,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     setPlugins,
     setRefreshVersion,
     setSettings,
+    setTranslations,
     setSlots,
     setThemeLayouts,
     setThemeVariables,
@@ -115,6 +116,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     registerPluginApi,
     registerPlugins,
     registerSettings,
+    registerTranslations,
     registerSlotComponent,
     registerTheme,
     replaceCollections,
@@ -257,6 +259,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       registerPlugins,
       registerTheme,
       registerSettings,
+      registerTranslations,
       registerPluginApi,
       getPluginApi,
       hasPluginApi,
@@ -300,7 +303,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       runtimeModules,
       stabilityRef,
     });
-  }, [apiUrl, emit, getPluginApi, hasPluginApi, isReady, on, providerClass, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, runtimeModules, setPluginState, stableApiBridge, stableGetFrontendMetadata, stableLoadConfig, stableT]);
+  }, [apiUrl, emit, getPluginApi, hasPluginApi, isReady, on, providerClass, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, registerTranslations, replaceCollections, replaceMenuItems, runtimeModules, setPluginState, stableApiBridge, stableGetFrontendMetadata, stableLoadConfig, stableT]);
 
   const value = React.useMemo<PluginContextValue>(() => ({
     slots,

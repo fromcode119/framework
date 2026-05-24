@@ -11,15 +11,15 @@ describe('PluginDefaultPageContractRegistryService', () => {
 
   it('registers plugin contracts with canonical keys', () => {
     const registration: PluginDefaultPageContractRegistration = {
-      namespace: 'org.fromcode',
-      pluginSlug: 'ecommerce',
+      namespace: 'org.synthetic',
+      pluginSlug: 'catalog-alpha',
       contracts: [
         {
           key: 'store-index',
           kind: 'index',
           defaultSlug: '/shop',
           capability: 'catalog',
-          recipe: 'ecommerce.store-index',
+          recipe: 'catalog-alpha.store-index',
           materializationMode: 'singleton-document',
           dependencies: ['search'],
           adoptionHints: ['/shop', '/shop'],
@@ -36,30 +36,32 @@ describe('PluginDefaultPageContractRegistryService', () => {
         kind: 'index',
         defaultSlug: '/shop',
         capability: 'catalog',
-        recipe: 'ecommerce.store-index',
+        recipe: 'catalog-alpha.store-index',
         materializationMode: 'singleton-document',
         dependencies: ['search'],
         adoptionHints: ['/shop'],
+        aliases: undefined,
         required: true,
-        namespace: 'org.fromcode',
-        pluginSlug: 'ecommerce',
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        recordCollection: undefined,
+        namespace: 'org.synthetic',
+        pluginSlug: 'catalog-alpha',
+        canonicalKey: 'org.synthetic:catalog-alpha:store-index',
       },
     ]);
-    expect(service.listByPlugin('org.fromcode', 'ecommerce')).toHaveLength(1);
+    expect(service.listByPlugin('org.synthetic', 'catalog-alpha')).toHaveLength(1);
   });
 
-  it('rejects duplicate canonical keys', () => {
+  it('replaces previous registrations for the same plugin on re-register', () => {
     service.register({
-      namespace: 'org.fromcode',
-      pluginSlug: 'forms',
+      namespace: 'org.synthetic',
+      pluginSlug: 'contact-beta',
       contracts: [
         {
           key: 'contact-page',
           kind: 'form-page',
           defaultSlug: '/contact',
           capability: 'contact-form',
-          recipe: 'forms.contact-page',
+          recipe: 'contact-beta.contact-page',
           materializationMode: 'singleton-document',
           dependencies: ['audit'],
           adoptionHints: ['/contact'],
@@ -68,38 +70,77 @@ describe('PluginDefaultPageContractRegistryService', () => {
       ],
     });
 
+    service.register({
+      namespace: 'org.synthetic',
+      pluginSlug: 'contact-beta',
+      contracts: [
+        {
+          key: 'contact-page',
+          kind: 'form-page',
+          defaultSlug: '/contact-us',
+          capability: 'contact-form',
+          recipe: 'contact-beta.contact-page',
+          materializationMode: 'singleton-document',
+          dependencies: ['audit'],
+          adoptionHints: ['/contact-us'],
+          required: true,
+        },
+      ],
+    });
+
+    expect(service.listByPlugin('org.synthetic', 'contact-beta')).toEqual([
+      expect.objectContaining({
+        canonicalKey: 'org.synthetic:contact-beta:contact-page',
+        defaultSlug: '/contact-us',
+        adoptionHints: ['/contact-us'],
+      }),
+    ]);
+  });
+
+  it('rejects duplicate canonical keys within the same registration batch', () => {
     expect(() => {
       service.register({
-        namespace: 'org.fromcode',
-        pluginSlug: 'forms',
+        namespace: 'org.synthetic',
+        pluginSlug: 'contact-beta',
         contracts: [
           {
             key: 'contact-page',
             kind: 'form-page',
             defaultSlug: '/contact',
             capability: 'contact-form',
-            recipe: 'forms.contact-page',
+            recipe: 'contact-beta.contact-page',
             materializationMode: 'singleton-document',
             dependencies: ['audit'],
             adoptionHints: ['/contact'],
             required: true,
           },
+          {
+            key: 'contact-page',
+            kind: 'form-page',
+            defaultSlug: '/contact-alt',
+            capability: 'contact-form',
+            recipe: 'contact-beta.contact-page-alt',
+            materializationMode: 'singleton-document',
+            dependencies: ['audit'],
+            adoptionHints: ['/contact-alt'],
+            required: true,
+          },
         ],
       });
-    }).toThrow('duplicate default page contract registration: org.fromcode:forms:contact-page');
+    }).toThrow('duplicate default page contract registration: org.synthetic:contact-beta:contact-page');
   });
 
   it('allows the same key across different plugins and namespaces', () => {
     service.register({
-      namespace: 'org.fromcode',
-      pluginSlug: 'ecommerce',
+      namespace: 'org.synthetic',
+      pluginSlug: 'catalog-alpha',
       contracts: [
         {
           key: 'store-index',
           kind: 'index',
           defaultSlug: '/shop',
           capability: 'catalog',
-          recipe: 'ecommerce.store-index',
+          recipe: 'catalog-alpha.store-index',
           materializationMode: 'singleton-document',
           dependencies: ['search'],
           adoptionHints: ['/shop'],
@@ -109,15 +150,15 @@ describe('PluginDefaultPageContractRegistryService', () => {
     });
 
     service.register({
-      namespace: 'org.partner',
-      pluginSlug: 'catalog',
+      namespace: 'org.sample',
+      pluginSlug: 'catalog-beta',
       contracts: [
         {
           key: 'store-index',
           kind: 'index',
           defaultSlug: '/catalog',
           capability: 'catalog',
-          recipe: 'catalog.store-index',
+          recipe: 'catalog-beta.store-index',
           materializationMode: 'singleton-document',
           dependencies: ['search'],
           adoptionHints: ['/catalog'],
@@ -128,22 +169,22 @@ describe('PluginDefaultPageContractRegistryService', () => {
 
     expect(service.list()).toHaveLength(2);
     expect(service.list().map((entry) => entry.canonicalKey)).toEqual([
-      'org.fromcode:ecommerce:store-index',
-      'org.partner:catalog:store-index',
+      'org.synthetic:catalog-alpha:store-index',
+      'org.sample:catalog-beta:store-index',
     ]);
   });
 
   it('returns defensive clones for registered entries', () => {
     const [entry] = service.register({
-      namespace: 'org.fromcode',
-      pluginSlug: 'privacy',
+      namespace: 'org.synthetic',
+      pluginSlug: 'policy-gamma',
       contracts: [
         {
           key: 'cookies-policy-page',
           kind: 'policy',
           defaultSlug: '/cookies-policy',
           capability: 'compliance',
-          recipe: 'privacy.cookies-policy-page',
+          recipe: 'policy-gamma.cookies-policy-page',
           materializationMode: 'singleton-document',
           dependencies: ['audit', 'navigation'],
           adoptionHints: ['/cookies-policy'],
@@ -159,7 +200,7 @@ describe('PluginDefaultPageContractRegistryService', () => {
 
     expect(service.list()).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:privacy:cookies-policy-page',
+        canonicalKey: 'org.synthetic:policy-gamma:cookies-policy-page',
         dependencies: ['audit', 'navigation'],
         adoptionHints: ['/cookies-policy'],
         aliases: ['/cookies'],

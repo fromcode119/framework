@@ -12,6 +12,13 @@ vi.mock('@fromcode119/react', () => ({
     usePlugins: () => mockUsePlugins(),
   },
   Slot: () => null,
+  FrameworkIcons: {
+    Close: () => <span>Close</span>,
+    Zap: () => <span>Zap</span>,
+    Down: () => <span>Down</span>,
+    Left: () => <span>Left</span>,
+    Activity: () => <span>ActivityIcon</span>,
+  },
 }));
 
 vi.mock('@/components/use-theme', () => ({
@@ -28,16 +35,6 @@ vi.mock('@/components/use-auth', () => ({
 
 vi.mock('@/components/icon', () => ({
   Icon: ({ name }: { name: string }) => <span data-icon={name} />, 
-}));
-
-vi.mock('@/lib/icons', () => ({
-  FrameworkIcons: {
-    Close: () => <span>Close</span>,
-    Zap: () => <span>Zap</span>,
-    Down: () => <span>Down</span>,
-    Left: () => <span>Left</span>,
-    Activity: () => <span>ActivityIcon</span>,
-  },
 }));
 
 vi.mock('next/link', () => ({

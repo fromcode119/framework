@@ -3,10 +3,12 @@ import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
 import { ThemeManager } from '@fromcode119/core';
 import { ThemeController } from '../../controllers/themes/theme-controller';
+import { ThemeAssetsListController } from '../../controllers/themes/theme-assets-list-controller';
 import { RouteConstants } from '@fromcode119/core';
 
 export class ThemeRouter extends BaseRouter {
   private controller: ThemeController;
+  private assetsListController: ThemeAssetsListController;
   private upload: multer.Multer;
   private chunkUpload: multer.Multer;
 
@@ -16,11 +18,13 @@ export class ThemeRouter extends BaseRouter {
   ) {
     super();
     this.controller = new ThemeController(manager);
+    this.assetsListController = new ThemeAssetsListController(manager);
     this.upload = multer({ dest: '/tmp/theme-uploads' });
     this.chunkUpload = multer({ dest: '/tmp/theme-upload-chunks' });
   }
 
   protected registerRoutes(): void {
+    this.get(RouteConstants.SEGMENTS.THEMES_ACTIVE_ASSETS, this.auth.guard(['admin']), this.bind(this.assetsListController.listActiveThemeAssets));
     this.get('/', this.auth.guard(['admin']), this.bind(this.controller.list.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.bind(this.controller.getMarketplace.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CHECK_UPDATE, this.auth.guard(['admin']), this.bind(this.controller.checkUpdate.bind(this.controller)));

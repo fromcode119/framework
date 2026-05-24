@@ -6,6 +6,11 @@ import type {
 import { PluginDefaultPageContractRegistryService } from '../plugin-default-page-contract-registry-service';
 import { PluginDefaultPageContractResolutionService } from '../plugin-default-page-contract-resolution-service';
 
+const TEST_NAMESPACE = 'org.synthetic';
+const CONTACT_CANONICAL_KEY = 'org.synthetic:contact-module:contact-page';
+const CATALOG_CANONICAL_KEY = 'org.synthetic:catalog-module:catalog-index';
+const POLICY_CANONICAL_KEY = 'org.synthetic:policy-module:primary-policy-page';
+
 describe('PluginDefaultPageContractResolutionService', () => {
   let registry: PluginDefaultPageContractRegistryService;
   let service: PluginDefaultPageContractResolutionService;
@@ -18,15 +23,17 @@ describe('PluginDefaultPageContractResolutionService', () => {
   it('returns declaration defaults unchanged when no overrides or site state are provided', () => {
     registerContracts(registry, [
       {
-        namespace: 'org.fromcode',
-        pluginSlug: 'forms',
+        namespace: TEST_NAMESPACE,
+        pluginSlug: 'contact-module',
         contracts: [
           {
             key: 'contact-page',
             kind: 'form-page',
             defaultSlug: '/contact',
             capability: 'contact-form',
-            recipe: 'forms.contact-page',
+            recipe: 'contact-module.contact-page',
+            title: 'Contact',
+            themeLayout: 'FormLayout',
             materializationMode: 'singleton-document',
             dependencies: ['navigation'],
             adoptionHints: ['/contact'],
@@ -39,12 +46,12 @@ describe('PluginDefaultPageContractResolutionService', () => {
 
     expect(service.resolveAll()).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:forms:contact-page',
+        canonicalKey: CONTACT_CANONICAL_KEY,
         effectiveSlug: '/contact',
         effectiveAliases: ['/reach-us'],
-        effectiveRecipe: 'forms.contact-page',
-        effectiveTitle: undefined,
-        effectiveThemeLayout: undefined,
+        effectiveRecipe: 'contact-module.contact-page',
+        effectiveTitle: 'Contact',
+        effectiveThemeLayout: 'FormLayout',
         install: true,
         prerequisiteReady: true,
         status: 'ready',
@@ -67,15 +74,15 @@ describe('PluginDefaultPageContractResolutionService', () => {
       overrides: [
         {
           contract: {
-            namespace: 'org.fromcode',
-            pluginSlug: 'ecommerce',
-            key: 'store-index',
+            namespace: TEST_NAMESPACE,
+            pluginSlug: 'catalog-module',
+            key: 'catalog-index',
           },
           slug: '/cosmic-box',
-          aliases: ['/shop', '/catalog'],
+          aliases: ['/catalog', '/browse'],
           title: 'Catalog',
-          themeLayout: 'StoreLayout',
-          recipe: 'theme.store-index',
+          themeLayout: 'CatalogLayout',
+          recipe: 'theme.catalog-index',
           install: false,
         },
       ],
@@ -84,10 +91,10 @@ describe('PluginDefaultPageContractResolutionService', () => {
     expect(resolved).toEqual(
       expect.objectContaining({
         effectiveSlug: '/cosmic-box',
-        effectiveAliases: ['/shop', '/catalog'],
-        effectiveRecipe: 'theme.store-index',
+        effectiveAliases: ['/catalog', '/browse'],
+        effectiveRecipe: 'theme.catalog-index',
         effectiveTitle: 'Catalog',
-        effectiveThemeLayout: 'StoreLayout',
+        effectiveThemeLayout: 'CatalogLayout',
         install: false,
         status: 'skipped',
         reasons: ['install-disabled'],
@@ -126,8 +133,8 @@ describe('PluginDefaultPageContractResolutionService', () => {
     expect(resolved.sources.status).toBe('site-state');
     expect(registry.list()[0]).toEqual(
       expect.objectContaining({
-        defaultSlug: '/shop',
-        recipe: 'ecommerce.store-index',
+        defaultSlug: '/catalog',
+        recipe: 'catalog-module.catalog-index',
         required: true,
       }),
     );
@@ -140,16 +147,16 @@ describe('PluginDefaultPageContractResolutionService', () => {
       overrides: [
         {
           contract: {
-            namespace: 'org.fromcode',
-            pluginSlug: 'ecommerce',
-            key: 'store-index',
+            namespace: TEST_NAMESPACE,
+            pluginSlug: 'catalog-module',
+            key: 'catalog-index',
           },
-          slug: '/shop-now',
+          slug: '/catalog-now',
         },
       ],
       siteState: {
         byCanonicalKey: {
-          'org.fromcode:ecommerce:store-index': {
+          [CATALOG_CANONICAL_KEY]: {
             status: 'ready',
             reasons: ['contract-known'],
           },
@@ -170,7 +177,7 @@ describe('PluginDefaultPageContractResolutionService', () => {
     expect(resolved.reasons).toEqual(['contract-known', 'capability-missing']);
     expect(resolved.provenance).toEqual({
       overrideApplied: true,
-      overrideCanonicalKey: 'org.fromcode:ecommerce:store-index',
+      overrideCanonicalKey: CATALOG_CANONICAL_KEY,
       siteStateMatch: 'both',
     });
     expect(resolved.sources.effectiveSlug).toBe('theme-override');
@@ -185,23 +192,23 @@ describe('PluginDefaultPageContractResolutionService', () => {
         overrides: [
           {
             contract: {
-              namespace: 'org.fromcode',
-              pluginSlug: 'ecommerce',
-              key: 'store-index',
-            },
-            slug: '/shop',
-          },
-          {
-            contract: {
-              namespace: 'org.fromcode',
-              pluginSlug: 'ecommerce',
-              key: 'store-index',
+              namespace: TEST_NAMESPACE,
+              pluginSlug: 'catalog-module',
+              key: 'catalog-index',
             },
             slug: '/catalog',
           },
+          {
+            contract: {
+              namespace: TEST_NAMESPACE,
+              pluginSlug: 'catalog-module',
+              key: 'catalog-index',
+            },
+            slug: '/browse',
+          },
         ],
       });
-    }).toThrow('duplicate theme override for default page contract: org.fromcode:ecommerce:store-index');
+    }).toThrow(`duplicate theme override for default page contract: ${CATALOG_CANONICAL_KEY}`);
   });
 
   it('does not leak resolved mutations back into the registry boundary', () => {
@@ -215,47 +222,47 @@ describe('PluginDefaultPageContractResolutionService', () => {
 
     expect(registry.list()).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: CATALOG_CANONICAL_KEY,
         dependencies: ['search'],
-        adoptionHints: ['/shop'],
-        aliases: ['/catalog'],
+        adoptionHints: ['/catalog'],
+        aliases: ['/browse'],
       }),
     ]);
-    expect(service.resolveAll()[0].effectiveAliases).toEqual(['/catalog']);
+    expect(service.resolveAll()[0].effectiveAliases).toEqual(['/browse']);
   });
 
   it('returns contracts in deterministic canonical key order', () => {
     registerContracts(registry, [
       {
-        namespace: 'org.fromcode',
-        pluginSlug: 'privacy',
+        namespace: TEST_NAMESPACE,
+        pluginSlug: 'policy-module',
         contracts: [
           {
-            key: 'privacy-policy-page',
+            key: 'primary-policy-page',
             kind: 'policy',
-            defaultSlug: '/privacy-policy',
+            defaultSlug: '/primary-policy',
             capability: 'compliance',
-            recipe: 'privacy.privacy-policy-page',
+            recipe: 'policy-module.primary-policy-page',
             materializationMode: 'singleton-document',
             dependencies: ['audit'],
-            adoptionHints: ['/privacy-policy'],
+            adoptionHints: ['/primary-policy'],
             required: true,
           },
         ],
       },
       {
-        namespace: 'org.fromcode',
-        pluginSlug: 'ecommerce',
+        namespace: TEST_NAMESPACE,
+        pluginSlug: 'catalog-module',
         contracts: [
           {
-            key: 'store-index',
+            key: 'catalog-index',
             kind: 'index',
-            defaultSlug: '/shop',
+            defaultSlug: '/catalog',
             capability: 'catalog',
-            recipe: 'ecommerce.store-index',
+            recipe: 'catalog-module.catalog-index',
             materializationMode: 'singleton-document',
             dependencies: ['search'],
-            adoptionHints: ['/shop'],
+            adoptionHints: ['/catalog'],
             required: true,
           },
         ],
@@ -263,8 +270,8 @@ describe('PluginDefaultPageContractResolutionService', () => {
     ]);
 
     expect(service.resolveAll().map((entry) => entry.canonicalKey)).toEqual([
-      'org.fromcode:ecommerce:store-index',
-      'org.fromcode:privacy:privacy-policy-page',
+      CATALOG_CANONICAL_KEY,
+      POLICY_CANONICAL_KEY,
     ]);
   });
 });
@@ -281,19 +288,19 @@ function registerContracts(
 function registerStoreIndex(registry: PluginDefaultPageContractRegistryService): void {
   registerContracts(registry, [
     {
-      namespace: 'org.fromcode',
-      pluginSlug: 'ecommerce',
+      namespace: TEST_NAMESPACE,
+      pluginSlug: 'catalog-module',
       contracts: [
         {
-          key: 'store-index',
+          key: 'catalog-index',
           kind: 'index',
-          defaultSlug: '/shop',
+          defaultSlug: '/catalog',
           capability: 'catalog',
-          recipe: 'ecommerce.store-index',
+          recipe: 'catalog-module.catalog-index',
           materializationMode: 'singleton-document',
           dependencies: ['search'],
-          adoptionHints: ['/shop'],
-          aliases: ['/catalog'],
+          adoptionHints: ['/catalog'],
+          aliases: ['/browse'],
           required: true,
         },
       ],

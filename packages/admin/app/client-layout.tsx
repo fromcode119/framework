@@ -5,11 +5,13 @@ import { PluginsProvider } from '@fromcode119/react';
 import { ThemeProvider } from '@/components/theme-context';
 import * as SharedComponents from '@/components';
 import { AdminConstants } from '@/lib/constants';
-import type { ClientLayoutChildrenProps } from './client-layout.types';
+import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
 import ClientLayoutShell from './client-layout-shell';
+import { AdminIconRegistryBootstrapService } from './services/admin-icon-registry-bootstrap-service';
 import { AdminThemeEntryScriptGuardService } from './services/admin-theme-entry-script-guard-service';
 import { ClientLayoutRuntimeService } from './services/client-layout-runtime-service';
 
+AdminIconRegistryBootstrapService.install();
 AdminThemeEntryScriptGuardService.install();
 
 export default function ClientLayout({ children }: ClientLayoutChildrenProps) {

@@ -15,6 +15,12 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
 
   register(registration: PluginDefaultPageContractRegistration): RegisteredPluginDefaultPageContract[] {
     const nextEntries = this.createEntries(registration);
+    if (nextEntries.length > 0) {
+      this.unregisterByPlugin(nextEntries[0].namespace, nextEntries[0].pluginSlug);
+      for (const entry of nextEntries) {
+        this.entries.delete(entry.canonicalKey);
+      }
+    }
     this.assertNoDuplicateKeys(nextEntries);
 
     for (const entry of nextEntries) {
@@ -94,7 +100,7 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
     const incomingKeys = new Set<string>();
 
     for (const entry of entries) {
-      if (incomingKeys.has(entry.canonicalKey) || this.entries.has(entry.canonicalKey)) {
+      if (incomingKeys.has(entry.canonicalKey)) {
         throw new Error(
           `[PluginDefaultPageContractRegistryService] duplicate default page contract registration: ${entry.canonicalKey}`,
         );

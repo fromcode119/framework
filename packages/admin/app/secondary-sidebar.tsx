@@ -2,13 +2,13 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import { NavUtils } from '@/lib/nav-utils';
 import SecondarySidebarPanelBody from './secondary-sidebar-panel-body';
 import { SecondarySidebarAccessibilityService } from './services/secondary-sidebar-accessibility-service';
 import type { SecondaryPanelContext, SecondaryPanelItem } from '@fromcode119/react';
-import type { SecondarySidebarMode } from './services/secondary-sidebar-state-service.interfaces';
+import type { SecondarySidebarMode } from './services/secondary-sidebar-state-service.types';
 
 const {
   Close = () => null,

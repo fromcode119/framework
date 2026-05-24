@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TextArea } from '@/components/ui/text-area';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { BackupRestoreDialogProps } from './backups-page-client.interfaces';
 
 export function BackupRestoreDialog({

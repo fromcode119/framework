@@ -1,4 +1,4 @@
-import type { PluginManifest, ThemeManifest } from './types/manifests.interfaces';
+import type { PluginManifest, ThemeManifest } from './manifests.interfaces';
 
 export type PluginManifestInput = Omit<PluginManifest, 'version' | 'category'> & {
   version?: string;

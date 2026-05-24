@@ -57,10 +57,15 @@ export class EsmRegistry {
       'EnvConfig',
       'CapabilityRegistry',
       'IntegrationRegistry',
+      'PluginFrontendDefaultDesignRegistrar',
+      'ThemeFrontendDefaultDesignRegistrar',
       'RecordVersions',
       'PluginCapability',
       'MiddlewareStage',
       'InteractiveCanvas',
+      'LiveBlocks',
+      'LocalizedField',
+      'PublicSettings',
       'SystemAuthSession',
     ];
     const sdkExportSource =
@@ -71,6 +76,9 @@ export class EsmRegistry {
     const sdkReactExportSource =
       `export const { FrameworkIcons, FrameworkIconRegistry, PluginsProvider, ContextHooks, ContextBridge, Slot, Override, RootFramework, SystemShortcodes, CollectionQueryUtils, BrowserLocalization, AsyncDataController, LazyComponentLoaderService } = ${reactModuleAccessor} || window.Fromcode || {};` +
       `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
+    const sdkClientDefaultDesignExportSource =
+      `export const { PluginFrontendDefaultDesignRegistrar, ThemeFrontendDefaultDesignRegistrar } = ${bridge};` +
+      `\nexport default ${bridge};`;
 
     return {
       imports: {
@@ -78,6 +86,7 @@ export class EsmRegistry {
         "react-dom": "data:application/javascript,const rd = window.ReactDOM || window.ReactDom; export default rd; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = rd;",
         "@fromcode119/react": `data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, usePluginAPI, PluginsProvider, getIcon, createProxyIcon, FrameworkIcons, FrameworkIconRegistry, IconNames, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, emit, on, CliUtils, RuntimeBridge } = ${bridge}; export default ${reactModuleAccessor} || window.Fromcode;`,
         "@fromcode119/sdk": `data:application/javascript,${encodeURIComponent(sdkExportSource)}`,
+        "@fromcode119/sdk/client/default-design": `data:application/javascript,${encodeURIComponent(sdkClientDefaultDesignExportSource)}`,
         "@fromcode119/sdk/react": `data:application/javascript,${encodeURIComponent(sdkReactExportSource)}`,
         "@fromcode119/admin": `data:application/javascript,export default ${adminModuleAccessor} || window.Fromcode;`,
         "@fromcode119/admin/components": `data:application/javascript,export default ${adminModuleAccessor} || window.Fromcode;`,

@@ -49,6 +49,10 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
       return this.createEntrySummary(entry, 'skipped', entry.reasons);
     }
 
+    if (entry.action === 'create-missing') {
+      return this.executeCreateMissingEntry(entry, input);
+    }
+
     if (entry.matchedPageId === undefined) {
       return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'matched-page-id-missing'));
     }
@@ -91,8 +95,54 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
 
   private isExecutableEntry(entry: PluginDefaultPageContractMaterializationPlanEntry): boolean {
     return entry.materializationMode === 'singleton-document'
-      && entry.action === 'adopt-existing'
-      && entry.status === 'ready';
+      && entry.status === 'ready'
+      && (entry.action === 'adopt-existing' || entry.action === 'create-missing');
+  }
+
+  private async executeCreateMissingEntry(
+    entry: PluginDefaultPageContractMaterializationPlanEntry,
+    input: PluginDefaultPageContractMaterializationExecutionInput,
+  ): Promise<PluginDefaultPageContractMaterializationExecutionEntrySummary> {
+    if (!entry.createPayload) {
+      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'create-payload-missing'));
+    }
+
+    const createdPage = await input.pageCreateRepository.createPage(entry.createPayload);
+    if (!createdPage) {
+      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'created-page-missing'));
+    }
+
+    if (createdPage.id === undefined || createdPage.id === null) {
+      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'created-page-id-missing'));
+    }
+
+    if (!this.matchesLookupCandidates(entry, createdPage)) {
+      return this.createEntrySummary(
+        entry,
+        'failed',
+        this.appendReason(entry.reasons, 'created-page-no-longer-matches-lookup-candidates'),
+        createdPage.id,
+      );
+    }
+
+    const associationMaps = this.associationService.createMaps(
+      await input.associationSnapshotRepository.getAssociationSnapshot(),
+    );
+    const conflictReasons = this.getAssociationConflictReasons(entry, associationMaps, createdPage.id);
+    if (conflictReasons.length) {
+      return this.createEntrySummary(entry, 'failed', conflictReasons, createdPage.id);
+    }
+
+    if (this.hasSameAssociation(associationMaps, entry.canonicalKey, createdPage.id)) {
+      return this.createEntrySummary(entry, 'noop', entry.reasons, createdPage.id);
+    }
+
+    const persistResult = await input.associationPersistRepository.persistAssociation({
+      canonicalKey: entry.canonicalKey,
+      pageId: createdPage.id,
+    });
+
+    return this.createPersistSummary(entry, createdPage.id, persistResult);
   }
 
   private getAssociationConflictReasons(

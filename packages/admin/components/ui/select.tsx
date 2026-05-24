@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { RootFramework } from '@fromcode119/react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
 
 interface Option {

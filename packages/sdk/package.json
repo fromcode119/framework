@@ -45,6 +45,12 @@
       "import": "./dist/admin/index.js",
       "require": "./dist/admin/index.js",
       "types": "./dist/admin/index.d.ts"
+    },
+    "./client/default-design": {
+      "development": "./src/client/default-design/index.ts",
+      "import": "./dist/client/default-design/index.js",
+      "require": "./dist/client/default-design/index.js",
+      "types": "./dist/client/default-design/index.d.ts"
     }
   },
   "files": [

@@ -66,11 +66,11 @@ export class NavUtils {
   }
 
   static getMenuGroupMeta(groupKey?: string): { key: string; label: string; order: number; manual?: boolean } {
+    const raw = String(groupKey || '').trim();
     const normalized = NavUtils.normalizeGroupKey(groupKey);
     const configured = MENU_GROUP_CONFIG[normalized];
     if (configured) return { key: normalized, ...configured };
-    const label = String(normalized || '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-    return { key: normalized, label, order: Number.MAX_SAFE_INTEGER, manual: false };
+    return { key: normalized, label: raw || normalized, order: Number.MAX_SAFE_INTEGER, manual: false };
   }
 
   static sortMenuGroups(groups: string[]): string[] {

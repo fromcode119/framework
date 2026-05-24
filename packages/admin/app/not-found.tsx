@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ThemeHooks } from '@/components/use-theme';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 
 export default function NotFound() {
   const { theme } = ThemeHooks.useTheme();

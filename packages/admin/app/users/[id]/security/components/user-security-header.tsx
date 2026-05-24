@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 
 export default function UserSecurityHeader({ email, isDark, backHref }: { backHref: string; email: string; isDark: boolean }) {
   return (

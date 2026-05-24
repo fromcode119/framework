@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { MediaPicker } from '@/components/media/media-picker';
 import { AdminApi } from '@/lib/api';
 import { AdminServices } from '@/lib/admin-services';

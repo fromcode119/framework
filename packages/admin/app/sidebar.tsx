@@ -5,7 +5,7 @@ import { Slot, ContextHooks } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { AuthHooks } from '@/components/use-auth';
 import { Icon } from '@/components/icon';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AdminPathUtils } from '@/lib/admin-path';
@@ -67,6 +67,7 @@ const NavItem = ({ icon, label, href, persistenceKey, active, isAnchoredToSecond
     [pathname, childPaths]
   );
   const isChildActive = !!activeChildPath;
+  const displayLabel = label;
 
   const [expanded, setExpanded] = React.useState(!!(active || isChildActive));
 
@@ -144,7 +145,7 @@ const NavItem = ({ icon, label, href, persistenceKey, active, isAnchoredToSecond
             {!isMini && (
               <div className="flex flex-col">
                 <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-bold' : 'font-bold'} tracking-tight whitespace-nowrap`}>
-                  {label}
+                  {displayLabel}
                 </span>
                 {version && (
                   <span className={`text-[8px] font-mono mt-0.5 opacity-60 ${isHighlighted ? 'text-white' : 'text-slate-400'}`}>
@@ -157,7 +158,7 @@ const NavItem = ({ icon, label, href, persistenceKey, active, isAnchoredToSecond
 
           {isMini && (
             <span className={`text-[8px] font-bold tracking-tight text-center leading-none px-1 ${isHighlighted ? 'text-white' : isChildActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'}`}>
-              {label.length > 9 ? label.substring(0, 8) + '..' : label}
+              {displayLabel.length > 9 ? displayLabel.substring(0, 8) + '..' : displayLabel}
             </span>
           )}
         </Link>

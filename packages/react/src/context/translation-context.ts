@@ -1,10 +1,5 @@
 import React from 'react';
-
-export interface TranslationContextValue {
-  t: (key: string, params?: Record<string, any>, defaultValue?: string) => string;
-  locale: string;
-  setLocale: (locale: string) => void;
-}
+import type { TranslationContextValue } from './translation-context.interfaces';
 
 const defaultValue: TranslationContextValue = {
   t: (key) => key,

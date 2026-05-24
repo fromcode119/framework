@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { ContextHooks } from '@fromcode119/react';
-import { ApiPathUtils } from '@fromcode119/core/client';
+import { ApiPathUtils, CoreServices } from '@fromcode119/core/client';
 import { FrontendApiBaseUrl } from '@/lib/api-base-url';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 
@@ -15,7 +15,38 @@ export default function PluginLoader() {
   const theme = activeTheme;
   const pluginList = Array.isArray(plugins) ? plugins : [];
   const loadedModulesRef = useRef<Set<string>>(new Set());
+  const previousPluginOwnersRef = useRef<Array<{ namespace: string; pluginSlug: string }>>([]);
+  const previousThemeSlugRef = useRef('');
   const [retryTick, setRetryTick] = useState(0);
+
+  useEffect(() => {
+    const runtimeBridge = CoreServices.getInstance().defaultDesignRuntimeBridge;
+    const currentThemeSlug = String(theme?.slug || '').trim();
+    const previousThemeSlug = previousThemeSlugRef.current;
+
+    if (previousThemeSlug && previousThemeSlug !== currentThemeSlug) {
+      runtimeBridge.unregisterByTheme(previousThemeSlug);
+    }
+
+    previousThemeSlugRef.current = currentThemeSlug;
+
+    const currentOwners = pluginList
+      .map((plugin: any) => ({
+        namespace: String(plugin?.namespace || plugin?.manifest?.namespace || '').trim(),
+        pluginSlug: String(plugin?.slug || '').trim(),
+      }))
+      .filter((owner) => owner.namespace && owner.pluginSlug);
+    const currentOwnerKeys = new Set(currentOwners.map((owner) => `${owner.namespace}:${owner.pluginSlug}`));
+
+    previousPluginOwnersRef.current.forEach((owner) => {
+      const key = `${owner.namespace}:${owner.pluginSlug}`;
+      if (!currentOwnerKeys.has(key)) {
+        runtimeBridge.unregisterByPlugin(owner.namespace, owner.pluginSlug);
+      }
+    });
+
+    previousPluginOwnersRef.current = currentOwners;
+  }, [pluginList, theme?.slug]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;

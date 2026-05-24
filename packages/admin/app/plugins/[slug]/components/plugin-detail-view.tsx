@@ -5,7 +5,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Loader } from '@/components/ui/loader';
 import { NotificationHooks } from '@/components/use-notification';
 import PluginSettingsForm from '@/components/plugins/plugin-settings-form';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import PluginDetailHeader from './plugin-detail-header';
 import PluginDetailOverview from './plugin-detail-overview';
 import PluginDetailPermissions from './plugin-detail-permissions';

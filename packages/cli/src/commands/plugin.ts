@@ -80,10 +80,8 @@ module.exports = {
       res.json({ message: "Hello from ${pluginName}!" });
     });
 
-    // Example Translation registration
-    context.i18n.registerTranslations('en', {
-      '${slug}.welcome': 'Welcome to ${pluginName}!'
-    });
+    // Example translation loading from ./i18n/*.json
+    context.i18n.registerTranslations();
   },
   async onEnable(context) {
     context.logger.info("${pluginName} Plugin Enabled!");

@@ -1,6 +1,6 @@
 "use client";
 
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginManifestModalProps } from '../plugin-detail-page.interfaces';
 
 export default function PluginManifestModal({ isOpen, onClose, plugin, theme }: PluginManifestModalProps) {

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { AuthHooks } from '@/components/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { AdminApi } from '@/lib/api';

@@ -1,8 +1,11 @@
 import { IDatabaseManager, IMediaManager, IEmailManager, ICacheManager } from './managers.interfaces';
-import { Collection, CollectionInput, PluginSettingsSchema } from './schema.interfaces';
+import { Collection, PluginSettingsSchema } from './schema.interfaces';
+import type { CollectionInput } from './schema.types';
+import type { EntityParseOptions, EntityParseResult } from './entity.interfaces';
 import { PluginManifest, MiddlewareConfig } from './manifests.interfaces';
 import { PluginCapability } from './enums.enums';
 import type { PluginHealthProbeResult } from '../plugin-health-route-handler.interfaces';
+import type { NamespacedPluginsFacade } from '../namespaced-plugins-facade';
 
 export interface PluginPathReadOptions {
   pluginDirectory?: string;
@@ -125,12 +128,19 @@ export interface PluginContext {
   };
   
   readonly plugins: {
-    namespace(namespace: string): any;
+    namespace(namespace: string): NamespacedPluginsFacade;
     has(namespace: string, slug: string): boolean;
     get(namespace: string, slug: string): any;
+    require<TPlugin = any>(key: string): TPlugin;
+    optional<TPlugin = any>(key: string): TPlugin | null;
     isEnabled(slug: string): boolean;
     emit(event: string, payload: any): void;
     on(event: string, handler: (payload: any) => void | Promise<void>): void;
+  };
+
+  readonly dependencies: {
+    require<TDependency = any>(key: string): TDependency;
+    optional<TDependency = any>(key: string): TDependency | null;
   };
 
   readonly extensions: {
@@ -143,6 +153,11 @@ export interface PluginContext {
   readonly collections: {
     register(collection: CollectionInput): void;
     extend(targetPlugin: string, targetCollection: string, extensions: Partial<Collection>): void;
+  };
+
+  readonly entities: {
+    parse(collection: Collection, input: Record<string, unknown>, options?: EntityParseOptions): EntityParseResult;
+    clean(collection: Collection, input: Record<string, unknown>, options?: EntityParseOptions): Record<string, unknown>;
   };
 
   // Plugin Settings
@@ -167,6 +182,7 @@ export interface PluginContext {
       scope?: 'plugin' | 'theme' | null,
     ): string;
     t(key: string, params?: Record<string, any>): string;
+    registerTranslations(pluginDirectory?: string): void;
     registerTranslations(locale: string, translations: Record<string, any>): void;
   };
 

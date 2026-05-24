@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { Notification, NotificationPayload } from './notification-context.interfaces';
 import { NotificationContextStore } from './notification-context-store';
 

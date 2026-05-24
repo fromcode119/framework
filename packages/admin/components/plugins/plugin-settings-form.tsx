@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { ContextHooks } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/field-renderer';
 import { ThemeHooks } from '@/components/use-theme';
 import { AdminApi } from '@/lib/api';

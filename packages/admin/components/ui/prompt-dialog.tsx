@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ThemeHooks } from '@/components/use-theme';
 import { Button } from './button';
 import { Input } from './input';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 
 const { Close: X } = FrameworkIcons;

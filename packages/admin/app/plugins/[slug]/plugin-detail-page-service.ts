@@ -3,8 +3,8 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
+import type { PluginDetailTab } from './plugin-detail-page.types';
 import type {
-  PluginDetailTab,
   PluginLogEntry,
   PluginMarketplaceItem,
   PluginSandboxSettings,

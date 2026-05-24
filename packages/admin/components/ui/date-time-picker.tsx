@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { DayPicker } from 'react-day-picker';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from './button';
 import { RootFramework } from '@fromcode119/react';
 import { ThemeHooks } from '../use-theme';

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Slot } from '@fromcode119/react';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';

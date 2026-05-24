@@ -2,8 +2,6 @@ import { ApiVersionUtils } from '@fromcode119/core/client';
 import { ServerApiUtils } from '../server-api';
 import type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefetcher.interfaces';
 
-export type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefetcher.interfaces';
-
 /**
  * Fetches plugin data server-side based on theme.json `ui.prefetchApis` config
  * and returns a record keyed by the declared entry `key`.

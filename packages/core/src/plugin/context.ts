@@ -21,6 +21,7 @@ import { ThemeContextProxy } from './context/theme';
 import { PluginsFacade } from '../plugins-facade';
 import { PluginsManagerResolver } from '../plugins-manager-resolver';
 import { PluginPathContextProxy } from './context/paths';
+import { EntitiesContextProxy } from './context/entities';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -32,6 +33,34 @@ export class PluginContextFactory {
       const security = ContextSecurityProxy.createSecurityHelpers(plugin, manager, rootLogger);
       const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(manager.plugins));
       const pathContext = new PluginPathContextProxy(plugin, manager);
+      const requireDependency = <TDependency = any>(key: string): TDependency => {
+        if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
+        const separatorIndex = key.indexOf(':');
+        const namespace = separatorIndex >= 0 ? key.slice(0, separatorIndex).trim() : '';
+        const slug = separatorIndex >= 0 ? key.slice(separatorIndex + 1).trim() : '';
+        if (!namespace || !slug) {
+          throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
+        }
+
+        const dependency = pluginsFacade.get(namespace, slug);
+        if (dependency === null || dependency === undefined) {
+          throw new Error(`Missing required dependency: ${key}`);
+        }
+
+        return dependency as TDependency;
+      };
+      const optionalDependency = <TDependency = any>(key: string): TDependency | null => {
+        if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
+        const separatorIndex = key.indexOf(':');
+        const namespace = separatorIndex >= 0 ? key.slice(0, separatorIndex).trim() : '';
+        const slug = separatorIndex >= 0 ? key.slice(separatorIndex + 1).trim() : '';
+        if (!namespace || !slug) {
+          throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
+        }
+
+        const dependency = pluginsFacade.get(namespace, slug);
+        return dependency === null || dependency === undefined ? null : dependency as TDependency;
+      };
 
       const context: PluginContext = {
         db: DatabaseContextProxy.createDatabaseProxy(plugin, manager, security) as any,
@@ -127,6 +156,8 @@ export class PluginContextFactory {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
             return pluginsFacade.get(namespace, slug);
           },
+          require: requireDependency,
+          optional: optionalDependency,
           isEnabled: (slug: string) => {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
             return manager.plugins.get(slug)?.state === 'active';
@@ -139,6 +170,10 @@ export class PluginContextFactory {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.on(event, handler);
           }
+        },
+        dependencies: {
+          require: requireDependency,
+          optional: optionalDependency,
         },
         extensions: {
           installArchive: async (input: { filePath: string; type: 'plugin' | 'theme' | 'core'; enable?: boolean; activate?: boolean }) => {
@@ -156,11 +191,12 @@ export class PluginContextFactory {
         meta: MetaContextProxy.createMetaProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager),
         theme: ThemeContextProxy.createThemeProxy(plugin, manager),
+        entities: EntitiesContextProxy.createEntitiesProxy(),
         collections: CollectionsContextProxy.createCollectionsProxy(plugin, manager, rootLogger, security),
         settings: SettingsContextProxy.createSettingsProxy(plugin, manager),
-        i18n: I18nContextProxy.createI18nProxy(plugin, manager, security),
+        i18n: I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security),
         t: (key: string, params?: Record<string, any>) => {
-          const i18n = I18nContextProxy.createI18nProxy(plugin, manager, security);
+          const i18n = I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security);
           return i18n.t(key, params);
         },
         ui: UiContextProxy.createUiProxy(plugin, manager),

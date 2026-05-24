@@ -17,7 +17,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PromptDialog } from '@/components/ui/prompt-dialog';
 import { ArrayField } from '@/components/ui/array-field';
 import { FieldRenderer } from '@/components/collection/field-renderer';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import Link from 'next/link';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
@@ -83,12 +83,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
   }, [readOnlyOverrideFields, readOnlyOverridePassword]);
 
   const prepareSubmitPayload = useCallback((payload: Record<string, any>) => {
-    return CollectionEditUtils.normalizeCollectionSubmitPayload(
-      payload,
-      collection?.fields || [],
-      preferredLocaleFallback
-    );
-  }, [collection?.fields, preferredLocaleFallback]);
+    return AdminServices.getInstance().entityFormData.normalizeSubmitPayload(collection, payload, { isNew });
+  }, [collection, isNew]);
   
   const {
     formData,
@@ -211,7 +207,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     setRestoringPermanently(true);
     try {
       const response = await AdminApi.post(AdminConstants.ENDPOINTS.VERSIONS.RESTORE(resolvedSlug, id, version), {});
-      setFormData(CollectionEditUtils.normalizeCollectionFormData(response.data, collection?.fields || []));
+      setFormData(AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, response.data));
       setStatus({ type: 'success', message: `Record permanently restored to version ${version}` });
       setSelectedRevision(null);
       fetchRevisions(1);
@@ -249,9 +245,9 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
         const entryData = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${duplicateFromId}?locale_mode=raw`);
         if (cancelled) return;
         setFormData(
-          CollectionEditUtils.normalizeCollectionFormData(
-            CollectionEditUtils.buildDuplicateFormData(entryData, collection?.fields || []),
-            collection?.fields || []
+          AdminServices.getInstance().entityFormData.normalizeLoadedRecord(
+            collection,
+            CollectionEditUtils.buildDuplicateFormData(entryData, collection?.fields || [])
           )
         );
         setStatus({ type: 'success', message: 'Duplicate loaded. Review the values and save to create a new record.' });
@@ -278,7 +274,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
       try {
         const entryData = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${id}?locale_mode=raw`);
 
-        setFormData(CollectionEditUtils.normalizeCollectionFormData(entryData, collection?.fields || []));
+        setFormData(AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, entryData));
         if (entryData.slug) setSlugManuallyEdited(true);
 
         // Fetch revisions with pagination

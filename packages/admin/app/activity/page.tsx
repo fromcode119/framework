@@ -5,7 +5,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { DataTable } from '@/components/ui/data-table';
 import { PageHeading } from '@/components/ui/page-heading';
 import { AdminApi } from '@/lib/api';

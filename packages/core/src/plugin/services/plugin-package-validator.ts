@@ -84,10 +84,6 @@ export class PluginPackageValidator {
         'Build/package the plugin before uploading.'
       );
     }
-
-    throw new Error(
-      `Uploaded plugin archive is invalid: manifest declares migrations at "${migrationsDirName}" but no migration files were found.`
-    );
   }
 
   private static toTypeScriptCandidate(compiledPath: string): string | null {

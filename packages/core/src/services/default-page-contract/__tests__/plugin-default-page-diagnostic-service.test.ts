@@ -10,6 +10,11 @@ import { PluginDefaultPageDiagnosticService } from '../plugin-default-page-diagn
 import { PluginDefaultPageMaterializationService } from '../plugin-default-page-materialization-service';
 import { SeedPageService } from '../../seed-page-service';
 
+const TEST_NAMESPACE = 'org.synthetic';
+const TEST_PLUGIN = 'catalog-module';
+const TEST_KEY = 'catalog-index';
+const TEST_CANONICAL_KEY = 'org.synthetic:catalog-module:catalog-index';
+
 describe('PluginDefaultPageDiagnosticService', () => {
   let registry: PluginDefaultPageContractRegistryService;
   let service: PluginDefaultPageDiagnosticService;
@@ -32,14 +37,14 @@ describe('PluginDefaultPageDiagnosticService', () => {
         overrides: [
           {
             contract: {
-              namespace: 'org.fromcode',
-              pluginSlug: 'ecommerce',
-              key: 'store-index',
+              namespace: TEST_NAMESPACE,
+              pluginSlug: TEST_PLUGIN,
+              key: TEST_KEY,
             },
             slug: '/cosmic-box',
-            aliases: ['/shop'],
+            aliases: ['/catalog'],
             title: 'Catalog',
-            themeLayout: 'StoreLayout',
+            themeLayout: 'CatalogLayout',
           },
         ],
       },
@@ -49,10 +54,10 @@ describe('PluginDefaultPageDiagnosticService', () => {
     expect(report.backfillPlan).toBeUndefined();
     expect(report.resolvedContracts).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
-        key: 'store-index',
+        canonicalKey: TEST_CANONICAL_KEY,
+        key: TEST_KEY,
         effectiveSlug: '/cosmic-box',
-        effectiveAliases: ['/shop'],
+        effectiveAliases: ['/catalog'],
         status: 'ready',
         install: true,
         prerequisiteReady: true,
@@ -93,7 +98,7 @@ describe('PluginDefaultPageDiagnosticService', () => {
 
     const withPages = service.createReport({
       materialization: {
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
       },
     });
 
@@ -102,7 +107,7 @@ describe('PluginDefaultPageDiagnosticService', () => {
       expect.objectContaining({
         entries: [
           expect.objectContaining({
-            canonicalKey: 'org.fromcode:ecommerce:store-index',
+            canonicalKey: TEST_CANONICAL_KEY,
             action: 'adopt-existing',
             matchedPageId: 42,
           }),
@@ -118,13 +123,13 @@ describe('PluginDefaultPageDiagnosticService', () => {
 
     const withoutAssociations = service.createReport({
       backfill: {
-        existingPages: [{ id: 7, customPermalink: '/shop' }],
+        existingPages: [{ id: 7, customPermalink: '/catalog' }],
       },
     });
 
     const withAssociations = service.createReport({
       backfill: {
-        existingPages: [{ id: 7, customPermalink: '/shop' }],
+        existingPages: [{ id: 7, customPermalink: '/catalog' }],
         existingAssociations: {},
       },
     });
@@ -134,7 +139,7 @@ describe('PluginDefaultPageDiagnosticService', () => {
       expect.objectContaining({
         entries: [
           expect.objectContaining({
-            canonicalKey: 'org.fromcode:ecommerce:store-index',
+            canonicalKey: TEST_CANONICAL_KEY,
             action: 'associate-existing',
             matchedPageId: 7,
           }),
@@ -150,24 +155,24 @@ describe('PluginDefaultPageDiagnosticService', () => {
 
     const report = service.createReport({
       materialization: {
-        existingPages: [{ id: 10, customPermalink: '/shop' }],
+        existingPages: [{ id: 10, customPermalink: '/catalog' }],
       },
       backfill: {
-        existingPages: [{ id: 20, customPermalink: '/shop' }],
+        existingPages: [{ id: 20, customPermalink: '/catalog' }],
         existingAssociations: {},
       },
     });
 
     expect(report.materializationPlan?.entries).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: TEST_CANONICAL_KEY,
         action: 'adopt-existing',
         matchedPageId: 10,
       }),
     ]);
     expect(report.backfillPlan?.entries).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: TEST_CANONICAL_KEY,
         action: 'associate-existing',
         matchedPageId: 20,
       }),
@@ -184,11 +189,11 @@ describe('PluginDefaultPageDiagnosticService', () => {
         overrides: [
           {
             contract: {
-              namespace: 'org.fromcode',
-              pluginSlug: 'ecommerce',
-              key: 'store-index',
+              namespace: TEST_NAMESPACE,
+              pluginSlug: TEST_PLUGIN,
+              key: TEST_KEY,
             },
-            aliases: ['/catalog'],
+            aliases: ['/browse'],
           },
         ],
         siteState: {
@@ -201,14 +206,14 @@ describe('PluginDefaultPageDiagnosticService', () => {
         },
       },
       materialization: {
-        existingPages: [{ id: 5, customPermalink: '/shop' }],
+        existingPages: [{ id: 5, customPermalink: '/catalog' }],
       },
       backfill: {
-        existingPages: [{ id: 6, customPermalink: '/shop' }],
+        existingPages: [{ id: 6, customPermalink: '/catalog' }],
         existingAssociations: {
           byCanonicalKey: {
-            'org.fromcode:ecommerce:store-index': {
-              canonicalKey: 'org.fromcode:ecommerce:store-index',
+            [TEST_CANONICAL_KEY]: {
+              canonicalKey: TEST_CANONICAL_KEY,
               pageId: 6,
             },
           },
@@ -238,19 +243,19 @@ class PluginDefaultPageDiagnosticServiceTestFixture {
 
   private static createStoreRegistration(): PluginDefaultPageContractRegistration {
     return {
-      namespace: 'org.fromcode',
-      pluginSlug: 'ecommerce',
+      namespace: TEST_NAMESPACE,
+      pluginSlug: TEST_PLUGIN,
       contracts: [
         {
-          key: 'store-index',
+          key: TEST_KEY,
           kind: 'index',
-          defaultSlug: '/shop',
+          defaultSlug: '/catalog',
           capability: 'catalog',
-          recipe: 'ecommerce.store-index',
+          recipe: 'catalog-module.catalog-index',
           materializationMode: 'singleton-document',
           dependencies: ['search'],
-          adoptionHints: ['/shop'],
-          aliases: ['/catalog'],
+          adoptionHints: ['/catalog'],
+          aliases: ['/browse'],
           required: true,
         },
       ],

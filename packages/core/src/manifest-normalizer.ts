@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { PluginManifest, ThemeManifest } from './types/manifests.interfaces';
-import type { PluginManifestInput, ThemeManifestInput } from './manifest-normalizer.types';
+import type { PluginManifestInput, ThemeManifestInput } from './types/manifests.types';
 
 export class ManifestNormalizer {
   static plugin(input: PluginManifestInput, basePath?: string): PluginManifest {

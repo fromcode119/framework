@@ -3,7 +3,7 @@
 import { ThemeHooks } from '@/components/use-theme';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { BackupSummaryCardProps } from './backups-page-client.interfaces';
 import { SystemBackupPageUtils } from './system-backup-page-utils';
 

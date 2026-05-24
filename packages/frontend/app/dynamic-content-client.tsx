@@ -4,6 +4,7 @@ import React from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
+import DefaultPageDesignRenderer from './default-page-design-renderer';
 
 type DynamicContentClientProps = {
   content: any;
@@ -22,14 +23,19 @@ export default function DynamicContentClient({ content }: DynamicContentClientPr
   const renderableContent = shouldBypassDefaultContent
     ? null
     : ContentRenderingUtils.buildRenderableContent(normalizedContent);
+  const hasDefaultPageDesign = Boolean(normalizedContent?.recipe);
 
   return (
     <LayoutComponent page={normalizedContent}>
       {!shouldBypassDefaultContent ? (
         <div className="w-full" style={{ minHeight: '100svh' }}>
-          <Slot name="frontend.content.display" props={{ content: renderableContent, entry: normalizedContent }} />
+          {hasDefaultPageDesign ? (
+            <DefaultPageDesignRenderer content={renderableContent} entry={normalizedContent} />
+          ) : (
+            <Slot name="frontend.content.display" props={{ content: renderableContent, entry: normalizedContent }} />
+          )}
 
-          {((!renderableContent || typeof renderableContent === 'string')) && (
+          {(!hasDefaultPageDesign && (!renderableContent || typeof renderableContent === 'string')) && (
             <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
               <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(normalizedContent)}</h1>
               <div dangerouslySetInnerHTML={{ __html: renderableContent || '' }} />

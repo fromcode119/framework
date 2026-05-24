@@ -1,59 +1,14 @@
-import { Collection, CollectionInput, DeepReadonly, LoadedPlugin , Field } from '../../types';
+import { Collection, CollectionInput, LoadedPlugin , Field } from '../../types';
 import { Logger } from '../../logging';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { ContextSecurityProxy } from './utils';
 import { PluginRegistry } from '@fromcode119/plugins';
-import { NamingStrategy } from '@fromcode119/database/naming-strategy';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
+import { PluginEntityRegistrationService } from '../services/plugin-entity-registration-service';
 
 
 export class CollectionsContextProxy {
-  private static cloneFields(fields: ReadonlyArray<Field | DeepReadonly<Field>>): Field[] {
-      return [...fields].map((field) => {
-        const mutableField = { ...field } as Field;
-        mutableField.options = Array.isArray(field.options)
-          ? field.options.map((option) => ({ ...option }))
-          : field.options as Field['options'];
-        mutableField.relationTo = Array.isArray(field.relationTo)
-          ? [...field.relationTo]
-          : field.relationTo as Field['relationTo'];
-        mutableField.fields = Array.isArray(field.fields)
-          ? CollectionsContextProxy.cloneFields(field.fields)
-          : field.fields as Field['fields'];
-        mutableField.admin = field.admin ? { ...field.admin } : field.admin as Field['admin'];
-        return mutableField;
-      });
-  }
-
-  private static cloneHooks(collection: CollectionInput): Collection['hooks'] {
-      if (!collection.hooks) {
-        return undefined;
-      }
-
-      return {
-        beforeChange: collection.hooks.beforeChange ? [...collection.hooks.beforeChange] : undefined,
-        afterChange: collection.hooks.afterChange ? [...collection.hooks.afterChange] : undefined,
-        beforeDelete: collection.hooks.beforeDelete ? [...collection.hooks.beforeDelete] : undefined,
-        afterDelete: collection.hooks.afterDelete ? [...collection.hooks.afterDelete] : undefined,
-      };
-  }
-
-  private static cloneAdmin(collection: CollectionInput): Collection['admin'] {
-      if (!collection.admin) {
-        return undefined;
-      }
-
-      return {
-        ...collection.admin,
-        defaultColumns: collection.admin.defaultColumns ? [...collection.admin.defaultColumns] : undefined,
-        tabs: collection.admin.tabs
-          ? collection.admin.tabs.map((tab) => ({ ...tab }))
-          : undefined,
-        sections: collection.admin.sections
-          ? collection.admin.sections.map((section) => ({ ...section }))
-          : undefined,
-      };
-  }
+  private static readonly entityRegistration = new PluginEntityRegistrationService();
 
   static createCollectionsProxy(
   plugin: LoadedPlugin,
@@ -69,98 +24,20 @@ export class CollectionsContextProxy {
             handleViolation('content');
           }
 
-          const normalizedPluginSlug = NamingStrategy.toSnakeIdentifier(plugin.manifest.slug);
-          const tablePrefix = PhysicalTableNameUtils.createPluginPrefix(normalizedPluginSlug);
-          const inputSlug = collection.slug;
-
-          // Clean slug to avoid "ecommerce_ecommerce-categories" kind of redundancy
-          const cleanInputSlug = inputSlug.startsWith(`${plugin.manifest.slug}-`)
-            ? inputSlug.slice(plugin.manifest.slug.length + 1)
-            : inputSlug;
-
-          const tableSuffixSource = inputSlug.startsWith(tablePrefix)
-            ? inputSlug.replace(tablePrefix, '')
-            : cleanInputSlug;
-          const normalizedTableSuffix = NamingStrategy.toSnakeIdentifier(tableSuffixSource);
-          const prefixedSlug = PhysicalTableNameUtils.create(plugin.manifest.slug, normalizedTableSuffix);
-
-          if ((inputSlug.startsWith(plugin.manifest.slug) && inputSlug !== plugin.manifest.slug) || PhysicalTableNameUtils.hasPlatformPrefix(inputSlug)) {
+          const registration = CollectionsContextProxy.entityRegistration.normalizeForPlugin(collection, plugin.manifest.slug);
+          if (registration.cleanedSlug) {
             rootLogger.warn(
-              `Collection slug "${inputSlug}" in plugin "${plugin.manifest.slug}" was automatically cleaned to be used as table name. ` +
-              `Final table: ${prefixedSlug}`
+              `Collection slug "${collection.slug}" in plugin "${plugin.manifest.slug}" was automatically cleaned to be used as table name. ` +
+              `Final table: ${registration.physicalSlug}`
             );
           }
-
-          // Use cleanInputSlug (plugin-prefix stripped) so that e.g. "ecommerce-orders"
-          // gets shortSlug "orders", enabling URL-to-collection resolution at /ecommerce/orders.
-          const shortSlug = collection.shortSlug || (inputSlug.startsWith(tablePrefix) ? inputSlug.replace(tablePrefix, '') : cleanInputSlug);
-
-          const modifiedCollection: Collection = {
-            ...collection,
-            access: collection.access ? { ...collection.access } : undefined,
-            hooks: CollectionsContextProxy.cloneHooks(collection),
-            admin: CollectionsContextProxy.cloneAdmin(collection),
-            fields: CollectionsContextProxy.cloneFields(collection.fields),
-            slug: prefixedSlug,
-            shortSlug,
-            unprefixedSlug: inputSlug,
-            pluginSlug: plugin.manifest.slug,
-            displayName: collection.displayName || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
-          };
-
-          if (modifiedCollection.workflow) {
-            if (!modifiedCollection.fields.find(f => f.name === 'status')) {
-                 modifiedCollection.fields.push({
-                   name: 'status',
-                   type: 'select',
-                   label: 'Status',
-                   defaultValue: 'draft',
-                   options: [
-                     { label: 'Draft', value: 'draft' },
-                     { label: 'In Review', value: 'review' },
-                     { label: 'Published', value: 'published' }
-                   ],
-                   admin: { position: 'sidebar', section: 'Review Process' }
-                 } as any);
-            }
-
-            if (!modifiedCollection.fields.find(f => f.name === 'publishedAt')) {
-              modifiedCollection.fields.push({
-                name: 'publishedAt',
-                type: 'datetime',
-                label: 'Published Date',
-                admin: { position: 'sidebar', section: 'Review Process' }
-              } as any);
-            }
-          }
-
-          if (modifiedCollection.fields.find((f: Field) => f.name === 'slug')) {
-            if (!modifiedCollection.fields.find((f: Field) => f.name === 'customPermalink')) {
-              modifiedCollection.fields.push({
-                name: 'customPermalink',
-                type: 'text',
-                unique: true,
-                admin: { hidden: true }
-              } as any);
-            }
-            if (!modifiedCollection.fields.find((f: Field) => f.name === 'disablePermalink')) {
-              modifiedCollection.fields.push({
-                name: 'disablePermalink',
-                type: 'checkbox',
-                defaultValue: false,
-                admin: { hidden: true }
-              } as any);
-            }
-          }
+          const modifiedCollection = CollectionsContextProxy.entityRegistration.applyFrameworkFields(registration.collection);
+          const prefixedSlug = registration.physicalSlug;
+          const shortSlug = registration.shortSlug;
 
           const existing = manager.registeredCollections.get(prefixedSlug);
           if (existing) {
-            const fieldNames = new Set(existing.collection.fields.map((f: Field) => f.name));
-            for (const field of modifiedCollection.fields) {
-              if (!fieldNames.has(field.name)) {
-                existing.collection.fields.push(field);
-              }
-            }
+            CollectionsContextProxy.entityRegistration.mergeCollectionFields(existing.collection, modifiedCollection);
           } else {
             manager.registeredCollections.set(prefixedSlug, {
               collection: modifiedCollection,
@@ -176,7 +53,7 @@ export class CollectionsContextProxy {
           });
         },
         extend: (targetPlugin: string, targetCollection: string, extensions: Partial<Collection>) => {
-          const fullSlug = PhysicalTableNameUtils.create(targetPlugin, NamingStrategy.toSnakeIdentifier(targetCollection));
+          const fullSlug = PhysicalTableNameUtils.create(targetPlugin, targetCollection);
 
           const entry = manager.getCollection(fullSlug);
           if (entry) {

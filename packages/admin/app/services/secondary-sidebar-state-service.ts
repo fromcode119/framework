@@ -1,5 +1,6 @@
 import { AdminConstants } from '@/lib/constants';
-import type { SecondarySidebarLayoutInput, SecondarySidebarMode } from './secondary-sidebar-state-service.interfaces';
+import type { SecondarySidebarLayoutInput } from './secondary-sidebar-state-service.interfaces';
+import type { SecondarySidebarMode } from './secondary-sidebar-state-service.types';
 
 export class SecondarySidebarStateService {
   resolveMode(input: SecondarySidebarLayoutInput): SecondarySidebarMode {

@@ -17,4 +17,5 @@ export { CollectionService } from './collection-service';
 export { DateService } from './date-service';
 export { UrlService } from './url-service';
 export { UiPreferenceService } from './ui-preference-service';
+export { EntityFormDataService } from './entity-form-data-service';
 export { AdminServices } from '../admin-services';

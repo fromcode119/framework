@@ -13,7 +13,7 @@ import { PageHeading } from '@/components/ui/page-heading';
 import { Icon as DynamicIcon } from '@/components/icon';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 import { PlatformBrandingService } from '@/lib/platform-branding-service';
 

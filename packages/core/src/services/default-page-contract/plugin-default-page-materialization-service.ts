@@ -66,6 +66,18 @@ export class PluginDefaultPageMaterializationService extends BaseService {
       return this.createBaseEntry(contract, lookupCandidates, 'blocked', 'blocked', undefined, undefined, contract.reasons);
     }
 
+    if (this.isRuntimeParameterizedContract(contract)) {
+      return this.createBaseEntry(
+        contract,
+        lookupCandidates,
+        'deferred',
+        'deferred',
+        undefined,
+        undefined,
+        this.createReasons(contract.reasons, 'parameterized-route-deferred'),
+      );
+    }
+
     if (contract.materializationMode === 'per-record-document') {
       return this.createBaseEntry(
         contract,
@@ -183,12 +195,14 @@ export class PluginDefaultPageMaterializationService extends BaseService {
   }
 
   private createCreatePayload(contract: ResolvedPluginDefaultPageContract): PluginDefaultPageContractCreatePayload {
+    const resolvedSlug = this.resolveSingletonDocumentSlug(contract.effectiveSlug);
+
     return {
       canonicalKey: contract.canonicalKey,
       namespace: contract.namespace,
       pluginSlug: contract.pluginSlug,
       key: contract.key,
-      slug: contract.effectiveSlug,
+      slug: resolvedSlug,
       customPermalink: contract.effectiveSlug,
       aliases: [...contract.effectiveAliases],
       recipe: contract.effectiveRecipe,
@@ -317,5 +331,24 @@ export class PluginDefaultPageMaterializationService extends BaseService {
   private normalizeOptionalString(value?: string): string | undefined {
     const normalized = String(value || '').trim();
     return normalized || undefined;
+  }
+
+  private isRuntimeParameterizedContract(contract: ResolvedPluginDefaultPageContract): boolean {
+    return contract.materializationMode === 'singleton-document' && this.hasPathParameters(contract.effectiveSlug);
+  }
+
+  private hasPathParameters(value: string): boolean {
+    return String(value || '')
+      .trim()
+      .split('?')[0]
+      .split('#')[0]
+      .split('/')
+      .filter(Boolean)
+      .some((segment) => segment.startsWith(':'));
+  }
+
+  private resolveSingletonDocumentSlug(value: string): string {
+    const segments = String(value || '').trim().split('?')[0].split('#')[0].split('/').filter(Boolean);
+    return segments[segments.length - 1] || String(value || '').trim();
   }
 }

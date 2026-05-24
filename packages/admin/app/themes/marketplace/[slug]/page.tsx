@@ -4,7 +4,7 @@ import React, { use, useState, useEffect } from 'react';
 import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AdminApi } from '@/lib/api';

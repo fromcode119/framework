@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { NotificationHooks } from '@/components/use-notification';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { AppEnv } from '@/lib/env';
 

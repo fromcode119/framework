@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import { UserSecurityPageService } from '../user-security-page-service';
 import type { AuthActivityEntry } from '../user-security-page.interfaces';

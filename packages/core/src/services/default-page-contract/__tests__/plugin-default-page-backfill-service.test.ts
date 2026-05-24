@@ -7,6 +7,11 @@ import type {
 import { PluginDefaultPageBackfillService } from '../plugin-default-page-backfill-service';
 import { SeedPageService } from '../../seed-page-service';
 
+const TEST_NAMESPACE = 'org.synthetic';
+const CATALOG_CANONICAL_KEY = 'org.synthetic:catalog-module:catalog-index';
+const POLICY_CANONICAL_KEY = 'org.synthetic:policy-module:primary-policy-page';
+const CONTACT_CANONICAL_KEY = 'org.synthetic:contact-module:contact-page';
+
 describe('PluginDefaultPageBackfillService', () => {
   let service: PluginDefaultPageBackfillService;
 
@@ -18,10 +23,10 @@ describe('PluginDefaultPageBackfillService', () => {
     const plan = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
-          canonicalKey: 'org.fromcode:privacy:privacy-policy-page',
-          pluginSlug: 'privacy',
-          key: 'privacy-policy-page',
-          effectiveSlug: '/privacy-policy',
+          canonicalKey: POLICY_CANONICAL_KEY,
+          pluginSlug: 'policy-module',
+          key: 'primary-policy-page',
+          effectiveSlug: '/primary-policy',
         }),
         createResolvedContract(),
       ],
@@ -30,8 +35,8 @@ describe('PluginDefaultPageBackfillService', () => {
     });
 
     expect(plan.entries.map((entry) => entry.canonicalKey)).toEqual([
-      'org.fromcode:ecommerce:store-index',
-      'org.fromcode:privacy:privacy-policy-page',
+      CATALOG_CANONICAL_KEY,
+      POLICY_CANONICAL_KEY,
     ]);
     expect(plan.summary.total).toBe(2);
   });
@@ -39,11 +44,11 @@ describe('PluginDefaultPageBackfillService', () => {
   it('marks a contract already-associated when its association points to a page in the snapshot', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
-      existingPages: [{ id: 42, customPermalink: '/shop' }],
+      existingPages: [{ id: 42, customPermalink: '/catalog' }],
       existingAssociations: {
         byCanonicalKey: {
-          'org.fromcode:ecommerce:store-index': {
-            canonicalKey: 'org.fromcode:ecommerce:store-index',
+          [CATALOG_CANONICAL_KEY]: {
+            canonicalKey: CATALOG_CANONICAL_KEY,
             pageId: 42,
           },
         },
@@ -59,7 +64,7 @@ describe('PluginDefaultPageBackfillService', () => {
   it('associates a single eligible existing page when there is no conflicting association', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
-      existingPages: [{ id: 7, customPermalink: '/shop/' }],
+      existingPages: [{ id: 7, customPermalink: '/catalog/' }],
       existingAssociations: {},
     }).entries;
 
@@ -74,8 +79,8 @@ describe('PluginDefaultPageBackfillService', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
       existingPages: [
-        { id: 1, customPermalink: '/shop' },
-        { id: 2, customPermalink: '/catalog' },
+        { id: 1, customPermalink: '/catalog' },
+        { id: 2, customPermalink: '/browse' },
       ],
       existingAssociations: {},
     }).entries;
@@ -91,35 +96,35 @@ describe('PluginDefaultPageBackfillService', () => {
       resolvedContracts: [
         createResolvedContract(),
         createResolvedContract({
-          canonicalKey: 'org.fromcode:forms:contact-page',
-          pluginSlug: 'forms',
+          canonicalKey: CONTACT_CANONICAL_KEY,
+          pluginSlug: 'contact-module',
           key: 'contact-page',
           kind: 'form-page',
-          capability: 'forms',
-          recipe: 'forms.contact-page',
-          effectiveRecipe: 'forms.contact-page',
-          effectiveSlug: '/shop',
+          capability: 'contact-form',
+          recipe: 'contact-module.contact-page',
+          effectiveRecipe: 'contact-module.contact-page',
+          effectiveSlug: '/catalog',
           effectiveTitle: 'Contact',
           effectiveThemeLayout: 'DefaultLayout',
           aliases: [],
           effectiveAliases: [],
-          adoptionHints: ['/shop'],
+          adoptionHints: ['/catalog'],
         }),
       ],
-      existingPages: [{ id: 42, customPermalink: '/shop' }],
+      existingPages: [{ id: 42, customPermalink: '/catalog' }],
       existingAssociations: {},
     });
 
     expect(plan.entries).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: CATALOG_CANONICAL_KEY,
         action: 'ambiguous',
         status: 'ambiguous',
         matchedPageId: 42,
         reasons: ['matched-by-customPermalink', 'page-claimed-by-multiple-contracts'],
       }),
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:forms:contact-page',
+        canonicalKey: CONTACT_CANONICAL_KEY,
         action: 'ambiguous',
         status: 'ambiguous',
         matchedPageId: 42,
@@ -132,12 +137,12 @@ describe('PluginDefaultPageBackfillService', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
       existingPages: [
-        { id: 10, customPermalink: '/archived-shop' },
-        { id: 20, customPermalink: '/shop' },
+        { id: 10, customPermalink: '/archived-catalog' },
+        { id: 20, customPermalink: '/catalog' },
       ],
       existingAssociations: {
         byCanonicalKey: {
-          'org.fromcode:ecommerce:store-index': {
+          [CATALOG_CANONICAL_KEY]: {
             pageId: 10,
           },
         },
@@ -154,11 +159,11 @@ describe('PluginDefaultPageBackfillService', () => {
   it('marks a contract ambiguous when a matched page is already associated to a different contract', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
-      existingPages: [{ id: 22, customPermalink: '/shop' }],
+      existingPages: [{ id: 22, customPermalink: '/catalog' }],
       existingAssociations: {
         byPageId: {
           '22': {
-            canonicalKey: 'org.fromcode:forms:contact-page',
+            canonicalKey: CONTACT_CANONICAL_KEY,
             pageId: 22,
           },
         },
@@ -175,8 +180,8 @@ describe('PluginDefaultPageBackfillService', () => {
     const plan = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
-          canonicalKey: 'org.fromcode:forms:contact-page',
-          pluginSlug: 'forms',
+          canonicalKey: CONTACT_CANONICAL_KEY,
+          pluginSlug: 'contact-module',
           key: 'contact-page',
           kind: 'form-page',
           effectiveSlug: '/contact',
@@ -185,11 +190,11 @@ describe('PluginDefaultPageBackfillService', () => {
           reasons: ['install-disabled'],
         }),
         createResolvedContract({
-          canonicalKey: 'org.fromcode:privacy:cookies-policy-page',
-          pluginSlug: 'privacy',
-          key: 'cookies-policy-page',
+          canonicalKey: 'org.synthetic:policy-module:secondary-policy-page',
+          pluginSlug: 'policy-module',
+          key: 'secondary-policy-page',
           kind: 'policy',
-          effectiveSlug: '/cookies-policy',
+          effectiveSlug: '/secondary-policy',
           effectiveAliases: [],
           status: 'blocked',
           reasons: ['compliance-disabled'],
@@ -209,8 +214,8 @@ describe('PluginDefaultPageBackfillService', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
-          canonicalKey: 'org.fromcode:lms:course-detail',
-          pluginSlug: 'lms',
+          canonicalKey: 'org.synthetic:learning-module:course-detail',
+          pluginSlug: 'learning-module',
           key: 'course-detail',
           kind: 'detail',
           effectiveSlug: '/courses',
@@ -232,13 +237,13 @@ describe('PluginDefaultPageBackfillService', () => {
     const existingPages: PluginDefaultPageContractBackfillPageSnapshot[] = [
       {
         id: 5,
-        slug: 'shop',
-        customPermalink: '/shop',
+        slug: 'catalog',
+        customPermalink: '/catalog',
       },
     ];
     const existingAssociations: PluginDefaultPageContractBackfillAssociationSnapshot = {
       byCanonicalKey: {
-        'org.fromcode:ecommerce:store-index': {
+        [CATALOG_CANONICAL_KEY]: {
           pageId: 5,
         },
       },
@@ -252,13 +257,13 @@ describe('PluginDefaultPageBackfillService', () => {
     expect(existingPages).toEqual([
       {
         id: 5,
-        slug: 'shop',
-        customPermalink: '/shop',
+        slug: 'catalog',
+        customPermalink: '/catalog',
       },
     ]);
     expect(existingAssociations).toEqual({
       byCanonicalKey: {
-        'org.fromcode:ecommerce:store-index': {
+        [CATALOG_CANONICAL_KEY]: {
           pageId: 5,
         },
       },
@@ -269,29 +274,29 @@ describe('PluginDefaultPageBackfillService', () => {
     const plan = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
-          canonicalKey: 'org.fromcode:ecommerce:store-a',
-          key: 'store-a',
+          canonicalKey: 'org.synthetic:catalog-module:page-a',
+          key: 'page-a',
           effectiveSlug: '/a',
           adoptionHints: ['/a'],
         }),
         createResolvedContract({
-          canonicalKey: 'org.fromcode:ecommerce:store-b',
-          key: 'store-b',
+          canonicalKey: 'org.synthetic:catalog-module:page-b',
+          key: 'page-b',
           effectiveSlug: '/b',
           adoptionHints: ['/b'],
           status: 'skipped',
           reasons: ['install-disabled'],
         }),
         createResolvedContract({
-          canonicalKey: 'org.fromcode:ecommerce:store-c',
-          key: 'store-c',
+          canonicalKey: 'org.synthetic:catalog-module:page-c',
+          key: 'page-c',
           effectiveSlug: '/c',
           adoptionHints: ['/c'],
           materializationMode: 'adopt-only',
         }),
         createResolvedContract({
-          canonicalKey: 'org.fromcode:ecommerce:store-d',
-          key: 'store-d',
+          canonicalKey: 'org.synthetic:catalog-module:page-d',
+          key: 'page-d',
           effectiveSlug: '/d',
           adoptionHints: ['/d'],
         }),
@@ -302,7 +307,7 @@ describe('PluginDefaultPageBackfillService', () => {
       ],
       existingAssociations: {
         byCanonicalKey: {
-          'org.fromcode:ecommerce:store-a': {
+          'org.synthetic:catalog-module:page-a': {
             pageId: 11,
           },
         },
@@ -333,24 +338,24 @@ describe('PluginDefaultPageBackfillService', () => {
 
 function createResolvedContract(overrides: Partial<ResolvedPluginDefaultPageContract> = {}): ResolvedPluginDefaultPageContract {
   return {
-    key: 'store-index',
+    key: 'catalog-index',
     kind: 'index',
-    defaultSlug: '/shop',
+    defaultSlug: '/catalog',
     capability: 'catalog',
-    recipe: 'ecommerce.store-index',
+    recipe: 'catalog-module.catalog-index',
     materializationMode: 'singleton-document',
     dependencies: ['search'],
-    adoptionHints: ['/shop'],
-    aliases: ['/catalog'],
+    adoptionHints: ['/catalog'],
+    aliases: ['/browse'],
     required: true,
-    namespace: 'org.fromcode',
-    pluginSlug: 'ecommerce',
-    canonicalKey: 'org.fromcode:ecommerce:store-index',
-    effectiveAliases: ['/catalog'],
-    effectiveRecipe: 'ecommerce.store-index',
-    effectiveSlug: '/shop',
-    effectiveThemeLayout: 'StoreLayout',
-    effectiveTitle: 'Store',
+    namespace: TEST_NAMESPACE,
+    pluginSlug: 'catalog-module',
+    canonicalKey: CATALOG_CANONICAL_KEY,
+    effectiveAliases: ['/browse'],
+    effectiveRecipe: 'catalog-module.catalog-index',
+    effectiveSlug: '/catalog',
+    effectiveThemeLayout: 'CatalogLayout',
+    effectiveTitle: 'Catalog',
     install: true,
     prerequisiteReady: true,
     provenance: {

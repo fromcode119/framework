@@ -5,7 +5,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { NotificationHooks } from '@/components/use-notification';
 import { Loader } from '@/components/ui/loader';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';

@@ -4,20 +4,16 @@ import { FieldRenderer } from './field-renderer';
 import React from 'react';
 
 // Mock usePlugins
-vi.mock('@fromcode119/react', () => ({
-  ContextHooks: {
-    usePlugins: vi.fn(() => ({
-      collections: [],
-      fieldComponents: {}
-    })),
-  },
-  Slot: ({ children }: any) => <div>{children}</div>
-}));
-
-// Mock icons
-vi.mock('@/lib/icons', () => {
+vi.mock('@fromcode119/react', () => {
   const MockIcon = () => <div data-testid="mock-icon" />;
   return {
+    ContextHooks: {
+      usePlugins: vi.fn(() => ({
+        collections: [],
+        fieldComponents: {}
+      })),
+    },
+    Slot: ({ children }: any) => <div>{children}</div>,
     FrameworkIcons: {
       Alert: MockIcon,
       Refresh: MockIcon,

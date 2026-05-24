@@ -7,9 +7,9 @@ import { NotificationHooks } from '@/components/use-notification';
 import type { PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form.interfaces';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
+import type { PluginDetailTab } from './plugin-detail-page.types';
 import type {
   PluginDetailPageModel,
-  PluginDetailTab,
   PluginLogEntry,
   PluginMarketplaceItem,
   PluginSandboxSettings,

@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import type { UserSessionRecord } from '../user-security-page.interfaces';
 
 export default function DeviceSessionsCard({ isDark, sessions, sessionsLoading, onRevokeOtherSessions, onRevokeSession }: { isDark: boolean; onRevokeOtherSessions: () => Promise<void>; onRevokeSession: (sessionId: string) => Promise<void>; sessions: UserSessionRecord[]; sessionsLoading: boolean }) {

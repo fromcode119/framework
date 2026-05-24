@@ -5,7 +5,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeHooks } from '../use-theme';
 import { NotificationHooks } from '../use-notification';
 import { ContextHooks } from '@fromcode119/react';

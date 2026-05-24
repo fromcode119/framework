@@ -2,8 +2,7 @@ import type { RefObject } from 'react';
 import type { LoadedPlugin } from '@fromcode119/core/client';
 import type { PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form.interfaces';
 import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
-
-export type PluginDetailTab = 'overview' | 'settings' | 'permissions' | 'resources';
+import type { PluginDetailTab } from './plugin-detail-page.types';
 
 export interface PluginLogEntry {
   id?: string | number;

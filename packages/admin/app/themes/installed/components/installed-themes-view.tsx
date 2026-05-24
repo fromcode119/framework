@@ -1,6 +1,6 @@
 "use client";
 
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
 import InstalledThemeCard from './installed-theme-card';
 import type { InstalledThemesViewProps } from '../installed-themes-page.interfaces';

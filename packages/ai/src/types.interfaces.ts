@@ -20,6 +20,14 @@ export interface AssistantMessage {
   };
 }
 
+export interface AssistantSession {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: AssistantMessage[];
+}
+
 export interface AssistantChatParams {
   messages: AssistantMessage[];
   json?: boolean;

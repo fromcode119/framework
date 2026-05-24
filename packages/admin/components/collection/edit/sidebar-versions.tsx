@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 
 interface SidebarVersionsProps {
   revisions: any[];

@@ -1,10 +1,11 @@
 import { FieldType } from './enums.enums';
-import type { Access } from './schema.types';
+import type { Access, DeepReadonly } from './schema.types';
 
 export interface Field {
   name: string;
   type: FieldType;
   label?: string;
+  placeholder?: string;
   localized?: boolean;
   required?: boolean;
   unique?: boolean;
@@ -19,12 +20,15 @@ export interface Field {
   language?: 'javascript' | 'css' | 'html' | 'json' | 'typescript'; // For code
   showTime?: boolean; // For date/datetime
   fields?: Field[]; // For array/group fields
+  inputAliases?: string[];
   admin?: {
     hidden?: boolean;
     readOnly?: boolean;
     description?: string;
     position?: 'sidebar' | 'main';
     component?: string;
+    sourceCollection?: string;
+    sourceField?: string;
     handlesLocalization?: boolean;
     width?: 'full' | 'half';
     condition?: {
@@ -41,7 +45,7 @@ export interface SettingsTab {
   id: string;
   label: string;
   icon?: string;
-  fields: string[]; // Field names
+  fields?: string[]; // Optional explicit field names; field.tab is the canonical source when omitted
 }
 
 export interface PluginSettingsField extends Omit<Field, 'fields'> {
@@ -82,6 +86,38 @@ export interface Collection {
   priority?: number;    // Optional: for sorting in the menu
   system?: boolean;      // Optional: mark as system collection
   fields: Field[];
+  indexes?: {
+    name?: string;
+    fields: string[];
+    unique?: boolean;
+  }[];
+  inputAliases?: {
+    field: string;
+    from: string[];
+  }[];
+  derivedFields?: {
+    name: string;
+    dependsOn?: string[];
+    readOnly?: boolean;
+  }[];
+  api?: {
+    create?: boolean;
+    read?: boolean;
+    update?: boolean;
+    delete?: boolean;
+  };
+  adminLayout?: {
+    sections?: {
+      name: string;
+      label: string;
+      description?: string;
+    }[];
+    tabs?: {
+      name: string;
+      label: string;
+      icon?: string;
+    }[];
+  };
   access?: {
     create?: Access;
     read?: Access;
@@ -114,17 +150,6 @@ export interface Collection {
     previewPrefixSettingsKey?: string;
   };
 }
-
-export type DeepReadonly<T> =
-  T extends (...args: any[]) => any
-    ? T
-    : T extends readonly (infer U)[]
-      ? readonly DeepReadonly<U>[]
-      : T extends object
-        ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
-        : T;
-
-export type CollectionInput = Collection | DeepReadonly<Collection>;
 
 export interface CollectionQueryInterface {
   find(options?: any): Promise<any[]>;

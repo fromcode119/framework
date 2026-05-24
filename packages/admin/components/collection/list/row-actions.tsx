@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Slot } from '@fromcode119/react';
 import { Copy } from 'lucide-react';
 
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 
 export function CollectionListRowActions({

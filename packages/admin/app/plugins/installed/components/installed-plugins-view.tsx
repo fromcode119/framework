@@ -2,7 +2,7 @@
 
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { DependencyDialog } from '@/components/ui/dependency-dialog';
-import { FrameworkIcons } from '@/lib/icons';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
 import InstalledPluginCard from './installed-plugin-card';

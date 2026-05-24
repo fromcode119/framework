@@ -11,6 +11,12 @@ import type {
 import { PluginDefaultPageBackfillAssociationService } from '../plugin-default-page-backfill-association-service';
 import { PluginDefaultPageMaterializationExecutorService } from '../plugin-default-page-materialization-executor-service';
 
+const TEST_NAMESPACE = 'org.synthetic';
+const CATALOG_CANONICAL_KEY = 'org.synthetic:catalog-module:catalog-index';
+const CONTACT_CANONICAL_KEY = 'org.synthetic:contact-module:contact-page';
+const CREATE_CANONICAL_KEY = 'org.synthetic:catalog-module:create-missing';
+const BLOCKED_CANONICAL_KEY = 'org.synthetic:catalog-module:blocked';
+
 describe('PluginDefaultPageMaterializationExecutorService', () => {
   let service: PluginDefaultPageMaterializationExecutorService;
 
@@ -29,7 +35,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     const report = await service.execute(
       createExecutionInput({
         plan: createPlan([createReadyAdoptEntry()]),
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
         associationSnapshot: {},
         persistAssociation,
       }),
@@ -37,7 +43,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
 
     expect(report.entries).toEqual([
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: CATALOG_CANONICAL_KEY,
         executionOutcome: 'applied',
         matchedPageId: 42,
         reasons: ['matched-by-customPermalink'],
@@ -46,7 +52,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     expect(report.summary.byOutcome).toEqual({ applied: 1, failed: 0, noop: 0, skipped: 0 });
     expect(persistAssociation).toHaveBeenCalledTimes(1);
     expect(persistAssociation).toHaveBeenCalledWith({
-      canonicalKey: 'org.fromcode:ecommerce:store-index',
+      canonicalKey: CATALOG_CANONICAL_KEY,
       pageId: 42,
     });
   });
@@ -56,17 +62,17 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     const report = await service.execute(
       createExecutionInput({
         plan: createPlan([createReadyAdoptEntry()]),
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
         associationSnapshot: {
           byCanonicalKey: {
-            'org.fromcode:ecommerce:store-index': {
-              canonicalKey: 'org.fromcode:ecommerce:store-index',
+            [CATALOG_CANONICAL_KEY]: {
+              canonicalKey: CATALOG_CANONICAL_KEY,
               pageId: 42,
             },
           },
           byPageId: {
             '42': {
-              canonicalKey: 'org.fromcode:ecommerce:store-index',
+              canonicalKey: CATALOG_CANONICAL_KEY,
               pageId: 42,
             },
           },
@@ -97,7 +103,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     const report = await service.execute(
       createExecutionInput({
         plan: createPlan([createReadyAdoptEntry()]),
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
         associationSnapshot: {},
         persistAssociation,
       }),
@@ -105,7 +111,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
 
     expect(report.entries[0]).toEqual(
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: CATALOG_CANONICAL_KEY,
         executionOutcome: 'noop',
         matchedPageId: 42,
         reasons: ['matched-by-customPermalink'],
@@ -114,7 +120,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     expect(report.summary.byOutcome).toEqual({ applied: 0, failed: 0, noop: 1, skipped: 0 });
     expect(persistAssociation).toHaveBeenCalledTimes(1);
     expect(persistAssociation).toHaveBeenCalledWith({
-      canonicalKey: 'org.fromcode:ecommerce:store-index',
+      canonicalKey: CATALOG_CANONICAL_KEY,
       pageId: 42,
     });
   });
@@ -131,7 +137,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     const report = await service.execute(
       createExecutionInput({
         plan: createPlan([createReadyAdoptEntry()]),
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
         associationSnapshot: {},
         persistAssociation,
       }),
@@ -139,7 +145,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
 
     expect(report.entries[0]).toEqual(
       expect.objectContaining({
-        canonicalKey: 'org.fromcode:ecommerce:store-index',
+        canonicalKey: CATALOG_CANONICAL_KEY,
         executionOutcome: 'failed',
         matchedPageId: 42,
         reasons: ['matched-by-customPermalink', 'contract-already-associated-to-different-page'],
@@ -148,7 +154,7 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     expect(report.summary.byOutcome).toEqual({ applied: 0, failed: 1, noop: 0, skipped: 0 });
     expect(persistAssociation).toHaveBeenCalledTimes(1);
     expect(persistAssociation).toHaveBeenCalledWith({
-      canonicalKey: 'org.fromcode:ecommerce:store-index',
+      canonicalKey: CATALOG_CANONICAL_KEY,
       pageId: 42,
     });
   });
@@ -199,11 +205,11 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     const report = await service.execute(
       createExecutionInput({
         plan: createPlan([createReadyAdoptEntry()]),
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
         associationSnapshot: {
           byCanonicalKey: {
-            'org.fromcode:ecommerce:store-index': {
-              canonicalKey: 'org.fromcode:ecommerce:store-index',
+            [CATALOG_CANONICAL_KEY]: {
+              canonicalKey: CATALOG_CANONICAL_KEY,
               pageId: 10,
             },
           },
@@ -226,11 +232,11 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     const report = await service.execute(
       createExecutionInput({
         plan: createPlan([createReadyAdoptEntry()]),
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
         associationSnapshot: {
           byPageId: {
             '42': {
-              canonicalKey: 'org.fromcode:forms:contact-page',
+              canonicalKey: CONTACT_CANONICAL_KEY,
               pageId: 42,
             },
           },
@@ -248,37 +254,103 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
     expect(persistAssociation).not.toHaveBeenCalled();
   });
 
-  it('skips blocked and create-missing entries without writing', async () => {
+  it('creates and associates an eligible create-missing entry successfully', async () => {
+    const createPage = vi.fn(async () => ({
+      id: 51,
+      slug: 'catalog',
+      customPermalink: '/catalog',
+      title: 'Catalog',
+      status: 'published',
+    }));
+    const persistAssociation = vi.fn(async (input: PluginDefaultPageContractAssociationPersistInput) => {
+      return createPersistResult({
+        canonicalKey: input.canonicalKey,
+        pageId: input.pageId,
+        status: 'applied',
+      });
+    });
+
+    const report = await service.execute(
+      createExecutionInput({
+        plan: createPlan([
+          createPlanEntry({
+            canonicalKey: CREATE_CANONICAL_KEY,
+            key: 'create-missing',
+            action: 'create-missing',
+            status: 'ready',
+            reasons: ['no-existing-page-match'],
+            lookupCandidates: ['/catalog'],
+            createPayload: {
+              canonicalKey: CREATE_CANONICAL_KEY,
+              namespace: TEST_NAMESPACE,
+              pluginSlug: 'catalog-module',
+              key: 'create-missing',
+              slug: 'catalog',
+              customPermalink: '/catalog',
+              aliases: [],
+              recipe: 'catalog-module.catalog-index',
+              title: 'Catalog',
+              themeLayout: 'CatalogLayout',
+            },
+          }),
+        ]),
+        existingPages: [],
+        associationSnapshot: {},
+        createPage,
+        persistAssociation,
+      }),
+    );
+
+    expect(report.entries).toEqual([
+      expect.objectContaining({
+        canonicalKey: CREATE_CANONICAL_KEY,
+        executionOutcome: 'applied',
+        matchedPageId: 51,
+        reasons: ['no-existing-page-match'],
+      }),
+    ]);
+    expect(createPage).toHaveBeenCalledTimes(1);
+    expect(createPage).toHaveBeenCalledWith({
+      canonicalKey: CREATE_CANONICAL_KEY,
+      namespace: TEST_NAMESPACE,
+      pluginSlug: 'catalog-module',
+      key: 'create-missing',
+      slug: 'catalog',
+      customPermalink: '/catalog',
+      aliases: [],
+      recipe: 'catalog-module.catalog-index',
+      title: 'Catalog',
+      themeLayout: 'CatalogLayout',
+    });
+    expect(persistAssociation).toHaveBeenCalledWith({
+      canonicalKey: CREATE_CANONICAL_KEY,
+      pageId: 51,
+    });
+  });
+
+  it('skips blocked entries without writing', async () => {
     const persistAssociation = vi.fn();
     const report = await service.execute(
       createExecutionInput({
         plan: createPlan([
           createPlanEntry({
-            canonicalKey: 'org.fromcode:ecommerce:create-missing',
-            key: 'create-missing',
-            action: 'create-missing',
-            status: 'ready',
-            reasons: ['no-existing-page-match'],
-          }),
-          createPlanEntry({
-            canonicalKey: 'org.fromcode:ecommerce:blocked',
+            canonicalKey: BLOCKED_CANONICAL_KEY,
             key: 'blocked',
             action: 'blocked',
             status: 'blocked',
             reasons: ['install-disabled'],
           }),
         ]),
-        existingPages: [{ id: 42, customPermalink: '/shop' }],
+        existingPages: [{ id: 42, customPermalink: '/catalog' }],
         associationSnapshot: {},
         persistAssociation,
       }),
     );
 
     expect(report.entries).toEqual([
-      expect.objectContaining({ canonicalKey: 'org.fromcode:ecommerce:blocked', executionOutcome: 'skipped', reasons: ['install-disabled'] }),
-      expect.objectContaining({ canonicalKey: 'org.fromcode:ecommerce:create-missing', executionOutcome: 'skipped', reasons: ['no-existing-page-match'] }),
+      expect.objectContaining({ canonicalKey: BLOCKED_CANONICAL_KEY, executionOutcome: 'skipped', reasons: ['install-disabled'] }),
     ]);
-    expect(report.summary.byOutcome.skipped).toBe(2);
+    expect(report.summary.byOutcome.skipped).toBe(1);
     expect(persistAssociation).not.toHaveBeenCalled();
   });
 
@@ -294,41 +366,41 @@ describe('PluginDefaultPageMaterializationExecutorService', () => {
       createExecutionInput({
         plan: createPlan([
           createPlanEntry({
-            canonicalKey: 'org.fromcode:zeta:skipped',
-            namespace: 'org.fromcode',
-            pluginSlug: 'zeta',
+            canonicalKey: 'org.synthetic:zeta-module:skipped',
+            namespace: TEST_NAMESPACE,
+            pluginSlug: 'zeta-module',
             key: 'skipped',
             action: 'blocked',
             status: 'blocked',
             reasons: ['disabled'],
           }),
           createPlanEntry({
-            canonicalKey: 'org.fromcode:alpha:existing',
-            namespace: 'org.fromcode',
-            pluginSlug: 'alpha',
+            canonicalKey: 'org.synthetic:alpha-module:existing',
+            namespace: TEST_NAMESPACE,
+            pluginSlug: 'alpha-module',
             key: 'existing',
             matchedPageId: 10,
             reasons: ['matched-by-customPermalink'],
           }),
           createPlanEntry({
-            canonicalKey: 'org.fromcode:beta:missing-page',
-            namespace: 'org.fromcode',
-            pluginSlug: 'beta',
+            canonicalKey: 'org.synthetic:beta-module:missing-page',
+            namespace: TEST_NAMESPACE,
+            pluginSlug: 'beta-module',
             key: 'missing-page',
             matchedPageId: 77,
             reasons: ['matched-by-customPermalink'],
           }),
         ]),
-        existingPages: [{ id: 10, customPermalink: '/shop' }],
+        existingPages: [{ id: 10, customPermalink: '/catalog' }],
         associationSnapshot: {},
         persistAssociation,
       }),
     );
 
     expect(report.entries.map((entry) => entry.canonicalKey)).toEqual([
-      'org.fromcode:alpha:existing',
-      'org.fromcode:beta:missing-page',
-      'org.fromcode:zeta:skipped',
+      'org.synthetic:alpha-module:existing',
+      'org.synthetic:beta-module:missing-page',
+      'org.synthetic:zeta-module:skipped',
     ]);
     expect(report.summary).toEqual({
       total: 3,
@@ -346,6 +418,7 @@ function createExecutionInput(overrides: {
   plan: PluginDefaultPageContractMaterializationPlan;
   existingPages: PluginDefaultPageContractPageSnapshot[];
   associationSnapshot: PluginDefaultPageContractBackfillAssociationSnapshot;
+  createPage?: (payload: any) => Promise<PluginDefaultPageContractPageSnapshot | undefined>;
   persistAssociation?: (input: PluginDefaultPageContractAssociationPersistInput) => Promise<PluginDefaultPageContractAssociationPersistResult>;
 }): PluginDefaultPageContractMaterializationExecutionInput {
   const pagesById = new Map(overrides.existingPages.map((page) => [String(page.id), page]));
@@ -355,6 +428,15 @@ function createExecutionInput(overrides: {
     pageLookupRepository: {
       async findPageById(pageId: number | string): Promise<PluginDefaultPageContractPageSnapshot | undefined> {
         return pagesById.get(String(pageId));
+      },
+    },
+    pageCreateRepository: {
+      async createPage(payload): Promise<PluginDefaultPageContractPageSnapshot | undefined> {
+        if (overrides.createPage) {
+          return overrides.createPage(payload);
+        }
+
+        return undefined;
       },
     },
     associationSnapshotRepository: {
@@ -414,12 +496,12 @@ function createReadyAdoptEntry(overrides: Partial<PluginDefaultPageContractMater
 
 function createPlanEntry(overrides: Partial<PluginDefaultPageContractMaterializationPlanEntry> = {}): PluginDefaultPageContractMaterializationPlanEntry {
   return {
-    canonicalKey: 'org.fromcode:ecommerce:store-index',
-    namespace: 'org.fromcode',
-    pluginSlug: 'ecommerce',
-    key: 'store-index',
+    canonicalKey: CATALOG_CANONICAL_KEY,
+    namespace: TEST_NAMESPACE,
+    pluginSlug: 'catalog-module',
+    key: 'catalog-index',
     action: 'adopt-existing',
-    lookupCandidates: ['/shop'],
+    lookupCandidates: ['/catalog'],
     matchedPageId: undefined,
     createPayload: undefined,
     reasons: [],
@@ -433,7 +515,7 @@ function createPersistResult(
   overrides: Partial<PluginDefaultPageContractAssociationPersistResult>,
 ): PluginDefaultPageContractAssociationPersistResult {
   return {
-    canonicalKey: 'org.fromcode:ecommerce:store-index',
+    canonicalKey: CATALOG_CANONICAL_KEY,
     pageId: 42,
     status: 'applied',
     ...overrides,
