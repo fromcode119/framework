@@ -162,6 +162,9 @@ export default function PluginLoader() {
 
         if (Array.isArray(plugins)) {
           registerPlugins(plugins);
+          const hasCompleteCollectionMetadata = plugins.every((plugin) =>
+            plugin?.admin && Array.isArray(plugin.admin.collections)
+          );
           const nextCollections = plugins.flatMap((plugin) =>
             Array.isArray(plugin?.admin?.collections)
               ? plugin.admin.collections.map((collection: any) => ({
@@ -171,8 +174,10 @@ export default function PluginLoader() {
               : []
           );
 
-          if (typeof replaceCollections === 'function') {
+          if (typeof replaceCollections === 'function' && hasCompleteCollectionMetadata) {
             replaceCollections(nextCollections);
+          } else if (!hasCompleteCollectionMetadata) {
+            console.warn('[Admin] Skipping collection replacement because plugin metadata is incomplete.');
           } else {
             for (const collection of nextCollections) {
               registerCollection(collection);
