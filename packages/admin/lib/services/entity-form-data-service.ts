@@ -3,6 +3,7 @@ import type { Collection } from '@fromcode119/core/client';
 
 export class EntityFormDataService {
   private readonly parser = new EntityValueParserService();
+  private static readonly READ_ONLY_OVERRIDE_SYSTEM_FIELDS = new Set(['createdAt', 'updatedAt']);
 
   normalizeSubmitPayload(
     collection: Collection | null | undefined,
@@ -20,6 +21,7 @@ export class EntityFormDataService {
 
     return {
       ...parsed.data,
+      ...this.extractUnlockedSystemFields(collection, payload, preservedMetadata),
       ...preservedMetadata,
     };
   }
@@ -55,5 +57,42 @@ export class EntityFormDataService {
       metadata._change_summary = payload._change_summary;
     }
     return metadata;
+  }
+
+  private extractUnlockedSystemFields(
+    collection: Collection,
+    payload: Record<string, any>,
+    preservedMetadata: Record<string, any>,
+  ): Record<string, any> {
+    const unlockedFields = this.readUnlockedFieldNames(preservedMetadata._readOnlyOverride);
+    if (!unlockedFields.size) {
+      return {};
+    }
+
+    const systemFields: Record<string, any> = {};
+    for (const field of collection.fields || []) {
+      const fieldName = String(field?.name || '').trim();
+      if (!fieldName || !EntityFormDataService.READ_ONLY_OVERRIDE_SYSTEM_FIELDS.has(fieldName)) {
+        continue;
+      }
+      if (!unlockedFields.has(fieldName) || !Object.prototype.hasOwnProperty.call(payload, fieldName)) {
+        continue;
+      }
+      systemFields[fieldName] = payload[fieldName];
+    }
+
+    return systemFields;
+  }
+
+  private readUnlockedFieldNames(readOnlyOverride: unknown): Set<string> {
+    const fields = Array.isArray((readOnlyOverride as { fields?: unknown[] } | null | undefined)?.fields)
+      ? (readOnlyOverride as { fields: unknown[] }).fields
+      : [];
+
+    return new Set(
+      fields
+        .map((fieldName) => String(fieldName || '').trim())
+        .filter(Boolean)
+    );
   }
 }
