@@ -199,6 +199,8 @@ export class LifecycleService {
       await this.materializeDefaultPages();
 
       plugin.state = 'active';
+      plugin.error = undefined;
+      plugin.healthStatus = 'healthy';
       const currentCaps = plugin.manifest.capabilities as string[] || [];
       plugin.approvedCapabilities = currentCaps;
       

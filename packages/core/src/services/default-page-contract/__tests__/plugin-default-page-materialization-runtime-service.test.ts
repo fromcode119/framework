@@ -232,6 +232,39 @@ describe('PluginDefaultPageMaterializationRuntimeService', () => {
       'Required route reconciliation failed: org.synthetic:catalog-module:catalog-index (install-disabled, contract-not-ready)',
     );
   });
+
+  it('does not throw when the pages collection is unavailable during runtime materialization', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const manager = createManagerWithoutPagesCollection(() => '', () => undefined);
+
+    CoreServices.getInstance().defaultPageContracts.register({
+      namespace: TEST_NAMESPACE,
+      pluginSlug: TEST_PLUGIN,
+      contracts: [{
+        key: 'catalog-index',
+        capability: 'catalog',
+        kind: 'index',
+        recipe: 'catalog-module.catalog-index',
+        defaultSlug: '/catalog',
+        title: 'Catalog',
+        themeLayout: 'CatalogLayout',
+        materializationMode: 'singleton-document',
+        required: true,
+        aliases: [],
+        adoptionHints: [],
+        dependencies: [],
+      }],
+    });
+
+    const service = new PluginDefaultPageMaterializationRuntimeService(manager as any);
+
+    await expect(service.materialize()).resolves.toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[PluginDefaultPageMaterializationRuntimeService] Skipping default page materialization because no registered page collection is available.',
+    );
+
+    warnSpy.mockRestore();
+  });
 });
 
 function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (value: string) => void) {
@@ -326,6 +359,36 @@ function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (
       }),
       delete: vi.fn(),
       count: vi.fn(async () => pages.length),
+    },
+  };
+}
+
+function createManagerWithoutPagesCollection(getMetaValue: () => string, setMetaValue: (value: string) => void) {
+  return {
+    registeredCollections: new Map(),
+    db: {
+      findOne: vi.fn(async (table: string, where: Record<string, unknown>) => {
+        if (table === '_system_meta' && where?.key === 'default_page_contract_associations') {
+          const value = getMetaValue();
+          return value ? { key: 'default_page_contract_associations', value } : null;
+        }
+        return null;
+      }),
+      insert: vi.fn(async (_table: string, data: Record<string, unknown>) => {
+        if (data?.key === 'default_page_contract_associations') {
+          setMetaValue(String(data.value || ''));
+        }
+        return data;
+      }),
+      update: vi.fn(async (_table: string, where: Record<string, unknown>, data: Record<string, unknown>) => {
+        if (where?.key === 'default_page_contract_associations') {
+          setMetaValue(String(data.value || ''));
+        }
+        return data;
+      }),
+      find: vi.fn(async () => []),
+      delete: vi.fn(async () => true),
+      count: vi.fn(async () => 0),
     },
   };
 }

@@ -195,6 +195,32 @@ describe('LifecycleService.enable() — required route reconciliation failures',
     await expect(service.enable('test-plugin')).rejects.toThrow('Required route reconciliation failed');
     expect(registry.savePluginState).not.toHaveBeenCalledWith('test-plugin', 'active', expect.anything(), expect.anything());
   });
+
+  it('clears stale startup error state after a successful enable', async () => {
+    const { service, manager, registry } = buildService({ 'test-plugin': { state: 'error', version: '1.0.0', healthStatus: 'error' } });
+    const loadedPlugin = {
+      ...makePlugin(),
+      instanceId: 'x',
+      state: 'error',
+      error: 'Invalid or unexpected token',
+      path: '/plugins/test-plugin',
+      approvedCapabilities: [],
+      healthStatus: 'error',
+      onEnable: vi.fn().mockResolvedValue(undefined),
+    };
+    manager.plugins.set('test-plugin', loadedPlugin);
+    vi.spyOn(service as any, 'autoDiscoverCollections').mockResolvedValue(undefined);
+    vi.spyOn(service as any, 'syncPluginCollections').mockResolvedValue(undefined);
+    vi.spyOn(service as any, 'runSeeds').mockResolvedValue(undefined);
+    vi.spyOn(service as any, 'materializeDefaultPages').mockResolvedValue(undefined);
+
+    await service.enable('test-plugin');
+
+    expect(loadedPlugin.state).toBe('active');
+    expect(loadedPlugin.error).toBeUndefined();
+    expect(loadedPlugin.healthStatus).toBe('healthy');
+    expect(registry.savePluginState).toHaveBeenCalledWith('test-plugin', 'active', expect.any(Array), '1.0.0');
+  });
 });
 
 describe('LifecycleService.delete() — uninstall hook and cleanup', () => {

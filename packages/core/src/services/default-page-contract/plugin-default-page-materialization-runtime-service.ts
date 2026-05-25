@@ -48,7 +48,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     const pagesEntry = this.findPagesCollectionEntry();
 
     if (!pagesEntry) {
-      this.assertRequiredRouteReconciliation(null, resolvedContracts);
+      this.warn('Skipping default page materialization because no registered page collection is available.');
       return null;
     }
 
