@@ -12,6 +12,11 @@ export class ResolvedContentShape {
       normalized.themeLayout = layoutName;
     }
 
+    const styleVariant = this.resolveStyleVariant(content);
+    if (styleVariant) {
+      normalized.styleVariant = styleVariant;
+    }
+
     if (resolvedContent !== null) {
       normalized.content = resolvedContent;
     }
@@ -29,6 +34,10 @@ export class ResolvedContentShape {
 
   static resolveLayoutName(content: Record<string, unknown> | null): string {
     return this.readString(content, ['themeLayout']);
+  }
+
+  static resolveStyleVariant(content: Record<string, unknown> | null): string {
+    return this.readString(content, ['styleVariant']);
   }
 
   static resolveContent(content: Record<string, unknown> | null): unknown | null {

@@ -46,6 +46,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
   const [overrides, setOverrides] = React.useState<Record<string, SlotComponent>>({});
   const [themeVariables, setThemeVariables] = React.useState<Record<string, string>>({});
   const [themeLayouts, setThemeLayouts] = React.useState<Record<string, any>>({});
+  const [themeStyleVariants, setThemeStyleVariants] = React.useState<Record<string, any>>({});
   const [activeTheme, setActiveTheme] = React.useState<any>(null);
   const [menuItems, setMenuItems] = React.useState<MenuItem[]>([]);
   const [secondaryPanel, setSecondaryPanel] = React.useState<SecondaryPanelState>(ContextProviderStateService.createEmptySecondaryPanelState());
@@ -99,6 +100,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     setTranslations,
     setSlots,
     setThemeLayouts,
+    setThemeStyleVariants,
     setThemeVariables,
   });
 
@@ -198,11 +200,12 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       slots,
       t,
       themeLayouts,
+      themeStyleVariants,
       themeVariables,
       translations,
       triggerRefresh,
     };
-  }, [activeTheme, api, apiUrl, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, plugins, refreshVersion, resolveContent, runtimeModules, secondaryPanel, serverRuntimeModules, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
+  }, [activeTheme, api, apiUrl, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, plugins, refreshVersion, resolveContent, runtimeModules, secondaryPanel, serverRuntimeModules, settings, slots, t, themeLayouts, themeStyleVariants, themeVariables, translations, triggerRefresh]);
 
   const stableT = React.useCallback((...args: any[]) => (stabilityRef.current.t as any)(...args), []);
   const stableLoadConfig = React.useCallback((path?: string) => {
@@ -310,6 +313,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     overrides,
     themeVariables,
     themeLayouts,
+    themeStyleVariants,
     activeTheme,
     menuItems,
     secondaryPanel,
@@ -346,7 +350,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     getFrontendMetadata,
     resolveContent,
     api,
-  }), [activeTheme, api, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, pluginState, plugins, refreshVersion, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, resolveContent, secondaryPanel, settings, slots, t, themeLayouts, themeVariables, translations, triggerRefresh]);
+  }), [activeTheme, api, collections, emit, fieldComponents, getFrontendMetadata, getPluginApi, hasPluginApi, isReady, loadConfig, locale, menuItems, on, overrides, pluginState, plugins, refreshVersion, registerCollection, registerContentTransformer, registerFieldComponent, registerMenuItem, registerOverride, registerPluginApi, registerPlugins, registerSettings, registerSlotComponent, registerTheme, replaceCollections, replaceMenuItems, resolveContent, secondaryPanel, settings, slots, t, themeLayouts, themeStyleVariants, themeVariables, translations, triggerRefresh]);
 
   const translationValue = React.useMemo(() => ({ t, locale, setLocale }), [t, locale]);
   const pluginStateValue = React.useMemo(() => ({ pluginState, setPluginState }), [pluginState, setPluginState]);

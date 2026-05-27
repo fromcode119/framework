@@ -359,6 +359,7 @@ function createResolvedContract(overrides: Partial<ResolvedPluginDefaultPageCont
       effectiveAliases: 'declaration',
       effectiveRecipe: 'declaration',
       effectiveSlug: 'declaration',
+      effectiveStyleVariant: 'declaration',
       effectiveThemeLayout: 'declaration',
       effectiveTitle: 'declaration',
       install: 'declaration',

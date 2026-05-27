@@ -70,6 +70,9 @@ import { ContextBridge } from '../context-bridge';
 import { ContextHooks } from '../context-hooks';
 import { LazyComponentLoaderService } from '../lazy-component-loader-service';
 import { LazyLoadClass } from '../lazy-load-class';
+import { PageStyleContext } from '../page-style-context';
+import { PageStyleProvider } from '../page-style-provider';
+import { PageStyleHooks } from '../page-style-hooks';
 import { SystemShortcodes } from '../system-shortcodes';
 
 export class BridgeObjectBuilder {
@@ -121,6 +124,9 @@ export class BridgeObjectBuilder {
       PluginsProvider: args.PluginsProvider,
       CollectionQueryUtils: args.CollectionQueryUtils,
       BrowserLocalization: args.BrowserLocalization,
+      PageStyleContext,
+      PageStyleProvider,
+      PageStyleHooks,
     };
   }
 

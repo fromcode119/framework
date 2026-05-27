@@ -76,6 +76,7 @@ export interface PluginContextValue {
   overrides: Record<string, SlotComponent>;
   themeVariables: Record<string, string>;
   themeLayouts: Record<string, any>;
+  themeStyleVariants: Record<string, any>;
   activeTheme: any;
   menuItems: MenuItem[];
   secondaryPanel: SecondaryPanelState;

@@ -32,3 +32,7 @@ export { BrowserLocalization } from './browser-localization';
 export { AsyncDataController } from './async-data-controller';
 export { LazyComponentLoaderService } from './lazy-component-loader-service';
 export { LazyLoadClass } from './lazy-load-class';
+export { PageStyleContext } from './page-style-context';
+export { PageStyleProvider } from './page-style-provider';
+export { PageStyleHooks } from './page-style-hooks';
+export type { PageStyleContextValue } from './page-style-context.interfaces';

@@ -13,6 +13,7 @@ export interface PluginDefaultPageContract {
   recipe: string;
   title?: string;
   themeLayout?: string;
+  styleVariant?: string;
   materializationMode: PluginDefaultPageContractMaterializationMode;
   dependencies: PluginDefaultPageContractDependency[];
   adoptionHints: string[];
@@ -43,6 +44,7 @@ export interface ThemeDefaultPageContractOverride {
   aliases?: string[];
   title?: string;
   themeLayout?: string;
+  styleVariant?: string;
   recipe?: string;
   install?: boolean;
 }

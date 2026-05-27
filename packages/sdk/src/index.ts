@@ -201,3 +201,7 @@ export type {
 
 // Plugin runtime interfaces
 export type { PluginContext, FromcodePlugin, LoadedPlugin } from '@fromcode119/core/client';
+
+// ── Theme Registration & Style Variant Types ─────────────────────────────────
+export type { ThemeStyleVariant } from './types/theme-style-variant.interfaces';
+export type { ThemeRegistration } from './types/theme-registration.interfaces';

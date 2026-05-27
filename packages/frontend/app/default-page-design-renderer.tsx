@@ -23,5 +23,14 @@ export default function DefaultPageDesignRenderer({ content, entry }: { content?
   }
 
   const Component = resolved.winner as React.ComponentType<{ content?: unknown; entry?: unknown }>;
+  const isRenderableComponent =
+    typeof Component === 'function' ||
+    typeof Component === 'string' ||
+    Boolean((Component as any)?.$$typeof);
+  if (!isRenderableComponent) {
+    console.warn(`[DefaultPageDesignRenderer] Invalid component for target "${targetKey}". Owner: ${resolved.winnerOwner || 'unknown'}`);
+    return null;
+  }
+
   return <Component content={content} entry={entry} />;
 }

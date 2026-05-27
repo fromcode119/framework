@@ -55,6 +55,7 @@ export class RuntimeBridge {
       return {
         activeTheme: state?.activeTheme ?? null,
         themeLayouts: state?.themeLayouts ?? {},
+        themeStyleVariants: state?.themeStyleVariants ?? {},
         themeVariables: state?.themeVariables ?? {},
         settings: state?.settings ?? {},
         menuItems: Array.isArray(state?.menuItems) ? state.menuItems : [],

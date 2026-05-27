@@ -271,6 +271,203 @@ describe('ResolutionService default page contract routing', () => {
     });
   });
 
+  it('returns the CMS page for /shop when an exact page permalink exists and preserves safe contract presentation', async () => {
+    const restController = {
+      find: jest.fn().mockImplementation((collection: any, options: any) => {
+        if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
+          return Promise.resolve({ docs: [{ id: 9, slug: 'shop', customPermalink: '/shop' }] });
+        }
+
+        if (collection.slug === 'synthetic-catalog') {
+          return Promise.resolve({ docs: [{ id: 77, slug: 'shop', title: 'Synthetic Catalog' }] });
+        }
+
+        return Promise.resolve({ docs: [] });
+      }),
+    };
+    const manager: any = {
+      db: { find: jest.fn().mockResolvedValue([]) },
+      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'catalog-module' } }]),
+      registeredCollections: new Map([
+        [
+          'pages',
+          {
+            pluginSlug: 'system',
+            collection: {
+              slug: 'pages',
+              shortSlug: 'pages',
+              fields: [{ name: 'slug' }, { name: 'customPermalink' }],
+            },
+          },
+        ],
+        [
+          'catalog',
+          {
+            pluginSlug: 'catalog-module',
+            collection: {
+              slug: 'synthetic-catalog',
+              shortSlug: 'catalog',
+              fields: [{ name: 'slug' }],
+            },
+          },
+        ],
+      ]),
+    };
+    const themeManager: any = {
+      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+    };
+
+    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      defaultPageContractResolution: {
+        resolveAll: jest.fn().mockReturnValue([
+          {
+            install: true,
+            status: 'ready',
+            materializationMode: 'singleton-document',
+            effectiveSlug: '/shop',
+            effectiveAliases: [],
+            effectiveTitle: 'Catalog Contract Page',
+            effectiveThemeLayout: 'CatalogLayout',
+            recordCollection: 'catalog',
+            pluginSlug: 'catalog-module',
+          },
+        ]),
+      },
+    } as any);
+
+    const service = new ResolutionService(manager, themeManager, restController as any);
+    const result = await service.resolveSlug('/shop', {});
+
+    expect(result).toEqual({
+      type: 'pages',
+      plugin: 'system',
+      doc: {
+        id: 9,
+        slug: 'shop',
+        customPermalink: '/shop',
+        title: 'Catalog Contract Page',
+        themeLayout: 'CatalogLayout',
+      },
+    });
+  });
+
+  it('falls back to the enabled contract for /shop when no exact CMS page exists', async () => {
+    const restController = {
+      find: jest.fn().mockImplementation((collection: any, options: any) => {
+        if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
+          return Promise.resolve({ docs: [] });
+        }
+
+        if (collection.slug === 'pages' && options?.query?.slug === 'shop') {
+          return Promise.resolve({ docs: [{ id: 42, slug: 'shop', title: 'Contract Catalog Page' }] });
+        }
+
+        return Promise.resolve({ docs: [] });
+      }),
+    };
+    const manager: any = {
+      db: { find: jest.fn().mockResolvedValue([]) },
+      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'catalog-module' } }]),
+      registeredCollections: new Map([
+        [
+          'pages',
+          {
+            pluginSlug: 'system',
+            collection: {
+              slug: 'pages',
+              shortSlug: 'pages',
+              fields: [{ name: 'slug' }, { name: 'customPermalink' }],
+            },
+          },
+        ],
+      ]),
+    };
+    const themeManager: any = {
+      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+    };
+
+    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      defaultPageContractResolution: {
+        resolveAll: jest.fn().mockReturnValue([
+          {
+            install: true,
+            status: 'ready',
+            materializationMode: 'singleton-document',
+            effectiveSlug: '/shop',
+            effectiveAliases: [],
+            pluginSlug: 'catalog-module',
+          },
+        ]),
+      },
+    } as any);
+
+    const service = new ResolutionService(manager, themeManager, restController as any);
+    const result = await service.resolveSlug('/shop', {});
+
+    expect(result).toEqual({
+      type: 'pages',
+      plugin: 'system',
+      doc: { id: 42, slug: 'shop', title: 'Contract Catalog Page' },
+    });
+    expect(restController.find).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: 'pages' }),
+      expect.objectContaining({
+        query: expect.objectContaining({ slug: 'shop', limit: 1, preview: '0' }),
+      }),
+    );
+  });
+
+  it('does not fall back for /shop when the matching contract is disabled', async () => {
+    const restController = {
+      find: jest.fn().mockImplementation((collection: any, options: any) => {
+        if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
+          return Promise.resolve({ docs: [] });
+        }
+
+        return Promise.resolve({ docs: [] });
+      }),
+    };
+    const manager: any = {
+      db: { find: jest.fn().mockResolvedValue([]) },
+      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'catalog-module' } }]),
+      registeredCollections: new Map([
+        [
+          'pages',
+          {
+            pluginSlug: 'system',
+            collection: {
+              slug: 'pages',
+              shortSlug: 'pages',
+              fields: [{ name: 'slug' }, { name: 'customPermalink' }],
+            },
+          },
+        ],
+      ]),
+    };
+    const themeManager: any = {
+      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+    };
+
+    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      defaultPageContractResolution: {
+        resolveAll: jest.fn().mockReturnValue([
+          {
+            install: false,
+            status: 'skipped',
+            materializationMode: 'singleton-document',
+            effectiveSlug: '/shop',
+            effectiveAliases: [],
+            pluginSlug: 'catalog-module',
+          },
+        ]),
+      },
+    } as any);
+
+    const service = new ResolutionService(manager, themeManager, restController as any);
+
+    await expect(service.resolveSlug('/shop', {})).resolves.toBeNull();
+  });
+
   it('does not resolve detail contracts for records with disabled permalinks', async () => {
     const restController = {
       find: jest.fn().mockImplementation((collection: any) => {

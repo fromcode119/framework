@@ -18,6 +18,7 @@ export class ContextProviderRegistrationHooks {
     setTranslations: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setSlots: React.Dispatch<React.SetStateAction<Record<string, SlotComponent[]>>>;
     setThemeLayouts: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+    setThemeStyleVariants: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setThemeVariables: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   }) {
     const {
@@ -34,6 +35,7 @@ export class ContextProviderRegistrationHooks {
       setTranslations,
       setSlots,
       setThemeLayouts,
+      setThemeStyleVariants,
       setThemeVariables,
     } = args;
 
@@ -282,6 +284,10 @@ export class ContextProviderRegistrationHooks {
         setThemeLayouts((prev) => ({ ...prev, ...config.layouts }));
       }
 
+      if (config?.styleVariants && !Array.isArray(config.styleVariants)) {
+        setThemeStyleVariants((prev) => ({ ...prev, ...config.styleVariants }));
+      }
+
       if (config?.overrides) {
         if (Array.isArray(config.overrides)) {
           config.overrides.forEach((override: any) => {
@@ -296,7 +302,7 @@ export class ContextProviderRegistrationHooks {
           registerOverride(name, component, slug, 10);
         });
       }
-    }, [registerOverride, setThemeLayouts, setThemeVariables]);
+    }, [registerOverride, setThemeLayouts, setThemeStyleVariants, setThemeVariables]);
 
     return {
       emit,

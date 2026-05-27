@@ -3,3 +3,5 @@
 export * from '@fromcode119/admin/components';
 // @ts-ignore
 export { AdminServices } from '@fromcode119/admin/services';
+
+export { ThemeStyleVariantSelect } from './theme-style-variant-select';

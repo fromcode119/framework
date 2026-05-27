@@ -26,6 +26,9 @@ export class ReactExportSourceBuilder {
     'AsyncDataController',
     'LazyComponentLoaderService',
     'LazyLoadClass',
+    'PageStyleContext',
+    'PageStyleProvider',
+    'PageStyleHooks',
   ];
 
   private static readonly REQUIRED_REACT_EXPORT_KEYS: readonly string[] = [

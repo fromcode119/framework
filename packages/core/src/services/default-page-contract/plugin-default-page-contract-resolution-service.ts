@@ -60,6 +60,7 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
       aliases: this.normalizeOptionalStringArray(override.aliases),
       title: this.normalizeOptionalString(override.title),
       themeLayout: this.normalizeOptionalString(override.themeLayout),
+      styleVariant: this.normalizeOptionalString(override.styleVariant),
       recipe: this.normalizeOptionalString(override.recipe),
       install: typeof override.install === 'boolean' ? override.install : undefined,
     };
@@ -89,6 +90,7 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
       effectiveAliases: override?.aliases ? [...override.aliases] : [...(entry.aliases || [])],
       effectiveRecipe: override?.recipe || entry.recipe,
       effectiveTitle: override?.title || entry.title,
+      effectiveStyleVariant: override?.styleVariant || entry.styleVariant,
       effectiveThemeLayout: override?.themeLayout || entry.themeLayout,
       install,
       prerequisiteReady,
@@ -99,6 +101,7 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
         effectiveAliases: override?.aliases ? 'theme-override' : 'declaration',
         effectiveRecipe: override?.recipe ? 'theme-override' : 'declaration',
         effectiveTitle: override?.title ? 'theme-override' : 'declaration',
+        effectiveStyleVariant: override?.styleVariant ? 'theme-override' : 'declaration',
         effectiveThemeLayout: override?.themeLayout ? 'theme-override' : 'declaration',
         install: installSource,
         prerequisiteReady: this.getPrerequisiteSource(install, siteStateEntries),

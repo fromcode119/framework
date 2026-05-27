@@ -1,6 +1,7 @@
 export interface FrontendRuntimeMetadata {
   activeTheme: any;
   themeLayouts: Record<string, any>;
+  themeStyleVariants: Record<string, any>;
   themeVariables: Record<string, string>;
   settings: Record<string, any>;
   menuItems: any[];

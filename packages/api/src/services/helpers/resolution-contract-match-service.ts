@@ -1,5 +1,6 @@
 import type { Collection, ResolvedPluginDefaultPageContract } from '@fromcode119/core';
 import { RESTController } from '../../controllers/rest/rest-controller';
+import { ResolutionContractPresentationService } from './resolution-contract-presentation-service';
 import { ResolutionContractPathService } from './resolution-contract-path-service';
 
 export class ResolutionContractMatchService {
@@ -93,7 +94,7 @@ export class ResolutionContractMatchService {
       return {
         type: collectionEntry.collection.shortSlug || collectionEntry.collection.slug,
         plugin: collectionEntry.pluginSlug,
-        doc: this.applyContractPresentation(result.docs[0], contract),
+        doc: ResolutionContractPresentationService.applyToDoc(result.docs[0], contract),
       };
     }
 
@@ -137,7 +138,7 @@ export class ResolutionContractMatchService {
       return {
         type: collectionEntry.collection.shortSlug || collectionEntry.collection.slug,
         plugin: collectionEntry.pluginSlug,
-        doc: this.applyContractPresentation(routableDoc, contract),
+        doc: ResolutionContractPresentationService.applyToDoc(routableDoc, contract),
       };
     }
 
@@ -202,21 +203,6 @@ export class ResolutionContractMatchService {
     }
 
     return null;
-  }
-
-  private applyContractPresentation(doc: any, contract: ResolvedPluginDefaultPageContract): any {
-    if (!doc || typeof doc !== 'object') {
-      return doc;
-    }
-
-    if (contract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate && !doc.page_template) {
-      return {
-        ...doc,
-        themeLayout: contract.effectiveThemeLayout,
-      };
-    }
-
-    return doc;
   }
 
   private isRoutableDetailRecord(doc: any, collection: Collection, preview?: boolean): boolean {

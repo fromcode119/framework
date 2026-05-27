@@ -2,12 +2,15 @@ import {
   CoreServices,
   CoercionUtils,
   PluginManager,
+  type ResolvedPluginDefaultPageContract,
   ThemeManager,
   SystemConstants,
   type Collection,
 } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from './helpers/resolution-contract-match-service';
+import { ResolutionContractPresentationService } from './helpers/resolution-contract-presentation-service';
+import { ResolutionContractPathService } from './helpers/resolution-contract-path-service';
 
 export class ResolutionService {
   private readonly contractMatcher: ResolutionContractMatchService;
@@ -85,7 +88,11 @@ export class ResolutionService {
             if (results?.docs?.length > 0) {
               const doc = results.docs[0];
               if (await this.isPermalinkDisabled(collection, doc.id, !!options.preview)) continue;
-              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc };
+              return {
+                type: collection.shortSlug || collection.slug,
+                plugin: pluginSlug,
+                doc: this.applyExactPageContractPresentation(doc, collection, normalizedInput, resolvedContracts),
+              };
             }
           }
         }
@@ -103,7 +110,11 @@ export class ResolutionService {
             if (results?.docs?.length > 0) {
               const doc = results.docs[0];
               if (await this.isPermalinkDisabled(collection, doc.id, !!options.preview)) continue;
-              return { type: collection.shortSlug || collection.slug, plugin: pluginSlug, doc };
+              return {
+                type: collection.shortSlug || collection.slug,
+                plugin: pluginSlug,
+                doc: this.applyExactPageContractPresentation(doc, collection, normalizedInput, resolvedContracts),
+              };
             }
           }
         }
@@ -199,6 +210,57 @@ export class ResolutionService {
     }
 
     return null;
+  }
+
+  private applyExactPageContractPresentation(
+    doc: any,
+    collection: Collection,
+    normalizedInput: string,
+    resolvedContracts: ResolvedPluginDefaultPageContract[],
+  ): any {
+    if (!doc || typeof doc !== 'object') {
+      return doc;
+    }
+
+    const collectionType = String(collection.shortSlug || collection.slug || '').trim();
+    if (collectionType !== 'pages') {
+      return doc;
+    }
+
+    const matchingContract = resolvedContracts.find((contract) => this.isMatchingSingletonContract(contract, normalizedInput));
+    if (!matchingContract) {
+      return doc;
+    }
+
+    if (matchingContract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate && !doc.page_template) {
+      return ResolutionContractPresentationService.applyToDoc(doc, matchingContract);
+    }
+
+    if (matchingContract.effectiveTitle && (!doc.title || !String(doc.title).trim()) && (!doc.name || !String(doc.name).trim())) {
+      return ResolutionContractPresentationService.applyToDoc(doc, matchingContract);
+    }
+
+    return doc;
+  }
+
+  private isMatchingSingletonContract(
+    contract: ResolvedPluginDefaultPageContract,
+    normalizedInput: string,
+  ): boolean {
+    if (!contract.install || contract.status !== 'ready') {
+      return false;
+    }
+
+    if (contract.materializationMode !== 'singleton-document') {
+      return false;
+    }
+
+    const matchingPattern = ResolutionContractPathService.findMatchingPattern(contract, normalizedInput);
+    if (!matchingPattern) {
+      return false;
+    }
+
+    return !ResolutionContractPathService.hasPathParameters(matchingPattern);
   }
 
   private async isPermalinkDisabled(collection: Collection, docId: any, preview: boolean): Promise<boolean> {

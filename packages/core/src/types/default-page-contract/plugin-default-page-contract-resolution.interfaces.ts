@@ -28,6 +28,7 @@ export interface PluginDefaultPageContractResolutionSources {
   effectiveAliases: PluginDefaultPageContractResolutionSource;
   effectiveRecipe: PluginDefaultPageContractResolutionSource;
   effectiveSlug: PluginDefaultPageContractResolutionSource;
+  effectiveStyleVariant: PluginDefaultPageContractResolutionSource;
   effectiveThemeLayout: PluginDefaultPageContractResolutionSource;
   effectiveTitle: PluginDefaultPageContractResolutionSource;
   install: PluginDefaultPageContractResolutionSource;
@@ -45,6 +46,7 @@ export interface ResolvedPluginDefaultPageContract extends RegisteredPluginDefau
   effectiveAliases: string[];
   effectiveRecipe: string;
   effectiveSlug: string;
+  effectiveStyleVariant?: string;
   effectiveThemeLayout?: string;
   effectiveTitle?: string;
   install: boolean;
