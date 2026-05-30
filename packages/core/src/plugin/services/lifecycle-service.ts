@@ -335,7 +335,7 @@ export class LifecycleService {
 
   private async autoDiscoverCollections(plugin: LoadedPlugin, ctx: any): Promise<void> {
     if (!plugin.path) return;
-    const collectionsDir = path.join(plugin.path, 'collections');
+    const collectionsDir = path.join(plugin.path, 'src', 'collections');
     if (!fs.existsSync(collectionsDir)) return;
     const files = fs.readdirSync(collectionsDir).filter(f => f.endsWith('.json'));
     for (const file of files) {

@@ -310,8 +310,8 @@ export class PluginController {
     }
 
     const filePath = (req.params as any)[0];
-    const abs = path.resolve(plugin.path, 'ui', filePath);
-    if (!abs.startsWith(path.resolve(plugin.path, 'ui'))) {
+    const abs = path.resolve(plugin.path, 'src', 'ui', filePath);
+    if (!abs.startsWith(path.resolve(plugin.path, 'src', 'ui'))) {
       return res.status(400).json({ error: 'Invalid path' });
     }
 

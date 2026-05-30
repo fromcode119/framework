@@ -36,3 +36,4 @@ export { PageStyleContext } from './page-style-context';
 export { PageStyleProvider } from './page-style-provider';
 export { PageStyleHooks } from './page-style-hooks';
 export type { PageStyleContextValue } from './page-style-context.interfaces';
+export { ThemeOverrideRegistrar } from './theme-override-registrar';

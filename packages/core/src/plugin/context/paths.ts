@@ -91,8 +91,8 @@ export class PluginPathContextProxy {
 
   async readCurrentPluginTemplate(relativePath: string): Promise<string> {
     return this.readCurrentPluginText(relativePath, {
-      pluginDirectory: 'templates',
-      themeDirectory: path.posix.join('templates', 'plugins', this.plugin.manifest.slug),
+      pluginDirectory: 'src/templates',
+      themeDirectory: path.posix.join('src', 'templates', 'plugins', this.plugin.manifest.slug),
     });
   }
 

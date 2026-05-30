@@ -18,17 +18,22 @@ export class DefaultDesignResolutionService {
     return 'DefaultDesignResolutionService';
   }
 
-  resolvePageTarget(targetKey: string, activeThemeSlug?: string): ResolvedDefaultDesign {
+  resolveTarget(
+    targetKind: RegisteredPluginDefaultDesignDefinition['targetKind'],
+    targetKey: string,
+    activeThemeSlug?: string,
+  ): ResolvedDefaultDesign {
+    const normalizedTargetKind = this.normalizeTargetKind(targetKind);
     const normalizedTargetKey = this.normalizeRequiredString(targetKey, 'targetKey');
-    const pluginEntry = this.getPluginPageEntry(normalizedTargetKey);
-    const themeDisables = this.getThemeDisables(normalizedTargetKey, activeThemeSlug);
-    const themeReplacements = this.getThemeReplacements(normalizedTargetKey, activeThemeSlug);
+    const pluginEntry = this.getPluginEntry(normalizedTargetKind, normalizedTargetKey);
+    const themeDisables = this.getThemeDisables(normalizedTargetKind, normalizedTargetKey, activeThemeSlug);
+    const themeReplacements = this.getThemeReplacements(normalizedTargetKind, normalizedTargetKey, activeThemeSlug);
     const diagnostics = this.getConflictDiagnostics(normalizedTargetKey, themeReplacements);
 
     if (!pluginEntry) {
       return {
         targetKey: normalizedTargetKey,
-        targetKind: 'page',
+        targetKind: normalizedTargetKind,
         status: 'missing',
         diagnostics,
       };
@@ -42,14 +47,14 @@ export class DefaultDesignResolutionService {
         'required-route-disabled',
         'error',
         normalizedTargetKey,
-        `[DefaultDesignResolutionService] required page target cannot be disabled without a replacement: ${normalizedTargetKey}`,
+        `[DefaultDesignResolutionService] required ${normalizedTargetKind} target cannot be disabled without a replacement: ${normalizedTargetKey}`,
       ));
     }
 
     if (replacementWinner) {
       return {
         targetKey: normalizedTargetKey,
-        targetKind: 'page',
+        targetKind: normalizedTargetKind,
         status: 'resolved',
         source: 'theme-replacement',
         winner: replacementWinner.component,
@@ -61,7 +66,7 @@ export class DefaultDesignResolutionService {
     if (disableWinner && !pluginEntry.required) {
       return {
         targetKey: normalizedTargetKey,
-        targetKind: 'page',
+        targetKind: normalizedTargetKind,
         status: 'disabled',
         diagnostics,
       };
@@ -69,7 +74,7 @@ export class DefaultDesignResolutionService {
 
     return {
       targetKey: normalizedTargetKey,
-      targetKind: 'page',
+      targetKind: normalizedTargetKind,
       status: 'resolved',
       source: 'plugin-default',
       winner: pluginEntry.component,
@@ -78,24 +83,39 @@ export class DefaultDesignResolutionService {
     };
   }
 
-  private getPluginPageEntry(targetKey: string): RegisteredPluginDefaultDesignDefinition | undefined {
+  resolvePageTarget(targetKey: string, activeThemeSlug?: string): ResolvedDefaultDesign {
+    return this.resolveTarget('page', targetKey, activeThemeSlug);
+  }
+
+  private getPluginEntry(
+    targetKind: RegisteredPluginDefaultDesignDefinition['targetKind'],
+    targetKey: string,
+  ): RegisteredPluginDefaultDesignDefinition | undefined {
     return this.pluginRegistry
-      .listPages()
-      .filter((entry) => entry.targetKey === targetKey)
+      .listByTargetKind(targetKind)
+      .filter((entry) => entry.targetKind === targetKind && entry.targetKey === targetKey)
       .sort((left, right) => right.priority - left.priority || left.canonicalKey.localeCompare(right.canonicalKey))[0];
   }
 
-  private getThemeDisables(targetKey: string, activeThemeSlug?: string): RegisteredThemeDesignDisableDefinition[] {
+  private getThemeDisables(
+    targetKind: RegisteredThemeDesignDisableDefinition['targetKind'],
+    targetKey: string,
+    activeThemeSlug?: string,
+  ): RegisteredThemeDesignDisableDefinition[] {
     return this.themeRegistry
       .listDisables()
-      .filter((entry) => entry.targetKind === 'page' && entry.targetKey === targetKey)
+      .filter((entry) => entry.targetKind === targetKind && entry.targetKey === targetKey)
       .filter((entry) => !activeThemeSlug || entry.themeSlug === activeThemeSlug);
   }
 
-  private getThemeReplacements(targetKey: string, activeThemeSlug?: string): RegisteredThemeDesignReplacementDefinition[] {
+  private getThemeReplacements(
+    targetKind: RegisteredThemeDesignReplacementDefinition['targetKind'],
+    targetKey: string,
+    activeThemeSlug?: string,
+  ): RegisteredThemeDesignReplacementDefinition[] {
     return this.themeRegistry
       .listReplacements()
-      .filter((entry) => entry.targetKind === 'page' && entry.targetKey === targetKey)
+      .filter((entry) => entry.targetKind === targetKind && entry.targetKey === targetKey)
       .filter((entry) => !activeThemeSlug || entry.themeSlug === activeThemeSlug);
   }
 
@@ -157,5 +177,14 @@ export class DefaultDesignResolutionService {
       throw new Error(`[DefaultDesignResolutionService] ${label} must be a non-empty string`);
     }
     return normalized;
+  }
+
+  private normalizeTargetKind(
+    value: RegisteredPluginDefaultDesignDefinition['targetKind'],
+  ): RegisteredPluginDefaultDesignDefinition['targetKind'] {
+    if (value === 'page' || value === 'block' || value === 'slot') {
+      return value;
+    }
+    throw new Error(`[DefaultDesignResolutionService] unsupported targetKind: ${String(value)}`);
   }
 }

@@ -129,6 +129,7 @@ export type { CapabilityMetadata } from '@fromcode119/core/client';
 // Use @fromcode119/sdk/server to access IntegrationManager in plugin server code.
 export { IntegrationRegistry } from '@fromcode119/core/client';
 export { PluginFrontendDefaultDesignRegistrar, ThemeFrontendDefaultDesignRegistrar } from '@fromcode119/core/client';
+export type { RegisteredWidgetDefinition, WidgetDefinitionInput, WidgetSettingsRenderInput, WidgetStyle } from '@fromcode119/core/client';
 export type { IntegrationTypeDefinition } from '@fromcode119/core/client';
 export type { PluginApiResolver } from '@fromcode119/core/client';
 export type {

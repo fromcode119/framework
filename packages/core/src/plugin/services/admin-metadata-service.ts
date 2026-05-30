@@ -305,7 +305,7 @@ export class AdminMetadataService {
       return null;
     }
 
-    const absolutePath = path.resolve(pluginPath, 'ui', asset.replace(/^\/+/, ''));
+    const absolutePath = path.resolve(pluginPath, 'src', 'ui', asset.replace(/^\/+/, ''));
     if (!fs.existsSync(absolutePath)) {
       return null;
     }

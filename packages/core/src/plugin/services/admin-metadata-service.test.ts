@@ -83,7 +83,7 @@ describe('AdminMetadataService', () => {
 
   it('adds a file version query to plugin ui asset urls', () => {
     const pluginRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-admin-metadata-'));
-    const uiRoot = path.join(pluginRoot, 'ui');
+    const uiRoot = path.join(pluginRoot, 'src', 'ui');
     fs.mkdirSync(uiRoot, { recursive: true });
 
     const bundlePath = path.join(uiRoot, 'bundle.js');

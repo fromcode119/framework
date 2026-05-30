@@ -197,3 +197,4 @@ export { DefaultDesignDiagnosticService } from './plugin/default-design/default-
 export { DefaultDesignLifecycleService } from './plugin/default-design/default-design-lifecycle-service';
 export { DefaultDesignRuntimeBridgeService } from './plugin/default-design/default-design-runtime-bridge-service';
 export { ThemeDesignOverrideRegistryService } from './theme/theme-design-override-registry-service';
+export type { RegisteredWidgetDefinition, WidgetDefinitionInput, WidgetSettingsRenderInput, WidgetStyle } from './widget';

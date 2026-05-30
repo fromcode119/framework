@@ -36,6 +36,14 @@ export class DefaultDesignRuntimeBridgeService {
     return this.resolutionService.resolvePageTarget(targetKey, activeThemeSlug);
   }
 
+  resolveTarget(
+    targetKind: PluginDefaultDesignRegistration['designs'][number]['targetKind'],
+    targetKey: string,
+    activeThemeSlug?: string,
+  ): ResolvedDefaultDesign {
+    return this.resolutionService.resolveTarget(targetKind, targetKey, activeThemeSlug);
+  }
+
   createDefaultPageContractDiagnostics(
     contracts: RegisteredPluginDefaultPageContract[],
     activeThemeSlug?: string,

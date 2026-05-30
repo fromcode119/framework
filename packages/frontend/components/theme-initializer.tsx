@@ -3,6 +3,9 @@
 import React, { useEffect } from 'react';
 import { SystemConstants } from '@fromcode119/core/client';
 import { ContextHooks } from '@fromcode119/react';
+import { AccountSlotRegistrar } from './account/account-slot-registrar';
+
+AccountSlotRegistrar.register();
 
 export default function ThemeInitializer() {
   const { loadConfig, themeVariables } = ContextHooks.usePlugins();

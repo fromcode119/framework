@@ -29,7 +29,7 @@ export class PluginScaffoldService {
     if (this.hasPlugin(slug)) throw new Error(`Plugin "${slug}" already exists.`);
     if (fs.existsSync(pluginPath)) throw new Error(`Plugin path already exists: ${pluginPath}`);
 
-    fs.mkdirSync(path.join(pluginPath, 'ui'), { recursive: true });
+    fs.mkdirSync(path.join(pluginPath, 'src', 'ui'), { recursive: true });
 
     const manifest = {
       slug, name, version, description,
@@ -64,7 +64,7 @@ export class PluginScaffoldService {
 
     fs.writeFileSync(path.join(pluginPath, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
     fs.writeFileSync(path.join(pluginPath, 'index.js'), pluginMain, 'utf8');
-    fs.writeFileSync(path.join(pluginPath, 'ui', 'index.js'), uiEntry, 'utf8');
+    fs.writeFileSync(path.join(pluginPath, 'src', 'ui', 'index.js'), uiEntry, 'utf8');
 
     await this.discoverPlugins();
 

@@ -41,7 +41,7 @@ export class PluginPackageValidator {
     ].filter(Boolean);
 
     for (const uiEntry of uiEntries) {
-      const uiPath = path.resolve(packageRoot, 'ui', uiEntry);
+      const uiPath = path.resolve(packageRoot, 'src', 'ui', uiEntry);
       if (fs.existsSync(uiPath)) {
         continue;
       }

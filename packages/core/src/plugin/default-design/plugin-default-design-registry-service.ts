@@ -30,6 +30,10 @@ export class PluginDefaultDesignRegistryService {
     return this.list().filter((entry) => entry.targetKind === 'page');
   }
 
+  listByTargetKind(targetKind: RegisteredPluginDefaultDesignDefinition['targetKind']): RegisteredPluginDefaultDesignDefinition[] {
+    return this.list().filter((entry) => entry.targetKind === targetKind);
+  }
+
   unregisterByPlugin(namespace: string, pluginSlug: string): void {
     const normalizedNamespace = this.normalizeRequiredString(namespace, 'namespace');
     const normalizedPluginSlug = this.normalizeRequiredString(pluginSlug, 'pluginSlug');
@@ -64,7 +68,7 @@ export class PluginDefaultDesignRegistryService {
   ): RegisteredPluginDefaultDesignDefinition {
     const targetKind = this.normalizeRequiredString(design.targetKind, 'design.targetKind') as RegisteredPluginDefaultDesignDefinition['targetKind'];
     const targetKey = this.normalizeRequiredString(design.targetKey, 'design.targetKey');
-    this.assertPageTargetKey(pluginSlug, targetKind, targetKey);
+    this.assertTargetKey(pluginSlug, targetKind, targetKey);
 
     return {
       namespace,
@@ -89,14 +93,10 @@ export class PluginDefaultDesignRegistryService {
     }
   }
 
-  private assertPageTargetKey(pluginSlug: string, targetKind: string, targetKey: string): void {
-    if (targetKind !== 'page') {
-      return;
-    }
-
+  private assertTargetKey(pluginSlug: string, targetKind: string, targetKey: string): void {
     if (!targetKey.startsWith(`${pluginSlug}.`)) {
       throw new Error(
-        `[PluginDefaultDesignRegistryService] page targetKey must start with "${pluginSlug}.": ${targetKey}`,
+        `[PluginDefaultDesignRegistryService] ${targetKind} targetKey must start with "${pluginSlug}.": ${targetKey}`,
       );
     }
   }

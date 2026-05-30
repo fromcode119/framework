@@ -74,7 +74,7 @@ export class EsmRegistry {
         .join('\n') +
       `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
     const sdkReactExportSource =
-      `export const { FrameworkIcons, FrameworkIconRegistry, PluginsProvider, ContextHooks, ContextBridge, Slot, Override, RootFramework, SystemShortcodes, CollectionQueryUtils, BrowserLocalization, AsyncDataController, LazyComponentLoaderService } = ${reactModuleAccessor} || window.Fromcode || {};` +
+      `export const { FrameworkIcons, FrameworkIconRegistry, PluginsProvider, ContextHooks, ContextBridge, Slot, Override, RootFramework, SystemShortcodes, CollectionQueryUtils, BrowserLocalization, AsyncDataController, LazyComponentLoaderService, LazyLoadClass, PageStyleContext, PageStyleProvider, PageStyleHooks } = ${reactModuleAccessor} || window.Fromcode || {};` +
       `\nexport default ${reactModuleAccessor} || window.Fromcode;`;
     const sdkClientDefaultDesignExportSource =
       `export const { PluginFrontendDefaultDesignRegistrar, ThemeFrontendDefaultDesignRegistrar } = ${bridge};` +
@@ -84,7 +84,7 @@ export class EsmRegistry {
       imports: {
         "react": "data:application/javascript,export default window.React; export const { useState, useEffect, useMemo, useCallback, useContext, createContext, useRef, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, Fragment, Profiler, StrictMode, Children, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Component, PureComponent, version } = window.React;",
         "react-dom": "data:application/javascript,const rd = window.ReactDOM || window.ReactDom; export default rd; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = rd;",
-        "@fromcode119/react": `data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, usePluginAPI, PluginsProvider, getIcon, createProxyIcon, FrameworkIcons, FrameworkIconRegistry, IconNames, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, emit, on, CliUtils, RuntimeBridge } = ${bridge}; export default ${reactModuleAccessor} || window.Fromcode;`,
+        "@fromcode119/react": `data:application/javascript,export const { Slot, Override, usePlugins, useTranslation, usePluginAPI, PluginsProvider, ContextHooks, ContextBridge, getIcon, createProxyIcon, FrameworkIcons, FrameworkIconRegistry, IconNames, registerSlotComponent, registerFieldComponent, registerOverride, registerMenuItem, registerCollection, registerPlugins, registerTheme, registerSettings, registerAPI, getAPI, registerPluginApi, getPluginApi, hasPluginApi, emit, on, CliUtils, RuntimeBridge, SystemShortcodes, CollectionQueryUtils, BrowserLocalization, AsyncDataController, LazyComponentLoaderService, LazyLoadClass, PageStyleContext, PageStyleProvider, PageStyleHooks } = ${bridge}; export default ${reactModuleAccessor} || window.Fromcode;`,
         "@fromcode119/sdk": `data:application/javascript,${encodeURIComponent(sdkExportSource)}`,
         "@fromcode119/sdk/client/default-design": `data:application/javascript,${encodeURIComponent(sdkClientDefaultDesignExportSource)}`,
         "@fromcode119/sdk/react": `data:application/javascript,${encodeURIComponent(sdkReactExportSource)}`,

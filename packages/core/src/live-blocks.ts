@@ -11,7 +11,7 @@ interface LiveBlocksSnapshot {
  * Cross-package "live blocks" bus. Lets the visual editor publish optimistic
  * block patches and lets theme renderers subscribe to them without coupling.
  *
- *   Publisher (CMS plugin):   LiveBlocks.publish({ pageId, slug, blocks })
+ *   Publisher (content host): LiveBlocks.publish({ pageId, slug, blocks })
  *   Consumer  (theme page):   const blocks = LiveBlocks.useLiveBlocks(page) ?? fallback
  *
  * Themes that don't care about live preview simply don't call useLiveBlocks.

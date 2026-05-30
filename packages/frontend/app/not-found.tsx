@@ -82,6 +82,10 @@ function NotFoundFallback() {
 export default function NotFound() {
   const path = usePathname();
   return (
-    <Override name="frontend.page.404" props={{ path }} fallback={<NotFoundFallback />} />
+    <Override
+      name="framework.page.404"
+      props={{ path }}
+      fallback={<Override name="frontend.page.404" props={{ path }} fallback={<NotFoundFallback />} />}
+    />
   );
 }

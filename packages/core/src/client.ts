@@ -110,6 +110,7 @@ export { DefaultDesignDiagnosticService } from './plugin/default-design/default-
 export { DefaultDesignLifecycleService } from './plugin/default-design/default-design-lifecycle-service';
 export { DefaultDesignRuntimeBridgeService } from './plugin/default-design/default-design-runtime-bridge-service';
 export { PluginFrontendDefaultDesignRegistrar, ThemeFrontendDefaultDesignRegistrar } from './default-design';
+export type { RegisteredWidgetDefinition, WidgetDefinitionInput, WidgetSettingsRenderInput, WidgetStyle } from './widget';
 export type {
   PluginFrontendDefaultDesignRegistrarOptions,
   PluginFrontendDefaultDesignRegistration,
