@@ -34,7 +34,9 @@
     "dev:local:api-admin": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node starters/local/proxy.js\" \"PORT=4000 npm run dev --workspace=@fromcode119/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --workspace=@fromcode119/admin\"",
     "dev:local:api": "PORT=4000 npm run dev --workspace=@fromcode119/api",
     "publish:all": "npm publish --workspaces --if-present --access public",
-    "release": "npm run build && npm run publish:all"
+    "release": "npm run build && npm run publish:all",
+    "check:theme-override-boundary": "node scripts/check-theme-override-boundary.mjs",
+    "check:theme-override-boundary:strict": "THEME_OVERRIDE_BOUNDARY_MODE=error node scripts/check-theme-override-boundary.mjs"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",
