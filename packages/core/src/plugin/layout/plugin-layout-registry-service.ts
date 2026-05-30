@@ -1,17 +1,17 @@
 import type {
-  PluginDefaultDesignDefinition,
-  PluginDefaultDesignRegistration,
-  RegisteredPluginDefaultDesignDefinition,
+  PluginLayoutDefinition,
+  PluginLayoutRegistration,
+  RegisteredPluginLayoutDefinition,
 } from '../../types';
 
-export class PluginDefaultDesignRegistryService {
-  private readonly entries = new Map<string, RegisteredPluginDefaultDesignDefinition>();
+export class PluginLayoutRegistryService {
+  private readonly entries = new Map<string, RegisteredPluginLayoutDefinition>();
 
   get serviceName(): string {
-    return 'PluginDefaultDesignRegistryService';
+    return 'PluginLayoutRegistryService';
   }
 
-  register(registration: PluginDefaultDesignRegistration): RegisteredPluginDefaultDesignDefinition[] {
+  register(registration: PluginLayoutRegistration): RegisteredPluginLayoutDefinition[] {
     const normalizedEntries = this.createEntries(registration);
     this.assertNoDuplicateKeys(normalizedEntries);
 
@@ -22,15 +22,15 @@ export class PluginDefaultDesignRegistryService {
     return normalizedEntries.map((entry) => ({ ...entry }));
   }
 
-  list(): RegisteredPluginDefaultDesignDefinition[] {
+  list(): RegisteredPluginLayoutDefinition[] {
     return Array.from(this.entries.values()).map((entry) => ({ ...entry }));
   }
 
-  listPages(): RegisteredPluginDefaultDesignDefinition[] {
+  listPages(): RegisteredPluginLayoutDefinition[] {
     return this.list().filter((entry) => entry.targetKind === 'page');
   }
 
-  listByTargetKind(targetKind: RegisteredPluginDefaultDesignDefinition['targetKind']): RegisteredPluginDefaultDesignDefinition[] {
+  listByTargetKind(targetKind: RegisteredPluginLayoutDefinition['targetKind']): RegisteredPluginLayoutDefinition[] {
     return this.list().filter((entry) => entry.targetKind === targetKind);
   }
 
@@ -49,24 +49,24 @@ export class PluginDefaultDesignRegistryService {
     this.entries.clear();
   }
 
-  private createEntries(registration: PluginDefaultDesignRegistration): RegisteredPluginDefaultDesignDefinition[] {
+  private createEntries(registration: PluginLayoutRegistration): RegisteredPluginLayoutDefinition[] {
     const namespace = this.normalizeRequiredString(registration.namespace, 'namespace');
     const pluginSlug = this.normalizeRequiredString(registration.pluginSlug, 'pluginSlug');
-    const designs = Array.isArray(registration.designs) ? registration.designs : [];
+    const layouts = Array.isArray(registration.layouts) ? registration.layouts : [];
 
-    if (!designs.length) {
-      throw new Error('[PluginDefaultDesignRegistryService] registration must include at least one design');
+    if (!layouts.length) {
+      throw new Error('[PluginLayoutRegistryService] registration must include at least one design');
     }
 
-    return designs.map((design) => this.createEntry(namespace, pluginSlug, design));
+    return layouts.map((design) => this.createEntry(namespace, pluginSlug, design));
   }
 
   private createEntry(
     namespace: string,
     pluginSlug: string,
-    design: PluginDefaultDesignDefinition,
-  ): RegisteredPluginDefaultDesignDefinition {
-    const targetKind = this.normalizeRequiredString(design.targetKind, 'design.targetKind') as RegisteredPluginDefaultDesignDefinition['targetKind'];
+    design: PluginLayoutDefinition,
+  ): RegisteredPluginLayoutDefinition {
+    const targetKind = this.normalizeRequiredString(design.targetKind, 'design.targetKind') as RegisteredPluginLayoutDefinition['targetKind'];
     const targetKey = this.normalizeRequiredString(design.targetKey, 'design.targetKey');
     this.assertTargetKey(pluginSlug, targetKind, targetKey);
 
@@ -82,12 +82,12 @@ export class PluginDefaultDesignRegistryService {
     };
   }
 
-  private assertNoDuplicateKeys(entries: RegisteredPluginDefaultDesignDefinition[]): void {
+  private assertNoDuplicateKeys(entries: RegisteredPluginLayoutDefinition[]): void {
     const incomingKeys = new Set<string>();
 
     for (const entry of entries) {
       if (incomingKeys.has(entry.canonicalKey) || this.entries.has(entry.canonicalKey)) {
-        throw new Error(`[PluginDefaultDesignRegistryService] duplicate default design registration: ${entry.canonicalKey}`);
+        throw new Error(`[PluginLayoutRegistryService] duplicate default design registration: ${entry.canonicalKey}`);
       }
       incomingKeys.add(entry.canonicalKey);
     }
@@ -96,7 +96,7 @@ export class PluginDefaultDesignRegistryService {
   private assertTargetKey(pluginSlug: string, targetKind: string, targetKey: string): void {
     if (!targetKey.startsWith(`${pluginSlug}.`)) {
       throw new Error(
-        `[PluginDefaultDesignRegistryService] ${targetKind} targetKey must start with "${pluginSlug}.": ${targetKey}`,
+        `[PluginLayoutRegistryService] ${targetKind} targetKey must start with "${pluginSlug}.": ${targetKey}`,
       );
     }
   }
@@ -108,7 +108,7 @@ export class PluginDefaultDesignRegistryService {
   private normalizeRequiredString(value: string, label: string): string {
     const normalized = String(value || '').trim();
     if (!normalized) {
-      throw new Error(`[PluginDefaultDesignRegistryService] ${label} must be a non-empty string`);
+      throw new Error(`[PluginLayoutRegistryService] ${label} must be a non-empty string`);
     }
     return normalized;
   }

@@ -5,18 +5,18 @@ import { CollectionService } from './collection-service';
 import { CollectionWriteCompatibilityService } from './collection-write-compatibility-service';
 import { CollectionIdentityService } from './collection-identity-service';
 import { EntityValueParserService } from './entity-value-parser-service';
-import { DefaultDesignDiagnosticService } from '../plugin/default-design/default-design-diagnostic-service';
-import { DefaultDesignLifecycleService } from '../plugin/default-design/default-design-lifecycle-service';
-import { DefaultDesignResolutionService } from '../plugin/default-design/default-design-resolution-service';
-import { DefaultDesignRuntimeBridgeService } from '../plugin/default-design/default-design-runtime-bridge-service';
-import { PluginDefaultDesignRegistryService } from '../plugin/default-design/plugin-default-design-registry-service';
+import { LayoutDiagnosticService } from '../plugin/layout/layout-diagnostic-service';
+import { LayoutLifecycleService } from '../plugin/layout/layout-lifecycle-service';
+import { LayoutResolutionService } from '../plugin/layout/layout-resolution-service';
+import { LayoutRuntimeBridgeService } from '../plugin/layout/layout-runtime-bridge-service';
+import { PluginLayoutRegistryService } from '../plugin/layout/plugin-layout-registry-service';
 import { PluginDefaultPageBackfillService } from './default-page-contract/plugin-default-page-backfill-service';
 import { PluginDefaultPageDiagnosticService } from './default-page-contract/plugin-default-page-diagnostic-service';
 import { PluginDefaultPageMaterializationService } from './default-page-contract/plugin-default-page-materialization-service';
 import { PluginDefaultPageContractRegistryService } from './default-page-contract/plugin-default-page-contract-registry-service';
 import { PluginDefaultPageContractResolutionService } from './default-page-contract/plugin-default-page-contract-resolution-service';
 import { SeedPageService } from './seed-page-service';
-import { ThemeDesignOverrideRegistryService } from '../theme/theme-design-override-registry-service';
+import { ThemeLayoutOverrideRegistryService } from '../theme/theme-layout-override-registry-service';
 
 /**
  * Core Services Singleton.
@@ -58,18 +58,18 @@ export class CoreServices {
   private _collectionWriteCompatibility: CollectionWriteCompatibilityService | null = null;
   private _collectionIdentity: CollectionIdentityService | null = null;
   private _entityValueParser: EntityValueParserService | null = null;
-  private _defaultDesignDiagnostic: DefaultDesignDiagnosticService | null = null;
-  private _defaultDesignLifecycle: DefaultDesignLifecycleService | null = null;
-  private _defaultDesignRegistry: PluginDefaultDesignRegistryService | null = null;
-  private _defaultDesignResolution: DefaultDesignResolutionService | null = null;
-  private _defaultDesignRuntimeBridge: DefaultDesignRuntimeBridgeService | null = null;
+  private _defaultDesignDiagnostic: LayoutDiagnosticService | null = null;
+  private _defaultDesignLifecycle: LayoutLifecycleService | null = null;
+  private _defaultDesignRegistry: PluginLayoutRegistryService | null = null;
+  private _defaultDesignResolution: LayoutResolutionService | null = null;
+  private _defaultDesignRuntimeBridge: LayoutRuntimeBridgeService | null = null;
   private _defaultPageContracts: PluginDefaultPageContractRegistryService | null = null;
   private _defaultPageContractResolution: PluginDefaultPageContractResolutionService | null = null;
   private _defaultPageBackfill: PluginDefaultPageBackfillService | null = null;
   private _defaultPageDiagnostic: PluginDefaultPageDiagnosticService | null = null;
   private _defaultPageMaterialization: PluginDefaultPageMaterializationService | null = null;
   private _seedPage: SeedPageService | null = null;
-  private _themeDesignOverrides: ThemeDesignOverrideRegistryService | null = null;
+  private _themeDesignOverrides: ThemeLayoutOverrideRegistryService | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -146,23 +146,23 @@ export class CoreServices {
     return this._entityValueParser;
   }
 
-  get defaultDesignRegistry(): PluginDefaultDesignRegistryService {
+  get defaultDesignRegistry(): PluginLayoutRegistryService {
     if (!this._defaultDesignRegistry) {
-      this._defaultDesignRegistry = new PluginDefaultDesignRegistryService();
+      this._defaultDesignRegistry = new PluginLayoutRegistryService();
     }
     return this._defaultDesignRegistry;
   }
 
-  get themeDesignOverrides(): ThemeDesignOverrideRegistryService {
+  get themeDesignOverrides(): ThemeLayoutOverrideRegistryService {
     if (!this._themeDesignOverrides) {
-      this._themeDesignOverrides = new ThemeDesignOverrideRegistryService();
+      this._themeDesignOverrides = new ThemeLayoutOverrideRegistryService();
     }
     return this._themeDesignOverrides;
   }
 
-  get defaultDesignResolution(): DefaultDesignResolutionService {
+  get defaultDesignResolution(): LayoutResolutionService {
     if (!this._defaultDesignResolution) {
-      this._defaultDesignResolution = new DefaultDesignResolutionService(
+      this._defaultDesignResolution = new LayoutResolutionService(
         this.defaultDesignRegistry,
         this.themeDesignOverrides,
       );
@@ -170,9 +170,9 @@ export class CoreServices {
     return this._defaultDesignResolution;
   }
 
-  get defaultDesignDiagnostic(): DefaultDesignDiagnosticService {
+  get defaultDesignDiagnostic(): LayoutDiagnosticService {
     if (!this._defaultDesignDiagnostic) {
-      this._defaultDesignDiagnostic = new DefaultDesignDiagnosticService(
+      this._defaultDesignDiagnostic = new LayoutDiagnosticService(
         this.defaultDesignRegistry,
         this.defaultDesignResolution,
       );
@@ -180,9 +180,9 @@ export class CoreServices {
     return this._defaultDesignDiagnostic;
   }
 
-  get defaultDesignLifecycle(): DefaultDesignLifecycleService {
+  get defaultDesignLifecycle(): LayoutLifecycleService {
     if (!this._defaultDesignLifecycle) {
-      this._defaultDesignLifecycle = new DefaultDesignLifecycleService(
+      this._defaultDesignLifecycle = new LayoutLifecycleService(
         this.defaultDesignRegistry,
         this.themeDesignOverrides,
       );
@@ -190,9 +190,9 @@ export class CoreServices {
     return this._defaultDesignLifecycle;
   }
 
-  get defaultDesignRuntimeBridge(): DefaultDesignRuntimeBridgeService {
+  get defaultDesignRuntimeBridge(): LayoutRuntimeBridgeService {
     if (!this._defaultDesignRuntimeBridge) {
-      this._defaultDesignRuntimeBridge = new DefaultDesignRuntimeBridgeService(
+      this._defaultDesignRuntimeBridge = new LayoutRuntimeBridgeService(
         this.defaultDesignRegistry,
         this.themeDesignOverrides,
         this.defaultDesignResolution,

@@ -14,6 +14,6 @@ export * from './entity-field-config.types';
 export * from './manifests.interfaces';
 export * from './manifests.types';
 export * from './default-page-contract';
-export * from './default-design';
+export * from './layout';
 export * from './plugin.interfaces';
 export * from './core.interfaces';

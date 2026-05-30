@@ -191,10 +191,10 @@ export { EntityEnumResolverService } from './services/entity-enum-resolver-servi
 export { EntityMetadataService } from './services/entity-metadata-service';
 export { MediaRelationService } from './services/media-relation-service';
 export { EntityDefinitionUtils } from './entity-definition-utils';
-export { PluginDefaultDesignRegistryService } from './plugin/default-design/plugin-default-design-registry-service';
-export { DefaultDesignResolutionService } from './plugin/default-design/default-design-resolution-service';
-export { DefaultDesignDiagnosticService } from './plugin/default-design/default-design-diagnostic-service';
-export { DefaultDesignLifecycleService } from './plugin/default-design/default-design-lifecycle-service';
-export { DefaultDesignRuntimeBridgeService } from './plugin/default-design/default-design-runtime-bridge-service';
-export { ThemeDesignOverrideRegistryService } from './theme/theme-design-override-registry-service';
+export { PluginLayoutRegistryService } from './plugin/layout/plugin-layout-registry-service';
+export { LayoutResolutionService } from './plugin/layout/layout-resolution-service';
+export { LayoutDiagnosticService } from './plugin/layout/layout-diagnostic-service';
+export { LayoutLifecycleService } from './plugin/layout/layout-lifecycle-service';
+export { LayoutRuntimeBridgeService } from './plugin/layout/layout-runtime-bridge-service';
+export { ThemeLayoutOverrideRegistryService } from './theme/theme-layout-override-registry-service';
 export type { RegisteredWidgetDefinition, WidgetDefinitionInput, WidgetSettingsRenderInput, WidgetStyle } from './widget';

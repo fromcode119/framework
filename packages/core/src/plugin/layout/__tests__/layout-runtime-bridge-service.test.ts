@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { DefaultDesignDiagnosticService } from '../default-design-diagnostic-service';
-import { DefaultDesignLifecycleService } from '../default-design-lifecycle-service';
-import { DefaultDesignResolutionService } from '../default-design-resolution-service';
-import { DefaultDesignRuntimeBridgeService } from '../default-design-runtime-bridge-service';
-import { PluginDefaultDesignRegistryService } from '../plugin-default-design-registry-service';
-import { ThemeDesignOverrideRegistryService } from '../../../theme/theme-design-override-registry-service';
+import { LayoutDiagnosticService } from '../layout-diagnostic-service';
+import { LayoutLifecycleService } from '../layout-lifecycle-service';
+import { LayoutResolutionService } from '../layout-resolution-service';
+import { LayoutRuntimeBridgeService } from '../layout-runtime-bridge-service';
+import { PluginLayoutRegistryService } from '../plugin-layout-registry-service';
+import { ThemeLayoutOverrideRegistryService } from '../../../theme/theme-layout-override-registry-service';
 
 function PluginRenderer(): null {
   return null;
@@ -37,14 +37,14 @@ const LEARNING_INDEX_TARGET = 'learning-module.course-index';
 const LEARNING_DETAIL_TARGET = 'learning-module.course-detail';
 const PARTNER_PORTAL_TARGET = 'partner-module.partner-portal';
 
-describe('DefaultDesignRuntimeBridgeService', () => {
-  function createSubject(): DefaultDesignRuntimeBridgeService {
-    const pluginRegistry = new PluginDefaultDesignRegistryService();
-    const themeRegistry = new ThemeDesignOverrideRegistryService();
-    const resolutionService = new DefaultDesignResolutionService(pluginRegistry, themeRegistry);
-    const diagnosticService = new DefaultDesignDiagnosticService(pluginRegistry, resolutionService);
-    const lifecycleService = new DefaultDesignLifecycleService(pluginRegistry, themeRegistry);
-    return new DefaultDesignRuntimeBridgeService(
+describe('LayoutRuntimeBridgeService', () => {
+  function createSubject(): LayoutRuntimeBridgeService {
+    const pluginRegistry = new PluginLayoutRegistryService();
+    const themeRegistry = new ThemeLayoutOverrideRegistryService();
+    const resolutionService = new LayoutResolutionService(pluginRegistry, themeRegistry);
+    const diagnosticService = new LayoutDiagnosticService(pluginRegistry, resolutionService);
+    const lifecycleService = new LayoutLifecycleService(pluginRegistry, themeRegistry);
+    return new LayoutRuntimeBridgeService(
       pluginRegistry,
       themeRegistry,
       resolutionService,
@@ -59,7 +59,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: CATALOG_PLUGIN,
-      designs: [{ namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_INDEX_TARGET, component: PluginRenderer, required: true }],
+      layouts: [{ namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_INDEX_TARGET, component: PluginRenderer, required: true }],
     });
     subject.registerThemeOverrides({
       themeSlug: THEME_ALPHA,
@@ -79,7 +79,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: CATALOG_PLUGIN,
-      designs: [{ namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_INDEX_TARGET, component: PluginRenderer, required: true }],
+      layouts: [{ namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_INDEX_TARGET, component: PluginRenderer, required: true }],
     });
     subject.registerThemeOverrides({
       themeSlug: THEME_ALPHA,
@@ -105,7 +105,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: CATALOG_PLUGIN,
-      designs: [{ namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_DETAIL_TARGET, component: PluginRenderer, required: true }],
+      layouts: [{ namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_DETAIL_TARGET, component: PluginRenderer, required: true }],
     });
     subject.registerThemeOverrides({
       themeSlug: THEME_ALPHA,
@@ -115,7 +115,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     const resolved = subject.resolvePageTarget(CATALOG_DETAIL_TARGET, THEME_ALPHA);
 
     expect(resolved.status).toBe('resolved');
-    expect(resolved.source).toBe('plugin-default');
+    expect(resolved.source).toBe('plugin');
     expect(resolved.diagnostics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ code: 'required-route-disabled', severity: 'error' }),
@@ -129,7 +129,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: CATALOG_PLUGIN,
-      designs: [
+      layouts: [
         { namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_INDEX_TARGET, component: PluginRenderer, required: true },
         { namespace: TEST_NAMESPACE, pluginSlug: CATALOG_PLUGIN, targetKind: 'page', targetKey: CATALOG_ORPHAN_TARGET, component: PluginRenderer, required: false },
       ],
@@ -174,8 +174,8 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     expect(diagnostics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ code: 'theme-override-selected', targetKey: CATALOG_INDEX_TARGET }),
-        expect.objectContaining({ code: 'backend-contract-present/frontend-default-missing', targetKey: CATALOG_DETAIL_TARGET }),
-        expect.objectContaining({ code: 'frontend-default-present/backend-contract-missing', targetKey: CATALOG_ORPHAN_TARGET }),
+        expect.objectContaining({ code: 'backend-contract-present/frontend-layout-missing', targetKey: CATALOG_DETAIL_TARGET }),
+        expect.objectContaining({ code: 'frontend-layout-present/backend-contract-missing', targetKey: CATALOG_ORPHAN_TARGET }),
       ]),
     );
   });
@@ -186,7 +186,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: POLICY_PLUGIN,
-      designs: [
+      layouts: [
         {
           namespace: TEST_NAMESPACE,
           pluginSlug: POLICY_PLUGIN,
@@ -239,15 +239,15 @@ describe('DefaultDesignRuntimeBridgeService', () => {
 
     expect(diagnostics).not.toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ code: 'backend-contract-present/frontend-default-missing' }),
-        expect.objectContaining({ code: 'frontend-default-present/backend-contract-missing' }),
+        expect.objectContaining({ code: 'backend-contract-present/frontend-layout-missing' }),
+        expect.objectContaining({ code: 'frontend-layout-present/backend-contract-missing' }),
       ]),
     );
 
     const resolved = subject.resolvePageTarget(POLICY_PRIMARY_TARGET);
 
     expect(resolved.status).toBe('resolved');
-    expect(resolved.source).toBe('plugin-default');
+    expect(resolved.source).toBe('plugin');
     expect(resolved.winner).toBe(PluginRenderer);
   });
 
@@ -257,7 +257,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: OUTREACH_PLUGIN,
-      designs: [
+      layouts: [
         {
           namespace: TEST_NAMESPACE,
           pluginSlug: OUTREACH_PLUGIN,
@@ -272,7 +272,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: POLICY_PLUGIN,
-      designs: [
+      layouts: [
         {
           namespace: TEST_NAMESPACE,
           pluginSlug: POLICY_PLUGIN,
@@ -295,7 +295,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: LEARNING_PLUGIN,
-      designs: [
+      layouts: [
         {
           namespace: TEST_NAMESPACE,
           pluginSlug: LEARNING_PLUGIN,
@@ -318,7 +318,7 @@ describe('DefaultDesignRuntimeBridgeService', () => {
     subject.registerPluginDefaults({
       namespace: TEST_NAMESPACE,
       pluginSlug: PARTNER_PLUGIN,
-      designs: [
+      layouts: [
         {
           namespace: TEST_NAMESPACE,
           pluginSlug: PARTNER_PLUGIN,
@@ -434,8 +434,8 @@ describe('DefaultDesignRuntimeBridgeService', () => {
 
     expect(diagnostics).not.toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ code: 'backend-contract-present/frontend-default-missing' }),
-        expect.objectContaining({ code: 'frontend-default-present/backend-contract-missing' }),
+        expect.objectContaining({ code: 'backend-contract-present/frontend-layout-missing' }),
+        expect.objectContaining({ code: 'frontend-layout-present/backend-contract-missing' }),
       ]),
     );
   });

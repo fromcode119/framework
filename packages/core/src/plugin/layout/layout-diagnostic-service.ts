@@ -1,22 +1,22 @@
-import type { DefaultDesignDiagnosticEntry, RegisteredPluginDefaultPageContract } from '../../types';
-import { PluginDefaultDesignRegistryService } from './plugin-default-design-registry-service';
-import { DefaultDesignResolutionService } from './default-design-resolution-service';
+import type { LayoutDiagnosticEntry, RegisteredPluginDefaultPageContract } from '../../types';
+import { PluginLayoutRegistryService } from './plugin-layout-registry-service';
+import { LayoutResolutionService } from './layout-resolution-service';
 
-export class DefaultDesignDiagnosticService {
+export class LayoutDiagnosticService {
   constructor(
-    private readonly pluginRegistry: PluginDefaultDesignRegistryService,
-    private readonly resolutionService: DefaultDesignResolutionService,
+    private readonly pluginRegistry: PluginLayoutRegistryService,
+    private readonly resolutionService: LayoutResolutionService,
   ) {}
 
   get serviceName(): string {
-    return 'DefaultDesignDiagnosticService';
+    return 'LayoutDiagnosticService';
   }
 
   crossCheckDefaultPageContracts(
     contracts: RegisteredPluginDefaultPageContract[],
     activeThemeSlug?: string,
-  ): DefaultDesignDiagnosticEntry[] {
-    const diagnostics: DefaultDesignDiagnosticEntry[] = [];
+  ): LayoutDiagnosticEntry[] {
+    const diagnostics: LayoutDiagnosticEntry[] = [];
     const registeredTargets = new Set(this.pluginRegistry.listPages().map((entry) => entry.targetKey));
     const contractTargets = new Set<string>();
 
@@ -32,10 +32,10 @@ export class DefaultDesignDiagnosticService {
 
       if (resolution.status === 'missing') {
         diagnostics.push({
-          code: 'backend-contract-present/frontend-default-missing',
+          code: 'backend-contract-present/frontend-layout-missing',
           severity: contract.required ? 'error' : 'warning',
           targetKey,
-          message: `[DefaultDesignDiagnosticService] default page contract has no frontend design registration: ${targetKey}`,
+          message: `[LayoutDiagnosticService] default page contract has no frontend design registration: ${targetKey}`,
         });
       }
 
@@ -44,7 +44,7 @@ export class DefaultDesignDiagnosticService {
           code: 'theme-override-selected',
           severity: 'info',
           targetKey,
-          message: `[DefaultDesignDiagnosticService] theme replacement selected for page target: ${targetKey}`,
+          message: `[LayoutDiagnosticService] theme replacement selected for page target: ${targetKey}`,
         });
       }
     }
@@ -52,10 +52,10 @@ export class DefaultDesignDiagnosticService {
     for (const targetKey of registeredTargets) {
       if (!contractTargets.has(targetKey)) {
         diagnostics.push({
-          code: 'frontend-default-present/backend-contract-missing',
+          code: 'frontend-layout-present/backend-contract-missing',
           severity: 'warning',
           targetKey,
-          message: `[DefaultDesignDiagnosticService] frontend default page design has no backend contract: ${targetKey}`,
+          message: `[LayoutDiagnosticService] frontend default page design has no backend contract: ${targetKey}`,
         });
       }
     }
