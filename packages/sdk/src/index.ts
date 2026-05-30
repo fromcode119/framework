@@ -128,7 +128,7 @@ export type { CapabilityMetadata } from '@fromcode119/core/client';
 // NOTE: IntegrationManager is server-only (@fromcode119/email, media, cache deps).
 // Use @fromcode119/sdk/server to access IntegrationManager in plugin server code.
 export { IntegrationRegistry } from '@fromcode119/core/client';
-export { PluginFrontendDefaultDesignRegistrar, ThemeFrontendDefaultDesignRegistrar } from '@fromcode119/core/client';
+export { PluginFrontendLayoutRegistrar, ThemeFrontendLayoutRegistrar } from '@fromcode119/core/client';
 export type { RegisteredWidgetDefinition, WidgetDefinitionInput, WidgetSettingsRenderInput, WidgetStyle } from '@fromcode119/core/client';
 export type { IntegrationTypeDefinition } from '@fromcode119/core/client';
 export type { PluginApiResolver } from '@fromcode119/core/client';
@@ -141,24 +141,24 @@ export type {
   PluginDefaultPageContractRegistration,
   RegisteredPluginDefaultPageContract,
   ThemeDefaultPageContractOverride,
-  DefaultDesignDiagnosticCode,
-  DefaultDesignDiagnosticEntry,
-  DefaultDesignDiagnosticSeverity,
-  DefaultDesignOwnerIdentity,
-  DefaultDesignResolutionSource,
-  DefaultDesignResolutionStatus,
-  DefaultDesignTargetKind,
-  PluginDefaultDesignDefinition,
-  PluginDefaultDesignRegistration,
-  RegisteredPluginDefaultDesignDefinition,
-  RegisteredThemeDesignDisableDefinition,
-  RegisteredThemeDesignReplacementDefinition,
-  ResolvedDefaultDesign,
-  ThemeDesignDisableDefinition,
-  ThemeDesignOverrideRegistration,
-  ThemeDesignReplacementDefinition,
-  PluginFrontendDefaultDesignRegistrarOptions,
-  ThemeFrontendDefaultDesignRegistrarOptions,
+  LayoutDiagnosticCode,
+  LayoutDiagnosticEntry,
+  LayoutDiagnosticSeverity,
+  LayoutOwnerIdentity,
+  LayoutResolutionSource,
+  LayoutResolutionStatus,
+  LayoutTargetKind,
+  PluginLayoutDefinition,
+  PluginLayoutRegistration,
+  RegisteredPluginLayoutDefinition,
+  RegisteredThemeLayoutDisableDefinition,
+  RegisteredThemeLayoutReplacementDefinition,
+  ResolvedLayout,
+  ThemeLayoutDisableDefinition,
+  ThemeLayoutOverrideRegistration,
+  ThemeLayoutReplacementDefinition,
+  PluginFrontendLayoutRegistrarOptions,
+  ThemeFrontendLayoutRegistrarOptions,
 } from '@fromcode119/core/client';
 // RequestContextUtils / RequestStore intentionally omitted — server-only (AsyncLocalStorage),
 // must not be bundled into client-side builds. Use @fromcode119/sdk/server.

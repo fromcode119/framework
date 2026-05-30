@@ -11,8 +11,8 @@ describe('SdkExportSourceBuilder', () => {
     expect(source).toContain('export const ClientRuntimeConstants =');
     expect(source).toContain('export const CookieConstants =');
     expect(source).toContain('export const MediaRelationService =');
-    expect(source).toContain('export const PluginFrontendDefaultDesignRegistrar =');
-    expect(source).toContain('export const ThemeFrontendDefaultDesignRegistrar =');
+    expect(source).toContain('export const PluginFrontendLayoutRegistrar =');
+    expect(source).toContain('export const ThemeFrontendLayoutRegistrar =');
   });
 
   it('parenthesizes complex accessors so named exports resolve to properties', () => {
