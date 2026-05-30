@@ -26,7 +26,11 @@ const MODE = (process.env.THEME_OVERRIDE_BOUNDARY_MODE || 'warn').toLowerCase();
 
 const SOURCE_FILE_PATTERN = /\.(ts|tsx)$/;
 const IGNORE_PATH_PATTERNS = [/\/node_modules\//, /\/dist\//, /\/\.next\//];
-const PLUGIN_SOURCE_IMPORT = /from\s+['"](?:[^'"]*\/plugins\/[^'"]+|@fromcode119\/(?!sdk(?:\/|['"]|$))[^'"]+)['"]/;
+// Real plugin-source imports only: a `@fromcode119/<non-sdk>` package, or a relative
+// path that climbs into the repo `plugins/` tree. Theme-internal references to sibling
+// override files (which live under `.../overrides/plugins/...`) are legitimate and must
+// NOT match — hence the negative lookahead excluding any `overrides/` segment.
+const PLUGIN_SOURCE_IMPORT = /from\s+['"](?:(?![^'"]*\/overrides\/)[^'"]*\/plugins\/[^'"]+|@fromcode119\/(?!sdk(?:\/|['"]|$))[^'"]+)['"]/;
 
 function walk(dir, files = []) {
   let entries;
