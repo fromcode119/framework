@@ -57,6 +57,7 @@ export class SdkExportSourceBuilder {
     'IntegrationRegistry',
     'PluginFrontendLayoutRegistrar',
     'ThemeFrontendLayoutRegistrar',
+    'ThemeOverrideRegistrar',
     'RecordVersions',
     'PluginCapability',
     'MiddlewareStage',

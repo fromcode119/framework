@@ -68,6 +68,7 @@ import {
 } from '@fromcode119/core/client';
 import { ContextBridge } from '../context-bridge';
 import { ContextHooks } from '../context-hooks';
+import { ThemeOverrideRegistrar } from '../theme-override-registrar';
 import { LazyComponentLoaderService } from '../lazy-component-loader-service';
 import { LazyLoadClass } from '../lazy-load-class';
 import { PageStyleContext } from '../page-style-context';
@@ -189,6 +190,7 @@ export class BridgeObjectBuilder {
       IntegrationRegistry,
       PluginFrontendLayoutRegistrar,
       ThemeFrontendLayoutRegistrar,
+      ThemeOverrideRegistrar,
       RecordVersions,
       PluginCapability,
       MiddlewareStage,
