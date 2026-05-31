@@ -34,6 +34,13 @@ export { LazyComponentLoaderService } from './lazy-component-loader-service';
 export { LazyLoadClass } from './lazy-load-class';
 export { PageStyleContext } from './page-style-context';
 export { PageStyleProvider } from './page-style-provider';
+// Class-consumable contexts (for hook-free framework/admin components via `static contextType`).
+export { PluginContextRegistry } from './plugin-context';
+export { SettingsContext } from './context/settings-context';
+export { TranslationContext } from './context/translation-context';
+export { CollectionsContext } from './context/collections-context';
+export { MenuContext } from './context/menu-context';
+export { PluginStateContext } from './context/plugin-state-context';
 export { PageStyleHooks } from './page-style-hooks';
 export type { PageStyleContextValue } from './page-style-context.interfaces';
 export { ThemeOverrideRegistrar } from './theme-override-registrar';
