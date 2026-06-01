@@ -1,11 +1,14 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailResourcesProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginDetailResources({ onSandboxSettingsChange, sandboxSettings, theme }: PluginDetailResourcesProps) {
+export default class PluginDetailResources extends React.Component<PluginDetailResourcesProps> {
+  render(): React.ReactNode {
+    const { onSandboxSettingsChange, sandboxSettings, theme } = this.props;
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Card title="Sandbox Isolation Policy" className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
@@ -54,4 +57,5 @@ export default function PluginDetailResources({ onSandboxSettingsChange, sandbox
       </Card>
     </div>
   );
+  }
 }

@@ -1,12 +1,15 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { UserSessionRecord } from '../user-security-page.interfaces';
 
-export default function DeviceSessionsCard({ isDark, sessions, sessionsLoading, onRevokeOtherSessions, onRevokeSession }: { isDark: boolean; onRevokeOtherSessions: () => Promise<void>; onRevokeSession: (sessionId: string) => Promise<void>; sessions: UserSessionRecord[]; sessionsLoading: boolean }) {
+export default class DeviceSessionsCard extends React.Component<{ isDark: boolean; onRevokeOtherSessions: () => Promise<void>; onRevokeSession: (sessionId: string) => Promise<void>; sessions: UserSessionRecord[]; sessionsLoading: boolean }> {
+  render(): React.ReactNode {
+    const { isDark, sessions, sessionsLoading, onRevokeOtherSessions, onRevokeSession } = this.props;
   return (
     <Card title="Device Sessions" icon={<FrameworkIcons.Activity size={18} className="text-indigo-500" />}>
       <div className="space-y-3">
@@ -15,4 +18,5 @@ export default function DeviceSessionsCard({ isDark, sessions, sessionsLoading, 
       </div>
     </Card>
   );
+  }
 }

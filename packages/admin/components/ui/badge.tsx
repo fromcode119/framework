@@ -8,7 +8,9 @@ interface BadgeProps {
   className?: string;
 }
 
-export const Badge = ({ children, variant = 'default', className = '' }: BadgeProps) => {
+export class Badge extends React.Component<BadgeProps> {
+  render(): React.ReactNode {
+    const { children, variant = 'default', className = '' } = this.props;
   const variants = {
     success: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
     green: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
@@ -27,4 +29,5 @@ export const Badge = ({ children, variant = 'default', className = '' }: BadgePr
       {children}
     </span>
   );
-};
+  }
+}

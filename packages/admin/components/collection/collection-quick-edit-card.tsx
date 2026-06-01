@@ -22,7 +22,9 @@ interface CollectionQuickEditCardProps {
   pluginSettings: Record<string, any>;
 }
 
-export const CollectionQuickEditCard: React.FC<CollectionQuickEditCardProps> = ({
+export class CollectionQuickEditCard extends React.Component<CollectionQuickEditCardProps> {
+  render(): React.ReactNode {
+    const {
   row,
   collection,
   resolvedSlug,
@@ -36,7 +38,7 @@ export const CollectionQuickEditCard: React.FC<CollectionQuickEditCardProps> = (
   onClose,
   theme,
   pluginSettings
-}) => {
+} = this.props;
   const rowId = String(row.id);
 
   return (
@@ -110,4 +112,5 @@ export const CollectionQuickEditCard: React.FC<CollectionQuickEditCardProps> = (
       </div>
     </Card>
   );
-};
+  }
+}

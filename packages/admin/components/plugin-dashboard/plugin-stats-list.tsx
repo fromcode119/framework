@@ -130,11 +130,13 @@ function StatCard({ stat }: { stat: StatItem }) {
   return <div className={cardClass}>{inner}</div>;
 }
 
-export const PluginStatsList = ({
+export class PluginStatsList extends React.Component<PluginStatsListProps> {
+  render(): React.ReactNode {
+    const {
   stats,
   columns = 3,
   className = '',
-}: PluginStatsListProps) => {
+} = this.props;
   return (
     <div className={`grid ${gridCols[columns]} gap-6 ${className}`}>
       {stats.map((stat, index) => (
@@ -142,4 +144,5 @@ export const PluginStatsList = ({
       ))}
     </div>
   );
-};
+  }
+}

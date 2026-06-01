@@ -1,9 +1,12 @@
 "use client";
 
+import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginManifestModalProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginManifestModal({ isOpen, onClose, plugin, theme }: PluginManifestModalProps) {
+export default class PluginManifestModal extends React.Component<PluginManifestModalProps> {
+  render(): React.ReactNode {
+    const { isOpen, onClose, plugin, theme } = this.props;
   if (!isOpen) return null;
 
   return (
@@ -25,4 +28,5 @@ export default function PluginManifestModal({ isOpen, onClose, plugin, theme }: 
       </div>
     </div>
   );
+  }
 }

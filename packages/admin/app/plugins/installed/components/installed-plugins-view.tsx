@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { DependencyDialog } from '@/components/ui/dependency-dialog';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -8,7 +9,9 @@ import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
 import InstalledPluginCard from './installed-plugin-card';
 import type { InstalledPluginsViewProps } from '../installed-plugins-page.interfaces';
 
-export default function InstalledPluginsView({
+export default class InstalledPluginsView extends React.Component<InstalledPluginsViewProps> {
+  render(): React.ReactNode {
+    const {
   closeDeleteConfirm,
   closeDependencyConfirm,
   closeUploadPreview,
@@ -49,7 +52,7 @@ export default function InstalledPluginsView({
   uploadPreviewDescription,
   uploadPreviewSections,
   uploadPreviewTitle,
-}: InstalledPluginsViewProps) {
+} = this.props;
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {operationStatus && (isUploading || isActivating) ? <Loader fullPage label={operationStatus.message} /> : null}
@@ -104,4 +107,5 @@ export default function InstalledPluginsView({
       <UploadPreviewDialog isOpen={showUploadPreview} title={uploadPreviewTitle} description={uploadPreviewDescription} sections={uploadPreviewSections} confirmLabel="Install Plugin" cancelLabel="Cancel" isLoading={isUploading} onClose={closeUploadPreview} onConfirm={confirmUploadPreview} />
     </div>
   );
+  }
 }

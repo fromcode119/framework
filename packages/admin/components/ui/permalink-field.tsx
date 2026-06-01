@@ -15,12 +15,14 @@ interface PermalinkFieldProps {
   disabled?: boolean;
 }
 
-export const PermalinkField: React.FC<PermalinkFieldProps> = ({
+export class PermalinkField extends React.Component<PermalinkFieldProps> {
+  render(): React.ReactNode {
+    const {
   value,
   onChange,
   theme = 'light',
   disabled = false,
-}) => {
+} = this.props;
   const custom = typeof value?.custom === 'string' ? value.custom : '';
   const isDisabled = Boolean(value?.disabled);
 
@@ -66,4 +68,5 @@ export const PermalinkField: React.FC<PermalinkFieldProps> = ({
       </button>
     </div>
   );
-};
+  }
+}

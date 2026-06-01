@@ -16,7 +16,9 @@ interface SidebarVersionsProps {
   formData: any;
 }
 
-export const SidebarVersions: React.FC<SidebarVersionsProps> = ({
+export class SidebarVersions extends React.Component<SidebarVersionsProps> {
+  render(): React.ReactNode {
+    const {
   revisions,
   revisionsLoading,
   activeVersionId,
@@ -26,7 +28,7 @@ export const SidebarVersions: React.FC<SidebarVersionsProps> = ({
   loadMoreRevisions,
   hasMoreRevisions,
   formData
-}) => {
+} = this.props;
   return (
     <Card title="Version History">
       <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -83,4 +85,5 @@ export const SidebarVersions: React.FC<SidebarVersionsProps> = ({
       </div>
     </Card>
   );
-};
+  }
+}

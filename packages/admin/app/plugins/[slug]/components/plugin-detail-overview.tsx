@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -7,7 +8,9 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailOverviewProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginDetailOverview({
+export default class PluginDetailOverview extends React.Component<PluginDetailOverviewProps> {
+  render(): React.ReactNode {
+    const {
   loadingLogs,
   logs,
   marketplaceItem,
@@ -15,7 +18,7 @@ export default function PluginDetailOverview({
   onToggle,
   plugin,
   theme,
-}: PluginDetailOverviewProps) {
+} = this.props;
   const hasUpdate = Boolean(marketplaceItem?.version && VersionComparisonService.isGreater(marketplaceItem.version, plugin.manifest.version));
 
   return (
@@ -103,4 +106,5 @@ export default function PluginDetailOverview({
       </Card>
     </>
   );
+  }
 }

@@ -1,9 +1,12 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@fromcode119/react';
 
-export default function SecurityRecommendationsCard({ isAdministrator, isDark, twoFactorEnabled }: { isAdministrator: boolean; isDark: boolean; twoFactorEnabled: boolean }) {
+export default class SecurityRecommendationsCard extends React.Component<{ isAdministrator: boolean; isDark: boolean; twoFactorEnabled: boolean }> {
+  render(): React.ReactNode {
+    const { isAdministrator, isDark, twoFactorEnabled } = this.props;
   return (
     <Card title="Security Recommendations" icon={<FrameworkIcons.Shield size={18} className="text-amber-500" />}>
       <div className="space-y-4 py-2">
@@ -13,4 +16,5 @@ export default function SecurityRecommendationsCard({ isAdministrator, isDark, t
       </div>
     </Card>
   );
+  }
 }

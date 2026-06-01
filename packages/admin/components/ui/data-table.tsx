@@ -31,259 +31,204 @@ interface DataTableProps<T> {
   renderExpandedRow?: (row: T) => React.ReactNode;
 }
 
-export function DataTable<T extends { id: any }>({
-  columns,
-  data,
-  loading,
-  totalDocs = 0,
-  limit = 10,
-  page = 1,
-  onPageChange,
-  onSort,
-  currentSort,
-  onRowClick,
-  actions,
-  emptyMessage = "No records found",
-  selectable,
-  selectedIds = [],
-  onSelectionChange,
-  expandedRowId = null,
-  renderExpandedRow
-}: DataTableProps<T>) {
-  const handleSort = (columnId: string) => {
+/** Generic paginated, sortable, selectable data table. Pure presentational class. */
+export class DataTable<T extends { id: any }> extends React.Component<DataTableProps<T>> {
+  private handleSort(columnId: string): void {
+    const { onSort, currentSort } = this.props;
     if (!onSort) return;
     const isDesc = currentSort === `-${columnId}`;
     onSort(isDesc ? columnId : `-${columnId}`);
-  };
+  }
 
-  const toggleAll = () => {
+  private toggleAll(): void {
+    const { onSelectionChange, selectedIds = [], data } = this.props;
     if (!onSelectionChange) return;
-    if (selectedIds.length === data.length) {
-      onSelectionChange([]);
-    } else {
-      onSelectionChange(data.map(row => String(row.id)));
-    }
-  };
+    if (selectedIds.length === data.length) onSelectionChange([]);
+    else onSelectionChange(data.map(row => String(row.id)));
+  }
 
-  const toggleOne = (id: string, e: React.MouseEvent) => {
+  private toggleOne(id: string, e: React.MouseEvent): void {
     e.stopPropagation();
+    const { onSelectionChange, selectedIds = [] } = this.props;
     if (!onSelectionChange) return;
     const stringId = String(id);
-    if (selectedIds.includes(stringId)) {
-      onSelectionChange(selectedIds.filter(i => i !== stringId));
-    } else {
-      onSelectionChange([...selectedIds, stringId]);
-    }
-  };
+    if (selectedIds.includes(stringId)) onSelectionChange(selectedIds.filter(i => i !== stringId));
+    else onSelectionChange([...selectedIds, stringId]);
+  }
 
-  const getSortIcon = (columnId: string) => {
+  private getSortIcon(columnId: string): React.ReactNode {
+    const { currentSort } = this.props;
     if (currentSort === columnId) return <FrameworkIcons.Up size={12} />;
     if (currentSort === `-${columnId}`) return <FrameworkIcons.Down size={12} />;
     return <FrameworkIcons.Down size={12} className="opacity-20" />;
-  };
+  }
 
-  const totalPages = Math.ceil(totalDocs / limit);
-  const startRecord = totalDocs > 0 ? ((page - 1) * limit) + 1 : 0;
-  const endRecord = totalDocs > 0 ? Math.min(page * limit, totalDocs) : 0;
-  const maxPageButtons = 5;
-  const windowStart = totalPages <= maxPageButtons
-    ? 1
-    : Math.min(
-        Math.max(1, page - Math.floor(maxPageButtons / 2)),
-        totalPages - maxPageButtons + 1,
-      );
-  const windowEnd = totalPages <= maxPageButtons
-    ? totalPages
-    : Math.min(totalPages, windowStart + maxPageButtons - 1);
-  const visiblePages = Array.from(
-    { length: Math.max(0, windowEnd - windowStart + 1) },
-    (_, index) => windowStart + index,
-  );
+  render(): React.ReactNode {
+    const {
+      columns, data, loading, totalDocs = 0, limit = 10, page = 1,
+      onPageChange, onRowClick, actions, emptyMessage = 'No records found',
+      selectable, selectedIds = [], expandedRowId = null, renderExpandedRow,
+    } = this.props;
 
-  return (
-    <div className={`flex flex-col w-full h-full transition-all duration-300 ${loading ? 'opacity-60 pointer-events-none' : ''}`}>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[600px]">
-          <thead>
-            <tr className="bg-slate-100/50 border-b border-slate-200/60 dark:bg-slate-900/50 dark:border-slate-800">
-              {selectable && (
-                <th className="px-5 py-4 w-4">
-                  <div 
-                    onClick={toggleAll}
-                    className={`w-4 h-4 rounded border-2 cursor-pointer transition-all flex items-center justify-center ${
-                      selectedIds.length > 0 && selectedIds.length === data.length
-                        ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20' 
-                        : selectedIds.length > 0 
-                          ? 'bg-indigo-600/50 border-indigo-600' 
-                          : 'bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-600'
-                    }`}
-                  >
-                    {selectedIds.length > 0 && (
-                      <div className={`w-2 h-0.5 bg-white rounded-full ${selectedIds.length === data.length ? 'hidden' : 'block'}`} />
-                    )}
-                    {selectedIds.length === data.length && data.length > 0 && (
-                      <FrameworkIcons.Check size={10} className="text-white" strokeWidth={3} />
-                    )}
-                  </div>
-                </th>
-              )}
-              {columns.map((col) => (
-                <th 
-                  key={col.id} 
-                  className={`px-5 py-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide ${col.sortable ? 'cursor-pointer hover:text-indigo-500 transition-colors' : ''} ${col.className || ''}`}
-                  onClick={() => col.sortable && handleSort(col.id)}
-                >
-                  <div className="flex items-center gap-2">
-                    {col.header}
-                    {col.sortable && getSortIcon(col.id)}
-                  </div>
-                </th>
-              ))}
-              {actions && (
-                <th className="px-5 py-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 text-right tracking-wide">
-                  Actions
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
-            {data.length === 0 && !loading ? (
-              <tr>
-                <td colSpan={columns.length + (actions ? 1 : 0) + (selectable ? 1 : 0)} className="px-6 py-24 text-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="w-14 h-14 rounded-3xl flex items-center justify-center mb-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
-                      <FrameworkIcons.Search size={22} className="text-slate-400" />
-                    </div>
-                    <p className="font-semibold text-slate-400 tracking-wide text-[12px]">{emptyMessage}</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              data.map((row, index) => {
-                const rowKey = String(row.id || (row as any).key || (row as any).slug || index);
-                const isExpanded = expandedRowId !== null && String(expandedRowId) === String(row.id);
-                return (
-                  <React.Fragment key={rowKey}>
-                    <tr 
-                      className={`transition-all duration-200 cursor-default hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${
-                        onRowClick ? 'cursor-pointer' : ''
-                      } ${selectedIds.includes(String(row.id)) ? 'bg-indigo-50/30 dark:bg-indigo-500/5' : ''}`}
-                      onClick={() => onRowClick?.(row)}
+    const totalPages = Math.ceil(totalDocs / limit);
+    const startRecord = totalDocs > 0 ? ((page - 1) * limit) + 1 : 0;
+    const endRecord = totalDocs > 0 ? Math.min(page * limit, totalDocs) : 0;
+    const maxPageButtons = 5;
+    const windowStart = totalPages <= maxPageButtons
+      ? 1
+      : Math.min(Math.max(1, page - Math.floor(maxPageButtons / 2)), totalPages - maxPageButtons + 1);
+    const windowEnd = totalPages <= maxPageButtons
+      ? totalPages
+      : Math.min(totalPages, windowStart + maxPageButtons - 1);
+    const visiblePages = Array.from({ length: Math.max(0, windowEnd - windowStart + 1) }, (_, i) => windowStart + i);
+
+    return (
+      <div className={`flex flex-col w-full h-full transition-all duration-300 ${loading ? 'opacity-60 pointer-events-none' : ''}`}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[600px]">
+            <thead>
+              <tr className="bg-slate-100/50 border-b border-slate-200/60 dark:bg-slate-900/50 dark:border-slate-800">
+                {selectable && (
+                  <th className="px-5 py-4 w-4">
+                    <div
+                      onClick={() => this.toggleAll()}
+                      className={`w-4 h-4 rounded border-2 cursor-pointer transition-all flex items-center justify-center ${
+                        selectedIds.length > 0 && selectedIds.length === data.length
+                          ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20'
+                          : selectedIds.length > 0
+                            ? 'bg-indigo-600/50 border-indigo-600'
+                            : 'bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-600'
+                      }`}
                     >
-                      {selectable && (
-                        <td className="px-5 py-3 w-4" onClick={(e) => toggleOne(String(row.id), e)}>
-                          <div 
-                            className={`w-4 h-4 rounded border-2 transition-all flex items-center justify-center ${
-                              selectedIds.includes(String(row.id))
-                                ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20' 
-                                : 'bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-600'
-                            }`}
-                          >
-                            {selectedIds.includes(String(row.id)) && (
-                              <FrameworkIcons.Check size={10} className="text-white" strokeWidth={3} />
-                            )}
-                          </div>
-                        </td>
+                      {selectedIds.length > 0 && (
+                        <div className={`w-2 h-0.5 bg-white rounded-full ${selectedIds.length === data.length ? 'hidden' : 'block'}`} />
                       )}
-                      {columns.map((col) => (
-                        <td key={col.id} className={`px-5 py-3 ${col.className || ''}`}>
-                          <div className="text-[13px] font-semibold tracking-tight text-slate-700 dark:text-slate-300">
-                            {typeof col.accessor === 'function' 
-                              ? col.accessor(row) 
-                              : (String(row[col.accessor]) || '-')}
-                          </div>
-                        </td>
-                      ))}
-                      {actions && (
-                        <td className="px-5 py-2 text-right">
-                          {actions(row)}
-                        </td>
+                      {selectedIds.length === data.length && data.length > 0 && (
+                        <FrameworkIcons.Check size={10} className="text-white" strokeWidth={3} />
                       )}
-                    </tr>
-
-                    {isExpanded && renderExpandedRow && (
-                      <tr className="bg-indigo-50/20 dark:bg-indigo-500/5">
-                        <td
-                          className="px-5 py-4"
-                          colSpan={columns.length + (actions ? 1 : 0) + (selectable ? 1 : 0)}
-                        >
-                          {renderExpandedRow(row)}
-                        </td>
+                    </div>
+                  </th>
+                )}
+                {columns.map((col) => (
+                  <th
+                    key={col.id}
+                    className={`px-5 py-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide ${col.sortable ? 'cursor-pointer hover:text-indigo-500 transition-colors' : ''} ${col.className || ''}`}
+                    onClick={() => col.sortable && this.handleSort(col.id)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {col.header}
+                      {col.sortable && this.getSortIcon(col.id)}
+                    </div>
+                  </th>
+                ))}
+                {actions && (
+                  <th className="px-5 py-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 text-right tracking-wide">
+                    Actions
+                  </th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
+              {data.length === 0 && !loading ? (
+                <tr>
+                  <td colSpan={columns.length + (actions ? 1 : 0) + (selectable ? 1 : 0)} className="px-6 py-24 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-14 h-14 rounded-3xl flex items-center justify-center mb-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
+                        <FrameworkIcons.Search size={22} className="text-slate-400" />
+                      </div>
+                      <p className="font-semibold text-slate-400 tracking-wide text-[12px]">{emptyMessage}</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                data.map((row, index) => {
+                  const rowKey = String(row.id || (row as any).key || (row as any).slug || index);
+                  const isExpanded = expandedRowId !== null && String(expandedRowId) === String(row.id);
+                  return (
+                    <React.Fragment key={rowKey}>
+                      <tr
+                        className={`transition-all duration-200 cursor-default hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${onRowClick ? 'cursor-pointer' : ''} ${selectedIds.includes(String(row.id)) ? 'bg-indigo-50/30 dark:bg-indigo-500/5' : ''}`}
+                        onClick={() => onRowClick?.(row)}
+                      >
+                        {selectable && (
+                          <td className="px-5 py-3 w-4" onClick={(e) => this.toggleOne(String(row.id), e)}>
+                            <div
+                              className={`w-4 h-4 rounded border-2 transition-all flex items-center justify-center ${
+                                selectedIds.includes(String(row.id))
+                                  ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20'
+                                  : 'bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-600'
+                              }`}
+                            >
+                              {selectedIds.includes(String(row.id)) && (
+                                <FrameworkIcons.Check size={10} className="text-white" strokeWidth={3} />
+                              )}
+                            </div>
+                          </td>
+                        )}
+                        {columns.map((col) => (
+                          <td key={col.id} className={`px-5 py-3 ${col.className || ''}`}>
+                            <div className="text-[13px] font-semibold tracking-tight text-slate-700 dark:text-slate-300">
+                              {typeof col.accessor === 'function'
+                                ? col.accessor(row)
+                                : (String(row[col.accessor]) || '-')}
+                            </div>
+                          </td>
+                        ))}
+                        {actions && (
+                          <td className="px-5 py-2 text-right">{actions(row)}</td>
+                        )}
                       </tr>
-                    )}
-                  </React.Fragment>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-8 py-5 border-t transition-all bg-slate-50/50 border-slate-100 dark:bg-slate-950/40 dark:border-slate-800/50">
-          <p className="text-[12px] font-semibold text-slate-400 tracking-wide">
-            Showing <span className="text-slate-900 dark:text-white">{startRecord}-{endRecord}</span> of <span className="text-slate-900 dark:text-white">{totalDocs}</span> records
-          </p>
-          
-          <div className="flex items-center gap-2">
-            <button 
-              disabled={page === 1}
-              onClick={() => onPageChange?.(page - 1)}
-              className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20"
-            >
-              <FrameworkIcons.Left size={16} />
-            </button>
-            
-            <div className="flex items-center gap-1">
-              {windowStart > 1 && (
-                <>
-                  <button
-                    onClick={() => onPageChange?.(1)}
-                    className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent"
-                  >
-                    1
-                  </button>
-                  {windowStart > 2 && <span className="text-slate-400 mx-1">...</span>}
-                </>
+                      {isExpanded && renderExpandedRow && (
+                        <tr className="bg-indigo-50/20 dark:bg-indigo-500/5">
+                          <td className="px-5 py-4" colSpan={columns.length + (actions ? 1 : 0) + (selectable ? 1 : 0)}>
+                            {renderExpandedRow(row)}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
               )}
-
-              {visiblePages.map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => onPageChange?.(pageNum)}
-                  className={`h-9 w-9 text-[11px] font-bold rounded-lg transition-all ${
-                    page === pageNum
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                      : 'bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              ))}
-
-              {windowEnd < totalPages && (
-                <>
-                  {windowEnd < totalPages - 1 && <span className="text-slate-400 mx-1">...</span>}
-                  <button
-                    onClick={() => onPageChange?.(totalPages)}
-                    className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent"
-                  >
-                    {totalPages}
-                  </button>
-                </>
-              )}
-            </div>
-
-            <button 
-              disabled={page === totalPages}
-              onClick={() => onPageChange?.(page + 1)}
-              className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20"
-            >
-              <FrameworkIcons.Right size={16} />
-            </button>
-          </div>
+            </tbody>
+          </table>
         </div>
-      )}
-    </div>
-  );
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-8 py-5 border-t transition-all bg-slate-50/50 border-slate-100 dark:bg-slate-950/40 dark:border-slate-800/50">
+            <p className="text-[12px] font-semibold text-slate-400 tracking-wide">
+              Showing <span className="text-slate-900 dark:text-white">{startRecord}-{endRecord}</span> of <span className="text-slate-900 dark:text-white">{totalDocs}</span> records
+            </p>
+            <div className="flex items-center gap-2">
+              <button disabled={page === 1} onClick={() => onPageChange?.(page - 1)} className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20">
+                <FrameworkIcons.Left size={16} />
+              </button>
+              <div className="flex items-center gap-1">
+                {windowStart > 1 && (
+                  <>
+                    <button onClick={() => onPageChange?.(1)} className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent">1</button>
+                    {windowStart > 2 && <span className="text-slate-400 mx-1">...</span>}
+                  </>
+                )}
+                {visiblePages.map((pageNum) => (
+                  <button key={pageNum} onClick={() => onPageChange?.(pageNum)}
+                    className={`h-9 w-9 text-[11px] font-bold rounded-lg transition-all ${page === pageNum ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent'}`}>
+                    {pageNum}
+                  </button>
+                ))}
+                {windowEnd < totalPages && (
+                  <>
+                    {windowEnd < totalPages - 1 && <span className="text-slate-400 mx-1">...</span>}
+                    <button onClick={() => onPageChange?.(totalPages)} className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent">{totalPages}</button>
+                  </>
+                )}
+              </div>
+              <button disabled={page === totalPages} onClick={() => onPageChange?.(page + 1)} className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20">
+                <FrameworkIcons.Right size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 }

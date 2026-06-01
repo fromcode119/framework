@@ -27,7 +27,9 @@ interface FilterBarProps {
   prettifyColumnName: (name: string) => string;
 }
 
-export const FilterBar: React.FC<FilterBarProps> = ({
+export class FilterBar extends React.Component<FilterBarProps> {
+  render(): React.ReactNode {
+    const {
   collection,
   slug,
   theme,
@@ -47,7 +49,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   fieldFilters,
   setFieldFilters,
   prettifyColumnName
-}) => {
+} = this.props;
   return (
     <div className="flex flex-wrap items-start gap-2 flex-1 w-full min-w-0">
       <div className="relative group min-w-[220px] flex-[1_1_320px] w-full">
@@ -184,4 +186,5 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       ))}
     </div>
   );
-};
+  }
+}

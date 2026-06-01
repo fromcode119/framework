@@ -12,7 +12,9 @@ interface PageHeadingProps {
   subtitleClassName?: string;
 }
 
-export const PageHeading = ({
+export class PageHeading extends React.Component<PageHeadingProps> {
+  render(): React.ReactNode {
+    const {
   title,
   subtitle,
   icon,
@@ -20,7 +22,7 @@ export const PageHeading = ({
   className = '',
   titleClassName = 'text-3xl sm:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic',
   subtitleClassName = 'text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight opacity-80 mt-3'
-}: PageHeadingProps) => {
+} = this.props;
   return (
     <div className={className}>
       <div className="flex flex-wrap items-center gap-3">
@@ -31,4 +33,5 @@ export const PageHeading = ({
       {subtitle ? <p className={subtitleClassName}>{subtitle}</p> : null}
     </div>
   );
-};
+  }
+}

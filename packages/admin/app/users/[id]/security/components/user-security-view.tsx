@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
@@ -15,7 +16,9 @@ import DeviceSessionsCard from './device-sessions-card';
 import UserApiTokensCard from './user-api-tokens-card';
 import AuthActivityCard from './auth-activity-card';
 
-export default function UserSecurityView({ model }: { model: UserSecurityPageModel }) {
+export default class UserSecurityView extends React.Component<{ model: UserSecurityPageModel }> {
+  render(): React.ReactNode {
+    const { model } = this.props;
   if (model.loading) {
     return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Loading Security Settings..." /></div>;
   }
@@ -38,4 +41,5 @@ export default function UserSecurityView({ model }: { model: UserSecurityPageMod
       </div>
     </div>
   );
+  }
 }

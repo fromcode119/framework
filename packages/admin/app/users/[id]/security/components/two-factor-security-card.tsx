@@ -1,28 +1,12 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@fromcode119/react';
 
-export default function TwoFactorSecurityCard({
-  copyRecoveryCodes,
-  generatedRecoveryCodes,
-  handleDisable2FA,
-  handleEnable2FA,
-  handleRegenerateRecoveryCodes,
-  handleVerify2FA,
-  isDark,
-  isEnabling,
-  isRegeneratingCodes,
-  isVerifying,
-  qrCode,
-  recoveryCodesRemaining,
-  secret,
-  setVerificationCode,
-  twoFactorEnabled,
-  verificationCode,
-}: {
+export default class TwoFactorSecurityCard extends React.Component<{
   copyRecoveryCodes: () => Promise<void>;
   generatedRecoveryCodes: string[];
   handleDisable2FA: () => Promise<void>;
@@ -39,7 +23,26 @@ export default function TwoFactorSecurityCard({
   setVerificationCode: (value: string) => void;
   twoFactorEnabled: boolean;
   verificationCode: string;
-}) {
+}> {
+  render(): React.ReactNode {
+    const {
+  copyRecoveryCodes,
+  generatedRecoveryCodes,
+  handleDisable2FA,
+  handleEnable2FA,
+  handleRegenerateRecoveryCodes,
+  handleVerify2FA,
+  isDark,
+  isEnabling,
+  isRegeneratingCodes,
+  isVerifying,
+  qrCode,
+  recoveryCodesRemaining,
+  secret,
+  setVerificationCode,
+  twoFactorEnabled,
+  verificationCode,
+} = this.props;
   return (
     <Card title="Two-Factor Authentication" icon={<FrameworkIcons.ShieldCheck size={20} className="text-indigo-500" />}>
       <div className="space-y-6">
@@ -58,4 +61,5 @@ export default function TwoFactorSecurityCard({
       </div>
     </Card>
   );
+  }
 }

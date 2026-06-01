@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-export default function GlobalLoading() {
+export default class GlobalLoading extends React.Component<{}> {
+  render(): React.ReactNode {
   return (
     <div className="flex-1 flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-6">
@@ -25,4 +26,5 @@ export default function GlobalLoading() {
         </div>
     </div>
   );
+  }
 }

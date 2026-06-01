@@ -10,7 +10,9 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;
 }
 
-export function Card({ children, className = "", noPadding = false, title, ...props }: CardProps) {
+export class Card extends React.Component<CardProps> {
+  render(): React.ReactNode {
+    const { children, className = "", noPadding = false, title, ...props } = this.props;
   return (
     <div 
       {...props}
@@ -20,4 +22,5 @@ export function Card({ children, className = "", noPadding = false, title, ...pr
       {children}
     </div>
   );
+  }
 }

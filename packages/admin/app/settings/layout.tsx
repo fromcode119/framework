@@ -1,6 +1,8 @@
 import React from 'react';
 
-export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+export default class SettingsLayout extends React.Component<{ children: React.ReactNode }> {
+  render(): React.ReactNode {
+    const { children } = this.props;
   return (
     <div className="flex-1 flex flex-col h-full">
       <main className="flex-1 overflow-y-auto min-w-0">
@@ -8,4 +10,5 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       </main>
     </div>
   );
+  }
 }

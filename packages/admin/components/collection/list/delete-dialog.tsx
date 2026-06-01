@@ -4,17 +4,19 @@ import React from 'react';
 
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
-export function CollectionListDeleteDialog({
-  deleteDialogState,
-  deleteLoading,
-  onClose,
-  onConfirm
-}: {
+export class CollectionListDeleteDialog extends React.Component<{
   deleteDialogState: { mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null;
   deleteLoading: boolean;
   onClose: () => void;
   onConfirm: () => void;
-}) {
+}> {
+  render(): React.ReactNode {
+    const {
+  deleteDialogState,
+  deleteLoading,
+  onClose,
+  onConfirm
+} = this.props;
   return (
     <ConfirmDialog
       isOpen={Boolean(deleteDialogState)}
@@ -32,4 +34,5 @@ export function CollectionListDeleteDialog({
       variant="danger"
     />
   );
+  }
 }

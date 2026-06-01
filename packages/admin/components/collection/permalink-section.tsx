@@ -13,7 +13,9 @@ interface PermalinkSectionProps {
   pluginSettings?: Record<string, any>;
 }
 
-export const PermalinkSection: React.FC<PermalinkSectionProps> = ({
+export class PermalinkSection extends React.Component<PermalinkSectionProps> {
+  render(): React.ReactNode {
+    const {
   value,
   slug,
   id,
@@ -21,7 +23,7 @@ export const PermalinkSection: React.FC<PermalinkSectionProps> = ({
   disabled,
   collection,
   pluginSettings
-}) => {
+} = this.props;
   return (
     <Card title="Preview & Permalink">
         <PermalinkInput
@@ -38,4 +40,5 @@ export const PermalinkSection: React.FC<PermalinkSectionProps> = ({
         </p>
     </Card>
   );
-};
+  }
+}

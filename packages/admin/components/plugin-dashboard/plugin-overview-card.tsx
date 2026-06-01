@@ -16,7 +16,9 @@ interface PluginOverviewCardProps {
   className?: string;
 }
 
-export const PluginOverviewCard = ({ 
+export class PluginOverviewCard extends React.Component<PluginOverviewCardProps> {
+  render(): React.ReactNode {
+    const { 
   title, 
   value, 
   icon, 
@@ -24,7 +26,7 @@ export const PluginOverviewCard = ({
   subtitle, 
   onClick,
   className = "" 
-}: PluginOverviewCardProps) => {
+} = this.props;
   const isClickable = !!onClick;
   
   return (
@@ -93,4 +95,5 @@ export const PluginOverviewCard = ({
       </div>
     </div>
   );
-};
+  }
+}

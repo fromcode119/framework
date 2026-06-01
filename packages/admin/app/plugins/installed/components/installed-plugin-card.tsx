@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,9 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import type { InstalledPluginCardProps } from '../installed-plugins-page.interfaces';
 
-export default function InstalledPluginCard({ hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin }: InstalledPluginCardProps) {
+export default class InstalledPluginCard extends React.Component<InstalledPluginCardProps> {
+  render(): React.ReactNode {
+    const { hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin } = this.props;
   const hasRuntimeError = Boolean(plugin.error) || plugin.state === 'error';
   const statusLabel = hasRuntimeError ? 'Error' : plugin.state === 'active' ? 'Active' : 'Inactive';
   const statusVariant = hasRuntimeError ? 'danger' : plugin.state === 'active' ? 'success' : 'gray';
@@ -66,4 +69,5 @@ export default function InstalledPluginCard({ hasImageError, hasUpdate, isDark, 
       </div>
     </Card>
   );
+  }
 }

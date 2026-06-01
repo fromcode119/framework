@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,18 +8,7 @@ import { Loader } from '@/components/ui/loader';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { UserApiTokenRecord } from '../user-security-page.interfaces';
 
-export default function UserApiTokensCard({
-  createdToken,
-  isDark,
-  onCreateToken,
-  onRevokeToken,
-  setTokenDays,
-  setTokenName,
-  tokenDays,
-  tokenName,
-  tokens,
-  tokensLoading,
-}: {
+export default class UserApiTokensCard extends React.Component<{
   createdToken: string;
   isDark: boolean;
   onCreateToken: () => Promise<void>;
@@ -29,7 +19,20 @@ export default function UserApiTokensCard({
   tokenName: string;
   tokens: UserApiTokenRecord[];
   tokensLoading: boolean;
-}) {
+}> {
+  render(): React.ReactNode {
+    const {
+  createdToken,
+  isDark,
+  onCreateToken,
+  onRevokeToken,
+  setTokenDays,
+  setTokenName,
+  tokenDays,
+  tokenName,
+  tokens,
+  tokensLoading,
+} = this.props;
   return (
     <Card title="Personal API Tokens" icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}>
       <div className="space-y-4">
@@ -39,4 +42,5 @@ export default function UserApiTokensCard({
       </div>
     </Card>
   );
+  }
 }

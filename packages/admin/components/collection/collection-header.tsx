@@ -23,7 +23,9 @@ interface CollectionHeaderProps {
   status?: string;
 }
 
-export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
+export class CollectionHeader extends React.Component<CollectionHeaderProps> {
+  render(): React.ReactNode {
+    const {
   collection,
   pluginSlug,
   slug,
@@ -40,7 +42,7 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
   theme,
   scheduledPublishAt,
   status
-}) => {
+} = this.props;
   const collectionLabel = CollectionListUtils.resolveCollectionLabel(collection, slug);
 
   return (
@@ -127,4 +129,5 @@ export const CollectionHeader: React.FC<CollectionHeaderProps> = ({
       </div>
     </div>
   );
-};
+  }
+}

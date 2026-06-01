@@ -21,7 +21,9 @@ interface RevisionModalProps {
   setStatus: (status: { type: 'success' | 'error', message: string } | null) => void;
 }
 
-export const RevisionModal: React.FC<RevisionModalProps> = ({
+export class RevisionModal extends React.Component<RevisionModalProps> {
+  render(): React.ReactNode {
+    const {
   selectedRevision,
   setSelectedRevision,
   showOnlyChanges,
@@ -35,7 +37,7 @@ export const RevisionModal: React.FC<RevisionModalProps> = ({
   handleHardRestore,
   setActiveVersionId,
   setStatus
-}) => {
+} = this.props;
   if (!selectedRevision) return null;
 
   return (
@@ -157,4 +159,5 @@ export const RevisionModal: React.FC<RevisionModalProps> = ({
        </Card>
     </div>
   );
-};
+  }
+}

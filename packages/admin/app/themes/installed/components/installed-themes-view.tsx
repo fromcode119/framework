@@ -1,11 +1,14 @@
 "use client";
 
+import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
 import InstalledThemeCard from './installed-theme-card';
 import type { InstalledThemesViewProps } from '../installed-themes-page.interfaces';
 
-export default function InstalledThemesView({
+export default class InstalledThemesView extends React.Component<InstalledThemesViewProps> {
+  render(): React.ReactNode {
+    const {
   closeUploadPreview,
   confirmUploadPreview,
   fileInputRef,
@@ -31,7 +34,7 @@ export default function InstalledThemesView({
   uploadPreviewSections,
   uploadPreviewTitle,
   updateVersionForTheme,
-}: InstalledThemesViewProps) {
+} = this.props;
   if (loading) {
     return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 min-[1400px]:grid-cols-3 gap-6">{[1, 2, 3].map((value) => <div key={value} className={`h-64 rounded-3xl animate-pulse ${themeMode === 'dark' ? 'bg-slate-900/40' : 'bg-white border-2 border-slate-50 shadow-xl shadow-slate-200/50'}`} />)}</div>;
   }
@@ -66,4 +69,5 @@ export default function InstalledThemesView({
       <UploadPreviewDialog isOpen={showUploadPreview} title={uploadPreviewTitle} description={uploadPreviewDescription} sections={uploadPreviewSections} confirmLabel="Install Theme" cancelLabel="Cancel" isLoading={isUploading} onClose={closeUploadPreview} onConfirm={confirmUploadPreview} />
     </div>
   );
+  }
 }

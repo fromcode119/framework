@@ -1,11 +1,14 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailPermissionsProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginDetailPermissions({ plugin, theme }: PluginDetailPermissionsProps) {
+export default class PluginDetailPermissions extends React.Component<PluginDetailPermissionsProps> {
+  render(): React.ReactNode {
+    const { plugin, theme } = this.props;
   return (
     <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
       <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-10 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -44,4 +47,5 @@ export default function PluginDetailPermissions({ plugin, theme }: PluginDetailP
       </div>
     </Card>
   );
+  }
 }

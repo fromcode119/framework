@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,9 @@ import { AdminConstants } from '@/lib/constants';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailHeaderProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginDetailHeader({
+export default class PluginDetailHeader extends React.Component<PluginDetailHeaderProps> {
+  render(): React.ReactNode {
+    const {
   activeTab,
   isSaving,
   isUpdating,
@@ -17,7 +20,7 @@ export default function PluginDetailHeader({
   onUpdate,
   plugin,
   theme,
-}: PluginDetailHeaderProps) {
+} = this.props;
   const hasUpdate = Boolean(marketplaceItem?.version && VersionComparisonService.isGreater(marketplaceItem.version, plugin.manifest.version));
   const marketplaceVersion = marketplaceItem?.version || null;
 
@@ -69,4 +72,5 @@ export default function PluginDetailHeader({
       )}
     </div>
   );
+  }
 }

@@ -15,12 +15,14 @@ interface CollectionListHeaderProps {
   theme: string;
 }
 
-export const CollectionListHeader: React.FC<CollectionListHeaderProps> = ({
+export class CollectionListHeader extends React.Component<CollectionListHeaderProps> {
+  render(): React.ReactNode {
+    const {
   collection,
   pluginSlug,
   slug,
   theme
-}) => {
+} = this.props;
   const displayName = CollectionListUtils.resolveCollectionLabel(collection, slug);
   const singularDisplayName = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
 
@@ -89,4 +91,5 @@ export const CollectionListHeader: React.FC<CollectionListHeaderProps> = ({
       </div>
     </div>
   );
-};
+  }
+}

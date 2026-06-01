@@ -9,12 +9,14 @@ interface DayRangeToggleProps {
   label?: string;
 }
 
-export const DayRangeToggle = ({
+export class DayRangeToggle extends React.Component<DayRangeToggleProps> {
+  render(): React.ReactNode {
+    const {
   value,
   onChange,
   options = [7, 14, 30],
   label = 'Range',
-}: DayRangeToggleProps) => {
+} = this.props;
   return (
     <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900/40 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm">
       {label && (
@@ -40,4 +42,5 @@ export const DayRangeToggle = ({
       </div>
     </div>
   );
-};
+  }
+}

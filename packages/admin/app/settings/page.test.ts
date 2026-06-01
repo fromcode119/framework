@@ -13,7 +13,7 @@ import SettingsPage from './page';
 
 describe('SettingsPage', () => {
   it('redirects /settings to /settings/general', () => {
-    expect(() => SettingsPage()).toThrow(`redirect:${AdminConstants.ROUTES.SETTINGS.GENERAL}`);
+    expect(() => new SettingsPage({}).render()).toThrow(`redirect:${AdminConstants.ROUTES.SETTINGS.GENERAL}`);
     expect(redirectMock).toHaveBeenCalledWith(AdminConstants.ROUTES.SETTINGS.GENERAL);
   });
 });

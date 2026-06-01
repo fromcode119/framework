@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +8,9 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import type { InstalledThemeCardProps } from '../installed-themes-page.interfaces';
 
-export default function InstalledThemeCard({ isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion }: InstalledThemeCardProps) {
+export default class InstalledThemeCard extends React.Component<InstalledThemeCardProps> {
+  render(): React.ReactNode {
+    const { isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion } = this.props;
   const isActive = theme.state === 'active';
 
   return (
@@ -54,4 +57,5 @@ export default function InstalledThemeCard({ isDark, onActivate, onDelete, onDis
       </div>
     </Card>
   );
+  }
 }

@@ -1,9 +1,12 @@
 "use client";
 
+import React from 'react';
 import Link from 'next/link';
 import { FrameworkIcons } from '@fromcode119/react';
 
-export default function UserSecurityHeader({ email, isDark, backHref }: { backHref: string; email: string; isDark: boolean }) {
+export default class UserSecurityHeader extends React.Component<{ backHref: string; email: string; isDark: boolean }> {
+  render(): React.ReactNode {
+    const { email, isDark, backHref } = this.props;
   return (
     <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl ${isDark ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl' : 'bg-white/80 border-slate-100 shadow-sm'}`}>
       <div className="w-full px-6 lg:px-12 py-8 flex items-center justify-between">
@@ -19,4 +22,5 @@ export default function UserSecurityHeader({ email, isDark, backHref }: { backHr
       </div>
     </div>
   );
+  }
 }

@@ -11,7 +11,9 @@ interface SwitchProps {
   className?: string;
 }
 
-export const Switch = ({ checked, onChange, label, description, disabled }: SwitchProps) => {
+export class Switch extends React.Component<SwitchProps> {
+  render(): React.ReactNode {
+    const { checked, onChange, label, description, disabled } = this.props;
   return (
     <div className="flex items-center justify-between gap-4">
       {(label || description) && (
@@ -41,4 +43,5 @@ export const Switch = ({ checked, onChange, label, description, disabled }: Swit
       </button>
     </div>
   );
-};
+  }
+}

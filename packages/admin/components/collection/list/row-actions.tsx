@@ -8,21 +8,7 @@ import { Copy } from 'lucide-react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 
-export function CollectionListRowActions({
-  row,
-  collection,
-  pluginSlug,
-  slug,
-  slotSlug,
-  resolvedSlug,
-  theme,
-  frontendUrl,
-  permalinkStructure,
-  pluginSettings,
-  quickEditExpandedId,
-  onQuickEditOpen,
-  onDelete
-}: {
+export class CollectionListRowActions extends React.Component<{
   row: any;
   collection: any;
   pluginSlug: string;
@@ -36,7 +22,23 @@ export function CollectionListRowActions({
   quickEditExpandedId: string | null;
   onQuickEditOpen: (row: any, event: React.MouseEvent) => void;
   onDelete: (id: string, event: React.MouseEvent) => void;
-}) {
+}> {
+  render(): React.ReactNode {
+    const {
+  row,
+  collection,
+  pluginSlug,
+  slug,
+  slotSlug,
+  resolvedSlug,
+  theme,
+  frontendUrl,
+  permalinkStructure,
+  pluginSettings,
+  quickEditExpandedId,
+  onQuickEditOpen,
+  onDelete
+} = this.props;
   const canPreview = AdminCollectionUtils.supportsPreview(collection);
   const previewUrl = canPreview
     ? AdminCollectionUtils.generatePreviewUrl(frontendUrl, row, collection, permalinkStructure, pluginSettings)
@@ -105,4 +107,5 @@ export function CollectionListRowActions({
       </button>
     </div>
   );
+  }
 }

@@ -9,21 +9,7 @@ import { ListFooter } from './list-footer';
 import { CollectionListTable } from './table';
 import { CollectionListToolbar } from './toolbar';
 
-export function CollectionListPageLayout({
-  collection,
-  pluginSlug,
-  slug,
-  slotSlug,
-  resolvedSlug,
-  total,
-  page,
-  search,
-  theme,
-  toolbarProps,
-  tableProps,
-  footerProps,
-  deleteDialogProps
-}: {
+export class CollectionListPageLayout extends React.Component<{
   collection: any;
   pluginSlug: string;
   slug: string;
@@ -37,7 +23,23 @@ export function CollectionListPageLayout({
   tableProps: Record<string, any>;
   footerProps: Record<string, any>;
   deleteDialogProps: Record<string, any>;
-}) {
+}> {
+  render(): React.ReactNode {
+    const {
+  collection,
+  pluginSlug,
+  slug,
+  slotSlug,
+  resolvedSlug,
+  total,
+  page,
+  search,
+  theme,
+  toolbarProps,
+  tableProps,
+  footerProps,
+  deleteDialogProps
+} = this.props;
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
       <CollectionListHeader collection={collection} pluginSlug={pluginSlug} slug={slug} theme={theme} />
@@ -53,4 +55,5 @@ export function CollectionListPageLayout({
       <CollectionListDeleteDialog {...deleteDialogProps} />
     </div>
   );
+  }
 }

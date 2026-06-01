@@ -9,7 +9,9 @@ interface CardHeaderProps {
   badge?: React.ReactNode;
 }
 
-export function CardHeader({ title, subtitle, description, badge }: CardHeaderProps) {
+export class CardHeader extends React.Component<CardHeaderProps> {
+  render(): React.ReactNode {
+    const { title, subtitle, description, badge } = this.props;
   const desc = description || subtitle;
 
   return (
@@ -21,4 +23,5 @@ export function CardHeader({ title, subtitle, description, badge }: CardHeaderPr
       {badge}
     </div>
   );
+  }
 }
