@@ -2,8 +2,8 @@
 
 import React from 'react';
 
-export default class GlobalLoading extends React.Component<{}> {
-  render(): React.ReactNode {
+// Next.js App Router route loading UI — must be a function component (RSC has no class API).
+export default function GlobalLoading(): React.ReactNode {
   return (
     <div className="flex-1 flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-6">
@@ -26,5 +26,4 @@ export default class GlobalLoading extends React.Component<{}> {
         </div>
     </div>
   );
-  }
 }

@@ -21,10 +21,20 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
   const isActive = plugins.some((p: any) => p.slug === pluginSlug);
 
   const collection = AdminCollectionUtils.resolveCollection(collections as any, pluginSlug, slug);
-  const pageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}`;
+  // Plugins register sub-page slots as `admin.plugin.<plugin>.<slug>` (the simple convention).
+  // The verbose `…page.<plugin>.<slug>` form is also accepted for backward compatibility.
+  const verbosePageSlot = `admin.plugin.${pluginSlug}.page.${pluginSlug}.${slug}`;
+  const directPageSlot = `admin.plugin.${pluginSlug}.${slug}`;
+  const resolvedPageSlot = (slots?.[verbosePageSlot] && slots[verbosePageSlot].length > 0)
+    ? verbosePageSlot
+    : (slots?.[directPageSlot] && slots[directPageSlot].length > 0)
+      ? directPageSlot
+      : null;
   const activePlugin = plugins.find((plugin: any) => plugin.slug === pluginSlug);
-  const hasPageSlot = !!(slots?.[pageSlot] && slots[pageSlot].length > 0);
-  const hasDeclaredPageSlot = Boolean(activePlugin?.admin?.slots?.some((entry: any) => entry?.slot === pageSlot));
+  const hasPageSlot = !!resolvedPageSlot;
+  const hasDeclaredPageSlot = Boolean(activePlugin?.admin?.slots?.some(
+    (entry: any) => entry?.slot === verbosePageSlot || entry?.slot === directPageSlot,
+  ));
   const shouldRedirectToPluginSettings = isReady && !hasPageSlot && !hasDeclaredPageSlot && !collection && slug === 'settings';
 
   useEffect(() => {
@@ -44,10 +54,10 @@ export default function CollectionListRoute({ params }: { params: Promise<{ plug
     return <PluginNotFound pluginSlug={pluginSlug} />;
   }
 
-  if (hasPageSlot) {
+  if (hasPageSlot && resolvedPageSlot) {
     return (
       <Slot
-        name={pageSlot}
+        name={resolvedPageSlot}
         fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} />}
       />
     );

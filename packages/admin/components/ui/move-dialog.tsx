@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { ThemeHooks } from '@/components/use-theme';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 import { Button } from './button';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 
-const { Folder, Left, Loader, Check } = FrameworkIcons;
+const { Folder, Loader, Check } = FrameworkIcons;
 
 interface MediaFolder {
   id: number;
@@ -24,49 +24,57 @@ interface MoveDialogProps {
   isLoading?: boolean;
 }
 
-export function MoveDialog({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title = "Move to Folder",
-  isLoading = false 
-}: MoveDialogProps) {
-  const { theme } = ThemeHooks.useTheme();
-  const [folders, setFolders] = useState<MediaFolder[]>([]);
-  const [currentParentId, setCurrentParentId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [path, setPath] = useState<MediaFolder[]>([]);
+interface MoveDialogState {
+  folders: MediaFolder[];
+  currentParentId: number | null;
+  loading: boolean;
+  path: MediaFolder[];
+}
 
-  const fetchFolders = async (parentId: number | null) => {
-    setLoading(true);
+export class MoveDialog extends AdminComponent<MoveDialogProps, MoveDialogState> {
+  state: MoveDialogState = { folders: [], currentParentId: null, loading: false, path: [] };
+
+  private fetchFolders = async (parentId: number | null): Promise<void> => {
+    this.setState({ loading: true });
     try {
       const pId = parentId === null ? 'null' : parentId;
       const data = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders?parentId=${pId}`);
-      setFolders(data);
-      
+      this.setState({ folders: data });
+
       if (parentId) {
         const pathData = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${parentId}/path`);
-        setPath(pathData);
+        this.setState({ path: pathData });
       } else {
-        setPath([]);
+        this.setState({ path: [] });
       }
     } catch (err) {
       console.error('Failed to fetch folders:', err);
     } finally {
-      setLoading(false);
+      this.setState({ loading: false });
     }
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchFolders(null);
-      setCurrentParentId(null);
-    }
-  }, [isOpen]);
+  private openFolder = (parentId: number | null): void => {
+    this.setState({ currentParentId: parentId });
+    void this.fetchFolders(parentId);
+  };
 
-  if (!isOpen) return null;
+  componentDidMount(): void {
+    if (this.props.isOpen) this.openFolder(null);
+  }
 
-  return (
+  componentDidUpdate(prevProps: MoveDialogProps): void {
+    if (!prevProps.isOpen && this.props.isOpen) this.openFolder(null);
+  }
+
+  render(): React.ReactNode {
+    const { isOpen, onClose, onConfirm, title = 'Move to Folder', isLoading = false } = this.props;
+    const theme = this.theme;
+    const { folders, currentParentId, loading, path } = this.state;
+
+    if (!isOpen) return null;
+
+    return (
     <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         {/* Backdrop */}
@@ -85,11 +93,8 @@ export function MoveDialog({
           </h3>
           
           <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800/10 mb-4">
-            <button 
-              onClick={() => {
-                setCurrentParentId(null);
-                fetchFolders(null);
-              }}
+            <button
+              onClick={() => this.openFolder(null)}
               className={`text-[10px] font-semibold tracking-wide ${currentParentId === null ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
             >
               Root
@@ -97,11 +102,8 @@ export function MoveDialog({
             {path.map((folder) => (
               <React.Fragment key={folder.id}>
                 <span className="text-slate-400 text-[10px]">/</span>
-                <button 
-                  onClick={() => {
-                    setCurrentParentId(folder.id);
-                    fetchFolders(folder.id);
-                  }}
+                <button
+                  onClick={() => this.openFolder(folder.id)}
                   className={`text-[10px] font-semibold tracking-wide ${currentParentId === folder.id ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
                 >
                   {folder.name}
@@ -123,10 +125,7 @@ export function MoveDialog({
               folders.map((folder) => (
                 <button
                   key={folder.id}
-                  onClick={() => {
-                    setCurrentParentId(folder.id);
-                    fetchFolders(folder.id);
-                  }}
+                  onClick={() => this.openFolder(folder.id)}
                   className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${
                     theme === 'dark' 
                       ? 'hover:bg-slate-800 text-slate-300 hover:text-white' 
@@ -162,5 +161,6 @@ export function MoveDialog({
       </div>
     </div>
     </RootFramework>
-  );
+    );
+  }
 }

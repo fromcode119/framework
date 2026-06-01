@@ -44,3 +44,8 @@ export { PluginStateContext } from './context/plugin-state-context';
 export { PageStyleHooks } from './page-style-hooks';
 export type { PageStyleContextValue } from './page-style-context.interfaces';
 export { ThemeOverrideRegistrar } from './theme-override-registrar';
+// Plugin OOP runtime: hook-free plugin UI components via `static contextType`.
+export { PluginRuntimeContext } from './plugin-runtime-context';
+export { PluginRuntimeProvider } from './plugin-runtime-provider';
+export { PluginComponent } from './plugin-component';
+export type { PluginRuntimeValue } from './plugin-runtime-context.interfaces';

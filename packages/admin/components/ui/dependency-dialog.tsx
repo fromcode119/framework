@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from './button';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from './root-framework';
-import { ThemeHooks } from '@/components/use-theme';
+import { AdminComponent } from '@/components/admin-component';
 import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';
 
 const { Warning: AlertTriangle, Close: X, Box } = FrameworkIcons;
@@ -18,37 +18,41 @@ interface DependencyDialogProps {
   isLoading?: boolean;
 }
 
-export function DependencyDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  issues,
-  pluginSlug,
-  isLoading = false
-}: DependencyDialogProps) {
-  const { theme } = ThemeHooks.useTheme();
-  
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-  }, [isOpen]);
+export class DependencyDialog extends AdminComponent<DependencyDialogProps> {
+  private applyBodyOverflow(): void {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = this.props.isOpen ? 'hidden' : 'unset';
+  }
 
-  if (!isOpen) return null;
+  componentDidMount(): void {
+    this.applyBodyOverflow();
+  }
 
-  const hasMissing = issues.some(i => i.type === 'missing');
-  const hasIncompatible = issues.some(i => i.type === 'incompatible');
-  const onlyInactive = issues.every(i => i.type === 'inactive');
+  componentDidUpdate(prevProps: DependencyDialogProps): void {
+    if (prevProps.isOpen !== this.props.isOpen) this.applyBodyOverflow();
+  }
 
-  const primaryLabel = hasMissing 
-    ? "Install & Enable All" 
-    : onlyInactive 
-      ? "Enable Dependencies" 
-      : "Resolve & Activate";
+  componentWillUnmount(): void {
+    if (typeof document !== 'undefined') document.body.style.overflow = 'unset';
+  }
 
-  return (
+  render(): React.ReactNode {
+    const { isOpen, onClose, onConfirm, issues, pluginSlug, isLoading = false } = this.props;
+    const theme = this.theme;
+
+    if (!isOpen) return null;
+
+    const hasMissing = issues.some(i => i.type === 'missing');
+    const hasIncompatible = issues.some(i => i.type === 'incompatible');
+    const onlyInactive = issues.every(i => i.type === 'inactive');
+
+    const primaryLabel = hasMissing
+      ? "Install & Enable All"
+      : onlyInactive
+        ? "Enable Dependencies"
+        : "Resolve & Activate";
+
+    return (
     <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         <div 
@@ -146,5 +150,6 @@ export function DependencyDialog({
         </div>
       </div>
     </RootFramework>
-  );
+    );
+  }
 }

@@ -26,7 +26,7 @@ export class CollectionsContextProxy {
 
           const registration = CollectionsContextProxy.entityRegistration.normalizeForPlugin(collection, plugin.manifest.slug);
           if (registration.cleanedSlug) {
-            rootLogger.warn(
+            rootLogger.info(
               `Collection slug "${collection.slug}" in plugin "${plugin.manifest.slug}" was automatically cleaned to be used as table name. ` +
               `Final table: ${registration.physicalSlug}`
             );

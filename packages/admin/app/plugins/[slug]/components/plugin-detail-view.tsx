@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Loader } from '@/components/ui/loader';
-import { NotificationHooks } from '@/components/use-notification';
 import PluginSettingsForm from '@/components/plugins/plugin-settings-form';
 import { FrameworkIcons } from '@fromcode119/react';
 import PluginDetailHeader from './plugin-detail-header';
@@ -15,54 +15,63 @@ import PluginDetailTabs from './plugin-detail-tabs';
 import PluginManifestModal from './plugin-manifest-modal';
 import type { PluginDetailViewProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginDetailView({
-  activeTab,
-  isDeleting,
-  isSaving,
-  isUpdating,
-  installOperation,
-  loadingLogs,
-  logs,
-  marketplaceItem,
-  onCloseDefinition,
-  onCloseDeleteConfirm,
-  onDelete,
-  onOpenDefinition,
-  onOpenDeleteConfirm,
-  onRefreshLogs,
-  onSandboxSettingsChange,
-  onSaveSandbox,
-  onSettingsStateChange,
-  onTabChange,
-  onToggle,
-  onUpdate,
-  plugin,
-  sandboxSettings,
-  settingsDirty,
-  settingsFormRef,
-  settingsSaving,
-  showDefinition,
-  showDeleteConfirm,
-  slug,
-  theme,
-}: PluginDetailViewProps) {
-  const { notify } = NotificationHooks.useNotify();
-  const [isCopyingError, setIsCopyingError] = useState(false);
+interface PluginDetailViewState {
+  isCopyingError: boolean;
+}
 
-  const copyPluginError = async (): Promise<void> => {
-    if (!plugin.error || isCopyingError) return;
-    setIsCopyingError(true);
+export default class PluginDetailView extends AdminComponent<PluginDetailViewProps, PluginDetailViewState> {
+  state: PluginDetailViewState = { isCopyingError: false };
+
+  private copyPluginError = async (): Promise<void> => {
+    const { plugin } = this.props;
+    const { notify } = this.runtime.notify;
+    if (!plugin.error || this.state.isCopyingError) return;
+    this.setState({ isCopyingError: true });
     try {
       await navigator.clipboard.writeText(plugin.error);
       notify('success', 'Error Copied', 'Plugin startup error copied to clipboard.');
     } catch (error: any) {
       notify('error', 'Copy Failed', error?.message || 'Could not copy the plugin startup error.');
     } finally {
-      setIsCopyingError(false);
+      this.setState({ isCopyingError: false });
     }
   };
 
-  return (
+  render(): React.ReactNode {
+    const {
+      activeTab,
+      isDeleting,
+      isSaving,
+      isUpdating,
+      installOperation,
+      loadingLogs,
+      logs,
+      marketplaceItem,
+      onCloseDefinition,
+      onCloseDeleteConfirm,
+      onDelete,
+      onOpenDefinition,
+      onOpenDeleteConfirm,
+      onRefreshLogs,
+      onSandboxSettingsChange,
+      onSaveSandbox,
+      onSettingsStateChange,
+      onTabChange,
+      onToggle,
+      onUpdate,
+      plugin,
+      sandboxSettings,
+      settingsDirty,
+      settingsFormRef,
+      settingsSaving,
+      showDefinition,
+      showDeleteConfirm,
+      slug,
+      theme,
+    } = this.props;
+    const { isCopyingError } = this.state;
+
+    return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {isUpdating && installOperation ? <Loader fullPage label={installOperation.message} /> : null}
       <PluginDetailHeader activeTab={activeTab} isSaving={isSaving} isUpdating={isUpdating} marketplaceItem={marketplaceItem} onSaveSandbox={onSaveSandbox} onUpdate={onUpdate} plugin={plugin} theme={theme} />
@@ -77,7 +86,7 @@ export default function PluginDetailView({
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-500">Plugin Startup Error</h3>
                 <button
                   type="button"
-                  onClick={() => void copyPluginError()}
+                  onClick={() => void this.copyPluginError()}
                   disabled={isCopyingError}
                   className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === 'dark' ? 'border-rose-500/20 bg-slate-950/40 text-rose-200 hover:bg-slate-900/60 disabled:opacity-60' : 'border-rose-200 bg-white text-rose-600 hover:bg-rose-50 disabled:opacity-60'}`}
                 >
@@ -112,5 +121,6 @@ export default function PluginDetailView({
       <ConfirmDialog isOpen={showDeleteConfirm} onClose={onCloseDeleteConfirm} onConfirm={onDelete} isLoading={isDeleting} title="Confirm Uninstallation" description={`Are you sure you want to delete ${plugin.manifest.name}? This will remove all associated files and data from the system. This action cannot be undone.`} confirmLabel="Uninstall Plugin" />
       <PluginManifestModal isOpen={showDefinition} onClose={onCloseDefinition} plugin={plugin} theme={theme} />
     </div>
-  );
+    );
+  }
 }

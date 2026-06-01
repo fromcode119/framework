@@ -1,19 +1,22 @@
 'use client';
 
-import { ThemeHooks } from '@/components/use-theme';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { BackupSummaryCardProps } from './backups-page-client.interfaces';
 import { SystemBackupPageUtils } from './system-backup-page-utils';
 
-export function BackupSummaryCard({ groups, capabilities }: BackupSummaryCardProps) {
-  const { theme } = ThemeHooks.useTheme();
-  const totalBackups = SystemBackupPageUtils.totalBackups(groups);
-  const totalBytes = SystemBackupPageUtils.totalBytes(groups);
-  const latestBackup = SystemBackupPageUtils.getLatestBackup(groups);
+export class BackupSummaryCard extends AdminComponent<BackupSummaryCardProps> {
+  render(): React.ReactNode {
+    const { groups, capabilities } = this.props;
+    const theme = this.theme;
+    const totalBackups = SystemBackupPageUtils.totalBackups(groups);
+    const totalBytes = SystemBackupPageUtils.totalBytes(groups);
+    const latestBackup = SystemBackupPageUtils.getLatestBackup(groups);
 
-  return (
+    return (
     <Card className="border-0 rounded-[2rem] p-8 shadow-[0_24px_64px_-24px_rgba(15,23,42,0.22)] dark:ring-1 dark:ring-white/5">
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-3">
@@ -69,5 +72,6 @@ export function BackupSummaryCard({ groups, capabilities }: BackupSummaryCardPro
         </div>
       </div>
     </Card>
-  );
+    );
+  }
 }

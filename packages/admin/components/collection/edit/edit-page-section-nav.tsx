@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 
 interface SectionNavItem {
@@ -11,6 +11,11 @@ interface SectionNavItem {
 interface EditPageSectionNavProps {
   sections: SectionNavItem[];
   theme?: string;
+}
+
+interface EditPageSectionNavState {
+  activeKey: string;
+  stickyTop: number;
 }
 
 const MARGIN = 8; // gap below sticky headers
@@ -26,63 +31,76 @@ function getStickyHeaderHeight(): number {
   return 64 + 70 + MARGIN;
 }
 
-export function EditPageSectionNav({ sections, theme }: EditPageSectionNavProps) {
-  const [activeKey, setActiveKey] = useState<string>(sections[0]?.key ?? '');
-  const [stickyTop, setStickyTop] = useState(130);
-  const navRef = useRef<HTMLDivElement>(null);
-  const stickyTopRef = useRef<number>(130);
+export class EditPageSectionNav extends React.Component<EditPageSectionNavProps, EditPageSectionNavState> {
+  private readonly navRef = React.createRef<HTMLDivElement>();
+  private stickyTopValue = 130;
+  private measureTimer?: ReturnType<typeof setTimeout>;
 
-  // Measure actual header height on mount
-  useEffect(() => {
-    const measure = () => {
-      const h = getStickyHeaderHeight();
-      stickyTopRef.current = h;
-      setStickyTop(h);
-    };
-    measure();
-    const t = setTimeout(measure, 200);
-    return () => clearTimeout(t);
-  }, []);
+  state: EditPageSectionNavState = { activeKey: this.props.sections[0]?.key ?? '', stickyTop: 130 };
 
-  // Scroll-based section detection — finds the last section whose top
-  // is at or above the sticky nav position (most reliable approach)
-  useEffect(() => {
-    if (sections.length === 0) return;
-    const onScroll = () => {
-      const threshold = window.scrollY + stickyTopRef.current + 20;
-      let current = sections[0]?.key ?? '';
-      for (const section of sections) {
-        const el = document.getElementById(`section-${section.key}`);
-        if (el && el.getBoundingClientRect().top + window.scrollY <= threshold) {
-          current = section.key;
-        }
-      }
-      setActiveKey(current);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [sections]);
-
-  const scrollToSection = (key: string) => {
-    const el = document.getElementById(`section-${key}`);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - stickyTopRef.current;
-    window.scrollTo({ top, behavior: 'smooth' });
-    setActiveKey(key);
+  private measure = (): void => {
+    const h = getStickyHeaderHeight();
+    this.stickyTopValue = h;
+    this.setState({ stickyTop: h });
   };
 
-  const activeIndex = sections.findIndex((s) => s.key === activeKey);
-  const hasPrev = activeIndex > 0;
-  const hasNext = activeIndex < sections.length - 1;
+  private handleScroll = (): void => {
+    const { sections } = this.props;
+    if (sections.length === 0) return;
+    const threshold = window.scrollY + this.stickyTopValue + 20;
+    let current = sections[0]?.key ?? '';
+    for (const section of sections) {
+      const el = document.getElementById(`section-${section.key}`);
+      if (el && el.getBoundingClientRect().top + window.scrollY <= threshold) {
+        current = section.key;
+      }
+    }
+    this.setState({ activeKey: current });
+  };
 
-  if (sections.length < 2) return null;
+  componentDidMount(): void {
+    this.measure();
+    this.measureTimer = setTimeout(this.measure, 200);
+    if (this.props.sections.length > 0) {
+      window.addEventListener('scroll', this.handleScroll, { passive: true });
+      this.handleScroll();
+    }
+  }
 
-  const isDark = theme === 'dark';
+  componentDidUpdate(prevProps: EditPageSectionNavProps): void {
+    if (prevProps.sections !== this.props.sections) {
+      this.handleScroll();
+    }
+  }
 
-  return (
+  componentWillUnmount(): void {
+    if (this.measureTimer) clearTimeout(this.measureTimer);
+    window.removeEventListener('scroll', this.handleScroll);
+  }
+
+  private scrollToSection = (key: string): void => {
+    const el = document.getElementById(`section-${key}`);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - this.stickyTopValue;
+    window.scrollTo({ top, behavior: 'smooth' });
+    this.setState({ activeKey: key });
+  };
+
+  render(): React.ReactNode {
+    const { sections, theme } = this.props;
+    const { activeKey, stickyTop } = this.state;
+    const scrollToSection = this.scrollToSection;
+    const activeIndex = sections.findIndex((s) => s.key === activeKey);
+    const hasPrev = activeIndex > 0;
+    const hasNext = activeIndex < sections.length - 1;
+
+    if (sections.length < 2) return null;
+
+    const isDark = theme === 'dark';
+
+    return (
     // Outer: self-stretch fills full row height so CSS sticky has room to operate
-    <div ref={navRef} className="hidden lg:block select-none self-stretch" style={{ width: 20, zIndex: 200, position: 'relative' }}>
+    <div ref={this.navRef} className="hidden lg:block select-none self-stretch" style={{ width: 20, zIndex: 200, position: 'relative' }}>
       {/* CSS sticky — no JS transform needed; overflow-x-clip on <main> allows this */}
       <div className="flex flex-col items-center gap-1 pt-1" style={{ position: 'sticky', top: stickyTop }}>
         {/* Up arrow */}
@@ -134,5 +152,6 @@ export function EditPageSectionNav({ sections, theme }: EditPageSectionNavProps)
         </button>
       </div>
     </div>
-  );
+    );
+  }
 }

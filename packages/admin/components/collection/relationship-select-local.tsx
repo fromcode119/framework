@@ -1,9 +1,12 @@
 "use client";
 
 import React from 'react';
-import { CollectionQueryUtils, ContextHooks } from '@fromcode119/react';
+import { CollectionQueryUtils } from '@fromcode119/react';
 import { Select } from '@/components/ui/select';
+import { AdminComponent } from '@/components/admin-component';
 import { AdminServices } from '@/lib/admin-services';
+import { CollectionKeyUtils } from './collection-key-utils';
+import { RelationshipSelectLocalUtils } from './relationship-select-local-utils';
 
 interface RelationshipSelectLocalProps {
   field: any;
@@ -17,43 +20,68 @@ interface SelectOption {
   value: string;
 }
 
-import { CollectionKeyUtils } from './collection-key-utils';
-import { RelationshipSelectLocalUtils } from './relationship-select-local-utils';
+interface RelationshipSelectLocalState {
+  search: string;
+  options: SelectOption[];
+}
 
-export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = ({ field, value, onChange, theme }) => {
-  const { collections, api } = ContextHooks.usePlugins();
-  const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
-  const sourceCollectionSlugs = React.useMemo(
-    () => CollectionKeyUtils.resolveSourceSlugs(requestedSourceCollection, collections || []),
-    [collections, requestedSourceCollection]
-  );
-  const isMultiSource = sourceCollectionSlugs.length > 1;
-  const currentTarget = React.useMemo(() => RelationshipSelectLocalUtils.resolveRelationTarget(value), [value]);
+export class RelationshipSelectLocal extends AdminComponent<RelationshipSelectLocalProps, RelationshipSelectLocalState> {
+  state: RelationshipSelectLocalState = { search: '', options: [] };
+  private rawValueMap: Record<string, any> = {};
+  private fetchToken = 0;
 
-  const currentValue = React.useMemo(() => RelationshipSelectLocalUtils.toScalar(value), [value]);
-  const currentSelectValue = React.useMemo(() => {
+  private get plugins(): any {
+    return this.runtime?.plugins ?? {};
+  }
+
+  private getSourceSlugs(): string[] {
+    const { field } = this.props;
+    const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
+    return CollectionKeyUtils.resolveSourceSlugs(requestedSourceCollection, this.plugins.collections || []);
+  }
+
+  private isMultiSource(): boolean {
+    return this.getSourceSlugs().length > 1;
+  }
+
+  private getCurrentTarget(): any {
+    return RelationshipSelectLocalUtils.resolveRelationTarget(this.props.value);
+  }
+
+  private getCurrentValue(): any {
+    return RelationshipSelectLocalUtils.toScalar(this.props.value);
+  }
+
+  private getCurrentSelectValue(): string {
+    const currentValue = this.getCurrentValue();
     if (!currentValue) return '';
-    if (!isMultiSource || !currentTarget) return currentValue;
-    return RelationshipSelectLocalUtils.toOptionKey(currentValue, currentTarget);
-  }, [currentTarget, currentValue, isMultiSource]);
-  const [search, setSearch] = React.useState('');
-  const [options, setOptions] = React.useState<SelectOption[]>([]);
-  const rawValueMapRef = React.useRef<Record<string, any>>({});
+    if (!this.isMultiSource() || !this.getCurrentTarget()) return currentValue;
+    return RelationshipSelectLocalUtils.toOptionKey(currentValue, this.getCurrentTarget());
+  }
 
-  const upsertOption = React.useCallback((option: SelectOption) => {
+  private upsertOption = (option: SelectOption): void => {
     if (!option.value) return;
-    setOptions((prev) => {
-      if (prev.some((entry) => entry.value === option.value)) return prev;
-      return [option, ...prev];
+    this.setState((prev) => {
+      if (prev.options.some((entry) => entry.value === option.value)) return null;
+      return { options: [option, ...prev.options] };
     });
-  }, []);
+  };
 
-  React.useEffect(() => {
-    let disposed = false;
-    if (!sourceCollectionSlugs.length) return () => { disposed = true; };
+  private fetchOptions = async (): Promise<void> => {
+    const token = ++this.fetchToken;
+    const disposed = () => token !== this.fetchToken;
+    const { field, value } = this.props;
+    const { collections, api } = this.plugins;
+    const sourceCollectionSlugs = this.getSourceSlugs();
+    const isMultiSource = this.isMultiSource();
+    const currentTarget = this.getCurrentTarget();
+    const currentValue = this.getCurrentValue();
+    const currentSelectValue = this.getCurrentSelectValue();
+    const search = this.state.search;
+    if (!sourceCollectionSlugs.length) return;
 
     const resolveLookupField = (sourceCollectionSlug: string): string => {
-      const sourceCollection = collections.find((entry: any) => entry.slug === sourceCollectionSlug);
+      const sourceCollection = (collections || []).find((entry: any) => entry.slug === sourceCollectionSlug);
       const preferredLabelField =
         sourceCollection?.admin?.useAsTitle ||
         (sourceCollectionSlug === 'users' ? 'username' : sourceCollectionSlug === 'media' ? 'filename' : 'name');
@@ -72,7 +100,7 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
           : scalarValue;
         if (!optionValue || seen.has(optionValue)) continue;
         seen.add(optionValue);
-        rawValueMapRef.current[optionValue] = isMultiSource
+        this.rawValueMap[optionValue] = isMultiSource
           ? RelationshipSelectLocalUtils.buildTaggedValue(rawValue ?? scalarValue, sourceCollectionSlug)
           : rawValue ?? optionValue;
         const preferredLabel =
@@ -86,100 +114,114 @@ export const RelationshipSelectLocal: React.FC<RelationshipSelectLocalProps> = (
       return mapped;
     };
 
-    const fetchOptions = async () => {
-      try {
-        const responses = await Promise.all(
-          sourceCollectionSlugs.map(async (sourceCollectionSlug) => {
-            const docs = await CollectionQueryUtils.queryCollectionDocs(api, sourceCollectionSlug, {
-              limit: 30,
-              search: search.trim() || undefined
-            });
-            return mapDocsToOptions(docs, sourceCollectionSlug);
-          })
-        );
-        const nextOptions = responses.flat().filter((option, index, entries) => (
-          entries.findIndex((entry) => entry.value === option.value) === index
-        ));
+    try {
+      const responses = await Promise.all(
+        sourceCollectionSlugs.map(async (sourceCollectionSlug) => {
+          const docs = await CollectionQueryUtils.queryCollectionDocs(api, sourceCollectionSlug, {
+            limit: 30,
+            search: search.trim() || undefined
+          });
+          return mapDocsToOptions(docs, sourceCollectionSlug);
+        })
+      );
+      const nextOptions = responses.flat().filter((option, index, entries) => (
+        entries.findIndex((entry) => entry.value === option.value) === index
+      ));
 
-        if (!disposed) {
-          setOptions(nextOptions);
-        }
+      if (!disposed()) {
+        this.setState({ options: nextOptions });
+      }
 
-        if (!currentValue || nextOptions.some((option) => option.value === currentSelectValue)) return;
+      if (!currentValue || nextOptions.some((option) => option.value === currentSelectValue)) return;
 
-        // Ensure the currently selected value resolves to a label.
-        const candidateSlugs = currentTarget && isMultiSource
-          ? [currentTarget, ...sourceCollectionSlugs.filter((entry) => entry !== currentTarget)]
-          : sourceCollectionSlugs;
+      // Ensure the currently selected value resolves to a label.
+      const candidateSlugs = currentTarget && isMultiSource
+        ? [currentTarget, ...sourceCollectionSlugs.filter((entry) => entry !== currentTarget)]
+        : sourceCollectionSlugs;
 
-        for (const sourceCollectionSlug of candidateSlugs) {
-          const lookupField = resolveLookupField(sourceCollectionSlug);
+      for (const sourceCollectionSlug of candidateSlugs) {
+        const lookupField = resolveLookupField(sourceCollectionSlug);
+        try {
+          const byId = await CollectionQueryUtils.queryCollectionDocById(api, sourceCollectionSlug, currentValue);
+          const resolved = mapDocsToOptions([byId], sourceCollectionSlug)[0];
+          if (resolved && !disposed()) {
+            this.upsertOption(resolved);
+            return;
+          }
+        } catch {
           try {
-            const byId = await CollectionQueryUtils.queryCollectionDocById(api, sourceCollectionSlug, currentValue);
-            const resolved = mapDocsToOptions([byId], sourceCollectionSlug)[0];
-            if (resolved && !disposed) {
-              upsertOption(resolved);
+            const byFieldDoc = await CollectionQueryUtils.queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
+            const resolved = byFieldDoc ? mapDocsToOptions([byFieldDoc], sourceCollectionSlug)[0] : undefined;
+            if (resolved && !disposed()) {
+              this.upsertOption(resolved);
               return;
             }
           } catch {
-            try {
-              const byFieldDoc = await CollectionQueryUtils.queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
-              const resolved = byFieldDoc ? mapDocsToOptions([byFieldDoc], sourceCollectionSlug)[0] : undefined;
-              if (resolved && !disposed) {
-                upsertOption(resolved);
-                return;
-              }
-            } catch {
-              continue;
-            }
+            continue;
           }
         }
-
-        if (!disposed) {
-          rawValueMapRef.current[currentSelectValue || currentValue] = value;
-          upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
-        }
-      } catch {
-        if (!disposed && currentValue) {
-          rawValueMapRef.current[currentSelectValue || currentValue] = value;
-          upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
-        }
       }
-    };
 
-    fetchOptions();
-    return () => {
-      disposed = true;
-    };
-  }, [api, collections, currentSelectValue, currentTarget, currentValue, field.admin?.sourceField, isMultiSource, search, sourceCollectionSlugs, upsertOption, value]);
+      if (!disposed()) {
+        this.rawValueMap[currentSelectValue || currentValue] = value;
+        this.upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
+      }
+    } catch {
+      if (!disposed() && currentValue) {
+        this.rawValueMap[currentSelectValue || currentValue] = value;
+        this.upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
+      }
+    }
+  };
 
-  return (
-    <Select
-      value={currentSelectValue}
-      onChange={(next) => {
-        const key = String(next || '').trim();
-        if (!key) {
-          onChange('');
-          return;
-        }
-        const rawValue = rawValueMapRef.current[key];
-        if (rawValue !== undefined) {
-          onChange(rawValue);
-          return;
-        }
-        if (!isMultiSource) {
-          onChange(key);
-          return;
-        }
-        const parsed = RelationshipSelectLocalUtils.parseOptionKey(key);
-        onChange(RelationshipSelectLocalUtils.buildTaggedValue(parsed.scalar, parsed.relationTo));
-      }}
-      options={options}
-      placeholder={`Select ${field.label || field.name || 'record'}...`}
-      searchable
-      onSearchChange={setSearch}
-      theme={theme}
-      clearable={Boolean(field.admin?.clearable)}
-    />
-  );
-};
+  componentDidMount(): void {
+    void this.fetchOptions();
+  }
+
+  componentDidUpdate(prevProps: RelationshipSelectLocalProps, prevState: RelationshipSelectLocalState): void {
+    if (prevProps.value !== this.props.value || prevState.search !== this.state.search) {
+      void this.fetchOptions();
+    }
+  }
+
+  componentWillUnmount(): void {
+    this.fetchToken++;
+  }
+
+  render(): React.ReactNode {
+    const { field, onChange, theme } = this.props;
+    const { options } = this.state;
+    const isMultiSource = this.isMultiSource();
+    const currentSelectValue = this.getCurrentSelectValue();
+
+    return (
+      <Select
+        value={currentSelectValue}
+        onChange={(next) => {
+          const key = String(next || '').trim();
+          if (!key) {
+            onChange('');
+            return;
+          }
+          const rawValue = this.rawValueMap[key];
+          if (rawValue !== undefined) {
+            onChange(rawValue);
+            return;
+          }
+          if (!isMultiSource) {
+            onChange(key);
+            return;
+          }
+          const parsed = RelationshipSelectLocalUtils.parseOptionKey(key);
+          onChange(RelationshipSelectLocalUtils.buildTaggedValue(parsed.scalar, parsed.relationTo));
+        }}
+        options={options}
+        placeholder={`Select ${field.label || field.name || 'record'}...`}
+        searchable
+        onSearchChange={(v: string) => this.setState({ search: v })}
+        theme={theme}
+        clearable={Boolean(field.admin?.clearable)}
+      />
+    );
+  }
+}

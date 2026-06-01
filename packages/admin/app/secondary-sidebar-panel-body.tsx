@@ -17,18 +17,22 @@ type SecondarySidebarPanelBodyProps = {
   onMouseLeave?: () => void;
 };
 
-export default function SecondarySidebarPanelBody(props: SecondarySidebarPanelBodyProps) {
-  const grouped = React.useMemo(() => {
+export default class SecondarySidebarPanelBody extends React.Component<SecondarySidebarPanelBodyProps> {
+  private getGrouped(): Array<[string, SecondaryPanelItem[]]> {
     const groups: Record<string, SecondaryPanelItem[]> = {};
-    for (const item of props.items) {
+    for (const item of this.props.items) {
       const key = String(item.group || 'General').trim() || 'General';
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     }
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [props.items]);
+  }
 
-  return (
+  render(): React.ReactNode {
+    const props = this.props;
+    const grouped = this.getGrouped();
+
+    return (
     <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-5" aria-label="Secondary navigation" onKeyDown={props.onListKeyDown} onMouseEnter={props.onMouseEnter} onMouseLeave={props.onMouseLeave}>
       <div className="space-y-5">
         {grouped.map(([group, groupItems]) => (
@@ -61,5 +65,6 @@ export default function SecondarySidebarPanelBody(props: SecondarySidebarPanelBo
         ))}
       </div>
     </nav>
-  );
+    );
+  }
 }

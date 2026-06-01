@@ -1,8 +1,9 @@
 "use client";
 
 import React from 'react';
-import { PluginsProvider } from '@fromcode119/react';
+import { PluginsProvider, PluginRuntimeProvider } from '@fromcode119/react';
 import { ThemeProvider } from '@/components/theme-context';
+import { AdminRuntimeProvider } from '@/components/admin-runtime-provider';
 import * as SharedComponents from '@/components';
 import { AdminConstants } from '@/lib/constants';
 import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
@@ -29,7 +30,11 @@ export default function ClientLayout({ children }: ClientLayoutChildrenProps) {
       runtimeModules={runtimeModules}
     >
       <ThemeProvider>
-        <ClientLayoutShell>{children}</ClientLayoutShell>
+        <AdminRuntimeProvider>
+          <PluginRuntimeProvider>
+            <ClientLayoutShell>{children}</ClientLayoutShell>
+          </PluginRuntimeProvider>
+        </AdminRuntimeProvider>
       </ThemeProvider>
     </PluginsProvider>
   );

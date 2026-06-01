@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback, useState } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { FrameworkIcons } from '@fromcode119/react';
 
@@ -13,45 +13,60 @@ interface LightboxProps {
   title?: string;
 }
 
-export function Lightbox({ images, currentIndex, isOpen, onClose, onNavigate, title }: LightboxProps) {
-  const [mounted, setMounted] = useState(false);
+interface LightboxState {
+  mounted: boolean;
+}
 
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
+export class Lightbox extends React.Component<LightboxProps, LightboxState> {
+  state: LightboxState = { mounted: false };
 
-  const handlePrev = useCallback(() => {
+  private handlePrev = (): void => {
+    const { images, currentIndex, onNavigate } = this.props;
     if (images.length <= 1) return;
     onNavigate((currentIndex - 1 + images.length) % images.length);
-  }, [currentIndex, images.length, onNavigate]);
+  };
 
-  const handleNext = useCallback(() => {
+  private handleNext = (): void => {
+    const { images, currentIndex, onNavigate } = this.props;
     if (images.length <= 1) return;
     onNavigate((currentIndex + 1) % images.length);
-  }, [currentIndex, images.length, onNavigate]);
+  };
 
-  useEffect(() => {
-    if (!isOpen) return;
+  private handleKeyDown = (e: KeyboardEvent): void => {
+    if (!this.props.isOpen) return;
+    if (e.key === 'Escape') this.props.onClose();
+    if (e.key === 'ArrowLeft') this.handlePrev();
+    if (e.key === 'ArrowRight') this.handleNext();
+  };
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft') handlePrev();
-      if (e.key === 'ArrowRight') handleNext();
-    };
+  private applyOpenSideEffects(): void {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = this.props.isOpen ? 'hidden' : '';
+  }
 
-    window.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, onClose, handlePrev, handleNext]);
+  componentDidMount(): void {
+    this.setState({ mounted: true });
+    if (typeof window !== 'undefined') window.addEventListener('keydown', this.handleKeyDown);
+    this.applyOpenSideEffects();
+  }
 
-  if (!isOpen || !mounted) return null;
+  componentDidUpdate(prevProps: LightboxProps): void {
+    if (prevProps.isOpen !== this.props.isOpen) this.applyOpenSideEffects();
+  }
 
-  return createPortal(
+  componentWillUnmount(): void {
+    if (typeof window !== 'undefined') window.removeEventListener('keydown', this.handleKeyDown);
+    if (typeof document !== 'undefined') document.body.style.overflow = '';
+  }
+
+  render(): React.ReactNode {
+    const { images, currentIndex, isOpen, onClose, title } = this.props;
+    const handlePrev = this.handlePrev;
+    const handleNext = this.handleNext;
+
+    if (!isOpen || !this.state.mounted) return null;
+
+    return createPortal(
     <div 
       className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/98 backdrop-blur-3xl animate-in fade-in duration-300"
       onClick={onClose}
@@ -109,5 +124,6 @@ export function Lightbox({ images, currentIndex, isOpen, onClose, onNavigate, ti
       </div>
     </div>,
     document.body
-  );
+    );
+  }
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { ContextHooks } from '@fromcode119/react';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
@@ -11,21 +11,31 @@ import { CollectionListUtils } from './utils';
 
 const RELATIONSHIP_LABEL_CACHE = new Map<string, string>();
 
-export function CollectionListRelationshipCellValue({
-  relationTo,
-  raw
-}: {
+interface RelationToken {
+  value: any;
+  directLabel: any;
+  target: any;
+}
+
+interface RelationshipCellValueProps {
   relationTo?: string | string[];
   raw: any;
-}) {
-  const collections = ContextHooks.useCollections();
-  const [resolved, setResolved] = useState<Record<string, string>>({});
+}
 
-  const relationSlugs = useMemo(() => {
-    return CollectionKeyUtils.resolveSourceSlugs(relationTo, collections || []);
-  }, [collections, relationTo]);
+interface RelationshipCellValueState {
+  resolved: Record<string, string>;
+}
 
-  const tokens = useMemo(() => {
+export class CollectionListRelationshipCellValue extends AdminComponent<RelationshipCellValueProps, RelationshipCellValueState> {
+  state: RelationshipCellValueState = { resolved: {} };
+  private runToken = 0;
+
+  private getRelationSlugs(): string[] {
+    return CollectionKeyUtils.resolveSourceSlugs(this.props.relationTo, this.collections || []);
+  }
+
+  private getTokens(): RelationToken[] {
+    const { raw } = this.props;
     const entries = Array.isArray(raw) ? raw : [raw];
     return entries
       .map((entry) => {
@@ -35,15 +45,17 @@ export function CollectionListRelationshipCellValue({
         return { value, directLabel, target };
       })
       .filter((entry) => entry.value || entry.directLabel);
-  }, [raw]);
+  }
 
-  useEffect(() => {
-    let disposed = false;
-    if (!relationSlugs.length) return () => {
-      disposed = true;
-    };
+  private resolveLabels = async (): Promise<void> => {
+    const token = ++this.runToken;
+    const disposed = () => token !== this.runToken;
+    const relationSlugs = this.getRelationSlugs();
+    const tokens = this.getTokens();
+    const resolved = this.state.resolved;
+    if (!relationSlugs.length) return;
 
-    const run = async () => {
+    {
       const pending = tokens
         .filter((entry) => {
           if (!entry.value) return false;
@@ -93,27 +105,48 @@ export function CollectionListRelationshipCellValue({
         })
       );
 
-      if (!disposed && Object.keys(updates).length) {
-        setResolved((prev) => ({ ...prev, ...updates }));
+      if (!disposed() && Object.keys(updates).length) {
+        this.setState((prev) => ({ resolved: { ...prev.resolved, ...updates } }));
       }
-    };
+    }
+  };
 
-    run();
-    return () => {
-      disposed = true;
-    };
-  }, [relationSlugs, resolved, tokens]);
+  componentDidMount(): void {
+    void this.resolveLabels();
+  }
 
-  if (!tokens.length) return <>-</>;
+  componentDidUpdate(prevProps: RelationshipCellValueProps, prevState: RelationshipCellValueState): void {
+    // Re-resolve when inputs change, or after a resolved batch lands (converges: pending filters
+    // out already-resolved entries, so no further setState once everything is labeled).
+    if (
+      prevProps.raw !== this.props.raw ||
+      prevProps.relationTo !== this.props.relationTo ||
+      prevState.resolved !== this.state.resolved
+    ) {
+      void this.resolveLabels();
+    }
+  }
 
-  const labels = tokens.map((entry) => {
-    if (entry.directLabel && entry.directLabel !== entry.value) return entry.directLabel;
-    const candidateSlugs = entry.target ? [entry.target] : relationSlugs;
-    const key = candidateSlugs
-      .map((relationSlug) => `${relationSlug}:${entry.value}`)
-      .find((candidate) => resolved[candidate] || RELATIONSHIP_LABEL_CACHE.get(candidate));
-    return (key && (resolved[key] || RELATIONSHIP_LABEL_CACHE.get(key))) || entry.directLabel || entry.value;
-  });
+  componentWillUnmount(): void {
+    this.runToken++;
+  }
 
-  return <>{labels.slice(0, 3).join(', ')}{labels.length > 3 ? '…' : ''}</>;
+  render(): React.ReactNode {
+    const { resolved } = this.state;
+    const relationSlugs = this.getRelationSlugs();
+    const tokens = this.getTokens();
+
+    if (!tokens.length) return <>-</>;
+
+    const labels = tokens.map((entry) => {
+      if (entry.directLabel && entry.directLabel !== entry.value) return entry.directLabel;
+      const candidateSlugs = entry.target ? [entry.target] : relationSlugs;
+      const key = candidateSlugs
+        .map((relationSlug) => `${relationSlug}:${entry.value}`)
+        .find((candidate) => resolved[candidate] || RELATIONSHIP_LABEL_CACHE.get(candidate));
+      return (key && (resolved[key] || RELATIONSHIP_LABEL_CACHE.get(key))) || entry.directLabel || entry.value;
+    });
+
+    return <>{labels.slice(0, 3).join(', ')}{labels.length > 3 ? '…' : ''}</>;
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { Search, Upload, X, Check, Image as ImageIcon, File, Loader2 } from 'lucide-react';
 import { AdminApi } from '@/lib/api';
@@ -28,54 +28,62 @@ interface MediaPickerProps {
   allowMultiple?: boolean;
 }
 
-export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) => {
-  const [items, setItems] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface MediaPickerState {
+  items: MediaItem[];
+  loading: boolean;
+  uploading: boolean;
+  search: string;
+  selectedId: string | null;
+  mounted: boolean;
+}
 
-  useEffect(() => {
-    fetchMedia();
-  }, [search]);
+export class MediaPicker extends React.Component<MediaPickerProps, MediaPickerState> {
+  private readonly fileInputRef = React.createRef<HTMLInputElement>();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  state: MediaPickerState = { items: [], loading: true, uploading: false, search: '', selectedId: null, mounted: false };
 
-  const fetchMedia = async () => {
-    setLoading(true);
+  private fetchMedia = async (): Promise<void> => {
+    const { search } = this.state;
+    this.setState({ loading: true });
     try {
       const query = search ? `?q=${encodeURIComponent(search)}` : '';
       const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}${query}`);
-      setItems(Array.isArray(result) ? result : result.docs || []);
+      this.setState({ items: Array.isArray(result) ? result : result.docs || [] });
     } catch (error) {
       console.error('Failed to fetch media:', error);
     } finally {
-      setLoading(false);
+      this.setState({ loading: false });
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  componentDidMount(): void {
+    this.setState({ mounted: true });
+    void this.fetchMedia();
+  }
+
+  componentDidUpdate(_prevProps: MediaPickerProps, prevState: MediaPickerState): void {
+    if (prevState.search !== this.state.search) void this.fetchMedia();
+  }
+
+  private handleUpload = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const { onSelect, onClose } = this.props;
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    this.setState({ uploading: true });
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       // First upload file (assuming specialized endpoint or generic collection upload)
       // If no specialized endpoint, we'd use the general collection create with multipart
       const result = await AdminApi.upload(`${AdminConstants.ENDPOINTS.MEDIA.UPLOAD}`, formData);
-      
+
       // Refresh list and select the new item
-      await fetchMedia();
+      await this.fetchMedia();
       if (result.id || result.doc?.id) {
           const newItem = result.doc || result;
-          setSelectedId(newItem.id);
+          this.setState({ selectedId: newItem.id });
           onSelect(newItem);
           onClose();
       }
@@ -83,15 +91,20 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
       console.error('Upload failed:', error);
       alert('Upload failed. Please try again.');
     } finally {
-      setUploading(false);
+      this.setState({ uploading: false });
     }
   };
 
-  const selectedItem = items.find(i => i.id === selectedId);
+  render(): React.ReactNode {
+    const { onSelect, onClose } = this.props;
+    const { items, loading, uploading, search, selectedId, mounted } = this.state;
+    const setSearch = (v: string) => this.setState({ search: v });
+    const setSelectedId = (v: string | null) => this.setState({ selectedId: v });
+    const selectedItem = items.find(i => i.id === selectedId);
 
-  if (!mounted) return null;
+    if (!mounted) return null;
 
-  return createPortal(
+    return createPortal(
     <RootFramework>
       <div className="fixed inset-0 z-[2147483000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
         <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-lg shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
@@ -122,15 +135,15 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
                 className={`w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${AdminTypography.TYPOGRAPHY.LABEL}`}
               />
             </div>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              onChange={handleUpload}
+            <input
+              type="file"
+              ref={this.fileInputRef}
+              className="hidden"
+              onChange={this.handleUpload}
               accept="image/*,video/*,application/pdf"
             />
-            <Button 
-              onClick={() => fileInputRef.current?.click()}
+            <Button
+              onClick={() => this.fileInputRef.current?.click()}
               disabled={uploading}
               className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
             >
@@ -259,5 +272,6 @@ export const MediaPicker: React.FC<MediaPickerProps> = ({ onSelect, onClose }) =
       </div>
     </RootFramework>,
     document.body
-  );
-};
+    );
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React from 'react';
 import { RootFramework } from '@fromcode119/react';
 
 interface DropdownItem {
@@ -17,20 +17,36 @@ interface DropdownProps {
   header?: React.ReactNode;
 }
 
-export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, maxHeight: 320, direction: 'down' as 'up' | 'down' });
+interface DropdownCoords {
+  top: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+  direction: 'up' | 'down';
+}
 
-  const updatePosition = () => {
-    if (!triggerRef.current) return;
+interface DropdownState {
+  isOpen: boolean;
+  coords: DropdownCoords;
+}
+
+export class Dropdown extends React.Component<DropdownProps, DropdownState> {
+  private readonly triggerRef = React.createRef<HTMLDivElement>();
+  private readonly menuRef = React.createRef<HTMLDivElement>();
+
+  state: DropdownState = {
+    isOpen: false,
+    coords: { top: 0, left: 0, width: 0, maxHeight: 320, direction: 'down' },
+  };
+
+  private updatePosition = (): void => {
+    if (!this.triggerRef.current) return;
 
     const gap = 12;
     const viewportPadding = 16;
     const minMenuHeight = 180;
-    const rect = triggerRef.current.getBoundingClientRect();
-    const menuHeight = menuRef.current?.offsetHeight || 0;
+    const rect = this.triggerRef.current.getBoundingClientRect();
+    const menuHeight = this.menuRef.current?.offsetHeight || 0;
     const availableBelow = window.innerHeight - rect.bottom - viewportPadding;
     const availableAbove = rect.top - viewportPadding;
     const shouldOpenUp = menuHeight > availableBelow && availableAbove > availableBelow;
@@ -39,48 +55,66 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
       (shouldOpenUp ? availableAbove : availableBelow) - gap,
     );
 
-    setCoords({
-      top: shouldOpenUp
-        ? Math.max(viewportPadding, rect.top - Math.min(menuHeight || maxHeight, maxHeight) - gap)
-        : Math.min(window.innerHeight - viewportPadding, rect.bottom + gap),
-      left: rect.left,
-      width: rect.width,
-      maxHeight,
-      direction: shouldOpenUp ? 'up' : 'down',
+    this.setState({
+      coords: {
+        top: shouldOpenUp
+          ? Math.max(viewportPadding, rect.top - Math.min(menuHeight || maxHeight, maxHeight) - gap)
+          : Math.min(window.innerHeight - viewportPadding, rect.bottom + gap),
+        left: rect.left,
+        width: rect.width,
+        maxHeight,
+        direction: shouldOpenUp ? 'up' : 'down',
+      },
     });
   };
 
-  useLayoutEffect(() => {
-    if (isOpen) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition, true);
-      window.addEventListener('resize', updatePosition);
+  private handleClickOutside = (event: MouseEvent): void => {
+    if (
+      this.triggerRef.current && !this.triggerRef.current.contains(event.target as Node) &&
+      this.menuRef.current && !this.menuRef.current.contains(event.target as Node)
+    ) {
+      this.setState({ isOpen: false });
     }
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [isOpen]);
+  };
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        triggerRef.current && !triggerRef.current.contains(event.target as Node) &&
-        menuRef.current && !menuRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
+  private addPositionListeners(): void {
+    this.updatePosition();
+    window.addEventListener('scroll', this.updatePosition, true);
+    window.addEventListener('resize', this.updatePosition);
+  }
+
+  private removePositionListeners(): void {
+    window.removeEventListener('scroll', this.updatePosition, true);
+    window.removeEventListener('resize', this.updatePosition);
+  }
+
+  componentDidMount(): void {
+    document.addEventListener('mousedown', this.handleClickOutside);
+    if (this.state.isOpen) this.addPositionListeners();
+  }
+
+  componentDidUpdate(_prevProps: DropdownProps, prevState: DropdownState): void {
+    if (prevState.isOpen !== this.state.isOpen) {
+      if (this.state.isOpen) this.addPositionListeners();
+      else this.removePositionListeners();
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }
 
-  return (
+  componentWillUnmount(): void {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+    this.removePositionListeners();
+  }
+
+  render(): React.ReactNode {
+    const { trigger, items, align = 'right', header } = this.props;
+    const { isOpen, coords } = this.state;
+
+    return (
     <>
-      <div 
-        className="relative inline-block text-left" 
-        ref={triggerRef}
-        onClick={() => setIsOpen(!isOpen)}
+      <div
+        className="relative inline-block text-left"
+        ref={this.triggerRef}
+        onClick={() => this.setState({ isOpen: !isOpen })}
       >
         <div className="cursor-pointer">
           {trigger}
@@ -89,8 +123,8 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
 
       {isOpen && (
         <RootFramework>
-          <div 
-            ref={menuRef}
+          <div
+            ref={this.menuRef}
             style={{
               position: 'fixed',
               top: coords.top,
@@ -124,7 +158,7 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
                       title={item.label}
                       onClick={() => {
                         item.onClick();
-                        setIsOpen(false);
+                        this.setState({ isOpen: false });
                       }}
                       className={`group flex items-center w-full gap-3 px-3 py-2 text-[12px] font-bold rounded-xl transition-all duration-300 overflow-hidden relative ${
                         isDanger 
@@ -155,5 +189,6 @@ export const Dropdown = ({ trigger, items, align = 'right', header }: DropdownPr
         </RootFramework>
       )}
     </>
-  );
-};
+    );
+  }
+}

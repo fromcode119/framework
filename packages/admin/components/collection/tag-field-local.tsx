@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { ContextHooks } from '@fromcode119/react';
+import { AdminComponent } from '@/components/admin-component';
 import { TagField } from '@/components/ui/tag-field';
 import { CollectionKeyUtils } from './collection-key-utils';
 
@@ -13,54 +13,53 @@ interface TagFieldLocalProps {
   collectionSlug: string;
 }
 
-export const TagFieldLocal: React.FC<TagFieldLocalProps> = ({ field, value, onChange, theme, collectionSlug }) => {
-  const collections = ContextHooks.useCollections();
-  const isRelationshipField = field.type === 'relationship';
-  const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
-  const sourceCollectionSlug = React.useMemo(
-    () => CollectionKeyUtils.resolveSourceSlug(requestedSourceCollection, collections || []),
-    [collections, requestedSourceCollection]
-  );
-  const sourceCollection = collections.find((c: any) => c.slug === sourceCollectionSlug);
-  
-  const targetField = sourceCollectionSlug
-    ? (
-        field.admin?.sourceField ||
-        sourceCollection?.admin?.useAsTitle ||
-        (sourceCollectionSlug === 'users'
-          ? 'username'
-          : sourceCollectionSlug === 'media'
-            ? 'filename'
-            : 'slug')
-      )
-    : field.admin?.sourceField;
+export class TagFieldLocal extends AdminComponent<TagFieldLocalProps> {
+  render(): React.ReactNode {
+    const { field, value, onChange, theme, collectionSlug } = this.props;
+    const collections = this.collections;
+    const isRelationshipField = field.type === 'relationship';
+    const requestedSourceCollection = field.admin?.sourceCollection || field.relationTo;
+    const sourceCollectionSlug = CollectionKeyUtils.resolveSourceSlug(requestedSourceCollection, collections || []);
+    const sourceCollection = collections.find((c: any) => c.slug === sourceCollectionSlug);
 
-  // Ensure relationship values that might be raw objects or slugs are handled correctly
-  const safeValue = React.useMemo(() => {
-    if (!value) return field.hasMany ? [] : '';
-    
-    // If it's single-select and we have a string, it's already a slug/ID
-    if (!field.hasMany && typeof value === 'string') return value;
-    
-    // If it's an object with a label, it's from the Select/TagField UI or API
-    // We want the underlying ID/slug for the input/logic
-    if (!field.hasMany && typeof value === 'object' && value !== null) {
-      return value.value || value.slug || value.id || value;
-    }
+    const targetField = sourceCollectionSlug
+      ? (
+          field.admin?.sourceField ||
+          sourceCollection?.admin?.useAsTitle ||
+          (sourceCollectionSlug === 'users'
+            ? 'username'
+            : sourceCollectionSlug === 'media'
+              ? 'filename'
+              : 'slug')
+        )
+      : field.admin?.sourceField;
 
-    if (field.hasMany && Array.isArray(value)) {
-       return value.map((item: any) => {
-          if (typeof item === 'object' && item !== null) {
-             return item.value || item.slug || item.id || item;
-          }
-          return item;
-       });
-    }
+    // Ensure relationship values that might be raw objects or slugs are handled correctly
+    const safeValue = (() => {
+      if (!value) return field.hasMany ? [] : '';
 
-    return value;
-  }, [value, field.hasMany]);
+      // If it's single-select and we have a string, it's already a slug/ID
+      if (!field.hasMany && typeof value === 'string') return value;
 
-  return (
+      // If it's an object with a label, it's from the Select/TagField UI or API
+      // We want the underlying ID/slug for the input/logic
+      if (!field.hasMany && typeof value === 'object' && value !== null) {
+        return value.value || value.slug || value.id || value;
+      }
+
+      if (field.hasMany && Array.isArray(value)) {
+         return value.map((item: any) => {
+            if (typeof item === 'object' && item !== null) {
+               return item.value || item.slug || item.id || item;
+            }
+            return item;
+         });
+      }
+
+      return value;
+    })();
+
+    return (
     <TagField 
       collectionSlug={collectionSlug}
       fieldName={field.name}
@@ -75,5 +74,6 @@ export const TagFieldLocal: React.FC<TagFieldLocalProps> = ({ field, value, onCh
       placeholder={field.admin?.placeholder || undefined}
       suggestionsLabel={field.admin?.suggestionsLabel || undefined}
     />
-  );
-};
+    );
+  }
+}

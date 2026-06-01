@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from './button';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
@@ -19,28 +19,40 @@ interface ConfirmDialogProps {
   isLoading?: boolean;
 }
 
-export const ConfirmDialog = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
-  variant = 'danger',
-  isLoading = false
-}: ConfirmDialogProps) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-  }, [isOpen]);
+export class ConfirmDialog extends React.Component<ConfirmDialogProps> {
+  private applyBodyOverflow(): void {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = this.props.isOpen ? 'hidden' : 'unset';
+  }
 
-  if (!isOpen) return null;
+  componentDidMount(): void {
+    this.applyBodyOverflow();
+  }
 
-  return (
+  componentDidUpdate(prevProps: ConfirmDialogProps): void {
+    if (prevProps.isOpen !== this.props.isOpen) this.applyBodyOverflow();
+  }
+
+  componentWillUnmount(): void {
+    if (typeof document !== 'undefined') document.body.style.overflow = 'unset';
+  }
+
+  render(): React.ReactNode {
+    const {
+      isOpen,
+      onClose,
+      onConfirm,
+      title,
+      description,
+      confirmLabel = 'Confirm',
+      cancelLabel = 'Cancel',
+      variant = 'danger',
+      isLoading = false,
+    } = this.props;
+
+    if (!isOpen) return null;
+
+    return (
     <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         {/* Backdrop */}
@@ -96,5 +108,6 @@ export const ConfirmDialog = ({
         </div>
       </div>
     </RootFramework>
-  );
-};
+    );
+  }
+}

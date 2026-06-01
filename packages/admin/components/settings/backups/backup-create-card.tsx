@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ThemeHooks } from '@/components/use-theme';
+import { AdminComponent } from '@/components/admin-component';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -10,24 +10,17 @@ import { SystemBackupPageUtils } from './system-backup-page-utils';
 
 const BACKUP_IMPORT_ACCEPT = '.tar.gz,.gz,application/gzip,application/x-gzip,.sql,.db';
 
-export function BackupCreateCard({
-  capabilities,
-  createSections,
-  isCreating,
-  isImporting,
-  createProgress,
-  importProgress,
-  onToggleSection,
-  onApplyPreset,
-  onCreate,
-  onImport,
-}: BackupCreateCardProps) {
-  const { theme } = ThemeHooks.useTheme();
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-  const [isDropActive, setIsDropActive] = React.useState(false);
-  const [importError, setImportError] = React.useState('');
+interface BackupCreateCardState {
+  isDropActive: boolean;
+  importError: string;
+}
 
-  const handleImportFile = React.useCallback((file: File | null) => {
+export class BackupCreateCard extends AdminComponent<BackupCreateCardProps, BackupCreateCardState> {
+  private readonly fileInputRef = React.createRef<HTMLInputElement>();
+
+  state: BackupCreateCardState = { isDropActive: false, importError: '' };
+
+  private handleImportFile = (file: File | null): void => {
     if (!file) {
       return;
     }
@@ -35,55 +28,73 @@ export function BackupCreateCard({
     const normalizedName = String(file.name || '').trim().toLowerCase();
     const isSupportedArchive = normalizedName.endsWith('.tar.gz') || normalizedName.endsWith('.sql') || normalizedName.endsWith('.db');
     if (!isSupportedArchive) {
-      setImportError('Choose a .tar.gz, .sql, or .db backup archive.');
+      this.setState({ importError: 'Choose a .tar.gz, .sql, or .db backup archive.' });
       return;
     }
 
-    setImportError('');
-    void onImport(file);
-  }, [onImport]);
+    this.setState({ importError: '' });
+    void this.props.onImport(file);
+  };
 
-  const handleUploadClick = React.useCallback(() => {
+  private handleUploadClick = (): void => {
+    const { capabilities, isCreating, isImporting } = this.props;
     if (!capabilities.canManage || isCreating || isImporting) {
       return;
     }
 
-    fileInputRef.current?.click();
-  }, [capabilities.canManage, isCreating, isImporting]);
+    this.fileInputRef.current?.click();
+  };
 
-  const handleFileChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  private handleFileChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
     event.target.value = '';
-    handleImportFile(file || null);
-  }, [handleImportFile]);
+    this.handleImportFile(file || null);
+  };
 
-  const handleDragOver = React.useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  private handleDragOver = (event: React.DragEvent<HTMLDivElement>): void => {
     event.preventDefault();
+    const { capabilities, isCreating, isImporting } = this.props;
     if (!capabilities.canManage || isCreating || isImporting) {
       return;
     }
 
-    setIsDropActive(true);
-  }, [capabilities.canManage, isCreating, isImporting]);
+    this.setState({ isDropActive: true });
+  };
 
-  const handleDragLeave = React.useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  private handleDragLeave = (event: React.DragEvent<HTMLDivElement>): void => {
     event.preventDefault();
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      setIsDropActive(false);
+      this.setState({ isDropActive: false });
     }
-  }, []);
+  };
 
-  const handleDrop = React.useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  private handleDrop = (event: React.DragEvent<HTMLDivElement>): void => {
     event.preventDefault();
-    setIsDropActive(false);
+    this.setState({ isDropActive: false });
+    const { capabilities, isCreating, isImporting } = this.props;
     if (!capabilities.canManage || isCreating || isImporting) {
       return;
     }
 
-    handleImportFile(event.dataTransfer.files?.[0] || null);
-  }, [capabilities.canManage, handleImportFile, isCreating, isImporting]);
+    this.handleImportFile(event.dataTransfer.files?.[0] || null);
+  };
 
-  return (
+  render(): React.ReactNode {
+    const {
+      capabilities,
+      createSections,
+      isCreating,
+      isImporting,
+      createProgress,
+      importProgress,
+      onToggleSection,
+      onApplyPreset,
+      onCreate,
+    } = this.props;
+    const theme = this.theme;
+    const { isDropActive, importError } = this.state;
+
+    return (
     <Card className="border-0 rounded-[2rem] p-0 overflow-hidden shadow-[0_24px_64px_-24px_rgba(15,23,42,0.18)] dark:ring-1 dark:ring-white/5">
       <div className={`border-b px-8 py-6 ${theme === 'dark' ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -96,18 +107,18 @@ export function BackupCreateCard({
 
           <div className="flex flex-wrap gap-3">
             <input
-              ref={fileInputRef}
+              ref={this.fileInputRef}
               type="file"
               className="hidden"
               accept={BACKUP_IMPORT_ACCEPT}
-              onChange={handleFileChange}
+              onChange={this.handleFileChange}
             />
             <Button
               variant="secondary"
               className="rounded-xl px-5 uppercase tracking-[0.16em]"
               icon={<FrameworkIcons.Upload size={14} />}
               isLoading={isImporting}
-              onClick={handleUploadClick}
+              onClick={this.handleUploadClick}
               disabled={!capabilities.canManage || isCreating || isImporting}
             >
               {isImporting ? 'Importing Backup...' : 'Import Backup'}
@@ -141,10 +152,10 @@ export function BackupCreateCard({
         </div>
 
         <div
-          onClick={handleUploadClick}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
+          onClick={this.handleUploadClick}
+          onDrop={this.handleDrop}
+          onDragOver={this.handleDragOver}
+          onDragLeave={this.handleDragLeave}
           className={`cursor-pointer rounded-[1.5rem] border-2 border-dashed px-6 py-5 transition-all ${!capabilities.canManage || isCreating || isImporting
             ? theme === 'dark'
               ? 'cursor-not-allowed border-slate-800 bg-slate-950/20 opacity-70'
@@ -173,7 +184,7 @@ export function BackupCreateCard({
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                handleUploadClick();
+                this.handleUploadClick();
               }}
               disabled={!capabilities.canManage || isCreating || isImporting}
               className="flex items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-all shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50"
@@ -283,5 +294,6 @@ export function BackupCreateCard({
         </div>
       </div>
     </Card>
-  );
+    );
+  }
 }

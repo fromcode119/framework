@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,47 +11,56 @@ interface DomainAliasesInputProps {
   theme?: string;
 }
 
-export const DomainAliasesInput: React.FC<DomainAliasesInputProps> = ({ value, onChange, theme = 'light' }) => {
-  const [draft, setDraft] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+interface DomainAliasesInputState {
+  draft: string;
+}
 
-  const isDark = theme === 'dark';
+export class DomainAliasesInput extends React.Component<DomainAliasesInputProps, DomainAliasesInputState> {
+  private readonly inputRef = React.createRef<HTMLInputElement>();
+  state: DomainAliasesInputState = { draft: '' };
 
-  function addAlias() {
-    const trimmed = draft.trim().toLowerCase().replace(/\/+$/, '');
+  private addAlias = (): void => {
+    const { value, onChange } = this.props;
+    const trimmed = this.state.draft.trim().toLowerCase().replace(/\/+$/, '');
     if (!trimmed || value.includes(trimmed)) {
-      setDraft('');
+      this.setState({ draft: '' });
       return;
     }
     onChange([...value, trimmed]);
-    setDraft('');
-    inputRef.current?.focus();
-  }
+    this.setState({ draft: '' });
+    this.inputRef.current?.focus();
+  };
 
-  function removeAlias(alias: string) {
+  private removeAlias = (alias: string): void => {
+    const { value, onChange } = this.props;
     onChange(value.filter((a) => a !== alias));
-  }
+  };
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  private handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addAlias();
+      this.addAlias();
     }
-  }
+  };
 
-  return (
+  render(): React.ReactNode {
+    const { value, theme = 'light' } = this.props;
+    const { draft } = this.state;
+    const isDark = theme === 'dark';
+
+    return (
     <div className="flex flex-col gap-3 w-full md:w-96">
       <div className="flex gap-2">
         <Input
-          ref={inputRef}
+          ref={this.inputRef}
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onChange={(e) => this.setState({ draft: e.target.value })}
+          onKeyDown={this.handleKeyDown}
           placeholder="https://alias.example.com"
           className="flex-1 font-bold"
         />
         <Button
-          onClick={addAlias}
+          onClick={this.addAlias}
           disabled={!draft.trim()}
           icon={<FrameworkIcons.Plus size={13} strokeWidth={3} />}
           className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
@@ -73,7 +82,7 @@ export const DomainAliasesInput: React.FC<DomainAliasesInputProps> = ({ value, o
               <FrameworkIcons.Globe size={11} className="opacity-50" />
               {alias}
               <button
-                onClick={() => removeAlias(alias)}
+                onClick={() => this.removeAlias(alias)}
                 className={`ml-0.5 rounded transition-colors ${
                   isDark ? 'text-slate-400 hover:text-rose-400' : 'text-slate-400 hover:text-rose-600'
                 }`}
@@ -85,5 +94,6 @@ export const DomainAliasesInput: React.FC<DomainAliasesInputProps> = ({ value, o
         </div>
       )}
     </div>
-  );
-};
+    );
+  }
+}

@@ -75,6 +75,9 @@ import { PageStyleContext } from '../page-style-context';
 import { PageStyleProvider } from '../page-style-provider';
 import { PageStyleHooks } from '../page-style-hooks';
 import { SystemShortcodes } from '../system-shortcodes';
+import { PluginRuntimeContext } from '../plugin-runtime-context';
+import { PluginRuntimeProvider } from '../plugin-runtime-provider';
+import { PluginComponent } from '../plugin-component';
 
 export class BridgeObjectBuilder {
   // buildRegisterMethods() is REMOVED — ContextBridge now owns args directly via
@@ -128,6 +131,9 @@ export class BridgeObjectBuilder {
       PageStyleContext,
       PageStyleProvider,
       PageStyleHooks,
+      PluginRuntimeContext,
+      PluginRuntimeProvider,
+      PluginComponent,
     };
   }
 

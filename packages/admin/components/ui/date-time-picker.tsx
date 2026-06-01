@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React from 'react';
 import { DayPicker } from 'react-day-picker';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from './button';
 import { RootFramework } from '@fromcode119/react';
-import { ThemeHooks } from '../use-theme';
+import { AdminComponent } from '@/components/admin-component';
 import { UiFieldUtils } from '@/lib/ui';
 import { TimezoneUtils } from '@/lib/timezone';
 
@@ -34,58 +34,48 @@ interface DateTimePickerProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export const DateTimePicker = ({ 
-  value, 
-  onChange, 
-  disabled, 
-  showTime = true, 
-  placeholder = "Select date...", 
-  className = "",
-  size = "md"
-}: DateTimePickerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const { theme } = ThemeHooks.useTheme();
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
-  const timezone = TimezoneUtils.resolveSystemTimezone();
-  const utcDate = TimezoneUtils.parseDateValue(value);
-  const zonedParts = TimezoneUtils.getZonedDateParts(utcDate, timezone);
-  const pickerDate = zonedParts
-    ? new Date(zonedParts.year, zonedParts.month - 1, zonedParts.day, 12, 0, 0)
-    : undefined;
-  const [visibleMonth, setVisibleMonth] = useState<Date>(() => pickerDate || new Date());
-  const [isJumpViewOpen, setIsJumpViewOpen] = useState(false);
-  const today = new Date();
-  const selectedSummary = value && utcDate
-    ? TimezoneUtils.formatSystemDate(
-        utcDate,
-        showTime ? { dateStyle: 'full', timeStyle: 'short' } : { dateStyle: 'full' },
-        placeholder,
-        timezone,
-      )
-    : 'No date selected';
-  const currentVisibleYear = visibleMonth.getFullYear();
+interface DateTimePickerState {
+  isOpen: boolean;
+  coords: { top: number; left: number; width: number };
+  visibleMonth: Date;
+  isJumpViewOpen: boolean;
+}
 
-  // Only sync visible month when the picker first opens — not on every render.
-  // pickerDate is a new Date object on each render so including it in the
-  // dependency array would reset the visible month on every state change.
-  useEffect(() => {
-    if (!isOpen) return;
-    const base = utcDate ? TimezoneUtils.getZonedDateParts(utcDate, timezone) : null;
-    const openMonth = base
-      ? new Date(base.year, base.month - 1, 1)
-      : new Date();
-    setVisibleMonth(openMonth);
-    setIsJumpViewOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-  
-  const updatePosition = () => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
+export class DateTimePicker extends AdminComponent<DateTimePickerProps, DateTimePickerState> {
+  private readonly containerRef = React.createRef<HTMLDivElement>();
+  private readonly popoverRef = React.createRef<HTMLDivElement>();
+
+  state: DateTimePickerState = {
+    isOpen: false,
+    coords: { top: 0, left: 0, width: 0 },
+    visibleMonth: this.getPickerDate() || new Date(),
+    isJumpViewOpen: false,
+  };
+
+  private get timezone(): string {
+    return TimezoneUtils.resolveSystemTimezone();
+  }
+
+  private getUtcDate(): Date | null {
+    return TimezoneUtils.parseDateValue(this.props.value);
+  }
+
+  private getZonedParts() {
+    return TimezoneUtils.getZonedDateParts(this.getUtcDate(), this.timezone);
+  }
+
+  private getPickerDate(): Date | undefined {
+    const zonedParts = this.getZonedParts();
+    return zonedParts
+      ? new Date(zonedParts.year, zonedParts.month - 1, zonedParts.day, 12, 0, 0)
+      : undefined;
+  }
+
+  private updatePosition = (): void => {
+    if (this.containerRef.current) {
+      const rect = this.containerRef.current.getBoundingClientRect();
       const popoverWidth = 360;
-      const popoverHeight = showTime ? 460 : 380;
+      const popoverHeight = this.props.showTime !== false ? 460 : 380;
       const viewportPadding = 12;
       const maxLeft = Math.max(viewportPadding, window.innerWidth - popoverWidth - viewportPadding);
       const preferredLeft = rect.left;
@@ -95,73 +85,87 @@ export const DateTimePicker = ({
         ? Math.max(viewportPadding, rect.top - popoverHeight - 8)
         : Math.max(viewportPadding, preferredTop);
 
-      setCoords({
-        top,
-        left: Math.min(Math.max(preferredLeft, viewportPadding), maxLeft),
-        width: rect.width
+      this.setState({
+        coords: {
+          top,
+          left: Math.min(Math.max(preferredLeft, viewportPadding), maxLeft),
+          width: rect.width,
+        },
       });
     }
   };
 
-  useLayoutEffect(() => {
-    if (isOpen) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition, true);
-      window.addEventListener('resize', updatePosition);
+  private handleClickOutside = (event: MouseEvent): void => {
+    if (
+      this.containerRef.current && !this.containerRef.current.contains(event.target as Node) &&
+      this.popoverRef.current && !this.popoverRef.current.contains(event.target as Node)
+    ) {
+      this.setState({ isOpen: false });
     }
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [isOpen]);
+  };
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current && !containerRef.current.contains(event.target as Node) &&
-        popoverRef.current && !popoverRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
+  private addPositionListeners(): void {
+    this.updatePosition();
+    window.addEventListener('scroll', this.updatePosition, true);
+    window.addEventListener('resize', this.updatePosition);
+  }
+
+  private removePositionListeners(): void {
+    window.removeEventListener('scroll', this.updatePosition, true);
+    window.removeEventListener('resize', this.updatePosition);
+  }
+
+  componentDidMount(): void {
+    document.addEventListener('mousedown', this.handleClickOutside);
+    if (this.state.isOpen) this.addPositionListeners();
+  }
+
+  componentDidUpdate(_prevProps: DateTimePickerProps, prevState: DateTimePickerState): void {
+    if (prevState.isOpen !== this.state.isOpen) {
+      if (this.state.isOpen) {
+        // Sync the visible month to the selected value when the picker first opens.
+        const base = this.getZonedParts();
+        const openMonth = base ? new Date(base.year, base.month - 1, 1) : new Date();
+        this.setState({ visibleMonth: openMonth, isJumpViewOpen: false });
+        this.addPositionListeners();
+      } else {
+        this.removePositionListeners();
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }
 
-  const commitDate = (selectedDate: Date, shouldClose: boolean) => {
-    const baseTime = zonedParts || TimezoneUtils.getZonedDateParts(new Date(), timezone);
-    // CRITICAL: DayPicker creates Date objects at midnight in the browser's local timezone.
-    // The Date constructor: new Date(2026, 0, 7) creates Jan 7, 2026 at 00:00:00 local time.
-    // When we call .getFullYear(), .getMonth(), .getDate() on this Date, we get the LOCAL
-    // calendar values (2026, 0, 7), which is exactly what we want.
-    // We then pass these calendar values to zonedPartsToUtcDate with the system timezone
-    // to create the correct UTC timestamp representing that calendar day at midnight in
-    // the system timezone.
+  componentWillUnmount(): void {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+    this.removePositionListeners();
+  }
+
+  private commitDate = (selectedDate: Date, shouldClose: boolean): void => {
+    const { showTime = true, onChange } = this.props;
+    const baseTime = this.getZonedParts() || TimezoneUtils.getZonedDateParts(new Date(), this.timezone);
     const finalUtcDate = TimezoneUtils.zonedPartsToUtcDate({
       year: selectedDate.getFullYear(),
       month: selectedDate.getMonth() + 1,
       day: selectedDate.getDate(),
       hour: showTime ? (baseTime?.hour || 0) : 0,
       minute: showTime ? (baseTime?.minute || 0) : 0,
-      second: 0
-    }, timezone);
+      second: 0,
+    }, this.timezone);
 
     onChange(finalUtcDate.toISOString());
-    setVisibleMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
-    if (shouldClose) setIsOpen(false);
+    this.setState({ visibleMonth: new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1) });
+    if (shouldClose) this.setState({ isOpen: false });
   };
 
-  const handleSelect = (selectedDate: Date | undefined) => {
+  private handleSelect = (selectedDate: Date | undefined): void => {
     if (!selectedDate) {
-      onChange(null);
+      this.props.onChange(null);
       return;
     }
-
-    commitDate(selectedDate, !showTime);
+    this.commitDate(selectedDate, this.props.showTime === false);
   };
 
-  const handleTimeChange = (type: 'hours' | 'minutes', val: string) => {
-    const base = zonedParts || TimezoneUtils.getZonedDateParts(new Date(), timezone);
+  private handleTimeChange = (type: 'hours' | 'minutes', val: string): void => {
+    const base = this.getZonedParts() || TimezoneUtils.getZonedDateParts(new Date(), this.timezone);
     if (!base) return;
 
     const parsed = Number.parseInt(val, 10);
@@ -174,42 +178,70 @@ export const DateTimePicker = ({
       ...base,
       hour: type === 'hours' ? clamped : base.hour,
       minute: type === 'minutes' ? clamped : base.minute,
-      second: 0
+      second: 0,
     };
-    onChange(TimezoneUtils.zonedPartsToUtcDate(next, timezone).toISOString());
+    this.props.onChange(TimezoneUtils.zonedPartsToUtcDate(next, this.timezone).toISOString());
   };
 
-  const shiftVisibleMonth = (monthOffset: number) => {
-    setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + monthOffset, 1));
+  private shiftVisibleMonth = (monthOffset: number): void => {
+    const { visibleMonth } = this.state;
+    this.setState({ visibleMonth: new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + monthOffset, 1) });
   };
 
-  const shiftVisibleYear = (yearOffset: number) => {
-    setVisibleMonth(new Date(visibleMonth.getFullYear() + yearOffset, visibleMonth.getMonth(), 1));
+  private shiftVisibleYear = (yearOffset: number): void => {
+    const { visibleMonth } = this.state;
+    this.setState({ visibleMonth: new Date(visibleMonth.getFullYear() + yearOffset, visibleMonth.getMonth(), 1) });
   };
 
-  const handleJumpMonthSelect = (monthIndex: number) => {
-    setVisibleMonth(new Date(visibleMonth.getFullYear(), monthIndex, 1));
-    setIsJumpViewOpen(false);
+  private handleJumpMonthSelect = (monthIndex: number): void => {
+    const { visibleMonth } = this.state;
+    this.setState({ visibleMonth: new Date(visibleMonth.getFullYear(), monthIndex, 1), isJumpViewOpen: false });
   };
 
-  const applyQuickAction = (dayOffset: number) => {
+  private applyQuickAction = (dayOffset: number): void => {
     const quickDate = new Date();
     quickDate.setDate(quickDate.getDate() + dayOffset);
-    commitDate(quickDate, !showTime);
+    this.commitDate(quickDate, this.props.showTime === false);
   };
 
-  const handleClear = () => {
-    onChange(null);
-    setVisibleMonth(new Date());
-    if (!showTime) {
-      setIsOpen(false);
+  private handleClear = (): void => {
+    this.props.onChange(null);
+    this.setState({ visibleMonth: new Date() });
+    if (this.props.showTime === false) {
+      this.setState({ isOpen: false });
     }
   };
 
-  return (
-    <div className={`relative w-full ${className}`} ref={containerRef}>
-      <div 
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+  render(): React.ReactNode {
+    const {
+      value,
+      onChange,
+      disabled,
+      showTime = true,
+      placeholder = 'Select date...',
+      className = '',
+      size = 'md',
+    } = this.props;
+    const { isOpen, coords, visibleMonth, isJumpViewOpen } = this.state;
+    const theme = this.theme;
+    const timezone = this.timezone;
+    const utcDate = this.getUtcDate();
+    const zonedParts = this.getZonedParts();
+    const pickerDate = this.getPickerDate();
+    const selectedSummary = value && utcDate
+      ? TimezoneUtils.formatSystemDate(
+          utcDate,
+          showTime ? { dateStyle: 'full', timeStyle: 'short' } : { dateStyle: 'full' },
+          placeholder,
+          timezone,
+        )
+      : 'No date selected';
+    const currentVisibleYear = visibleMonth.getFullYear();
+
+    return (
+    <div className={`relative w-full ${className}`} ref={this.containerRef}>
+      <div
+        onClick={() => !disabled && this.setState({ isOpen: !isOpen })}
         className={`${UiFieldUtils.getFieldClasses(size, `cursor-pointer flex items-center justify-between transition-all duration-150 ${isOpen ? 'ring-2 ring-indigo-500/50' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div className="flex items-center gap-2.5">
@@ -228,7 +260,7 @@ export const DateTimePicker = ({
            </span>
         </div>
         {value && !disabled && (
-          <div 
+          <div
             onClick={(e) => { e.stopPropagation(); onChange(null); }}
             className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-150 active:scale-90"
           >
@@ -239,8 +271,8 @@ export const DateTimePicker = ({
 
       {isOpen && (
         <RootFramework>
-          <div 
-            ref={popoverRef}
+          <div
+            ref={this.popoverRef}
             style={{
               position: 'fixed',
               top: coords.top,
@@ -250,8 +282,8 @@ export const DateTimePicker = ({
               zIndex: 9999
             }}
             className={`p-6 rounded-2xl animate-in zoom-in-95 slide-in-from-top-2 duration-200
-              ${theme === 'dark' 
-                ? 'bg-slate-900/98 backdrop-blur-2xl shadow-2xl shadow-black/40 ring-1 ring-white/5' 
+              ${theme === 'dark'
+                ? 'bg-slate-900/98 backdrop-blur-2xl shadow-2xl shadow-black/40 ring-1 ring-white/5'
                 : 'bg-white/98 backdrop-blur-2xl shadow-2xl shadow-slate-950/10 ring-1 ring-black/5'}`}
           >
             <div className={`mb-5 flex flex-col gap-4 rounded-xl p-4 ${theme === 'dark' ? 'bg-slate-800/40 ring-1 ring-white/5' : 'bg-slate-50/80 ring-1 ring-black/5'}`}>
@@ -266,7 +298,7 @@ export const DateTimePicker = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setVisibleMonth(pickerDate || new Date())}
+                  onClick={() => this.setState({ visibleMonth: pickerDate || new Date() })}
                   className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-150 ${
                     theme === 'dark'
                       ? 'text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95'
@@ -279,7 +311,7 @@ export const DateTimePicker = ({
               <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2.5">
                 <button
                   type="button"
-                  onClick={() => shiftVisibleMonth(-1)}
+                  onClick={() => this.shiftVisibleMonth(-1)}
                   className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-150 ${
                     theme === 'dark'
                       ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
@@ -291,7 +323,7 @@ export const DateTimePicker = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsJumpViewOpen((current) => !current)}
+                  onClick={() => this.setState((current) => ({ isJumpViewOpen: !current.isJumpViewOpen }))}
                   className={`flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold tracking-tight transition-all duration-150 ${
                     theme === 'dark'
                       ? 'bg-slate-700/40 text-white hover:bg-indigo-500/20 hover:text-indigo-100 active:scale-[0.98] ring-1 ring-white/5'
@@ -304,7 +336,7 @@ export const DateTimePicker = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => shiftVisibleMonth(1)}
+                  onClick={() => this.shiftVisibleMonth(1)}
                   className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-150 ${
                     theme === 'dark'
                       ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
@@ -321,7 +353,7 @@ export const DateTimePicker = ({
                 <div className="flex items-center justify-between">
                   <button
                     type="button"
-                    onClick={() => shiftVisibleYear(-1)}
+                    onClick={() => this.shiftVisibleYear(-1)}
                     className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-150 ${
                       theme === 'dark'
                         ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
@@ -337,7 +369,7 @@ export const DateTimePicker = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => shiftVisibleYear(1)}
+                    onClick={() => this.shiftVisibleYear(1)}
                     className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-150 ${
                       theme === 'dark'
                         ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
@@ -355,7 +387,7 @@ export const DateTimePicker = ({
                       <button
                         key={label}
                         type="button"
-                        onClick={() => handleJumpMonthSelect(monthIndex)}
+                        onClick={() => this.handleJumpMonthSelect(monthIndex)}
                         className={`rounded-xl px-4 py-2.5 text-[13px] font-semibold tracking-tight transition-all duration-150 ${
                           isActive
                             ? theme === 'dark'
@@ -376,9 +408,9 @@ export const DateTimePicker = ({
               <DayPicker
                 mode="single"
                 selected={pickerDate}
-                onSelect={handleSelect}
+                onSelect={this.handleSelect}
                 month={visibleMonth}
-                onMonthChange={setVisibleMonth}
+                onMonthChange={(next: Date) => this.setState({ visibleMonth: next })}
                 showOutsideDays={false}
                 className={`${theme === 'dark' ? 'rdp-dark' : ''}`}
                 classNames={{
@@ -396,8 +428,8 @@ export const DateTimePicker = ({
                   week: "",
                   day: "h-11 w-11 p-0 text-center align-middle",
                   day_button: `flex h-10 w-10 items-center justify-center rounded-xl p-0 font-semibold text-[14px] tracking-tight transition-all duration-150 mx-auto
-                    ${theme === 'dark' 
-                      ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95' 
+                    ${theme === 'dark'
+                      ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95'
                       : 'text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95'}`,
                   selected: theme === 'dark'
                     ? "!bg-indigo-500 !text-white hover:!bg-indigo-500 shadow-xl shadow-indigo-500/40 ring-2 ring-indigo-400/50 scale-105"
@@ -431,15 +463,15 @@ export const DateTimePicker = ({
                 <div className="flex items-center gap-3 justify-center">
                   <div className="flex flex-col gap-2 w-20">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">Hour</span>
-                    <input 
+                    <input
                       type="number"
                       min="0"
                       max="23"
                       value={zonedParts?.hour || 0}
-                      onChange={(e) => handleTimeChange('hours', e.target.value)}
+                      onChange={(e) => this.handleTimeChange('hours', e.target.value)}
                       className={`w-full h-12 rounded-xl text-center font-bold text-[15px] tracking-tight transition-all duration-150 outline-none ${
-                        theme === 'dark' 
-                          ? 'bg-slate-800/60 text-white focus:bg-slate-700/60 focus:ring-2 focus:ring-indigo-400/50 ring-1 ring-white/5' 
+                        theme === 'dark'
+                          ? 'bg-slate-800/60 text-white focus:bg-slate-700/60 focus:ring-2 focus:ring-indigo-400/50 ring-1 ring-white/5'
                           : 'bg-slate-50 text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 shadow-inner ring-1 ring-black/5'
                       }`}
                     />
@@ -447,15 +479,15 @@ export const DateTimePicker = ({
                   <span className={`text-2xl font-bold pt-6 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
                   <div className="flex flex-col gap-2 w-20">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">Min</span>
-                    <input 
+                    <input
                       type="number"
                       min="0"
                       max="59"
                       value={zonedParts?.minute || 0}
-                      onChange={(e) => handleTimeChange('minutes', e.target.value)}
+                      onChange={(e) => this.handleTimeChange('minutes', e.target.value)}
                       className={`w-full h-12 rounded-xl text-center font-bold text-[15px] tracking-tight transition-all duration-150 outline-none ${
-                        theme === 'dark' 
-                          ? 'bg-slate-800/60 text-white focus:bg-slate-700/60 focus:ring-2 focus:ring-indigo-400/50 ring-1 ring-white/5' 
+                        theme === 'dark'
+                          ? 'bg-slate-800/60 text-white focus:bg-slate-700/60 focus:ring-2 focus:ring-indigo-400/50 ring-1 ring-white/5'
                           : 'bg-slate-50 text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/50 shadow-inner ring-1 ring-black/5'
                       }`}
                     />
@@ -463,12 +495,12 @@ export const DateTimePicker = ({
                 </div>
               </div>
             )}
-            
+
             <div className={`mt-6 pt-6 flex flex-col gap-3.5 ${theme === 'dark' ? 'border-t border-white/5' : 'border-t border-slate-200/80'}`}>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => applyQuickAction(0)}
+                  onClick={() => this.applyQuickAction(0)}
                   className={`rounded-xl px-4 py-2 text-[12px] font-semibold tracking-tight transition-all duration-150 ${
                     theme === 'dark'
                       ? 'bg-slate-700/40 text-slate-200 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
@@ -479,7 +511,7 @@ export const DateTimePicker = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => applyQuickAction(1)}
+                  onClick={() => this.applyQuickAction(1)}
                   className={`rounded-xl px-4 py-2 text-[12px] font-semibold tracking-tight transition-all duration-150 ${
                     theme === 'dark'
                       ? 'bg-slate-700/40 text-slate-200 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
@@ -490,7 +522,7 @@ export const DateTimePicker = ({
                 </button>
                 <button
                   type="button"
-                  onClick={handleClear}
+                  onClick={this.handleClear}
                   className={`rounded-xl px-4 py-2 text-[12px] font-semibold tracking-tight transition-all duration-150 ${
                     theme === 'dark'
                       ? 'bg-slate-700/40 text-slate-200 hover:bg-rose-500/10 hover:text-rose-300 active:scale-95 ring-1 ring-white/5'
@@ -501,11 +533,11 @@ export const DateTimePicker = ({
                 </button>
               </div>
               {showTime ? (
-                <Button 
-                  variant="primary" 
-                  size="md" 
+                <Button
+                  variant="primary"
+                  size="md"
                   className="w-full rounded-xl font-semibold text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => this.setState({ isOpen: false })}
                 >
                   Apply Selection
                 </Button>
@@ -515,5 +547,6 @@ export const DateTimePicker = ({
         </RootFramework>
       )}
     </div>
-  );
-};
+    );
+  }
+}

@@ -1,6 +1,7 @@
 'use client';
 
-import { ThemeHooks } from '@/components/use-theme';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,21 +9,23 @@ import { FrameworkIcons } from '@fromcode119/react';
 import type { BackupListCardProps } from './backups-page-client.interfaces';
 import { SystemBackupPageUtils } from './system-backup-page-utils';
 
-export function BackupListCard({
-  groups,
-  capabilities,
-  isRefreshing,
-  downloadProgress,
-  activeDeleteId,
-  activePreviewId,
-  onRefresh,
-  onDownload,
-  onRequestDelete,
-  onRequestRestore,
-}: BackupListCardProps) {
-  const { theme } = ThemeHooks.useTheme();
+export class BackupListCard extends AdminComponent<BackupListCardProps> {
+  render(): React.ReactNode {
+    const {
+      groups,
+      capabilities,
+      isRefreshing,
+      downloadProgress,
+      activeDeleteId,
+      activePreviewId,
+      onRefresh,
+      onDownload,
+      onRequestDelete,
+      onRequestRestore,
+    } = this.props;
+    const theme = this.theme;
 
-  return (
+    return (
     <Card className="border-0 rounded-[2rem] p-0 overflow-hidden shadow-[0_24px_64px_-24px_rgba(15,23,42,0.18)] dark:ring-1 dark:ring-white/5">
       <div className={`border-b px-8 py-6 ${theme === 'dark' ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -162,5 +165,6 @@ export function BackupListCard({
         </div>
       )}
     </Card>
-  );
+    );
+  }
 }

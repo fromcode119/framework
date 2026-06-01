@@ -15,6 +15,8 @@ export * from './ui/data-table';
 export * from './ui/confirm-dialog';
 export * from './ui/prompt-dialog';
 export * from './ui/date-time-picker';
+export * from './ui/currency-select';
+export * from './ui/money-input';
 export * from './ui/color-picker';
 export * from './ui/code-editor';
 export * from './ui/visual-menu-field';

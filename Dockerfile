@@ -88,17 +88,18 @@ RUN ./node_modules/.bin/tsc -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:api FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:api OK ==="
 
-# Step 2: Build SDK package used by plugin backend entrypoints at runtime.
-RUN npm run build --workspace=@fromcode119/sdk > /tmp/build-sdk.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-sdk.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:sdk FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
-    echo "=== build:sdk OK ==="
-
-# Step 3: Build React package required by the AI extension.
+# Step 2: Build React package FIRST — the SDK (and AI extension) consume its built type
+# declarations (e.g. PluginContextRegistry), so react must be compiled before sdk.
 RUN npm run build --workspace=@fromcode119/react > /tmp/build-react.log 2>&1; ec=$?; \
     tail -80 /tmp/build-react.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:react FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:react OK ==="
+
+# Step 3: Build SDK package used by plugin backend entrypoints at runtime.
+RUN npm run build --workspace=@fromcode119/sdk > /tmp/build-sdk.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-sdk.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:sdk FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:sdk OK ==="
 
 # Step 4: Build AI extension.
 RUN npm run build --workspace=@fromcode119/ai > /tmp/build-ai.log 2>&1; ec=$?; \
