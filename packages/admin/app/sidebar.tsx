@@ -98,8 +98,7 @@ const NavItem = ({ icon, label, href, persistenceKey, active, isAnchoredToSecond
   // The parent is "highlighted" if it is active AND NO CHILD is active.
   const isHighlighted = active && !isChildActive;
   const isPreviewingSecondary = Boolean(showHoverPreview && !isHighlighted && !isChildActive);
-  const extendsSecondary = Boolean((isAnchoredToSecondary || isPreviewingSecondary) && (isHighlighted || isChildActive || isPreviewingSecondary || preserveActiveAnchor));
-  
+
   // If it's a group header, clicking should just toggle expansion
   const handleClick = (e: React.MouseEvent) => {
     if (isGroupHeader || (hasChildren && !expanded)) {
@@ -112,43 +111,37 @@ const NavItem = ({ icon, label, href, persistenceKey, active, isAnchoredToSecond
   };
 
   return (
-    <div className="relative flex flex-col gap-1">
+    <div className="relative flex flex-col">
       <div
-        className={`flex items-center group relative ${isMini ? 'justify-center w-full' : 'gap-1'}`}
-        onMouseEnter={canHoverPreview && !isMini ? () => onHoverPreviewStart?.(href) : undefined}
-        onMouseLeave={canHoverPreview && !isMini ? onHoverPreviewEnd : undefined}
+        className={`flex items-center group relative ${isMini ? 'justify-center w-full' : 'gap-0.5'}`}
+        onMouseEnter={!isMini ? () => onHoverPreviewStart?.(href) : undefined}
+        onMouseLeave={!isMini ? onHoverPreviewEnd : undefined}
       >
-        {extendsSecondary && !isMini && (
-          <div
-            aria-hidden="true"
-            className={`pointer-events-none absolute bottom-0 right-[-2rem] top-0 w-8 ${isHighlighted || preserveActiveAnchor ? 'bg-indigo-600 shadow-[14px_0_28px_-18px_rgba(79,70,229,0.65)]' : isPreviewingSecondary ? 'bg-slate-100 shadow-[14px_0_24px_-20px_rgba(15,23,42,0.14)] dark:bg-slate-800/60 dark:shadow-[14px_0_24px_-20px_rgba(2,6,23,0.55)]' : 'bg-indigo-50 dark:bg-indigo-500/10'}`}
-          />
-        )}
-        <Link 
-          href={isGroupHeader ? '#' : href} 
+        <Link
+          href={isGroupHeader ? '#' : href}
           onClick={handleClick}
-          className={`flex items-center transition-all duration-300 ${
-            isHighlighted 
-              ? 'bg-indigo-600 text-white shadow-[10px_0_28px_rgba(79,70,229,0.28)]' 
+          className={`flex items-center transition-colors duration-150 ${
+            isHighlighted
+              ? 'bg-indigo-600 text-white'
               : isPreviewingSecondary
-                ? 'bg-slate-100 text-indigo-600 shadow-[10px_0_24px_rgba(15,23,42,0.08)] dark:bg-slate-800/60 dark:text-slate-200'
+                ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300'
               : isChildActive
-                ? 'bg-indigo-50 text-indigo-600 font-semibold dark:bg-indigo-500/10 dark:text-indigo-400'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'
-          } ${isMini ? 'flex-col justify-center w-14 h-14 rounded-xl gap-1' : `${extendsSecondary && !hasChildren ? 'w-[calc(100%+2rem)] max-w-none' : 'flex-1'} justify-between px-3.5 py-2 rounded-lg ${extendsSecondary ? 'rounded-r-none relative z-10 mr-[-2rem] pr-5' : ''}`}`}
+                ? 'text-indigo-600 dark:text-indigo-400'
+                : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
+          } ${isMini ? 'flex-col justify-center w-14 h-14 rounded-lg gap-1' : 'flex-1 justify-between px-2.5 py-1.5 rounded-md'}`}
         >
-          <div className={`flex items-center justify-center ${isMini ? 'w-full' : 'gap-3'}`}>
-            <span className={`${isHighlighted ? 'text-white' : isPreviewingSecondary ? 'text-indigo-500 dark:text-slate-200' : isChildActive ? 'text-indigo-500' : 'text-slate-500 group-hover:text-indigo-500 transition-colors'} flex items-center justify-center`}>
+          <div className={`flex items-center justify-center ${isMini ? 'w-full' : 'gap-2.5'}`}>
+            <span className={`${isHighlighted ? 'text-white' : isPreviewingSecondary ? 'text-indigo-500 dark:text-indigo-300' : isChildActive ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors'} flex items-center justify-center shrink-0`}>
               {icon}
             </span>
-            
+
             {!isMini && (
               <div className="flex flex-col">
-                <span className={`text-[13px] ${isHighlighted || isChildActive ? 'font-bold' : 'font-bold'} tracking-tight whitespace-nowrap`}>
+                <span className={`text-[12px] ${isHighlighted || isChildActive ? 'font-semibold' : 'font-medium'} tracking-[-0.01em] whitespace-nowrap`}>
                   {displayLabel}
                 </span>
                 {version && (
-                  <span className={`text-[8px] font-mono mt-0.5 opacity-60 ${isHighlighted ? 'text-white' : 'text-slate-400'}`}>
+                  <span className={`text-[8px] font-mono mt-px opacity-50 ${isHighlighted ? 'text-white' : 'text-slate-400'}`}>
                     v{version}
                   </span>
                 )}
@@ -157,67 +150,42 @@ const NavItem = ({ icon, label, href, persistenceKey, active, isAnchoredToSecond
           </div>
 
           {isMini && (
-            <span className={`text-[8px] font-bold tracking-tight text-center leading-none px-1 ${isHighlighted ? 'text-white' : isChildActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'}`}>
+            <span className={`text-[8px] font-semibold tracking-tight text-center leading-none px-1 ${isHighlighted ? 'text-white' : isChildActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-700'}`}>
               {displayLabel.length > 9 ? displayLabel.substring(0, 8) + '..' : displayLabel}
             </span>
           )}
+
+          {hasChildren && !isMini && (
+            <Down
+              size={14}
+              className={`shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''} ${
+                isHighlighted ? 'text-white/60' : 'text-slate-300 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400'
+              }`}
+              onClick={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setExpanded(!expanded); }}
+            />
+          )}
         </Link>
-
-        {hasChildren && !isMini && (
-          <button 
-            onClick={() => setExpanded(!expanded)}
-            className={`p-2 rounded-lg transition-colors ${
-              isHighlighted || isChildActive
-                ? 'text-indigo-500' 
-                : 'hover:bg-slate-100 text-slate-400 dark:hover:bg-slate-800 dark:text-slate-500'
-            }`}
-          >
-            <Down size={14} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
-          </button>
-        )}
       </div>
-      
-      {hasChildren && expanded && !isMini && (
-        <div className="flex flex-col gap-0.5 mt-1 relative">
-          {/* Vertical track line for visual hierarchy */}
-          <div className="absolute left-[21px] top-0 bottom-6 w-px bg-slate-100 dark:bg-slate-800/80" />
 
+      {hasChildren && expanded && !isMini && (
+        <div className="relative ml-[18px] mt-0.5 mb-1 flex flex-col gap-px border-l border-slate-200/70 pl-2 dark:border-slate-800">
           {children.map((child) => {
             const isSubActive = NavUtils.normalizePath(child.path) === activeChildPath;
-            const subIcon = child.icon || 'Circle';
-            
             return (
               <Link
                 key={child.path}
                 href={child.path}
                 onClick={onClick}
-                className={`flex items-center gap-3 py-2 pl-10 pr-4 text-[10px] transition-all relative group/sub rounded-lg mx-2 ${
+                className={`relative flex items-center gap-2.5 rounded-md py-1.5 pl-3 pr-2 text-[12px] transition-colors duration-150 ${
                   isSubActive
-                    ? 'text-indigo-600 bg-indigo-50/50 shadow-sm shadow-indigo-100/20 dark:text-indigo-400 dark:bg-indigo-500/5 dark:shadow-none'
-                    : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50/30 dark:hover:bg-slate-800/20'
+                    ? 'font-semibold text-indigo-600 dark:text-indigo-400'
+                    : 'font-medium text-slate-400 hover:bg-slate-100/70 hover:text-slate-800 dark:text-slate-500 dark:hover:bg-slate-800/40 dark:hover:text-slate-200'
                 }`}
               >
-                 {/* Horizontal Connector Line */}
-                 <div className={`absolute left-[13px] top-1/2 -translate-y-1/2 h-px transition-all duration-300 ${
-                   isSubActive ? 'w-4 bg-indigo-500' : 'w-2 bg-slate-200 dark:bg-slate-800 group-hover/sub:bg-indigo-300 group-hover/sub:w-3'
-                 }`} />
-
-                 {isSubActive && (
-                   <div className="absolute left-[11px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.6)] z-10" />
-                 )}
-
-                 <div className="flex items-center gap-2.5">
-                   <div className={`flex items-center justify-center transition-all duration-300 ${
-                     isSubActive 
-                       ? 'text-indigo-500 scale-110' 
-                       : 'text-slate-400 opacity-40 group-hover/sub:opacity-100 group-hover/sub:text-indigo-500'
-                   }`}>
-                      <Icon name={subIcon} size={14} strokeWidth={2.5} />
-                   </div>
-                   <span className={`font-bold text-[11px] whitespace-nowrap tracking-tight ${isSubActive ? 'text-indigo-600 dark:text-indigo-400' : 'opacity-70 group-hover/sub:opacity-100'}`}>
-                     {child.label}
-                   </span>
-                 </div>
+                {isSubActive && (
+                  <span className="absolute left-[-9px] top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-indigo-500" aria-hidden="true" />
+                )}
+                <span className="whitespace-nowrap tracking-[-0.01em]">{child.label}</span>
               </Link>
             );
           })}
@@ -258,6 +226,18 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
 
   const [collapsedGroups, setCollapsedGroups] = React.useState<string[]>([]);
   const [isInitialized, setIsInitialized] = React.useState(false);
+
+  // Lock body scroll on mobile when sidebar is open so the page doesn't scroll
+  // behind the overlay. On desktop the sidebar is always visible (lg:translate-x-0)
+  // so isOpen is only ever true from the mobile burger button.
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const mq = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)') : null;
+    if (mq?.matches) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [isOpen]);
 
   // Load state from localStorage on mount
   React.useEffect(() => {
@@ -334,11 +314,15 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
     [authorizedMenuItems, footerSettingsPath]
   );
 
-  // Group menu items by their group property
+  // Group menu items by their group property.
+  // groupLabels preserves the original casing from the collection definition so
+  // that "E-commerce" is not lowercased to "e-commerce" in the sidebar header.
+  const groupLabels: Record<string, string> = {};
   const groupedMenu = groupedMenuItems
     .reduce((acc: Record<string, any[]>, item) => {
     const rawGroup = NavUtils.normalizeGroupKey(item.group);
-    
+    const originalLabel = String(item.group || '').trim();
+
     // Manual mapping for core items if they don't have a group
     let groupKey = rawGroup;
     if (coreGroupPaths.includes(item.path)) {
@@ -347,6 +331,16 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
       groupKey = 'management';
     } else if (item.path === AdminConstants.ROUTES.ACTIVITY) {
       groupKey = 'system';
+    }
+
+    // First item in this group wins the display label (all items in a group
+    // should have the same casing). Built-in groups (core/management/settings/system)
+    // keep their configured label; plugin/theme groups use the original casing from
+    // the collection definition so "E-commerce" is not lowercased to "e-commerce".
+    if (!groupLabels[groupKey] && originalLabel) {
+      const configured = NavUtils.getMenuGroupMeta(groupKey);
+      const isBuiltIn = ['core', 'management', 'settings', 'system'].includes(groupKey);
+      groupLabels[groupKey] = isBuiltIn ? configured.label : originalLabel;
     }
 
       if (!acc[groupKey]) acc[groupKey] = [];
@@ -421,7 +415,7 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
 
   return (
     <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-[72px]' : showMobileSecondaryPanel ? 'w-full max-w-full' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 ${showMobileSecondaryPanel ? 'border-r-0' : 'border-r'} flex ${showMobileSecondaryPanel ? 'flex-row lg:flex-col' : 'flex-col'} shadow-2xl lg:shadow-[12px_0_28px_-24px_rgba(15,23,42,0.28)] dark:lg:shadow-[12px_0_28px_-24px_rgba(2,6,23,0.9)] overflow-hidden group/sidebar`} onMouseEnter={onPreviewRegionEnter} onMouseLeave={onPreviewRegionLeave}>
-      <div className={`min-w-0 ${showMobileSecondaryPanel ? 'w-[45%] max-w-[18rem] min-w-[15rem] border-r border-slate-200 dark:border-slate-800' : 'w-full lg:flex-1 lg:min-h-0'} flex flex-col bg-white dark:bg-[#020617]`}>
+      <div className={`min-w-0 ${showMobileSecondaryPanel ? 'w-[45%] max-w-[18rem] min-w-[15rem] border-r border-slate-200 dark:border-slate-800' : 'w-full flex-1 min-h-0'} flex flex-col bg-white dark:bg-[#020617]`}>
         <div className={`p-5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30">
@@ -446,14 +440,14 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
           </button>
         </div>
         
-        <nav className={`flex-1 min-h-0 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto scrollbar-hide space-y-1 pb-32`}>
+        <nav className={`flex-1 min-h-0 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto overscroll-contain scrollbar-hide space-y-1 pb-32`}>
         <div className="pt-2">
            {!isMini && <Slot name="admin.layout.sidebar.top" />}
         </div>
 
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group] || [];
-          const displayGroup = NavUtils.getMenuGroupMeta(group).label;
+          const displayGroup = groupLabels[group] || NavUtils.getMenuGroupMeta(group).label;
           const isCollapsed = collapsedGroups.includes(group);
           
           // If a group has only one item and that item is a group wrapper (dropdown),
@@ -463,18 +457,9 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
           return (
             <React.Fragment key={group}>
               {!isMini && !isRedundantHeader && (
-                <button 
-                  onClick={() => toggleGroup(group)}
-                  className={`w-full flex items-center justify-between px-3 text-[11px] font-bold text-slate-400/80 tracking-tight mb-2 group/header ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}
-                >
-                  <span className="group-hover/header:text-slate-600 dark:group-hover/header:text-slate-300 transition-colors">
-                    {displayGroup}
-                  </span>
-                  <Down 
-                    size={12} 
-                    className={`transition-transform duration-200 group-hover/header:text-slate-600 ${isCollapsed ? '-rotate-90' : ''}`} 
-                  />
-                </button>
+                <div className={`px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5 ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}>
+                  {displayGroup}
+                </div>
               )}
               {isMini && groupIdx > 0 && (
                 <div className="flex justify-center py-4">
@@ -512,18 +497,9 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
         {!groupedMenu['core'] && (
           <>
             {!isMini && (
-              <button 
-                onClick={() => toggleGroup('core-fallback')}
-                className="w-full flex items-center justify-between px-3 text-[11px] font-bold text-slate-400/80 tracking-tight mb-2 mt-4 group/header"
-              >
-                <span className="group-hover/header:text-slate-600 dark:group-hover/header:text-slate-300 transition-colors">
-                  Core
-                </span>
-                <Down 
-                  size={12} 
-                  className={`transition-transform duration-200 group-hover/header:text-slate-600 ${collapsedGroups.includes('core-fallback') ? '-rotate-90' : ''}`} 
-                />
-              </button>
+              <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5 mt-4">
+                Core
+              </div>
             )}
             {(!collapsedGroups.includes('core-fallback') || isMini) && (
               <>
@@ -536,18 +512,9 @@ export default function Sidebar({ isOpen, onClose, isMini, onMiniToggle, onActiv
 
         <div className="mt-auto pt-6 space-y-1">
           {!isMini && (
-            <button 
-              onClick={() => toggleGroup('system')}
-              className={`w-full flex items-center justify-between px-3 text-[11px] font-bold text-slate-400/80 tracking-tight mb-2 group/header`}
-            >
-              <span className="group-hover/header:text-slate-600 dark:group-hover/header:text-slate-300 transition-colors">
-                System
-              </span>
-              <Down 
-                size={12} 
-                className={`transition-transform duration-200 group-hover/header:text-slate-600 ${collapsedGroups.includes('system') ? '-rotate-90' : ''}`} 
-              />
-            </button>
+            <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5">
+              System
+            </div>
           )}
           {(!collapsedGroups.includes('system') || isMini) && (
             <>

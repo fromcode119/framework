@@ -213,21 +213,44 @@ export class AdminMetadataService {
         }
       }
 
-      if (strategy === 'section') {
+      // A dropdown wrapper only makes sense with 2+ children. A single-page plugin
+      // (e.g. SEO → Overview, Analytics → Overview) should be a plain link with no
+      // chevron — otherwise every plugin shows a redundant expand arrow.
+      if (strategy === 'section' || items.length <= 1) {
         items.forEach(item => {
           finalMenu.push({
             ...item,
-            group: groupName
+            group: groupName,
+            // Single-page dropdown plugins still want the plugin's short label/icon
+            // on their one nav item rather than the raw page label.
+            ...(strategy !== 'section' && items.length === 1
+              ? {
+                  label: String(plugin?.manifest.admin?.label || item.label).trim(),
+                  icon: plugin?.manifest.admin?.icon || item.icon,
+                }
+              : {}),
           });
         });
       } else {
-        const groupIcon = items.find(i => i.icon)?.icon || plugin?.manifest.admin?.icon || 'Layers';
-        
+        // Use admin.label (short display name, e.g. "CMS", "SEO") so that multiple
+        // plugins sharing the same group each appear as a distinctly-named dropdown.
+        // Fall back to manifest.name then groupName.
+        const dropdownLabel = String(
+          plugin?.manifest.admin?.label ||
+          plugin?.manifest.name ||
+          groupName
+        ).trim();
+        const groupIcon = plugin?.manifest.admin?.icon || items.find(i => i.icon)?.icon || 'Layers';
+        // Anchor the dropdown to its first child's real path (e.g. /cms) so the
+        // secondary-sidebar resolver can preview that plugin's panel on hover.
+        // Falls back to a synthetic group anchor when no concrete path exists.
+        const anchorPath = String(items[0]?.path || '').trim() || `/#group-${pluginSlug}-${groupName.toLowerCase()}`;
+
         finalMenu.push({
-          label: groupName,
+          label: dropdownLabel,
           icon: groupIcon,
           group: groupName,
-          path: `/#group-${pluginSlug}-${groupName.toLowerCase()}`,
+          path: anchorPath,
           children: items,
           isGroup: true,
           priority: items[0].priority || 50,

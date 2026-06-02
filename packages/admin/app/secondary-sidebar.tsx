@@ -30,6 +30,12 @@ type SecondarySidebarProps = {
   onPanelMouseLeave?: () => void;
   onItemActivate?: (item?: SecondaryPanelItem) => void;
   parentPrimaryPath?: string;
+  /** When true (and not docked open), the panel renders as a floating overlay over
+   *  the content — used for hover-preview so it never reserves layout width. */
+  hoverOpen?: boolean;
+  /** Tailwind left-offset class to anchor the hover overlay just after the primary
+   *  sidebar (e.g. 'left-64' full, 'left-[72px]' mini). */
+  overlayLeftClass?: string;
 };
 
 export default function SecondarySidebar(props: SecondarySidebarProps) {
@@ -134,9 +140,16 @@ export default function SecondarySidebar(props: SecondarySidebarProps) {
   }
 
   if (isDesktop) {
-    if (!props.isOpen) {
+    // A hover-preview pops the panel out as a floating overlay even when the user
+    // hasn't docked it. Docked-open keeps reserving layout width and pushes content.
+    const isOverlay = !props.isOpen && Boolean(props.hoverOpen);
+    const expanded = props.isOpen || Boolean(props.hoverOpen);
+
+    if (!expanded) {
+      // Collapsed: reserve ZERO layout width (w-0) so content fills the space; the
+      // toggle button floats over the content's left edge instead of cutting a gap.
       return (
-        <div className="sticky top-16 z-40 h-[calc(100vh-4rem)] w-5 shrink-0 self-start overflow-visible">
+        <div className="sticky top-16 z-40 h-[calc(100vh-4rem)] w-0 shrink-0 self-start overflow-visible">
           <button
             ref={triggerRef}
             type="button"
@@ -144,9 +157,9 @@ export default function SecondarySidebar(props: SecondarySidebarProps) {
             aria-expanded="false"
             aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
             onClick={props.onOpen}
-            className="absolute left-0 top-8 z-40 inline-flex h-20 w-5 items-center justify-center rounded-r-xl border border-l-0 border-slate-200 bg-white text-slate-500 shadow-[12px_0_28px_-24px_rgba(15,23,42,0.28)] transition-colors hover:text-indigo-600 dark:border-slate-800 dark:bg-[#020617] dark:text-slate-300"
+            className="absolute left-0 top-8 z-40 inline-flex h-16 w-4 items-center justify-center rounded-r-lg border border-l-0 border-slate-200 bg-white/90 text-slate-400 shadow-[10px_0_24px_-22px_rgba(15,23,42,0.3)] backdrop-blur transition-colors hover:w-5 hover:text-indigo-600 dark:border-slate-800 dark:bg-[#020617]/90 dark:text-slate-400"
           >
-            <Right size={14} />
+            <Right size={12} />
           </button>
         </div>
       );
@@ -155,7 +168,9 @@ export default function SecondarySidebar(props: SecondarySidebarProps) {
     return (
       <aside
         id={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
-        className={`sticky top-0 z-30 ml-[-1px] flex h-screen w-[var(--secondary-sidebar-width)] shrink-0 overflow-hidden border-r shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)] ${hasActiveItem ? 'border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,246,255,0.60)_100%)] ring-1 ring-inset ring-indigo-100/20 dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(30,41,59,0.96)_0%,rgba(37,99,235,0.05)_100%)] dark:ring-indigo-500/5' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-[#020617]'}`}
+        className={`${isOverlay
+          ? `fixed top-16 ${props.overlayLeftClass || 'left-64'} z-40 h-[calc(100vh-4rem)] rounded-r-xl`
+          : 'sticky top-0 z-30 ml-[-1px] h-screen shrink-0'} flex w-[var(--secondary-sidebar-width)] overflow-hidden border-r shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)] ${hasActiveItem ? 'border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,246,255,0.60)_100%)] ring-1 ring-inset ring-indigo-100/20 dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(30,41,59,0.96)_0%,rgba(37,99,235,0.05)_100%)] dark:ring-indigo-500/5' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-[#020617]'}`}
         aria-label="Secondary navigation"
         onMouseEnter={props.onPanelMouseEnter}
         onMouseLeave={props.onPanelMouseLeave}

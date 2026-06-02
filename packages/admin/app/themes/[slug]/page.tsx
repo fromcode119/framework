@@ -513,7 +513,6 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                                     searchable={false}
                                                     theme={adminTheme}
                                                     className="w-full"
-                                                    triggerClassName="bg-transparent border-0 p-0 min-h-0 h-auto text-sm font-semibold shadow-none ring-0"
                                                 />
                                             ) : type === 'font' ? (
                                                 <div className="flex items-center gap-4">
@@ -620,7 +619,6 @@ export default function ThemeSettingsPage({ params }: { params: Promise<{ slug: 
                                             searchable={false}
                                             theme={adminTheme}
                                             className="w-full"
-                                            triggerClassName="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-semibold"
                                         />
                                     </div>
                                 </div>

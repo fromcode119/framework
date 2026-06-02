@@ -133,6 +133,8 @@ export interface PluginManifest {
   // Metadata for Admin UI
   admin?: {
     group?: string;
+    /** Short display name for the dropdown entry (e.g. "CMS", "SEO"). Falls back to manifest.name then group. */
+    label?: string;
     groupStrategy?: 'dropdown' | 'section' | Record<string, 'dropdown' | 'section'>;
     icon?: string;
     menu?: MenuItemManifest[];
