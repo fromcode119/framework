@@ -1,9 +1,11 @@
 "use client";
 
 import React from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { ContextHooks } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
+import { AuthHooks } from '@/components/use-auth';
 import { AdminRuntimeContext } from './admin-runtime-context';
 import type { AdminRuntimeValue } from './admin-runtime-context.interfaces';
 import type { AdminRuntimeProviderProps } from './admin-runtime-provider.interfaces';
@@ -22,10 +24,13 @@ export function AdminRuntimeProvider({ children }: AdminRuntimeProviderProps): R
   const globalSettings = ContextHooks.useGlobalSettings() as Record<string, any>;
   const plugins = ContextHooks.usePlugins();
   const collections = ContextHooks.useCollections() as any[];
+  const router = useRouter();
+  const pathname = usePathname();
+  const auth = AuthHooks.useAuth();
 
   const value = React.useMemo<AdminRuntimeValue>(
-    () => ({ theme, toggleTheme, notify, globalSettings, plugins, collections }),
-    [theme, toggleTheme, notify, globalSettings, plugins, collections],
+    () => ({ theme, toggleTheme, notify, globalSettings, plugins, collections, router, pathname, auth }),
+    [theme, toggleTheme, notify, globalSettings, plugins, collections, router, pathname, auth],
   );
 
   return <AdminRuntimeContext.context.Provider value={value}>{children}</AdminRuntimeContext.context.Provider>;

@@ -25,4 +25,19 @@ export abstract class AdminComponent<P = Record<string, unknown>, S = Record<str
   protected get collections(): any[] {
     return this.context?.collections ?? [];
   }
+
+  /** App Router navigation — replaces `useRouter()` for hook-free classes. */
+  protected get router(): AdminRuntimeValue['router'] {
+    return this.context?.router;
+  }
+
+  /** Current pathname — replaces `usePathname()` for hook-free classes. */
+  protected get pathname(): string {
+    return this.context?.pathname ?? '';
+  }
+
+  /** Auth context — replaces `AuthHooks.useAuth()` for hook-free classes. */
+  protected get auth(): AdminRuntimeValue['auth'] {
+    return this.context?.auth;
+  }
 }

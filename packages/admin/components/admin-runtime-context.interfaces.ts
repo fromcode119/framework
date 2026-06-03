@@ -1,5 +1,7 @@
+import type { useRouter } from 'next/navigation';
 import type { ThemeContextType } from '@/components/theme-context.interfaces';
 import type { NotificationContextType } from '@/components/notification-context.interfaces';
+import type { AuthContextType } from '@/components/auth-context.interfaces';
 
 /**
  * Hook-derived values that admin components need but which are only reachable through React
@@ -17,4 +19,10 @@ export interface AdminRuntimeValue {
   globalSettings: Record<string, any>;
   plugins: any;
   collections: any[];
+  /** App Router navigation (`next/navigation`) — lets hook-free classes navigate without `useRouter`. */
+  router: ReturnType<typeof useRouter>;
+  /** Current pathname (`usePathname`) — published so classes need no hook. */
+  pathname: string;
+  /** Auth context (`useAuth`) — context-backed, so classes read it via `this.auth` not a hook. */
+  auth: AuthContextType;
 }

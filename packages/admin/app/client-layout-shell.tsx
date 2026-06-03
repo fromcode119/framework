@@ -5,7 +5,7 @@ import PluginLoader from './plugin-loader';
 import Sidebar from './sidebar';
 import SecondarySidebar from './secondary-sidebar';
 import AdminExtensionLoader from './admin-extension-loader';
-import ClientLayoutHeader from './client-layout-header';
+import { ClientLayoutHeader } from './client-layout-header';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { AdminConstants } from '@/lib/constants';

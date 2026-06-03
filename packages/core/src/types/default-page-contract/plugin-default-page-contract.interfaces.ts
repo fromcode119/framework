@@ -19,6 +19,13 @@ export interface PluginDefaultPageContract {
   adoptionHints: string[];
   required: boolean;
   aliases?: string[];
+  /**
+   * Optional default block content the materializer writes when creating this page (instead
+   * of an empty `[]`). Lets a plugin own its route AND its default block (e.g. an affiliate
+   * portal block), so the theme only OVERRIDES the block renderer for branding — no theme/seed
+   * needed to place the block.
+   */
+  defaultContent?: any[];
 }
 
 export interface PluginDefaultPageContractRegistration {

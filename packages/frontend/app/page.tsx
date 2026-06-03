@@ -6,7 +6,7 @@ import type { HomePageProps } from './home-page.types';
 
 export async function generateMetadata({ searchParams }: HomePageProps) {
   const { content, resolution } = await HomePageResolver.resolve(searchParams);
-  return ResolvedContentMetadata.build((content as Record<string, unknown> | null) || null, resolution?.type);
+  return ResolvedContentMetadata.buildEnriched((content as Record<string, unknown> | null) || null, resolution?.type, '/');
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {

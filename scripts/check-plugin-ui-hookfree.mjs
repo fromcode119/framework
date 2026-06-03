@@ -13,6 +13,10 @@ const PLUGINS_DIR = path.resolve(process.cwd(), '../../plugins');
 // Dev/test fixtures excluded until Task 20 decides their fate.
 const IGNORE = new Set(['build-server', 'test-feature']);
 
+// No files currently require a hook-boundary exemption.
+// order-popup-connected.tsx was converted to a hook-free PluginComponent class (Task 3 complete).
+const IGNORE_FILES = new Set();
+
 const HOOK = /\buse(State|Effect|Memo|Ref|Callback|Context)\b/;
 const FC = /export\s+(const|function)\s+[A-Z][A-Za-z0-9]*/;
 
@@ -53,9 +57,10 @@ for (const slug of slugs) {
   const files = [];
   walkTsx(uiDir, files);
   for (const file of files) {
+    const rel = path.relative(PLUGINS_DIR, file);
+    if (IGNORE_FILES.has(rel)) continue;
     scanned += 1;
     const src = readFileSync(file, 'utf8');
-    const rel = path.relative(PLUGINS_DIR, file);
     if (HOOK.test(src)) violations.push(`plugins/${rel}: contains a React hook call`);
     if (FC.test(src)) violations.push(`plugins/${rel}: contains 'export const/function <Capitalized>' (function component)`);
   }

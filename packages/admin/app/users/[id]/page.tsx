@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { ThemeHooks } from '@/components/use-theme';
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,198 +9,213 @@ import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { AdminComponent } from '@/components/admin-component';
+import type { UserProfilePageProps, UserProfilePageState } from './user-profile-page.interfaces';
 
-export default function UserProfilePage() {
-  const { theme } = ThemeHooks.useTheme();
-  const { id } = useParams();
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export default class UserProfilePage extends AdminComponent<UserProfilePageProps, UserProfilePageState> {
+  private mounted = false;
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(id as string));
-        setUser(data);
-      } catch (err) {
-        console.error('Failed to fetch user:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  state: UserProfilePageState = {
+    routeId: '',
+    user: null,
+    loading: true,
+  };
 
-    fetchUser();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-screen">
-        <Loader label="Synchronizing Identity..." />
-      </div>
-    );
+  async componentDidMount(): Promise<void> {
+    this.mounted = true;
+    const params = await this.props.params;
+    if (!this.mounted) return;
+    this.setState({ routeId: params.id }, () => void this.fetchUser());
   }
 
-  if (!user) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4">
-        <h1 className="text-2xl font-semibold text-slate-400 tracking-tight">User Not Found</h1>
-        <Link href={AdminConstants.ROUTES.USERS.LIST}>
-          <Button variant="ghost">Return to Database</Button>
-        </Link>
-      </div>
-    );
+  componentWillUnmount(): void {
+    this.mounted = false;
   }
 
-  const initials = user.firstName && user.lastName 
-    ? `${user.firstName[0]}${user.lastName[0]}` 
-    : user.email[0].toUpperCase();
+  private async fetchUser(): Promise<void> {
+    try {
+      const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(this.state.routeId));
+      if (this.mounted) this.setState({ user: data });
+    } catch (err) {
+      console.error('Failed to fetch user:', err);
+    } finally {
+      if (this.mounted) this.setState({ loading: false });
+    }
+  }
 
-  return (
-    <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-700">
-      {/* Profile Header */}
-      <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl ${
-        theme === 'dark' ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl' : 'bg-white/80 border-slate-100 shadow-sm'
-      }`}>
-        <div className="w-full px-6 lg:px-12 py-8 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href={AdminConstants.ROUTES.USERS.LIST} className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
-              <FrameworkIcons.Left size={20} />
-            </Link>
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-indigo-500/20 ring-4 ring-indigo-500/10">
-              {initials}
-            </div>
-            <div>
-              <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {user.firstName ? `${user.firstName} ${user.lastName}` : user.email.split('@')[0]}
-              </h1>
-              <div className="flex items-center gap-4 mt-1">
-                <span className="text-[10px] font-bold tracking-tight text-slate-500">{user.email}</span>
-                <Badge variant="blue" className="text-[8px] px-2 py-0 border-none font-bold">ID: {user.id}</Badge>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-             <Link href={AdminConstants.ROUTES.USERS.EDIT(id as string)}>
-                <Button 
-                  variant="secondary"
-                  className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] border-slate-200 dark:border-slate-800"
-                  icon={<FrameworkIcons.Settings size={16} />}
-                >
-                  Edit Profile
-                </Button>
-             </Link>
-             <Link href={AdminConstants.ROUTES.USERS.ROLES(id as string)}>
-                <Button 
-                  className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] text-white"
-                  icon={<FrameworkIcons.Shield size={16} />}
-                >
-                  Configure RBAC
-                </Button>
-             </Link>
-          </div>
+  render(): React.ReactElement {
+    const theme = this.theme;
+    const { routeId: id, user, loading } = this.state;
+
+    if (loading) {
+      return (
+        <div className="flex-1 flex items-center justify-center min-h-screen">
+          <Loader label="Synchronizing Identity..." />
         </div>
-      </div>
+      );
+    }
 
-      <div className="flex-1 w-full px-6 lg:px-12 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <Card title="Account Information">
-              <div className="grid grid-cols-2 gap-8 py-4">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">First Name</span>
-                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.firstName || 'Not Set'}</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Last Name</span>
-                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.lastName || 'Not Set'}</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">E-Mail Address</span>
-                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.email}</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Username</span>
-                  <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.username || 'Not Set'}</p>
+    if (!user) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4">
+          <h1 className="text-2xl font-semibold text-slate-400 tracking-tight">User Not Found</h1>
+          <Link href={AdminConstants.ROUTES.USERS.LIST}>
+            <Button variant="ghost">Return to Database</Button>
+          </Link>
+        </div>
+      );
+    }
+
+    const initials = user.firstName && user.lastName
+      ? `${user.firstName[0]}${user.lastName[0]}`
+      : user.email[0].toUpperCase();
+
+    return (
+      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-700">
+        {/* Profile Header */}
+        <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl ${
+          theme === 'dark' ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl' : 'bg-white/80 border-slate-100 shadow-sm'
+        }`}>
+          <div className="w-full px-6 lg:px-12 py-8 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <Link href={AdminConstants.ROUTES.USERS.LIST} className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
+                <FrameworkIcons.Left size={20} />
+              </Link>
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-indigo-500/20 ring-4 ring-indigo-500/10">
+                {initials}
+              </div>
+              <div>
+                <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  {user.firstName ? `${user.firstName} ${user.lastName}` : user.email.split('@')[0]}
+                </h1>
+                <div className="flex items-center gap-4 mt-1">
+                  <span className="text-[10px] font-bold tracking-tight text-slate-500">{user.email}</span>
+                  <Badge variant="blue" className="text-[8px] px-2 py-0 border-none font-bold">ID: {user.id}</Badge>
                 </div>
               </div>
-            </Card>
+            </div>
 
-            <Card title="Assigned Security Roles" icon={<FrameworkIcons.Shield size={18} className="text-indigo-500" />}>
-               <div className="flex flex-wrap gap-3 py-2">
-                 {user.roles && user.roles.length > 0 ? (
-                    user.roles.map((role: string) => (
-                      <div key={role} className={`px-6 py-4 rounded-2xl border flex items-center gap-4 transition-all hover:border-indigo-500/50 hover:shadow-lg ${
-                        theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-100 shadow-sm'
-                      }`}>
-                         <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
-                         <div>
-                            <span className={`text-[11px] font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{role}</span>
-                            <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-tight">Custom Security Definition</p>
-                         </div>
-                      </div>
-                    ))
-                 ) : (
-                    <p className="text-slate-500 font-bold text-sm italic py-4">No roles assigned to this account.</p>
-                 )}
-               </div>
-               <div className="mt-8 pt-6 border-t border-slate-800/10 flex justify-end">
-                  <Link href={AdminConstants.ROUTES.USERS.ROLES(id as string)}>
-                    <Button variant="ghost" className="text-[10px] font-bold tracking-tight text-indigo-500 uppercase">
-                      Manage Assignments
-                    </Button>
-                  </Link>
-               </div>
-            </Card>
-          </div>
-
-          <div className="space-y-8">
-            <Card title="System Metadata">
-              <div className="space-y-6">
-                 <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Type</span>
-                    {user.roles && user.roles.includes('admin') ? (
-                       <Badge variant="purple" className="px-3 font-bold">Administrator</Badge>
-                    ) : (
-                       <Badge variant="amber" className="px-3 font-bold">Standard</Badge>
-                    )}
-                 </div>
-                 <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Status</span>
-                    <Badge variant={String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'danger' : 'success'} className="px-3 font-bold">
-                      {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
-                    </Badge>
-                 </div>
-                 <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Password Reset</span>
-                    <span className="text-xs font-bold text-slate-400">
-                      {user.forcePasswordReset ? 'Required on next login' : 'Not required'}
-                    </span>
-                 </div>
-                 <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Created</span>
-                    <span className="text-xs font-bold text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
-                 </div>
-                 <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Last Modified</span>
-                    <span className="text-xs font-bold text-slate-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}</span>
-                 </div>
-              </div>
-            </Card>
-
-            <div className={`p-8 rounded-[2rem] border overflow-hidden relative ${
-              theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'
-            }`}>
-               <h4 className="text-[11px] font-bold tracking-tight text-indigo-500 mb-4 uppercase">Security Notice</h4>
-               <p className="text-xs font-bold leading-relaxed text-slate-500">
-                 Modifying user roles or permissions takes effect immediately. Ensure you follow the principle of least privilege when assigning administrative roles.
-               </p>
-               <FrameworkIcons.Shield className="absolute -bottom-4 -right-4 text-indigo-500/10" size={100} />
+            <div className="flex items-center gap-4">
+               <Link href={AdminConstants.ROUTES.USERS.EDIT(id)}>
+                  <Button
+                    variant="secondary"
+                    className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] border-slate-200 dark:border-slate-800"
+                    icon={<FrameworkIcons.Settings size={16} />}
+                  >
+                    Edit Profile
+                  </Button>
+               </Link>
+               <Link href={AdminConstants.ROUTES.USERS.ROLES(id)}>
+                  <Button
+                    className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] text-white"
+                    icon={<FrameworkIcons.Shield size={16} />}
+                  >
+                    Configure RBAC
+                  </Button>
+               </Link>
             </div>
           </div>
         </div>
+
+        <div className="flex-1 w-full px-6 lg:px-12 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <Card title="Account Information">
+                <div className="grid grid-cols-2 gap-8 py-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">First Name</span>
+                    <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.firstName || 'Not Set'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Last Name</span>
+                    <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.lastName || 'Not Set'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">E-Mail Address</span>
+                    <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.email}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Username</span>
+                    <p className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>{user.username || 'Not Set'}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card title="Assigned Security Roles" icon={<FrameworkIcons.Shield size={18} className="text-indigo-500" />}>
+                 <div className="flex flex-wrap gap-3 py-2">
+                   {user.roles && user.roles.length > 0 ? (
+                      user.roles.map((role: string) => (
+                        <div key={role} className={`px-6 py-4 rounded-2xl border flex items-center gap-4 transition-all hover:border-indigo-500/50 hover:shadow-lg ${
+                          theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-100 shadow-sm'
+                        }`}>
+                           <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
+                           <div>
+                              <span className={`text-[11px] font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{role}</span>
+                              <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-tight">Custom Security Definition</p>
+                           </div>
+                        </div>
+                      ))
+                   ) : (
+                      <p className="text-slate-500 font-bold text-sm italic py-4">No roles assigned to this account.</p>
+                   )}
+                 </div>
+                 <div className="mt-8 pt-6 border-t border-slate-800/10 flex justify-end">
+                    <Link href={AdminConstants.ROUTES.USERS.ROLES(id)}>
+                      <Button variant="ghost" className="text-[10px] font-bold tracking-tight text-indigo-500 uppercase">
+                        Manage Assignments
+                      </Button>
+                    </Link>
+                 </div>
+              </Card>
+            </div>
+
+            <div className="space-y-8">
+              <Card title="System Metadata">
+                <div className="space-y-6">
+                   <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Type</span>
+                      {user.roles && user.roles.includes('admin') ? (
+                         <Badge variant="purple" className="px-3 font-bold">Administrator</Badge>
+                      ) : (
+                         <Badge variant="amber" className="px-3 font-bold">Standard</Badge>
+                      )}
+                   </div>
+                   <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Status</span>
+                      <Badge variant={String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'danger' : 'success'} className="px-3 font-bold">
+                        {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
+                      </Badge>
+                   </div>
+                   <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Password Reset</span>
+                      <span className="text-xs font-bold text-slate-400">
+                        {user.forcePasswordReset ? 'Required on next login' : 'Not required'}
+                      </span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Created</span>
+                      <span className="text-xs font-bold text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Last Modified</span>
+                      <span className="text-xs font-bold text-slate-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}</span>
+                   </div>
+                </div>
+              </Card>
+
+              <div className={`p-8 rounded-[2rem] border overflow-hidden relative ${
+                theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'
+              }`}>
+                 <h4 className="text-[11px] font-bold tracking-tight text-indigo-500 mb-4 uppercase">Security Notice</h4>
+                 <p className="text-xs font-bold leading-relaxed text-slate-500">
+                   Modifying user roles or permissions takes effect immediately. Ensure you follow the principle of least privilege when assigning administrative roles.
+                 </p>
+                 <FrameworkIcons.Shield className="absolute -bottom-4 -right-4 text-indigo-500/10" size={100} />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }

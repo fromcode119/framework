@@ -46,7 +46,7 @@ export async function generateMetadata({
 
   if (!slug) {
     const { content, resolution } = await DynamicPageResolver.resolveHomeTarget(locale, fallbackLocale, resolvedSearchParams);
-    return ResolvedContentMetadata.build((content as Record<string, unknown> | null) || null, resolution?.type);
+    return ResolvedContentMetadata.buildEnriched((content as Record<string, unknown> | null) || null, resolution?.type, '/');
   }
 
   const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(
@@ -56,7 +56,7 @@ export async function generateMetadata({
     routingConfig.strategy,
   );
 
-  return ResolvedContentMetadata.build(resolution?.doc || null, resolution?.type);
+  return ResolvedContentMetadata.buildEnriched(resolution?.doc || null, resolution?.type, `/${slug}`);
 }
 
 export default async function DynamicContentPage({

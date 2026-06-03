@@ -146,7 +146,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
       pagePayload.title = payload.title || this.createFallbackTitle(payload.slug);
     }
     if (fieldNames.has('content')) {
-      pagePayload.content = [];
+      pagePayload.content = Array.isArray(payload.defaultContent) ? payload.defaultContent : [];
     }
     if (fieldNames.has('status')) {
       pagePayload.status = 'published';
