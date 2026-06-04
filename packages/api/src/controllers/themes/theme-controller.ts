@@ -9,6 +9,15 @@ import { BackupService } from '@fromcode119/core';
 export class ThemeController {
   private static readonly PRODUCTION_ASSET_CACHE_HEADER = 'public, max-age=2592000';
 
+  private static readonly COMPRESSIBLE_MIME: Record<string, string> = {
+    '.js': 'application/javascript',
+    '.mjs': 'application/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.svg': 'image/svg+xml',
+    '.html': 'text/html',
+  };
+
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'theme-controller' });
@@ -241,7 +250,28 @@ export class ThemeController {
     }
 
     if (fs.existsSync(absolutePath)) {
-      if (this.shouldDisableAssetCache(req)) {
+      const noCache = this.shouldDisableAssetCache(req);
+      const ext = path.extname(absolutePath).toLowerCase();
+      const mimeType = ThemeController.COMPRESSIBLE_MIME[ext];
+      const gzPath = absolutePath + '.gz';
+      const acceptsGzip = String(req.headers['accept-encoding'] || '').includes('gzip');
+
+      if (mimeType && acceptsGzip && fs.existsSync(gzPath)) {
+        const headers: Record<string, string> = {
+          'Content-Encoding': 'gzip',
+          'Content-Type': mimeType,
+          'Vary': 'Accept-Encoding',
+          'Cache-Control': noCache ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : ThemeController.PRODUCTION_ASSET_CACHE_HEADER,
+        };
+        if (noCache) {
+          headers['Pragma'] = 'no-cache';
+          headers['Expires'] = '0';
+        }
+        res.set(headers);
+        return res.sendFile(gzPath);
+      }
+
+      if (noCache) {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');

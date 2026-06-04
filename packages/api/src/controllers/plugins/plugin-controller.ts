@@ -9,6 +9,15 @@ import { PluginInstallOperationService } from '../../services/plugin-install-ope
 export class PluginController {
   private static readonly PRODUCTION_ASSET_CACHE_HEADER = 'public, max-age=2592000';
 
+  private static readonly COMPRESSIBLE_MIME: Record<string, string> = {
+    '.js': 'application/javascript',
+    '.mjs': 'application/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.svg': 'image/svg+xml',
+    '.html': 'text/html',
+  };
+
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'plugin-controller' });
@@ -316,18 +325,36 @@ export class PluginController {
     }
 
     if (fs.existsSync(abs)) {
-      if (this.shouldDisableAssetCache(req)) {
+      const noCache = this.shouldDisableAssetCache(req);
+      const ext = path.extname(abs).toLowerCase();
+      const mimeType = PluginController.COMPRESSIBLE_MIME[ext];
+      const gzPath = abs + '.gz';
+      const acceptsGzip = String(req.headers['accept-encoding'] || '').includes('gzip');
+
+      if (mimeType && acceptsGzip && fs.existsSync(gzPath)) {
+        const headers: Record<string, string> = {
+          'Content-Encoding': 'gzip',
+          'Content-Type': mimeType,
+          'Vary': 'Accept-Encoding',
+          'Cache-Control': noCache ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PluginController.PRODUCTION_ASSET_CACHE_HEADER,
+        };
+        if (noCache) {
+          headers['Pragma'] = 'no-cache';
+          headers['Expires'] = '0';
+        }
+        res.set(headers);
+        return res.sendFile(gzPath);
+      }
+
+      if (noCache) {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
         return res.sendFile(abs);
-      } else {
-        return res.sendFile(abs, {
-          headers: {
-            'Cache-Control': PluginController.PRODUCTION_ASSET_CACHE_HEADER,
-          },
-        });
       }
+      return res.sendFile(abs, {
+        headers: { 'Cache-Control': PluginController.PRODUCTION_ASSET_CACHE_HEADER },
+      });
     }
 
     return res.status(404).json({ error: 'Asset not found' });
