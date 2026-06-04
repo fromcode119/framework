@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode, useEffect } from 'react';
-import { PluginsProvider, Override } from '@fromcode119/react';
+import { PluginsProvider, PluginRuntimeProvider, Override } from '@fromcode119/react';
 import { useRouter } from 'next/navigation';
 import { useSystemStatus } from '@/lib/use-system-status';
 import MaintenanceScreen from '@/components/maintenance-screen';
@@ -58,9 +58,11 @@ export default function RootProvider({ children }: { children: ReactNode }) {
     <PluginsProvider apiUrl={apiUrl} clientType="frontend-ui">
       <RouterBridge />
       <ThemeInitializer />
-      <SystemGate>
-        {normalizedChildren}
-      </SystemGate>
+      <PluginRuntimeProvider>
+        <SystemGate>
+          {normalizedChildren}
+        </SystemGate>
+      </PluginRuntimeProvider>
     </PluginsProvider>
   );
 }
