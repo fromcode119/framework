@@ -90,9 +90,14 @@ export class PluginPathContextProxy {
   }
 
   async readCurrentPluginTemplate(relativePath: string): Promise<string> {
+    const namespace = String(this.plugin.manifest.namespace || '').trim();
+    const slug = this.plugin.manifest.slug;
+    const themeDirectory = namespace
+      ? path.posix.join('src', 'overrides', 'plugins', namespace, slug)
+      : path.posix.join('src', 'overrides', 'plugins', slug);
     return this.readCurrentPluginText(relativePath, {
       pluginDirectory: 'src/templates',
-      themeDirectory: path.posix.join('src', 'templates', 'plugins', this.plugin.manifest.slug),
+      themeDirectory,
     });
   }
 

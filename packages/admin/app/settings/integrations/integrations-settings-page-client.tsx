@@ -277,7 +277,7 @@ export class IntegrationsSettingsPageClient extends AdminComponent<IntegrationsS
   private activateType(typeKey: string): void {
     const normalized = IntegrationsPageUtils.normalizeKey(typeKey);
     if (!normalized || normalized === this.state.activeType) return;
-    this.setState({ selectedProviderId: '', editor: null, removeCandidateId: null });
+    this.setState({ activeType: normalized, selectedProviderId: '', editor: null, removeCandidateId: null });
     this.router.replace(AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(normalized));
   }
 
