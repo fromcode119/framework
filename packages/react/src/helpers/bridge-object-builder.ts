@@ -68,12 +68,16 @@ import {
 } from '@fromcode119/core/client';
 import { ContextBridge } from '../context-bridge';
 import { ContextHooks } from '../context-hooks';
+import { ThemeOverrideRegistrar } from '../theme-override-registrar';
 import { LazyComponentLoaderService } from '../lazy-component-loader-service';
 import { LazyLoadClass } from '../lazy-load-class';
 import { PageStyleContext } from '../page-style-context';
 import { PageStyleProvider } from '../page-style-provider';
 import { PageStyleHooks } from '../page-style-hooks';
 import { SystemShortcodes } from '../system-shortcodes';
+import { PluginRuntimeContext } from '../plugin-runtime-context';
+import { PluginRuntimeProvider } from '../plugin-runtime-provider';
+import { PluginComponent } from '../plugin-component';
 
 export class BridgeObjectBuilder {
   // buildRegisterMethods() is REMOVED — ContextBridge now owns args directly via
@@ -127,6 +131,9 @@ export class BridgeObjectBuilder {
       PageStyleContext,
       PageStyleProvider,
       PageStyleHooks,
+      PluginRuntimeContext,
+      PluginRuntimeProvider,
+      PluginComponent,
     };
   }
 
@@ -189,6 +196,7 @@ export class BridgeObjectBuilder {
       IntegrationRegistry,
       PluginFrontendLayoutRegistrar,
       ThemeFrontendLayoutRegistrar,
+      ThemeOverrideRegistrar,
       RecordVersions,
       PluginCapability,
       MiddlewareStage,

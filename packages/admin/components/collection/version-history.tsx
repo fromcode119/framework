@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
@@ -22,24 +22,23 @@ interface VersionHistoryProps {
   theme: string;
 }
 
-export const VersionHistory: React.FC<VersionHistoryProps> = ({
-  collectionSlug,
-  recordId,
-  onRestore,
-  activeVersionId,
-  theme
-}) => {
-  const [revisions, setRevisions] = useState<Version[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [selectedRevision, setSelectedRevision] = useState<Version | null>(null);
+interface VersionHistoryState {
+  revisions: Version[];
+  loading: boolean;
+  hasMore: boolean;
+  page: number;
+  selectedRevision: Version | null;
+}
 
-  const fetchRevisions = async (p: number) => {
-    setLoading(true);
+export class VersionHistory extends React.Component<VersionHistoryProps, VersionHistoryState> {
+  state: VersionHistoryState = { revisions: [], loading: false, hasMore: false, page: 1, selectedRevision: null };
+
+  private fetchRevisions = async (p: number): Promise<void> => {
+    const { recordId, collectionSlug } = this.props;
+    this.setState({ loading: true });
     try {
       const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/versions?ref_id=${recordId}&ref_collection=${collectionSlug}&sort=-id&limit=10&page=${p}`);
-      
+
       const mapped: Version[] = (result.docs || []).map((v: any) => ({
         id: v.id,
         version: v.version || 1,
@@ -50,34 +49,44 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
       }));
 
       if (p === 1) {
-        setRevisions(mapped);
+        this.setState({ revisions: mapped });
       } else {
-        setRevisions(prev => [...prev, ...mapped]);
+        this.setState(prev => ({ revisions: [...prev.revisions, ...mapped] }));
       }
-      
-      setHasMore(result.hasNextPage || (result.docs?.length === 10));
+
+      this.setState({ hasMore: result.hasNextPage || (result.docs?.length === 10) });
     } catch (err) {
       console.error("Failed to fetch revisions:", err);
     } finally {
-      setLoading(false);
+      this.setState({ loading: false });
     }
   };
 
-  useEffect(() => {
-    if (recordId && collectionSlug) {
-      fetchRevisions(1);
-    }
-  }, [recordId, collectionSlug]);
+  componentDidMount(): void {
+    const { recordId, collectionSlug } = this.props;
+    if (recordId && collectionSlug) void this.fetchRevisions(1);
+  }
 
-  const loadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchRevisions(nextPage);
+  componentDidUpdate(prevProps: VersionHistoryProps): void {
+    const { recordId, collectionSlug } = this.props;
+    if ((prevProps.recordId !== recordId || prevProps.collectionSlug !== collectionSlug) && recordId && collectionSlug) {
+      void this.fetchRevisions(1);
+    }
+  }
+
+  private loadMore = (): void => {
+    const nextPage = this.state.page + 1;
+    this.setState({ page: nextPage });
+    void this.fetchRevisions(nextPage);
   };
 
-  const currentRevIndex = selectedRevision ? revisions.findIndex(r => r.id === selectedRevision.id) : -1;
+  render(): React.ReactNode {
+    const { onRestore, activeVersionId, theme } = this.props;
+    const { revisions, loading, hasMore, selectedRevision } = this.state;
+    const setSelectedRevision = (v: Version | null) => this.setState({ selectedRevision: v });
+    const currentRevIndex = selectedRevision ? revisions.findIndex(r => r.id === selectedRevision.id) : -1;
 
-  return (
+    return (
     <>
       <Card title="Version History">
         <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -123,8 +132,8 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
           )}
 
           {hasMore && !loading && (
-            <button 
-              onClick={loadMore}
+            <button
+              onClick={this.loadMore}
               className="w-full py-3 text-[10px] font-semibold uppercase tracking-widest text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
             >
               Load More History
@@ -198,5 +207,6 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
         </div>
       )}
     </>
-  );
-};
+    );
+  }
+}

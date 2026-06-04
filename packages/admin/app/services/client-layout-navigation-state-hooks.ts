@@ -121,6 +121,11 @@ export class ClientLayoutNavigationStateHooks {
       : String(activePrimaryItem?.path || '');
     const hasDisplayedSecondaryItems = displayedSecondaryResolved.items.length > 0;
     const hasDesktopPreviewablePaths = previewablePrimaryPaths.length > 0;
+    // True when the displayed secondary is driven by a HOVER (not docked open) —
+    // the panel should then float as an overlay instead of reserving layout width.
+    const isDesktopSecondaryHoverPreview = secondaryMode === 'desktop'
+      && !sidebarState.isDesktopSecondaryOpen
+      && Boolean(activePreviewPath && hoveredSecondaryResolved);
     const activeSecondaryAnchorPath = hasSecondaryItems ? String(activePrimaryItem?.path || '') : '';
     const showSecondaryTrigger = secondarySidebarStateService.shouldShowTrigger(secondaryMode, hasSecondaryItems);
     const showSecondaryOverlay = secondarySidebarStateService.shouldShowOverlay(secondaryMode, hasSecondaryItems, sidebarState.isSecondaryOpen);
@@ -250,6 +255,7 @@ export class ClientLayoutNavigationStateHooks {
       previewablePrimaryPaths,
       showSecondaryInlineInSidebar,
       showCollapsedDesktopSecondaryHandle,
+      isDesktopSecondaryHoverPreview,
       showSecondaryTrigger,
       showSecondaryOverlay,
       hasDesktopPreviewablePaths,

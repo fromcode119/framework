@@ -6,6 +6,7 @@ import { TextArea } from '@/components/ui/text-area';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { CodeEditor } from '@/components/ui/code-editor';
+import { LocalizedTextField } from './fields/localized-text-field';
 import { ArrayField } from '@/components/ui/array-field';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
@@ -342,7 +343,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             collectionSlug={collectionSlug}
           />
         )
-      ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'CodeEditor' ? (() => {
+      ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'CodeEditor' && field.admin?.component !== 'LocalizedText' && field.admin?.component !== 'LocalizedTextarea' ? (() => {
         const componentName = field.admin.component;
         const registeredComponent = fieldComponents[componentName];
         let CustomComponent: any = registeredComponent;
@@ -555,10 +556,20 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         )
       ) : (field.type === 'color' || field.admin?.component === 'ColorPicker') ? (
         wrapWithReadOnlyOverride(
-          <ColorPicker 
+          <ColorPicker
             value={currentValue}
             onChange={updateValue}
             disabled={isFieldReadOnly}
+          />
+        )
+      ) : (field.admin?.component === 'LocalizedText' || field.admin?.component === 'LocalizedTextarea') ? (
+        wrapWithReadOnlyOverride(
+          <LocalizedTextField
+            value={currentValue}
+            onChange={updateValue}
+            disabled={isFieldReadOnly}
+            multiline={field.admin?.component === 'LocalizedTextarea'}
+            field={field}
           />
         )
       ) : (field.type === 'code' || field.admin?.component === 'CodeEditor') ? (

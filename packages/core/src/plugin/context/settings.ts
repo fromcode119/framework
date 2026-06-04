@@ -36,7 +36,12 @@ export class SettingsContextProxy {
           const existingSettings = PluginConfigValueService.getSettings(stored?.settings);
 
           const schema = manager.getPluginSettings(plugin.manifest.slug);
-          const settingsToSave = { ...values };
+          // Merge over existing settings — `update()` is a partial update by name. Replacing
+          // the whole object here would silently wipe any key the caller didn't pass (e.g. a
+          // periodic Finance/tax sync that only touches a few keys must not drop the rest).
+          // The admin "save settings form" path uses savePluginConfig directly with the full
+          // object, so clearing a field there is unaffected.
+          const settingsToSave = { ...existingSettings, ...values };
           const SENSITIVE_FIELD_RE = /secret|password|api_key|private_key|access_token|auth_token|refresh_token|bearer_token|credential|passphrase/i;
           if (schema?.fields) {
             for (const field of schema.fields) {

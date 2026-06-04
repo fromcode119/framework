@@ -7,7 +7,9 @@ interface RecordInfoProps {
   updatedAt?: string | Date;
 }
 
-export const RecordInfo: React.FC<RecordInfoProps> = ({ id, createdAt, updatedAt }) => {
+export class RecordInfo extends React.Component<RecordInfoProps> {
+  render(): React.ReactNode {
+    const { id, createdAt, updatedAt } = this.props;
   return (
     <Card title="Record Info">
       <div className="space-y-4">
@@ -30,4 +32,5 @@ export const RecordInfo: React.FC<RecordInfoProps> = ({ id, createdAt, updatedAt
       </div>
     </Card>
   );
-};
+  }
+}

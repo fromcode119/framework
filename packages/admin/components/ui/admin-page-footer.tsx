@@ -8,17 +8,19 @@ type FooterLink = {
   href: string;
 };
 
-export function AdminPageFooter({
-  label,
-  description,
-  links,
-  accent = 'indigo',
-}: {
+export class AdminPageFooter extends React.Component<{
   label: string;
   description: string;
   links: FooterLink[];
   accent?: 'indigo' | 'emerald';
-}) {
+}> {
+  render(): React.ReactNode {
+    const {
+  label,
+  description,
+  links,
+  accent = 'indigo',
+} = this.props;
   const accentClasses =
     accent === 'emerald'
       ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]'
@@ -52,4 +54,5 @@ export function AdminPageFooter({
       </div>
     </div>
   );
+  }
 }

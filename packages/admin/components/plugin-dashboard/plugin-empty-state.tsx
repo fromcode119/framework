@@ -13,13 +13,15 @@ interface PluginEmptyStateProps {
   className?: string;
 }
 
-export const PluginEmptyState = ({ 
+export class PluginEmptyState extends React.Component<PluginEmptyStateProps> {
+  render(): React.ReactNode {
+    const { 
   icon, 
   title, 
   description, 
   action,
   className = ""
-}: PluginEmptyStateProps) => {
+} = this.props;
   return (
     <div 
       className={`
@@ -72,4 +74,5 @@ export const PluginEmptyState = ({
       )}
     </div>
   );
-};
+  }
+}

@@ -130,7 +130,10 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     try {
       const encodedLocale = encodeURIComponent(String(newLocale || '').trim() || 'en');
       const data = await api.get(`${SystemConstants.API_PATH.SYSTEM.I18N}?locale=${encodedLocale}`, { silent: true });
-      setTranslations(data);
+      // Merge (don't replace) so plugin UI translations registered via registerTranslations
+      // (e.g. the CMS visual-editor chrome, which lives only in the UI bundle and never comes
+      // through the backend /system/i18n payload) survive a (re)load of backend translations.
+      setTranslations((prev) => ({ ...prev, ...(data && typeof data === 'object' ? data : {}) }));
     } catch (error) {
       console.warn('[I18n] Failed to load translations from:', error);
     }

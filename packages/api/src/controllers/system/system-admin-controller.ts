@@ -191,6 +191,9 @@ export class SystemAdminController {
     const metadata = await this.runtime.themeManager.getFrontendMetadata(this.runtime.manager.getRuntimeModules());
     const adminMetadata = await this.runtime.manager.getAdminMetadata() as any;
     const publicSettings = await this.runtime.publicFrontendSettings.getSettings(this.runtime.db);
+    // Per-plugin, security-filtered settings (only fields flagged `public: true`) keyed by
+    // namespace/slug — consumed by the storefront via `runtime.globalSettings`.
+    const pluginPublicSettings = await this.runtime.manager.getPublicFrontendPluginSettings();
     const plugins = this.runtime.manager.getSortedPlugins(
       this.runtime.manager.getPlugins().filter((plugin: any) => plugin.state === 'active')
     ).map((plugin: any) => ({
@@ -213,6 +216,7 @@ export class SystemAdminController {
         : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),
       plugins,
       publicSettings,
+      settings: pluginPublicSettings,
     });
   }
 

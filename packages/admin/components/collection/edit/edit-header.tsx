@@ -31,7 +31,9 @@ interface EditHeaderProps {
   setShowDeleteConfirm: (val: boolean) => void;
 }
 
-export const EditHeader: React.FC<EditHeaderProps> = ({
+export class EditHeader extends React.Component<EditHeaderProps> {
+  render(): React.ReactNode {
+    const {
   collection,
   pluginSlug,
   slug,
@@ -51,7 +53,7 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
   handleSubmit,
   saving,
   setShowDeleteConfirm
-}) => {
+} = this.props;
   const collectionLabel = CollectionListUtils.resolveCollectionLabel(collection, slug);
   const singularCollectionLabel = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
   const hideHeaderPrimaryAction = collection?.admin?.hideHeaderPrimaryAction === true;
@@ -173,4 +175,5 @@ export const EditHeader: React.FC<EditHeaderProps> = ({
       </div>
     </div>
   );
-};
+  }
+}

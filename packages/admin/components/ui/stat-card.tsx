@@ -12,7 +12,9 @@ interface StatCardProps {
   };
 }
 
-export const StatCard = ({ title, value, icon, trend }: StatCardProps) => {
+export class StatCard extends React.Component<StatCardProps> {
+  render(): React.ReactNode {
+    const { title, value, icon, trend } = this.props;
   return (
     <div className="p-6 rounded-lg border transition-all hover:shadow-md bg-white border-slate-100 dark:bg-slate-900 dark:border-slate-800">
       <div className="flex items-center justify-between mb-4">
@@ -29,4 +31,5 @@ export const StatCard = ({ title, value, icon, trend }: StatCardProps) => {
       <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">{value}</h3>
     </div>
   );
-};
+  }
+}

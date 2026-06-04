@@ -29,6 +29,9 @@ export class ReactExportSourceBuilder {
     'PageStyleContext',
     'PageStyleProvider',
     'PageStyleHooks',
+    'PluginRuntimeContext',
+    'PluginRuntimeProvider',
+    'PluginComponent',
   ];
 
   private static readonly REQUIRED_REACT_EXPORT_KEYS: readonly string[] = [

@@ -38,6 +38,7 @@ import { PluginScaffoldService } from './services/plugin-scaffold-service';
 import { PluginAdminRuntimeService } from './services/plugin-admin-runtime-service';
 import { PluginInstallationService } from './services/plugin-installation-service';
 import { PluginRuntimeStateService } from './services/plugin-runtime-state-service';
+import { PluginPublicSettingsService } from './services/plugin-public-settings-service';
 import { PluginRuntimeRestartService } from './services/plugin-runtime-restart-service';
 
 export class PluginManager implements PluginManagerInterface {
@@ -416,6 +417,21 @@ export class PluginManager implements PluginManagerInterface {
 
   public getAllPluginSettings(): Map<string, any> {
     return this.runtimeState.getAllPluginSettings();
+  }
+
+  /**
+   * Resolved, security-filtered public settings for every active plugin, keyed by
+   * `namespace/slug` (and bare `slug`). Only fields flagged `public: true` in a plugin's
+   * settings schema are included; password/credential fields are always excluded.
+   * Safe to embed in the public, unauthenticated frontend metadata response.
+   */
+  public async getPublicFrontendPluginSettings(): Promise<Record<string, Record<string, any>>> {
+    const activePlugins = this.getPlugins().filter((plugin) => plugin.state === 'active');
+    return PluginPublicSettingsService.resolve(
+      activePlugins,
+      (slug: string) => this.getPluginSettings(slug),
+      this.db,
+    );
   }
 
   async installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest> {

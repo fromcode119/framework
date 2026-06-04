@@ -1,12 +1,14 @@
 'use client';
 
-import { ThemeHooks } from '@/components/use-theme';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 import { Card } from '@/components/ui/card';
 
-export function BackupOperatorNotesCard() {
-  const { theme } = ThemeHooks.useTheme();
+export class BackupOperatorNotesCard extends AdminComponent {
+  render(): React.ReactNode {
+    const theme = this.theme;
 
-  return (
+    return (
     <Card className="border-0 rounded-[2rem] p-8 shadow-[0_20px_64px_-28px_rgba(15,23,42,0.2)] dark:ring-1 dark:ring-white/5">
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-1">
@@ -33,5 +35,6 @@ export function BackupOperatorNotesCard() {
         </div>
       </div>
     </Card>
-  );
+    );
+  }
 }

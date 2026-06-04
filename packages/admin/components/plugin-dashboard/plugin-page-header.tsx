@@ -13,7 +13,9 @@ interface PluginPageHeaderProps {
   titleClassName?: string;
 }
 
-export const PluginPageHeader = ({
+export class PluginPageHeader extends React.Component<PluginPageHeaderProps> {
+  render(): React.ReactNode {
+    const {
   title,
   subtitle,
   icon,
@@ -21,7 +23,7 @@ export const PluginPageHeader = ({
   badge,
   subtitleClassName = 'text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight opacity-80 mt-3',
   titleClassName = 'text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic'
-}: PluginPageHeaderProps) => {
+} = this.props;
   return (
     <div className="sticky top-0 z-30 border-b backdrop-blur-3xl transition-all duration-300 bg-white/80 border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:bg-slate-950/80 dark:border-slate-800/50 dark:shadow-2xl dark:shadow-black/20 -mx-8 -mt-8 px-8 py-8 mb-8">
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between md:gap-6">
@@ -51,4 +53,5 @@ export const PluginPageHeader = ({
       </div>
     </div>
   );
-};
+  }
+}

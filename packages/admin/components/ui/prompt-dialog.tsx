@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ThemeHooks } from '@/components/use-theme';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 import { Button } from './button';
 import { Input } from './input';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -24,44 +24,67 @@ interface PromptDialogProps {
   inputType?: 'text' | 'password';
 }
 
-export const PromptDialog = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  description,
-  placeholder = 'Enter value...',
-  defaultValue = '',
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
-  isLoading = false,
-  icon,
-  inputType = 'text'
-}: PromptDialogProps) => {
-  const { theme } = ThemeHooks.useTheme();
-  const [value, setValue] = useState(defaultValue);
-  const inputRef = useRef<HTMLInputElement>(null);
+interface PromptDialogState {
+  value: string;
+}
 
-  useEffect(() => {
-    if (isOpen) {
+export class PromptDialog extends AdminComponent<PromptDialogProps, PromptDialogState> {
+  private readonly inputRef = React.createRef<HTMLInputElement>();
+
+  state: PromptDialogState = { value: this.props.defaultValue ?? '' };
+
+  private syncOpenState(): void {
+    if (typeof document === 'undefined') return;
+    if (this.props.isOpen) {
       document.body.style.overflow = 'hidden';
-      setValue(defaultValue);
-      setTimeout(() => inputRef.current?.focus(), 100);
+      this.setState({ value: this.props.defaultValue ?? '' });
+      setTimeout(() => this.inputRef.current?.focus(), 100);
     } else {
       document.body.style.overflow = 'unset';
     }
-  }, [isOpen, defaultValue]);
+  }
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  componentDidMount(): void {
+    this.syncOpenState();
+  }
+
+  componentDidUpdate(prevProps: PromptDialogProps): void {
+    if (prevProps.isOpen !== this.props.isOpen || prevProps.defaultValue !== this.props.defaultValue) {
+      this.syncOpenState();
+    }
+  }
+
+  componentWillUnmount(): void {
+    if (typeof document !== 'undefined') document.body.style.overflow = 'unset';
+  }
+
+  private handleSubmit = (e?: React.FormEvent): void => {
     e?.preventDefault();
-    if (value.trim()) {
-      onConfirm(value.trim());
+    const trimmed = this.state.value.trim();
+    if (trimmed) {
+      this.props.onConfirm(trimmed);
     }
   };
 
-  if (!isOpen) return null;
+  render(): React.ReactNode {
+    const {
+      isOpen,
+      onClose,
+      title,
+      description,
+      placeholder = 'Enter value...',
+      confirmLabel = 'Confirm',
+      cancelLabel = 'Cancel',
+      isLoading = false,
+      icon,
+      inputType = 'text',
+    } = this.props;
+    const theme = this.theme;
+    const { value } = this.state;
 
-  return (
+    if (!isOpen) return null;
+
+    return (
     <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         {/* Backdrop */}
@@ -100,13 +123,13 @@ export const PromptDialog = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input 
-            ref={inputRef}
+        <form onSubmit={this.handleSubmit} className="space-y-6">
+          <Input
+            ref={this.inputRef}
             type={inputType}
             placeholder={placeholder}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => this.setState({ value: e.target.value })}
             disabled={isLoading}
             className="w-full"
             autoFocus
@@ -136,5 +159,6 @@ export const PromptDialog = ({
       </div>
     </div>
     </RootFramework>
-  );
-};
+    );
+  }
+}

@@ -1,10 +1,13 @@
 "use client";
 
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailSidebarProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginDetailSidebar({
+export default class PluginDetailSidebar extends React.Component<PluginDetailSidebarProps> {
+  render(): React.ReactNode {
+    const {
   activeTab,
   onOpenDefinition,
   onOpenDeleteConfirm,
@@ -14,7 +17,7 @@ export default function PluginDetailSidebar({
   settingsFormRef,
   settingsSaving,
   theme,
-}: PluginDetailSidebarProps) {
+} = this.props;
   return (
     <div className="space-y-8">
       {activeTab === 'settings' && (
@@ -75,4 +78,5 @@ export default function PluginDetailSidebar({
       </Card>
     </div>
   );
+  }
 }

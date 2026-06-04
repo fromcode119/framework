@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
@@ -33,41 +33,34 @@ interface TagOption {
   value: string;
 }
 
+interface TagFieldState {
+  inputValue: string;
+  suggestions: TagOption[];
+  showSuggestions: boolean;
+  sourceUnavailableMessage: string;
+  labels: Record<string, string>;
+  isCreating: boolean;
+}
 
+export class TagField extends React.Component<TagFieldProps, TagFieldState> {
+  private readonly containerRef = React.createRef<HTMLDivElement>();
+  private suggestTimer?: ReturnType<typeof setTimeout>;
 
-export const TagField = ({ 
-  value, 
-  onChange, 
-  placeholder,
-  suggestionsLabel,
-  theme = 'light',
-  collectionSlug,
-  fieldName,
-  sourceCollection,
-  sourceField,
-  hasMany = true,
-  allowCreate = true,
-  size = 'md',
-  apiOverrides
-}: TagFieldProps) => {
-  const [inputValue, setInputValue] = useState('');
-  const [suggestions, setSuggestions] = useState<TagOption[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [sourceUnavailableMessage, setSourceUnavailableMessage] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [labels, setLabels] = useState<Record<string, string>>({});
-  const inferredFieldLabel = TagFieldUtils.inferFieldLabel(fieldName);
-  const sourceCollectionCandidates = React.useMemo(
-    () => TagFieldUtils.resolveCollectionCandidates(String(sourceCollection || '')),
-    [sourceCollection]
-  );
-  const effectivePlaceholder = placeholder || (sourceCollection ? `Search ${inferredFieldLabel}...` : `Add ${inferredFieldLabel} and press Enter...`);
-  const effectiveSuggestionsLabel =
-    suggestionsLabel ||
-    `Existing ${inferredFieldLabel}`;
-  const createEntityLabel = inferredFieldLabel;
+  state: TagFieldState = {
+    inputValue: '',
+    suggestions: [],
+    showSuggestions: false,
+    sourceUnavailableMessage: '',
+    labels: {},
+    isCreating: false,
+  };
 
-  const tags = React.useMemo(() => {
+  private getSourceCollectionCandidates(): string[] {
+    return TagFieldUtils.resolveCollectionCandidates(String(this.props.sourceCollection || ''));
+  }
+
+  private getTags(): any[] {
+    const { value, hasMany = true } = this.props;
     if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined);
     if (value !== null && value !== undefined && typeof value === 'string' && value.trim()) {
       if (!hasMany) return [value];
@@ -79,17 +72,98 @@ export const TagField = ({
       }
     }
     if (value !== null && value !== undefined && !Array.isArray(value) && typeof value !== 'string') {
-        return [String(value)];
+      return [String(value)];
     }
     return [];
-  }, [value, hasMany]);
+  }
+
+  // ----- side-effect keys (mirror the original effect dependency arrays) -----
+  private labelsEffectKey(): string {
+    return JSON.stringify([this.getTags(), this.props.sourceCollection, this.state.sourceUnavailableMessage]);
+  }
+
+  private suggestionsEffectKey(): string {
+    return JSON.stringify([
+      this.state.inputValue,
+      this.props.collectionSlug,
+      this.props.fieldName,
+      this.getTags(),
+      this.props.sourceCollection,
+      this.props.sourceField,
+      this.state.showSuggestions,
+    ]);
+  }
+
+  componentDidMount(): void {
+    document.addEventListener('mousedown', this.handleClickOutside);
+    void this.fetchLabels();
+    this.scheduleFetchSuggestions();
+  }
+
+  componentDidUpdate(prevProps: TagFieldProps, prevState: TagFieldState): void {
+    const prevLabelsKey = JSON.stringify([this.tagsFromProps(prevProps), prevProps.sourceCollection, prevState.sourceUnavailableMessage]);
+    if (prevLabelsKey !== this.labelsEffectKey()) {
+      void this.fetchLabels();
+    }
+
+    const prevSuggKey = JSON.stringify([
+      prevState.inputValue,
+      prevProps.collectionSlug,
+      prevProps.fieldName,
+      this.tagsFromProps(prevProps),
+      prevProps.sourceCollection,
+      prevProps.sourceField,
+      prevState.showSuggestions,
+    ]);
+    if (prevSuggKey !== this.suggestionsEffectKey()) {
+      this.scheduleFetchSuggestions();
+    }
+  }
+
+  componentWillUnmount(): void {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+    if (this.suggestTimer) clearTimeout(this.suggestTimer);
+  }
+
+  private tagsFromProps(props: TagFieldProps): any[] {
+    const { value, hasMany = true } = props;
+    if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined);
+    if (value !== null && value !== undefined && typeof value === 'string' && value.trim()) {
+      if (!hasMany) return [value];
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.filter(v => v !== null && v !== undefined) : [value];
+      } catch (e) {
+        return [value];
+      }
+    }
+    if (value !== null && value !== undefined && !Array.isArray(value) && typeof value !== 'string') {
+      return [String(value)];
+    }
+    return [];
+  }
+
+  private handleClickOutside = (event: MouseEvent): void => {
+    if (this.containerRef.current && !this.containerRef.current.contains(event.target as Node)) {
+      this.setState({ showSuggestions: false });
+    }
+  };
+
+  private scheduleFetchSuggestions(): void {
+    if (this.suggestTimer) clearTimeout(this.suggestTimer);
+    this.suggestTimer = setTimeout(() => { void this.fetchSuggestions(); }, 300);
+  }
 
   // Fetch missing labels for current tags
-  useEffect(() => {
-    const fetchLabels = async () => {
+  private fetchLabels = async (): Promise<void> => {
+    const { sourceCollection, sourceField, apiOverrides } = this.props;
+    const tags = this.getTags();
+    const labels = this.state.labels;
+    const sourceCollectionCandidates = this.getSourceCollectionCandidates();
+    {
       if (!sourceCollection || tags.length === 0) return;
-      if (sourceUnavailableMessage) return;
-      
+      if (this.state.sourceUnavailableMessage) return;
+
       const missing = tags.filter(t => !labels[t]);
       if (missing.length === 0) return;
 
@@ -147,25 +221,29 @@ export const TagField = ({
            } catch (e: any) {
              const message = String(e?.message || '');
              if (e?.status === 403 && message.includes('is unavailable because plugin')) {
-               setSourceUnavailableMessage(message);
+               this.setState({ sourceUnavailableMessage: message });
              }
            }
         }));
-        setLabels((prev) => ({ ...prev, ...newLabels }));
+        this.setState((prev) => ({ labels: { ...prev.labels, ...newLabels } }));
       } catch (err) {}
-    };
-    fetchLabels();
-  }, [tags, sourceCollection, sourceCollectionCandidates, sourceUnavailableMessage]);
+    }
+  };
 
-  useEffect(() => {
-    const fetchSuggestions = async () => {
+  private fetchSuggestions = async (): Promise<void> => {
+    const { sourceCollection, collectionSlug, sourceField, fieldName, apiOverrides } = this.props;
+    const inputValue = this.state.inputValue;
+    const sourceUnavailableMessage = this.state.sourceUnavailableMessage;
+    const tags = this.getTags();
+    const sourceCollectionCandidates = this.getSourceCollectionCandidates();
+    {
       // If it's a relationship field (sourceCollection exists), we allow empty input to show initial suggestions
       if (inputValue.length < 1 && !sourceCollection) {
-        setSuggestions([]);
+        this.setState({ suggestions: [] });
         return;
       }
       if (sourceCollection && sourceUnavailableMessage) {
-        setSuggestions([]);
+        this.setState({ suggestions: [] });
         return;
       }
 
@@ -206,8 +284,8 @@ export const TagField = ({
             throw lastError;
           }
         }
-        setSourceUnavailableMessage('');
-        
+        this.setState({ sourceUnavailableMessage: '' });
+
         // Handle both array responses and paginated responses
         const docs = Array.isArray(result) ? result : (result.docs || []);
         
@@ -244,50 +322,36 @@ export const TagField = ({
           });
 
           // Filter out if value is missing or already selected
-          setSuggestions(
-            mapped.filter(s => s.value && !tags.includes(s.value))
-          );
-          
+          this.setState({ suggestions: mapped.filter(s => s.value && !tags.includes(s.value)) });
+
           // Update labels map with suggestion info
           const newLabels: Record<string, string> = {};
           mapped.forEach(m => { if (m.value) newLabels[m.value] = m.label; });
-          setLabels((prev) => ({ ...prev, ...newLabels }));
+          this.setState((prev) => ({ labels: { ...prev.labels, ...newLabels } }));
         }
       } catch (err) {
         const message = String((err as any)?.message || '');
         const status = (err as any)?.status;
         if (status === 403 && message.includes('is unavailable because plugin')) {
-          setSourceUnavailableMessage(message);
-          setSuggestions([]);
+          this.setState({ sourceUnavailableMessage: message, suggestions: [] });
           return;
         }
         console.error("Failed to fetch suggestions", err);
       }
-    };
-
-    const timer = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timer);
-  }, [inputValue, collectionSlug, fieldName, tags, sourceCollection, sourceCollectionCandidates, sourceField, showSuggestions]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  };
 
-  const addTag = (tag: any) => {
+  private addTag = (tag: any): void => {
+    const { onChange, hasMany = true, allowCreate = true, sourceCollection, sourceField, apiOverrides } = this.props;
+    const tags = this.getTags();
+    {
     if (tag === null || tag === undefined) return;
     const strValue = String(tag).trim();
     if (!strValue) return;
 
     // Filter out if already exists (for hasMany)
     if (hasMany && tags.includes(strValue)) {
-      setInputValue('');
-      setShowSuggestions(false);
+      this.setState({ inputValue: '', showSuggestions: false });
       return;
     }
 
@@ -300,9 +364,8 @@ export const TagField = ({
       // Direct pass-through of the string value to prevent object wrapping
       onChange(finalValue);
     }
-    
-    setInputValue('');
-    setShowSuggestions(false);
+
+    this.setState({ inputValue: '', showSuggestions: false });
 
     // Then background auto-creation if enabled
     if (allowCreate && (sourceCollection || apiOverrides?.create)) {
@@ -330,22 +393,39 @@ export const TagField = ({
         }
       })();
     }
+    }
   };
 
-  const [isCreating, setIsCreating] = useState(false);
-
-  const inputTextSizeClass = size === 'sm' ? 'text-[12px]' : size === 'lg' ? 'text-sm' : 'text-[13px]';
-  const wrapperClasses = hasMany
-    ? UiFieldUtils.getFieldClasses(size, 'flex flex-wrap gap-2', true)
-    : UiFieldUtils.getFieldClasses(size, 'flex items-center gap-2', false);
-
-  const handleAddClick = (tag: any) => {
-      // Direct synchronous call to ensure state transitions happen immediately
-      addTag(tag);
+  private handleAddClick = (tag: any): void => {
+    // Direct synchronous call to ensure state transitions happen immediately
+    this.addTag(tag);
   };
 
-  return (
-    <div className="relative w-full" ref={containerRef}>
+  render(): React.ReactNode {
+    const {
+      placeholder,
+      suggestionsLabel,
+      theme = 'light',
+      fieldName,
+      sourceCollection,
+      hasMany = true,
+      allowCreate = true,
+      size = 'md',
+      onChange,
+    } = this.props;
+    const { inputValue, suggestions, showSuggestions, sourceUnavailableMessage, labels, isCreating } = this.state;
+    const tags = this.getTags();
+    const inferredFieldLabel = TagFieldUtils.inferFieldLabel(fieldName);
+    const effectivePlaceholder = placeholder || (sourceCollection ? `Search ${inferredFieldLabel}...` : `Add ${inferredFieldLabel} and press Enter...`);
+    const effectiveSuggestionsLabel = suggestionsLabel || `Existing ${inferredFieldLabel}`;
+    const createEntityLabel = inferredFieldLabel;
+    const inputTextSizeClass = size === 'sm' ? 'text-[12px]' : size === 'lg' ? 'text-sm' : 'text-[13px]';
+    const wrapperClasses = hasMany
+      ? UiFieldUtils.getFieldClasses(size, 'flex flex-wrap gap-2', true)
+      : UiFieldUtils.getFieldClasses(size, 'flex items-center gap-2', false);
+
+    return (
+    <div className="relative w-full" ref={this.containerRef}>
       <div className={wrapperClasses}>
         {tags.map((tag: string, i: number) => {
           const label = labels[tag] || tag;
@@ -383,15 +463,14 @@ export const TagField = ({
                 type="text"
                 value={inputValue}
                 onChange={(e) => {
-                    setInputValue(e.target.value);
-                    setShowSuggestions(true);
+                    this.setState({ inputValue: e.target.value, showSuggestions: true });
                 }}
-                onFocus={() => setShowSuggestions(true)}
+                onFocus={() => this.setState({ showSuggestions: true })}
                 placeholder={tags.length === 0 ? effectivePlaceholder : ''}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        if (inputValue.trim()) handleAddClick(inputValue);
+                        if (inputValue.trim()) this.handleAddClick(inputValue);
                     } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
                         const newTags = [...tags];
                         newTags.pop();
@@ -433,7 +512,7 @@ export const TagField = ({
                     type="button"
                     onMouseDown={(e) => {
                       e.preventDefault();
-                      handleAddClick(suggestion.value);
+                      this.handleAddClick(suggestion.value);
                     }}
                     className={`w-full text-left px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center justify-between group ${
                         theme === 'dark' 
@@ -458,7 +537,7 @@ export const TagField = ({
                 type="button"
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  handleAddClick(inputValue);
+                  this.handleAddClick(inputValue);
                 }}
                 className={`w-full text-left px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center gap-3 group mt-1 ${
                     theme === 'dark' 
@@ -480,5 +559,6 @@ export const TagField = ({
         </div>
       )}
     </div>
-  );
-};
+    );
+  }
+}

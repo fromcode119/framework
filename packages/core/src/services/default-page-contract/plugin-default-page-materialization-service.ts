@@ -208,6 +208,7 @@ export class PluginDefaultPageMaterializationService extends BaseService {
       recipe: contract.effectiveRecipe,
       title: contract.effectiveTitle,
       themeLayout: contract.effectiveThemeLayout,
+      defaultContent: Array.isArray(contract.defaultContent) ? contract.defaultContent : undefined,
     };
   }
 

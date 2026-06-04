@@ -1,9 +1,12 @@
 "use client";
 
+import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailTabsProps } from '../plugin-detail-page.interfaces';
 
-export default function PluginDetailTabs({ activeTab, onTabChange, theme }: PluginDetailTabsProps) {
+export default class PluginDetailTabs extends React.Component<PluginDetailTabsProps> {
+  render(): React.ReactNode {
+    const { activeTab, onTabChange, theme } = this.props;
   const tabs = [
     { id: 'overview', label: 'Overview', icon: FrameworkIcons.Plugins },
     { id: 'settings', label: 'Configuration', icon: FrameworkIcons.Settings },
@@ -25,4 +28,5 @@ export default function PluginDetailTabs({ activeTab, onTabChange, theme }: Plug
       ))}
     </div>
   );
+  }
 }

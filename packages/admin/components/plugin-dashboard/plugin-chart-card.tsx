@@ -11,14 +11,16 @@ interface PluginChartCardProps {
   noPadding?: boolean;
 }
 
-export const PluginChartCard = ({ 
+export class PluginChartCard extends React.Component<PluginChartCardProps> {
+  render(): React.ReactNode {
+    const { 
   title, 
   subtitle, 
   actions, 
   children,
   className = "",
   noPadding = false
-}: PluginChartCardProps) => {
+} = this.props;
   return (
     <div 
       className={`
@@ -58,4 +60,5 @@ export const PluginChartCard = ({
       </div>
     </div>
   );
-};
+  }
+}

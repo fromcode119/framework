@@ -14,7 +14,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   target?: string;
 }
 
-export const Button = ({ 
+export class Button extends React.Component<ButtonProps> {
+  render(): React.ReactNode {
+    const { 
   variant = 'primary', 
   size = 'md', 
   children, 
@@ -23,7 +25,7 @@ export const Button = ({
   icon,
   as: Component = 'button',
   ...props 
-}: ButtonProps) => {
+} = this.props;
   const variants = {
     primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20',
     secondary: 'bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:border-transparent',
@@ -58,4 +60,5 @@ export const Button = ({
       )}
     </Component>
   );
-};
+  }
+}

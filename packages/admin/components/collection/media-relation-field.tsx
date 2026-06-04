@@ -18,11 +18,17 @@ interface MediaRelationFieldProps {
   hasMany?: boolean;
 }
 
-export const MediaRelationField: React.FC<MediaRelationFieldProps> = ({ value, onChange, theme, hasMany = false }) => {
-  const [open, setOpen] = React.useState(false);
-  const [preview, setPreview] = React.useState<{ url?: string; filename?: string } | null>(null);
+interface MediaRelationFieldState {
+  open: boolean;
+  preview: { url?: string; filename?: string } | null;
+}
 
-  const selectedIds = React.useMemo((): Array<string | number> => {
+export class MediaRelationField extends React.Component<MediaRelationFieldProps, MediaRelationFieldState> {
+  state: MediaRelationFieldState = { open: false, preview: null };
+  private hydrateToken = 0;
+
+  private getSelectedIds(): Array<string | number> {
+    const { value } = this.props;
     const normalizeEntry = (entry: any): any => {
       if (entry && typeof entry === 'object') {
         return entry.id ?? entry._id ?? entry.value;
@@ -60,104 +66,117 @@ export const MediaRelationField: React.FC<MediaRelationFieldProps> = ({ value, o
     }
 
     return normalizeScalarOrListString(value);
-  }, [value]);
+  }
 
-  const selectedKey = React.useMemo(
-    () => selectedIds.map((entry) => String(entry)).join('|'),
-    [selectedIds]
-  );
+  private getSelectedKey(): string {
+    return this.getSelectedIds().map((entry) => String(entry)).join('|');
+  }
 
-  React.useEffect(() => {
-    let active = true;
+  private hydratePreview = async (): Promise<void> => {
+    const token = ++this.hydrateToken;
+    const isCurrent = () => token === this.hydrateToken;
+    const selectedIds = this.getSelectedIds();
+    const preview = this.state.preview;
 
-    const hydratePreview = async () => {
-      const firstId = selectedIds[0];
-      if (!firstId) {
-        if (active) setPreview(null);
+    const firstId = selectedIds[0];
+    if (!firstId) {
+      if (isCurrent()) this.setState({ preview: null });
+      return;
+    }
+
+    const currentPreviewId = String(preview?.filename || '').startsWith('media-')
+      ? String(preview?.filename || '').replace(/^media-/, '')
+      : '';
+    if (preview?.url && currentPreviewId === String(firstId)) {
+      return;
+    }
+
+    try {
+      const primaryResponse = await AdminApi.get(
+        `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/media/${encodeURIComponent(String(firstId))}`
+      );
+      if (!isCurrent()) return;
+
+      const response = primaryResponse?.doc || primaryResponse?.data || primaryResponse;
+
+      const fallbackPathFromFilename = (() => {
+        const filename = String(response?.filename || '').trim();
+        if (!filename) return '';
+        if (filename.startsWith('/')) return filename;
+        return `/uploads/${filename}`;
+      })();
+
+      const pathOrUrl = String(response?.url || response?.path || fallbackPathFromFilename).trim();
+      const resolvedUrl = resolvePreviewUrl(pathOrUrl);
+
+      if (resolvedUrl) {
+        this.setState({ preview: {
+          url: resolvedUrl,
+          filename: String(response?.filename || response?.originalName || `media-${firstId}`),
+        } });
         return;
       }
 
-      const currentPreviewId = String(preview?.filename || '').startsWith('media-')
-        ? String(preview?.filename || '').replace(/^media-/, '')
-        : '';
-      if (preview?.url && currentPreviewId === String(firstId)) {
-        return;
-      }
-
+      throw new Error('No media url/path returned');
+    } catch {
       try {
-        const primaryResponse = await AdminApi.get(
-          `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/media/${encodeURIComponent(String(firstId))}`
-        );
-        if (!active) return;
-
-        const response = primaryResponse?.doc || primaryResponse?.data || primaryResponse;
-
-        const fallbackPathFromFilename = (() => {
-          const filename = String(response?.filename || '').trim();
-          if (!filename) return '';
-          if (filename.startsWith('/')) return filename;
-          return `/uploads/${filename}`;
-        })();
-
-        const pathOrUrl = String(response?.url || response?.path || fallbackPathFromFilename).trim();
-        const resolvedUrl = resolvePreviewUrl(pathOrUrl);
-
-        if (resolvedUrl) {
-          setPreview({
+        const listResponse = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?limit=200`);
+        if (!isCurrent()) return;
+        const docs = Array.isArray(listResponse)
+          ? listResponse
+          : Array.isArray(listResponse?.docs)
+            ? listResponse.docs
+            : [];
+        const matched = docs.find((item: any) => String(item?.id ?? item?._id ?? '') === String(firstId));
+        const fallbackPath = String(matched?.url || matched?.path || '').trim();
+        if (matched && fallbackPath) {
+          const resolvedUrl = resolvePreviewUrl(fallbackPath);
+          this.setState({ preview: {
             url: resolvedUrl,
-            filename: String(response?.filename || response?.originalName || `media-${firstId}`),
-          });
+            filename: String(matched?.filename || matched?.originalName || `media-${firstId}`),
+          } });
           return;
         }
-
-        throw new Error('No media url/path returned');
       } catch {
-        try {
-          const listResponse = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?limit=200`);
-          if (!active) return;
-          const docs = Array.isArray(listResponse)
-            ? listResponse
-            : Array.isArray(listResponse?.docs)
-              ? listResponse.docs
-              : [];
-          const matched = docs.find((item: any) => String(item?.id ?? item?._id ?? '') === String(firstId));
-          const fallbackPath = String(matched?.url || matched?.path || '').trim();
-          if (matched && fallbackPath) {
-            const resolvedUrl = resolvePreviewUrl(fallbackPath);
-            setPreview({
-              url: resolvedUrl,
-              filename: String(matched?.filename || matched?.originalName || `media-${firstId}`),
-            });
-            return;
-          }
-        } catch {
-          // Fallback lookup failed; keep textual ID label.
-        }
-
-        if (active) setPreview(null);
+        // Fallback lookup failed; keep textual ID label.
       }
-    };
 
-    hydratePreview();
+      if (isCurrent()) this.setState({ preview: null });
+    }
+  };
 
-    return () => {
-      active = false;
-    };
-  }, [selectedKey]);
+  componentDidMount(): void {
+    void this.hydratePreview();
+  }
 
-  const handleSelect = (item: any) => {
+  componentDidUpdate(prevProps: MediaRelationFieldProps): void {
+    if (prevProps.value !== this.props.value) void this.hydratePreview();
+  }
+
+  componentWillUnmount(): void {
+    // Invalidate any in-flight hydrate so it can't setState after unmount.
+    this.hydrateToken++;
+  }
+
+  private handleSelect = (item: any): void => {
+    const { onChange, hasMany = false } = this.props;
     const selectedId = item?.id || item?._id || item;
     if (hasMany) {
       onChange(selectedId ? [selectedId] : []);
     } else {
       onChange(selectedId);
     }
-    setPreview({ url: item.url, filename: item.filename });
+    this.setState({ preview: { url: item.url, filename: item.filename } });
   };
 
-  const selectedLabel = hasMany ? selectedIds.join(', ') : String(selectedIds[0] || '');
+  render(): React.ReactNode {
+    const { theme, hasMany = false } = this.props;
+    const { open, preview } = this.state;
+    const setOpen = (v: boolean) => this.setState({ open: v });
+    const selectedIds = this.getSelectedIds();
+    const selectedLabel = hasMany ? selectedIds.join(', ') : String(selectedIds[0] || '');
 
-  return (
+    return (
     <div className="space-y-3">
       {preview?.url ? (
         <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -185,12 +204,13 @@ export const MediaRelationField: React.FC<MediaRelationFieldProps> = ({ value, o
       {open && (
         <MediaPicker
           onSelect={(item) => {
-            handleSelect(item);
+            this.handleSelect(item);
             setOpen(false);
           }}
           onClose={() => setOpen(false)}
         />
       )}
     </div>
-  );
-};
+    );
+  }
+}

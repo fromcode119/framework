@@ -50,3 +50,24 @@ export interface ProviderEditorState {
   config: Record<string, any>;
   preservedSecretFields: Record<string, boolean>;
 }
+
+export interface IntegrationsSettingsPageClientProps {
+  searchParams?: Promise<Record<string, string | string[]>>;
+}
+
+export interface IntegrationsSettingsPageClientState {
+  queryType: string;
+  resolved: boolean;
+  loading: boolean;
+  saving: boolean;
+  resettingStaleJs: boolean;
+  changingProviderId: string | null;
+  removeCandidateId: string | null;
+  integrations: IntegrationRecord[];
+  activeType: string;
+  selectedProviderId: string;
+  editor: ProviderEditorState | null;
+  dynamicFieldOptions: Record<string, Array<{ label: string; value: string }>>;
+  dynamicFieldErrors: Record<string, string>;
+  dynamicFieldLoading: Record<string, boolean>;
+}

@@ -1,9 +1,11 @@
 "use client";
 
+import React from 'react';
 import { Slot } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 
-export function ForgeClient() {
+export class ForgeClient extends React.Component<{}> {
+  render(): React.ReactNode {
   return (
     <div className="h-full min-h-0 w-full overflow-hidden">
       <Slot
@@ -21,4 +23,5 @@ export function ForgeClient() {
       />
     </div>
   );
+  }
 }

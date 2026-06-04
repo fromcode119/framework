@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { ContextHooks } from '@fromcode119/react';
+import React from 'react';
+import { AdminComponent } from '@/components/admin-component';
 import { adminExtensionLoaders } from '@/lib/admin-extensions';
 import type { AdminExtensionBridge, AdminExtensionModule } from '@/lib/admin-extensions';
 
@@ -21,36 +21,47 @@ function resolveRegisterAdminExtension(
   return undefined;
 }
 
-export default function AdminExtensionLoader() {
-  const { registerSlotComponent, registerMenuItem, refreshVersion } = ContextHooks.usePlugins();
+export default class AdminExtensionLoader extends AdminComponent {
+  private loadToken = 0;
+  private lastRefreshVersion: unknown = undefined;
 
-  useEffect(() => {
-    let cancelled = false;
-    const bridge: AdminExtensionBridge = { registerSlotComponent, registerMenuItem };
+  private loadExtensions = async (): Promise<void> => {
+    this.lastRefreshVersion = this.runtime?.plugins?.refreshVersion;
+    const token = ++this.loadToken;
+    const plugins = this.runtime?.plugins ?? {};
+    const bridge: AdminExtensionBridge = {
+      registerSlotComponent: plugins.registerSlotComponent,
+      registerMenuItem: plugins.registerMenuItem,
+    };
 
-    const loadExtensions = async () => {
-      // Load extension modules from admin-extensions.ts
-      for (const load of adminExtensionLoaders) {
-        try {
-          const module = (await load()) as AdminExtensionDynamicModule;
-          if (cancelled) return;
-          const register = resolveRegisterAdminExtension(module);
-
-          if (register) {
-            register(bridge);
-          }
-        } catch (error) {
-          console.warn('[Admin] Failed to load admin extension module', error);
-        }
+    for (const load of adminExtensionLoaders) {
+      try {
+        const module = (await load()) as AdminExtensionDynamicModule;
+        if (token !== this.loadToken) return;
+        const register = resolveRegisterAdminExtension(module);
+        if (register) register(bridge);
+      } catch (error) {
+        console.warn('[Admin] Failed to load admin extension module', error);
       }
-    };
+    }
+  };
 
-    loadExtensions();
+  componentDidMount(): void {
+    void this.loadExtensions();
+  }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [registerSlotComponent, registerMenuItem, refreshVersion]);
+  componentDidUpdate(): void {
+    // Re-run only when the plugin registry version changes (slot/menu registrations may differ).
+    if (this.runtime?.plugins?.refreshVersion !== this.lastRefreshVersion) {
+      void this.loadExtensions();
+    }
+  }
 
-  return null;
+  componentWillUnmount(): void {
+    this.loadToken++;
+  }
+
+  render(): React.ReactNode {
+    return null;
+  }
 }

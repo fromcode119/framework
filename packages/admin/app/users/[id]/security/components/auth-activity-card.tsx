@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,9 @@ import { AdminConstants } from '@/lib/constants';
 import { UserSecurityPageService } from '../user-security-page-service';
 import type { AuthActivityEntry } from '../user-security-page.interfaces';
 
-export default function AuthActivityCard({ activity, activityLoading, email, isDark }: { activity: AuthActivityEntry[]; activityLoading: boolean; email: string; isDark: boolean }) {
+export default class AuthActivityCard extends React.Component<{ activity: AuthActivityEntry[]; activityLoading: boolean; email: string; isDark: boolean }> {
+  render(): React.ReactNode {
+    const { activity, activityLoading, email, isDark } = this.props;
   return (
     <div id="auth-activity">
       <Card title="Login & Session Activity" icon={<FrameworkIcons.Activity size={18} className="text-indigo-500" />}>
@@ -20,4 +23,5 @@ export default function AuthActivityCard({ activity, activityLoading, email, isD
       </Card>
     </div>
   );
+  }
 }

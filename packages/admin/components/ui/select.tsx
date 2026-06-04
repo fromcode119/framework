@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React from 'react';
 import { RootFramework } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
@@ -28,28 +28,112 @@ interface SelectProps {
   clearable?: boolean;
 }
 
-export const Select = ({ 
-  value, 
-  onChange, 
-  options, 
-  placeholder = "Select an option...", 
-  disabled = false, 
-  theme = 'light',
-  className = '',
-  triggerClassName = '',
-  label,
-  searchable = true,
-  size = 'md',
-  onSearchChange,
-  clearable = false,
-}: SelectProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
-  const isDarkTheme = theme === 'dark';
+interface SelectState {
+  isOpen: boolean;
+  searchValue: string;
+  coords: { top: number; left: number; width: number };
+}
+
+export class Select extends React.Component<SelectProps, SelectState> {
+  private readonly triggerRef = React.createRef<HTMLDivElement>();
+  private readonly menuRef = React.createRef<HTMLDivElement>();
+  private readonly searchInputRef = React.createRef<HTMLInputElement>();
+
+  state: SelectState = { isOpen: false, searchValue: '', coords: { top: 0, left: 0, width: 0 } };
+
+  private getFilteredOptions(): Option[] {
+    const searchValue = this.state.searchValue;
+    return this.props.options.filter(opt =>
+      opt.label.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }
+
+  private updatePosition = (): void => {
+    if (this.triggerRef.current) {
+      const rect = this.triggerRef.current.getBoundingClientRect();
+      const margin = 8;
+      const filteredCount = this.getFilteredOptions().length;
+      const menuHeight = Math.min(filteredCount * 48 + (this.props.searchable !== false ? 100 : 40), 300);
+
+      let top = rect.bottom + margin;
+      if (top + menuHeight > window.innerHeight) {
+        top = rect.top - menuHeight - margin;
+      }
+
+      this.setState({ coords: { top, left: rect.left, width: rect.width } });
+    }
+  };
+
+  private handleClickOutside = (event: MouseEvent): void => {
+    const target = event.target as Node;
+    if (
+      this.triggerRef.current && !this.triggerRef.current.contains(target) &&
+      this.menuRef.current && !this.menuRef.current.contains(target)
+    ) {
+      this.setState({ isOpen: false });
+    }
+  };
+
+  private addPositionListeners(): void {
+    this.updatePosition();
+    window.addEventListener('scroll', this.updatePosition, true);
+    window.addEventListener('resize', this.updatePosition);
+    if (this.props.searchable !== false) {
+      setTimeout(() => this.searchInputRef.current?.focus(), 50);
+    }
+  }
+
+  private removePositionListeners(): void {
+    window.removeEventListener('scroll', this.updatePosition, true);
+    window.removeEventListener('resize', this.updatePosition);
+  }
+
+  componentDidMount(): void {
+    document.addEventListener('mousedown', this.handleClickOutside);
+    if (this.state.isOpen) this.addPositionListeners();
+  }
+
+  componentDidUpdate(_prevProps: SelectProps, prevState: SelectState): void {
+    const openChanged = prevState.isOpen !== this.state.isOpen;
+    if (openChanged) {
+      if (this.state.isOpen) {
+        this.addPositionListeners();
+      } else {
+        this.removePositionListeners();
+        this.setState({ searchValue: '' });
+        this.props.onSearchChange?.('');
+      }
+    } else if (this.state.isOpen && prevState.searchValue !== this.state.searchValue) {
+      // Filtered option count may have changed while open — reposition.
+      this.updatePosition();
+    }
+  }
+
+  componentWillUnmount(): void {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+    this.removePositionListeners();
+  }
+
+  render(): React.ReactNode {
+    const {
+      value,
+      onChange,
+      options,
+      placeholder = 'Select an option...',
+      disabled = false,
+      theme = 'light',
+      className = '',
+      triggerClassName = '',
+      label,
+      searchable = true,
+      size = 'md',
+      onSearchChange,
+      clearable = false,
+    } = this.props;
+    const { isOpen, searchValue, coords } = this.state;
+    const setIsOpen = (next: boolean) => this.setState({ isOpen: next });
+    const setSearchValue = (next: string) => this.setState({ searchValue: next });
+    const isDarkTheme = theme === 'dark';
   const triggerThemeClasses = isDarkTheme
     ? '!bg-slate-900/60 !border-slate-800 !text-white caret-white placeholder:text-slate-600 hover:!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-0 [color-scheme:dark] autofill:[-webkit-text-fill-color:#ffffff] autofill:caret-white autofill:shadow-[inset_0_0_0px_1000px_rgba(15,23,42,0.96)]'
     : '';
@@ -82,66 +166,10 @@ export const Select = ({
   }, [] as Array<{ name: string; options: Option[] }>);
   const showGroupHeaders = groupedFilteredOptions.length > 1 || (groupedFilteredOptions.length === 1 && groupedFilteredOptions[0].name !== 'Options');
 
-  const updatePosition = () => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const margin = 8;
-      const menuHeight = Math.min(filteredOptions.length * 48 + (searchable ? 100 : 40), 300);
-      
-      let top = rect.bottom + margin;
-      // Check if it should open upwards
-      if (top + menuHeight > window.innerHeight) {
-        top = rect.top - menuHeight - margin;
-      }
-
-      setCoords({
-        top,
-        left: rect.left,
-        width: rect.width
-      });
-    }
-  };
-
-  useLayoutEffect(() => {
-    if (isOpen) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition, true);
-      window.addEventListener('resize', updatePosition);
-      if (searchable) {
-        setTimeout(() => searchInputRef.current?.focus(), 50);
-      }
-    }
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [isOpen, filteredOptions.length]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as Node;
-      if (
-        triggerRef.current && !triggerRef.current.contains(target) &&
-        menuRef.current && !menuRef.current.contains(target)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setSearchValue('');
-      onSearchChange?.('');
-    }
-  }, [isOpen, onSearchChange]);
-
   return (
     <div className={`flex flex-col gap-1 w-full ${className}`}>
       {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
-      <div className="relative w-full" ref={triggerRef}>
+      <div className="relative w-full" ref={this.triggerRef}>
         <button
           type="button"
           disabled={disabled}
@@ -191,8 +219,8 @@ export const Select = ({
 
         {isOpen && (
           <RootFramework>
-            <div 
-              ref={menuRef}
+            <div
+              ref={this.menuRef}
               style={{
                 position: 'fixed',
                 top: coords.top,
@@ -213,7 +241,7 @@ export const Select = ({
                       <FrameworkIcons.Search size={12} />
                     </div>
                     <input
-                      ref={searchInputRef}
+                      ref={this.searchInputRef}
                       type="text"
                       placeholder="Search options..."
                       value={searchValue}
@@ -303,5 +331,6 @@ export const Select = ({
         )}
       </div>
     </div>
-  );
-};
+    );
+  }
+}

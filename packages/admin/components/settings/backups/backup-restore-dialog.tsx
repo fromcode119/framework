@@ -1,7 +1,8 @@
 'use client';
 
+import React from 'react';
 import { RootFramework } from '@fromcode119/react';
-import { ThemeHooks } from '@/components/use-theme';
+import { AdminComponent } from '@/components/admin-component';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,25 +10,27 @@ import { TextArea } from '@/components/ui/text-area';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { BackupRestoreDialogProps } from './backups-page-client.interfaces';
 
-export function BackupRestoreDialog({
-  isOpen,
-  state,
-  isPreviewing,
-  isRestoring,
-  onClose,
-  onTargetScopeChange,
-  onTargetSlugChange,
-  onConfirmationTextChange,
-  onPreview,
-  onExecute,
-}: BackupRestoreDialogProps) {
-  const { theme } = ThemeHooks.useTheme();
+export class BackupRestoreDialog extends AdminComponent<BackupRestoreDialogProps> {
+  render(): React.ReactNode {
+    const {
+      isOpen,
+      state,
+      isPreviewing,
+      isRestoring,
+      onClose,
+      onTargetScopeChange,
+      onTargetSlugChange,
+      onConfirmationTextChange,
+      onPreview,
+      onExecute,
+    } = this.props;
+    const theme = this.theme;
 
-  if (!isOpen || !state.backup) {
-    return null;
-  }
+    if (!isOpen || !state.backup) {
+      return null;
+    }
 
-  return (
+    return (
     <RootFramework>
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6">
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" onClick={onClose} />
@@ -165,5 +168,6 @@ export function BackupRestoreDialog({
         </div>
       </div>
     </RootFramework>
-  );
+    );
+  }
 }

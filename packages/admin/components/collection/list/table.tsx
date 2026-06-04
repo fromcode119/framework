@@ -8,40 +8,7 @@ import { DataTable } from '@/components/ui/data-table';
 
 import { CollectionListRowActions } from './row-actions';
 
-export function CollectionListTable({
-  collection,
-  pluginSlug,
-  slug,
-  slotSlug,
-  resolvedSlug,
-  theme,
-  total,
-  page,
-  search,
-  columns,
-  data,
-  loading,
-  sort,
-  onPageChange,
-  onSort,
-  onRowClick,
-  selectedIds,
-  setSelectedIds,
-  quickEditExpandedId,
-  quickEditLoadingId,
-  quickEditSavingId,
-  quickEditData,
-  setQuickEditData,
-  quickEditStatus,
-  quickEditFields,
-  pluginSettings,
-  frontendUrl,
-  permalinkStructure,
-  onDelete,
-  onQuickEditOpen,
-  onQuickEditSave,
-  onQuickEditClose
-}: {
+export class CollectionListTable extends React.Component<{
   collection: any;
   pluginSlug: string;
   slug: string;
@@ -74,7 +41,42 @@ export function CollectionListTable({
   onQuickEditOpen: (row: any, event: React.MouseEvent) => void;
   onQuickEditSave: () => void;
   onQuickEditClose: () => void;
-}) {
+}> {
+  render(): React.ReactNode {
+    const {
+  collection,
+  pluginSlug,
+  slug,
+  slotSlug,
+  resolvedSlug,
+  theme,
+  total,
+  page,
+  search,
+  columns,
+  data,
+  loading,
+  sort,
+  onPageChange,
+  onSort,
+  onRowClick,
+  selectedIds,
+  setSelectedIds,
+  quickEditExpandedId,
+  quickEditLoadingId,
+  quickEditSavingId,
+  quickEditData,
+  setQuickEditData,
+  quickEditStatus,
+  quickEditFields,
+  pluginSettings,
+  frontendUrl,
+  permalinkStructure,
+  onDelete,
+  onQuickEditOpen,
+  onQuickEditSave,
+  onQuickEditClose
+} = this.props;
   return (
     <>
       <Slot
@@ -146,4 +148,5 @@ export function CollectionListTable({
       />
     </>
   );
+  }
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
-import { ThemeHooks } from '../use-theme';
+import { AdminComponent } from '@/components/admin-component';
 import { UiFieldUtils } from '@/lib/ui';
 import { ColorPickerUtils } from './color-picker-utils';
 
@@ -16,63 +16,73 @@ interface ColorPickerProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+interface ColorPickerState {
+  isOpen: boolean;
+  coords: { top: number; left: number };
+}
 
+export class ColorPicker extends AdminComponent<ColorPickerProps, ColorPickerState> {
+  private readonly containerRef = React.createRef<HTMLDivElement>();
+  private readonly popoverRef = React.createRef<HTMLDivElement>();
 
-export const ColorPicker = ({ 
-  value = "#000000", 
-  onChange, 
-  disabled, 
-  className = "",
-  size = "md"
-}: ColorPickerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const { theme } = ThemeHooks.useTheme();
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const rawValue = ColorPickerUtils.coerceColorValue(value);
-  const normalizedValue = ColorPickerUtils.normalizeHexColor(rawValue);
-  const pickerValue = normalizedValue || '#000000';
+  state: ColorPickerState = { isOpen: false, coords: { top: 0, left: 0 } };
 
-  const updatePosition = () => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setCoords({
-        top: rect.bottom + 8,
-        left: rect.left
-      });
+  private updatePosition = (): void => {
+    if (this.containerRef.current) {
+      const rect = this.containerRef.current.getBoundingClientRect();
+      this.setState({ coords: { top: rect.bottom + 8, left: rect.left } });
     }
   };
 
-  useLayoutEffect(() => {
-    if (isOpen) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition, true);
-      window.addEventListener('resize', updatePosition);
+  private handleClickOutside = (event: MouseEvent): void => {
+    if (
+      this.containerRef.current && !this.containerRef.current.contains(event.target as Node) &&
+      this.popoverRef.current && !this.popoverRef.current.contains(event.target as Node)
+    ) {
+      this.setState({ isOpen: false });
     }
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [isOpen]);
+  };
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current && !containerRef.current.contains(event.target as Node) &&
-        popoverRef.current && !popoverRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
+  private addPositionListeners(): void {
+    this.updatePosition();
+    window.addEventListener('scroll', this.updatePosition, true);
+    window.addEventListener('resize', this.updatePosition);
+  }
+
+  private removePositionListeners(): void {
+    window.removeEventListener('scroll', this.updatePosition, true);
+    window.removeEventListener('resize', this.updatePosition);
+  }
+
+  componentDidMount(): void {
+    document.addEventListener('mousedown', this.handleClickOutside);
+    if (this.state.isOpen) this.addPositionListeners();
+  }
+
+  componentDidUpdate(_prevProps: ColorPickerProps, prevState: ColorPickerState): void {
+    if (prevState.isOpen !== this.state.isOpen) {
+      if (this.state.isOpen) this.addPositionListeners();
+      else this.removePositionListeners();
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }
 
-  return (
-    <div className={`relative ${className}`} ref={containerRef}>
-      <div 
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+  componentWillUnmount(): void {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+    this.removePositionListeners();
+  }
+
+  render(): React.ReactNode {
+    const { value = '#000000', onChange, disabled, className = '', size = 'md' } = this.props;
+    const { isOpen, coords } = this.state;
+    const theme = this.theme;
+    const rawValue = ColorPickerUtils.coerceColorValue(value);
+    const normalizedValue = ColorPickerUtils.normalizeHexColor(rawValue);
+    const pickerValue = normalizedValue || '#000000';
+
+    return (
+    <div className={`relative ${className}`} ref={this.containerRef}>
+      <div
+        onClick={() => !disabled && this.setState({ isOpen: !isOpen })}
         className={`${UiFieldUtils.getFieldClasses(size, `flex items-center gap-3 cursor-pointer ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div 
@@ -85,8 +95,8 @@ export const ColorPicker = ({
 
       {isOpen && (
         <RootFramework>
-          <div 
-            ref={popoverRef}
+          <div
+            ref={this.popoverRef}
             style={{
               position: 'fixed',
               top: coords.top,
@@ -118,8 +128,8 @@ export const ColorPicker = ({
             </div>
             
             <div className={`mt-6 pt-6 border-t flex justify-end ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>
-               <button 
-                onClick={() => setIsOpen(false)}
+               <button
+                onClick={() => this.setState({ isOpen: false })}
                 className="w-full h-10 bg-indigo-600 text-white rounded-lg text-[10px] font-semibold tracking-wide hover:bg-indigo-700 shadow-lg shadow-indigo-600/10 transition-all active:scale-[0.98]"
                >
                  Confirm Color
@@ -129,5 +139,6 @@ export const ColorPicker = ({
         </RootFramework>
       )}
     </div>
-  );
-};
+    );
+  }
+}

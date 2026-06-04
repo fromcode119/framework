@@ -14,7 +14,9 @@ interface BulkActionsProps {
   setSelectedIds: (ids: string[]) => void;
 }
 
-export const BulkActions: React.FC<BulkActionsProps> = ({
+export class BulkActions extends React.Component<BulkActionsProps> {
+  render(): React.ReactNode {
+    const {
   theme,
   selectedIds,
   statusOptions,
@@ -22,7 +24,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   handleExport,
   handleBulkDelete,
   setSelectedIds
-}) => {
+} = this.props;
   if (selectedIds.length === 0) return null;
 
   return (
@@ -80,4 +82,5 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
       </button>
     </div>
   );
-};
+  }
+}

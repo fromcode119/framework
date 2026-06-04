@@ -18,7 +18,9 @@ interface VisualMenuFieldProps {
  * Visual Menu Builder Component.
  * Supports hierarchical menu structures with visual indentation and easy ordering.
  */
-export const VisualMenuField = ({ field, value = [], onChange, theme, collectionSlug }: VisualMenuFieldProps) => {
+export class VisualMenuField extends React.Component<VisualMenuFieldProps> {
+  render(): React.ReactNode {
+    const { field, value = [], onChange, theme, collectionSlug } = this.props;
   const items = Array.isArray(value) ? value : [];
 
   const handleAddItem = () => {
@@ -212,4 +214,5 @@ export const VisualMenuField = ({ field, value = [], onChange, theme, collection
       </button>
     </div>
   );
-};
+  }
+}

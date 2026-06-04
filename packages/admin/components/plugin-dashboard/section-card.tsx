@@ -12,7 +12,9 @@ interface SectionCardProps {
   className?: string;
 }
 
-export const SectionCard = ({
+export class SectionCard extends React.Component<SectionCardProps> {
+  render(): React.ReactNode {
+    const {
   title,
   subtitle,
   icon,
@@ -20,7 +22,7 @@ export const SectionCard = ({
   children,
   noPadding = false,
   className = '',
-}: SectionCardProps) => {
+} = this.props;
   return (
     <section className={`rounded-3xl border overflow-hidden bg-white border-slate-100 shadow-lg shadow-slate-200/50 dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none ${className}`}>
       <header className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
@@ -42,4 +44,5 @@ export const SectionCard = ({
       {noPadding ? children : <div className="p-6">{children}</div>}
     </section>
   );
-};
+  }
+}

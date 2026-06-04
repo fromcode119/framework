@@ -6,13 +6,14 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run check:sdk-boundary && tsc -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
+    "build": "npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && tsc -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
     "build:api": "npm run build --workspace=@fromcode119/api",
     "build:admin": "npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run build --workspace=@fromcode119/frontend",
     "audit:core-boundary": "node scripts/audit-core-boundary.mjs",
     "check:plugin-architecture": "node scripts/check-plugin-architecture.mjs",
     "check:sdk-boundary": "node scripts/check-sdk-boundary.mjs",
+    "check:plugin-ui-hookfree": "node scripts/check-plugin-ui-hookfree.mjs",
     "check:plugin-architecture:warn": "ARCH_LEGACY_MODE=warn ARCH_LAYER_MODE=warn ARCH_SIZE_MODE=warn node scripts/check-plugin-architecture.mjs",
     "check:plugin-architecture:strict": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=ecommerce,finance,cms node scripts/check-plugin-architecture.mjs",
     "check:plugin-architecture:phase:finance": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance node scripts/check-plugin-architecture.mjs",
@@ -34,7 +35,9 @@
     "dev:local:api-admin": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node starters/local/proxy.js\" \"PORT=4000 npm run dev --workspace=@fromcode119/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --workspace=@fromcode119/admin\"",
     "dev:local:api": "PORT=4000 npm run dev --workspace=@fromcode119/api",
     "publish:all": "npm publish --workspaces --if-present --access public",
-    "release": "npm run build && npm run publish:all"
+    "release": "npm run build && npm run publish:all",
+    "check:theme-override-boundary": "node scripts/check-theme-override-boundary.mjs",
+    "check:theme-override-boundary:strict": "THEME_OVERRIDE_BOUNDARY_MODE=error node scripts/check-theme-override-boundary.mjs"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

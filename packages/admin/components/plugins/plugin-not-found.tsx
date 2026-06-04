@@ -9,7 +9,9 @@ interface PluginNotFoundProps {
   pluginSlug: string;
 }
 
-export const PluginNotFound = ({ pluginSlug }: PluginNotFoundProps) => {
+export class PluginNotFound extends React.Component<PluginNotFoundProps> {
+  render(): React.ReactNode {
+    const { pluginSlug } = this.props;
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-in fade-in duration-700 slide-in-from-bottom-4">
       <div className="p-8 rounded-[40px] mb-8 relative group bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200 dark:shadow-black/50">
@@ -44,4 +46,5 @@ export const PluginNotFound = ({ pluginSlug }: PluginNotFoundProps) => {
       </div>
     </div>
   );
-};
+  }
+}

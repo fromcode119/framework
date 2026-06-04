@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { InteractiveCanvasState, InteractiveCanvasContextValue } from './interactive-canvas.interfaces';
 
@@ -52,6 +54,8 @@ function WrapperComponent({ id, children, className }: WrapperProps) {
 export class InteractiveCanvas {
   static Provider = ProviderComponent;
   static Wrapper = WrapperComponent;
+  /** Render-prop consumer for hook-free (class component) access to the canvas context. */
+  static Consumer = InteractiveCanvasContext.Consumer;
   static use(): InteractiveCanvasContextValue {
     const context = useContext(InteractiveCanvasContext);
     if (!context) throw new Error('InteractiveCanvas.use() must be called inside InteractiveCanvas.Provider');

@@ -33,6 +33,7 @@ export interface PluginDefaultPageContractCreatePayload {
   recipe: string;
   title?: string;
   themeLayout?: string;
+  defaultContent?: any[];
 }
 
 export interface PluginDefaultPageContractMaterializationPlanEntry {

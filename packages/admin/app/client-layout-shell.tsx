@@ -5,7 +5,7 @@ import PluginLoader from './plugin-loader';
 import Sidebar from './sidebar';
 import SecondarySidebar from './secondary-sidebar';
 import AdminExtensionLoader from './admin-extension-loader';
-import ClientLayoutHeader from './client-layout-header';
+import { ClientLayoutHeader } from './client-layout-header';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { AdminConstants } from '@/lib/constants';
@@ -95,8 +95,8 @@ export default function ClientLayoutShell({ children }: ClientLayoutChildrenProp
         onActiveContextChange={navigationState.setActivePrimaryContextId}
         activeSecondaryAnchorPath={navigationState.activeSecondaryAnchorPath}
         hoverPreviewPath={navigationState.hoveredPrimaryPath}
-        previewablePaths={navigationState.secondaryMode === 'desktop' && navigationState.isDesktopSecondaryOpen && navigationState.hasDesktopPreviewablePaths ? navigationState.previewablePrimaryPaths : []}
-        onHoverPreviewPathChange={navigationState.secondaryMode === 'desktop' && navigationState.isDesktopSecondaryOpen && navigationState.hasDesktopPreviewablePaths ? navigationState.handleHoverPreviewPathChange : undefined}
+        previewablePaths={navigationState.secondaryMode === 'desktop' && navigationState.hasDesktopPreviewablePaths ? navigationState.previewablePrimaryPaths : []}
+        onHoverPreviewPathChange={navigationState.secondaryMode === 'desktop' && navigationState.hasDesktopPreviewablePaths ? navigationState.handleHoverPreviewPathChange : undefined}
         inlineSecondaryContext={navigationState.secondaryResolved.activeContext}
         inlineSecondaryItems={navigationState.secondaryResolved.items}
         inlineSecondarySourceLabel={navigationState.secondarySourceLabel}
@@ -112,6 +112,8 @@ export default function ClientLayoutShell({ children }: ClientLayoutChildrenProp
           items={navigationState.displayedSecondaryResolved.items}
           sourceLabel={navigationState.displayedSecondarySourceLabel}
           isOpen={navigationState.isDesktopSecondaryOpen}
+          hoverOpen={navigationState.isDesktopSecondaryHoverPreview}
+          overlayLeftClass={navigationState.isMini ? 'left-[72px]' : 'left-64'}
           onOpen={() => navigationState.setDesktopSecondaryOpen(true)}
           onClose={() => navigationState.setDesktopSecondaryOpen(false)}
           onPanelMouseEnter={navigationState.handleSecondaryPanelMouseEnter}

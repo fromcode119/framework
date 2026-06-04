@@ -11,8 +11,10 @@ interface CollectionNotFoundProps {
   pluginSlug: string;
 }
 
-export const CollectionNotFound: React.FC<CollectionNotFoundProps> = ({ theme, slug, pluginSlug }) => {
-  return (
+export class CollectionNotFound extends React.Component<CollectionNotFoundProps> {
+  render(): React.ReactNode {
+    const { theme, slug, pluginSlug } = this.props;
+    return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in-95 duration-700">
       <div className={`p-8 rounded-[40px] mb-8 relative group ${theme === 'dark' ? 'bg-slate-900 shadow-2xl shadow-black/50' : 'bg-white shadow-2xl shadow-slate-200'}`}>
         <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -46,5 +48,6 @@ export const CollectionNotFound: React.FC<CollectionNotFoundProps> = ({ theme, s
         </Button>
       </div>
     </div>
-  );
-};
+    );
+  }
+}

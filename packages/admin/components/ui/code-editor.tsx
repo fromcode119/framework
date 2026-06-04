@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Editor from '@monaco-editor/react';
-import { ThemeHooks } from '../use-theme';
+import { AdminComponent } from '@/components/admin-component';
 
 interface CodeEditorProps {
   value?: string;
@@ -13,17 +13,19 @@ interface CodeEditorProps {
   className?: string;
 }
 
-export const CodeEditor = ({ 
-  value = "", 
-  onChange, 
-  language = "javascript", 
-  height = "300px",
-  disabled = false,
-  className = "" 
-}: CodeEditorProps) => {
-  const { theme } = ThemeHooks.useTheme();
+export class CodeEditor extends AdminComponent<CodeEditorProps> {
+  render(): React.ReactNode {
+    const {
+      value = "",
+      onChange,
+      language = "javascript",
+      height = "300px",
+      disabled = false,
+      className = "",
+    } = this.props;
+    const theme = this.theme;
 
-  return (
+    return (
     <div className={`rounded-lg border overflow-hidden transition-all ${
       theme === 'dark' ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
     } ${className}`}>
@@ -53,5 +55,6 @@ export const CodeEditor = ({
         }}
       />
     </div>
-  );
-};
+    );
+  }
+}
