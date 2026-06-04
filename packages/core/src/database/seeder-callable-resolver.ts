@@ -3,6 +3,7 @@ import type { SeederCallableResolution, SeederCallableSymbol } from './seeder-ca
 
 export class SeederCallableResolver {
   private static readonly PRECEDENCE: SeederCallableSymbol[] = ['default', 'seed', 'run', 'execute'];
+  private static readonly STATIC_METHOD_PRECEDENCE: SeederCallableSymbol[] = ['seed', 'run', 'execute'];
 
   resolveCallable(moduleExports: unknown): SeederCallableResolution {
     if (!moduleExports || (typeof moduleExports !== 'object' && typeof moduleExports !== 'function')) {
@@ -30,6 +31,13 @@ export class SeederCallableResolver {
         );
       }
 
+      // A class can't be invoked as `callable(db)` (throws without `new`). When the precedence
+      // symbol resolves to a class, use its static seed method instead of the bare constructor.
+      const classStatic = this.resolveClassStaticCallable(candidate);
+      if (classStatic) {
+        return classStatic;
+      }
+
       return {
         callable: candidate as (...args: unknown[]) => unknown,
         symbolName,
@@ -37,10 +45,44 @@ export class SeederCallableResolver {
       };
     }
 
+    // No directly-callable precedence symbol. Accept a single exported class that exposes a static
+    // `seed`/`run`/`execute` method — this lets a seed file be PURELY one `export class`, with no
+    // `export const` or `export default` wrapper around the callable.
+    for (const value of Object.values(exportsRecord)) {
+      const classStatic = this.resolveClassStaticCallable(value);
+      if (classStatic) {
+        return classStatic;
+      }
+    }
+
     throw this.buildResolverError(
       SeederCallableResolverErrorCodes.MISSING_SEED_CALLABLE,
-      'No valid seed callable found. Allowed symbols: default, seed, run, execute.'
+      'No valid seed callable found. Allowed: a default/seed/run/execute callable, '
+        + 'or an exported class with a static seed/run/execute method.'
     );
+  }
+
+  /**
+   * If `value` is a class (constructor function) carrying a static `seed`/`run`/`execute` method,
+   * return that method bound to the class. Plain functions have no such static members, so they
+   * fall through and resolve as direct callables — keeping the old behavior intact.
+   */
+  private resolveClassStaticCallable(value: unknown): SeederCallableResolution | null {
+    if (typeof value !== 'function') {
+      return null;
+    }
+    const owner = value as unknown as Record<string, unknown>;
+    for (const methodName of SeederCallableResolver.STATIC_METHOD_PRECEDENCE) {
+      const method = owner[methodName];
+      if (typeof method === 'function') {
+        return {
+          callable: (method as (...args: unknown[]) => unknown).bind(value),
+          symbolName: methodName,
+          sourceType: 'static'
+        };
+      }
+    }
+    return null;
   }
 
   private readDefaultCandidate(moduleExports: unknown, exportsRecord: Record<string, unknown>): unknown {
