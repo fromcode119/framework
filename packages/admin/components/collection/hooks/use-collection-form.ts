@@ -65,12 +65,24 @@ export function useCollectionForm({
       let fieldErrors: Record<string, string[]> = {};
 
       if (err.data?.errors) {
-        // If it's an array of strings like ["Field X is required"]
+        // API returns [{ field: 'fieldName', message: '...' }, ...] or { fieldName: ['msg'] }
         if (Array.isArray(err.data.errors)) {
-          message = err.data.errors.join(', ');
-          setErrors({ base: err.data.errors });
+          const errorItems = err.data.errors as Array<any>;
+          message = errorItems
+            .map((e) => (typeof e === 'string' ? e : e.message || e.field || 'Validation error'))
+            .join(', ');
+          // Build per-field map so individual inputs can highlight
+          const perField: Record<string, string[]> = {};
+          for (const e of errorItems) {
+            if (e && typeof e === 'object' && e.field) {
+              const key = String(e.field);
+              if (!perField[key]) perField[key] = [];
+              perField[key].push(typeof e.message === 'string' ? e.message : String(e.message ?? e));
+            }
+          }
+          setErrors(Object.keys(perField).length ? perField : { base: [message] });
         } else if (typeof err.data.errors === 'object') {
-          // If it's an object like { fieldName: ['error1'] }
+          // Object like { fieldName: ['error1'] }
           fieldErrors = err.data.errors;
           setErrors(fieldErrors);
           message = Object.values(fieldErrors).flat().join(', ');

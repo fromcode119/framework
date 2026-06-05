@@ -36,8 +36,8 @@ function InputComponent({
         {...props}
         ref={ref}
         value={normalizedValue}
-        className={`${UiFieldUtils.getFieldClasses(size, inputClassName)} 
-          ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
+        className={`${UiFieldUtils.getFieldClasses(size, inputClassName)}
+          ${error ? '!border-rose-500 focus:!border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
       />
       {error && (
         <div className="flex items-center gap-2 px-1 animate-fade-in-up">

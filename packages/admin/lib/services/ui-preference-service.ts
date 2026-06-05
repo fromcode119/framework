@@ -111,6 +111,14 @@ export class UiPreferenceService extends BaseService {
     );
   }
 
+  readCollectionSort(pluginSlug: string, collectionSlug: string): string {
+    return this.browserState.readLocalString(this.buildCollectionSortStorageKey(pluginSlug, collectionSlug));
+  }
+
+  writeCollectionSort(pluginSlug: string, collectionSlug: string, sort: string): void {
+    this.browserState.writeLocalString(this.buildCollectionSortStorageKey(pluginSlug, collectionSlug), String(sort || '').trim());
+  }
+
   private buildNavExpandedStorageKey(persistenceKey: string): string {
     const normalizedKey = String(persistenceKey || '').trim();
     return normalizedKey ? `${ClientRuntimeConstants.ADMIN_UI.STORAGE_PREFIXES.NAV_EXPANDED}${normalizedKey}` : '';
@@ -118,5 +126,9 @@ export class UiPreferenceService extends BaseService {
 
   private buildCollectionColumnsStorageKey(pluginSlug: string, collectionSlug: string): string {
     return `${ClientRuntimeConstants.ADMIN_UI.STORAGE_PREFIXES.COLLECTION_COLUMNS}${String(pluginSlug || '').trim()}_${String(collectionSlug || '').trim()}`;
+  }
+
+  private buildCollectionSortStorageKey(pluginSlug: string, collectionSlug: string): string {
+    return `admin.ui.sort_${String(pluginSlug || '').trim()}_${String(collectionSlug || '').trim()}`;
   }
 }

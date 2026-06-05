@@ -269,10 +269,12 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         : ''
     }`}>
       <div className="flex items-center justify-between gap-3 mb-1 min-h-[22px]">
+        {!field.admin?.hideLabel && (
         <label className={UiFieldUtils.TEXT.LABEL}>
           {label}
           {field.required && <span className="text-rose-500 ml-1 font-semibold font-sans">*</span>}
         </label>
+        )}
 
         <div className="flex items-center gap-2">
           {!isFieldReadOnly && supportsReadOnlyOverride && readOnlyOverrideGranted && (
@@ -440,12 +442,13 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
         wrapWithReadOnlyOverride(
           <div className="relative">
-            <Input 
+            <Input
               type="password"
               value={typeof currentValue === 'string' ? currentValue : resolvedCurrentText}
               onChange={(e) => updateValue(e.target.value)}
               placeholder="••••••••"
               disabled={isFieldReadOnly}
+              error={errors?.[0]}
               inputClassName={isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}
             />
             {isLocalizedField && shouldInlineLocaleSwitcher && (
@@ -593,7 +596,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       ) : (
       wrapWithReadOnlyOverride(
         <div className="relative">
-          <Input 
+          <Input
             type={field.type === 'number' ? 'number' : 'text'}
             value={field.type === 'number' ? (typeof currentValue === 'number' || typeof currentValue === 'string' ? currentValue : '') : (typeof currentValue === 'string' ? currentValue : resolvedCurrentText)}
             onChange={(e) => {
@@ -611,6 +614,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             }}
             placeholder={`Enter ${label}...`}
             disabled={isFieldReadOnly}
+            error={errors?.[0]}
             inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}
           />
           {isLocalizedField && shouldInlineLocaleSwitcher && (
@@ -635,6 +639,16 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       <p className={UiFieldUtils.TEXT.SUBTEXT}>{resolvedFieldDescription}</p>
     )}
     {errors && errors.length > 0 && (
+      // Only show outer error text for types whose renderers don't display it internally.
+      // Input (text/number/password) and TextArea already render the error inside themselves.
+      field.admin?.component ||
+      field.type === 'select' ||
+      field.type === 'checkbox' ||
+      field.type === 'date' ||
+      field.type === 'array' ||
+      field.type === 'json' ||
+      field.type === 'relationship'
+    ) && (
       <p className={UiFieldUtils.TEXT.ERROR}>{errors[0]}</p>
     )}
   </div>

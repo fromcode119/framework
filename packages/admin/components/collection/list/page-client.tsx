@@ -48,6 +48,11 @@ export function CollectionListPageClient({
     return CollectionListUtils.parsePageQueryValue(new URLSearchParams(window.location.search).get('page'));
   });
   const [sort, setSort] = useState('-createdAt');
+
+  const handleSort = useCallback((newSort: string) => {
+    adminServices.uiPreference.writeCollectionSort(pluginSlug, resolvedSlug, newSort);
+    setSort(newSort);
+  }, [pluginSlug, resolvedSlug]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
@@ -68,9 +73,9 @@ export function CollectionListPageClient({
   const selectFilterFields = useMemo(() => CollectionListPageService.resolveSelectFilterFields(collection), [collection]);
   const quickEditFields = useMemo(() => CollectionListPageService.resolveQuickEditFields(collection), [collection]);
   const columns = useMemo(() => {
-    const selected = new Set(visibleColumnIds);
-    const filtered = allColumns.filter((column) => selected.has(column.id));
-    return filtered.length ? filtered : allColumns.slice(0, 1);
+    const columnById = new Map(allColumns.map((col) => [col.id, col]));
+    const ordered = visibleColumnIds.map((id) => columnById.get(id)).filter(Boolean);
+    return ordered.length ? ordered : allColumns.slice(0, 1);
   }, [allColumns, visibleColumnIds]);
 
   useEffect(() => {
@@ -101,6 +106,14 @@ export function CollectionListPageClient({
     });
     setVisibleColumnIds((prev) => CollectionListUtils.areStringArraysEqual(prev, next) ? prev : next);
   }, [allColumns, collection?.admin?.defaultColumns, pluginSlug, resolvedSlug]);
+
+  useEffect(() => {
+    if (!collection) return;
+    const persisted = adminServices.uiPreference.readCollectionSort(pluginSlug, resolvedSlug);
+    if (persisted) { setSort(persisted); return; }
+    const defaultSort = (collection?.admin as any)?.defaultSort;
+    if (defaultSort) setSort(String(defaultSort));
+  }, [collection, pluginSlug, resolvedSlug]);
 
   useEffect(() => {
     if (!showColumnsMenu) return;
@@ -193,6 +206,7 @@ export function CollectionListPageClient({
           allColumns,
           visibleColumnIds,
           toggleColumn: (columnId: string) => CollectionListPageActions.toggleColumn({ columnId, pluginSlug, resolvedSlug, setVisibleColumnIds }),
+          reorderColumn: (columnId: string, direction: 'up' | 'down') => CollectionListPageActions.reorderColumn({ columnId, direction, pluginSlug, resolvedSlug, setVisibleColumnIds }),
           selectFilterFields,
           fieldFilters,
           setFieldFilters,
@@ -222,7 +236,7 @@ export function CollectionListPageClient({
         loading,
         sort,
         onPageChange: setPage,
-        onSort: setSort,
+        onSort: handleSort,
         onRowClick: (row: any) => router.push(`/${pluginSlug}/${slug}/${row.id}`),
         selectedIds,
         setSelectedIds,

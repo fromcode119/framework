@@ -22,6 +22,12 @@ export { EntityEnumResolverService } from './entity-enum-resolver-service';
 export { MediaRelationService } from './media-relation-service';
 export * from './default-page-contract';
 export { SeedPageService } from './seed-page-service';
+export { ContentResolutionGateRegistryService } from './content-resolution-gate-registry-service';
+export type {
+  ContentResolutionGate,
+  ContentResolutionGateOptions,
+  ContentResolutionResult,
+} from './content-resolution-gate.types';
 
 // Main singleton
 export { CoreServices } from './core-services';

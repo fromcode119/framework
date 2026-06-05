@@ -23,10 +23,27 @@ export class ResolutionService {
     this.contractMatcher = new ResolutionContractMatchService(restController);
   }
 
-  async resolveSlug(slug: string, options: { 
-    user?: any; 
-    preview?: boolean; 
-    locale?: string; 
+  async resolveSlug(slug: string, options: {
+    user?: any;
+    preview?: boolean;
+    locale?: string;
+    fallback_locale?: string;
+    locale_mode?: string;
+  }) {
+    const resolved = await this.resolveSlugRaw(slug, options);
+    // Run the resolved document through any plugin-registered content-resolution
+    // gates (e.g. members-only paywall gating). The framework holds no knowledge
+    // of what the gates do; plugins register them via CoreServices during onInit.
+    return CoreServices.getInstance().contentResolutionGates.apply(resolved, {
+      user: options.user,
+      preview: options.preview,
+    });
+  }
+
+  private async resolveSlugRaw(slug: string, options: {
+    user?: any;
+    preview?: boolean;
+    locale?: string;
     fallback_locale?: string;
     locale_mode?: string;
   }) {

@@ -92,6 +92,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     setFieldValue,
     handleSubmit,
     isSubmitting: saving,
+    errors: fieldErrors,
   } = useCollectionForm({
     collectionSlug: resolvedSlug,
     isNew,
@@ -583,7 +584,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                 <Card key={section.key} id={`section-${section.key}`} title={section.title}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                     {section.fields.map((field) => (
-                      <FieldRenderer 
+                      <FieldRenderer
                         key={field.name}
                         field={field}
                         value={formData[field.name]}
@@ -593,6 +594,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                         pluginSettings={pluginSettings}
                         disabled={saving}
                         isNew={isNew}
+                        errors={fieldErrors[field.name]}
                         slugWarning={field.name === 'slug' ? slugWarning : undefined}
                         slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
                         readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
@@ -606,7 +608,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                 <Card key={`full-width-${section.key}`} id={`section-${section.key}`} title={section.title}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
                     {section.fields.map((field) => (
-                      <FieldRenderer 
+                      <FieldRenderer
                         key={field.name}
                         field={field}
                         value={formData[field.name]}
@@ -616,6 +618,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                         pluginSettings={pluginSettings}
                         disabled={saving}
                         isNew={isNew}
+                        errors={fieldErrors[field.name]}
                         slugWarning={field.name === 'slug' ? slugWarning : undefined}
                         slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
                         readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
@@ -669,7 +672,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                     <Card key={`sidebar-section-${section.title}`} title={section.title}>
                       <div className="space-y-6">
                         {section.fields.map((field) => (
-                          <FieldRenderer 
+                          <FieldRenderer
                             key={field.name}
                             field={field}
                             value={formData[field.name]}
@@ -679,6 +682,7 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                             pluginSettings={pluginSettings}
                             disabled={saving}
                             isNew={isNew}
+                            errors={fieldErrors[field.name]}
                             readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
                             onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
                           />

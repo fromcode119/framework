@@ -17,6 +17,7 @@ import { PluginDefaultPageContractRegistryService } from './default-page-contrac
 import { PluginDefaultPageContractResolutionService } from './default-page-contract/plugin-default-page-contract-resolution-service';
 import { SeedPageService } from './seed-page-service';
 import { ThemeLayoutOverrideRegistryService } from '../theme/theme-layout-override-registry-service';
+import { ContentResolutionGateRegistryService } from './content-resolution-gate-registry-service';
 
 /**
  * Core Services Singleton.
@@ -70,6 +71,7 @@ export class CoreServices {
   private _defaultPageMaterialization: PluginDefaultPageMaterializationService | null = null;
   private _seedPage: SeedPageService | null = null;
   private _themeDesignOverrides: ThemeLayoutOverrideRegistryService | null = null;
+  private _contentResolutionGates: ContentResolutionGateRegistryService | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -247,6 +249,18 @@ export class CoreServices {
       this._seedPage = new SeedPageService();
     }
     return this._seedPage;
+  }
+
+  /**
+   * Registry of content-resolution gates (lazy-loaded). Plugins register
+   * transformers that rewrite a resolved document before it is sent to the
+   * client (e.g. members-only paywall gating). The framework stays plugin-agnostic.
+   */
+  get contentResolutionGates(): ContentResolutionGateRegistryService {
+    if (!this._contentResolutionGates) {
+      this._contentResolutionGates = new ContentResolutionGateRegistryService();
+    }
+    return this._contentResolutionGates;
   }
 
   /**

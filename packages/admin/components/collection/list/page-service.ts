@@ -242,7 +242,12 @@ export class CollectionListPageService {
     if (columnName === 'createdAt' || columnName === 'updatedAt' || field?.type === 'date' || field?.type === 'datetime') {
       const date = raw ? new Date(raw) : null;
       if (!date || Number.isNaN(date.getTime())) return '-';
-      return date.toLocaleString();
+      // System timestamp columns and explicit datetime fields keep the full date+time.
+      // Fields typed as "date" (date-only pickers) render without the time component.
+      // Show time only for explicit datetime fields. Date fields and system
+      // timestamp columns (createdAt/updatedAt) render date-only in list view.
+      const isDateOnly = field?.type !== 'datetime';
+      return isDateOnly ? date.toLocaleDateString() : date.toLocaleString();
     }
 
     return CollectionListUtils.formatCellValue(raw);

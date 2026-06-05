@@ -3,6 +3,7 @@
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Select } from '@/components/ui/select';
+import { CollectionColumnsMenu } from './columns-menu';
 import { CollectionListUtils } from './utils';
 
 interface FilterBarProps {
@@ -21,6 +22,7 @@ interface FilterBarProps {
   allColumns: any[];
   visibleColumnIds: string[];
   toggleColumn: (id: string) => void;
+  reorderColumn: (id: string, direction: 'up' | 'down') => void;
   selectFilterFields: any[];
   fieldFilters: Record<string, string>;
   setFieldFilters: (val: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
@@ -45,6 +47,7 @@ export class FilterBar extends React.Component<FilterBarProps> {
   allColumns,
   visibleColumnIds,
   toggleColumn,
+  reorderColumn,
   selectFilterFields,
   fieldFilters,
   setFieldFilters,
@@ -109,55 +112,13 @@ export class FilterBar extends React.Component<FilterBarProps> {
         </button>
 
         {showColumnsMenu && (
-          <div
-            className={`absolute right-0 mt-3 w-72 max-w-[92vw] rounded-2xl border shadow-2xl p-2 z-30 animate-in fade-in zoom-in duration-200 ${
-              theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
-            }`}
-          >
-            <div className="px-2.5 py-2 mb-1 text-[10px] font-black uppercase tracking-widest text-slate-500/80">
-              Visible Columns
-            </div>
-            <div className="max-h-80 overflow-auto pr-1 space-y-0.5 custom-scrollbar">
-              {allColumns.map((column) => {
-                const checked = visibleColumnIds.includes(column.id);
-                return (
-                  <button
-                    key={column.id}
-                    type="button"
-                    onClick={() => toggleColumn(column.id)}
-                    className={`group w-full px-2.5 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-                      checked
-                        ? theme === 'dark'
-                          ? 'bg-indigo-500/10 text-indigo-300'
-                          : 'bg-indigo-50/60 text-indigo-700'
-                        : theme === 'dark'
-                          ? 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
-                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                  >
-                    <div className={`h-5 w-5 rounded-md border-2 transition-all flex items-center justify-center shrink-0 ${
-                      checked
-                        ? theme === 'dark'
-                          ? 'bg-indigo-500 border-indigo-500 shadow-lg shadow-indigo-500/20'
-                          : 'bg-indigo-600 border-indigo-600 shadow-sm shadow-indigo-600/20'
-                        : theme === 'dark'
-                          ? 'border-slate-800 bg-slate-900'
-                          : 'border-slate-200 bg-slate-50'
-                    }`}>
-                      {checked && (
-                        <FrameworkIcons.Check
-                          size={11}
-                          className="text-white scale-110"
-                          strokeWidth={3}
-                        />
-                      )}
-                    </div>
-                    <span className="truncate flex-1">{column.header}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <CollectionColumnsMenu
+            theme={theme}
+            allColumns={allColumns}
+            visibleColumnIds={visibleColumnIds}
+            toggleColumn={toggleColumn}
+            reorderColumn={reorderColumn}
+          />
         )}
       </div>
 

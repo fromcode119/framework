@@ -1,5 +1,6 @@
 import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
+import { cookies } from 'next/headers';
 
 const SERVER_FETCH_TIMEOUT_MS = Number(process.env.SERVER_FETCH_TIMEOUT_MS || 12000);
 const DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';
@@ -86,6 +87,24 @@ export class ServerApiUtils {
       || ApplicationUrlUtils.LOCALHOST_PRIMARY_API_BASE_URL;
   }
 
+  /**
+   * Forward the signed-in visitor's framework session cookie (`userToken`) into
+   * server-side API fetches so per-request SSR (force-dynamic pages) resolves with
+   * the visitor's identity. Without this the API sees every SSR fetch as anonymous,
+   * which makes members-only gated pages render the paywall even for entitled members.
+   * Safe outside a request scope: `cookies()` throws there and we forward nothing.
+   */
+  static async buildForwardedAuthHeaders(): Promise<Record<string, string>> {
+    try {
+      const store = await cookies();
+      const token = store.get('userToken')?.value;
+      if (token) return { cookie: `userToken=${token}` };
+    } catch {
+      // No request scope (e.g. build-time) — nothing to forward.
+    }
+    return {};
+  }
+
   static async serverFetchJson(path: string): Promise<unknown> {
     const requestPath = ServerApiUtils.AdminUrlUtils(path);
     if (!requestPath) {
@@ -96,6 +115,7 @@ export class ServerApiUtils {
     }
 
     const prefixes = ServerApiUtils.getServerApiPrefixes();
+    const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();
     let lastError: unknown = null;
 
     for (const prefix of prefixes) {
@@ -103,7 +123,7 @@ export class ServerApiUtils {
       const timeout = setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT_MS);
       try {
         const url = /^https?:\/\//i.test(requestPath) ? requestPath : `${prefix}${requestPath}`;
-        const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+        const response = await fetch(url, { cache: 'no-store', signal: controller.signal, headers: forwardedHeaders });
         if (!response.ok) continue;
         return response.json();
       } catch (error) {
@@ -133,6 +153,7 @@ export class ServerApiUtils {
     }
 
     const prefixes = ServerApiUtils.getServerApiPrefixes();
+    const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();
     let lastError: unknown = null;
     let lastResponse: Response | null = null;
 
@@ -145,6 +166,7 @@ export class ServerApiUtils {
           ...requestInit,
           cache: requestInit?.cache ?? 'no-store',
           signal: controller.signal,
+          headers: { ...forwardedHeaders, ...(requestInit?.headers as Record<string, string> | undefined) },
         });
         if (!response.ok) { lastResponse = response; continue; }
         return response;

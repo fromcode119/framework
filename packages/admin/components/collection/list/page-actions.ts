@@ -26,6 +26,35 @@ export class CollectionListPageActions {
     });
   }
 
+  static reorderColumn({
+    columnId,
+    direction,
+    pluginSlug,
+    resolvedSlug,
+    setVisibleColumnIds
+  }: {
+    columnId: string;
+    direction: 'up' | 'down';
+    pluginSlug: string;
+    resolvedSlug: string;
+    setVisibleColumnIds: React.Dispatch<React.SetStateAction<string[]>>;
+  }): void {
+    setVisibleColumnIds((prev) => {
+      const idx = prev.indexOf(columnId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      if (direction === 'up' && idx > 0) {
+        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      } else if (direction === 'down' && idx < next.length - 1) {
+        [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      } else {
+        return prev;
+      }
+      adminServices.uiPreference.writeCollectionColumns(pluginSlug, resolvedSlug, next);
+      return next;
+    });
+  }
+
   static handleImport(event: React.ChangeEvent<HTMLInputElement>, resolvedSlug: string): void {
     const file = event.target.files?.[0];
     if (!file) return;
