@@ -86,6 +86,17 @@ export class LifecycleService {
     const saved = registryData[normSlug];
     let state = saved?.state || 'inactive';
 
+    // Failures now only flip health_status to 'error' and PRESERVE the desired `state`
+    // (see PluginStateService.markPluginHealthError), so saved.state is normally a real
+    // 'active' | 'inactive' value and the plugin recovers to exactly where it was: an
+    // active plugin re-enables below, an inactive one stays inactive. This branch is a
+    // defensive fallback for legacy rows persisted with state='error' before that change —
+    // recover them conservatively to 'inactive' rather than guess. A tampered/malicious
+    // plugin never reaches here (the integrity check above throws first).
+    if (state === 'error') {
+      state = 'inactive';
+    }
+
     if (state === 'active') {
       const currentCaps = [...(plugin.manifest.capabilities || [])].sort().join(',');
       const approvedCaps = [...(saved?.approvedCapabilities || [])].sort().join(',');
@@ -147,6 +158,12 @@ export class LifecycleService {
       return;
     }
 
+    // Registration succeeded: clear any stale health-error carried over from a prior
+    // failure so a recovered (now inactive) plugin reports healthy. savePluginState
+    // persists health='healthy' for any non-error state. (The active path resets these
+    // inside enable().)
+    loadedPlugin.healthStatus = 'healthy';
+    loadedPlugin.error = undefined;
     await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
   }
 

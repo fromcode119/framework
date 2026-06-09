@@ -1,0 +1,58 @@
+{
+  "account": {
+    "section": {
+      "overview": "Overview",
+      "profile": "Profile",
+      "security": "Security",
+      "sessions": "Sessions",
+      "two-factor": "Two-factor"
+    },
+    "overview": {
+      "greeting": "Welcome, {{name}}",
+      "greetingAnon": "Welcome",
+      "intro": "Manage your profile and account settings from one place."
+    },
+    "profile": {
+      "heading": "My profile",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthDate": "Birth date",
+      "phone": "Phone",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "loading": "Loading…"
+    },
+    "security": {
+      "current": "Current password",
+      "new": "New password",
+      "change": "Change password",
+      "saving": "Saving…",
+      "changed": "Password changed.",
+      "failed": "Could not change password."
+    },
+    "sessions": {
+      "loading": "Loading sessions…",
+      "none": "No active sessions.",
+      "current": "This device",
+      "session": "Session",
+      "revokeOthers": "Sign out other sessions",
+      "revoking": "Signing out…"
+    },
+    "twoFactor": {
+      "loading": "Loading…",
+      "on": "Two-factor authentication is enabled.",
+      "off": "Two-factor authentication is not enabled.",
+      "enable": "Enable two-factor",
+      "disable": "Disable two-factor",
+      "scanKey": "Add this key to your authenticator app:",
+      "recoveryCodes": "Recovery codes (store them safely):",
+      "tokenPlaceholder": "6-digit code",
+      "verify": "Verify",
+      "enabledMsg": "Two-factor enabled.",
+      "disabledMsg": "Two-factor disabled.",
+      "invalidToken": "Invalid code, try again.",
+      "failed": "Action failed."
+    }
+  }
+}

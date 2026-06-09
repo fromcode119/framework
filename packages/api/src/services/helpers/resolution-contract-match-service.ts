@@ -35,17 +35,29 @@ export class ResolutionContractMatchService {
       }
 
       if (ResolutionContractPathService.hasPathParameters(matchingPattern)) {
-        const detailMatch = await this.resolveDetailMatch(
-          contract,
-          matchingPattern,
-          normalizedInput,
-          collections,
-          activePlugins,
-          withLocale,
-          options,
-        );
-        if (detailMatch) {
-          return detailMatch;
+        // Record-backed detail (e.g. /shop/:slug) resolves the param to a record; a static "shell"
+        // route with no recordCollection (e.g. /account/:section) consumes the param client-side and
+        // resolves to its base singleton page (the AccountShell host page).
+        const parameterizedMatch = String(contract.recordCollection || '').trim()
+          ? await this.resolveDetailMatch(
+              contract,
+              matchingPattern,
+              normalizedInput,
+              collections,
+              activePlugins,
+              withLocale,
+              options,
+            )
+          : await this.resolveShellMatch(
+              contract,
+              matchingPattern,
+              collections,
+              activePlugins,
+              withLocale,
+              options,
+            );
+        if (parameterizedMatch) {
+          return parameterizedMatch;
         }
         continue;
       }
@@ -143,6 +155,50 @@ export class ResolutionContractMatchService {
     }
 
     return null;
+  }
+
+  private async resolveShellMatch(
+    contract: ResolvedPluginDefaultPageContract,
+    matchingPattern: string,
+    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    activePlugins: Set<string>,
+    withLocale: (query: any) => any,
+    options: {
+      user?: any;
+      preview?: boolean;
+    },
+  ): Promise<{ type: string; plugin: string; doc: any } | null> {
+    const baseSlug = this.resolveShellBaseSlug(contract, matchingPattern);
+    const collectionEntry = this.findPagesCollectionEntry(collections, activePlugins);
+    if (!baseSlug || !collectionEntry) {
+      return null;
+    }
+
+    const result: any = await this.restController.find(collectionEntry.collection, {
+      query: withLocale({
+        slug: baseSlug,
+        limit: 1,
+        preview: options.preview ? '1' : '0',
+      }),
+      user: options.user,
+    } as any);
+
+    if (result?.docs?.length > 0) {
+      return {
+        type: collectionEntry.collection.shortSlug || collectionEntry.collection.slug,
+        plugin: collectionEntry.pluginSlug,
+        doc: ResolutionContractPresentationService.applyToDoc(result.docs[0], contract),
+      };
+    }
+
+    return null;
+  }
+
+  private resolveShellBaseSlug(contract: ResolvedPluginDefaultPageContract, matchingPattern: string): string | null {
+    const source = String(matchingPattern || contract.effectiveSlug || '').trim();
+    const segments = source.split('?')[0].split('#')[0].split('/').filter(Boolean);
+    const staticSegments = segments.filter((segment) => !segment.startsWith(':'));
+    return staticSegments.length ? staticSegments[staticSegments.length - 1] : null;
   }
 
   private resolveSingletonSlugValue(contract: ResolvedPluginDefaultPageContract): string | null {

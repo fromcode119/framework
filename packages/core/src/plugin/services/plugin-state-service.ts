@@ -75,6 +75,29 @@ export class PluginStateService {
     }
   }
 
+  /**
+   * Mark a plugin's health as failed WITHOUT touching its desired `state`.
+   *
+   * `state` (active | inactive) is the operator's intent; `health_status` is runtime
+   * health. Failures must only flip health to 'error' so the desired state survives and
+   * the plugin can recover to exactly where it was (active stays active) once it boots
+   * cleanly again. Saving any non-error state via savePluginState resets health to 'healthy'.
+   */
+  async markPluginHealthError(slug: string): Promise<void> {
+    const normSlug = slug.toLowerCase();
+    try {
+      const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
+      if (existing) {
+        await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, {
+          health_status: 'error',
+          updated_at: new Date(),
+        });
+      }
+    } catch (err) {
+      this.logger.error(`Failed to mark plugin health error for ${normSlug} in DB`, err);
+    }
+  }
+
   async getPluginConfig(slug: string): Promise<any> {
     try {
       const row = await this.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: slug });

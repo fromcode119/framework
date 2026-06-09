@@ -4,8 +4,25 @@ import { AuthControllerSecurity } from './auth-controller-security';
 import { SystemTwoFactorService } from '../system/system-2fa-service';
 import { AuthProfileService } from '../../services/auth-profile-service';
 import { UserManagementService } from '../../services/user-management-service';
+import { PeopleSelfService } from '../../services/people-self-service';
 
 export class AuthControllerSelfService extends AuthControllerSecurity {
+  async getMyPerson(req: any, res: Response) {
+    const userId = this.parseUserId(req.user?.id);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const person = await new PeopleSelfService(this.db).resolveSelf(req.user);
+    return res.json({ person });
+  }
+
+  async updateMyPerson(req: any, res: Response) {
+    const userId = this.parseUserId(req.user?.id);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const service = new PeopleSelfService(this.db);
+    const self = await service.resolveSelf(req.user);
+    const person = await service.updateSelf(self, req.body || {});
+    return res.json({ person });
+  }
+
   async getMySecurityState(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -27,7 +44,7 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
         email: this.normalizeEmail(user.email),
         firstName: this.readUserFirstName(user),
         lastName: this.readUserLastName(user),
-        roles: this.readRoles(user),
+        roles: await this.resolveEffectiveRoles({ ...user, id: userId }),
       },
       profile,
       account: {

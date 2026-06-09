@@ -33,7 +33,11 @@ export class SystemConstants {
     WEBHOOKS: '_system_webhooks',
     SCHEDULER_TASKS: '_system_scheduler_tasks',
     USERS_ROLES: '_system_users_roles',
-    MIGRATIONS: '_system_migrations'
+    MIGRATIONS: '_system_migrations',
+    PEOPLE: 'people',
+    PERSON_RELATIONSHIPS: 'person_relationships',
+    PEOPLE_ADDRESSES: 'people_addresses',
+    PERSON_CATALOGS: 'person_catalogs'
   } as const;
 
   /**
@@ -158,6 +162,9 @@ export class SystemConstants {
     ADMIN_BACKUP_RESTORE_EXECUTE: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_EXECUTE),
     ADMIN_USERS: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_USERS),
     ADMIN_USER: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_USERS_ID),
+    ADMIN_PEOPLE: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_PEOPLE),
+    ADMIN_PEOPLE_ID: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_PEOPLE_ID),
+    ADMIN_PEOPLE_CREATE_USER: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.ADMIN_PEOPLE_ID_CREATE_USER),
     RESOLVE: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.RESOLVE),
     I18N: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.I18N),
     EVENTS: joinPath(SYSTEM_BASE, ROUTE_SEGMENTS.EVENTS),

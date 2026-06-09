@@ -46,6 +46,7 @@ export { RequestSurfaceUtils } from './request-surface-utils';
 export { RuntimeLocationUtils } from './runtime-location-utils';
 export { RuntimeConstants } from './runtime-constants';
 export { RouteConstants } from './route-constants';
+export { AccountRouteUtils } from './account-route-utils';
 export { PublicRouteConstants } from './public-route-constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────

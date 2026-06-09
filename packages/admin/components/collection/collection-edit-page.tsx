@@ -443,6 +443,14 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
     setFieldValue(name, value);
   };
 
+  // Reactive-form patch: lets a custom field component update several sibling fields at
+  // once (e.g. pick a city → fill lat/lon/tz live). Powers the Livewire-style live fields.
+  const handlePatch = useCallback((partial: Record<string, any>) => {
+    for (const [name, value] of Object.entries(partial || {})) {
+      setFieldValue(name, value);
+    }
+  }, [setFieldValue]);
+
   const handleDelete = async () => {
     setDeleting(true);
     try {
@@ -589,6 +597,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                         field={field}
                         value={formData[field.name]}
                         onChange={(val) => handleInputChange(field.name, val)}
+                        record={formData}
+                        onPatch={handlePatch}
                         theme={theme}
                         collectionSlug={resolvedSlug}
                         pluginSettings={pluginSettings}
@@ -613,6 +623,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                         field={field}
                         value={formData[field.name]}
                         onChange={(val) => handleInputChange(field.name, val)}
+                        record={formData}
+                        onPatch={handlePatch}
                         theme={theme}
                         collectionSlug={resolvedSlug}
                         pluginSettings={pluginSettings}
@@ -677,6 +689,8 @@ export default function CollectionEditPage({ params }: { params: Promise<{ plugi
                             field={field}
                             value={formData[field.name]}
                             onChange={(val) => handleInputChange(field.name, val)}
+                        record={formData}
+                        onPatch={handlePatch}
                             theme={theme}
                             collectionSlug={resolvedSlug}
                             pluginSettings={pluginSettings}

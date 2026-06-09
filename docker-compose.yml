@@ -73,11 +73,14 @@ services:
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
+      # AI provider + keys are NOT env vars — they're configured securely in the admin via the
+      # `ai` integration (IntegrationManager), encrypted with INTEGRATION_SECRET_KEY above.
     depends_on:
       - db
       - redis
     extra_hosts:
       - "marketplace.framework.local:host-gateway"
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
       - ./public/uploads:/app/public/uploads

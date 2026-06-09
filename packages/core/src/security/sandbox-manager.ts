@@ -1,5 +1,10 @@
-// TypeScript namespace import correctly handles isolated-vm's CommonJS export pattern
-import * as ivm from 'isolated-vm';
+// isolated-vm's module.exports is a native object whose Isolate/Reference/ExternalCopy
+// constructors live on the PROTOTYPE (only `lib` is an enumerable own property). A TS
+// namespace import (`import * as ivm`) compiles to __importStar, which copies own
+// properties only and therefore drops the prototype constructors — making `ivm.Isolate`
+// undefined at runtime ("is not a constructor"). Use import-equals/require so `ivm` is the
+// exact module object and the prototype chain is preserved.
+import ivm = require('isolated-vm');
 import { PluginManifest, PluginContext } from '../types';
 import { Logger } from '../logging';
 

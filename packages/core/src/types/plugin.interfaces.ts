@@ -212,6 +212,26 @@ export interface PluginContext {
   };
 
   /**
+   * Canonical person/identity surface (the `people` table). Serves account holders,
+   * family members, and email-only contacts. Use instead of querying SystemTable.PEOPLE
+   * or any plugin-local people store directly.
+   */
+  readonly people: {
+    match(input: { userId?: any; email?: string; phone?: string }): Promise<Record<string, any> | null>;
+    getById(id: any): Promise<Record<string, any> | null>;
+    getByUserId(userId: any): Promise<Record<string, any> | null>;
+    getByEmail(email: string): Promise<Record<string, any> | null>;
+    upsert(input: Record<string, any>): Promise<Record<string, any> | null>;
+    linkAccount(personId: any, userId: any): Promise<any>;
+    addRelationship(fromPersonId: any, toPersonId: any, type: string, metadata?: Record<string, any>): Promise<any>;
+    listRelated(fromPersonId: any, type?: string): Promise<Array<Record<string, any>>>;
+    catalogs: {
+      register(kind: string, entry: { key: string; label: string; pluginSlug?: string }): Promise<void>;
+      list(kind: string): Promise<Array<{ key: string; label: string }>>;
+    };
+  };
+
+  /**
    * Read-only access to the system meta store.
    * Use instead of querying SystemTable.META directly.
    */
@@ -225,6 +245,12 @@ export interface PluginContext {
    */
   readonly roles: {
     ensure(slug: string, data: { name: string; description?: string; type?: string; permissions?: any[] }): Promise<void>;
+    /** Grant a role to a user (idempotent). */
+    assignRole(userId: number | string, slug: string): Promise<void>;
+    /** Revoke a role from a user (no-op if not assigned). */
+    removeRole(userId: number | string, slug: string): Promise<void>;
+    /** List the user ids that currently hold a given role. */
+    listUserIdsWithRole(slug: string): Promise<number[]>;
   };
 
   readonly theme: {

@@ -35,6 +35,7 @@ import { Plugins } from '../plugins';
 import { PluginsManagerResolver } from '../plugins-manager-resolver';
 import { PluginTelemetryService } from './services/plugin-telemetry-service';
 import { PluginScaffoldService } from './services/plugin-scaffold-service';
+import { PersonCatalogService } from './services/person-catalog-service';
 import { PluginAdminRuntimeService } from './services/plugin-admin-runtime-service';
 import { PluginInstallationService } from './services/plugin-installation-service';
 import { PluginRuntimeStateService } from './services/plugin-runtime-state-service';
@@ -169,6 +170,11 @@ export class PluginManager implements PluginManagerInterface {
 
   async init() {
     await this.migrationManager.migrate();
+    try {
+      await new PersonCatalogService(this.db as any).seedDefaults();
+    } catch (error) {
+      this.logger.warn(`[people] Failed to seed default person catalogs: ${error instanceof Error ? error.message : String(error)}`);
+    }
     await this.coordinator.validateDatabaseState();
     await this.integrations.initialize();
     

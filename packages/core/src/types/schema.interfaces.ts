@@ -29,6 +29,14 @@ export interface Field {
     component?: string;
     sourceCollection?: string;
     sourceField?: string;
+    /**
+     * For `relationship` fields: when a record is picked, copy values from the selected
+     * related record into sibling fields on this form (live, before save).
+     * Keys are the LOCAL sibling field names to fill; values are the source field on the
+     * related record — a single field name, or a list of fields joined with a space
+     * (e.g. `{ email: 'email', name: ['firstName', 'lastName'] }`).
+     */
+    autofill?: Record<string, string | readonly string[]>;
     handlesLocalization?: boolean;
     width?: 'full' | 'half';
     condition?: {

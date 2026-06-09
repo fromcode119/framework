@@ -29,6 +29,12 @@ interface DataTableProps<T> {
   onSelectionChange?: (ids: string[]) => void;
   expandedRowId?: string | null;
   renderExpandedRow?: (row: T) => React.ReactNode;
+  /**
+   * When provided, rows are visually grouped: a full-width header row is emitted before each run of
+   * rows that share a group key. Callers must pass `data` already sorted by the same key so a group's
+   * rows are contiguous. Returns the group label for a row.
+   */
+  groupBy?: (row: T) => string;
 }
 
 /** Generic paginated, sortable, selectable data table. Pure presentational class. */
@@ -67,8 +73,11 @@ export class DataTable<T extends { id: any }> extends React.Component<DataTableP
     const {
       columns, data, loading, totalDocs = 0, limit = 10, page = 1,
       onPageChange, onRowClick, actions, emptyMessage = 'No records found',
-      selectable, selectedIds = [], expandedRowId = null, renderExpandedRow,
+      selectable, selectedIds = [], expandedRowId = null, renderExpandedRow, groupBy,
     } = this.props;
+    const totalColumns = columns.length + (actions ? 1 : 0) + (selectable ? 1 : 0);
+    const groupCounts: Record<string, number> = {};
+    if (groupBy) for (const row of data) { const k = groupBy(row) || '—'; groupCounts[k] = (groupCounts[k] || 0) + 1; }
 
     const totalPages = Math.ceil(totalDocs / limit);
     const startRecord = totalDocs > 0 ? ((page - 1) * limit) + 1 : 0;
@@ -144,8 +153,18 @@ export class DataTable<T extends { id: any }> extends React.Component<DataTableP
                 data.map((row, index) => {
                   const rowKey = String(row.id || (row as any).key || (row as any).slug || index);
                   const isExpanded = expandedRowId !== null && String(expandedRowId) === String(row.id);
+                  const groupKey = groupBy ? (groupBy(row) || '—') : null;
+                  const showGroupHeader = groupKey !== null && (index === 0 || groupKey !== (groupBy!(data[index - 1]) || '—'));
                   return (
                     <React.Fragment key={rowKey}>
+                      {showGroupHeader && (
+                        <tr className="bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800">
+                          <td colSpan={totalColumns} className="px-5 py-2.5">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{groupKey}</span>
+                            <span className="ml-2 text-[11px] font-semibold text-slate-400">{groupCounts[groupKey!]}</span>
+                          </td>
+                        </tr>
+                      )}
                       <tr
                         className={`transition-all duration-200 cursor-default hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${onRowClick ? 'cursor-pointer' : ''} ${selectedIds.includes(String(row.id)) ? 'bg-indigo-50/30 dark:bg-indigo-500/5' : ''}`}
                         onClick={() => onRowClick?.(row)}

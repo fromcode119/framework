@@ -1,8 +1,20 @@
 import fs from 'fs';
 import path from 'path';
+import { createRequire } from 'module';
 import { pathToFileURL } from 'url';
 import { Logger } from '../logging';
 import type { SystemMigration } from '../types';
+
+/**
+ * A CommonJS require bound to this module.
+ *
+ * Plugin migrations are shipped as esbuild `--format=cjs` `.js` files. The loader previously
+ * used `await import(fileUrl)`, but the framework compiles with `module: "CommonJS"`, under
+ * which tsc rewrites that to `require(fileUrl)` — and `require()` cannot load a `file://` URL,
+ * so every migration silently failed to load in production (it only worked under tsx in dev).
+ * Loading the CJS module by absolute path with a real require avoids the URL problem entirely.
+ */
+const migrationRequire = createRequire(__filename);
 
 export class PluginMigrationLoader {
   private static readonly logger = new Logger({ namespace: 'plugin-migration-loader' });
@@ -30,12 +42,10 @@ export class PluginMigrationLoader {
     for (const file of files) {
       const absolutePath = path.resolve(migrationsDir, file);
       try {
-        const module = await import(pathToFileURL(absolutePath).href);
-        const migrationModule = module.default && typeof module.default.up === 'function'
-          ? module.default
-          : module;
+        const imported = migrationRequire(absolutePath);
+        const migrationModule = this.resolveMigrationExport(imported);
 
-        if (typeof migrationModule?.up !== 'function') {
+        if (!migrationModule || typeof migrationModule.up !== 'function') {
           this.logger.warn(`Skipping plugin migration without an up() export: ${absolutePath}`);
           continue;
         }
@@ -45,8 +55,8 @@ export class PluginMigrationLoader {
         migrations.push({
           name: `plugin:${pluginSlug}:${basename}`,
           version: this.toVersionNumber(basename, fallbackIndex),
-          up: migrationModule.up,
-          down: typeof migrationModule.down === 'function' ? migrationModule.down : undefined,
+          up: migrationModule.up.bind(migrationModule),
+          down: typeof migrationModule.down === 'function' ? migrationModule.down.bind(migrationModule) : undefined,
         });
       } catch (error) {
         if (this.shouldSkipImportError(error, absolutePath)) {
@@ -64,6 +74,39 @@ export class PluginMigrationLoader {
       }
       return left.version - right.version;
     });
+  }
+
+  /**
+   * Resolve the migration object (the one exposing up()/down()) from an imported module.
+   *
+   * Handles every shape we ship:
+   *  - ESM .ts loaded via tsx (dev): `export default new Migration()` → module.default
+   *  - CJS .js compiled by esbuild --format=cjs and loaded by Node's import() (prod):
+   *    interop wraps module.exports as `default`, so the instance is at module.default.default
+   *  - `export default class Migration extends BaseMigration` → the class itself; up() lives on
+   *    the prototype, so it must be instantiated
+   *  - the module object itself carrying up() (defensive)
+   */
+  private static resolveMigrationExport(module: any): { up?: unknown; down?: unknown } | undefined {
+    const candidates = [module?.default?.default, module?.default, module];
+    for (const candidate of candidates) {
+      if (!candidate) {
+        continue;
+      }
+      // Already an instance (or object) exposing up().
+      if (typeof candidate.up === 'function') {
+        return candidate;
+      }
+      // A migration class whose prototype carries up() — instantiate it.
+      if (typeof candidate === 'function' && typeof candidate.prototype?.up === 'function') {
+        try {
+          return new candidate();
+        } catch {
+          // Not constructable without args — fall through to the next candidate.
+        }
+      }
+    }
+    return undefined;
   }
 
   private static toVersionNumber(basename: string, fallbackIndex: number): number {

@@ -45,6 +45,11 @@ export class AppPathConstants {
       PERMISSIONS: '/users/permissions',
       PERMISSIONS_NEW: '/users/permissions/new',
     },
+    PEOPLE: {
+      ROOT: '/users/people',
+      LIST: '/users/people',
+      DETAIL: (id: string | number) => `/users/people/${id}`,
+    },
     PLUGINS: {
       ROOT: '/plugins',
       INSTALLED: '/plugins/installed',

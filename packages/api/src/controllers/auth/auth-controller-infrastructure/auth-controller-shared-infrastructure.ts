@@ -29,6 +29,26 @@ export class AuthControllerSharedInfrastructure {
     return AuthUtils.parseRoles(user?.roles);
   }
 
+  /**
+   * Effective roles = the legacy `users.roles` column UNION the assignable `_system_users_roles`
+   * junction roles (managed by the admin Roles UI and plugins like MLM). Without this union, role
+   * assignments made through the junction table would never reach auth/runtime — the role would be
+   * cosmetic. Reads go through the raw DB manager, so the junction row is snake_case (`role_slug`),
+   * the framework-internal convention for raw-manager access.
+   */
+  protected async resolveEffectiveRoles(user: any): Promise<string[]> {
+    const base = AuthUtils.parseRoles(user?.roles);
+    const userId = this.parseUserId(user?.id ?? user?.userId);
+    if (!userId) return base;
+    const rows = await this.db
+      .find(SystemConstants.TABLE.USERS_ROLES, { where: { userId } })
+      .catch(() => [] as any[]);
+    const assigned = (Array.isArray(rows) ? rows : [])
+      .map((row: any) => String(row?.role_slug ?? '').trim())
+      .filter(Boolean);
+    return Array.from(new Set([...base, ...assigned]));
+  }
+
   protected parseUserId(raw: any): number {
     return AuthUtils.parseUserId(raw);
   }

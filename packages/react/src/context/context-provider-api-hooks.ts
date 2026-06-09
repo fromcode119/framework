@@ -109,13 +109,18 @@ export class ContextProviderApiHooks {
         url = `${base}${versionPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
       }
 
-      const token = clientType === 'frontend-ui'
-        ? browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN)
-        : '';
+      // Read caller headers first so we can respect an explicit X-Framework-Client override.
+      // When a frontend plugin requests admin-ui context (e.g. the CMS visual editor), we must
+      // NOT send the frontend userToken as Bearer — it would authenticate as a non-admin user and
+      // shadow the fc_token cookie (which carries the admin role). Let the cookie travel on its own.
+      const existingHeaders = (fetchOptions.headers || {}) as Record<string, string>;
+      const explicitClientType = existingHeaders['X-Framework-Client'] || existingHeaders['x-framework-client'] || '';
+      const token = (explicitClientType === 'admin-ui')
+        ? ''
+        : (clientType === 'frontend-ui' ? browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN) : '');
       const csrfToken = browserState.readCookie(CookieConstants.AUTH_CSRF);
       const method = String(fetchOptions.method || 'GET').toUpperCase();
       const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(method);
-      const existingHeaders = (fetchOptions.headers || {}) as Record<string, string>;
 
       const execute = async () => {
         const response = await fetch(url, {

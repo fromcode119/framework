@@ -12,15 +12,14 @@ export class PluginFailureIsolationService {
   ) {}
 
   async markPluginError(plugin: LoadedPlugin, message: string): Promise<void> {
+    // In-memory state is 'error' so runtime filters/gates exclude the broken plugin and
+    // the admin UI shows it as failed. The DB only records health='error' and PRESERVES the
+    // desired `state` column, so the plugin recovers to exactly where it was (active stays
+    // active, inactive stays inactive) on the next clean boot, instead of being stuck.
     plugin.state = 'error';
     plugin.error = message;
     plugin.healthStatus = 'error';
-    await this.registry.savePluginState(
-      plugin.manifest.slug,
-      'error',
-      plugin.approvedCapabilities,
-      plugin.manifest.version,
-    );
+    await this.registry.markPluginHealthError(plugin.manifest.slug);
     await this.registry.writeLog('ERROR', `Plugin "${plugin.manifest.slug}" failed: ${message}`, plugin.manifest.slug);
   }
 

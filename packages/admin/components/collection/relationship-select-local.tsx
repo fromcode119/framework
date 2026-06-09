@@ -13,6 +13,10 @@ interface RelationshipSelectLocalProps {
   value: any;
   onChange: (val: any) => void;
   theme: string;
+  /** All current form values — lets autofill avoid clobbering existing siblings if needed. */
+  record?: Record<string, any>;
+  /** Patch sibling fields live when a related record is picked (schema `admin.autofill`). */
+  onPatch?: (partial: Record<string, any>) => void;
 }
 
 interface SelectOption {
@@ -28,6 +32,7 @@ interface RelationshipSelectLocalState {
 export class RelationshipSelectLocal extends AdminComponent<RelationshipSelectLocalProps, RelationshipSelectLocalState> {
   state: RelationshipSelectLocalState = { search: '', options: [] };
   private rawValueMap: Record<string, any> = {};
+  private docByKey: Record<string, any> = {};
   private fetchToken = 0;
 
   private get plugins(): any {
@@ -100,6 +105,7 @@ export class RelationshipSelectLocal extends AdminComponent<RelationshipSelectLo
           : scalarValue;
         if (!optionValue || seen.has(optionValue)) continue;
         seen.add(optionValue);
+        this.docByKey[optionValue] = doc;
         this.rawValueMap[optionValue] = isMultiSource
           ? RelationshipSelectLocalUtils.buildTaggedValue(rawValue ?? scalarValue, sourceCollectionSlug)
           : rawValue ?? optionValue;
@@ -188,6 +194,16 @@ export class RelationshipSelectLocal extends AdminComponent<RelationshipSelectLo
     this.fetchToken++;
   }
 
+  private applyAutofill(key: string): void {
+    const { field, onPatch } = this.props;
+    const autofill = field?.admin?.autofill;
+    if (!onPatch || !autofill) return;
+    const doc = this.docByKey[key];
+    if (!doc) return;
+    const patch = RelationshipSelectLocalUtils.buildAutofillPatch(doc, autofill);
+    if (Object.keys(patch).length > 0) onPatch(patch);
+  }
+
   render(): React.ReactNode {
     const { field, onChange, theme } = this.props;
     const { options } = this.state;
@@ -203,6 +219,7 @@ export class RelationshipSelectLocal extends AdminComponent<RelationshipSelectLo
             onChange('');
             return;
           }
+          this.applyAutofill(key);
           const rawValue = this.rawValueMap[key];
           if (rawValue !== undefined) {
             onChange(rawValue);

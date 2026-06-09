@@ -20,6 +20,10 @@ export class RouteConstants {
   HEALTH: '/health',
   READY: '/ready',
 
+  // ── Account (frontend page slugs) ────────────────────────────────────────
+  ACCOUNT: '/account',
+  ACCOUNT_SECTION: '/account/:section',
+
   // ── Core / Auth ───────────────────────────────────────────────────────────
   ACTIVE: '/active',
   ME: '/me',
@@ -42,6 +46,7 @@ export class RouteConstants {
   SSO_LOGIN: '/sso/login',
   SECURITY: '/security',
   PROFILE: '/profile',
+  ME_PERSON: '/me/person',
   VERIFY_PASSWORD: '/verify-password',
   CHANGE_PASSWORD: '/change-password',
   EMAIL_CHANGE_REQUEST: '/email-change/request',
@@ -83,6 +88,9 @@ export class RouteConstants {
   ADMIN_PERMISSIONS: '/admin/permissions',
   ADMIN_USERS: '/admin/users',
   ADMIN_USERS_ID: '/admin/users/:id',
+  ADMIN_PEOPLE: '/admin/people',
+  ADMIN_PEOPLE_ID: '/admin/people/:id',
+  ADMIN_PEOPLE_ID_CREATE_USER: '/admin/people/:id/create-user',
   ADMIN_USERS_ROLES: '/admin/users/roles',
   ADMIN_USERS_2FA_STATUS: '/admin/users/:id/2fa/status',
   ADMIN_USERS_2FA_SETUP: '/admin/users/:id/2fa/setup',

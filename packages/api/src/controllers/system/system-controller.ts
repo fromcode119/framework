@@ -7,12 +7,14 @@ import { SystemControllerRuntime } from './system-controller-runtime';
 import { SystemIntegrationController } from './system-integration-controller';
 import { SystemRuntimeController } from './system-runtime-controller';
 import { SystemUserController } from './system-user-controller';
+import { SystemPeopleController } from './system-people-controller';
 
 export class SystemController {
   private readonly adminController: SystemAdminController;
   private readonly integrationController: SystemIntegrationController;
   private readonly runtimeController: SystemRuntimeController;
   private readonly userController: SystemUserController;
+  private readonly peopleController: SystemPeopleController;
 
   constructor(
     manager: PluginManager,
@@ -25,6 +27,23 @@ export class SystemController {
     this.integrationController = new SystemIntegrationController(runtime);
     this.runtimeController = new SystemRuntimeController(runtime);
     this.userController = new SystemUserController(runtime);
+    this.peopleController = new SystemPeopleController(runtime);
+  }
+
+  async getPeople(req: Request, res: Response) {
+    return this.peopleController.getPeople(req, res);
+  }
+
+  async getPerson(req: Request, res: Response) {
+    return this.peopleController.getPerson(req, res);
+  }
+
+  async savePerson(req: Request, res: Response) {
+    return this.peopleController.savePerson(req, res);
+  }
+
+  async createUserFromPerson(req: Request, res: Response) {
+    return this.peopleController.createUserFromPerson(req, res);
   }
 
   async getAdminMetadata(req: Request, res: Response) {

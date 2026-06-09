@@ -48,6 +48,16 @@ export class AdminSystemNavigationMetadataService {
         requiredRoles: ['admin'],
       },
       {
+        id: 'people',
+        label: 'People',
+        path: AppPathConstants.ADMIN.PEOPLE.ROOT,
+        sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
+        icon: 'Users',
+        scope: 'self',
+        priority: 15,
+        requiredRoles: ['admin'],
+      },
+      {
         id: 'roles',
         label: 'Roles',
         path: AppPathConstants.ADMIN.USERS.ROLE_LIST,

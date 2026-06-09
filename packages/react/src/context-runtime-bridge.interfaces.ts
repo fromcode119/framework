@@ -62,6 +62,7 @@ export interface RuntimeBridgeInstallArgs {
   RootFramework: any;
   Slot: any;
   Override: any;
+  AccountShell: any;
   ReactRef: typeof React;
   ReactDOMRef: any;
   runtimeModules?: Record<string, any>;

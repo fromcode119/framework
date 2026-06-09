@@ -152,9 +152,19 @@ export class SystemRouter extends BaseRouter {
       this.bind(this.controller.saveUser.bind(this.controller)));
     this.delete(RouteConstants.SEGMENTS.ADMIN_USERS_ID, this.auth.requirePermission('users:manage'), 
       this.bind(this.controller.deleteUser.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.ADMIN_USERS_ROLES, this.auth.requirePermission('users:manage'), 
+    this.post(RouteConstants.SEGMENTS.ADMIN_USERS_ROLES, this.auth.requirePermission('users:manage'),
       this.bind(this.controller.saveUserRoles.bind(this.controller)));
-    
+
+    // People management (unified identity model): list people, promote a person to a login account.
+    this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE, this.auth.requirePermission('users:view'),
+      this.bind(this.controller.getPeople.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:view'),
+      this.bind(this.controller.getPerson.bind(this.controller)));
+    this.patch(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:manage'),
+      this.bind(this.controller.savePerson.bind(this.controller)));
+    this.post(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_CREATE_USER, this.auth.requirePermission('users:manage'),
+      this.bind(this.controller.createUserFromPerson.bind(this.controller)));
+
     // 2FA Management
     this.get(RouteConstants.SEGMENTS.ADMIN_USERS_2FA_STATUS, this.auth.requirePermission('users:view'), 
       this.bind(this.controller.getTwoFactorStatus.bind(this.controller)));

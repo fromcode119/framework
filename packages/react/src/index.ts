@@ -24,6 +24,7 @@ export type {
 } from './renderable-content-transformer.interfaces';
 export * from 'lucide-react';
 export { Slot } from './slot';
+export { AccountShell } from './account-shell';
 export { Override } from './override';
 export { RootFramework } from './root-framework';
 export { SystemShortcodes } from './system-shortcodes';

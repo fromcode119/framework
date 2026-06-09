@@ -5,6 +5,16 @@ const frameworkRoot = __dirname;
 
 export default defineConfig({
   root: frameworkRoot,
+  esbuild: {
+    // Required for TypeScript decorators used by EntityColumn and BaseEntity in plugin entity classes
+    target: 'es2022',
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+        useDefineForClassFields: false,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'packages/frontend'),
@@ -21,8 +31,12 @@ export default defineConfig({
     globals: true,
     include: [
       path.resolve(frameworkRoot, 'packages/core/src/services/__tests__/**/*.test.ts').replace(/\\/g, '/'),
+      path.resolve(frameworkRoot, 'packages/core/src/plugin/services/__tests__/**/*.test.ts').replace(/\\/g, '/'),
+      path.resolve(frameworkRoot, 'packages/core/src/plugin/context/__tests__/**/*.test.ts').replace(/\\/g, '/'),
       path.resolve(frameworkRoot, 'packages/admin/lib/services/__tests__/**/*.test.ts').replace(/\\/g, '/'),
       path.resolve(frameworkRoot, 'packages/frontend/tests/**/*.test.ts').replace(/\\/g, '/'),
+      // Plugin tests live in (and run from) each plugin's own repo — the framework never reaches
+      // across sibling-checkout paths to run them (those resolve only on one combined layout).
     ],
   },
 });

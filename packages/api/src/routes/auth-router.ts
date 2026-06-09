@@ -53,6 +53,8 @@ export class AuthRouter extends BaseRouter {
     // User security (requires authentication)
     this.get(RouteConstants.SEGMENTS.SECURITY, this.auth.guard(), this.bind(this.controller.getMySecurityState.bind(this.controller)));
     this.patch(RouteConstants.SEGMENTS.PROFILE, this.auth.guard(), this.bind(this.controller.updateMyProfile.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.ME_PERSON, this.auth.guard(), this.bind(this.controller.getMyPerson.bind(this.controller)));
+    this.patch(RouteConstants.SEGMENTS.ME_PERSON, this.auth.guard(), this.bind(this.controller.updateMyPerson.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.VERIFY_PASSWORD, this.auth.guard(), this.bind(this.controller.verifyPassword.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.CHANGE_PASSWORD, this.auth.guard(), this.bind(this.controller.changePassword.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.EMAIL_CHANGE_REQUEST, this.auth.guard(), this.bind(this.controller.requestEmailChange.bind(this.controller)));

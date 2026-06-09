@@ -109,6 +109,7 @@ export { ClientRuntimeConstants } from '@fromcode119/core/client';
 export { CookieConstants } from '@fromcode119/core/client';
 export { RuntimeConstants } from '@fromcode119/core/client';
 export { RouteConstants } from '@fromcode119/core/client';
+export { AccountRouteUtils } from '@fromcode119/core/client';
 export { PublicRouteConstants } from '@fromcode119/core/client';
 export { DataSourceConstants } from '@fromcode119/core/client';
 

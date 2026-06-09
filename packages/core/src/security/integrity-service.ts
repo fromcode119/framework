@@ -7,6 +7,23 @@ export class IntegrityService {
   private static logger = new Logger({ namespace: 'integrity-service' });
 
   /**
+   * Files/directories excluded from the integrity hash. These MUST be identical
+   * between checksum generation (build-plugins.sh) and verification here, or every
+   * plugin would fail its integrity check. In addition to these names, any entry
+   * starting with "." (dotfiles like .git, .fromcode-plugin-deps.json) is skipped.
+   *
+   *  - manifest.json: holds the checksum itself — hashing it would be self-referential.
+   *  - node_modules:  installed at runtime, never part of the published surface.
+   *  - package-lock.json: may be (re)written by a runtime `npm install`, so it is not
+   *    stable between generation and verification.
+   */
+  public static readonly EXCLUDED_ENTRIES: ReadonlySet<string> = new Set([
+    'manifest.json',
+    'node_modules',
+    'package-lock.json',
+  ]);
+
+  /**
    * Calculates the SHA-256 hash of a directory's contents
    */
   public static async calculateDirectoryHash(dirPath: string): Promise<string> {
@@ -19,7 +36,7 @@ export class IntegrityService {
     const items = fs.readdirSync(dirPath).sort(); // Sort to ensure deterministic hashing
 
     for (const item of items) {
-      if (item.startsWith('.') || item === 'node_modules') continue;
+      if (item.startsWith('.') || this.EXCLUDED_ENTRIES.has(item)) continue;
 
       const fullPath = path.join(dirPath, item);
       const stat = fs.statSync(fullPath);

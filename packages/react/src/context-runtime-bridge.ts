@@ -64,6 +64,7 @@ export class ContextRuntimeBridge {
       fc.InteractiveCanvas = {
         Provider: ({ children }: any) => children,
         Wrapper: ({ children }: any) => children,
+        Consumer: ({ children }: any) => children({ state: { isEnabled: false, targetId: null }, toggleEnabled: () => {}, setTargetId: () => {} }),
         use: () => ({ state: { isEnabled: false, targetId: null }, toggleEnabled: () => {}, setTargetId: () => {} }),
       };
     }

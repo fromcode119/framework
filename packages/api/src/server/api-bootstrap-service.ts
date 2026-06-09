@@ -8,6 +8,7 @@ import {
   SystemUpdateService,
   ThemeManager,
 } from '@fromcode119/core';
+import { FrameworkAccountPageContractService } from '../services/framework-account-page-contract-service';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -52,6 +53,9 @@ export class ApiBootstrapService {
     } catch (error: any) {
       this.logger.error('Initial plugin discovery failed. Check manifest files and permissions.', error);
     }
+
+    // Framework owns the /account route tree (built-in AccountShell), independent of any plugin.
+    FrameworkAccountPageContractService.register();
 
     const server = createServer(manager, themeManager, auth);
     server.pluginRouter.use(pluginApiRouter);

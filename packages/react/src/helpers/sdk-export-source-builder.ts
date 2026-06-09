@@ -48,6 +48,7 @@ export class SdkExportSourceBuilder {
     'CookieConstants',
     'RuntimeConstants',
     'RouteConstants',
+    'AccountRouteUtils',
     'PublicRouteConstants',
     'DataSourceConstants',
     'Logger',

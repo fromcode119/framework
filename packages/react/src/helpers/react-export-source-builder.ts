@@ -20,6 +20,7 @@ export class ReactExportSourceBuilder {
     'PluginsProvider',
     'Slot',
     'Override',
+    'AccountShell',
     'RootFramework',
     'CollectionQueryUtils',
     'BrowserLocalization',

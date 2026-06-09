@@ -105,8 +105,12 @@ export class AuthManager {
         }
       }
 
+      // In admin-ui context, skip Bearer tokens. Admin requests authenticate exclusively via the
+      // fc_token session cookie. Accepting a Bearer here can cause 403 when a frontend userToken
+      // (non-admin JWT) arrives alongside X-Framework-Client: admin-ui from the visual editor.
+      const isAdminCtx = this.isAdminRequestContext(req);
       const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
+      if (!isAdminCtx && authHeader && authHeader.startsWith('Bearer ')) {
         const t = authHeader.split(' ')[1];
         if (t && t !== 'undefined' && t !== 'null') {
           tokenCandidates.push(t);

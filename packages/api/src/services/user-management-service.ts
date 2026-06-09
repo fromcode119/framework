@@ -1,8 +1,15 @@
 import { randomBytes } from 'crypto';
+import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, users, systemRoles, systemUsersToRoles, systemRolesToPermissions } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
+
+// Physical table names for the composite-key junction tables. Writes go through the string-table
+// path (which maps camelCase → snake_case columns); the drizzle schema-object write path does not
+// apply that mapping for these keyless junction tables, producing "no such column: userId".
+const USERS_ROLES_TABLE = getTableName(systemUsersToRoles);
+const ROLES_PERMISSIONS_TABLE = getTableName(systemRolesToPermissions);
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });
@@ -111,10 +118,10 @@ export class UserManagementService {
     }
 
     if (Array.isArray(data.roles)) {
-      await this.db.delete(systemUsersToRoles, this.db.eq(systemUsersToRoles.userId, userId as any));
+      await this.db.delete(USERS_ROLES_TABLE, { userId });
       if (data.roles.length > 0) {
         for (const roleSlug of data.roles) {
-          await this.db.insert(systemUsersToRoles, { userId, roleSlug });
+          await this.db.insert(USERS_ROLES_TABLE, { userId, roleSlug });
         }
       }
     }
@@ -154,10 +161,10 @@ export class UserManagementService {
     });
 
     if (Array.isArray(data.permissions)) {
-      await this.db.delete(systemRolesToPermissions, this.db.eq(systemRolesToPermissions.roleSlug, slug));
+      await this.db.delete(ROLES_PERMISSIONS_TABLE, { roleSlug: slug });
       if (data.permissions.length > 0) {
         for (const perm of data.permissions) {
-          await this.db.insert(systemRolesToPermissions, { roleSlug: slug, permissionName: perm });
+          await this.db.insert(ROLES_PERMISSIONS_TABLE, { roleSlug: slug, permissionName: perm });
         }
       }
     }
@@ -229,10 +236,10 @@ export class UserManagementService {
   }
 
   async saveUserRoles(userId: number, roles: string[]) {
-    await this.db.delete(systemUsersToRoles, { userId });
+    await this.db.delete(USERS_ROLES_TABLE, { userId });
     if (roles.length > 0) {
       for (const roleSlug of roles) {
-        await this.db.insert(systemUsersToRoles, { userId, roleSlug });
+        await this.db.insert(USERS_ROLES_TABLE, { userId, roleSlug });
       }
     }
   }

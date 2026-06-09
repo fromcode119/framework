@@ -164,7 +164,8 @@ export default function PluginLoader() {
     // Plugins with loadStrategy "idle" are deferred until the browser is idle.
     // Plugins with loadStrategy "none" are skipped entirely on the frontend.
     pluginList.forEach((plugin: any) => {
-      if (!plugin?.ui?.entry) return;
+      // Frontend-only plugins ship only a `frontendEntry` (no admin `entry`); still load them.
+      if (!plugin?.ui?.entry && !plugin?.ui?.frontendEntry) return;
       const caps: string[] = Array.isArray(plugin.capabilities) ? plugin.capabilities : [];
       if (caps.length > 0 && !caps.includes('frontend')) return;
 

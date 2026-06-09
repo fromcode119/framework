@@ -11,7 +11,9 @@ import type {
 
 export class AuthControllerPolicy extends AuthControllerInfrastructure {
   protected async issueLoginSession(req: Request, res: Response, user: any) {
-    const roles = this.readRoles(user);
+    // Bake EFFECTIVE roles (legacy column ∪ `_system_users_roles` junction) into the session token so
+    // role assignments from the admin Roles UI / plugins actually drive guards and runtime behavior.
+    const roles = await this.resolveEffectiveRoles(user);
     const jti = randomUUID();
     const userResponse = {
       id: String(user.id),

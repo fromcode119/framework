@@ -31,6 +31,9 @@ export default class SecondarySidebarPanelBody extends React.Component<Secondary
   render(): React.ReactNode {
     const props = this.props;
     const grouped = this.getGrouped();
+    // Candidate paths for longest-prefix-wins active matching, so an index item (e.g. /users) is NOT
+    // also marked active when a deeper sibling (/users/roles) is the real match.
+    const allPaths = grouped.flatMap(([, items]) => items.map((i) => i.path)).filter(Boolean) as string[];
 
     return (
     <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-5" aria-label="Secondary navigation" onKeyDown={props.onListKeyDown} onMouseEnter={props.onMouseEnter} onMouseLeave={props.onMouseLeave}>
@@ -39,7 +42,7 @@ export default class SecondarySidebarPanelBody extends React.Component<Secondary
           <section key={group} className="space-y-2">
             <h3 className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{group}</h3>
             {groupItems.map((item) => {
-              const isActive = NavUtils.isPathMatch(props.pathname, item.path);
+              const isActive = NavUtils.isPathActive(props.pathname, item.path, allPaths);
               return (
                 <Link
                   key={item.canonicalId}

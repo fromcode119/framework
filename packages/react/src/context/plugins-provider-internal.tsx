@@ -251,6 +251,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
   React.useEffect(() => {
     const Slot = require('../slot').Slot;
     const Override = require('../override').Override;
+    const AccountShell = require('../account-shell').AccountShell;
 
     ContextRuntimeBridge.installRuntimeBridge({
       apiUrl,
@@ -304,6 +305,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
       RootFramework,
       Slot,
       Override,
+      AccountShell,
       ReactRef: React,
       ReactDOMRef: ReactDOM,
       runtimeModules,

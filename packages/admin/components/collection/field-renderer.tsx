@@ -37,6 +37,7 @@ interface CollectionField {
     description?: string;
     sourceCollection?: string;
     sourceField?: string;
+    autofill?: Record<string, string | readonly string[]>;
     language?: 'javascript' | 'css' | 'html' | 'json' | 'typescript';
     [key: string]: any;
   };
@@ -56,6 +57,10 @@ interface FieldRendererProps {
   slugManuallyEdited?: boolean;
   readOnlyOverrideGranted?: boolean;
   onReadOnlyOverrideRequest?: (field: { name: string; label: string }) => void;
+  /** All current form values — lets a custom component read sibling fields (reactive forms). */
+  record?: Record<string, any>;
+  /** Update one or more sibling fields at once — the Livewire-style reactive write. */
+  onPatch?: (partial: Record<string, any>) => void;
 }
 
 
@@ -73,7 +78,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   slugWarning,
   slugManuallyEdited,
   readOnlyOverrideGranted = false,
-  onReadOnlyOverrideRequest
+  onReadOnlyOverrideRequest,
+  record,
+  onPatch
 }) => {
   const plugins = ContextHooks.usePlugins();
   const fieldComponents = (plugins as any).fieldComponents || {};
@@ -333,6 +340,8 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
             value={currentValue}
             onChange={updateValue}
             theme={theme}
+            record={record || {}}
+            onPatch={onPatch || (() => {})}
           />
         )
       ) : field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
@@ -373,6 +382,9 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
               collectionSlug,
               pluginSettings,
               disabled: isFieldReadOnly,
+              // Reactive-form props: read all sibling values + patch any of them live.
+              record: record || {},
+              onPatch: onPatch || (() => {}),
             });
 
             return wrapWithReadOnlyOverride(
