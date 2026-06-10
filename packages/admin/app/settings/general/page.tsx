@@ -48,6 +48,9 @@ export default function GeneralSettingsPage() {
     notification_email: '',
     notification_email_cc: '',
     frontend_url: '',
+    admin_url: '',
+    site_url: '',
+    marketplace_url: '',
     domain_aliases: [] as string[],
     timezone: 'UTC',
     frontend_auth_enabled: true,
@@ -95,6 +98,9 @@ export default function GeneralSettingsPage() {
           notification_email: String(settings.notification_email ?? '').trim(),
           notification_email_cc: String(settings.notification_email_cc ?? '').trim(),
           frontend_url: String(settings.frontend_url ?? '').trim(),
+          admin_url: String(settings.admin_url ?? '').trim(),
+          site_url: String(settings.site_url ?? '').trim(),
+          marketplace_url: String(settings.marketplace_url ?? '').trim(),
           domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
           timezone: String(settings.timezone ?? '').trim(),
           frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
@@ -191,11 +197,53 @@ export default function GeneralSettingsPage() {
             title="Frontend URL" 
             description="The base URL where your website is hosted. Used for previews and sitemaps."
           >
-            <Input 
+            <Input
               value={settings.frontend_url}
               onChange={(e) => setSettings(prev => ({ ...prev, frontend_url: e.target.value }))}
               className="w-full md:w-64 font-bold"
               placeholder="https://example.com"
+            />
+          </SettingRow>
+
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Admin URL"
+            description="The web address of your admin panel (e.g. https://admin.yoursite.com). Used for admin links and sign-in redirects. Leave blank to use the server's configured default."
+          >
+            <Input
+              value={settings.admin_url}
+              onChange={(e) => setSettings(prev => ({ ...prev, admin_url: e.target.value }))}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://admin.example.com"
+            />
+          </SettingRow>
+
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Site URL"
+            description="Your main public website address. Used as a fallback for links in emails, sitemaps, and feeds. Leave blank to use the server's configured default."
+          >
+            <Input
+              value={settings.site_url}
+              onChange={(e) => setSettings(prev => ({ ...prev, site_url: e.target.value }))}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://example.com"
+            />
+          </SettingRow>
+
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Marketplace URL"
+            description="Where the platform downloads plugin, theme, and core updates from. Leave blank to use the default marketplace, or type 'off' to turn the marketplace off."
+          >
+            <Input
+              value={settings.marketplace_url}
+              onChange={(e) => setSettings(prev => ({ ...prev, marketplace_url: e.target.value }))}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://marketplace.example.com"
             />
           </SettingRow>
 

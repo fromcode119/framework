@@ -142,6 +142,7 @@ export type { PluginPermission } from './security/plugin-permissions-service.typ
 export { PluginSignatureService } from './security/plugin-signature-service';
 
 // Management (Server-only)
+export { PlatformSettingsService } from './management/platform-settings-service';
 export { BackupService } from './management/backup-service';
 export { BackupImportService } from './management/backup-import-service';
 export { ArchiveUploadSessionService } from './management/archive-upload-session-service';

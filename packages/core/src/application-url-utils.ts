@@ -45,26 +45,48 @@ export class ApplicationUrlUtils {
     return '';
   }
 
+  /**
+   * Optional reader for the DB-backed app URL settings (site_url/frontend_url/admin_url),
+   * registered by the API server once the settings cache is loaded. Keyed by app name
+   * ('api' | 'admin' | 'frontend'). Returns null where unset or in client/build contexts
+   * (no settings cache) — there, only env + default apply.
+   */
+  private static appUrlSettingsReader: ((app: string) => string | null) | null = null;
+
+  /** Wire the DB-backed app URL settings (env still wins — see readAppBaseUrlFromEnvironment). */
+  static registerAppUrlSettingsReader(reader: (app: string) => string | null): void {
+    ApplicationUrlUtils.appUrlSettingsReader = reader;
+  }
+
   static readAppBaseUrlFromEnvironment(app: string): string {
     const normalizedApp = String(app || '').trim().toLowerCase();
+
+    let envKeys: string[];
     if (normalizedApp === ApplicationUrlUtils.API_APP) {
-      return ApplicationUrlUtils.readEnvironmentBaseUrl(['API_URL', 'NEXT_PUBLIC_API_URL'], { stripApiPath: true });
+      envKeys = ['API_URL', 'NEXT_PUBLIC_API_URL'];
+    } else if (normalizedApp === ApplicationUrlUtils.ADMIN_APP) {
+      envKeys = ['ADMIN_URL'];
+    } else if (normalizedApp === ApplicationUrlUtils.FRONTEND_APP) {
+      envKeys = ['FRONTEND_URL', 'NEXT_PUBLIC_SITE_URL', 'PUBLIC_APP_URL', 'APP_URL'];
+    } else {
+      return '';
     }
+    const stripApiPath = normalizedApp === ApplicationUrlUtils.API_APP;
 
-    if (normalizedApp === ApplicationUrlUtils.ADMIN_APP) {
-      return ApplicationUrlUtils.readEnvironmentBaseUrl(['ADMIN_URL']);
+    // Setting-first, matching how CORS already resolves these URLs: a value configured in
+    // admin Settings is authoritative; the env var is the fallback when the setting is
+    // empty. This keeps the admin UI meaningful (what you set takes effect) and consistent
+    // across CORS, links, emails and PDFs.
+    if (ApplicationUrlUtils.appUrlSettingsReader) {
+      const fromSetting = ApplicationUrlUtils.normalizeBaseUrlCandidate(
+        ApplicationUrlUtils.appUrlSettingsReader(normalizedApp),
+        { stripApiPath },
+      );
+      if (fromSetting) {
+        return fromSetting;
+      }
     }
-
-    if (normalizedApp === ApplicationUrlUtils.FRONTEND_APP) {
-      return ApplicationUrlUtils.readEnvironmentBaseUrl([
-        'FRONTEND_URL',
-        'NEXT_PUBLIC_SITE_URL',
-        'PUBLIC_APP_URL',
-        'APP_URL',
-      ]);
-    }
-
-    return '';
+    return ApplicationUrlUtils.readEnvironmentBaseUrl(envKeys, { stripApiPath });
   }
 
   static readAppBasePathFromEnvironment(app: string): string {

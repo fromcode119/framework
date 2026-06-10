@@ -3,6 +3,7 @@ import { PluginManifest } from '../types';
 import { DiscoveryService } from '../plugin/services/discovery-service';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
 import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
+import { PlatformSettingsService } from '../management/platform-settings-service';
 import path from 'path';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
@@ -13,14 +14,26 @@ export class MarketplaceCatalogService {
   private client: MarketplaceClient | null = null;
   private manifestCache = new Map<string, PluginManifest>();
   private marketplaceUrl: string | null = null;
+  private resolved = false;
 
-  constructor(private discovery: DiscoveryService) {
-    const raw = String(process.env.MARKETPLACE_URL || '').trim();
+  constructor(private discovery: DiscoveryService) {}
+
+  /**
+   * Lazily resolve the marketplace URL as `env ?? _system_meta setting ?? default` and
+   * build the client. Resolution is deferred (not done in the constructor) so the DB-backed
+   * setting can be consulted once it's available; env still wins when set.
+   */
+  private async ensureClient(): Promise<void> {
+    if (this.resolved) return;
+    this.resolved = true;
+
+    const raw = await PlatformSettingsService.resolve(
+      process.env.MARKETPLACE_URL,
+      PlatformSettingsService.KEY.MARKETPLACE_URL,
+    );
     const normalized = raw.toLowerCase();
-    const disabled = normalized === 'off' || normalized === 'false' || normalized === 'disabled';
-
-    if (disabled) {
-      this.logger.info('Marketplace disabled via MARKETPLACE_URL.');
+    if (normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
+      this.logger.info('Marketplace disabled via MARKETPLACE_URL/setting.');
       return;
     }
 
@@ -35,6 +48,7 @@ export class MarketplaceCatalogService {
    */
   public async fetchCatalog(): Promise<MarketplacePlugin[]> {
     try {
+      await this.ensureClient();
       if (!this.client || !this.marketplaceUrl) {
         return [];
       }
@@ -78,6 +92,7 @@ export class MarketplaceCatalogService {
     progressReporter?: PluginInstallProgressReporter,
     version?: string,
   ): Promise<PluginManifest> {
+    await this.ensureClient();
     if (!this.client) {
       throw new Error('Marketplace is disabled.');
     }

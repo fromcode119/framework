@@ -53,6 +53,7 @@ export class SystemConstants {
   SITE_URL: 'site_url',
   FRONTEND_URL: 'frontend_url',
   ADMIN_URL: 'admin_url',
+  MARKETPLACE_URL: 'marketplace_url',
   DOMAIN_ALIASES: 'domain_aliases',
   TIMEZONE: 'timezone',
   PLATFORM_NAME: 'platform_name',

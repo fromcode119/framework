@@ -19,8 +19,8 @@ export {
   PluginDefinitionUtils
 } from '@fromcode119/core';
 
-export type { 
-  BasePluginRouterOptions, 
+export type {
+  BasePluginRouterOptions,
   PluginHealthBuildOptions, 
   PluginHealthIdentity, 
   PluginHealthProbeResult, 

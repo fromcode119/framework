@@ -8,6 +8,7 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.SITE_URL,
   SystemConstants.META_KEY.FRONTEND_URL,
   SystemConstants.META_KEY.ADMIN_URL,
+  SystemConstants.META_KEY.MARKETPLACE_URL,
   SystemConstants.META_KEY.DOMAIN_ALIASES,
   SystemConstants.META_KEY.TIMEZONE,
   SystemConstants.META_KEY.PLATFORM_NAME,

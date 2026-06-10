@@ -5,6 +5,8 @@ import {
   HotReloadService,
   Logger,
   PluginManager,
+  PlatformSettingsService,
+  SystemConstants,
   SystemUpdateService,
   ThemeManager,
 } from '@fromcode119/core';
@@ -22,6 +24,16 @@ export class ApiBootstrapService {
     manager.setApiHost(pluginApiRouter);
 
     await manager.init();
+
+    // Let platform settings (non-secret, non-bootstrap config) fall back to the
+    // `_system_meta` store when their env var is unset, so they can be changed from the
+    // admin Settings page without a redeploy. Env always wins (see PlatformSettingsService).
+    PlatformSettingsService.registerAccessor(async (key: string) => {
+      const db = (manager as any).db;
+      if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return null;
+      const row = await db.findOne(SystemConstants.TABLE.META, { key });
+      return row?.value ?? null;
+    });
 
     const themeManager = new ThemeManager((manager as any).db);
     manager.setThemeArchiveInstaller(async (filePath: string, options?: { activate?: boolean }) => {

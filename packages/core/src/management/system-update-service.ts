@@ -7,10 +7,20 @@ import semver from 'semver';
 import crypto from 'crypto';
 import { ProjectPaths } from '../config/paths';
 import { SafeArchive } from '../security/safe-archive';
+import { PlatformSettingsService } from './platform-settings-service';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
   private static client = new MarketplaceClient();
+
+  /** Marketplace client built with the resolved URL (env ?? `_system_meta` ?? default). */
+  private static async resolveClient(): Promise<MarketplaceClient> {
+    const url = await PlatformSettingsService.resolve(
+      process.env.MARKETPLACE_URL,
+      PlatformSettingsService.KEY.MARKETPLACE_URL,
+    );
+    return new MarketplaceClient(url || undefined);
+  }
 
   private static resolveInstalledVersion(): string {
     const rootDir = ProjectPaths.getProjectRoot();
@@ -52,8 +62,9 @@ export class SystemUpdateService {
 
   static async checkUpdate() {
     try {
+      this.client = await this.resolveClient();
       const marketplaceData = await this.client.fetch();
-      
+
       if (!marketplaceData.core) return null;
 
       const currentVersion = this.resolveInstalledVersion();

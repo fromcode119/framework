@@ -9,7 +9,7 @@ import {
   RecordVersions, 
   WebSocketManager, 
 } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -92,6 +92,22 @@ export class APIServer {
     
     // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
     await this.setupSettingsSync();
+
+    // Let ApplicationUrlUtils fall back to the DB-backed URL settings when the matching env
+    // var is unset (env always wins), so a URL changed in admin Settings propagates to links,
+    // emails and PDFs — not only to CORS. Reads the same sync settings cache CORS uses.
+    ApplicationUrlUtils.registerAppUrlSettingsReader((app: string) => {
+      if (app === ApplicationUrlUtils.ADMIN_APP) {
+        return this.settingsCache.get(SystemConstants.META_KEY.ADMIN_URL) || null;
+      }
+      if (app === ApplicationUrlUtils.FRONTEND_APP) {
+        return this.settingsCache.get(SystemConstants.META_KEY.FRONTEND_URL)
+          || this.settingsCache.get(SystemConstants.META_KEY.SITE_URL)
+          || null;
+      }
+      return null; // API base URL has no DB setting — env-only
+    });
+
     this.corsSetup.setup();
 
     this.mediaManager = (this.manager as any).storage;

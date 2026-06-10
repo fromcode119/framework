@@ -69,4 +69,45 @@ export class IntegrityService {
       return false;
     }
   }
+
+  /**
+   * Whether a checksum MISMATCH should hard-fail (disable) the plugin.
+   *
+   * Default OFF. The stored directory checksum is only a meaningful tamper signal
+   * when it comes from a trusted out-of-band source (a signed manifest). For a
+   * plugin that is already installed on disk — the deployed, trusted state — a
+   * mismatch is almost always a core-version hash-recipe change (e.g. an older core
+   * hashed manifest.json, a newer one excludes it), NOT tampering. Hard-failing on
+   * that silently disables every plugin the moment core is upgraded.
+   *
+   * So by default we self-heal (re-stamp) instead of disabling, mirroring how
+   * signature enforcement is opt-in (ENFORCE_PLUGIN_SIGNATURES). Operators who want
+   * cryptographic tamper protection should enable signature signing — a signature
+   * signs the manifest and cannot be false-positived by a core upgrade. Set
+   * ENFORCE_PLUGIN_INTEGRITY=true to restore the old strict directory-hash behavior.
+   */
+  public static isEnforced(): boolean {
+    return process.env.ENFORCE_PLUGIN_INTEGRITY === 'true';
+  }
+
+  /**
+   * Recompute a plugin's directory hash and write it back into its manifest.json
+   * `checksum` field, returning the new checksum. Used to self-heal an installed
+   * plugin whose stored checksum drifted (e.g. after a core upgrade) so it loads and
+   * future boots are stable. The manifest.json is excluded from the hash, so writing
+   * the checksum back does not invalidate it. Best-effort: if the manifest cannot be
+   * written (read-only mount), the computed hash is still returned for in-memory use.
+   */
+  public static async restampPlugin(dirPath: string): Promise<string> {
+    const checksum = await this.calculateDirectoryHash(dirPath);
+    const manifestPath = path.join(dirPath, 'manifest.json');
+    try {
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      manifest.checksum = checksum;
+      fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    } catch (e) {
+      this.logger.warn(`Could not persist re-stamped checksum to ${manifestPath}: ${e}`);
+    }
+    return checksum;
+  }
 }

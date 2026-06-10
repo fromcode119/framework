@@ -70,6 +70,13 @@ services:
       - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.framework.local}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
+      # Plugin integrity: a directory-checksum mismatch (extra/changed files, or a core
+      # upgrade changing the hash recipe) NO LONGER disables the plugin — by default the
+      # framework re-stamps the checksum from the on-disk content and loads it. Set this to
+      # `true` ONLY if you want strict mode: a mismatch hard-fails (disables) the plugin.
+      # Real tamper protection is signature signing (ENFORCE_PLUGIN_SIGNATURES), which a core
+      # upgrade cannot false-positive. Leave false unless you have a specific reason.
+      - ENFORCE_PLUGIN_INTEGRITY=${ENFORCE_PLUGIN_INTEGRITY:-false}
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}

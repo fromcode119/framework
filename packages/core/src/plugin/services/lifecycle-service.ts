@@ -59,11 +59,25 @@ export class LifecycleService {
       throw new Error(`Invalid manifest for "${slug}": ${err}`);
     }
 
-    // Integrity Check
+    // Integrity Check.
+    // A directory-hash mismatch on an already-installed plugin is almost always a
+    // core-version hash-recipe change, not tampering — hard-failing would silently
+    // disable every plugin the moment core is upgraded (it has, repeatedly). So unless
+    // strict enforcement is explicitly enabled, self-heal by re-stamping the checksum
+    // from the on-disk content (the trusted, deployed state) and continue. Real tamper
+    // protection is signature enforcement, which a core upgrade cannot false-positive.
     if (pluginPath && plugin.manifest.checksum) {
       const isHealthy = await IntegrityService.verifyPluginIntegrity(pluginPath, plugin.manifest.checksum);
       if (!isHealthy) {
-        throw new Error(`Security Violation: Integrity check failed for plugin "${slug}"`);
+        if (IntegrityService.isEnforced()) {
+          throw new Error(`Security Violation: Integrity check failed for plugin "${slug}"`);
+        }
+        const restamped = await IntegrityService.restampPlugin(pluginPath);
+        plugin.manifest.checksum = restamped;
+        this.logger.warn(
+          `Plugin "${slug}" checksum mismatch — re-stamped from on-disk content (${restamped.slice(0, 12)}…). ` +
+          `Set ENFORCE_PLUGIN_INTEGRITY=true to hard-fail instead, or enable signature signing for tamper protection.`
+        );
       }
     }
 
