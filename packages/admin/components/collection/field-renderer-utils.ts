@@ -4,6 +4,16 @@
  */
 export class FieldRendererUtils {
   /**
+   * Coerces a boolean-field value (which may arrive as a real boolean, the strings
+   * `'true'`/`'false'`, or `1`/`0`) into a strict boolean for the toggle control,
+   * falling back to the field's default when the value is unset.
+   */
+  static toBooleanValue(value: any, defaultValue?: any): boolean {
+    const candidate = value === undefined || value === null || value === '' ? defaultValue : value;
+    return candidate === true || candidate === 'true' || candidate === 1 || candidate === '1';
+  }
+
+  /**
    * Resolves a renderable text string from a potentially complex value.
    * Handles localized objects, nested structures, and fallback resolution.
    * 

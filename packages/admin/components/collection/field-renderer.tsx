@@ -2,6 +2,7 @@ import React from 'react';
 import { Slot, ContextHooks } from '@fromcode119/react';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { TextArea } from '@/components/ui/text-area';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { ColorPicker } from '@/components/ui/color-picker';
@@ -442,13 +443,14 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         )
       ) : field.type === 'array' ? (
         wrapWithReadOnlyOverride(
-          <ArrayField 
+          <ArrayField
             field={field}
             value={currentValue}
             onChange={updateValue}
             theme={theme}
             collectionSlug={collectionSlug}
             pluginSettings={pluginSettings}
+            fieldComponents={fieldComponents}
           />
         )
       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
@@ -552,12 +554,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
         })()
       ) : (field.type === 'boolean' || field.type === 'checkbox') ? (
         wrapWithReadOnlyOverride(
-          <Select
-            value={currentValue?.toString() || field.defaultValue?.toString() || 'false'}
-            options={[{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]}
-            onChange={(val) => updateValue(val === 'true')}
+          <Switch
+            checked={FieldRendererUtils.toBooleanValue(currentValue, field.defaultValue)}
+            onChange={(checked) => updateValue(checked)}
             disabled={isFieldReadOnly}
-            theme={theme}
           />
         )
       ) : (field.type === 'date' || field.type === 'datetime') ? (

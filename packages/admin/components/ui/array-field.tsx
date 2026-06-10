@@ -6,6 +6,7 @@ import { GripVertical } from 'lucide-react';
 import { Card } from './card';
 import { Input } from './input';
 import { Select } from './select';
+import { Switch } from './switch';
 import { TagField } from './tag-field';
 import { RelationshipSelectLocal } from '../collection/relationship-select-local';
 import { TagFieldLocal } from '../collection/tag-field-local';
@@ -17,6 +18,7 @@ interface ArrayFieldProps {
   theme?: string;
   collectionSlug: string;
   pluginSettings?: Record<string, any>;
+  fieldComponents?: Record<string, any>;
 }
 
 interface ArrayFieldState {
@@ -70,6 +72,43 @@ export class ArrayField extends React.Component<ArrayFieldProps, ArrayFieldState
     this.handleReorder(index, index + 1);
   };
 
+  private resolveCustomComponent = (
+    f: any,
+    item: any,
+    index: number,
+    isTagComponent: boolean
+  ): React.ReactNode => {
+    const componentName: string | undefined = f.admin?.component;
+    if (!componentName || isTagComponent) return null;
+
+    const registry = this.props.fieldComponents || {};
+    const registered = registry[componentName];
+    if (!registered) return null;
+
+    let Component: any = registered;
+    if (typeof registered === 'object' && !registered.$$typeof) {
+      Component = registered.component || registered.Component || registered.render || registered.default || registered;
+    }
+    if (typeof Component !== 'function' && typeof Component !== 'string') return null;
+
+    return React.createElement(Component, {
+      value: item[f.name],
+      onChange: (next: any) => this.handleUpdateItem(index, f.name, next?.target ? next.target.value : next),
+      theme: this.props.theme,
+      field: f,
+      collectionSlug: this.props.collectionSlug,
+      pluginSettings: this.props.pluginSettings,
+      readOnly: Boolean(f.admin?.readOnly),
+      disabled: Boolean(f.admin?.readOnly),
+      record: item,
+      onPatch: (partial: Record<string, any>) => {
+        const newItems = [...this.items];
+        newItems[index] = { ...newItems[index], ...partial };
+        this.props.onChange(newItems);
+      },
+    });
+  };
+
   private renderField = (f: any, item: any, index: number): React.ReactNode => {
     const { theme, collectionSlug } = this.props;
     const handleUpdateItem = this.handleUpdateItem;
@@ -89,6 +128,14 @@ export class ArrayField extends React.Component<ArrayFieldProps, ArrayFieldState
       f.admin?.component === 'TagField' ||
       f.admin?.component === 'Tags';
     const hasMany = f.hasMany !== undefined ? f.hasMany : isTagComponent;
+
+    // Honour a plugin-registered custom `admin.component` (e.g. FinanceCurrencyField) for
+    // array sub-fields, the same way the top-level FieldRenderer does — otherwise a sub-field
+    // that declares a component silently falls through to a plain text Input. Resolve from the
+    // shared fieldComponents registry; built-in component names (Tags/relationship) are handled
+    // by the branches below and intentionally skipped here.
+    const customComponentNode = this.resolveCustomComponent(f, item, index, isTagComponent);
+    if (customComponentNode) return customComponentNode;
 
     if (f.type === 'relationship' && !hasMany) {
       return (
@@ -132,13 +179,13 @@ export class ArrayField extends React.Component<ArrayFieldProps, ArrayFieldState
     }
 
     if (f.type === 'boolean' || f.type === 'checkbox') {
+        const checked = val === true || val === 'true' || val === 1 || val === '1'
+          || ((val === undefined || val === null) && (f.defaultValue === true || f.defaultValue === 'true'));
         return (
-            <Select 
-                {...fieldProps} 
-                value={val?.toString() || 'false'}
-                options={[{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]}
-                onChange={(v) => handleUpdateItem(index, f.name, v === 'true')}
-                size="sm"
+            <Switch
+                checked={checked}
+                onChange={(next) => handleUpdateItem(index, f.name, next)}
+                disabled={Boolean(f.admin?.readOnly)}
             />
         );
     }

@@ -7,6 +7,7 @@ import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { AuthHooks } from '@/components/use-auth';
 import { AdminRuntimeContext } from './admin-runtime-context';
+import { AdminFieldComponentBootstrapService } from '@/app/services/admin-field-component-bootstrap-service';
 import type { AdminRuntimeValue } from './admin-runtime-context.interfaces';
 import type { AdminRuntimeProviderProps } from './admin-runtime-provider.interfaces';
 
@@ -27,6 +28,14 @@ export function AdminRuntimeProvider({ children }: AdminRuntimeProviderProps): R
   const router = useRouter();
   const pathname = usePathname();
   const auth = AuthHooks.useAuth();
+
+  // Register the framework-owned built-in field components (e.g. SystemLocaleField) once the
+  // PluginsProvider is mounted. Must go through the context's registerFieldComponent — the
+  // module-load ContextBridge no-ops before the provider wires up its live args.
+  const registerFieldComponent = (plugins as any)?.registerFieldComponent;
+  React.useEffect(() => {
+    AdminFieldComponentBootstrapService.register(registerFieldComponent);
+  }, [registerFieldComponent]);
 
   const value = React.useMemo<AdminRuntimeValue>(
     () => ({ theme, toggleTheme, notify, globalSettings, plugins, collections, router, pathname, auth }),
