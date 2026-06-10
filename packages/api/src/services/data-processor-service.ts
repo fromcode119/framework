@@ -77,6 +77,14 @@ export class DataProcessorService {
         }
       }
 
+      // A UNIQUE field must store NULL (not '') when empty. Empty strings are NOT exempt
+      // from a UNIQUE constraint the way NULL is, so two "unset" rows (e.g. products with no
+      // custom permalink) both written as '' collide and the whole write fails with a UNIQUE
+      // violation. Coercing empty → null lets any number of rows be "unset".
+      if (fieldConfig?.unique && (value === '' || value === undefined)) {
+        value = null;
+      }
+
       processedData[key] = value;
     }
 
