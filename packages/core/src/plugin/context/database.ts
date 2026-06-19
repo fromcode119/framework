@@ -45,6 +45,18 @@ export class DatabaseContextProxy {
     return false;
   }
 
+  /**
+   * Whether a forbidden-table access HARD-FAILS (throws) or is allowed-with-a-warning. Strict by
+   * default (mirrors ENFORCE_PLUGIN_INTEGRITY); a deployment whose bundled plugins still do legacy
+   * cross-plugin reads can set ENFORCE_PLUGIN_DB_ISOLATION=false to run in warn+audit mode while
+   * those plugins are migrated to the namespace API, then flip it back on.
+   */
+  private static isIsolationEnforced(): boolean {
+    const flag = String(process.env.ENFORCE_PLUGIN_DB_ISOLATION || '').trim().toLowerCase();
+    if (['false', '0', 'no', 'off'].includes(flag)) return false;
+    return true;
+  }
+
   static createDatabaseProxy(
   plugin: LoadedPlugin,
   manager: PluginManagerInterface,
@@ -96,11 +108,19 @@ export class DatabaseContextProxy {
               // The framework's own context proxies (users/people/meta/media/recordVersions/…) use the
               // RAW manager db, so they are NOT affected by this guard — only plugin context.db is.
               if (DatabaseContextProxy.isForbiddenTable(args[0], tablePrefix)) {
-                manager.audit.logAction(plugin.manifest.slug, 'Database Access Denied', String(args[0]), 'blocked');
-                throw new Error(
-                  `Security Violation: plugin "${plugin.manifest.slug}" attempted direct context.db.${prop} on the protected table "${String(args[0])}". `
-                  + 'Plugins may only access their OWN tables via context.db; use the dedicated context API '
-                  + '(context.users / context.people / context.meta / context.media / context.recordVersions / …) for framework data.',
+                if (DatabaseContextProxy.isIsolationEnforced()) {
+                  manager.audit.logAction(plugin.manifest.slug, 'Database Access Denied', String(args[0]), 'blocked');
+                  throw new Error(
+                    `Security Violation: plugin "${plugin.manifest.slug}" attempted direct context.db.${prop} on the protected table "${String(args[0])}". `
+                    + 'Plugins may only access their OWN tables via context.db; use the dedicated context API '
+                    + '(context.users / context.people / context.meta / context.media / context.recordVersions / …) for framework data.',
+                  );
+                }
+                // Warn mode (ENFORCE_PLUGIN_DB_ISOLATION=false): surface the violation, allow the call.
+                manager.audit.logAction(plugin.manifest.slug, 'Database Access Warning', String(args[0]), 'allowed');
+                console.warn(
+                  `[plugin-db-isolation] plugin "${plugin.manifest.slug}" accessed protected table "${String(args[0])}" via context.db.${prop} `
+                  + '— allowed because ENFORCE_PLUGIN_DB_ISOLATION=false. Migrate to the namespace API / dedicated context API, then re-enable isolation.',
                 );
               }
               const out = fn.apply(this, args);

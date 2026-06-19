@@ -9,7 +9,7 @@ export class MysqlDatabaseDialect implements DatabaseDialectDefinition {
   readonly protocols = ['mysql'] as const;
 
   createManager(connection: string): IDatabaseManager {
-    const { MysqlDatabaseManager } = require('./mysql-database-manager');
+    const { MysqlDatabaseManager } = require('./database-manager');
     return new MysqlDatabaseManager(connection);
   }
 
