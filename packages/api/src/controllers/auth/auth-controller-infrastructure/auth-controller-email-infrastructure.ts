@@ -56,33 +56,41 @@ export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailI
     details?: string[];
     allowSilentFailure?: boolean;
   }) {
-    const enabled = await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS, true);
-    if (!enabled) return;
+    // A security NOTIFICATION must never break the security ACTION that triggered it (login,
+    // password/email change, SSO). Template-render failures (e.g. a missing template asset in a
+    // published build) and send failures are best-effort side effects — isolate every failure here
+    // so it can never propagate to the awaiting caller and surface as a failed login.
+    try {
+      const enabled = await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS, true);
+      if (!enabled) return;
 
-    const appName = await this.resolveFrameworkAppName();
-    const fromAddress = await this.resolveFrameworkSenderIdentity();
-    const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
-    const email = await SecurityNotificationEmailTemplate.build({
-      appName,
-      subject: options.subject,
-      title: options.title,
-      details,
-    });
-    const ok = await this.sendEmail({
-      to: options.to,
-      from: fromAddress,
-      subject: email.subject,
-      text: email.text,
-      html: email.html,
-    }, '[AuthController] Failed to send security notification');
+      const appName = await this.resolveFrameworkAppName();
+      const fromAddress = await this.resolveFrameworkSenderIdentity();
+      const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
+      const email = await SecurityNotificationEmailTemplate.build({
+        appName,
+        subject: options.subject,
+        title: options.title,
+        details,
+      });
+      const ok = await this.sendEmail({
+        to: options.to,
+        from: fromAddress,
+        subject: email.subject,
+        text: email.text,
+        html: email.html,
+      }, '[AuthController] Failed to send security notification');
 
-    if (!ok && !options.allowSilentFailure) {
-      await this.manager.writeLog(
-        'WARN',
-        `Security notification failed: ${options.subject}`,
-        'system',
-        { userId: options.userId, email: options.to },
-      ).catch(() => {});
+      if (!ok && !options.allowSilentFailure) {
+        await this.manager.writeLog(
+          'WARN',
+          `Security notification failed: ${options.subject}`,
+          'system',
+          { userId: options.userId, email: options.to },
+        ).catch(() => {});
+      }
+    } catch (error: any) {
+      this.logger.error(`[AuthController] Security notification error (non-blocking): ${error?.message || error}`);
     }
   }
 

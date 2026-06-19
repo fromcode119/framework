@@ -3,6 +3,8 @@ import { PluginDependencyCommandService } from '../services/plugin-dependency-co
 import { PluginScaffoldCommandService } from './plugin-scaffold-command-service';
 import { PluginMarketplaceCommandService } from './plugin-marketplace-command-service';
 import { PluginBuildCommandService } from './plugin-build-command-service';
+import { PluginStateCommandService } from '../services/plugin-state-command-service';
+import { PluginUpdateCommandService } from '../services/plugin-update-command-service';
 
 export class PluginCommands {
   static registerPluginCommands(program: Command) {
@@ -12,5 +14,7 @@ export class PluginCommands {
     PluginScaffoldCommandService.register(plugin);
     PluginMarketplaceCommandService.register(plugin);
     PluginBuildCommandService.register(plugin, dependencyService);
+    PluginStateCommandService.register(plugin);
+    PluginUpdateCommandService.register(plugin);
   }
 }

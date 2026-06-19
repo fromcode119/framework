@@ -6,6 +6,7 @@ import { ThemeCommands } from './commands/theme';
 import { DatabaseCommands } from './commands/database';
 import { SystemCommands } from './commands/system';
 import { QualityCommands } from './commands/quality';
+import { AuthCommands } from './commands/auth';
 
 const program = new Command();
 
@@ -20,6 +21,7 @@ ThemeCommands.registerThemeCommands(program);
 DatabaseCommands.registerDatabaseCommands(program);
 SystemCommands.registerSystemCommands(program);
 QualityCommands.registerQualityCommands(program);
+AuthCommands.registerAuthCommands(program);
 
 // Handle unknown commands
 program.on('command:*', () => {

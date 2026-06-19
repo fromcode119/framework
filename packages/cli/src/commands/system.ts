@@ -4,11 +4,14 @@ import path from 'path';
 import fs from 'fs-extra';
 import { CliUtils } from '../utils';
 import { SiteTransferBundleCommandService } from '../services/site-transfer-bundle-command-service';
+import { SystemUpdateCommandService } from '../services/system-update-command-service';
 
 
 export class SystemCommands {
   static registerSystemCommands(program: Command) {
     const system = program.command('system').description('System operations');
+
+    SystemUpdateCommandService.register(system);
 
     program
       .command('version')

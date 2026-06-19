@@ -10,7 +10,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/controllers/auth/email-templates/templates dist/controllers/auth/email-templates/",
+    "copy:templates": "mkdir -p dist/controllers/auth/email-templates/templates && cp -r src/controllers/auth/email-templates/templates/. dist/controllers/auth/email-templates/templates/",
+    "build": "tsc && npm run copy:templates",
+    "prepack": "npm run copy:templates",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/bin.js",
     "test": "jest"
