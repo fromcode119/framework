@@ -18,6 +18,13 @@ export class PluginDependencyInstallerService {
       return;
     }
 
+    // `@fromcode119/*` packages are NOT on the public npm registry — they are externalized in the
+    // plugin bundle and provided by the host at runtime. Leaving them in the manifest makes the
+    // install below 404 (`npm ci`/`install`), which would fail the whole plugin (and any plugin that
+    // depends on it). Strip them + drop the lockfile so a plain `npm install` resolves the plugin's
+    // REAL third-party deps only.
+    this.stripHostProvidedDependencies(pluginPath);
+
     const fingerprint = this.createFingerprint(pluginPath);
     if (!this.shouldInstall(pluginPath, fingerprint)) {
       return;
@@ -25,6 +32,45 @@ export class PluginDependencyInstallerService {
 
     this.installDependencies(pluginPath);
     this.writeState(pluginPath, fingerprint);
+  }
+
+  private stripHostProvidedDependencies(pluginPath: string): void {
+    const packageJsonPath = this.getPackageJsonPath(pluginPath);
+    let pkg: any;
+    try {
+      pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    } catch {
+      return;
+    }
+
+    let changed = false;
+    for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies', 'devDependencies']) {
+      const deps = pkg?.[field];
+      if (!deps || typeof deps !== 'object') continue;
+      for (const name of Object.keys(deps)) {
+        if (name.startsWith('@fromcode119/')) {
+          delete deps[name];
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      try {
+        fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2));
+      } catch {
+        // Leave the manifest as-is; the install may still fail, but we never make things worse.
+      }
+    }
+
+    const lockPath = this.getPackageLockPath(pluginPath);
+    if (fs.existsSync(lockPath)) {
+      try {
+        fs.rmSync(lockPath);
+      } catch {
+        // Non-fatal: with the lockfile present npm would run strict `ci`; without it, `install`.
+      }
+    }
   }
 
   private shouldInstall(pluginPath: string, fingerprint: string): boolean {
