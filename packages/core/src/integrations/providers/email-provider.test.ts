@@ -48,7 +48,7 @@ describe('EmailIntegrationDefinition', () => {
       const types = new Map<string, any>();
       types.set('email', {
         definition: EmailIntegrationDefinition,
-        providers: new Map(EmailIntegrationDefinition.providers?.map((provider) => [provider.key, provider])),
+        providers: new Map(EmailIntegrationDefinition.definition.providers?.map((provider) => [provider.key, provider])),
       });
       const profileService = {
         normalize(value: string) {
@@ -85,7 +85,7 @@ describe('EmailIntegrationDefinition', () => {
       );
 
       const rawProviders = await service.readStoredProvidersInternal('email');
-      const provider = EmailIntegrationDefinition.providers?.find((entry) => entry.key === 'smtp');
+      const provider = EmailIntegrationDefinition.definition.providers?.find((entry) => entry.key === 'smtp');
       const resolvedConfig = service.resolveRuntimeConfig(provider as any, rawProviders?.[0]?.config || {});
       const normalizedConfig = provider?.normalizeConfig?.(resolvedConfig) || resolvedConfig;
       const storedProviders = await service.readStoredProvidersConfig('email');

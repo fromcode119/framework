@@ -2,7 +2,8 @@ import { MediaManager, StorageFactory } from '@fromcode119/media';
 import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
 import path from 'path';
 
-export const StorageIntegrationDefinition: IntegrationTypeDefinition<MediaManager> = {
+export class StorageIntegrationDefinition {
+  static readonly definition: IntegrationTypeDefinition<MediaManager> = {
   key: 'storage',
   label: 'File Storage',
   description: 'Provider used for storing and retrieving uploaded media and files.',
@@ -81,3 +82,4 @@ export const StorageIntegrationDefinition: IntegrationTypeDefinition<MediaManage
     }
   ]
 };
+}

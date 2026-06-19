@@ -185,10 +185,10 @@ describe('LifecycleService.enable() — required route reconciliation failures',
       onEnable: vi.fn().mockResolvedValue(undefined),
     };
     manager.plugins.set('test-plugin', loadedPlugin);
-    vi.spyOn(service as any, 'autoDiscoverCollections').mockResolvedValue(undefined);
-    vi.spyOn(service as any, 'syncPluginCollections').mockResolvedValue(undefined);
-    vi.spyOn(service as any, 'runSeeds').mockResolvedValue(undefined);
-    vi.spyOn(service as any, 'materializeDefaultPages').mockRejectedValue(
+    vi.spyOn((service as any).activation, 'autoDiscoverCollections').mockResolvedValue(undefined);
+    vi.spyOn((service as any).activation, 'syncPluginCollections').mockResolvedValue(undefined);
+    vi.spyOn((service as any).activation, 'runSeeds').mockResolvedValue(undefined);
+    vi.spyOn((service as any).activation, 'materializeDefaultPages').mockRejectedValue(
       new Error('[PluginDefaultPageMaterializationRuntimeService] Required route reconciliation failed: org.synthetic:catalog-module:catalog-index (install-disabled, contract-not-ready)'),
     );
 
@@ -209,10 +209,10 @@ describe('LifecycleService.enable() — required route reconciliation failures',
       onEnable: vi.fn().mockResolvedValue(undefined),
     };
     manager.plugins.set('test-plugin', loadedPlugin);
-    vi.spyOn(service as any, 'autoDiscoverCollections').mockResolvedValue(undefined);
-    vi.spyOn(service as any, 'syncPluginCollections').mockResolvedValue(undefined);
-    vi.spyOn(service as any, 'runSeeds').mockResolvedValue(undefined);
-    vi.spyOn(service as any, 'materializeDefaultPages').mockResolvedValue(undefined);
+    vi.spyOn((service as any).activation, 'autoDiscoverCollections').mockResolvedValue(undefined);
+    vi.spyOn((service as any).activation, 'syncPluginCollections').mockResolvedValue(undefined);
+    vi.spyOn((service as any).activation, 'runSeeds').mockResolvedValue(undefined);
+    vi.spyOn((service as any).activation, 'materializeDefaultPages').mockResolvedValue(undefined);
 
     await service.enable('test-plugin');
 

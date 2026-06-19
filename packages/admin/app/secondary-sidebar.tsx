@@ -2,41 +2,14 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AdminConstants } from '@/lib/constants';
 import { NavUtils } from '@/lib/nav-utils';
-import SecondarySidebarPanelBody from './secondary-sidebar-panel-body';
+import SecondarySidebarDesktop from './secondary-sidebar-desktop';
+import SecondarySidebarMobile from './secondary-sidebar-mobile';
 import { SecondarySidebarAccessibilityService } from './services/secondary-sidebar-accessibility-service';
-import type { SecondaryPanelContext, SecondaryPanelItem } from '@fromcode119/react';
-import type { SecondarySidebarMode } from './services/secondary-sidebar-state-service.types';
-
-const {
-  Close = () => null,
-  Left = () => null,
-  Right = () => null,
-} = (FrameworkIcons || {}) as any;
+import type { SecondaryPanelItem } from '@fromcode119/react';
+import type { SecondarySidebarProps } from './secondary-sidebar.types';
 
 const accessibilityService = new SecondarySidebarAccessibilityService();
-
-type SecondarySidebarProps = {
-  mode: SecondarySidebarMode;
-  context: SecondaryPanelContext | null;
-  items: SecondaryPanelItem[];
-  sourceLabel: string;
-  isOpen: boolean;
-  onOpen: () => void;
-  onClose: () => void;
-  onPanelMouseEnter?: () => void;
-  onPanelMouseLeave?: () => void;
-  onItemActivate?: (item?: SecondaryPanelItem) => void;
-  parentPrimaryPath?: string;
-  /** When true (and not docked open), the panel renders as a floating overlay over
-   *  the content — used for hover-preview so it never reserves layout width. */
-  hoverOpen?: boolean;
-  /** Tailwind left-offset class to anchor the hover overlay just after the primary
-   *  sidebar (e.g. 'left-64' full, 'left-[72px]' mini). */
-  overlayLeftClass?: string;
-};
 
 export default function SecondarySidebar(props: SecondarySidebarProps) {
   const pathname = usePathname() || '';
@@ -140,119 +113,43 @@ export default function SecondarySidebar(props: SecondarySidebarProps) {
   }
 
   if (isDesktop) {
-    // A hover-preview pops the panel out as a floating overlay even when the user
-    // hasn't docked it. Docked-open keeps reserving layout width and pushes content.
-    const isOverlay = !props.isOpen && Boolean(props.hoverOpen);
-    const expanded = props.isOpen || Boolean(props.hoverOpen);
-
-    if (!expanded) {
-      // Collapsed: reserve ZERO layout width (w-0) so content fills the space; the
-      // toggle button floats over the content's left edge instead of cutting a gap.
-      return (
-        <div className="sticky top-16 z-40 h-[calc(100vh-4rem)] w-0 shrink-0 self-start overflow-visible">
-          <button
-            ref={triggerRef}
-            type="button"
-            aria-label="Open secondary navigation"
-            aria-expanded="false"
-            aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
-            onClick={props.onOpen}
-            className="absolute left-0 top-8 z-40 inline-flex h-16 w-4 items-center justify-center rounded-r-lg border border-l-0 border-slate-200 bg-white/90 text-slate-400 shadow-[10px_0_24px_-22px_rgba(15,23,42,0.3)] backdrop-blur transition-colors hover:w-5 hover:text-indigo-600 dark:border-slate-800 dark:bg-[#020617]/90 dark:text-slate-400"
-          >
-            <Right size={12} />
-          </button>
-        </div>
-      );
-    }
-
     return (
-      <aside
-        id={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
-        className={`${isOverlay
-          ? `fixed top-16 ${props.overlayLeftClass || 'left-64'} z-40 h-[calc(100vh-4rem)] rounded-r-xl`
-          : 'sticky top-0 z-30 ml-[-1px] h-screen shrink-0'} flex w-[var(--secondary-sidebar-width)] overflow-hidden border-r shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)] ${hasActiveItem ? 'border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,246,255,0.60)_100%)] ring-1 ring-inset ring-indigo-100/20 dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(30,41,59,0.96)_0%,rgba(37,99,235,0.05)_100%)] dark:ring-indigo-500/5' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-[#020617]'}`}
-        aria-label="Secondary navigation"
-        onMouseEnter={props.onPanelMouseEnter}
-        onMouseLeave={props.onPanelMouseLeave}
-      >
-        <button
-          type="button"
-          onClick={props.onClose}
-          className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          aria-label="Minimize secondary navigation"
-        >
-          <Left size={14} />
-        </button>
-        <SecondarySidebarPanelBody
-          context={props.context}
-          items={props.items}
-          sourceLabel={props.sourceLabel}
-          pathname={pathname}
-          onListKeyDown={handleListKeyDown}
-          onItemActivate={(item) => props.onItemActivate?.(item)}
-          onMouseEnter={props.onPanelMouseEnter}
-          onMouseLeave={props.onPanelMouseLeave}
-        />
-      </aside>
+      <SecondarySidebarDesktop
+        context={props.context}
+        items={props.items}
+        sourceLabel={props.sourceLabel}
+        pathname={pathname}
+        isOpen={props.isOpen}
+        hoverOpen={props.hoverOpen}
+        overlayLeftClass={props.overlayLeftClass}
+        hasActiveItem={hasActiveItem}
+        triggerRef={triggerRef}
+        onOpen={props.onOpen}
+        onClose={props.onClose}
+        onPanelMouseEnter={props.onPanelMouseEnter}
+        onPanelMouseLeave={props.onPanelMouseLeave}
+        onItemActivate={(item?: SecondaryPanelItem) => props.onItemActivate?.(item)}
+        onListKeyDown={handleListKeyDown}
+      />
     );
   }
 
   return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-haspopup="dialog"
-        aria-expanded={props.isOpen}
-        aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
-        onClick={props.onOpen}
-        className={`fixed z-[170] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-lg hover:border-indigo-400/70 transition-colors ${props.mode === 'mobile' ? 'bottom-6 right-6 h-12 w-12' : 'bottom-6 left-[84px] h-10 w-10'}`}
-      >
-        <Right size={18} />
-      </button>
-
-      {props.isOpen && (
-        <div className="fixed inset-0 z-[180]">
-          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={props.onClose} />
-          <div
-            ref={dialogRef}
-            id={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Secondary navigation"
-            className={`absolute top-0 bottom-0 w-[var(--secondary-sidebar-width)] overflow-hidden bg-white shadow-2xl dark:bg-[#020617] flex ${props.mode === 'mobile' ? 'right-0' : 'left-[72px] shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)]'}`}
-            onKeyDown={handleOverlayKeyDown}
-          >
-            <div className="flex min-w-0 flex-1 flex-col">
-            <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#020617]">
-              <h2 className="text-[13px] font-bold text-slate-900 dark:text-white">Secondary Navigation</h2>
-              <button
-                type="button"
-                onClick={props.onClose}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                aria-label="Close secondary navigation"
-              >
-                <Close size={16} />
-              </button>
-            </div>
-
-            <SecondarySidebarPanelBody
-              context={props.context}
-              items={props.items}
-              sourceLabel={props.sourceLabel}
-              pathname={pathname}
-              onListKeyDown={handleListKeyDown}
-              onItemActivate={(item) => {
-                props.onItemActivate?.(item);
-                props.onClose();
-              }}
-            />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <span className="sr-only" aria-live="polite">{liveMessage}</span>
-    </>
+    <SecondarySidebarMobile
+      context={props.context}
+      items={props.items}
+      sourceLabel={props.sourceLabel}
+      pathname={pathname}
+      mode={props.mode}
+      isOpen={props.isOpen}
+      liveMessage={liveMessage}
+      dialogRef={dialogRef}
+      triggerRef={triggerRef}
+      onOpen={props.onOpen}
+      onClose={props.onClose}
+      onItemActivate={(item?: SecondaryPanelItem) => props.onItemActivate?.(item)}
+      onOverlayKeyDown={handleOverlayKeyDown}
+      onListKeyDown={handleListKeyDown}
+    />
   );
 }

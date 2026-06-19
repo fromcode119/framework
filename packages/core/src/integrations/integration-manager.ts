@@ -1,21 +1,23 @@
 import { IntegrationRegistry } from './integration-registry';
 import type { IntegrationTypeDefinition, IntegrationProviderDefinition } from './integration-registry.interfaces';
-import { EmailManager, EmailFactory, EmailOptions } from '@fromcode119/email';
+import { EmailManager } from '@fromcode119/email';
 
 type EmailSender = Pick<EmailManager, 'send'>;
-import { MediaManager, StorageFactory } from '@fromcode119/media';
-import { CacheManager, CacheFactory } from '@fromcode119/cache';
+import { MediaManager } from '@fromcode119/media';
+import { CacheManager } from '@fromcode119/cache';
 import { Logger } from '../logging';
 import { EmailIntegrationDefinition } from './providers/email-integration-definition';
 import { StorageIntegrationDefinition } from './providers/storage-provider';
 import { CacheIntegrationDefinition } from './providers/cache-provider';
 import { SsoIntegrationDefinition } from './providers/sso-provider';
 import { CoreServices } from '../services';
-import path from 'path';
-import { MultiProviderEmailSender } from './multi-provider-email-sender';
+import { IntegrationConfigReadService } from './integration-config-read-service';
+import { IntegrationCoreRefreshService } from './integration-core-refresh-service';
 
 export class IntegrationManager {
   private registry: IntegrationRegistry;
+  private configReader: IntegrationConfigReadService;
+  private coreRefresh: IntegrationCoreRefreshService;
   private logger: Logger;
   private projectRoot: string;
   private instances: Map<string, any> = new Map();
@@ -29,7 +31,9 @@ export class IntegrationManager {
     this.projectRoot = projectRoot;
     this.logger = logger || new Logger({ namespace: 'integration-manager' });
     this.registry = new IntegrationRegistry(db, this.logger);
-    
+    this.configReader = new IntegrationConfigReadService(this.registry, (type: string) => this.normalizeKey(type));
+    this.coreRefresh = new IntegrationCoreRefreshService(this.registry, this.logger, this.projectRoot);
+
     this.registerCoreIntegrations();
   }
 
@@ -37,10 +41,10 @@ export class IntegrationManager {
    * Register all core integration types and their providers
    */
   private registerCoreIntegrations() {
-    this.registry.registerType(EmailIntegrationDefinition);
-    this.registry.registerType(StorageIntegrationDefinition);
-    this.registry.registerType(CacheIntegrationDefinition);
-    this.registry.registerType(SsoIntegrationDefinition);
+    this.registry.registerType(EmailIntegrationDefinition.definition);
+    this.registry.registerType(StorageIntegrationDefinition.definition);
+    this.registry.registerType(CacheIntegrationDefinition.definition);
+    this.registry.registerType(SsoIntegrationDefinition.definition);
     // AI integration is now registered by the AI core extension
     // (see packages/ai/src/extension.ts)
   }
@@ -137,135 +141,41 @@ export class IntegrationManager {
    * Refresh email integration
    */
   async refreshEmail(preferStored: boolean = true) {
-    try {
-      const resolvedInstances = await this.registry.instantiateMany<EmailManager>('email', {
-        preferStored,
-        context: { projectRoot: this.projectRoot, logger: this.logger }
-      });
-      if (!resolvedInstances.length) {
-        throw new Error('No email providers resolved');
-      }
-
-      if (resolvedInstances.length === 1) {
-        const only = resolvedInstances[0];
-        this.email = only.instance;
-        this.logger.info(`Email integration active: ${only.resolved.providerKey} (${only.resolved.source})`);
-        return only.resolved;
-      }
-
-      this.email = new MultiProviderEmailSender(
-        resolvedInstances.map((entry) => ({ key: entry.resolved.providerKey, sender: entry.instance })),
-        this.logger
-      );
-      const providerKeys = resolvedInstances.map((entry) => entry.resolved.providerKey).join(', ');
-      this.logger.info(`Email integrations active (fan-out): ${providerKeys} (stored)`);
-      return resolvedInstances.map((entry) => entry.resolved);
-    } catch (error: any) {
-      this.logger.error(`Failed to initialize email integration: ${error.message}. Falling back to mock driver.`);
-      this.email = new EmailManager(EmailFactory.create('mock', {}));
-      return null;
-    }
+    const { email, resolved } = await this.coreRefresh.refreshEmail(preferStored);
+    this.email = email;
+    return resolved;
   }
 
   /**
    * Refresh storage integration
    */
   async refreshStorage(preferStored: boolean = true) {
-    try {
-      const { instance, resolved } = await this.registry.instantiate<MediaManager>('storage', { 
-        preferStored,
-        context: { projectRoot: this.projectRoot, logger: this.logger }
-      });
-      this.storage = instance;
-      this.logger.info(`Storage integration active: ${resolved.providerKey} (${resolved.source})`);
-      return resolved;
-    } catch (error: any) {
-      this.logger.error(`Failed to initialize storage integration: ${error.message}. Falling back to default local driver.`);
-      // Fallback to local driver to prevent system-wide crashes
-      const uploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(this.projectRoot, 'public/uploads');
-      const publicUrl = process.env.STORAGE_PUBLIC_URL || '/uploads';
-      this.storage = new MediaManager(StorageFactory.create('local', { uploadDir, publicUrlBase: publicUrl }));
-      return null;
-    }
+    const { storage, resolved } = await this.coreRefresh.refreshStorage(preferStored);
+    this.storage = storage;
+    return resolved;
   }
 
   /**
    * Refresh cache integration
    */
   async refreshCache(preferStored: boolean = true) {
-    try {
-      const { instance, resolved } = await this.registry.instantiate<CacheManager>('cache', { 
-        preferStored,
-        context: { projectRoot: this.projectRoot, logger: this.logger }
-      });
-      this.cache = instance;
-      this.logger.info(`Cache integration active: ${resolved.providerKey} (${resolved.source})`);
-      return resolved;
-    } catch (error: any) {
-      this.logger.error(`Failed to initialize cache integration: ${error.message}. Falling back to memory driver.`);
-      this.cache = new CacheManager(CacheFactory.create('memory', {}));
-      return null;
-    }
+    const { cache, resolved } = await this.coreRefresh.refreshCache(preferStored);
+    this.cache = cache;
+    return resolved;
   }
 
   /**
    * List all registered integration types with their active and stored configurations
    */
   async listConfigs() {
-    const summaries = this.registry.listTypes();
-    const enriched = await Promise.all(
-      summaries.map(async (summary) => {
-        const active = await this.registry.resolve(summary.key).catch(() => null);
-        const stored = await this.registry.readStoredConfig(summary.key).catch(() => null);
-        const storedProviders = await this.registry.readStoredProvidersConfig(summary.key).catch(() => null);
-        const storedProfiles = await this.registry.readStoredProfilesConfig(summary.key).catch(() => null);
-        return {
-          ...summary,
-          active: active
-            ? {
-                provider: active.providerKey,
-                source: active.source,
-                config: this.registry.sanitizeResolvedConfig(summary.key, active.providerKey, active.config)
-              }
-            : null,
-          stored,
-          storedProviders,
-          storedProfiles: this.sanitizeStoredProfiles(summary.key, storedProfiles),
-          activeProfileId: storedProfiles?.activeProfileId || null
-        };
-      })
-    );
-
-    return enriched;
+    return this.configReader.listConfigs();
   }
 
   /**
    * Get configuration for a specific integration type
    */
   async getConfig(type: string) {
-    const normalizedType = this.normalizeKey(type);
-    const summary = this.registry.getTypeSummary(normalizedType);
-    if (!summary) return null;
-
-    const active = await this.registry.resolve(normalizedType).catch(() => null);
-    const stored = await this.registry.readStoredConfig(normalizedType).catch(() => null);
-    const storedProviders = await this.registry.readStoredProvidersConfig(normalizedType).catch(() => null);
-    const storedProfiles = await this.registry.readStoredProfilesConfig(normalizedType).catch(() => null);
-
-    return {
-      ...summary,
-      active: active
-        ? {
-            provider: active.providerKey,
-            source: active.source,
-            config: this.registry.sanitizeResolvedConfig(normalizedType, active.providerKey, active.config)
-          }
-        : null,
-      stored,
-      storedProviders,
-      storedProfiles: this.sanitizeStoredProfiles(normalizedType, storedProfiles),
-      activeProfileId: storedProfiles?.activeProfileId || null
-    };
+    return this.configReader.getConfig(type);
   }
 
   /**
@@ -346,19 +256,5 @@ export class IntegrationManager {
     }
 
     this.instances.delete(normalizedType);
-  }
-
-  private sanitizeStoredProfiles(typeKey: string, storedProfiles: any) {
-    if (!storedProfiles?.profiles?.length) {
-      return storedProfiles;
-    }
-
-    return {
-      ...storedProfiles,
-      profiles: storedProfiles.profiles.map((profile: any) => ({
-        ...profile,
-        config: this.registry.sanitizeResolvedConfig(typeKey, String(profile?.providerKey || ''), profile?.config || {}),
-      })),
-    };
   }
 }

@@ -49,3 +49,11 @@ export interface ExecutionResult {
   error?: string;
   duration: number;
 }
+export interface PlanStatusSummary {
+  total: number;
+  completed: number;
+  inProgress: number;
+  pending: number;
+  failed: number;
+  progress: number;
+}

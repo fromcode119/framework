@@ -1,4 +1,5 @@
 import { UrlUtils } from './url-utils';
+import { ApplicationUrlResolver } from './application-url-resolver';
 
 export class ApplicationUrlUtils {
   static readonly API_APP = 'api';
@@ -19,105 +20,53 @@ export class ApplicationUrlUtils {
     value: unknown,
     options: { stripApiPath?: boolean } = {},
   ): string {
-    const parsed = ApplicationUrlUtils.parseAbsoluteUrl(value);
-    if (!parsed) {
-      return '';
-    }
-
-    const pathname = options.stripApiPath
-      ? ApplicationUrlUtils.stripApiPath(parsed.pathname || '')
-      : (parsed.pathname || '');
-
-    return UrlUtils.trimTrailingSlash(`${parsed.origin}${pathname}`);
+    return ApplicationUrlResolver.normalizeBaseUrlCandidate(value, options);
   }
 
   static readEnvironmentBaseUrl(
     envKeys: string[],
     options: { stripApiPath?: boolean } = {},
   ): string {
-    for (const envKey of envKeys) {
-      const normalized = ApplicationUrlUtils.normalizeBaseUrlCandidate(process.env[envKey], options);
-      if (normalized) {
-        return normalized;
-      }
-    }
-
-    return '';
+    return ApplicationUrlResolver.readEnvironmentBaseUrl(envKeys, options);
   }
-
-  /**
-   * Optional reader for the DB-backed app URL settings (site_url/frontend_url/admin_url),
-   * registered by the API server once the settings cache is loaded. Keyed by app name
-   * ('api' | 'admin' | 'frontend'). Returns null where unset or in client/build contexts
-   * (no settings cache) — there, only env + default apply.
-   */
-  private static appUrlSettingsReader: ((app: string) => string | null) | null = null;
 
   /** Wire the DB-backed app URL settings (env still wins — see readAppBaseUrlFromEnvironment). */
   static registerAppUrlSettingsReader(reader: (app: string) => string | null): void {
-    ApplicationUrlUtils.appUrlSettingsReader = reader;
+    ApplicationUrlResolver.registerAppUrlSettingsReader(reader);
   }
 
+  /**
+   * Resolves the configured base URL for an app, ALWAYS returning a clean base with NO
+   * trailing slash, or '' when unresolved. Callers MUST NOT post-process the return (no
+   * `.replace(/\/+$/, '')`, no manual slash-joining) — use {@link joinApiPath} to append a
+   * path. The empty-string case is the deliberate "no URL configured" contract; callers fall
+   * back to a relative path.
+   */
   static readAppBaseUrlFromEnvironment(app: string): string {
-    const normalizedApp = String(app || '').trim().toLowerCase();
+    return ApplicationUrlResolver.readAppBaseUrlFromEnvironment(app);
+  }
 
-    let envKeys: string[];
-    if (normalizedApp === ApplicationUrlUtils.API_APP) {
-      envKeys = ['API_URL', 'NEXT_PUBLIC_API_URL'];
-    } else if (normalizedApp === ApplicationUrlUtils.ADMIN_APP) {
-      envKeys = ['ADMIN_URL'];
-    } else if (normalizedApp === ApplicationUrlUtils.FRONTEND_APP) {
-      envKeys = ['FRONTEND_URL', 'NEXT_PUBLIC_SITE_URL', 'PUBLIC_APP_URL', 'APP_URL'];
-    } else {
-      return '';
+  /**
+   * Joins a resolved app base URL with a path using exactly one slash between them, and
+   * returns a leading-slash relative path when the base is empty (matching the framework's
+   * "empty base = relative" contract). Pure and tiny — the canonical way to append a path to
+   * any {@link readAppBaseUrlFromEnvironment} / {@link inferBrowserBaseUrl} return.
+   *
+   * @example
+   * ApplicationUrlUtils.joinApiPath('https://api.example.com', 'v1/orders') // 'https://api.example.com/v1/orders'
+   * ApplicationUrlUtils.joinApiPath('', '/v1/orders')                       // '/v1/orders'
+   */
+  static joinApiPath(base: string, path: string): string {
+    const cleanBase = UrlUtils.trimTrailingSlash(String(base ?? '').trim());
+    const cleanPath = String(path ?? '').trim().replace(/^\/+/, '');
+    if (!cleanBase) {
+      return `/${cleanPath}`;
     }
-    const stripApiPath = normalizedApp === ApplicationUrlUtils.API_APP;
-
-    // Setting-first, matching how CORS already resolves these URLs: a value configured in
-    // admin Settings is authoritative; the env var is the fallback when the setting is
-    // empty. This keeps the admin UI meaningful (what you set takes effect) and consistent
-    // across CORS, links, emails and PDFs.
-    if (ApplicationUrlUtils.appUrlSettingsReader) {
-      const fromSetting = ApplicationUrlUtils.normalizeBaseUrlCandidate(
-        ApplicationUrlUtils.appUrlSettingsReader(normalizedApp),
-        { stripApiPath },
-      );
-      if (fromSetting) {
-        return fromSetting;
-      }
-    }
-    return ApplicationUrlUtils.readEnvironmentBaseUrl(envKeys, { stripApiPath });
+    return cleanPath ? `${cleanBase}/${cleanPath}` : cleanBase;
   }
 
   static readAppBasePathFromEnvironment(app: string): string {
-    const normalizedApp = String(app || '').trim().toLowerCase();
-    if (normalizedApp === ApplicationUrlUtils.API_APP) {
-      return ApplicationUrlUtils.deriveBasePathFromUrl(
-        process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || '',
-        ApplicationUrlUtils.defaultBasePathForApp(normalizedApp),
-      );
-    }
-
-    if (normalizedApp === ApplicationUrlUtils.ADMIN_APP) {
-      const fromAdminUrl = ApplicationUrlUtils.deriveBasePathFromUrl(
-        process.env.ADMIN_URL || '',
-        ApplicationUrlUtils.defaultBasePathForApp(normalizedApp),
-      );
-      if (fromAdminUrl) {
-        return fromAdminUrl;
-      }
-
-      return ApplicationUrlUtils.normalizePathPrefix(process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
-    }
-
-    if (normalizedApp === ApplicationUrlUtils.FRONTEND_APP) {
-      return ApplicationUrlUtils.deriveBasePathFromUrl(
-        process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || '',
-        '',
-      );
-    }
-
-    return '';
+    return ApplicationUrlResolver.readAppBasePathFromEnvironment(app);
   }
 
   static getServerApiBaseUrlCandidates(): string[] {
@@ -128,7 +77,7 @@ export class ApplicationUrlUtils {
       ApplicationUrlUtils.LOCALHOST_FALLBACK_API_BASE_URL,
     ];
 
-    return ApplicationUrlUtils.unique(values.map((value) => ApplicationUrlUtils.normalizeBaseUrlCandidate(value, { stripApiPath: true })));
+    return ApplicationUrlResolver.unique(values.map((value) => ApplicationUrlUtils.normalizeBaseUrlCandidate(value, { stripApiPath: true })));
   }
 
   static derivePlatformDomain(...values: Array<unknown>): string {
@@ -176,6 +125,12 @@ export class ApplicationUrlUtils {
     return String(value ?? '').trim().toLowerCase() === ApplicationUrlUtils.LEGACY_PLATFORM_DOMAIN;
   }
 
+  /**
+   * Infers the browser-side base URL for an app, ALWAYS returning a clean base with NO
+   * trailing slash, or '' (server/no-window or unresolved). Callers MUST NOT post-process the
+   * return (no `.replace(/\/+$/, '')`, no manual slash-joining) — use {@link joinApiPath} to
+   * append a path; an empty base is the deliberate "fall back to a relative URL" contract.
+   */
   static inferBrowserBaseUrl(targetApp?: string): string {
     if (typeof window === 'undefined') {
       return '';
@@ -183,21 +138,21 @@ export class ApplicationUrlUtils {
 
     const currentBaseUrl = ApplicationUrlUtils.normalizeBaseUrlCandidate(window.location?.origin || '');
     if (!currentBaseUrl || !targetApp) {
-      return currentBaseUrl;
+      return UrlUtils.trimTrailingSlash(currentBaseUrl);
     }
 
     if (ApplicationUrlUtils.isLoopbackCandidate(currentBaseUrl)) {
-      return currentBaseUrl;
+      return UrlUtils.trimTrailingSlash(currentBaseUrl);
     }
 
     const parsed = ApplicationUrlUtils.parseAbsoluteUrl(currentBaseUrl);
     if (!parsed) {
-      return currentBaseUrl;
+      return UrlUtils.trimTrailingSlash(currentBaseUrl);
     }
 
     const currentApp = ApplicationUrlUtils.detectHostRole(parsed);
     if (!currentApp || currentApp === targetApp) {
-      return currentBaseUrl;
+      return UrlUtils.trimTrailingSlash(currentBaseUrl);
     }
 
     const nextHostname = parsed.hostname.replace(
@@ -205,7 +160,7 @@ export class ApplicationUrlUtils {
       String(targetApp || '').trim().toLowerCase(),
     );
     if (!nextHostname || nextHostname === parsed.hostname) {
-      return currentBaseUrl;
+      return UrlUtils.trimTrailingSlash(currentBaseUrl);
     }
 
     return UrlUtils.trimTrailingSlash(
@@ -244,23 +199,7 @@ export class ApplicationUrlUtils {
   }
 
   static detectHostRole(value: URL | unknown): string {
-    const parsed = value instanceof URL ? value : ApplicationUrlUtils.parseAbsoluteUrl(value);
-    if (!parsed) {
-      return '';
-    }
-
-    const hostname = parsed.hostname.toLowerCase();
-    for (const role of [
-      ApplicationUrlUtils.ADMIN_APP,
-      ApplicationUrlUtils.API_APP,
-      ApplicationUrlUtils.FRONTEND_APP,
-    ]) {
-      if (hostname === role || hostname.startsWith(`${role}.`)) {
-        return role;
-      }
-    }
-
-    return '';
+    return ApplicationUrlResolver.detectHostRole(value);
   }
 
   static hasHostRole(value: URL | unknown, role: string): boolean {
@@ -268,104 +207,18 @@ export class ApplicationUrlUtils {
   }
 
   static isLoopbackCandidate(value: URL | unknown): boolean {
-    const parsed = value instanceof URL ? value : ApplicationUrlUtils.parseAbsoluteUrl(value);
-    if (!parsed) {
-      return false;
-    }
-
-    return parsed.hostname === 'localhost'
-      || parsed.hostname === '127.0.0.1'
-      || parsed.hostname === '[::1]'
-      || parsed.hostname === '::1';
+    return ApplicationUrlResolver.isLoopbackCandidate(value);
   }
 
   static parseAbsoluteUrl(value: unknown): URL | null {
-    const rawValue = String(value ?? '').trim();
-    if (!rawValue || rawValue.startsWith('/')) {
-      return null;
-    }
-
-    try {
-      if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
-        return new URL(rawValue);
-      }
-
-      return new URL(`http://${rawValue.replace(/^\/+/, '')}`);
-    } catch {
-      return null;
-    }
+    return ApplicationUrlResolver.parseAbsoluteUrl(value);
   }
 
   static deriveBasePathFromUrl(value: unknown, defaultPath = ''): string {
-    const parsed = ApplicationUrlUtils.parseAbsoluteUrl(value);
-    if (!parsed) {
-      return ApplicationUrlUtils.normalizePathPrefix(defaultPath);
-    }
-
-    const normalizedPath = ApplicationUrlUtils.normalizePathPrefix(parsed.pathname || '');
-    if (!normalizedPath) {
-      return ApplicationUrlUtils.normalizePathPrefix(defaultPath);
-    }
-
-    const withoutVersion = normalizedPath.replace(/\/v[^/]+$/i, '');
-    return ApplicationUrlUtils.normalizePathPrefix(withoutVersion) || ApplicationUrlUtils.normalizePathPrefix(defaultPath);
+    return ApplicationUrlResolver.deriveBasePathFromUrl(value, defaultPath);
   }
 
   static normalizePathPrefix(value: unknown): string {
-    const rawValue = String(value ?? '').trim();
-    if (!rawValue || rawValue === '/') {
-      return '';
-    }
-
-    const withLeadingSlash = rawValue.startsWith('/') ? rawValue : `/${rawValue}`;
-    return withLeadingSlash.replace(/\/+$/, '').replace(/\/{2,}/g, '/');
-  }
-
-  private static defaultBasePathForApp(app: string): string {
-    if (app === ApplicationUrlUtils.API_APP) {
-      return '/api';
-    }
-
-    return '';
-  }
-
-  private static stripApiPath(value: string): string {
-    const normalizedValue = ApplicationUrlUtils.normalizePathPrefix(value);
-    if (!normalizedValue) {
-      return '';
-    }
-
-    const apiBasePath = ApplicationUrlUtils.deriveBasePathFromUrl(
-      `http://placeholder${normalizedValue}`,
-      '',
-    );
-    if (!apiBasePath) {
-      return normalizedValue;
-    }
-
-    if (normalizedValue === apiBasePath) {
-      return '';
-    }
-
-    if (normalizedValue.startsWith(`${apiBasePath}/`)) {
-      return normalizedValue.slice(apiBasePath.length);
-    }
-
-    return normalizedValue;
-  }
-
-  private static unique(values: string[]): string[] {
-    const seen = new Set<string>();
-    const output: string[] = [];
-    for (const value of values) {
-      if (!value || seen.has(value)) {
-        continue;
-      }
-
-      seen.add(value);
-      output.push(value);
-    }
-
-    return output;
+    return ApplicationUrlResolver.normalizePathPrefix(value);
   }
 }

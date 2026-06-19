@@ -38,6 +38,14 @@ export class SystemController {
     return this.peopleController.getPerson(req, res);
   }
 
+  async getPersonRecords(req: Request, res: Response) {
+    return this.peopleController.getPersonRecords(req, res);
+  }
+
+  async getRecordsByRef(req: Request, res: Response) {
+    return this.peopleController.getRecordsByRef(req, res);
+  }
+
   async savePerson(req: Request, res: Response) {
     return this.peopleController.savePerson(req, res);
   }

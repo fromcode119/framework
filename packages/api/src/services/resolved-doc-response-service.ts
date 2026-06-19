@@ -21,7 +21,7 @@ export class ResolvedDocResponseService {
     }
 
     const normalized = { ...doc };
-    const themeLayout = this.readString(doc.themeLayout) || this.readString(doc.pageTemplate) || this.readString(doc.page_template);
+    const themeLayout = this.readString(doc.themeLayout) || this.readString(doc.pageTemplate);
     const content = doc.content ?? doc.contentBlocks ?? null;
 
     if (themeLayout) {

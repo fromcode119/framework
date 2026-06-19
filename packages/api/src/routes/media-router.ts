@@ -31,7 +31,12 @@ export class MediaRouter extends BaseRouter {
   ) {
     super();
     this.controller = new MediaController(manager, mediaManager);
-    this.upload = multer({ storage: multer.memoryStorage() });
+    // memoryStorage buffers the whole file in RAM — cap the size so an
+    // oversized upload cannot exhaust process memory.
+    this.upload = multer({
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 25 * 1024 * 1024 },
+    });
   }
 
   protected registerRoutes(): void {

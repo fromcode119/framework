@@ -7,6 +7,7 @@ import { SafeArchive } from '../security/safe-archive';
 import type { CreateSystemBackupOptions, CreateSystemBackupResult } from './backup-service.interfaces';
 import type { BackupSectionKey } from './backup-service.types';
 import { BackupArchivePathService } from './helpers/backup-archive-path-service';
+import { SystemBackupHelper } from './helpers/system-backup-helper';
 
 /**
  * Backup Service
@@ -180,16 +181,16 @@ export class BackupService {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFileName = `system-${timestamp}.tar.gz`;
     const backupPath = path.join(backupsPath, backupFileName);
-    const requestedSections = this.resolveRequestedSections(options.sections);
+    const requestedSections = SystemBackupHelper.resolveRequestedSections(options.sections);
 
-    if (this.isDatabaseOnlyRequest(requestedSections)) {
+    if (SystemBackupHelper.isDatabaseOnlyRequest(requestedSections)) {
       return await this.createDatabaseOnlyBackup(requestedSections);
     }
 
-    const rootEntries = this.collectSystemEntries(rootDir, requestedSections, options.excludePaths);
+    const rootEntries = SystemBackupHelper.collectSystemEntries(rootDir, requestedSections, options.excludePaths);
     const databaseEntry = await this.prepareDatabaseEntry(rootDir, requestedSections, timestamp);
     const toBackup = databaseEntry.tempDbFile ? [...rootEntries, databaseEntry.tempDbFile] : rootEntries;
-    const includedSections = this.resolveIncludedSections(requestedSections, rootEntries, databaseEntry.tempDbFile);
+    const includedSections = SystemBackupHelper.resolveIncludedSections(requestedSections, rootEntries, databaseEntry.tempDbFile);
 
     if (!toBackup.length) {
       throw new Error('Select at least one backup section that is available in this workspace.');
@@ -206,7 +207,7 @@ export class BackupService {
         toBackup,
       );
     } finally {
-      this.cleanupTemporaryDatabaseEntry(rootDir, databaseEntry.tempDbFile);
+      SystemBackupHelper.cleanupTemporaryDatabaseEntry(rootDir, databaseEntry.tempDbFile);
     }
 
     this.cleanupOld('system', 'system', 5);
@@ -219,17 +220,13 @@ export class BackupService {
     };
   }
 
-  private static isDatabaseOnlyRequest(requestedSections: BackupSectionKey[]): boolean {
-    return requestedSections.length === 1 && requestedSections[0] === 'database';
-  }
-
   private static async createDatabaseOnlyBackup(requestedSections: BackupSectionKey[]): Promise<CreateSystemBackupResult> {
     const backupPath = await this.backupDatabase();
     if (!backupPath || !fs.existsSync(backupPath)) {
       throw new Error('Database backup was requested, but no database snapshot is available in this environment.');
     }
 
-    this.cleanupDatabaseOld(5);
+    SystemBackupHelper.cleanupDatabaseOld(this.getBackupsDirectory('database'), 5);
 
     return {
       backupPath,
@@ -237,43 +234,6 @@ export class BackupService {
       includedSections: ['database'],
       warnings: [],
     };
-  }
-
-  private static resolveRequestedSections(sections?: BackupSectionKey[]): BackupSectionKey[] {
-    const allowedSections: BackupSectionKey[] = ['core', 'database', 'plugins', 'themes'];
-    if (sections === undefined) {
-      return [...allowedSections];
-    }
-
-    return Array.from(new Set(
-      sections.filter((section): section is BackupSectionKey => allowedSections.includes(section)),
-    ));
-  }
-
-  private static collectSystemEntries(
-    rootDir: string,
-    requestedSections: BackupSectionKey[],
-    excludePaths?: string[],
-  ): string[] {
-    return fs.readdirSync(rootDir).filter((item) => {
-      if (
-        item === 'node_modules' ||
-        item === 'backups' ||
-        item.startsWith('.') ||
-        item.startsWith('tmp-') ||
-        BackupArchivePathService.isTopLevelEntryExcluded(item, excludePaths)
-      ) {
-        return false;
-      }
-
-      if (item === 'plugins') {
-        return requestedSections.includes('plugins');
-      }
-      if (item === 'themes') {
-        return requestedSections.includes('themes');
-      }
-      return requestedSections.includes('core');
-    });
   }
 
   private static async prepareDatabaseEntry(
@@ -306,41 +266,6 @@ export class BackupService {
     }
   }
 
-  private static resolveIncludedSections(
-    requestedSections: BackupSectionKey[],
-    rootEntries: string[],
-    tempDbFile: string | null,
-  ): BackupSectionKey[] {
-    const includesCoreFiles = rootEntries.some((entry) => entry !== 'plugins' && entry !== 'themes');
-    const includedSections: BackupSectionKey[] = [];
-
-    if (requestedSections.includes('core') && includesCoreFiles) {
-      includedSections.push('core');
-    }
-    if (requestedSections.includes('database') && Boolean(tempDbFile)) {
-      includedSections.push('database');
-    }
-    if (requestedSections.includes('plugins') && rootEntries.includes('plugins')) {
-      includedSections.push('plugins');
-    }
-    if (requestedSections.includes('themes') && rootEntries.includes('themes')) {
-      includedSections.push('themes');
-    }
-
-    return includedSections;
-  }
-
-  private static cleanupTemporaryDatabaseEntry(rootDir: string, tempDbFile: string | null): void {
-    if (!tempDbFile) {
-      return;
-    }
-
-    const temporaryPath = path.join(rootDir, tempDbFile);
-    if (fs.existsSync(temporaryPath)) {
-      fs.unlinkSync(temporaryPath);
-    }
-  }
-
   /**
    * Cleans up old backups for a specific slug, keeping only the most recent N
    */
@@ -362,32 +287,6 @@ export class BackupService {
           fs.unlinkSync(path.join(dir, f.name));
         } catch (e) {
           // Ignore errors during cleanup
-        }
-      });
-    }
-  }
-
-  private static cleanupDatabaseOld(keep: number = 5): void {
-    const dir = path.join(this.getBackupsDir(), 'database');
-    if (!fs.existsSync(dir)) return;
-
-    const files = fs.readdirSync(dir)
-      .filter((fileName) =>
-        (fileName.startsWith('db-dump-') && fileName.endsWith('.sql'))
-        || (fileName.startsWith('db-copy-') && fileName.endsWith('.db')),
-      )
-      .map((fileName) => ({
-        name: fileName,
-        time: fs.statSync(path.join(dir, fileName)).mtime.getTime(),
-      }))
-      .sort((left, right) => right.time - left.time);
-
-    if (files.length > keep) {
-      files.slice(keep).forEach((file) => {
-        try {
-          fs.unlinkSync(path.join(dir, file.name));
-        } catch {
-          // Ignore errors during cleanup.
         }
       });
     }

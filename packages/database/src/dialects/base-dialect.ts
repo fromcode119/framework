@@ -1,14 +1,17 @@
-import { sql, eq, and, desc, asc } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import { NamingStrategy } from '../naming-strategy';
 import type { JoinClause } from '../types';
+import { OrderByBuilder } from './order-by-builder';
 
 /**
  * BaseDialect - Shared utilities for database dialect implementations
- * 
+ *
  * Provides common helper methods used across Postgres, MySQL, and SQLite dialects.
  * This reduces code duplication while allowing each dialect to maintain its specific implementation.
  */
 export abstract class BaseDialect {
+  protected orderByBuilder = new OrderByBuilder();
+
   /**
    * Normalize parameter values for database queries
    * Handles undefined, null, Date, Buffer, and objects (JSON stringify)
@@ -25,7 +28,7 @@ export abstract class BaseDialect {
     if (typeof where !== 'object' || where === null) return [];
     if (Object.getPrototypeOf(where) !== Object.prototype) return [];
 
-    return Object.entries(where).map(([k, v]) => 
+    return Object.entries(where).map(([k, v]) =>
       eq(sql`${sql.identifier(k)}`, v as any)
     );
   }
@@ -35,30 +38,14 @@ export abstract class BaseDialect {
    * Supports: string ("created_at desc"), object ({ created_at: 'desc' }), or drizzle expressions
    */
   protected buildOrderBy(orderBy: any): any {
-    if (!orderBy) return null;
+    return this.orderByBuilder.buildOrderBy(orderBy);
+  }
 
-    // Array of drizzle expressions - pass through
-    if (Array.isArray(orderBy)) {
-      return orderBy;
-    }
-
-    // String format: "column_name desc"
-    if (typeof orderBy === 'string') {
-      const [column, direction] = orderBy.split(' ');
-      const orderFn = direction?.toLowerCase() === 'desc' ? desc : asc;
-      return [orderFn(sql.identifier(column))];
-    }
-
-    // Object format: { column_name: 'desc' }
-    if (typeof orderBy === 'object' && Object.getPrototypeOf(orderBy) === Object.prototype) {
-      return Object.entries(orderBy).map(([column, direction]) => {
-        const orderFn = String(direction).toLowerCase() === 'desc' ? desc : asc;
-        return orderFn(sql.identifier(NamingStrategy.toSnakeCase(column)));
-      });
-    }
-
-    // Drizzle expression - pass through
-    return [orderBy];
+  /**
+   * Build raw SQL ORDER BY clause for string-based queries
+   */
+  protected buildRawOrderByClause(orderBy: any): string {
+    return this.orderByBuilder.buildRawOrderByClause(orderBy);
   }
 
   /**
@@ -82,26 +69,6 @@ export abstract class BaseDialect {
       sql: ` WHERE ${conditions.join(' AND ')}`,
       values
     };
-  }
-
-  /**
-   * Build raw SQL ORDER BY clause for string-based queries
-   */
-  protected buildRawOrderByClause(orderBy: any): string {
-    if (!orderBy) return '';
-
-    if (typeof orderBy === 'string') {
-      return ` ORDER BY ${orderBy}`;
-    }
-
-    if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
-      const clauses = Object.entries(orderBy)
-        .map(([k, v]) => `"${NamingStrategy.toSnakeCase(k)}" ${String(v).toUpperCase()}`)
-        .join(', ');
-      return ` ORDER BY ${clauses}`;
-    }
-
-    return '';
   }
 
   /**
@@ -217,10 +184,15 @@ export abstract class BaseDialect {
     // ORDER BY
     if (orderBy) {
       if (typeof orderBy === 'string') {
-        sqlStr += ` ORDER BY ${orderBy}`;
+        const parts = this.orderByBuilder.parseOrderByString(orderBy);
+        if (parts.length > 0) {
+          const clauses = parts
+            .map((part) => `"t0"."${NamingStrategy.toSnakeCase(part.column)}" ${part.direction}`);
+          sqlStr += ` ORDER BY ${clauses.join(', ')}`;
+        }
       } else if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
         const clauses = Object.entries(orderBy)
-          .map(([k, v]) => `"t0"."${NamingStrategy.toSnakeCase(k)}" ${String(v).toUpperCase()}`);
+          .map(([k, v]) => `"t0"."${NamingStrategy.toSnakeCase(k)}" ${this.orderByBuilder.normalizeOrderDirection(v)}`);
         sqlStr += ` ORDER BY ${clauses.join(', ')}`;
       }
     }

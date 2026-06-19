@@ -1,28 +1,25 @@
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
 import { Logger } from '../../logging';
 import { LoadedPlugin, FromcodePlugin } from '../../types';
 import { SystemConstants } from '../../constants';
 import type { PluginManagerInterface } from '../context/utils.interfaces';
-import { PluginPermissionsService } from '../../security/plugin-permissions-service';
-import { PluginSignatureService } from '../../security/plugin-signature-service';
 import { PluginStateService } from './plugin-state-service';
 import { DiscoveryService } from './discovery-service';
 import { SchemaManager } from '../../database/schema-manager';
 
 import { ManifestValidator } from '../../management/manifest';
 import { SandboxManager } from '../../security/sandbox-manager';
-import { IntegrityService } from '../../security/integrity-service';
 import { Seeder } from '../../database/seeder';
 import { PluginFailureIsolationService } from './plugin-failure-isolation-service';
-import { PluginDefaultPageMaterializationRuntimeService } from '../../services/default-page-contract/plugin-default-page-materialization-runtime-service';
+import { PluginCollectionActivationService } from './plugin-collection-activation-service';
+import { PluginRegistrationSecurityService } from './plugin-registration-security-service';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
   private sandbox?: SandboxManager;
   private seeder: Seeder;
   private failureIsolation: PluginFailureIsolationService;
+  private activation: PluginCollectionActivationService;
 
   constructor(
     private manager: PluginManagerInterface,
@@ -32,6 +29,7 @@ export class LifecycleService {
   ) {
     this.seeder = new Seeder(manager.db);
     this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
+    this.activation = new PluginCollectionActivationService(manager, schemaManager, this.seeder, this.logger);
     try {
       this.sandbox = new SandboxManager();
     } catch (e) {
@@ -59,39 +57,7 @@ export class LifecycleService {
       throw new Error(`Invalid manifest for "${slug}": ${err}`);
     }
 
-    // Integrity Check.
-    // A directory-hash mismatch on an already-installed plugin is almost always a
-    // core-version hash-recipe change, not tampering — hard-failing would silently
-    // disable every plugin the moment core is upgraded (it has, repeatedly). So unless
-    // strict enforcement is explicitly enabled, self-heal by re-stamping the checksum
-    // from the on-disk content (the trusted, deployed state) and continue. Real tamper
-    // protection is signature enforcement, which a core upgrade cannot false-positive.
-    if (pluginPath && plugin.manifest.checksum) {
-      const isHealthy = await IntegrityService.verifyPluginIntegrity(pluginPath, plugin.manifest.checksum);
-      if (!isHealthy) {
-        if (IntegrityService.isEnforced()) {
-          throw new Error(`Security Violation: Integrity check failed for plugin "${slug}"`);
-        }
-        const restamped = await IntegrityService.restampPlugin(pluginPath);
-        plugin.manifest.checksum = restamped;
-        this.logger.warn(
-          `Plugin "${slug}" checksum mismatch — re-stamped from on-disk content (${restamped.slice(0, 12)}…). ` +
-          `Set ENFORCE_PLUGIN_INTEGRITY=true to hard-fail instead, or enable signature signing for tamper protection.`
-        );
-      }
-    }
-
-    if (PluginSignatureService.isEnforced()) {
-      const publicKey = process.env.PLUGIN_SIGNING_PUBLIC_KEY || '';
-      const isValid = PluginSignatureService.verify(plugin.manifest, plugin.manifest.signature || '', publicKey);
-      if (!isValid) {
-        throw new Error(`Security Violation: Invalid signature for plugin "${slug}"`);
-      }
-    }
-
-    if (process.env.NODE_ENV === 'production' && !plugin.manifest.checksum && !plugin.manifest.signature) {
-      this.logger.warn(`Plugin "${slug}" has no checksum or signature — integrity cannot be verified.`);
-    }
+    await PluginRegistrationSecurityService.verify(plugin, pluginPath, this.logger);
 
     this.discovery.validateDependencies(plugin.manifest, this.manager.plugins);
 
@@ -187,7 +153,7 @@ export class LifecycleService {
     if (plugin.state === 'active') {
       if (options.force) {
         this.logger.info(`Plugin "${slug}" already active; forcing collection schema sync.`);
-        await this.syncPluginCollections(slug);
+        await this.activation.syncPluginCollections(slug);
       }
       return;
     }
@@ -224,10 +190,10 @@ export class LifecycleService {
       } else {
         if (plugin.onEnable) await plugin.onEnable(ctx);
       }
-      await this.autoDiscoverCollections(plugin, ctx);
-      await this.syncPluginCollections(slug);
-      await this.runSeeds(slug);
-      await this.materializeDefaultPages();
+      await this.activation.autoDiscoverCollections(plugin, ctx);
+      await this.activation.syncPluginCollections(slug);
+      await this.activation.runSeeds(slug);
+      await this.activation.materializeDefaultPages();
 
       plugin.state = 'active';
       plugin.error = undefined;
@@ -241,38 +207,6 @@ export class LifecycleService {
       const message = error instanceof Error ? error.message : String(error);
       await this.failureIsolation.markPluginError(plugin, message);
       throw error;
-    }
-  }
-
-  private async runSeeds(slug: string) {
-    const plugin = this.manager.plugins.get(slug);
-    if (!plugin || !plugin.manifest.seeds || !plugin.path) return;
-
-    const seedPath = path.resolve(plugin.path, plugin.manifest.seeds);
-    if (fs.existsSync(seedPath)) {
-      this.logger.info(`Running seeds for plugin "${slug}"...`);
-      try {
-        await this.seeder.seed(seedPath);
-      } catch (err: any) {
-        this.logger.error(`Failed to run seeds for plugin "${slug}": ${err.message}`);
-      }
-    }
-  }
-
-  private async materializeDefaultPages(): Promise<void> {
-    try {
-      const service = new PluginDefaultPageMaterializationRuntimeService(
-        this.manager,
-        async () => {
-          return await (this.manager.themeManager as any)?.getActiveThemeDefaultPageContractOverrides?.() || [];
-        },
-      );
-      await service.materialize();
-    } catch (error: any) {
-      if (PluginDefaultPageMaterializationRuntimeService.isRequiredRouteFailure(error)) {
-        throw error;
-      }
-      this.logger.warn(`Default page materialization failed: ${error?.message || error}`);
     }
   }
 
@@ -339,61 +273,6 @@ export class LifecycleService {
     this.manager.plugins.delete(slug);
     this.manager.middlewares.unregisterByPlugin(slug);
 
-    if (pluginPath) {
-      try {
-        const manifest = plugin!.manifest;
-        const indexPath = path.resolve(pluginPath, manifest.main || 'index.js');
-        const resolved = require.resolve(indexPath);
-        if (require.cache[resolved]) delete require.cache[resolved];
-      } catch (e) {
-        this.logger.warn(`Failed to clear require cache for plugin "${slug}": ${(e as Error).message}`);
-      }
-    }
-
-    for (const [colSlug, entry] of this.manager.registeredCollections.entries()) {
-      if (entry.pluginSlug === slug) this.manager.registeredCollections.delete(colSlug);
-    }
-
-    try {
-      const targetPath = pluginPath;
-      if (targetPath && fs.existsSync(targetPath)) {
-        fs.rmSync(targetPath, { recursive: true, force: true });
-      }
-    } catch (e) {
-      this.logger.warn(`Failed to remove plugin files for "${slug}": ${(e as Error).message}`);
-    }
-  }
-
-  private async autoDiscoverCollections(plugin: LoadedPlugin, ctx: any): Promise<void> {
-    if (!plugin.path) return;
-    const collectionsDir = path.join(plugin.path, 'src', 'collections');
-    if (!fs.existsSync(collectionsDir)) return;
-    const files = fs.readdirSync(collectionsDir).filter(f => f.endsWith('.json'));
-    for (const file of files) {
-      try {
-        const raw = JSON.parse(fs.readFileSync(path.join(collectionsDir, file), 'utf8'));
-        if (raw?.slug && Array.isArray(raw?.fields)) {
-          ctx.collections.register(raw);
-          this.logger.debug(`Auto-discovered collection "${raw.slug}" from ${file} in plugin "${plugin.manifest.slug}"`);
-        }
-      } catch (err: any) {
-        this.logger.warn(`Failed to auto-load collection from "${file}" in plugin "${plugin.manifest.slug}": ${err.message}`);
-      }
-    }
-  }
-
-  private async syncPluginCollections(pluginSlug: string) {
-    const plugin = this.manager.plugins.get(pluginSlug);
-    if (!plugin) return;
-
-    const pluginCollections = Array.from(this.manager.registeredCollections.values())
-      .filter(entry => entry.pluginSlug === pluginSlug);
-
-    if (pluginCollections.length > 0) {
-      PluginPermissionsService.ensure(pluginSlug, plugin.manifest, 'database:write');
-      for (const { collection } of pluginCollections) {
-        await this.schemaManager.syncCollection(collection);
-      }
-    }
+    this.activation.cleanupAfterDelete(slug, pluginPath, plugin?.manifest.main || 'index.js');
   }
 }

@@ -110,6 +110,7 @@ export * from './data-sources';
 export * from './utils';
 export { EnvConfig } from './config/env';
 export { SafeArchive } from './security/safe-archive';
+export { MediaPathUtils } from './security/media-path-utils';
 export { ProjectPaths } from './config/paths';
 
 // Integrations

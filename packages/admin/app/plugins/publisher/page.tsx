@@ -1,33 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
 import { AuthHooks } from '@/components/use-auth';
-import { AdminApi } from '@/lib/api';
 import { MarketplacePublisherConstants } from '@/lib/marketplace-publisher-constants';
-import { StringUtils } from '@fromcode119/core/client';
 import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
+import { PublisherPortalConstants } from './publisher-portal-constants';
+import { PublisherTypeTabs } from './publisher-type-tabs';
+import { PublisherForm } from './publisher-form';
 
-const PublisherPortal = () => {
+export default function PublisherPortal() {
     const { theme } = ThemeHooks.useTheme();
     const { notify } = NotificationHooks.useNotify();
     const { user } = AuthHooks.useAuth();
     const [loading, setLoading] = useState(false);
     const [submissionType, setSubmissionType] = useState<'plugin' | 'theme'>('plugin');
-    const [formData, setFormData] = useState({
-        name: '',
-        slug: '',
-        version: '1.0.0',
-        description: '',
-        category: 'general',
-        downloadUrl: '',
-        iconUrl: '',
-        capabilities: '',
-        author: ''
-    });
+    const [formData, setFormData] = useState({ ...PublisherPortalConstants.EMPTY_PUBLISHER_FORM });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,7 +24,7 @@ const PublisherPortal = () => {
         try {
             const marketplaceApiUrl = MarketplaceUrlService.resolveApiBaseUrl(process.env.NEXT_PUBLIC_MARKETPLACE_URL);
             const submitUrl = `${marketplaceApiUrl}${MarketplacePublisherConstants.SUBMIT_PATH}`;
-            
+
             const formattedData = {
                 ...formData,
                 capabilities: submissionType === 'plugin' ? formData.capabilities.split(',').map(c => c.trim()).filter(Boolean) : undefined,
@@ -53,17 +42,7 @@ const PublisherPortal = () => {
             });
 
             notify('success', 'Submission Sent', `Your ${submissionType} has been submitted for review.`);
-            setFormData({
-                name: '',
-                slug: '',
-                version: '1.0.0',
-                description: '',
-                category: 'general',
-                downloadUrl: '',
-                iconUrl: '',
-                capabilities: '',
-                author: ''
-            });
+            setFormData({ ...PublisherPortalConstants.EMPTY_PUBLISHER_FORM });
 
             setTimeout(() => {
                 window.location.reload();
@@ -86,151 +65,16 @@ const PublisherPortal = () => {
                 </p>
             </div>
 
-            <div className="flex gap-4 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit">
-                <button 
-                    onClick={() => setSubmissionType('plugin')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all ${submissionType === 'plugin' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                >
-                    Plugins
-                </button>
-                <button 
-                    onClick={() => setSubmissionType('theme')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all ${submissionType === 'theme' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                >
-                    Themes
-                </button>
-            </div>
+            <PublisherTypeTabs theme={theme} submissionType={submissionType} onSelect={setSubmissionType} />
 
-            <Card className={`p-10 border-0 shadow-2xl ${theme === 'dark' ? 'bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-slate-200'}`}>
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-2">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Plugin Name</label>
-                            <input 
-                                type="text" 
-                                required
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                                placeholder="My Awesome Plugin"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Identifier (Slug)</label>
-                            <input 
-                                type="text" 
-                                required
-                                value={formData.slug}
-                                onChange={e => setFormData({ ...formData, slug: StringUtils.slugify(e.target.value) })}
-                                className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                                placeholder="my-awesome-plugin"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Description</label>
-                        <textarea 
-                            required
-                            value={formData.description}
-                            onChange={e => setFormData({ ...formData, description: e.target.value })}
-                            className={`w-full p-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 min-h-[120px] ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                            placeholder="What does your plugin do?"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-2">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Version</label>
-                            <input 
-                                type="text" 
-                                value={formData.version}
-                                onChange={e => setFormData({ ...formData, version: e.target.value })}
-                                className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Category</label>
-                            <select 
-                                value={formData.category}
-                                onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                            >
-                                <option value="general">General</option>
-                                <option value="business">Business</option>
-                                <option value="marketing">Marketing</option>
-                                <option value="productivity">Productivity</option>
-                                <option value="testing">Testing</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {submissionType === 'plugin' ? (
-                            <div className="space-y-2">
-                                <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Capabilities (Comma Separated)</label>
-                                <input 
-                                    type="text" 
-                                    value={formData.capabilities}
-                                    onChange={e => setFormData({ ...formData, capabilities: e.target.value })}
-                                    className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                                    placeholder="api, database, hooks, content"
-                                />
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Author Name</label>
-                                <input 
-                                    type="text" 
-                                    value={formData.author}
-                                    onChange={e => setFormData({ ...formData, author: e.target.value })}
-                                    className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                                    placeholder="Your Name or Team"
-                                />
-                            </div>
-                        )}
-                        <div className="space-y-2">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Icon / Preview URL (Optional)</label>
-                            <input 
-                                type="text" 
-                                value={formData.iconUrl}
-                                onChange={e => setFormData({ ...formData, iconUrl: e.target.value })}
-                                className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                                placeholder="https://lucide.dev/icons/puzzle.svg"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className={`text-[10px] font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Download URL (ZIP Archive)</label>
-                        <input 
-                            type="url" 
-                            required
-                            value={formData.downloadUrl}
-                            onChange={e => setFormData({ ...formData, downloadUrl: e.target.value })}
-                            className={`w-full h-14 px-5 rounded-2xl border-0 ring-1 font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-800 ring-white/10 text-white' : 'bg-slate-50 ring-slate-200 text-slate-900'}`}
-                            placeholder="https://github.com/user/repo/releases/download/v1/plugin.zip"
-                        />
-                    </div>
-
-                    <button 
-                        type="submit"
-                        disabled={loading}
-                        className={`w-full h-16 rounded-[1.5rem] bg-indigo-600 hover:bg-indigo-700 text-white font-bold uppercase tracking-wide shadow-2xl shadow-indigo-600/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50`}
-                    >
-                        {loading ? (
-                            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                            <>
-                                <FrameworkIcons.Plus size={20} />
-                                <span>Submit Plugin to Review</span>
-                            </>
-                        )}
-                    </button>
-                </form>
-            </Card>
+            <PublisherForm
+                theme={theme}
+                submissionType={submissionType}
+                formData={formData}
+                loading={loading}
+                onChange={setFormData}
+                onSubmit={handleSubmit}
+            />
         </div>
     );
-};
-
-export default PublisherPortal;
+}

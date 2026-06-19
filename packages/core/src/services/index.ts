@@ -29,5 +29,17 @@ export type {
   ContentResolutionResult,
 } from './content-resolution-gate.types';
 
+export { PluginEntityRecordsRegistryService } from './entity-records/plugin-entity-records-registry-service';
+export { EntityRecordsResolutionService } from './entity-records/entity-records-resolution-service';
+export type {
+  EntityRecordRef,
+  EntityRecordItem,
+  EntityRecordProviderRegistration,
+  RegisteredEntityRecordProvider,
+  EntityRecordGroup,
+  EntityRecordProviderError,
+  EntityRecordsResult,
+} from './entity-records/entity-record.interfaces';
+
 // Main singleton
 export { CoreServices } from './core-services';

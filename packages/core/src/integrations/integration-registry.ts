@@ -9,6 +9,7 @@ import { Logger } from '../logging';
 import { CoreServices } from '../services';
 import { IntegrationProfileService } from './integration-profile-service';
 import { IntegrationStoredProviderService } from './integration-stored-provider-service';
+import { IntegrationResolverService } from './integration-resolver-service';
 import {
   IntegrationTypeDefinition,
   IntegrationProviderDefinition,
@@ -24,11 +25,19 @@ export class IntegrationRegistry {
   private readonly logger: Logger;
   private readonly profileService: IntegrationProfileService;
   private readonly storedProviderService: IntegrationStoredProviderService;
+  private readonly resolverService: IntegrationResolverService;
 
   constructor(private readonly db: any, logger?: Logger) {
     this.logger = logger || new Logger({ namespace: 'integration-registry' });
     this.profileService = new IntegrationProfileService(db, this.logger, this.types);
     this.storedProviderService = new IntegrationStoredProviderService(db, this.logger, this.types, this.profileService);
+    this.resolverService = new IntegrationResolverService(
+      this.types,
+      this.storedProviderService,
+      this.logger,
+      (value: string) => this.normalize(value),
+      (typeKey: string) => this.readStoredProfilesConfig(typeKey),
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -143,73 +152,7 @@ export class IntegrationRegistry {
     typeKey: string,
     options: { preferStored?: boolean } = {},
   ): Promise<IntegrationResolved<TInstance>[]> {
-    const normalizedType = this.normalize(typeKey);
-    const runtime = this.types.get(normalizedType);
-    if (!runtime) {
-      throw new Error(`Integration type "${normalizedType}" is not registered`);
-    }
-
-    const preferStored = options.preferStored !== false;
-    const storedProviders = preferStored ? await this.storedProviderService.readStoredProvidersInternal(normalizedType) : null;
-    const storedProfiles = preferStored ? await this.readStoredProfilesConfig(normalizedType) : null;
-    const envCandidate = runtime.definition.resolveFromEnv?.() || null;
-
-    if (storedProviders?.length) {
-      const enabledProviders = storedProviders.filter((entry) => entry.enabled !== false);
-      const resolvedFromStored: IntegrationResolved<TInstance>[] = [];
-      for (const entry of enabledProviders) {
-        if (!entry?.providerKey || !runtime.providers.has(entry.providerKey)) continue;
-        const provider = runtime.providers.get(entry.providerKey);
-        if (!provider) continue;
-        const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, entry.config || {});
-        const normalizedConfig = provider.normalizeConfig
-          ? provider.normalizeConfig(resolvedConfig)
-          : resolvedConfig;
-        resolvedFromStored.push({ type: normalizedType, providerKey: entry.providerKey, provider, config: normalizedConfig, source: 'stored' });
-      }
-      if (resolvedFromStored.length) return resolvedFromStored;
-    } else if (storedProfiles?.profiles?.length) {
-      const activeProfile =
-        storedProfiles.profiles.find((p) => p.id === storedProfiles.activeProfileId) ||
-        storedProfiles.profiles[0];
-      if (activeProfile?.providerKey && runtime.providers.has(activeProfile.providerKey)) {
-        const provider = runtime.providers.get(activeProfile.providerKey);
-        if (provider) {
-          const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, activeProfile.config || {});
-          const normalizedConfig = provider.normalizeConfig
-            ? provider.normalizeConfig(resolvedConfig)
-            : resolvedConfig;
-          return [{ type: normalizedType, providerKey: activeProfile.providerKey, provider, config: normalizedConfig, source: 'stored' }];
-        }
-      } else if (activeProfile?.providerKey) {
-        this.logger.warn(`Stored provider "${activeProfile.providerKey}" for integration "${normalizedType}" is not registered. Falling back.`);
-      }
-    }
-
-    if (envCandidate?.provider) {
-      const envProvider = this.normalize(envCandidate.provider);
-      if (runtime.providers.has(envProvider)) {
-        const provider = runtime.providers.get(envProvider);
-        if (provider) {
-          const normalizedConfig = provider.normalizeConfig
-            ? provider.normalizeConfig(envCandidate.config || {})
-            : envCandidate.config || {};
-          return [{ type: normalizedType, providerKey: envProvider, provider, config: normalizedConfig, source: 'env' }];
-        }
-      } else {
-        this.logger.warn(`Environment provider "${envProvider}" for integration "${normalizedType}" is not registered. Using default provider.`);
-      }
-    }
-
-    const providerKey = this.normalize(runtime.definition.defaultProvider);
-    const provider = runtime.providers.get(providerKey);
-    if (!provider) {
-      throw new Error(
-        `Integration "${normalizedType}" provider "${providerKey}" is not registered. Available: ${Array.from(runtime.providers.keys()).join(', ')}`,
-      );
-    }
-    const normalizedConfig = provider.normalizeConfig ? provider.normalizeConfig({}) : {};
-    return [{ type: normalizedType, providerKey, provider, config: normalizedConfig, source: 'default' }];
+    return this.resolverService.resolveMany<TInstance>(typeKey, options);
   }
 
   // ---------------------------------------------------------------------------

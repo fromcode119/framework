@@ -50,14 +50,16 @@ export class AccountSecurityPanel extends PluginComponent<Record<string, unknown
     return (
       <div style={card}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 18px' }}>{this.t('account.section.security')}</h2>
-        <div style={{ maxWidth: '420px' }}>
+        <form onSubmit={(e) => { e.preventDefault(); void this.submit(); }} style={{ maxWidth: '420px' }}>
+          {/* Hidden username field for password-manager / accessibility (browsers warn without one). */}
+          <input type="text" name="username" autoComplete="username" aria-hidden="true" tabIndex={-1} readOnly value="" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', border: 0 }} />
           {this.input('currentPassword', 'account.security.current')}
           {this.input('newPassword', 'account.security.new')}
           {message ? <p style={{ color: isError ? '#dc2626' : '#16a34a', fontSize: '13px', margin: '0 0 12px' }}>{message}</p> : null}
-          <button onClick={() => void this.submit()} disabled={saving} style={{ padding: '10px 22px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '999px', fontSize: '14px', fontWeight: 600, cursor: saving ? 'default' : 'pointer' }}>
+          <button type="submit" disabled={saving} style={{ padding: '10px 22px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '999px', fontSize: '14px', fontWeight: 600, cursor: saving ? 'default' : 'pointer' }}>
             {saving ? this.t('account.security.saving') : this.t('account.security.change')}
           </button>
-        </div>
+        </form>
       </div>
     );
   }

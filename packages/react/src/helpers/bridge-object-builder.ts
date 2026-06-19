@@ -100,6 +100,7 @@ export class BridgeObjectBuilder {
       Slot: args.Slot,
       Override: args.Override,
       AccountShell: args.AccountShell,
+      RecordsHub: args.RecordsHub,
       getIcon: args.getIcon,
       IconRegistry: args.FrameworkIconRegistry,
       FrameworkIconRegistry: args.FrameworkIconRegistry,

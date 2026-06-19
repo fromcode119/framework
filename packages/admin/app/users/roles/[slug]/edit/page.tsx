@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { Badge } from '@/components/ui/badge';
 import { Loader } from '@/components/ui/loader';
 import { AdminComponent } from '@/components/admin-component';
+import { EditRolePermissionsCard } from './edit-role-permissions-card';
+import { EditRoleSummarySidebar } from './edit-role-summary-sidebar';
 import type { EditRolePageProps, EditRolePageState } from './edit-role-page.interfaces';
 
 export default class EditRolePage extends AdminComponent<EditRolePageProps, EditRolePageState> {
@@ -177,85 +178,20 @@ export default class EditRolePage extends AdminComponent<EditRolePageProps, Edit
                 </div>
               </Card>
 
-              <Card title="Permissions">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Available Options</span>
-                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-tight">{formData.permissions.length} Selected</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {permissions.map(perm => (
-                      <div
-                        key={perm.name}
-                        onClick={() => this.togglePermission(perm.name)}
-                        className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 flex items-center justify-between group ${
-                          formData.permissions.includes(perm.name)
-                            ? (theme === 'dark' ? 'bg-indigo-500/10 border-indigo-500/40' : 'bg-indigo-50 border-indigo-200')
-                            : (theme === 'dark' ? 'bg-slate-950 border-slate-800 hover:border-slate-700' : 'bg-slate-50/50 border-slate-100 hover:border-slate-200')
-                        }`}
-                      >
-                        <div className="flex flex-col gap-0.5">
-                          <span className={`text-xs font-bold tracking-tight ${formData.permissions.includes(perm.name) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
-                            {perm.name}
-                          </span>
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight opacity-60">
-                            {perm.group || 'General'}
-                          </span>
-                        </div>
-                        <div className={`h-5 w-5 rounded-md border flex items-center justify-center transition-all ${
-                           formData.permissions.includes(perm.name)
-                             ? 'bg-indigo-500 border-indigo-500 text-white'
-                             : 'bg-transparent border-slate-200 dark:border-slate-800'
-                        }`}>
-                           {formData.permissions.includes(perm.name) && <FrameworkIcons.Check size={12} strokeWidth={4} />}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
+              <EditRolePermissionsCard
+                theme={theme}
+                permissions={permissions}
+                selected={formData.permissions}
+                onToggle={(perm) => this.togglePermission(perm)}
+              />
             </div>
 
-            <div className="lg:col-span-4 space-y-8">
-              <Card title="Summary">
-                <div className="space-y-6">
-                  <div className="bg-indigo-500/5 rounded-2.5xl p-6 border border-indigo-500/10 space-y-4">
-                     <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Role Type</span>
-                        <Badge variant="amber">{formData.type}</Badge>
-                     </div>
-                     <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Selected Scope</span>
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                          {formData.permissions.length === 0 ? 'No permissions' : `${formData.permissions.length} actions selected`}
-                        </span>
-                     </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-11 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-lg shadow-indigo-600/10 text-white"
-                    isLoading={loading}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full h-11 font-bold text-slate-400"
-                    onClick={() => this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </Card>
-
-              <Card title="Security Note">
-                 <p className="text-xs text-slate-500 font-bold leading-relaxed italic">
-                   Changes to role permissions are applied immediately. Users currently logged in with this role may need to refresh their session to see changes.
-                 </p>
-              </Card>
-            </div>
+            <EditRoleSummarySidebar
+              type={formData.type}
+              permissionCount={formData.permissions.length}
+              loading={loading}
+              onCancel={() => this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST)}
+            />
           </form>
         </div>
       </div>

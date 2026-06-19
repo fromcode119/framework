@@ -2,40 +2,8 @@
 
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
-
-interface Column<T> {
-  header: string;
-  accessor: keyof T | ((row: T) => React.ReactNode);
-  id: string;
-  sortable?: boolean;
-  className?: string;
-}
-
-interface DataTableProps<T> {
-  columns: Column<T>[];
-  data: T[];
-  loading?: boolean;
-  totalDocs?: number;
-  limit?: number;
-  page?: number;
-  onPageChange?: (page: number) => void;
-  onSort?: (sort: string) => void;
-  currentSort?: string;
-  onRowClick?: (row: T) => void;
-  actions?: (row: T) => React.ReactNode;
-  emptyMessage?: string;
-  selectable?: boolean;
-  selectedIds?: string[];
-  onSelectionChange?: (ids: string[]) => void;
-  expandedRowId?: string | null;
-  renderExpandedRow?: (row: T) => React.ReactNode;
-  /**
-   * When provided, rows are visually grouped: a full-width header row is emitted before each run of
-   * rows that share a group key. Callers must pass `data` already sorted by the same key so a group's
-   * rows are contiguous. Returns the group label for a row.
-   */
-  groupBy?: (row: T) => string;
-}
+import { DataTablePagination } from './data-table-pagination';
+import type { Column, DataTableProps } from './data-table.interfaces';
 
 /** Generic paginated, sortable, selectable data table. Pure presentational class. */
 export class DataTable<T extends { id: any }> extends React.Component<DataTableProps<T>> {
@@ -78,18 +46,6 @@ export class DataTable<T extends { id: any }> extends React.Component<DataTableP
     const totalColumns = columns.length + (actions ? 1 : 0) + (selectable ? 1 : 0);
     const groupCounts: Record<string, number> = {};
     if (groupBy) for (const row of data) { const k = groupBy(row) || '—'; groupCounts[k] = (groupCounts[k] || 0) + 1; }
-
-    const totalPages = Math.ceil(totalDocs / limit);
-    const startRecord = totalDocs > 0 ? ((page - 1) * limit) + 1 : 0;
-    const endRecord = totalDocs > 0 ? Math.min(page * limit, totalDocs) : 0;
-    const maxPageButtons = 5;
-    const windowStart = totalPages <= maxPageButtons
-      ? 1
-      : Math.min(Math.max(1, page - Math.floor(maxPageButtons / 2)), totalPages - maxPageButtons + 1);
-    const windowEnd = totalPages <= maxPageButtons
-      ? totalPages
-      : Math.min(totalPages, windowStart + maxPageButtons - 1);
-    const visiblePages = Array.from({ length: Math.max(0, windowEnd - windowStart + 1) }, (_, i) => windowStart + i);
 
     return (
       <div className={`flex flex-col w-full h-full transition-all duration-300 ${loading ? 'opacity-60 pointer-events-none' : ''}`}>
@@ -212,41 +168,12 @@ export class DataTable<T extends { id: any }> extends React.Component<DataTableP
           </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-8 py-5 border-t transition-all bg-slate-50/50 border-slate-100 dark:bg-slate-950/40 dark:border-slate-800/50">
-            <p className="text-[12px] font-semibold text-slate-400 tracking-wide">
-              Showing <span className="text-slate-900 dark:text-white">{startRecord}-{endRecord}</span> of <span className="text-slate-900 dark:text-white">{totalDocs}</span> records
-            </p>
-            <div className="flex items-center gap-2">
-              <button disabled={page === 1} onClick={() => onPageChange?.(page - 1)} className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20">
-                <FrameworkIcons.Left size={16} />
-              </button>
-              <div className="flex items-center gap-1">
-                {windowStart > 1 && (
-                  <>
-                    <button onClick={() => onPageChange?.(1)} className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent">1</button>
-                    {windowStart > 2 && <span className="text-slate-400 mx-1">...</span>}
-                  </>
-                )}
-                {visiblePages.map((pageNum) => (
-                  <button key={pageNum} onClick={() => onPageChange?.(pageNum)}
-                    className={`h-9 w-9 text-[11px] font-bold rounded-lg transition-all ${page === pageNum ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent'}`}>
-                    {pageNum}
-                  </button>
-                ))}
-                {windowEnd < totalPages && (
-                  <>
-                    {windowEnd < totalPages - 1 && <span className="text-slate-400 mx-1">...</span>}
-                    <button onClick={() => onPageChange?.(totalPages)} className="h-9 w-9 text-[11px] font-bold rounded-lg transition-all bg-white text-slate-500 hover:text-indigo-600 border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:border-transparent">{totalPages}</button>
-                  </>
-                )}
-              </div>
-              <button disabled={page === totalPages} onClick={() => onPageChange?.(page + 1)} className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20">
-                <FrameworkIcons.Right size={16} />
-              </button>
-            </div>
-          </div>
-        )}
+        <DataTablePagination
+          totalDocs={totalDocs}
+          limit={limit}
+          page={page}
+          onPageChange={onPageChange}
+        />
       </div>
     );
   }

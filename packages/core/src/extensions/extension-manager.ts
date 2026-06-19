@@ -1,16 +1,14 @@
 import { Logger } from '../logging';
-import { SystemConstants } from '../constants';
 import { IDatabaseManager } from '@fromcode119/database';
 import * as path from 'path';
 import * as fs from 'fs';
-import { CapabilityRegistry } from '../capabilities';
 import {
-  CoreExtensionManifest,
   LoadedCoreExtension,
   CoreExtensionModule,
-  CoreExtensionContext,
-  CoreExtensionState,
 } from './types';
+import { CoreExtensionStateStore } from './core-extension-state-store';
+import { CoreExtensionContextFactory } from './core-extension-context-factory';
+import { CoreExtensionDiscoveryService } from './core-extension-discovery-service';
 
 /**
  * CoreExtensionManager
@@ -20,14 +18,16 @@ import {
  */
 export class CoreExtensionManager {
   private extensions: Map<string, LoadedCoreExtension> = new Map();
-  private extensionStates: Map<string, CoreExtensionState> = new Map();
+  private stateStore: CoreExtensionStateStore;
+  private contextFactory: CoreExtensionContextFactory;
+  private discoveryService: CoreExtensionDiscoveryService;
   private logger: Logger;
   private db: IDatabaseManager;
   private packagesRoot: string;
   private capabilities: Set<string> = new Set();
   private registeredApiRoutes: Map<string, any> = new Map();
   private registeredAdminSlots: Map<string, Array<{ slot: string; component: any; priority: number; extensionSlug: string }>> = new Map(); // Store admin UI slots by slot name
-  
+
   // Framework services that extensions can use
   private services: {
     integrations?: any;
@@ -43,6 +43,16 @@ export class CoreExtensionManager {
     this.db = db;
     this.packagesRoot = packagesRoot;
     this.logger = logger || new Logger({ namespace: 'core-extensions' });
+    this.stateStore = new CoreExtensionStateStore(this.db, this.logger);
+    this.contextFactory = new CoreExtensionContextFactory(
+      this.db,
+      this.logger,
+      this.capabilities,
+      this.registeredApiRoutes,
+      this.registeredAdminSlots,
+      () => this.services,
+    );
+    this.discoveryService = new CoreExtensionDiscoveryService(this.logger);
   }
 
   /**
@@ -61,61 +71,16 @@ export class CoreExtensionManager {
    */
   public async discover(): Promise<void> {
     this.logger.info('Discovering core extensions...');
-    
+
     try {
       // Load saved states from database
-      await this.loadStates();
-      
-      // Verify packages directory exists, if not try to fix it
-      if (!fs.existsSync(this.packagesRoot)) {
-        this.logger.warn(`Packages directory not found at ${this.packagesRoot}, attempting to locate...`);
-        // Re-import ProjectPaths to get fresh path resolution
-        const { ProjectPaths } = await import('../config/paths');
-        this.packagesRoot = ProjectPaths.getPackagesDir();
-      }
-      
-      // If still not found, log a warning and exit discovery gracefully
-      if (!fs.existsSync(this.packagesRoot)) {
-        this.logger.warn(`Packages directory not found at ${this.packagesRoot}. Skipping core extension discovery.`);
-        this.logger.info(`Discovered 0 core extensions`);
-        return;
-      }
+      await this.stateStore.loadStates();
 
-      this.logger.info(`Using packages directory: ${this.packagesRoot}`);
-
-      // Scan packages directory for manifest.json files
-      const packageDirs = fs.readdirSync(this.packagesRoot, { withFileTypes: true });
-      
-      for (const dir of packageDirs) {
-        if (!dir.isDirectory()) continue;
-        
-        const manifestPath = path.join(this.packagesRoot, dir.name, 'manifest.json');
-        
-        if (!fs.existsSync(manifestPath)) continue;
-        
-        try {
-          const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
-          const manifest: CoreExtensionManifest = JSON.parse(manifestContent);
-          
-          // Only process core extensions (skip plugins, themes, etc.)
-          if (manifest.type !== 'core-extension') continue;
-          
-          const extension: LoadedCoreExtension = {
-            manifest,
-            path: path.join(this.packagesRoot, dir.name),
-            state: 'discovered',
-          };
-          
-          this.extensions.set(manifest.slug, extension);
-          this.logger.info(`Discovered core extension: ${manifest.slug}`);
-          
-        } catch (error) {
-          this.logger.error(`Failed to load manifest for ${dir.name}:`, error);
-        }
+      const { packagesRoot, extensions } = await this.discoveryService.discover(this.packagesRoot);
+      this.packagesRoot = packagesRoot;
+      for (const [slug, extension] of extensions) {
+        this.extensions.set(slug, extension);
       }
-      
-      this.logger.info(`Discovered ${this.extensions.size} core extensions`);
-      
     } catch (error) {
       this.logger.error('Failed to discover core extensions:', error);
       throw error;
@@ -129,8 +94,8 @@ export class CoreExtensionManager {
     this.logger.info('Initializing core extensions...');
     
     for (const [slug, extension] of this.extensions) {
-      const state = this.extensionStates.get(slug);
-      const isEnabled = state?.enabled ?? this.isEnabledByDefault(slug);
+      const state = this.stateStore.get(slug);
+      const isEnabled = state?.enabled ?? this.stateStore.isEnabledByDefault(slug);
       
       if (isEnabled) {
         await this.initializeExtension(slug);
@@ -179,8 +144,8 @@ export class CoreExtensionManager {
       extension.state = 'loaded';
       
       // Create extension context
-      const context = this.createExtensionContext(extension);
-      
+      const context = this.contextFactory.create(extension);
+
       // Call onInit if it exists
       if (module.onInit) {
         await module.onInit(context);
@@ -213,8 +178,8 @@ export class CoreExtensionManager {
     }
     
     // Update state
-    await this.updateExtensionState(slug, { enabled: true });
-    
+    await this.stateStore.updateExtensionState(slug, { enabled: true });
+
     // Initialize if not already
     if (extension.state !== 'active') {
       await this.initializeExtension(slug);
@@ -234,15 +199,15 @@ export class CoreExtensionManager {
     try {
       // Call onDisable if it exists
       if (extension.module?.onDisable) {
-        const context = this.createExtensionContext(extension);
+        const context = this.contextFactory.create(extension);
         await extension.module.onDisable(context);
       }
-      
+
       extension.state = 'disabled';
       this.registeredApiRoutes.delete(slug);
-      
+
       // Update state
-      await this.updateExtensionState(slug, { enabled: false });
+      await this.stateStore.updateExtensionState(slug, { enabled: false });
       
       this.logger.info(`Extension ${slug} disabled`);
       
@@ -312,146 +277,6 @@ export class CoreExtensionManager {
     return slots
       .map(({ component, priority, extensionSlug }) => ({ component, priority, extensionSlug }))
       .sort((a, b) => b.priority - a.priority); // Higher priority first
-  }
-
-  /**
-   * Create extension context with framework services
-   */
-  private createExtensionContext(extension: LoadedCoreExtension): CoreExtensionContext {
-    const logger = this.logger.child(extension.manifest.slug);
-    const extensionCapabilities: string[] = [];
-    
-    return {
-      extension,
-      services: {
-        logger,
-        db: this.db,
-        integrations: this.services.integrations,
-        hooks: this.services.hooks,
-        plugins: this.services.plugins,
-      },
-      registerCapability: (capability: string) => {
-        this.capabilities.add(capability);
-        extensionCapabilities.push(capability);
-        // Also register in global capability registry
-        CapabilityRegistry.getInstance().register(capability, {
-          provider: extension.manifest.slug,
-          version: extension.manifest.version,
-          description: extension.manifest.description,
-        });
-        logger.info(`Registered capability: ${capability}`);
-      },
-      unregisterCapability: (capability: string) => {
-        this.capabilities.delete(capability);
-        const index = extensionCapabilities.indexOf(capability);
-        if (index > -1) {
-          extensionCapabilities.splice(index, 1);
-        }
-        // Also unregister from global capability registry
-        CapabilityRegistry.getInstance().unregister(capability);
-        logger.info(`Unregistered capability: ${capability}`);
-      },
-      getRegisteredCapabilities: () => [...extensionCapabilities],
-      registerApiRoute: (routeKey: string, factory: any) => {
-        const normalizedKey = String(routeKey || '').trim() || extension.manifest.slug;
-        this.registeredApiRoutes.set(normalizedKey, factory);
-        logger.info(`Registered API route '${normalizedKey}' for extension: ${extension.manifest.slug}`);
-      },
-      registerAdminSlot: (slot: string, component: any, priority: number = 10) => {
-        if (!this.registeredAdminSlots.has(slot)) {
-          this.registeredAdminSlots.set(slot, []);
-        }
-        this.registeredAdminSlots.get(slot)!.push({
-          slot,
-          component,
-          priority,
-          extensionSlug: extension.manifest.slug,
-        });
-        logger.info(`Registered admin slot '${slot}' with priority ${priority} for extension: ${extension.manifest.slug}`);
-      },
-    };
-  }
-
-  /**
-   * Load extension states from database
-   */
-  private async loadStates(): Promise<void> {
-    try {
-      const rows = await this.db.find(
-        SystemConstants.TABLE.META,
-        { where: { group: 'core-extension-state' } }
-      );
-      
-      for (const row of rows) {
-        try {
-          const state: CoreExtensionState = JSON.parse(row.value);
-          this.extensionStates.set(state.slug, state);
-        } catch (error) {
-          this.logger.error(`Failed to parse state for ${row.key}:`, error);
-        }
-      }
-      
-    } catch (error) {
-      // Table might not exist yet, that's okay
-      this.logger.warn('Could not load extension states:', error);
-    }
-  }
-
-  /**
-   * Update extension state in database
-   */
-  private async updateExtensionState(
-    slug: string,
-    updates: Partial<CoreExtensionState>
-  ): Promise<void> {
-    const currentState = this.extensionStates.get(slug) || {
-      slug,
-      enabled: false,
-    };
-    
-    const newState: CoreExtensionState = {
-      ...currentState,
-      ...updates,
-      updatedAt: new Date(),
-    };
-    
-    this.extensionStates.set(slug, newState);
-    
-    try {
-      await this.db.upsert(
-        SystemConstants.TABLE.META,
-        {
-          group: 'core-extension-state',
-          key: `extension.${slug}`,
-          value: JSON.stringify(newState),
-        },
-        {
-          target: ['group', 'key'],
-          set: {
-            value: JSON.stringify(newState),
-          },
-        }
-      );
-    } catch (error) {
-      this.logger.error(`Failed to save state for ${slug}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Check if extension should be enabled by default
-   */
-  private isEnabledByDefault(slug: string): boolean {
-    // Check environment variable first
-    const envVar = `${slug.toUpperCase().replace(/-/g, '_')}_ENABLED`;
-    const envValue = process.env[envVar];
-    
-    if (envValue !== undefined) {
-      return envValue === 'true' || envValue === '1';
-    }
-    
-    // Default to true for backwards compatibility during migration
-    return true;
   }
 
   /**

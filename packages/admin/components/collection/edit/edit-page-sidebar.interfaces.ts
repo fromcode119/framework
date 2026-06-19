@@ -1,0 +1,30 @@
+export interface EditPageSidebarProps {
+  slug: string;
+  id: string;
+  isNew: boolean;
+  theme: string;
+  collection: any;
+  resolvedSlug: string;
+  formData: Record<string, any>;
+  setFormData: (data: any) => void;
+  handleSubmit: any;
+  saving: boolean;
+  pluginSettings: Record<string, any>;
+  fieldErrors: Record<string, any>;
+  handleInputChange: (name: string, value: any) => void;
+  handlePatch: (partial: Record<string, any>) => void;
+  handleReadOnlyOverrideRequest: (target: { name: string; label: string }) => void;
+  readOnlyOverrideFields: Record<string, true>;
+  showPermalink: boolean;
+  hasDisablePermalink: boolean;
+  hasSidebarFields: boolean;
+  sidebarFieldSections: Array<{ title: string; fields: any[] }>;
+  hasBuiltInSidebarContent: boolean;
+  revisions: any[];
+  revisionsLoading: boolean;
+  activeVersionId: number | null;
+  setSelectedRevision: (rev: any) => void;
+  setActiveVersionId: (id: number | null) => void;
+  loadMoreRevisions: () => void;
+  hasMoreRevisions: boolean;
+}

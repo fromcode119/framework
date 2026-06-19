@@ -15,6 +15,17 @@ const IGNORE_PATH_PATTERNS = [
   /\/bundle\.js$/,
   /\/index\.js$/,
   /\/seed-old\.ts$/,
+  // Built artifacts — not source code:
+  // - themes/<slug>/ui/** holds the Vite build output (hashed chunks like
+  //   vendor-chakra-XXXXXXXX.js); the corresponding source lives in src/.
+  // - frontend.js is an esbuild bundle output by convention (like bundle.js).
+  /\/themes\/[^/]+\/ui\//,
+  /\/frontend\.js$/,
+  // build-server is privileged build infrastructure: it packs OTHER plugins, so
+  // framework package names appear in its esbuild `external` arrays as data, and
+  // it resolves core's IntegrityService to stamp checksums. It is not a normal
+  // plugin and is exempt from the SDK boundary.
+  /\/plugins\/build-server\//,
 ];
 
 const IMPORT_PATTERN = /@fromcode119\/(?!sdk(?:\/|['"\s]|$))[A-Za-z0-9._/-]+/g;
@@ -138,12 +149,24 @@ function stripCommentsFromLine(line, state) {
   };
 }
 
-function collectLineViolations(filePath, lineText, lineNumber) {
+function collectLineViolations(filePath, lineText, lineNumber, ownPackageName) {
   const violations = [];
   const isPluginUiFile = PLUGIN_UI_FILE_PATTERN.test(filePath);
   const isThemeSourceFile = THEME_SOURCE_FILE_PATTERN.test(filePath);
 
   for (const match of lineText.matchAll(IMPORT_PATTERN)) {
+    // A package.json naming ITSELF with a scoped name is not a boundary
+    // violation — only references to other framework packages are.
+    if (ownPackageName && match[0] === ownPackageName) {
+      continue;
+    }
+
+    // esbuild `--external:@fromcode119/...` flags in build scripts EXCLUDE the
+    // package from the bundle — that is the boundary being enforced, not broken.
+    if (lineText.slice(0, match.index).endsWith('--external:')) {
+      continue;
+    }
+
     violations.push({
       filePath,
       lineNumber,
@@ -184,10 +207,24 @@ function collectLineViolations(filePath, lineText, lineNumber) {
   return violations;
 }
 
+function readOwnPackageName(filePath, content) {
+  if (!JSON_FILE_PATTERN.test(filePath)) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(content);
+    return typeof parsed?.name === 'string' ? parsed.name : null;
+  } catch {
+    return null;
+  }
+}
+
 function collectViolations(filePath, content) {
   const violations = [];
   const lineState = createLineState();
   const lines = content.split('\n');
+  const ownPackageName = readOwnPackageName(filePath, content);
 
   lines.forEach((rawLine, index) => {
     const lineNumber = index + 1;
@@ -199,7 +236,7 @@ function collectViolations(filePath, content) {
       return;
     }
 
-    violations.push(...collectLineViolations(filePath, strippedLine, lineNumber));
+    violations.push(...collectLineViolations(filePath, strippedLine, lineNumber, ownPackageName));
   });
 
   return violations;

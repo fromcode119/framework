@@ -26,6 +26,13 @@ export * from 'lucide-react';
 export { Slot } from './slot';
 export { AccountShell } from './account-shell';
 export { Override } from './override';
+export { RecordsHub } from './records-hub';
+export type {
+  RecordsHubItem,
+  RecordsHubGroup,
+  RecordsHubResult,
+  RecordsHubProps,
+} from './records-hub.interfaces';
 export { RootFramework } from './root-framework';
 export { SystemShortcodes } from './system-shortcodes';
 export { CollectionQueryUtils } from './collection-queries';

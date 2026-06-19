@@ -5,6 +5,7 @@
  */
 
 import type { ToolMetadata, ToolWithMetadata, ToolRanking, TaskContext } from './intelligent-tool-selector.interfaces';
+import { ToolRankingScorer } from './tool-ranking-scorer';
 
 export class IntelligentToolSelector {
   private toolMetadata: Map<string, ToolMetadata> = new Map();
@@ -22,7 +23,7 @@ export class IntelligentToolSelector {
         this.toolMetadata.set(tool.tool, tool.metadata);
       } else {
         // Create default metadata for tools without explicit metadata
-        this.toolMetadata.set(tool.tool, this.createDefaultMetadata(tool.tool, tool.description || ''));
+        this.toolMetadata.set(tool.tool, ToolRankingScorer.createDefaultMetadata(tool.tool, tool.description || ''));
       }
     }
   }
@@ -37,10 +38,10 @@ export class IntelligentToolSelector {
       const metadata = this.toolMetadata.get(tool.tool);
       if (!metadata) continue;
 
-      const relevance = this.calculateRelevance(task, tool, metadata);
+      const relevance = ToolRankingScorer.calculateRelevance(task, tool, metadata);
       const reliability = this.calculateReliability(tool.tool, metadata);
-      const costFitness = this.evaluateCostFitness(task.constraints?.maxCost, metadata.costEstimate);
-      const latencyFitness = this.evaluateLatencyFitness(task.constraints?.maxLatency, metadata.latencyProfile);
+      const costFitness = ToolRankingScorer.evaluateCostFitness(task.constraints?.maxCost, metadata.costEstimate);
+      const latencyFitness = ToolRankingScorer.evaluateLatencyFitness(task.constraints?.maxLatency, metadata.latencyProfile);
 
       const score =
         relevance * 0.4 + // Relevance is most important
@@ -48,7 +49,7 @@ export class IntelligentToolSelector {
         costFitness * 0.15 + // Cost efficiency
         latencyFitness * 0.15; // Latency budget
 
-      const reasoning = this.generateRankingRationale(task, tool, metadata, {
+      const reasoning = ToolRankingScorer.generateRankingRationale(task, tool, metadata, {
         relevance,
         reliability,
         costFitness,
@@ -218,105 +219,8 @@ export class IntelligentToolSelector {
 
   // ==================== Private Methods ====================
 
-  private calculateRelevance(task: TaskContext, tool: ToolWithMetadata, metadata: ToolMetadata): number {
-    let score = 0;
-    const taskWords = this.tokenize(task.taskDescription);
-    const toolWords = this.tokenize(tool.description || '');
-
-    // Word matching
-    const matches = taskWords.filter((w) => toolWords.includes(w)).length;
-    score += (matches / Math.max(taskWords.length, 1)) * 0.5;
-
-    // Capability matching
-    const relevantCapabilities = metadata.capabilities.filter((c) =>
-      taskWords.some((w) => c.toLowerCase().includes(w) || w.includes(c.toLowerCase()))
-    ).length;
-    score += (relevantCapabilities / Math.max(metadata.capabilities.length, 1)) * 0.5;
-
-    return Math.min(1, score);
-  }
-
   private calculateReliability(tool: string, metadata: ToolMetadata): number {
     const stats = this.getToolStats(tool);
     return stats.successRate;
-  }
-
-  private evaluateCostFitness(
-    maxCost: 'cheap' | 'moderate' | 'expensive' | undefined,
-    toolCost: 'cheap' | 'moderate' | 'expensive'
-  ): number {
-    if (!maxCost) return 1; // No constraint
-
-    const costOrder = { cheap: 1, moderate: 2, expensive: 3 };
-    const maxCostLevel = costOrder[maxCost];
-    const toolCostLevel = costOrder[toolCost];
-
-    return toolCostLevel <= maxCostLevel ? 1 : 0.2;
-  }
-
-  private evaluateLatencyFitness(
-    maxLatency: 'fast' | 'medium' | 'slow' | undefined,
-    toolLatency: 'fast' | 'medium' | 'slow'
-  ): number {
-    if (!maxLatency) return 1;
-
-    const latencyOrder = { fast: 1, medium: 2, slow: 3 };
-    const maxLatencyLevel = latencyOrder[maxLatency];
-    const toolLatencyLevel = latencyOrder[toolLatency];
-
-    return toolLatencyLevel <= maxLatencyLevel ? 1 : 0.5;
-  }
-
-  private generateRankingRationale(
-    task: TaskContext,
-    tool: ToolWithMetadata,
-    metadata: ToolMetadata,
-    scores: { relevance: number; reliability: number; costFitness: number; latencyFitness: number }
-  ): string {
-    const parts: string[] = [];
-
-    if (scores.relevance > 0.7) {
-      parts.push('highly relevant to task');
-    } else if (scores.relevance > 0.4) {
-      parts.push('partially relevant');
-    }
-
-    if (scores.reliability > 0.8) {
-      parts.push('very reliable');
-    } else if (scores.reliability < 0.5) {
-      parts.push('has history of failures');
-    }
-
-    if (scores.costFitness === 1) {
-      parts.push(`${metadata.costEstimate} cost fits budget`);
-    } else if (scores.costFitness < 1) {
-      parts.push('exceeds cost constraints');
-    }
-
-    if (scores.latencyFitness < 1) {
-      parts.push('may exceed latency budget');
-    }
-
-    return parts.join('; ') || 'Tool matches task criteria';
-  }
-
-  private tokenize(text: string): string[] {
-    return text
-      .toLowerCase()
-      .match(/\b\w+\b/g) || [];
-  }
-
-  private createDefaultMetadata(toolName: string, description: string): ToolMetadata {
-    return {
-      name: toolName,
-      capabilities: [toolName],
-      prerequisites: [],
-      costEstimate: 'moderate',
-      successRate: 0.7,
-      similarTools: [],
-      category: 'generic',
-      latencyProfile: 'medium',
-      errorHandling: 'retry',
-    };
   }
 }

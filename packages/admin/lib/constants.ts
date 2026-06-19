@@ -126,6 +126,7 @@ export class AdminConstants {
     PERSON: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID, { id })),
     PERSON_SAVE: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID, { id })),
     PERSON_CREATE_USER: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_CREATE_USER, { id })),
+    PERSON_RECORDS: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID_RECORDS, { id })),
     METADATA: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PLUGINS),
     INTEGRATIONS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS),
     INTEGRATION: (type: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_TYPE, { type }),

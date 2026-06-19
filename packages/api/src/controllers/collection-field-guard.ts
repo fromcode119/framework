@@ -49,7 +49,10 @@ export class CollectionFieldGuard {
       return trimmed;
     }
     if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-    if (typeof value === 'boolean') return value;
+    // Normalize booleans to 0/1 so a form value (`true`) compares equal to the SQLite-stored value
+    // (`1`). Without this, saving a record with an unchanged read-only BOOLEAN field (e.g. consent flags)
+    // falsely trips the "requires password override confirmation" guard on every save.
+    if (typeof value === 'boolean') return value ? 1 : 0;
     if (Array.isArray(value) || typeof value === 'object') return JSON.stringify(value);
     return value;
   }

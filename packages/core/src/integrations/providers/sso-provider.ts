@@ -82,7 +82,8 @@ const commonOauthFields = [
   }
 ];
 
-export const SsoIntegrationDefinition: IntegrationTypeDefinition<any> = {
+export class SsoIntegrationDefinition {
+  static readonly definition: IntegrationTypeDefinition<any> = {
   key: 'sso',
   label: 'Federated Login (SSO)',
   description: 'OAuth/OpenID provider credentials used for customer/admin single sign-on.',
@@ -149,3 +150,5 @@ export const SsoIntegrationDefinition: IntegrationTypeDefinition<any> = {
     }
   ]
 };
+
+}

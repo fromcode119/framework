@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { AdminComponent } from '@/components/admin-component';
-import { adminExtensionLoaders } from '@/lib/admin-extensions';
-import type { AdminExtensionBridge, AdminExtensionModule } from '@/lib/admin-extensions';
+import { AdminExtensions } from '@/lib/admin-extensions';
+import type { AdminExtensionBridge, AdminExtensionModule } from '@/lib/admin-extensions.types';
 
 type AdminExtensionDynamicModule = AdminExtensionModule & {
   default?: AdminExtensionModule;
@@ -34,7 +34,7 @@ export default class AdminExtensionLoader extends AdminComponent {
       registerMenuItem: plugins.registerMenuItem,
     };
 
-    for (const load of adminExtensionLoaders) {
+    for (const load of AdminExtensions.loaders) {
       try {
         const module = (await load()) as AdminExtensionDynamicModule;
         if (token !== this.loadToken) return;

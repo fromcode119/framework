@@ -1,6 +1,8 @@
 import path from 'path';
 import type { StorageDriver } from './storage-factory.interfaces';
 import { MediaImageOptimizer } from './media-image-optimizer';
+import { MediaMagicByteValidator } from './media-magic-byte-validator';
+import { MediaSvgSanitizer } from './media-svg-sanitizer';
 import type { MediaWebPConversionOptions } from './media-image-optimizer.interfaces';
 
 export class MediaManager {
@@ -28,6 +30,19 @@ export class MediaManager {
     const mimeType = mimeMap[ext] || 'application/octet-stream';
     let width: number | undefined;
     let height: number | undefined;
+
+    // Reject raster uploads whose content does not match the extension-implied
+    // format (magic-byte sniffing) — the MIME type above is derived from the
+    // extension alone, so without this check arbitrary content could be stored
+    // and served as an image.
+    if (MediaMagicByteValidator.canValidate(ext) && !MediaMagicByteValidator.matchesExtension(ext, file)) {
+      throw new Error(`Rejected upload "${filename}": file content does not match the ${ext} image format`);
+    }
+
+    // SVG is an active document format (stored XSS vector) — sanitize before storage.
+    if (ext === '.svg') {
+      payload = Buffer.from(MediaSvgSanitizer.sanitize(file.toString('utf8')), 'utf8');
+    }
 
     if (['.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
         const optimized = await MediaImageOptimizer.optimizeBuffer(file, filename);

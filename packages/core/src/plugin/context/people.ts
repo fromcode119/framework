@@ -3,6 +3,8 @@ import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { SystemConstants } from '../../constants';
 import { PersonCatalogService } from '../services/person-catalog-service';
+import { PeopleAddressService } from '../services/people-address-service';
+import type { PeopleAddressRef } from '../services/people-address-service.interfaces';
 
 export class PeopleContextProxy {
 
@@ -12,6 +14,7 @@ export class PeopleContextProxy {
   ) {
     const db = manager.db as any;
     const catalogs = new PersonCatalogService(db);
+    const addresses = new PeopleAddressService(db);
 
     async function match(input: { userId?: any; email?: string; phone?: string }) {
       if (input?.userId != null && input.userId !== '') {
@@ -84,6 +87,16 @@ export class PeopleContextProxy {
       catalogs: {
         register: (kind: string, entry: { key: string; label: string; pluginSlug?: string }) => catalogs.register(kind, entry),
         list: (kind: string) => catalogs.list(kind)
+      },
+
+      // Reusable address book on the shared `people_addresses` table. Plugins delegate their account
+      // address book here instead of owning a parallel store. `ref` resolves the owning person from
+      // { personId } | { userId } | { email }; upsert creates a minimal person when none exists yet.
+      addresses: {
+        list: (ref: PeopleAddressRef) => addresses.list(ref),
+        upsert: (ref: PeopleAddressRef, addr: Record<string, any>) => addresses.upsert(ref, addr),
+        delete: (addressId: any) => addresses.delete(addressId),
+        setDefault: (ref: PeopleAddressRef, addressId: any) => addresses.setDefault(ref, addressId)
       }
     };
   }

@@ -158,8 +158,13 @@ export class SystemRouter extends BaseRouter {
     // People management (unified identity model): list people, promote a person to a login account.
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE, this.auth.requirePermission('users:view'),
       this.bind(this.controller.getPeople.bind(this.controller)));
+    // Static `/records` must be registered before `/:id` so it is not captured as an id.
+    this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_RECORDS, this.auth.requirePermission('users:view'),
+      this.bind(this.controller.getRecordsByRef.bind(this.controller)));
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:view'),
       this.bind(this.controller.getPerson.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_RECORDS, this.auth.requirePermission('users:view'),
+      this.bind(this.controller.getPersonRecords.bind(this.controller)));
     this.patch(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:manage'),
       this.bind(this.controller.savePerson.bind(this.controller)));
     this.post(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_CREATE_USER, this.auth.requirePermission('users:manage'),

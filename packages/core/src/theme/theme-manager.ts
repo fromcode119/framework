@@ -11,6 +11,8 @@ import { ThemeInstallerService } from './theme-installer-service';
 import { ThemeScaffoldService } from './theme-scaffold-service';
 import { ThemeDefaultPageContractOverrideLoader } from './theme-default-page-contract-override-loader';
 import { PluginDefaultPageMaterializationRuntimeService } from '../services/default-page-contract/plugin-default-page-materialization-runtime-service';
+import { ThemeConfigService } from './theme-config-service';
+import { ThemeUpdateService } from './theme-update-service';
 import type { ThemeDefaultPageContractOverride } from '../types';
 
 export class ThemeManager {
@@ -23,6 +25,8 @@ export class ThemeManager {
   private installer: ThemeInstallerService;
   private scaffolder: ThemeScaffoldService;
   private overrideLoader: ThemeDefaultPageContractOverrideLoader;
+  private configService: ThemeConfigService;
+  private updateService: ThemeUpdateService;
 
   constructor(private db: any, private pluginManager?: any) {
     this.themesRoot = ProjectPaths.getThemesDir();
@@ -45,32 +49,12 @@ export class ThemeManager {
       (slug) => this.activateTheme(slug),
     );
     this.overrideLoader = new ThemeDefaultPageContractOverrideLoader();
+    this.configService = new ThemeConfigService(db, this.themes);
+    this.updateService = new ThemeUpdateService(this.themes, this.client, this.logger);
   }
 
   async checkForUpdates(slug: string): Promise<{ available: boolean; currentVersion: string; latestVersion?: string; updateUrl?: string }> {
-    const theme = this.themes.get(slug);
-    if (!theme) throw new Error(`Theme "${slug}" not found.`);
-    if ((theme as any).updateUrl) {
-      try {
-        const response = await fetch((theme as any).updateUrl.replace('.zip', '.json'));
-        if (response.ok) {
-          const data = await response.json();
-          if (data.version && data.version !== theme.version) {
-            return { available: true, currentVersion: theme.version, latestVersion: data.version, updateUrl: data.downloadUrl || (theme as any).updateUrl };
-          }
-        }
-      } catch (e) {
-        this.logger.warn(`Failed to check external update URL for ${slug}: ${(e as Error).message}`);
-      }
-    }
-    try {
-      const marketplaceThemes = await this.getMarketplaceThemes();
-      const pkg = marketplaceThemes.find((t: any) => t.slug === slug);
-      if (pkg && pkg.version !== theme.version) {
-        return { available: true, currentVersion: theme.version, latestVersion: pkg.version, updateUrl: pkg.downloadUrl };
-      }
-    } catch (e) {}
-    return { available: false, currentVersion: theme.version };
+    return this.updateService.checkForUpdates(slug);
   }
 
   async init() {
@@ -86,14 +70,7 @@ export class ThemeManager {
   }
 
   async getMarketplaceThemes() {
-    try {
-      this.logger.debug(`Fetching themes from marketplace...`);
-      const data = await this.client.fetch();
-      return data.themes || [];
-    } catch (err: any) {
-      this.logger.error(`Failed to fetch themes from marketplace: ${err.message}`);
-      return [];
-    }
+    return this.updateService.getMarketplaceThemes();
   }
 
   async installTheme(pkg: any): Promise<void> {
@@ -214,29 +191,11 @@ export class ThemeManager {
   }
 
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
-    if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
-    const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
-    if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
-    if (config.variables !== undefined) {
-      if (typeof config.variables !== 'object' || Array.isArray(config.variables)) {
-        throw new Error('Theme variables must be a plain object.');
-      }
-      for (const [key, value] of Object.entries(config.variables)) {
-        if (typeof value !== 'string') throw new Error(`Theme variable "${key}" must be a string.`);
-      }
-    }
-    const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: JSON.stringify(config), updated_at: new Date() });
-    } else {
-      const manifest = this.themes.get(slug)!;
-      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: 'inactive', config: JSON.stringify(config), created_at: new Date(), updated_at: new Date() });
-    }
+    return this.configService.saveThemeConfig(slug, config);
   }
 
   async getThemeConfig(slug: string): Promise<any> {
-    const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-    return row?.config || {};
+    return this.configService.getThemeConfig(slug);
   }
 
   async deleteTheme(slug: string) {
@@ -271,28 +230,7 @@ export class ThemeManager {
   }
 
   async getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
-    const theme = this.getActiveThemeManifest();
-    if (!theme) return { activeTheme: null, runtimeModules };
-    const config = await this.getThemeConfig(theme.slug);
-    const variables = { ...(theme.variables || {}), ...(config.variables || {}) };
-    const finalModules = { ...runtimeModules };
-    const themeAny = theme as any;
-    if (themeAny?.runtimeModules) Object.assign(finalModules, themeAny.runtimeModules);
-    return {
-      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', variables, ui: theme.ui, layouts: theme.layouts, slots: theme.slots || [], overrides: (theme as any).overrides || [] },
-      runtimeModules: finalModules,
-      cssVariables: this.generateCssVariables(variables),
-    };
-  }
-
-  private generateCssVariables(variables: Record<string, string>): string {
-    const lines = Object.entries(variables).map(([key, value]) => {
-      const cssKey = key.startsWith('--') ? key : `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-      // Strip chars that can break out of the CSS context or close the surrounding <style> tag
-      const safeValue = String(value).replace(/[<>"'\\]|\/\*/g, '');
-      return `${cssKey}: ${safeValue};`;
-    });
-    return `:root {\n  ${lines.join('\n  ')}\n}`;
+    return this.configService.getFrontendMetadata(this.getActiveThemeManifest(), runtimeModules);
   }
 
   async scaffoldTheme(input: {

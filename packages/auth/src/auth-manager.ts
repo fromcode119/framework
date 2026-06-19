@@ -92,7 +92,9 @@ export class AuthManager {
       const tokenCandidates: string[] = [];
       const sessionCookieNames = this.getSessionCookieNames(req);
 
-      const apiKey = req.headers?.['x-api-key'] || req.query?.api_key;
+      // API keys are accepted via the x-api-key header ONLY. Query-string keys
+      // leak into access logs, proxies, browser history and Referer headers.
+      const apiKey = req.headers?.['x-api-key'];
       if (apiKey && this.apiKeyValidator) {
         try {
           const user = await this.apiKeyValidator(String(apiKey));
@@ -260,15 +262,17 @@ export class AuthManager {
       }
 
       if (!this.permissionChecker) {
-        this.logger.error('Permission checker not configured - falling back to role check');
-        const isAdmin = req.user.roles.includes('admin');
-        if (!isAdmin) {
-          return res.status(403).json({
-            error: 'Forbidden: permission system not configured',
-            required: permission
-          });
-        }
-        return next();
+        // Fail closed: without a configured permission checker we cannot evaluate
+        // fine-grained permissions, so deny for everyone rather than silently
+        // degrading to a coarse role check.
+        this.logger.error(
+          `Permission checker not configured — denying request requiring "${Array.isArray(permission) ? permission.join(', ') : permission}". ` +
+          'Call setPermissionChecker() during auth bootstrap.'
+        );
+        return res.status(503).json({
+          error: 'Service Unavailable: permission system not configured',
+          required: permission
+        });
       }
 
       const permissions = Array.isArray(permission) ? permission : [permission];

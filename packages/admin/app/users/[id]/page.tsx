@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
@@ -10,6 +9,8 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import Link from 'next/link';
 import { AdminComponent } from '@/components/admin-component';
+import { UserProfileHeader } from './user-profile-header';
+import { UserProfileSidebar } from './user-profile-sidebar';
 import type { UserProfilePageProps, UserProfilePageState } from './user-profile-page.interfaces';
 
 export default class UserProfilePage extends AdminComponent<UserProfilePageProps, UserProfilePageState> {
@@ -72,50 +73,7 @@ export default class UserProfilePage extends AdminComponent<UserProfilePageProps
 
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-700">
-        {/* Profile Header */}
-        <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl ${
-          theme === 'dark' ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl' : 'bg-white/80 border-slate-100 shadow-sm'
-        }`}>
-          <div className="w-full px-6 lg:px-12 py-8 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link href={AdminConstants.ROUTES.USERS.LIST} className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-50 text-slate-400'}`}>
-                <FrameworkIcons.Left size={20} />
-              </Link>
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-indigo-500/20 ring-4 ring-indigo-500/10">
-                {initials}
-              </div>
-              <div>
-                <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  {user.firstName ? `${user.firstName} ${user.lastName}` : user.email.split('@')[0]}
-                </h1>
-                <div className="flex items-center gap-4 mt-1">
-                  <span className="text-[10px] font-bold tracking-tight text-slate-500">{user.email}</span>
-                  <Badge variant="blue" className="text-[8px] px-2 py-0 border-none font-bold">ID: {user.id}</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-               <Link href={AdminConstants.ROUTES.USERS.EDIT(id)}>
-                  <Button
-                    variant="secondary"
-                    className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] border-slate-200 dark:border-slate-800"
-                    icon={<FrameworkIcons.Settings size={16} />}
-                  >
-                    Edit Profile
-                  </Button>
-               </Link>
-               <Link href={AdminConstants.ROUTES.USERS.ROLES(id)}>
-                  <Button
-                    className="px-6 h-11 rounded-xl font-bold tracking-tight text-[11px] text-white"
-                    icon={<FrameworkIcons.Shield size={16} />}
-                  >
-                    Configure RBAC
-                  </Button>
-               </Link>
-            </div>
-          </div>
-        </div>
+        <UserProfileHeader theme={theme} user={user} userId={id} initials={initials} />
 
         <div className="flex-1 w-full px-6 lg:px-12 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -169,50 +127,7 @@ export default class UserProfilePage extends AdminComponent<UserProfilePageProps
               </Card>
             </div>
 
-            <div className="space-y-8">
-              <Card title="System Metadata">
-                <div className="space-y-6">
-                   <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Type</span>
-                      {user.roles && user.roles.includes('admin') ? (
-                         <Badge variant="purple" className="px-3 font-bold">Administrator</Badge>
-                      ) : (
-                         <Badge variant="amber" className="px-3 font-bold">Standard</Badge>
-                      )}
-                   </div>
-                   <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Account Status</span>
-                      <Badge variant={String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'danger' : 'success'} className="px-3 font-bold">
-                        {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
-                      </Badge>
-                   </div>
-                   <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Password Reset</span>
-                      <span className="text-xs font-bold text-slate-400">
-                        {user.forcePasswordReset ? 'Required on next login' : 'Not required'}
-                      </span>
-                   </div>
-                   <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Created</span>
-                      <span className="text-xs font-bold text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
-                   </div>
-                   <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Last Modified</span>
-                      <span className="text-xs font-bold text-slate-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}</span>
-                   </div>
-                </div>
-              </Card>
-
-              <div className={`p-8 rounded-[2rem] border overflow-hidden relative ${
-                theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'
-              }`}>
-                 <h4 className="text-[11px] font-bold tracking-tight text-indigo-500 mb-4 uppercase">Security Notice</h4>
-                 <p className="text-xs font-bold leading-relaxed text-slate-500">
-                   Modifying user roles or permissions takes effect immediately. Ensure you follow the principle of least privilege when assigning administrative roles.
-                 </p>
-                 <FrameworkIcons.Shield className="absolute -bottom-4 -right-4 text-indigo-500/10" size={100} />
-              </div>
-            </div>
+            <UserProfileSidebar user={user} theme={theme} />
           </div>
         </div>
       </div>

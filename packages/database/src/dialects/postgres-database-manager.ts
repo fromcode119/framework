@@ -1,17 +1,22 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { sql, eq, and, or, ne, isNull, isNotNull, inArray, count as drizzleCount, desc, asc, ilike } from 'drizzle-orm';
+import { sql, eq, and, or, ne, isNull, isNotNull, inArray, desc, asc, ilike } from 'drizzle-orm';
 import { pgTable, text } from 'drizzle-orm/pg-core';
 import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../types';
 import { BaseDialect } from './base-dialect';
 import { NamingStrategy } from '../naming-strategy';
+import { PostgresColumnNormalizer } from './postgres-column-normalizer';
+import { PostgresSchemaBuilder } from './postgres-schema-builder';
+import { PostgresReadOperations } from './postgres-read-operations';
 
 export class PostgresDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: Pool;
   public readonly drizzle: any;
   public readonly dialect = 'postgres' as const;
-  private jsonColumnsCache = new Map<string, Set<string>>();
-  
+  private normalizer: PostgresColumnNormalizer;
+  private schemaBuilder: PostgresSchemaBuilder;
+  private reader: PostgresReadOperations;
+
   // Standard operators
   public readonly like = ilike;
   public readonly eq = eq;
@@ -28,6 +33,9 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     super();
     this.pool = new Pool({ connectionString: connection });
     this.drizzle = drizzle(this.pool);
+    this.normalizer = new PostgresColumnNormalizer(this.pool);
+    this.schemaBuilder = new PostgresSchemaBuilder(this);
+    this.reader = new PostgresReadOperations(this.pool, this.drizzle, this.normalizer, this.like);
   }
 
   async connect(): Promise<void> {
@@ -40,6 +48,10 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       return this.pool.query(query);
     }
     return this.drizzle.execute(query);
+  }
+
+  invalidateTableCache(tableName: string): void {
+    this.normalizer.invalidateTableCache(tableName);
   }
 
   private getDynamicTable(tableName: string, columns: string[]): any {
@@ -55,95 +67,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   }
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
-    const { limit, offset, orderBy, where, columns, joins, search } = options;
-    
-    // If it's a string (dynamic table), use raw SQL to ensure all columns are retrieved
-    if (typeof tableOrName === 'string') {
-      const tableName = tableOrName;
-
-      // Guard against querying tables that haven't been created yet (first boot).
-      if (!(await this.tableExists(tableName))) {
-        return [];
-      }
-
-      const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
-
-      if (joins && joins.length > 0) {
-        const { sql: sqlStr, values } = this.buildJoinedSQL(tableName, joins, { ...options, where: normalizedWhere });
-        const rows = await this.executeRawSelect(sqlStr, values);
-        return this.processJoinedRows(rows, joins);
-      }
-      let sqlQuery = `SELECT `;
-      
-      if (columns && Object.keys(columns).length > 0) {
-        sqlQuery += Object.entries(columns)
-          .filter(([_, v]) => v)
-          .map(([k, _]) => `"${NamingStrategy.toSnakeCase(k)}"`)
-          .join(', ');
-      } else {
-        sqlQuery += `*`;
-      }
-      
-      sqlQuery += ` FROM "${tableName}"`;
-      
-      const { sql: whereClause, values } = this.buildRawFilterSQL(normalizedWhere, search);
-      sqlQuery += whereClause;
-      sqlQuery += this.buildRawOrderByClause(orderBy);
-      
-      if (limit) sqlQuery += ` LIMIT ${limit}`;
-      if (offset) sqlQuery += ` OFFSET ${offset}`;
-      
-      const result = await this.pool.query(sqlQuery, values);
-      return result.rows;
-    }
-
-    // Otherwise use Drizzle for typed table objects
-    let query: any;
-    
-    if (columns && Object.keys(columns).length > 0) {
-      const selection: Record<string, any> = {};
-      for (const [key, val] of Object.entries(columns)) {
-        if (val) selection[key] = (tableOrName as any)[key];
-      }
-      query = this.drizzle.select(selection).from(tableOrName);
-    } else {
-      query = this.drizzle.select().from(tableOrName);
-    }
-
-    if (joins && joins.length > 0) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
-    }
-
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
-      query = query.where(where);
-    }
-
-    if (search && search.columns.length > 0 && search.value) {
-        const pattern = `%${search.value}%`;
-        const likeConditions = search.columns.map((col: string) => {
-            const colObj = typeof tableOrName[col] !== 'undefined' ? tableOrName[col] : sql`${sql.identifier(col)}`;
-            return this.like(colObj, pattern);
-        });
-        const searchExpr = likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions);
-        query = query.where(searchExpr);
-    }
-
-    const orderExprs = this.buildOrderBy(orderBy);
-    if (orderExprs) {
-      query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
-    }
-
-    if (limit) query = query.limit(limit);
-    if (offset) query = query.offset(offset);
-
-    return await query;
+    return this.reader.find(tableOrName, options);
   }
 
   async findOne(tableOrName: any, where: any): Promise<any | null> {
@@ -162,7 +86,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       const identifiers = columns.map((column) => `"${NamingStrategy.toSnakeCase(column)}"`).join(', ');
       const placeholders = columns.map((_, index) => this.getParamPlaceholder(index + 1)).join(', ');
       const values = await Promise.all(
-        columns.map((column) => this.normalizeColumnValueForWrite(tableName, column, data[column]))
+        columns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, data[column]))
       );
       const result = await this.pool.query(
         `INSERT INTO "${tableName}" (${identifiers}) VALUES (${placeholders}) RETURNING *`,
@@ -181,22 +105,22 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       const whereColumns = Object.keys(where || {});
       if (!setColumns.length) throw new Error(`No update fields provided for table "${tableName}"`);
       if (!whereColumns.length) throw new Error(`Unsafe update blocked: missing where clause for table "${tableName}"`);
-      
+
       const setClause = setColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
       const whereClause = whereColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
 
       const setValues = await Promise.all(
-        setColumns.map((column) => this.normalizeColumnValueForWrite(tableName, column, data[column]))
+        setColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, data[column]))
       );
       const whereValues = await Promise.all(
-        whereColumns.map((column) => this.normalizeColumnValueForWrite(tableName, column, where[column]))
+        whereColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, where[column]))
       );
       const values = [...setValues, ...whereValues];
 
       const result = await this.pool.query(`UPDATE "${tableName}" SET ${setClause} WHERE ${whereClause} RETURNING *`, values);
       return result.rows[0] || null;
     }
-    
+
     const conditions = this.buildWhereConditions(where);
     const [result] = await this.drizzle
       .update(tableOrName)
@@ -219,14 +143,14 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   async delete(tableOrName: any, where: any): Promise<boolean> {
     if (typeof tableOrName === 'string') {
       const tableName = tableOrName;
-      const normalizedWhere = await this.normalizeWhereForTable(tableName, where);
+      const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, where);
       const { sql: whereClause, values } = this.buildRawWhereClause(normalizedWhere);
       if (!whereClause) throw new Error(`Unsafe delete blocked: missing where clause for table "${tableName}"`);
-      
+
       const result = await this.pool.query(`DELETE FROM "${tableName}"${whereClause} RETURNING *`, values);
       return (result.rowCount || 0) > 0;
     }
-    
+
     const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
     const conditions = this.buildWhereConditions(where);
     let query = this.drizzle.delete(tableOrName);
@@ -250,100 +174,8 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     return result.rows;
   }
 
-  private async getJsonColumns(tableName: string): Promise<Set<string>> {
-    const cached = this.jsonColumnsCache.get(tableName);
-    if (cached) return cached;
-
-    const result = await this.pool.query(
-      `SELECT column_name
-       FROM information_schema.columns
-       WHERE table_schema = 'public'
-         AND table_name = $1
-         AND data_type IN ('json', 'jsonb')`,
-      [tableName]
-    );
-
-    const columns = new Set(
-      (result.rows || []).map((row: any) => String(row?.column_name || '').toLowerCase())
-    );
-    this.jsonColumnsCache.set(tableName, columns);
-    return columns;
-  }
-
-  private normalizeJsonColumnValue(value: any): any {
-    if (value === undefined || value === null) return null;
-
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) return JSON.stringify(value);
-
-      try {
-        JSON.parse(trimmed);
-        return trimmed;
-      } catch {
-        // JSON/JSONB columns must receive valid JSON syntax.
-        return JSON.stringify(value);
-      }
-    }
-
-    return JSON.stringify(value);
-  }
-
-  private async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
-    const jsonColumns = await this.getJsonColumns(tableName);
-    const normalizedColumn = NamingStrategy.toSnakeCase(column).toLowerCase();
-    if (jsonColumns.has(normalizedColumn)) {
-      return this.normalizeJsonColumnValue(value);
-    }
-    return this.normalizeParamValue(value);
-  }
-
-  private async normalizeWhereForTable(tableName: string, where: any): Promise<any> {
-    if (!where || typeof where !== 'object' || Object.getPrototypeOf(where) !== Object.prototype) {
-      return where;
-    }
-
-    const normalized: Record<string, any> = {};
-    for (const [column, value] of Object.entries(where)) {
-      normalized[column] = await this.normalizeColumnValueForWrite(tableName, column, value);
-    }
-    return normalized;
-  }
-
   async count(tableOrName: any, options: any = {}): Promise<number> {
-    const { where, joins } = options;
-    const isString = typeof tableOrName === 'string';
-
-    // Guard: if given a string table name, skip the query entirely when the
-    // table hasn't been created yet (first boot / fresh install).  Without
-    // this guard, Postgres emits ERROR-level log entries for every
-    // not-yet-synced plugin collection even though the caller catches the
-    // exception.
-    if (isString && !(await this.tableExists(tableOrName))) {
-      return 0;
-    }
-
-    const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
-    
-    let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
-
-    if (joins && joins.length > 0) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
-    }
-
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
-      query = query.where(where);
-    }
-
-    const [result] = await query;
-    return Number(result?.total || 0);
+    return this.reader.count(tableOrName, options);
   }
 
   // Schema Management
@@ -365,86 +197,15 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   }
 
   async createTable(collection: ISchemaCollection): Promise<void> {
-    const tableName = collection.slug;
-    const columnDefs: any[] = [];
-    const fieldSnakeNames = collection.fields.map(f => NamingStrategy.toSnakeCase(f.name));
-
-    if (!fieldSnakeNames.includes('id')) {
-      columnDefs.push(sql`id SERIAL PRIMARY KEY`);
-    }
-
-    if (!fieldSnakeNames.includes('created_at')) {
-      columnDefs.push(sql`created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
-    }
-
-    if (!fieldSnakeNames.includes('updated_at')) {
-      columnDefs.push(sql`updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
-    }
-
-    for (const field of collection.fields) {
-      if (field.name === 'id' && !fieldSnakeNames.includes('id')) continue;
-      columnDefs.push(this.fieldToSqlFragment(field));
-    }
-
-    const query = sql`CREATE TABLE ${sql.identifier(tableName)} (${sql.join(columnDefs, sql`, `)})`;
-    await this.execute(query);
-    this.jsonColumnsCache.delete(tableName);
+    await this.schemaBuilder.createTable(collection);
   }
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
-    const columnDef = this.fieldToSqlFragment(field);
-    await this.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
-    this.jsonColumnsCache.delete(tableName);
-  }
-
-  private fieldToSqlFragment(field: ISchemaField): any {
-    const dbName = NamingStrategy.toSnakeCase(field.name);
-    let type = sql`TEXT`;
-    
-    switch (field.type) {
-      case 'number': type = sql`NUMERIC`; break;
-      case 'boolean': type = sql`BOOLEAN`; break;
-      case 'date': type = sql`TIMESTAMP WITH TIME ZONE`; break;
-      case 'json':
-      case 'relationship':
-      case 'upload':
-      case 'richText':
-        type = sql`JSONB`;
-        break;
-      case 'textarea':
-      case 'text':
-      case 'select':
-      default:
-        type = sql`TEXT`;
-    }
-
-    const constraints: any[] = [];
-    if (field.required) constraints.push(sql`NOT NULL`);
-    if (field.unique) constraints.push(sql`UNIQUE`);
-    
-    if (field.defaultValue !== undefined) {
-      if (typeof field.defaultValue === 'string') {
-        constraints.push(sql.raw(`DEFAULT '${field.defaultValue.replace(/'/g, "''")}'`));
-      } else if (typeof field.defaultValue === 'boolean') {
-        constraints.push(sql.raw(`DEFAULT ${field.defaultValue ? 'true' : 'false'}`));
-      } else if (typeof field.defaultValue === 'number') {
-        constraints.push(sql.raw(`DEFAULT ${field.defaultValue}`));
-      }
-    }
-
-    return sql`${sql.identifier(dbName)} ${type} ${sql.join(constraints, sql` `)}`;
+    await this.schemaBuilder.addColumn(tableName, field);
   }
 
   async ensureMigrationTable(tableName: string): Promise<void> {
-    await this.execute(sql`
-      CREATE TABLE IF NOT EXISTS ${sql.identifier(tableName)} (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        version INTEGER NOT NULL,
-        batch INTEGER NOT NULL,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    await this.schemaBuilder.ensureMigrationTable(tableName);
   }
 
   async resetDatabase(): Promise<void> {

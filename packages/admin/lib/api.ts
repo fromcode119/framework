@@ -1,8 +1,6 @@
-import { AdminConstants } from './constants';
 import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
-import { AuthUtils } from './auth-utils';
-import { AdminUrlUtils } from './url-utils';
-import { AdminPathUtils } from './admin-path';
+import { AdminApiHttpService } from './api-http-service';
+import { AdminApiSessionGuardService } from './api-session-guard-service';
 
 export class AdminApi {
   private static readonly browserState = new BrowserStateClient();
@@ -11,15 +9,13 @@ export class AdminApi {
   private static readonly cachedGetErrors = new Map<string, { expiresAt: number; error: any }>();
   private static readonly GET_RESPONSE_TTL_MS = 5000;
   private static readonly GET_ERROR_TTL_MS = 15000;
-  private static sessionExpiryVerificationPromise: Promise<void> | null = null;
 
   static getBaseUrl(): string {
-    return AdminConstants.API_BASE_URL;
+    return AdminApiHttpService.getBaseUrl();
   }
 
   static getURL(path: string): string {
-    const normalizedPath = AdminUrlUtils.normalizeRequestPath(path);
-    return normalizedPath.startsWith('http') ? normalizedPath : `${AdminConstants.API_BASE_URL}${normalizedPath}`;
+    return AdminApiHttpService.getURL(path);
   }
 
   static getAdminExportToken(): string {
@@ -114,7 +110,7 @@ export class AdminApi {
   ): Promise<any> {
     AdminApi.clearGetCaches();
     const url = AdminApi.getURL(path);
-    const headers = AdminApi.buildHeaders(options, { isJson: false });
+    const headers = AdminApiHttpService.buildHeaders(options, { isJson: false });
 
     if (typeof XMLHttpRequest !== 'undefined' && options?.onProgress) {
       return AdminApi.uploadWithProgress(url, formData, headers, options.onProgress);
@@ -128,8 +124,8 @@ export class AdminApi {
       credentials: 'include',
     });
 
-    AdminApi.handleUnauthorized(response, url, options?.method || 'POST');
-    return AdminApi.parseResponse(response, url);
+    AdminApiSessionGuardService.handleUnauthorized(response, url, options?.method || 'POST');
+    return AdminApiHttpService.parseResponse(response, url);
   }
 
   static async download(
@@ -141,18 +137,18 @@ export class AdminApi {
     const response = await fetch(url, {
       ...options,
       method: 'GET',
-      headers: AdminApi.buildHeaders(options, { isJson: false }),
+      headers: AdminApiHttpService.buildHeaders(options, { isJson: false }),
       credentials: 'include',
     });
 
-    AdminApi.handleUnauthorized(response, url, options?.method || 'GET');
+    AdminApiSessionGuardService.handleUnauthorized(response, url, options?.method || 'GET');
 
     if (!response.ok) {
-      await AdminApi.parseResponse(response, url);
+      await AdminApiHttpService.parseResponse(response, url);
     }
 
-    const filename = AdminApi.resolveDownloadFilename(response, path);
-    const totalBytes = AdminApi.readContentLength(response.headers.get('content-length'));
+    const filename = AdminApiHttpService.resolveDownloadFilename(response, path);
+    const totalBytes = AdminApiHttpService.readContentLength(response.headers.get('content-length'));
     if (!response.body) {
       const blob = await response.blob();
       onProgress?.({
@@ -203,12 +199,12 @@ export class AdminApi {
     const url = AdminApi.getURL(path);
     const response = await fetch(url, {
       ...options,
-      headers: AdminApi.buildHeaders(options),
+      headers: AdminApiHttpService.buildHeaders(options),
       credentials: 'include',
     });
 
-    AdminApi.handleUnauthorized(response, url);
-    return AdminApi.parseResponse(response, url);
+    AdminApiSessionGuardService.handleUnauthorized(response, url);
+    return AdminApiHttpService.parseResponse(response, url);
   }
 
   private static uploadWithProgress(
@@ -238,9 +234,9 @@ export class AdminApi {
       xhr.onerror = () => reject(new Error('Network request failed'));
 
       xhr.onload = () => {
-        AdminApi.handleUnauthorizedStatus(xhr.status, url, 'POST');
+        AdminApiSessionGuardService.handleUnauthorizedStatus(xhr.status, url, 'POST');
         try {
-          resolve(AdminApi.parseXhrResponse(xhr, url));
+          resolve(AdminApiHttpService.parseXhrResponse(xhr, url));
         } catch (error) {
           reject(error);
         }
@@ -250,160 +246,8 @@ export class AdminApi {
     });
   }
 
-  private static handleUnauthorized(response: Response, url: string, method: string = 'GET'): void {
-    AdminApi.handleUnauthorizedStatus(response.status, url, method);
-  }
-
-  private static handleUnauthorizedStatus(status: number, url: string, method: string = 'GET'): void {
-    const shouldPurge = status === 401;
-
-    if (!shouldPurge) {
-      return;
-    }
-    if (url.includes(AdminConstants.ENDPOINTS.AUTH.STATUS) || url.includes(AdminConstants.ENDPOINTS.AUTH.LOGIN)) {
-      return;
-    }
-    if (typeof window === 'undefined') {
-      return;
-    }
-    if (AdminPathUtils.stripBase(window.location.pathname) === AdminConstants.ROUTES.AUTH.LOGIN) {
-      return;
-    }
-    if (url.includes(AdminConstants.ENDPOINTS.AUTH.SECURITY) || String(method || 'GET').toUpperCase() !== 'GET') {
-      AdminApi.redirectToExpiredSession(url, status);
-      return;
-    }
-
-    void AdminApi.verifySessionExpiry(url, status);
-  }
-
-  private static async verifySessionExpiry(url: string, status: number): Promise<void> {
-    if (AdminApi.sessionExpiryVerificationPromise) {
-      return AdminApi.sessionExpiryVerificationPromise;
-    }
-
-    AdminApi.sessionExpiryVerificationPromise = (async () => {
-      try {
-        const response = await fetch(AdminApi.getURL(AdminConstants.ENDPOINTS.AUTH.SECURITY), {
-          method: 'GET',
-          headers: AdminApi.buildHeaders(undefined),
-          credentials: 'include',
-        });
-
-        if (response.status !== 401) {
-          return;
-        }
-      } catch {
-        return;
-      } finally {
-        AdminApi.sessionExpiryVerificationPromise = null;
-      }
-
-      AdminApi.redirectToExpiredSession(url, status);
-    })();
-
-    return AdminApi.sessionExpiryVerificationPromise;
-  }
-
-  private static redirectToExpiredSession(url: string, status: number): void {
-    console.warn(`[API] ${status} auth failure confirmed for ${url}. Purging session.`);
-    AuthUtils.purgeAuth();
-    window.location.href = AdminConstants.ADMIN_URLS.AUTH.LOGIN_SESSION_EXPIRED();
-  }
-
-  private static parseXhrResponse(xhr: XMLHttpRequest, url: string): any {
-    const contentType = xhr.getResponseHeader('content-type') || '';
-    const rawBody = typeof xhr.responseText === 'string' ? xhr.responseText : '';
-    const body = contentType.includes('application/json') && rawBody ? JSON.parse(rawBody) : null;
-
-    if (xhr.status >= 200 && xhr.status < 300) {
-      return body;
-    }
-
-    const message = body?.error || body?.message || rawBody.trim() || `HTTP error! status: ${xhr.status}`;
-    const errObj = new Error(message) as any;
-    errObj.status = xhr.status;
-    errObj.data = body;
-    errObj.raw = rawBody;
-    errObj.url = url;
-    throw errObj;
-  }
-
-  private static async parseResponse(response: Response, url: string): Promise<any> {
-    if (response.ok) {
-      return response.json();
-    }
-
-    let errorBody: any = null;
-    let rawBody = '';
-    const contentType = response.headers.get('content-type') || '';
-
-    if (contentType.includes('application/json')) {
-      errorBody = await response.json().catch(() => null);
-    } else {
-      rawBody = await response.text().catch(() => '');
-    }
-
-    const message =
-      errorBody?.error ||
-      errorBody?.message ||
-      rawBody.trim() ||
-      response.statusText ||
-      `HTTP error! status: ${response.status}`;
-
-    const errObj = new Error(message) as any;
-    errObj.status = response.status;
-    errObj.data = errorBody;
-    errObj.raw = rawBody;
-    errObj.url = url;
-    throw errObj;
-  }
-
   private static clearGetCaches(): void {
     AdminApi.cachedGetResponses.clear();
     AdminApi.cachedGetErrors.clear();
-  }
-
-  private static buildHeaders(options?: RequestInit, config?: { isJson?: boolean }): Record<string, string> {
-    const token = AdminApi.browserState.readCookie(CookieConstants.AUTH_TOKEN);
-    const csrfToken = AdminApi.browserState.readCookie(CookieConstants.AUTH_CSRF);
-    const headers: Record<string, string> = {
-      ...(config?.isJson === false ? {} : { 'Content-Type': 'application/json' }),
-      'X-Framework-Client': 'admin-ui',
-      'X-Requested-With': 'XMLHttpRequest',
-      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-      ...(options?.headers as any),
-    };
-
-    if (token && !headers.Authorization) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    return headers;
-  }
-
-  private static resolveDownloadFilename(response: Response, path: string): string {
-    const contentDisposition = response.headers.get('content-disposition') || '';
-    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
-    if (utf8Match?.[1]) {
-      try {
-        return decodeURIComponent(utf8Match[1]);
-      } catch {
-        return utf8Match[1];
-      }
-    }
-
-    const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
-    if (filenameMatch?.[1]) {
-      return filenameMatch[1];
-    }
-
-    const segments = String(path || '').split('/').filter(Boolean);
-    return segments[segments.length - 2] || 'backup-download';
-  }
-
-  private static readContentLength(value: string | null): number | null {
-    const parsedValue = Number(value);
-    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
   }
 }

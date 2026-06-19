@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
-import { PluginManager, Logger, SecretService } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core';
+import { PluginManager, Logger } from '@fromcode119/core';
+import { PluginSettingsSupport } from './plugin-settings-support';
 
 export class PluginSettingsController {
   private logger = new Logger({ namespace: 'plugin-settings-controller' });
-  private static readonly DYNAMIC_OPTIONS_SOURCE_SYSTEM_LOCALES = 'system_locales';
+  private support: PluginSettingsSupport;
 
-  constructor(private manager: PluginManager) {}
+  constructor(private manager: PluginManager) {
+    this.support = new PluginSettingsSupport(manager, this.logger);
+  }
 
   async getSettings(req: Request, res: Response) {
     const { slug } = req.params;
@@ -15,16 +17,16 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin not found' });
     }
 
-    const schema = await this.getEffectiveSchema(slug);
+    const schema = await this.support.getEffectiveSchema(slug);
     const storedSettings = plugin.manifest.config?.settings || {};
 
     if (!schema) {
       return res.json({ settings: storedSettings });
     }
 
-    const defaults = this.getDefaults(schema.fields || []);
+    const defaults = this.support.getDefaults(schema.fields || []);
     const merged = { ...defaults, ...storedSettings };
-    const masked = this.maskPasswordFields(merged, schema.fields || []);
+    const masked = this.support.maskPasswordFields(merged, schema.fields || []);
 
     res.json({ settings: masked });
   }
@@ -38,10 +40,10 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin not found' });
     }
 
-    const schema = await this.getEffectiveSchema(slug);
+    const schema = await this.support.getEffectiveSchema(slug);
 
     if (schema) {
-      const errors = await this.validateSettings(newSettings, schema);
+      const errors = await this.support.validateSettings(newSettings, schema);
       if (errors) {
         return res.status(400).json({ errors });
       }
@@ -56,7 +58,7 @@ export class PluginSettingsController {
 
     const oldSettings = plugin.manifest.config?.settings || {};
     const currentConfig = plugin.manifest.config || {};
-    const settingsToSave = this.encryptPasswordFields(newSettings, oldSettings, schema?.fields || []);
+    const settingsToSave = this.support.encryptPasswordFields(newSettings, oldSettings, schema?.fields || []);
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
       settings: settingsToSave
@@ -76,12 +78,12 @@ export class PluginSettingsController {
       newSettings,
     });
 
-    res.json({ success: true, settings: this.maskPasswordFields(settingsToSave, schema?.fields || []) });
+    res.json({ success: true, settings: this.support.maskPasswordFields(settingsToSave, schema?.fields || []) });
   }
 
   async getSchema(req: Request, res: Response) {
     const { slug } = req.params;
-    const schema = await this.getEffectiveSchema(slug);
+    const schema = await this.support.getEffectiveSchema(slug);
 
     if (!schema) {
       const allRegistered = Array.from(this.manager.getAllPluginSettings().keys());
@@ -100,14 +102,14 @@ export class PluginSettingsController {
 
   async resetSettings(req: Request, res: Response) {
     const { slug } = req.params;
-    const schema = await this.getEffectiveSchema(slug);
+    const schema = await this.support.getEffectiveSchema(slug);
 
     if (!schema) {
       return res.status(404).json({ error: 'Plugin has no settings registered' });
     }
 
-    const defaults = this.getDefaults(schema.fields || []);
-    const encryptedDefaults = this.encryptPasswordFields(defaults, {}, schema.fields || []);
+    const defaults = this.support.getDefaults(schema.fields || []);
+    const encryptedDefaults = this.support.encryptPasswordFields(defaults, {}, schema.fields || []);
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
     const currentConfig = plugin?.manifest.config || {};
 
@@ -116,7 +118,7 @@ export class PluginSettingsController {
       settings: encryptedDefaults
     });
 
-    res.json({ success: true, settings: this.maskPasswordFields(encryptedDefaults, schema.fields || []) });
+    res.json({ success: true, settings: this.support.maskPasswordFields(encryptedDefaults, schema.fields || []) });
   }
 
   async exportSettings(req: Request, res: Response) {
@@ -127,9 +129,9 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin not found' });
     }
 
-    const schema = await this.getEffectiveSchema(slug);
+    const schema = await this.support.getEffectiveSchema(slug);
     const settings = plugin.manifest.config?.settings || {};
-    const exportable = this.stripPasswordFields(settings, schema?.fields || []);
+    const exportable = this.support.stripPasswordFields(settings, schema?.fields || []);
 
     res.setHeader('Content-Type', 'application/json');
     res.setHeader(
@@ -148,12 +150,12 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin not found' });
     }
 
-    const schema = await this.getEffectiveSchema(slug);
+    const schema = await this.support.getEffectiveSchema(slug);
     if (!schema) {
       return res.status(422).json({ error: 'Cannot import settings: plugin schema not registered. Ensure the plugin is enabled.' });
     }
 
-    const errors = await this.validateSettings(importedSettings, schema);
+    const errors = await this.support.validateSettings(importedSettings, schema);
     if (errors) {
       return res.status(400).json({ errors });
     }
@@ -166,7 +168,7 @@ export class PluginSettingsController {
 
     const currentConfig = plugin.manifest.config || {};
     const existingSettings = plugin.manifest.config?.settings || {};
-    const settingsToSave = this.encryptPasswordFields(importedSettings, existingSettings, schema?.fields || []);
+    const settingsToSave = this.support.encryptPasswordFields(importedSettings, existingSettings, schema?.fields || []);
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
       settings: settingsToSave
@@ -181,191 +183,5 @@ export class PluginSettingsController {
     }
 
     res.json({ success: true, imported: Object.keys(importedSettings).length });
-  }
-
-  private static readonly SENSITIVE_FIELD_RE = /secret|password|api_key|private_key|access_token|auth_token|refresh_token|bearer_token|credential|passphrase/i;
-
-  private getPasswordFieldNames(fields: any[]): Set<string> {
-    return new Set(
-      fields
-        .filter(f => f.type === 'password' || PluginSettingsController.SENSITIVE_FIELD_RE.test(String(f.name || '')))
-        .map(f => f.name)
-    );
-  }
-
-  private maskPasswordFields(settings: Record<string, any>, fields: any[]): Record<string, any> {
-    const passwordFields = this.getPasswordFieldNames(fields);
-    const result = { ...settings };
-    for (const key of passwordFields) {
-      if (key in result) {
-        result[key] = SecretService.maskIfPresent(result[key]);
-      }
-    }
-    return result;
-  }
-
-  private encryptPasswordFields(
-    newSettings: Record<string, any>,
-    existingSettings: Record<string, any>,
-    fields: any[]
-  ): Record<string, any> {
-    const passwordFields = this.getPasswordFieldNames(fields);
-    const result = { ...newSettings };
-    for (const key of passwordFields) {
-      const incoming = result[key];
-      if (!incoming || SecretService.isSavedSecretMask(incoming)) {
-        // Preserve existing encrypted value
-        result[key] = existingSettings[key] ?? '';
-      } else if (!SecretService.isEncryptedValue(incoming)) {
-        result[key] = SecretService.encrypt(String(incoming));
-      }
-    }
-    return result;
-  }
-
-  private stripPasswordFields(settings: Record<string, any>, fields: any[]): Record<string, any> {
-    const passwordFields = this.getPasswordFieldNames(fields);
-    const result = { ...settings };
-    for (const key of passwordFields) {
-      result[key] = '';
-    }
-    return result;
-  }
-
-  private getDefaults(fields: any[]): Record<string, any> {
-    const defaults: Record<string, any> = {};
-    fields.forEach(field => {
-      if (field.defaultValue !== undefined) {
-        defaults[field.name] = field.defaultValue;
-      }
-    });
-    return defaults;
-  }
-
-  private async validateSettings(
-    settings: Record<string, any>,
-    schema: any
-  ): Promise<Record<string, string> | null> {
-    const errors: Record<string, string> = {};
-    const fields = schema.fields || [];
-
-    for (const field of fields) {
-      const value = settings[field.name];
-
-      if (field.required && (value === undefined || value === null || value === '')) {
-        errors[field.name] = 'This field is required';
-        continue;
-      }
-
-      if (value === undefined || value === null || value === '') {
-        continue;
-      }
-
-      switch (field.type) {
-        case 'number':
-          if (typeof value !== 'number' || Number.isNaN(value)) {
-            errors[field.name] = 'Must be a number';
-          } else if (field.min !== undefined && value < field.min) {
-            errors[field.name] = `Must be at least ${field.min}`;
-          } else if (field.max !== undefined && value > field.max) {
-            errors[field.name] = `Must be at most ${field.max}`;
-          }
-          break;
-        case 'email':
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
-            errors[field.name] = 'Must be a valid email';
-          }
-          break;
-        case 'url':
-          try {
-            new URL(String(value));
-          } catch {
-            errors[field.name] = 'Must be a valid URL';
-          }
-          break;
-        case 'select':
-          if (Array.isArray(field.options)) {
-            const optionValues = new Set(field.options.map((option: any) => option?.value));
-            const isMultiple = field?.admin?.multiple === true;
-            if (isMultiple) {
-              if (!Array.isArray(value) || value.some((entry) => !optionValues.has(entry))) {
-                errors[field.name] = 'Must be a valid option';
-              }
-            } else if (!optionValues.has(value)) {
-              errors[field.name] = 'Must be a valid option';
-            }
-          }
-          break;
-        default:
-          break;
-      }
-    }
-
-    return Object.keys(errors).length > 0 ? errors : null;
-  }
-
-  private async getEffectiveSchema(slug: string): Promise<any | null> {
-    const settingsRegistry = this.manager.getPluginSettings(slug);
-    if (!settingsRegistry) {
-      return null;
-    }
-
-    const schema = { ...settingsRegistry };
-    schema.fields = await this.resolveDynamicOptions(schema.fields || []);
-    return schema;
-  }
-
-  private async resolveDynamicOptions(fields: any[]): Promise<any[]> {
-    const resolvedFields: any[] = [];
-
-    for (const field of fields) {
-      if (field?.dynamicOptionsSource === PluginSettingsController.DYNAMIC_OPTIONS_SOURCE_SYSTEM_LOCALES) {
-        const localeOptions = await this.buildSystemLocaleOptions();
-        resolvedFields.push({
-          ...field,
-          options: localeOptions,
-        });
-        continue;
-      }
-
-      resolvedFields.push(field);
-    }
-
-    return resolvedFields;
-  }
-
-  private async buildSystemLocaleOptions(): Promise<Array<{ label: string; value: string }>> {
-    try {
-      const locales = await (this.manager as any).db.settings.findFirst({
-        where: (settings: any, operators: any) => operators.eq(settings.key, SystemConstants.META_KEY.LOCALIZATION_LOCALES),
-      });
-
-      const rawValue = locales?.value;
-      if (typeof rawValue !== 'string' || rawValue.trim().length === 0) {
-        return [];
-      }
-
-      const parsed = JSON.parse(rawValue);
-      const localeList = Array.isArray(parsed)
-        ? parsed
-        : Array.isArray(parsed?.locales)
-          ? parsed.locales
-          : [];
-
-      return localeList
-        .map((locale: any) => {
-          const code = String(locale?.code || '').trim();
-          if (!code) {
-            return null;
-          }
-
-          const label = String(locale?.label || locale?.name || code).trim() || code;
-          return { label, value: code };
-        })
-        .filter((option: { label: string; value: string } | null): option is { label: string; value: string } => option !== null);
-    } catch (error: any) {
-      this.logger.warn(`Failed to resolve system locale options: ${error?.message || 'unknown error'}`);
-      return [];
-    }
   }
 }

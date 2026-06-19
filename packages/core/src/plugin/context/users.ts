@@ -43,6 +43,40 @@ export class UsersContextProxy {
         if (!normalized) return null;
         const row = await manager.db.findOne(SystemConstants.TABLE.USERS, { email: normalized });
         return UsersContextProxy.toProfileUser(row);
+      },
+
+      /** List users (safe profiles, newest first) — for generic "any user" needs without raw table access. */
+      async list(options?: { limit?: number }): Promise<Array<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] }>> {
+        const limit = Math.max(1, Math.min(500, options?.limit ?? 100));
+        const rows = await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
+        const out: Array<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] }> = [];
+        for (const row of Array.isArray(rows) ? rows : []) {
+          const profile = UsersContextProxy.toProfileUser(row);
+          if (profile) out.push(profile);
+        }
+        return out;
+      },
+
+      /**
+       * Create a user through the framework (plugins must NOT insert into the `users` system table via
+       * context.db — that path is blocked). The caller passes an ALREADY-HASHED password (hash it with
+       * context.auth.hashPassword); the framework owns the only write to the users table. Idempotent:
+       * returns the existing user's id if the email is already taken.
+       */
+      async create(input: { email: string; password: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any } | null> {
+        const email = String(input?.email ?? '').trim().toLowerCase();
+        if (!email.includes('@')) return null;
+        const existing = await manager.db.findOne(SystemConstants.TABLE.USERS, { email });
+        if (existing?.id != null) return { id: existing.id };
+        const row: any = await manager.db.insert(SystemConstants.TABLE.USERS, {
+          email,
+          password: String(input?.password ?? ''),
+          roles: Array.isArray(input?.roles) && input.roles.length ? input.roles : ['customer'],
+          firstName: input?.firstName ? String(input.firstName) : null,
+          lastName: input?.lastName ? String(input.lastName) : null,
+        });
+        const created = Array.isArray(row) ? row[0] : row;
+        return created?.id != null ? { id: created.id } : null;
       }
     };
 

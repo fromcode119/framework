@@ -1,7 +1,8 @@
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
 import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
 
-export const CacheIntegrationDefinition: IntegrationTypeDefinition<CacheManager> = {
+export class CacheIntegrationDefinition {
+  static readonly definition: IntegrationTypeDefinition<CacheManager> = {
   key: 'cache',
   label: 'System Cache',
   description: 'Provider used for system-level caching and plugin data storage.',
@@ -37,3 +38,4 @@ export const CacheIntegrationDefinition: IntegrationTypeDefinition<CacheManager>
     }
   ]
 };
+}

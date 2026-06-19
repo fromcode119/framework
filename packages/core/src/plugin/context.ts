@@ -16,7 +16,10 @@ import { SettingsContextProxy } from './context/settings';
 import { UiContextProxy } from './context/ui';
 import { UsersContextProxy } from './context/users';
 import { PeopleContextProxy } from './context/people';
+import { EntityRecordsContextProxy } from './context/entity-records';
 import { MetaContextProxy } from './context/meta';
+import { MediaContextProxy } from './context/media';
+import { RecordVersionsContextProxy } from './context/record-versions';
 import { RolesContextProxy } from './context/roles';
 import { ThemeContextProxy } from './context/theme';
 import { PluginsFacade } from '../plugins-facade';
@@ -190,7 +193,10 @@ export class PluginContextFactory {
         },
         users: UsersContextProxy.createUsersProxy(plugin, manager),
         people: PeopleContextProxy.createPeopleProxy(plugin, manager),
+        entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         meta: MetaContextProxy.createMetaProxy(manager),
+        media: MediaContextProxy.createMediaProxy(manager),
+        recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager),
         theme: ThemeContextProxy.createThemeProxy(plugin, manager),
         entities: EntitiesContextProxy.createEntitiesProxy(),

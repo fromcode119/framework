@@ -7,7 +7,9 @@ export class MediaRelationService extends BaseService {
     const mediaRecords = new Map<string, any>();
 
     await Promise.all(ids.map(async (id) => {
-      const record = await this.context.db.findOne('media', { id: Number(id) });
+      // Framework `media` is a system table — reach it through the dedicated context API, never
+      // context.db (the plugin DB proxy blocks direct system-table access). See [[reference_plugin_system_table_guard]].
+      const record = await this.context.media.findById(Number(id));
       if (record) {
         mediaRecords.set(id, record);
       }

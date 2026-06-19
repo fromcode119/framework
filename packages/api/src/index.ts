@@ -124,13 +124,21 @@ export class APIServer {
 
     const uploadsConfig = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager);
     this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);
-    this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir, {
+    const uploadsStaticOptions = {
       maxAge: '30d',
-    }));
+      // SVG is an active document format: serve it with an explicit type and a
+      // CSP that blocks script/object/frame execution (defense in depth on top
+      // of the upload-time MediaSvgSanitizer).
+      setHeaders: (res: express.Response, filePath: string) => {
+        if (filePath.toLowerCase().endsWith('.svg')) {
+          res.setHeader('Content-Type', 'image/svg+xml');
+          res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'");
+        }
+      },
+    };
+    this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir, uploadsStaticOptions));
     if (uploadsConfig.publicPath !== ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL) {
-      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir, {
-        maxAge: '30d',
-      }));
+      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir, uploadsStaticOptions));
     }
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';

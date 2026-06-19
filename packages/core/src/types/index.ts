@@ -15,5 +15,7 @@ export * from './manifests.interfaces';
 export * from './manifests.types';
 export * from './default-page-contract';
 export * from './layout';
-export * from './plugin.interfaces';
+export * from './plugin-context-support.interfaces';
+export * from './plugin-context.interfaces';
+export * from './plugin-runtime.interfaces';
 export * from './core.interfaces';

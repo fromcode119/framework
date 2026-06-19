@@ -75,7 +75,7 @@ export class EditHeader extends React.Component<EditHeaderProps> {
           </Link>
           <span className="text-slate-300">/</span>
           <span className={`text-[10px] font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-500'}`}>
-            {isNew ? 'New Entry' : (id.length > 8 ? `${id.substring(0, 8)}...` : id)}
+            {isNew ? 'New Entry' : [resolvedTitleValue, `#${id.length > 8 ? `${id.substring(0, 8)}…` : id}`].filter(Boolean).join(' · ')}
           </span>
         </div>
 

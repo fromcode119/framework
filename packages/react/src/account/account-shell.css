@@ -1,0 +1,45 @@
+/*
+ * Default stylesheet for the framework AccountShell. Scoped under `.fc-acct` and driven by CSS custom
+ * properties so a theme can restyle it by overriding the variables (or any `.fc-acct-*` class) without
+ * the shell depending on the theme. Imported by account-shell.tsx (bundled by the consuming Next app).
+ */
+.fc-acct {
+  --fc-acct-accent: #7c3aed;
+  --fc-acct-accent-soft: rgba(124, 58, 237, .10);
+  --fc-acct-fg: #0f172a;
+  --fc-acct-muted: #64748b;
+  --fc-acct-border: #e7e8ee;
+  --fc-acct-bg: #ffffff;
+  --fc-acct-bg-soft: #f8fafc;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 20px 64px;
+  font-family: inherit;
+  color: var(--fc-acct-fg);
+}
+
+.fc-acct * { box-sizing: border-box; }
+.fc-acct-empty { color: var(--fc-acct-muted); padding: 48px 0; text-align: center; }
+.fc-acct-header { margin-bottom: 28px; }
+.fc-acct-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--fc-acct-accent); }
+.fc-acct-title { font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 0; }
+.fc-acct-body { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 32px; align-items: start; }
+.fc-acct-nav { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--fc-acct-border); border-radius: 18px; background: var(--fc-acct-bg); }
+.fc-acct-navlink { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; text-decoration: none; color: #334155; font-weight: 600; font-size: 14px; transition: background .15s, color .15s; border: 1px solid transparent; }
+.fc-acct-navlink:hover { background: var(--fc-acct-bg-soft); color: var(--fc-acct-fg); }
+.fc-acct-navlink.active { background: var(--fc-acct-accent-soft); color: var(--fc-acct-accent); border-color: transparent; }
+.fc-acct-navicon { display: inline-flex; width: 20px; height: 20px; flex: 0 0 20px; color: currentColor; }
+.fc-acct-navicon svg { width: 20px; height: 20px; }
+.fc-acct-navlabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-acct-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+/* Give plugin/framework panels a consistent surface even if they render a bare element. */
+.fc-acct-main > * { min-width: 0; }
+
+@media (max-width: 860px) {
+  .fc-acct { padding: 24px 14px 48px; }
+  .fc-acct-title { font-size: 26px; }
+  .fc-acct-body { grid-template-columns: 1fr; gap: 18px; }
+  .fc-acct-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; padding: 8px; }
+  .fc-acct-navlink { padding: 9px 12px; font-size: 13px; }
+  .fc-acct-navlabel { white-space: normal; }
+}

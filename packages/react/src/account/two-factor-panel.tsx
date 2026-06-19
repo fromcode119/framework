@@ -8,6 +8,7 @@ interface AccountTwoFactorPanelState {
   busy: boolean;
   enabled: boolean;
   setupSecret: string;
+  qrCode: string;
   recoveryCodes: string[];
   token: string;
   message: string;
@@ -21,7 +22,7 @@ export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknow
 
   private mounted = false;
 
-  state: AccountTwoFactorPanelState = { loading: true, busy: false, enabled: false, setupSecret: '', recoveryCodes: [], token: '', message: '', isError: false };
+  state: AccountTwoFactorPanelState = { loading: true, busy: false, enabled: false, setupSecret: '', qrCode: '', recoveryCodes: [], token: '', message: '', isError: false };
 
   componentDidMount(): void {
     this.mounted = true;
@@ -49,7 +50,7 @@ export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknow
     this.setState({ busy: true, message: '', isError: false });
     try {
       const data = await this.auth.post(RouteConstants.SEGMENTS.TWO_FACTOR_SETUP, {});
-      if (this.mounted) this.setState({ busy: false, setupSecret: String(data?.secret ?? data?.manualKey ?? data?.otpauthUrl ?? ''), recoveryCodes: Array.isArray(data?.recoveryCodes) ? data.recoveryCodes : [] });
+      if (this.mounted) this.setState({ busy: false, setupSecret: String(data?.secret ?? data?.manualKey ?? data?.otpauthUrl ?? ''), qrCode: String(data?.qrCode ?? data?.qr ?? ''), recoveryCodes: Array.isArray(data?.recoveryCodes) ? data.recoveryCodes : [] });
     } catch (error: any) {
       if (this.mounted) this.setState({ busy: false, isError: true, message: AccountAuthClient.errorMessage(error, this.t('account.twoFactor.failed')) });
     }
@@ -77,7 +78,7 @@ export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknow
   }
 
   render(): React.ReactNode {
-    const { loading, busy, enabled, setupSecret, recoveryCodes, token, message, isError } = this.state;
+    const { loading, busy, enabled, setupSecret, qrCode, recoveryCodes, token, message, isError } = this.state;
     const card: React.CSSProperties = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' };
     const btn = (bg: string, fg: string): React.CSSProperties => ({ padding: '10px 22px', background: bg, color: fg, border: 'none', borderRadius: '999px', fontSize: '14px', fontWeight: 600, cursor: busy ? 'default' : 'pointer' });
     if (loading) return <div style={card}>{this.t('account.twoFactor.loading')}</div>;
@@ -94,6 +95,7 @@ export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknow
         ) : setupSecret ? (
           <div>
             <p style={{ fontSize: '13px', color: '#475569' }}>{this.t('account.twoFactor.scanKey')}</p>
+            {qrCode ? <img src={qrCode} alt={this.t('account.twoFactor.qrAlt', undefined, 'Two-factor QR code')} style={{ display: 'block', width: '200px', height: '200px', margin: '8px 0', borderRadius: '12px', border: '1px solid #e2e8f0' }} /> : null}
             <code style={{ display: 'block', wordBreak: 'break-all', background: '#f8fafc', padding: '10px', borderRadius: '8px', fontSize: '12px', margin: '8px 0' }}>{setupSecret}</code>
             {recoveryCodes.length ? (
               <div style={{ margin: '8px 0' }}>
@@ -101,8 +103,10 @@ export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknow
                 <code style={{ display: 'block', background: '#f8fafc', padding: '10px', borderRadius: '8px', fontSize: '12px' }}>{recoveryCodes.join('  ')}</code>
               </div>
             ) : null}
-            <input value={token} onChange={(e) => this.setState({ token: e.target.value })} placeholder={this.t('account.twoFactor.tokenPlaceholder')} style={{ padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '14px', marginRight: '8px' }} />
-            <button onClick={() => void this.verify()} disabled={busy} style={btn('#1a1a2e', '#fff')}>{this.t('account.twoFactor.verify')}</button>
+            <form onSubmit={(e) => { e.preventDefault(); void this.verify(); }} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input value={token} onChange={(e) => this.setState({ token: e.target.value })} placeholder={this.t('account.twoFactor.tokenPlaceholder')} autoComplete="one-time-code" inputMode="numeric" style={{ padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '14px' }} />
+              <button type="submit" disabled={busy} style={btn('#1a1a2e', '#fff')}>{this.t('account.twoFactor.verify')}</button>
+            </form>
           </div>
         ) : (
           <button onClick={() => void this.startSetup()} disabled={busy} style={btn('#1a1a2e', '#fff')}>{this.t('account.twoFactor.enable')}</button>

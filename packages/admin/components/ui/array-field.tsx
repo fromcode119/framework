@@ -2,29 +2,9 @@
 
 import React from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
-import { GripVertical } from 'lucide-react';
-import { Card } from './card';
-import { Input } from './input';
-import { Select } from './select';
-import { Switch } from './switch';
-import { TagField } from './tag-field';
-import { RelationshipSelectLocal } from '../collection/relationship-select-local';
-import { TagFieldLocal } from '../collection/tag-field-local';
-
-interface ArrayFieldProps {
-  field: any;
-  value: any[];
-  onChange: (value: any[]) => void;
-  theme?: string;
-  collectionSlug: string;
-  pluginSettings?: Record<string, any>;
-  fieldComponents?: Record<string, any>;
-}
-
-interface ArrayFieldState {
-  draggedIndex: number | null;
-  isHandleHovered: number | null;
-}
+import { ArrayFieldRow } from './array-field-row';
+import { ArrayFieldRowRenderer } from './array-field-row-renderer';
+import type { ArrayFieldProps, ArrayFieldState } from './array-field.interfaces';
 
 export class ArrayField extends React.Component<ArrayFieldProps, ArrayFieldState> {
   state: ArrayFieldState = { draggedIndex: null, isHandleHovered: null };
@@ -72,129 +52,19 @@ export class ArrayField extends React.Component<ArrayFieldProps, ArrayFieldState
     this.handleReorder(index, index + 1);
   };
 
-  private resolveCustomComponent = (
-    f: any,
-    item: any,
-    index: number,
-    isTagComponent: boolean
-  ): React.ReactNode => {
-    const componentName: string | undefined = f.admin?.component;
-    if (!componentName || isTagComponent) return null;
-
-    const registry = this.props.fieldComponents || {};
-    const registered = registry[componentName];
-    if (!registered) return null;
-
-    let Component: any = registered;
-    if (typeof registered === 'object' && !registered.$$typeof) {
-      Component = registered.component || registered.Component || registered.render || registered.default || registered;
-    }
-    if (typeof Component !== 'function' && typeof Component !== 'string') return null;
-
-    return React.createElement(Component, {
-      value: item[f.name],
-      onChange: (next: any) => this.handleUpdateItem(index, f.name, next?.target ? next.target.value : next),
-      theme: this.props.theme,
-      field: f,
-      collectionSlug: this.props.collectionSlug,
-      pluginSettings: this.props.pluginSettings,
-      readOnly: Boolean(f.admin?.readOnly),
-      disabled: Boolean(f.admin?.readOnly),
-      record: item,
-      onPatch: (partial: Record<string, any>) => {
-        const newItems = [...this.items];
-        newItems[index] = { ...newItems[index], ...partial };
-        this.props.onChange(newItems);
-      },
-    });
-  };
-
   private renderField = (f: any, item: any, index: number): React.ReactNode => {
-    const { theme, collectionSlug } = this.props;
-    const handleUpdateItem = this.handleUpdateItem;
-    const val = item[f.name];
-    const fieldProps = {
-      value: val,
-      onChange: (v: any) => {
-        const value = v?.target ? v.target.value : v;
-        handleUpdateItem(index, f.name, value);
-      },
-      theme,
-      placeholder: `Enter ${f.label || f.name}...`,
-    };
-
-    const isTagComponent =
-      f.admin?.component === './tag-field' ||
-      f.admin?.component === 'TagField' ||
-      f.admin?.component === 'Tags';
-    const hasMany = f.hasMany !== undefined ? f.hasMany : isTagComponent;
-
-    // Honour a plugin-registered custom `admin.component` (e.g. FinanceCurrencyField) for
-    // array sub-fields, the same way the top-level FieldRenderer does — otherwise a sub-field
-    // that declares a component silently falls through to a plain text Input. Resolve from the
-    // shared fieldComponents registry; built-in component names (Tags/relationship) are handled
-    // by the branches below and intentionally skipped here.
-    const customComponentNode = this.resolveCustomComponent(f, item, index, isTagComponent);
-    if (customComponentNode) return customComponentNode;
-
-    if (f.type === 'relationship' && !hasMany) {
-      return (
-        <RelationshipSelectLocal
-          field={f}
-          value={val}
-          onChange={(next) => handleUpdateItem(index, f.name, next)}
-          theme={theme || 'light'}
-        />
-      );
-    }
-
-    if (f.type === 'relationship') {
-       return (
-        <TagFieldLocal
-          field={f}
-          value={val}
-          onChange={(next) => handleUpdateItem(index, f.name, next)}
-          theme={theme || 'light'}
-          collectionSlug={collectionSlug}
-        />
-       );
-    }
-
-    if (isTagComponent) {
-       return (
-        <TagField 
-          {...fieldProps}
-          collectionSlug={collectionSlug}
-          fieldName={f.name}
-          sourceCollection={f.admin?.sourceCollection || f.relationTo}
-          sourceField={f.admin?.sourceField || (f.admin?.sourceCollection === 'users' ? 'username' : 'slug')}
-          hasMany={hasMany}
-          allowCreate={f.admin?.sourceCollection !== 'users'}
-        />
-       );
-    }
-
-    if (f.type === 'select') {
-      return <Select {...fieldProps} options={f.options || []} size="sm" />;
-    }
-
-    if (f.type === 'boolean' || f.type === 'checkbox') {
-        const checked = val === true || val === 'true' || val === 1 || val === '1'
-          || ((val === undefined || val === null) && (f.defaultValue === true || f.defaultValue === 'true'));
-        return (
-            <Switch
-                checked={checked}
-                onChange={(next) => handleUpdateItem(index, f.name, next)}
-                disabled={Boolean(f.admin?.readOnly)}
-            />
-        );
-    }
-
     return (
-      <Input
-        {...fieldProps}
-        type={f.type === 'number' ? 'number' : 'text'}
-        size="sm"
+      <ArrayFieldRowRenderer
+        field={f}
+        item={item}
+        index={index}
+        theme={this.props.theme}
+        collectionSlug={this.props.collectionSlug}
+        pluginSettings={this.props.pluginSettings}
+        fieldComponents={this.props.fieldComponents}
+        items={this.items}
+        onUpdateItem={this.handleUpdateItem}
+        onChange={this.props.onChange}
       />
     );
   };
@@ -206,93 +76,37 @@ export class ArrayField extends React.Component<ArrayFieldProps, ArrayFieldState
 
     return (
     <div className="space-y-4">
-      {items.map((item, index) => {
-         // Check conditions
-         const visibleFields = field.fields.filter((f: any) => {
-            if (!f.admin?.condition) return true;
-            return f.admin.condition({}, item); // Passing empty global data for now as it's harder to get here
-         });
-
-         return (
-            <div
-              key={index}
-              draggable={isHandleHovered === index || draggedIndex === index}
-              onDragStart={(e) => {
-                this.setState({ draggedIndex: index });
-                e.dataTransfer.effectAllowed = 'move';
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                if (draggedIndex === null || draggedIndex === index) return;
-                this.handleReorder(draggedIndex, index);
-                this.setState({ draggedIndex: index });
-              }}
-              onDragEnd={() => {
-                this.setState({ draggedIndex: null, isHandleHovered: null });
-              }}
-              className={`relative p-5 rounded-lg border transition-all duration-300 ${
-                draggedIndex === index ? 'opacity-20 scale-[0.98]' : ''
-              } ${
-                theme === 'dark' ? 'bg-slate-900/30 border-slate-800' : 'bg-slate-50 border-slate-200'
-              }`}
-            >
-              <div className="absolute top-4 right-4 flex items-center gap-1">
-                <div
-                  onMouseEnter={() => this.setState({ isHandleHovered: index })}
-                  onMouseLeave={() => this.setState({ isHandleHovered: null })}
-                  className={`cursor-grab active:cursor-grabbing p-1.5 rounded-md transition-colors mr-2 ${
-                    theme === 'dark' ? 'text-slate-700 hover:text-indigo-400' : 'text-slate-200 hover:text-indigo-500'
-                  }`}
-                >
-                  <GripVertical size={16} className="opacity-50" />
-                </div>
-                <button
-                  onClick={() => this.handleMoveUp(index)}
-                  disabled={index === 0}
-                  className={`p-1 rounded-md transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-white text-slate-400'} disabled:opacity-20`}
-                >
-                  <FrameworkIcons.ChevronUp size={12} />
-                </button>
-                <button
-                  onClick={() => this.handleMoveDown(index)}
-                  disabled={index === items.length - 1}
-                  className={`p-1 rounded-md transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-white text-slate-400'} disabled:opacity-20`}
-                >
-                  <FrameworkIcons.ChevronDown size={12} />
-                </button>
-                <button
-                  onClick={() => this.handleRemoveItem(index)}
-                  className="p-1 rounded-md hover:bg-rose-500 hover:text-white text-rose-500/50 transition-all ml-0.5"
-                >
-                  <FrameworkIcons.Trash size={12} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                {visibleFields.map((f: any) => (
-                  <div key={f.name} className={f.type === 'textarea' || f.type === 'relationship' || f.type === 'array' ? 'md:col-span-2' : ''}>
-                    <label className={`block text-[11px] font-semibold tracking-wide mb-1.5 ${theme === 'dark' ? 'text-slate-500/80' : 'text-slate-400'}`}>
-                      {f.label || f.name}
-                    </label>
-                    {this.renderField(f, item, index)}
-                  </div>
-                ))}
-              </div>
-            </div>
-         );
-      })}
+      {items.map((item, index) => (
+         <ArrayFieldRow
+            key={index}
+            field={field}
+            item={item}
+            index={index}
+            theme={theme}
+            itemsLength={items.length}
+            draggedIndex={draggedIndex}
+            isHandleHovered={isHandleHovered}
+            renderField={this.renderField}
+            onSetDragged={(value) => this.setState({ draggedIndex: value })}
+            onSetHandleHovered={(value) => this.setState({ isHandleHovered: value })}
+            onReorder={this.handleReorder}
+            onMoveUp={this.handleMoveUp}
+            onMoveDown={this.handleMoveDown}
+            onRemove={this.handleRemoveItem}
+         />
+      ))}
 
       <button
         onClick={this.handleAddItem}
         className={`w-full py-6 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all group ${
-          theme === 'dark' 
-            ? 'border-slate-800 hover:border-indigo-500/50 bg-slate-900/10 hover:bg-indigo-500/5 text-slate-500 hover:text-indigo-400' 
+          theme === 'dark'
+            ? 'border-slate-800 hover:border-indigo-500/50 bg-slate-900/10 hover:bg-indigo-500/5 text-slate-500 hover:text-indigo-400'
             : 'border-slate-200 hover:border-indigo-300 bg-slate-50/50 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'
         }`}
       >
         <div className={`p-3 rounded-lg transition-all shadow-sm ${
-          theme === 'dark' 
-            ? 'bg-slate-800 group-hover:bg-indigo-500 group-hover:text-white' 
+          theme === 'dark'
+            ? 'bg-slate-800 group-hover:bg-indigo-500 group-hover:text-white'
             : 'bg-white group-hover:bg-indigo-600 group-hover:text-white shadow-slate-200'
         }`}>
           <FrameworkIcons.Plus size={20} strokeWidth={3} />

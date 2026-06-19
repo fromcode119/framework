@@ -5,12 +5,38 @@
       "profile": "Profile",
       "security": "Security",
       "sessions": "Sessions",
-      "two-factor": "Two-factor"
+      "two-factor": "Two-factor",
+      "orders": "Orders",
+      "subscription": "Subscription",
+      "courses": "Courses",
+      "partner": "Partner",
+      "affiliate": "Partner"
+    },
+    "shell": {
+      "title": "My account",
+      "nav": "Account sections",
+      "empty": "No account panels are available yet."
     },
     "overview": {
       "greeting": "Welcome, {{name}}",
       "greetingAnon": "Welcome",
-      "intro": "Manage your profile and account settings from one place."
+      "intro": "Manage your profile and account settings from one place.",
+      "loading": "Loading your account…",
+      "manage": "Manage your account",
+      "stats": {
+        "orders": "Orders",
+        "totalSpent": "{{amount}} total spent",
+        "points": "Reward points",
+        "pointsValue": "worth {{amount}}",
+        "subscription": "Subscription",
+        "subActive": "Active",
+        "subInactive": "None",
+        "subPrice": "{{amount}}",
+        "courses": "Courses",
+        "coursesCompleted": "{{count}} completed",
+        "partner": "Partner code",
+        "commissionsEarned": "{{amount}} earned"
+      }
     },
     "profile": {
       "heading": "My profile",
@@ -37,7 +63,12 @@
       "current": "This device",
       "session": "Session",
       "revokeOthers": "Sign out other sessions",
-      "revoking": "Signing out…"
+      "revoking": "Signing out…",
+      "ip": "IP address",
+      "revoke": "Sign out",
+      "revokingOne": "Signing out…",
+      "unknownDevice": "Unknown device",
+      "created": "Started"
     },
     "twoFactor": {
       "loading": "Loading…",
@@ -53,6 +84,11 @@
       "disabledMsg": "Two-factor disabled.",
       "invalidToken": "Invalid code, try again.",
       "failed": "Action failed."
+    },
+    "gate": {
+      "title": "Please sign in",
+      "body": "You need to be signed in to view your account.",
+      "login": "Sign in"
     }
   }
 }

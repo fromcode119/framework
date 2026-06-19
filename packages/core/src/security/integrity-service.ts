@@ -73,21 +73,23 @@ export class IntegrityService {
   /**
    * Whether a checksum MISMATCH should hard-fail (disable) the plugin.
    *
-   * Default OFF. The stored directory checksum is only a meaningful tamper signal
-   * when it comes from a trusted out-of-band source (a signed manifest). For a
-   * plugin that is already installed on disk — the deployed, trusted state — a
-   * mismatch is almost always a core-version hash-recipe change (e.g. an older core
-   * hashed manifest.json, a newer one excludes it), NOT tampering. Hard-failing on
-   * that silently disables every plugin the moment core is upgraded.
+   * ENFORCED BY DEFAULT IN PRODUCTION. When NODE_ENV === 'production' a mismatch
+   * throws ("Security Violation: Integrity check failed") unless the operator
+   * explicitly opts out with ENFORCE_PLUGIN_INTEGRITY=false (e.g. immediately
+   * after a core upgrade whose hash recipe changed, while plugins are re-stamped).
    *
-   * So by default we self-heal (re-stamp) instead of disabling, mirroring how
-   * signature enforcement is opt-in (ENFORCE_PLUGIN_SIGNATURES). Operators who want
-   * cryptographic tamper protection should enable signature signing — a signature
-   * signs the manifest and cannot be false-positived by a core upgrade. Set
-   * ENFORCE_PLUGIN_INTEGRITY=true to restore the old strict directory-hash behavior.
+   * Outside production the default stays permissive: a mismatch is almost always
+   * a core-version hash-recipe change or an in-place dev rebuild, NOT tampering,
+   * so we self-heal by re-stamping from the on-disk content. Set
+   * ENFORCE_PLUGIN_INTEGRITY=true to opt in to strict behavior in dev too.
+   * Cryptographic tamper protection is signature enforcement
+   * (ENFORCE_PLUGIN_SIGNATURES), which a core upgrade cannot false-positive.
    */
   public static isEnforced(): boolean {
-    return process.env.ENFORCE_PLUGIN_INTEGRITY === 'true';
+    const flag = String(process.env.ENFORCE_PLUGIN_INTEGRITY || '').trim().toLowerCase();
+    if (flag === 'true') return true;
+    if (flag === 'false') return false;
+    return process.env.NODE_ENV === 'production';
   }
 
   /**

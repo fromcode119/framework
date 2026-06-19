@@ -1,29 +1,19 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import { ArchiveUploadSessionService, BackupService, PluginManager, Logger, SafeArchive } from '@fromcode119/core';
-import { ApplicationHostUtils, CoercionUtils } from '@fromcode119/core';
+import { ArchiveUploadSessionService, PluginManager, Logger, CoercionUtils } from '@fromcode119/core';
 import { PluginInstallOperationService } from '../../services/plugin-install-operation-service';
+import { PluginArchiveSupport } from './plugin-archive-support';
 
 export class PluginController {
-  private static readonly PRODUCTION_ASSET_CACHE_HEADER = 'public, max-age=2592000';
-
-  private static readonly COMPRESSIBLE_MIME: Record<string, string> = {
-    '.js': 'application/javascript',
-    '.mjs': 'application/javascript',
-    '.css': 'text/css',
-    '.json': 'application/json',
-    '.svg': 'image/svg+xml',
-    '.html': 'text/html',
-  };
-
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'plugin-controller' });
   private operations = PluginInstallOperationService.getInstance();
+  private archiveSupport: PluginArchiveSupport;
 
-  constructor(private manager: PluginManager) {}
+  constructor(private manager: PluginManager) {
+    this.archiveSupport = new PluginArchiveSupport(manager);
+  }
 
   async list(req: Request, res: Response) {
     const shouldRefresh = CoercionUtils.toBoolean(req.query.refresh);
@@ -196,7 +186,6 @@ export class PluginController {
     const { slug } = req.params;
     const db = (this.manager as any).db;
     const { systemLogs } = require('@fromcode119/database');
-
     try {
       const logs = await db.find(systemLogs, {
         where: db.eq(systemLogs.pluginSlug, slug),
@@ -209,22 +198,26 @@ export class PluginController {
     }
   }
 
+  private startArchiveInstallOperation(detachedArchivePath: string) {
+    return this.operations.start('upload', 'archive install', async (reportProgress) => {
+      try {
+        await this.manager.installUploadedPluginArchive(detachedArchivePath, {
+          enable: true,
+          progressReporter: reportProgress,
+        });
+      } finally {
+        if (fs.existsSync(detachedArchivePath)) {
+          fs.unlinkSync(detachedArchivePath);
+        }
+      }
+    });
+  }
+
   async upload(req: any, res: Response) {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     try {
-      const detachedArchivePath = this.createDetachedArchiveCopy(req.file.path, req.file.originalname);
-      const operation = this.operations.start('upload', 'archive install', async (reportProgress) => {
-        try {
-          await this.manager.installUploadedPluginArchive(detachedArchivePath, {
-            enable: true,
-            progressReporter: reportProgress,
-          });
-        } finally {
-          if (fs.existsSync(detachedArchivePath)) {
-            fs.unlinkSync(detachedArchivePath);
-          }
-        }
-      });
+      const detachedArchivePath = this.archiveSupport.createDetachedArchiveCopy(req.file.path, req.file.originalname);
+      const operation = this.startArchiveInstallOperation(detachedArchivePath);
       res.status(202).json({ success: true, operationId: operation.id });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -236,7 +229,7 @@ export class PluginController {
   async inspectUpload(req: any, res: Response) {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     try {
-      const info = await this.inspectPluginArchive(req.file.path, req.file.originalname);
+      const info = await this.archiveSupport.inspectPluginArchive(req.file.path, req.file.originalname);
       res.json({ success: true, info });
     } catch (err: any) {
       res.status(400).json({ error: err.message || 'Invalid plugin archive' });
@@ -247,7 +240,7 @@ export class PluginController {
 
   async startUploadSession(req: Request, res: Response) {
     try {
-      const payload = this.readUploadSessionRequest(req.body);
+      const payload = this.archiveSupport.readUploadSessionRequest(req.body);
       res.status(201).json({
         success: true,
         ...ArchiveUploadSessionService.startSession(
@@ -264,7 +257,7 @@ export class PluginController {
 
   async uploadChunk(req: any, res: Response) {
     try {
-      const payload = this.readChunkUploadRequest(req);
+      const payload = this.archiveSupport.readChunkUploadRequest(req);
       const result = ArchiveUploadSessionService.appendChunk(payload.uploadId, payload.filePath, payload.chunkIndex, payload.totalChunks);
       res.status(201).json({ success: true, ...result });
     } catch (err: any) {
@@ -274,9 +267,9 @@ export class PluginController {
 
   async inspectStagedUpload(req: Request, res: Response) {
     try {
-      const uploadId = this.readUploadId(req.body);
+      const uploadId = this.archiveSupport.readUploadId(req.body);
       const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
-      const info = await this.inspectPluginArchive(uploadedArchive.filePath, uploadedArchive.originalFilename);
+      const info = await this.archiveSupport.inspectPluginArchive(uploadedArchive.filePath, uploadedArchive.originalFilename);
       res.json({ success: true, uploadId, info });
     } catch (err: any) {
       res.status(err?.statusCode || 400).json({ error: err.message || 'Invalid plugin archive' });
@@ -286,21 +279,10 @@ export class PluginController {
   async completeStagedUpload(req: Request, res: Response) {
     let uploadId = '';
     try {
-      uploadId = this.readUploadId(req.body);
+      uploadId = this.archiveSupport.readUploadId(req.body);
       const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
-      const detachedArchivePath = this.createDetachedArchiveCopy(uploadedArchive.filePath, uploadedArchive.originalFilename);
-      const operation = this.operations.start('upload', 'archive install', async (reportProgress) => {
-        try {
-          await this.manager.installUploadedPluginArchive(detachedArchivePath, {
-            enable: true,
-            progressReporter: reportProgress,
-          });
-        } finally {
-          if (fs.existsSync(detachedArchivePath)) {
-            fs.unlinkSync(detachedArchivePath);
-          }
-        }
-      });
+      const detachedArchivePath = this.archiveSupport.createDetachedArchiveCopy(uploadedArchive.filePath, uploadedArchive.originalFilename);
+      const operation = this.startArchiveInstallOperation(detachedArchivePath);
       res.status(202).json({ success: true, operationId: operation.id });
     } catch (err: any) {
       res.status(err?.statusCode || 500).json({ error: err.message || 'Could not install plugin package.' });
@@ -312,285 +294,6 @@ export class PluginController {
   }
 
   async serveAssets(req: Request, res: Response) {
-    const { slug } = req.params;
-    const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
-    if (!plugin || !plugin.path || plugin.state !== 'active') {
-      return res.status(404).json({ error: 'Not found or disabled' });
-    }
-
-    const filePath = (req.params as any)[0];
-    const abs = path.resolve(plugin.path, 'src', 'ui', filePath);
-    if (!abs.startsWith(path.resolve(plugin.path, 'src', 'ui'))) {
-      return res.status(400).json({ error: 'Invalid path' });
-    }
-
-    if (fs.existsSync(abs)) {
-      const noCache = this.shouldDisableAssetCache(req);
-      const ext = path.extname(abs).toLowerCase();
-      const mimeType = PluginController.COMPRESSIBLE_MIME[ext];
-      const gzPath = abs + '.gz';
-      const acceptsGzip = String(req.headers['accept-encoding'] || '').includes('gzip');
-
-      if (mimeType && acceptsGzip && fs.existsSync(gzPath)) {
-        const headers: Record<string, string> = {
-          'Content-Encoding': 'gzip',
-          'Content-Type': mimeType,
-          'Vary': 'Accept-Encoding',
-          'Cache-Control': noCache ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PluginController.PRODUCTION_ASSET_CACHE_HEADER,
-        };
-        if (noCache) {
-          headers['Pragma'] = 'no-cache';
-          headers['Expires'] = '0';
-        }
-        res.set(headers);
-        return res.sendFile(gzPath);
-      }
-
-      if (noCache) {
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        return res.sendFile(abs);
-      }
-      return res.sendFile(abs, {
-        headers: { 'Cache-Control': PluginController.PRODUCTION_ASSET_CACHE_HEADER },
-      });
-    }
-
-    return res.status(404).json({ error: 'Asset not found' });
-  }
-
-  private shouldDisableAssetCache(req: Request): boolean {
-    if (process.env.NODE_ENV !== 'production') {
-      return true;
-    }
-
-    const configuredUrls = [
-      process.env.API_URL,
-      process.env.FRONTEND_URL,
-      process.env.ADMIN_URL,
-      process.env.MARKETPLACE_URL,
-    ]
-      .map((value) => String(value || '').trim().toLowerCase())
-      .filter(Boolean);
-    if (configuredUrls.some((value) => ApplicationHostUtils.isLocalDevelopmentHostname(value))) {
-      return true;
-    }
-
-    const host = String(req.get('host') || req.get('x-forwarded-host') || '').trim().toLowerCase();
-    return ApplicationHostUtils.isLocalDevelopmentHostname(host);
-  }
-
-  private async inspectPluginArchive(filePath: string, originalFilename?: string) {
-    const extractedDir = await this.extractArchiveToTemporaryDirectory(filePath, originalFilename, 'plugin');
-    try {
-      const manifestPath = this.findManifestPath(extractedDir, 'manifest.json');
-      if (!manifestPath) {
-        throw new Error('Invalid plugin package: manifest.json not found.');
-      }
-
-      let manifest: any;
-      try {
-        manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-      } catch {
-        throw new Error('Invalid plugin package: manifest.json is not valid JSON.');
-      }
-
-      const slug = String(manifest?.slug || '').trim().toLowerCase();
-      if (!slug) {
-        throw new Error('Invalid plugin package: missing "slug" in manifest.json.');
-      }
-
-      const existing = this.manager.getPlugins().find((plugin: any) => plugin?.manifest?.slug === slug);
-
-      return {
-        slug,
-        name: String(manifest?.name || slug),
-        version: String(manifest?.version || ''),
-        description: String(manifest?.description || ''),
-        author: String(manifest?.author || ''),
-        files: this.countFiles(extractedDir),
-        dependencies: this.formatDependencyMap(manifest?.dependencies),
-        peerDependencies: this.formatDependencyMap(manifest?.peerDependencies),
-        hasUiBundle: this.directoryContainsSegment(extractedDir, 'ui'),
-        hasServerCode: this.directoryContainsFilePattern(extractedDir, /(^|\/)index\.(js|ts)$/i),
-        existingVersion: existing?.manifest?.version || null,
-        action: existing ? 'update' : 'install',
-      };
-    } finally {
-      fs.rmSync(extractedDir, { recursive: true, force: true });
-    }
-  }
-
-  private async extractArchiveToTemporaryDirectory(filePath: string, originalFilename: string | undefined, type: 'plugin' | 'theme'): Promise<string> {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `fromcode-${type}-inspect-`));
-    try {
-      if (this.isZipArchive(filePath, originalFilename)) {
-        SafeArchive.extractZip(filePath, tempDir);
-      } else if (this.isTarArchive(filePath, originalFilename)) {
-        await BackupService.restore(filePath, tempDir);
-      } else {
-        throw new Error(`Unsupported archive format. Upload a .zip or .tar.gz ${type} package.`);
-      }
-      return tempDir;
-    } catch (error) {
-      fs.rmSync(tempDir, { recursive: true, force: true });
-      throw error;
-    }
-  }
-
-  private findManifestPath(rootDir: string, filename: string): string | null {
-    const directPath = path.join(rootDir, filename);
-    if (fs.existsSync(directPath)) {
-      return directPath;
-    }
-
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) {
-        continue;
-      }
-      const found = this.findManifestPath(path.join(rootDir, entry.name), filename);
-      if (found) {
-        return found;
-      }
-    }
-
-    return null;
-  }
-
-  private directoryContainsSegment(rootDir: string, segment: string): boolean {
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      const absolutePath = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) {
-        if (entry.name === segment || this.directoryContainsSegment(absolutePath, segment)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private directoryContainsFilePattern(rootDir: string, pattern: RegExp): boolean {
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      const absolutePath = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) {
-        if (this.directoryContainsFilePattern(absolutePath, pattern)) {
-          return true;
-        }
-        continue;
-      }
-
-      const normalizedPath = absolutePath.replace(/\\/g, '/');
-      if (pattern.test(normalizedPath)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private countFiles(rootDir: string): number {
-    let count = 0;
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      const absolutePath = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) {
-        count += this.countFiles(absolutePath);
-      } else if (entry.isFile()) {
-        count += 1;
-      }
-    }
-    return count;
-  }
-
-  private formatDependencyMap(value: unknown): string[] {
-    if (!value || typeof value !== 'object') {
-      return [];
-    }
-    return Object.entries(value as Record<string, unknown>)
-      .map(([dependency, version]) => {
-        const normalizedDependency = String(dependency || '').trim();
-        const normalizedVersion = String(version || '').trim();
-        if (!normalizedDependency) {
-          return '';
-        }
-        return normalizedVersion ? `${normalizedDependency} (${normalizedVersion})` : normalizedDependency;
-      })
-      .filter(Boolean);
-  }
-
-  private createDetachedArchiveCopy(sourceFilePath: string, originalFilename?: string): string {
-    const extension = path.extname(String(originalFilename || sourceFilePath || '').trim()) || '.bin';
-    const detachedPath = path.join(os.tmpdir(), `fromcode-plugin-install-${Date.now()}-${Math.random().toString(16).slice(2)}${extension}`);
-    fs.copyFileSync(sourceFilePath, detachedPath);
-    return detachedPath;
-  }
-
-  private readUploadSessionRequest(body: unknown): { originalFilename: string; totalSizeBytes: number; totalChunks: number } {
-    if (!body || typeof body !== 'object') {
-      throw new Error('Upload session payload is required.');
-    }
-    const originalFilename = String((body as { originalFilename?: unknown }).originalFilename || '').trim();
-    const totalSizeBytes = Number((body as { totalSizeBytes?: unknown }).totalSizeBytes || 0);
-    const totalChunks = Number((body as { totalChunks?: unknown }).totalChunks || 0);
-    if (!originalFilename) {
-      throw new Error('originalFilename is required.');
-    }
-    if (!Number.isFinite(totalSizeBytes) || totalSizeBytes <= 0) {
-      throw new Error('totalSizeBytes must be greater than zero.');
-    }
-    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
-      throw new Error('totalChunks must be a positive integer.');
-    }
-    return { originalFilename, totalSizeBytes, totalChunks };
-  }
-
-  private readChunkUploadRequest(req: Request): { uploadId: string; filePath: string; chunkIndex: number; totalChunks: number } {
-    const uploadRequest = req as Request & {
-      file?: { path?: unknown };
-      body?: { uploadId?: unknown; chunkIndex?: unknown; totalChunks?: unknown };
-    };
-    const uploadId = String(uploadRequest.body?.uploadId || '').trim();
-    const filePath = String(uploadRequest.file?.path || '').trim();
-    const chunkIndex = Number(uploadRequest.body?.chunkIndex || -1);
-    const totalChunks = Number(uploadRequest.body?.totalChunks || 0);
-    if (!uploadId) {
-      throw new Error('uploadId is required.');
-    }
-    if (!filePath) {
-      throw new Error('chunk file is required.');
-    }
-    if (!Number.isInteger(chunkIndex) || chunkIndex < 0) {
-      throw new Error('chunkIndex must be a non-negative integer.');
-    }
-    if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
-      throw new Error('totalChunks must be a positive integer.');
-    }
-    return { uploadId, filePath, chunkIndex, totalChunks };
-  }
-
-  private readUploadId(body: unknown): string {
-    const uploadId = String((body as { uploadId?: unknown } | null | undefined)?.uploadId || '').trim();
-    if (!uploadId) {
-      throw new Error('uploadId is required.');
-    }
-    return uploadId;
-  }
-
-  private isZipArchive(filePath: string, originalFilename?: string): boolean {
-    const normalizedOriginalName = String(originalFilename || '').trim().toLowerCase();
-    if (normalizedOriginalName.endsWith('.zip')) {
-      return true;
-    }
-
-    try {
-      const header = fs.readFileSync(filePath).subarray(0, 4);
-      return header.length >= 2 && header[0] === 0x50 && header[1] === 0x4b;
-    } catch {
-      return false;
-    }
-  }
-
-  private isTarArchive(filePath: string, originalFilename?: string): boolean {
-    const normalizedOriginalName = String(originalFilename || '').trim().toLowerCase();
-    return normalizedOriginalName.endsWith('.tar.gz') || normalizedOriginalName.endsWith('.tgz') || normalizedOriginalName.endsWith('.tar') || !this.isZipArchive(filePath, originalFilename);
+    return this.archiveSupport.serveAssets(req, res);
   }
 }

@@ -61,4 +61,29 @@ export class FieldRendererUtils {
 
     return '';
   }
+
+  /**
+   * Computes the outer wrapper className for a rendered field: the col-span rule
+   * (wide controls span the full grid) plus the read-only framed-box styling.
+   */
+  static wrapperClassName(field: any, isFieldReadOnly: boolean, theme: 'light' | 'dark'): string {
+    const colSpan =
+      field.type === 'textarea' ||
+      field.type === 'richText' ||
+      field.type === 'array' ||
+      (field.type === 'relationship' && field.hasMany) ||
+      field.type === 'json' ||
+      field.admin?.width === 'full' ||
+      field.admin?.component === 'TagField' ||
+      field.admin?.component === 'Tags'
+        ? 'col-span-full' : '';
+
+    const readOnlyBox = isFieldReadOnly
+      ? theme === 'dark'
+        ? 'rounded-xl border border-slate-800/80 bg-slate-900/20 p-2.5'
+        : 'rounded-xl border border-slate-200 bg-slate-50/70 p-2.5'
+      : '';
+
+    return `w-full ${colSpan} ${readOnlyBox}`;
+  }
 }

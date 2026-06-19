@@ -1,8 +1,6 @@
-import { SystemConstants } from '../../constants';
 import type {
   Collection,
   CollectionQueryInterface,
-  PluginDefaultPageContractBackfillAssociationSnapshot,
   PluginDefaultPageContractCreatePayload,
   PluginDefaultPageContractMaterializationExecutionReport,
   PluginDefaultPageContractPageSnapshot,
@@ -14,21 +12,23 @@ import { CoreServices } from '../core-services';
 import { SeedPageService } from '../seed-page-service';
 import { PluginDefaultPageBackfillAssociationService } from './plugin-default-page-backfill-association-service';
 import { PluginDefaultPageMaterializationExecutorService } from './plugin-default-page-materialization-executor-service';
+import { PluginDefaultPageAssociationStore } from './plugin-default-page-association-store';
+import { PluginDefaultPageRequiredRouteAssertion } from './plugin-default-page-required-route-assertion';
 import type { PluginManagerInterface } from '../../plugin/context/utils.interfaces';
 
 export class PluginDefaultPageMaterializationRuntimeService extends BaseService {
-  private static readonly ASSOCIATIONS_META_KEY = 'default_page_contract_associations';
-  private static readonly REQUIRED_ROUTE_FAILURE_LABEL = 'Required route reconciliation failed';
-
   private readonly associationService = new PluginDefaultPageBackfillAssociationService();
   private readonly executor = new PluginDefaultPageMaterializationExecutorService(this.associationService);
   private readonly seedPageService = new SeedPageService();
+  private readonly associationStore: PluginDefaultPageAssociationStore;
+  private readonly requiredRouteAssertion = new PluginDefaultPageRequiredRouteAssertion(this.serviceName);
 
   constructor(
     private readonly manager: PluginManagerInterface,
     private readonly overridesProvider?: () => Promise<ThemeDefaultPageContractOverride[]>,
   ) {
     super();
+    this.associationStore = new PluginDefaultPageAssociationStore(manager);
   }
 
   get serviceName(): string {
@@ -36,14 +36,14 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
   }
 
   async materialize(): Promise<PluginDefaultPageContractMaterializationExecutionReport | null> {
-    const associationSnapshot = await this.loadAssociationSnapshot();
+    const associationSnapshot = await this.associationStore.loadAssociationSnapshot();
     const overrides = await this.loadOverrides();
     const preliminaryContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
       overrides,
     });
     const resolvedContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
       overrides,
-      siteState: this.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
+      siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
     });
     const pagesEntry = this.findPagesCollectionEntry();
 
@@ -67,22 +67,21 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
         createPage: async (payload) => this.createPage(pagesEntry.collection, payload),
       },
       associationSnapshotRepository: {
-        getAssociationSnapshot: async () => this.loadAssociationSnapshot(),
+        getAssociationSnapshot: async () => this.associationStore.loadAssociationSnapshot(),
       },
       associationPersistRepository: {
-        persistAssociation: async (input) => this.persistAssociation(input.canonicalKey, input.pageId),
+        persistAssociation: async (input) => this.associationStore.persistAssociation(input.canonicalKey, input.pageId),
       },
     });
 
     await this.reconcileMaterializedPageMetadata(pagesEntry.collection, report, resolvedContracts);
-    this.assertRequiredRouteReconciliation(report, resolvedContracts);
+    this.requiredRouteAssertion.assertRequiredRouteReconciliation(report, resolvedContracts);
 
     return report;
   }
 
   static isRequiredRouteFailure(error: unknown): boolean {
-    const message = error instanceof Error ? error.message : String(error || '');
-    return message.includes(PluginDefaultPageMaterializationRuntimeService.REQUIRED_ROUTE_FAILURE_LABEL);
+    return PluginDefaultPageRequiredRouteAssertion.isRequiredRouteFailure(error);
   }
 
   private async loadOverrides(): Promise<ThemeDefaultPageContractOverride[]> {
@@ -190,158 +189,6 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
       title: row?.title,
       status: row?.status,
     };
-  }
-
-  private async loadAssociationSnapshot(): Promise<PluginDefaultPageContractBackfillAssociationSnapshot> {
-    const row = await this.manager.db.findOne(SystemConstants.TABLE.META, {
-      key: PluginDefaultPageMaterializationRuntimeService.ASSOCIATIONS_META_KEY,
-    });
-    const parsed = this.parseAssociationSnapshot(row?.value);
-    return parsed || {};
-  }
-
-  private parseAssociationSnapshot(value: any): PluginDefaultPageContractBackfillAssociationSnapshot | null {
-    if (!value) {
-      return null;
-    }
-
-    if (typeof value === 'object') {
-      return value as PluginDefaultPageContractBackfillAssociationSnapshot;
-    }
-
-    try {
-      return JSON.parse(String(value)) as PluginDefaultPageContractBackfillAssociationSnapshot;
-    } catch {
-      return null;
-    }
-  }
-
-  private createSiteStateSnapshot(
-    snapshot: PluginDefaultPageContractBackfillAssociationSnapshot,
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
-  ) {
-    const runtimeParameterizedContracts = new Set(
-      resolvedContracts
-        .filter((contract) => this.isRuntimeParameterizedContract(contract))
-        .map((contract) => contract.canonicalKey),
-    );
-    const byCanonicalKey = Object.fromEntries(
-      Object.keys(snapshot?.byCanonicalKey || {}).map((canonicalKey) => {
-        if (runtimeParameterizedContracts.has(canonicalKey)) {
-          return null;
-        }
-
-        return [canonicalKey, { status: 'ready' as const, prerequisitesReady: true, reasons: ['materialized'] }];
-      }).filter(Boolean) as Array<[string, { status: 'ready'; prerequisitesReady: true; reasons: string[] }]>,
-    );
-
-    return { byCanonicalKey };
-  }
-
-  private assertRequiredRouteReconciliation(
-    report: PluginDefaultPageContractMaterializationExecutionReport | null,
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
-  ): void {
-    const reportByCanonicalKey = new Map((report?.entries || []).map((entry) => [entry.canonicalKey, entry]));
-    const failures = resolvedContracts
-      .filter((contract) => contract.required)
-      .flatMap((contract) => this.getRequiredRouteFailures(contract, reportByCanonicalKey, report));
-
-    if (!failures.length) {
-      return;
-    }
-
-    throw new Error(
-      `[${this.serviceName}] ${PluginDefaultPageMaterializationRuntimeService.REQUIRED_ROUTE_FAILURE_LABEL}: ${failures.join('; ')}`,
-    );
-  }
-
-  private getRequiredRouteFailures(
-    contract: ResolvedPluginDefaultPageContract,
-    reportByCanonicalKey: Map<string, PluginDefaultPageContractMaterializationExecutionReport['entries'][number]>,
-    report: PluginDefaultPageContractMaterializationExecutionReport | null,
-  ): string[] {
-    if (!contract.install || contract.status !== 'ready') {
-      return [this.formatRequiredRouteFailure(contract.canonicalKey, contract.reasons, 'contract-not-ready')];
-    }
-
-    if (this.isRuntimeParameterizedContract(contract) || contract.materializationMode !== 'singleton-document') {
-      return [];
-    }
-
-    if (!report) {
-      return [this.formatRequiredRouteFailure(contract.canonicalKey, [], 'pages-collection-missing')];
-    }
-
-    const entry = reportByCanonicalKey.get(contract.canonicalKey);
-    if (!entry) {
-      return [this.formatRequiredRouteFailure(contract.canonicalKey, [], 'reconciliation-entry-missing')];
-    }
-
-    if (entry.executionOutcome === 'applied' || entry.executionOutcome === 'noop') {
-      return [];
-    }
-
-    return [this.formatRequiredRouteFailure(contract.canonicalKey, entry.reasons, entry.executionOutcome)];
-  }
-
-  private formatRequiredRouteFailure(canonicalKey: string, reasons: string[], fallbackReason: string): string {
-    const normalizedReasons = Array.from(
-      new Set(
-        [...(reasons || []), fallbackReason]
-          .map((reason) => String(reason || '').trim())
-          .filter(Boolean),
-      ),
-    );
-
-    return `${canonicalKey} (${normalizedReasons.join(', ')})`;
-  }
-
-  private async persistAssociation(canonicalKey: string, pageId: number | string) {
-    const snapshot = await this.loadAssociationSnapshot();
-    const existingCanonical = snapshot.byCanonicalKey?.[canonicalKey];
-    const existingPage = snapshot.byPageId?.[String(pageId)];
-
-    if (existingCanonical?.pageId === pageId && existingPage?.canonicalKey === canonicalKey) {
-      return { canonicalKey, pageId, status: 'noop' as const };
-    }
-    if (existingCanonical && String(existingCanonical.pageId) !== String(pageId)) {
-      return { canonicalKey, pageId, status: 'conflict' as const, reason: 'contract-already-associated-to-different-page' };
-    }
-    if (existingPage && existingPage.canonicalKey !== canonicalKey) {
-      return { canonicalKey, pageId, status: 'conflict' as const, reason: 'matched-page-already-associated-to-different-contract' };
-    }
-
-    const nextSnapshot: PluginDefaultPageContractBackfillAssociationSnapshot = {
-      byCanonicalKey: {
-        ...(snapshot.byCanonicalKey || {}),
-        [canonicalKey]: { canonicalKey, pageId },
-      },
-      byPageId: {
-        ...(snapshot.byPageId || {}),
-        [String(pageId)]: { canonicalKey, pageId },
-      },
-    };
-    await this.saveAssociationSnapshot(nextSnapshot);
-
-    return { canonicalKey, pageId, status: 'applied' as const };
-  }
-
-  private async saveAssociationSnapshot(snapshot: PluginDefaultPageContractBackfillAssociationSnapshot): Promise<void> {
-    const existing = await this.manager.db.findOne(SystemConstants.TABLE.META, {
-      key: PluginDefaultPageMaterializationRuntimeService.ASSOCIATIONS_META_KEY,
-    });
-    const value = JSON.stringify(snapshot);
-
-    if (existing) {
-      await this.manager.db.update(SystemConstants.TABLE.META, { key: PluginDefaultPageMaterializationRuntimeService.ASSOCIATIONS_META_KEY }, { value });
-      return;
-    }
-
-    await this.manager.db.insert(SystemConstants.TABLE.META, {
-      key: PluginDefaultPageMaterializationRuntimeService.ASSOCIATIONS_META_KEY,
-      value,
-    });
   }
 
   private async reconcileMaterializedPageMetadata(

@@ -1,33 +1,16 @@
 "use client";
 
 import React from 'react';
-import { CollectionQueryUtils } from '@fromcode119/react';
 import { Select } from '@/components/ui/select';
 import { AdminComponent } from '@/components/admin-component';
-import { AdminServices } from '@/lib/admin-services';
 import { CollectionKeyUtils } from './collection-key-utils';
 import { RelationshipSelectLocalUtils } from './relationship-select-local-utils';
-
-interface RelationshipSelectLocalProps {
-  field: any;
-  value: any;
-  onChange: (val: any) => void;
-  theme: string;
-  /** All current form values — lets autofill avoid clobbering existing siblings if needed. */
-  record?: Record<string, any>;
-  /** Patch sibling fields live when a related record is picked (schema `admin.autofill`). */
-  onPatch?: (partial: Record<string, any>) => void;
-}
-
-interface SelectOption {
-  label: string;
-  value: string;
-}
-
-interface RelationshipSelectLocalState {
-  search: string;
-  options: SelectOption[];
-}
+import { RelationshipSelectLocalFetcher } from './relationship-select-local-fetcher';
+import type {
+  RelationshipSelectLocalProps,
+  RelationshipSelectLocalState,
+  SelectOption
+} from './relationship-select-local.interfaces';
 
 export class RelationshipSelectLocal extends AdminComponent<RelationshipSelectLocalProps, RelationshipSelectLocalState> {
   state: RelationshipSelectLocalState = { search: '', options: [] };
@@ -74,110 +57,25 @@ export class RelationshipSelectLocal extends AdminComponent<RelationshipSelectLo
 
   private fetchOptions = async (): Promise<void> => {
     const token = ++this.fetchToken;
-    const disposed = () => token !== this.fetchToken;
-    const { field, value } = this.props;
     const { collections, api } = this.plugins;
-    const sourceCollectionSlugs = this.getSourceSlugs();
-    const isMultiSource = this.isMultiSource();
-    const currentTarget = this.getCurrentTarget();
-    const currentValue = this.getCurrentValue();
-    const currentSelectValue = this.getCurrentSelectValue();
-    const search = this.state.search;
-    if (!sourceCollectionSlugs.length) return;
-
-    const resolveLookupField = (sourceCollectionSlug: string): string => {
-      const sourceCollection = (collections || []).find((entry: any) => entry.slug === sourceCollectionSlug);
-      const preferredLabelField =
-        sourceCollection?.admin?.useAsTitle ||
-        (sourceCollectionSlug === 'users' ? 'username' : sourceCollectionSlug === 'media' ? 'filename' : 'name');
-      return field.admin?.sourceField || preferredLabelField;
-    };
-
-    const mapDocsToOptions = (docs: any[], sourceCollectionSlug: string): SelectOption[] => {
-      const seen = new Set<string>();
-      const mapped: SelectOption[] = [];
-      const lookupField = resolveLookupField(sourceCollectionSlug);
-      for (const doc of docs) {
-        const rawValue = doc?.id ?? doc?._id ?? doc?.value ?? doc?.slug;
-        const scalarValue = RelationshipSelectLocalUtils.toScalar(rawValue);
-        const optionValue = isMultiSource
-          ? RelationshipSelectLocalUtils.toOptionKey(scalarValue, sourceCollectionSlug)
-          : scalarValue;
-        if (!optionValue || seen.has(optionValue)) continue;
-        seen.add(optionValue);
-        this.docByKey[optionValue] = doc;
-        this.rawValueMap[optionValue] = isMultiSource
-          ? RelationshipSelectLocalUtils.buildTaggedValue(rawValue ?? scalarValue, sourceCollectionSlug)
-          : rawValue ?? optionValue;
-        const preferredLabel =
-          AdminServices.getInstance().localization.resolveLabelText(doc?.[lookupField]) ||
-          AdminServices.getInstance().localization.resolveLabelText(doc);
-        mapped.push({
-          value: optionValue,
-          label: preferredLabel || optionValue
-        });
-      }
-      return mapped;
-    };
-
-    try {
-      const responses = await Promise.all(
-        sourceCollectionSlugs.map(async (sourceCollectionSlug) => {
-          const docs = await CollectionQueryUtils.queryCollectionDocs(api, sourceCollectionSlug, {
-            limit: 30,
-            search: search.trim() || undefined
-          });
-          return mapDocsToOptions(docs, sourceCollectionSlug);
-        })
-      );
-      const nextOptions = responses.flat().filter((option, index, entries) => (
-        entries.findIndex((entry) => entry.value === option.value) === index
-      ));
-
-      if (!disposed()) {
-        this.setState({ options: nextOptions });
-      }
-
-      if (!currentValue || nextOptions.some((option) => option.value === currentSelectValue)) return;
-
-      // Ensure the currently selected value resolves to a label.
-      const candidateSlugs = currentTarget && isMultiSource
-        ? [currentTarget, ...sourceCollectionSlugs.filter((entry) => entry !== currentTarget)]
-        : sourceCollectionSlugs;
-
-      for (const sourceCollectionSlug of candidateSlugs) {
-        const lookupField = resolveLookupField(sourceCollectionSlug);
-        try {
-          const byId = await CollectionQueryUtils.queryCollectionDocById(api, sourceCollectionSlug, currentValue);
-          const resolved = mapDocsToOptions([byId], sourceCollectionSlug)[0];
-          if (resolved && !disposed()) {
-            this.upsertOption(resolved);
-            return;
-          }
-        } catch {
-          try {
-            const byFieldDoc = await CollectionQueryUtils.queryCollectionDocByField(api, sourceCollectionSlug, lookupField, currentValue, 1);
-            const resolved = byFieldDoc ? mapDocsToOptions([byFieldDoc], sourceCollectionSlug)[0] : undefined;
-            if (resolved && !disposed()) {
-              this.upsertOption(resolved);
-              return;
-            }
-          } catch {
-            continue;
-          }
-        }
-      }
-
-      if (!disposed()) {
-        this.rawValueMap[currentSelectValue || currentValue] = value;
-        this.upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
-      }
-    } catch {
-      if (!disposed() && currentValue) {
-        this.rawValueMap[currentSelectValue || currentValue] = value;
-        this.upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
-      }
-    }
+    const fetcher = new RelationshipSelectLocalFetcher({
+      field: this.props.field,
+      value: this.props.value,
+      api,
+      collections,
+      sourceCollectionSlugs: this.getSourceSlugs(),
+      isMultiSource: this.isMultiSource(),
+      currentTarget: this.getCurrentTarget(),
+      currentValue: this.getCurrentValue(),
+      currentSelectValue: this.getCurrentSelectValue(),
+      search: this.state.search,
+      docByKey: this.docByKey,
+      rawValueMap: this.rawValueMap,
+      disposed: () => token !== this.fetchToken,
+      setOptions: (options) => this.setState({ options }),
+      upsertOption: this.upsertOption
+    });
+    await fetcher.fetch();
   };
 
   componentDidMount(): void {

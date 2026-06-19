@@ -102,6 +102,7 @@ export default function ClientLayoutShell({ children }: ClientLayoutChildrenProp
         inlineSecondarySourceLabel={navigationState.secondarySourceLabel}
         showInlineSecondary={navigationState.showSecondaryInlineInSidebar}
         activePrimaryPathOverride={String(navigationState.activePrimaryItem?.path || '')}
+        activeChildPathOverride={String(navigationState.secondaryResolved?.activeSourcePath || '')}
         onPreviewRegionEnter={navigationState.handleLeftNavigationMouseEnter}
         onPreviewRegionLeave={navigationState.handleLeftNavigationMouseLeave}
       />

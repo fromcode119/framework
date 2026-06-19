@@ -21,6 +21,7 @@ export class ReactExportSourceBuilder {
     'Slot',
     'Override',
     'AccountShell',
+    'RecordsHub',
     'RootFramework',
     'CollectionQueryUtils',
     'BrowserLocalization',

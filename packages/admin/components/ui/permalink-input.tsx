@@ -1,40 +1,12 @@
 "use client";
 
 import React from 'react';
-import { Input } from './input';
 import { Button } from './button';
 import { FrameworkIcons } from '@fromcode119/react';
-import type { Collection } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/admin-component';
-import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { UiFieldUtils } from '@/lib/ui';
-import { AdminUrlUtils } from '@/lib/url-utils';
-
-interface PermalinkInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  id?: string;
-  slug?: string;
-  collection?: Collection;
-  pluginSettings?: Record<string, any>;
-}
-
-interface PermalinkInputState {
-  isEditing: boolean;
-  useAbsolutePath: boolean;
-}
-
-interface PermalinkComputed {
-  baseUrl: string;
-  finalPrefix: string;
-  fullDisplayPrefix: string;
-  displayValue: string;
-  suffix: string;
-  isCustomMode: boolean;
-  isAbsoluteOverride: boolean;
-}
+import { PermalinkInputUtils } from './permalink-input-utils';
+import type { PermalinkInputProps, PermalinkInputState, PermalinkComputed } from './permalink-input.interfaces';
 
 export class PermalinkInput extends AdminComponent<PermalinkInputProps, PermalinkInputState> {
   state: PermalinkInputState = {
@@ -43,59 +15,7 @@ export class PermalinkInput extends AdminComponent<PermalinkInputProps, Permalin
   };
 
   private compute(): PermalinkComputed {
-    const { value, id, slug, collection, pluginSettings } = this.props;
-    const settings = this.runtime?.globalSettings ?? null;
-
-    const baseUrl = AdminUrlUtils.resolveFrontendBaseUrl(settings as Record<string, unknown> | null | undefined);
-    const structure = (settings as Record<string, any> | null)?.permalink_structure || '/:slug';
-    const normalizedValue = String(value || '');
-    const isAbsoluteOverride = normalizedValue.startsWith('/');
-
-    const collectionPrefix = collection ? AdminCollectionUtils.getCollectionPrefix(collection, pluginSettings) : '';
-
-    const isNumericOnly = structure.includes(':id') && !structure.includes(':slug');
-    const isCustomMode = !!normalizedValue;
-    const displayValue = (isCustomMode ? normalizedValue.replace(/^\/+/, '') : '') || (isNumericOnly ? (id || '') : (slug || 'unnamed-resource'));
-
-    const now = new Date();
-    const replacements: Record<string, string> = {
-      ':year': now.getFullYear().toString(),
-      ':month': (now.getMonth() + 1).toString().padStart(2, '0'),
-      ':day': now.getDate().toString().padStart(2, '0'),
-      ':hour': now.getHours().toString().padStart(2, '0'),
-      ':minute': now.getMinutes().toString().padStart(2, '0'),
-      ':second': now.getSeconds().toString().padStart(2, '0'),
-      ':id': id || '...',
-      ':slug': '{SLUG}',
-    };
-
-    let formattedStructure = structure;
-    Object.entries(replacements).forEach(([key, val]) => {
-      if (isNumericOnly && key === ':id' && !isCustomMode) return;
-      formattedStructure = formattedStructure.replace(key, val);
-    });
-
-    let prefix = '/';
-    let suffix = '';
-
-    if (isNumericOnly && !isCustomMode) {
-      const parts = formattedStructure.split(':id');
-      prefix = (parts[0] || '/');
-      suffix = parts[1] || '';
-    } else if (!isCustomMode) {
-      const parts = formattedStructure.split('{SLUG}');
-      prefix = (parts[0] || '/');
-      suffix = parts[1] || '';
-    }
-
-    let finalPrefix = prefix;
-    if (!isAbsoluteOverride && collectionPrefix) {
-      finalPrefix = `/${collectionPrefix}${prefix}`.replace(/\/+/g, '/');
-    }
-
-    const fullDisplayPrefix = `${baseUrl}${finalPrefix}`;
-
-    return { baseUrl, finalPrefix, fullDisplayPrefix, displayValue, suffix, isCustomMode, isAbsoluteOverride };
+    return PermalinkInputUtils.compute(this.props, this.runtime?.globalSettings ?? null);
   }
 
   private syncAbsoluteFromValue(): void {

@@ -249,7 +249,7 @@ export class ResolutionService {
       return doc;
     }
 
-    if (matchingContract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate && !doc.page_template) {
+    if (matchingContract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate) {
       return ResolutionContractPresentationService.applyToDoc(doc, matchingContract);
     }
 

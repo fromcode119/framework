@@ -8,7 +8,7 @@ export class ResolutionContractPresentationService {
 
     const nextDoc = { ...doc };
 
-    if (contract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate && !doc.page_template) {
+    if (contract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate) {
       nextDoc.themeLayout = contract.effectiveThemeLayout;
     }
 

@@ -4,7 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { FrameworkIcons } from '@fromcode119/react';
+import { FrameworkIcons, RecordsHub } from '@fromcode119/react';
+import type { RecordsHubItem } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -91,6 +92,31 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
     }
   }
 
+  /** Open a hub record: navigate to its admin page (href) or download its document (downloadUrl). */
+  private async openRecord(item: RecordsHubItem): Promise<void> {
+    if (item.downloadUrl) {
+      try {
+        const res: any = await AdminApi.get(item.downloadUrl);
+        const base64 = String(res?.base64 ?? res?.file?.base64 ?? '');
+        if (base64) {
+          const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          const url = URL.createObjectURL(new Blob([bytes], { type: res?.mimeType || 'application/pdf' }));
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = String(res?.filename || res?.fileName || `${item.title}.pdf`);
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 4000);
+          return;
+        }
+        if (res?.url) { window.open(String(res.url), '_blank', 'noopener'); return; }
+      } catch { /* fall through to href */ }
+    }
+    if (item.href) {
+      if (/^https?:\/\//i.test(item.href)) window.open(item.href, '_blank', 'noopener');
+      else this.router?.push(item.href);
+    }
+  }
+
   private field(label: string, key: keyof PersonEditPageFields, type = 'text'): React.ReactNode {
     return (
       <label className="block">
@@ -161,6 +187,17 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
               </div>
             </form>
             <PersonAccountPanel person={person} theme={theme} granting={granting} onGrantLogin={() => this.grantLogin()} />
+          </div>
+
+          <div className="mt-6">
+            <RecordsHub
+              theme={theme}
+              title="Documents & records"
+              emptyHint="No documents or records linked to this person yet."
+              reloadKey={person.id}
+              load={() => AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERSON_RECORDS(this.state.routeId))}
+              onOpenItem={(item) => void this.openRecord(item)}
+            />
           </div>
         </div>
       </div>

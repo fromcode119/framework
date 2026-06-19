@@ -17,7 +17,24 @@ const IGNORE = new Set(['build-server', 'test-feature']);
 // order-popup-connected.tsx was converted to a hook-free PluginComponent class (Task 3 complete).
 const IGNORE_FILES = new Set();
 
+// Pre-existing offenders found when the checker's blind spots were closed
+// (.ts scanning + custom-hook detection). Each is REPORTED as a warning on every
+// run — burn this list down to zero, do not add to it.
+const KNOWN_OFFENDERS = new Set([
+  'cms/src/ui/components/block-editor/block-editor-settings-panel.tsx',
+  'cms/src/ui/components/visual-editor/cms-document-context.ts',
+  'cms/src/ui/components/visual-editor/visual-editor-runtime-context.ts',
+  'cms/src/ui/hooks/use-datasource-selector.ts',
+  'cms/src/ui/hooks.ts',
+  'ecommerce/src/ui/checkout-flow/controller/checkout-flow-controller.ts',
+  'ecommerce/src/ui/ecommerce-plugin-client.ts',
+  'numerology/src/ui/use-async-data.ts',
+]);
+
 const HOOK = /\buse(State|Effect|Memo|Ref|Callback|Context)\b/;
+// Custom hook invocation: bare `useXxx(` not preceded by `.` (method calls on a
+// namespace/class are not React hooks) or a word character.
+const CUSTOM_HOOK = /(?<![.\w])use[A-Z]\w*\s*\(/;
 const FC = /export\s+(const|function)\s+[A-Z][A-Za-z0-9]*/;
 
 function walkTsx(dir, out) {
@@ -36,11 +53,12 @@ function walkTsx(dir, out) {
       continue;
     }
     if (st.isDirectory()) walkTsx(full, out);
-    else if (full.endsWith('.tsx')) out.push(full);
+    else if (full.endsWith('.tsx') || (full.endsWith('.ts') && !full.endsWith('.d.ts'))) out.push(full);
   }
 }
 
 const violations = [];
+const knownOffenderWarnings = [];
 let scanned = 0;
 
 let slugs = [];
@@ -61,9 +79,22 @@ for (const slug of slugs) {
     if (IGNORE_FILES.has(rel)) continue;
     scanned += 1;
     const src = readFileSync(file, 'utf8');
-    if (HOOK.test(src)) violations.push(`plugins/${rel}: contains a React hook call`);
-    if (FC.test(src)) violations.push(`plugins/${rel}: contains 'export const/function <Capitalized>' (function component)`);
+    const fileViolations = [];
+    if (HOOK.test(src)) fileViolations.push(`plugins/${rel}: contains a React hook call`);
+    else if (CUSTOM_HOOK.test(src)) fileViolations.push(`plugins/${rel}: contains a custom hook invocation (use<X>())`);
+    if (FC.test(src) && file.endsWith('.tsx')) fileViolations.push(`plugins/${rel}: contains 'export const/function <Capitalized>' (function component)`);
+    if (!fileViolations.length) continue;
+    if (KNOWN_OFFENDERS.has(rel)) {
+      knownOffenderWarnings.push(...fileViolations.map((v) => `${v} [known offender — burn down]`));
+    } else {
+      violations.push(...fileViolations);
+    }
   }
+}
+
+if (knownOffenderWarnings.length) {
+  console.warn(`Plugin UI hook-free check: ${knownOffenderWarnings.length} known-offender warnings (allowlisted, fix eventually):`);
+  console.warn(knownOffenderWarnings.join('\n'));
 }
 
 if (violations.length) {
@@ -72,4 +103,4 @@ if (violations.length) {
   process.exit(1);
 }
 
-console.log(`Plugin UI hook-free check passed (${scanned} files).`);
+console.log(`Plugin UI hook-free check passed (${scanned} files, ${knownOffenderWarnings.length} allowlisted warnings).`);

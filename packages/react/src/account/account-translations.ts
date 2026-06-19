@@ -5,34 +5,22 @@ import BG from './i18n/bg.json';
 /**
  * Registers the framework-default AccountShell copy so the shell renders complete on any install
  * with no plugins/theme. The words live in `./i18n/<locale>.json` (locale JSON, like every other
- * translation set). Only the ACTIVE locale's dataset is registered — the runtime translation
- * dictionary is flat/single-locale, so registering several would let one overwrite the others.
+ * translation set).
  *
- * The active locale comes from the runtime (which already resolves the system/admin/frontend default
- * locale settings) — we just match it against the available datasets by its base language code, with
- * no hardcoded locale branching. Adding a new translation file is the only change needed to support a
- * new language here.
+ * Both languages are registered once as a per-locale map; the framework auto-detects the active
+ * locale (`<html lang>` / configured default) and resolves the right language at lookup time. Adding
+ * a new translation file is the only change needed to support a new language here.
  */
 export class AccountTranslations {
-  /** Available locale datasets, keyed by base language code. The first entry is the source-language fallback. */
-  private static readonly DATASETS: Record<string, unknown> = { en: EN, bg: BG };
-  private static registeredLocale: string | null = null;
+  private static registered = false;
 
-  static register(locale?: string): void {
-    const lang = AccountTranslations.resolveLanguage(locale);
-    if (AccountTranslations.registeredLocale === lang) return;
+  static register(): void {
+    if (AccountTranslations.registered) return;
     try {
-      ContextBridge.registerTranslations(AccountTranslations.DATASETS[lang]);
-      AccountTranslations.registeredLocale = lang;
+      ContextBridge.registerTranslations({ en: EN, bg: BG });
+      AccountTranslations.registered = true;
     } catch {
       // bridge not ready yet — retried on next AccountShell render
     }
-  }
-
-  /** Base language code of the active locale (e.g. 'bg-BG' → 'bg') if a dataset exists, else the fallback. */
-  private static resolveLanguage(locale?: string): string {
-    const base = String(locale || '').toLowerCase().split(/[-_]/)[0];
-    const fallback = Object.keys(AccountTranslations.DATASETS)[0];
-    return base in AccountTranslations.DATASETS ? base : fallback;
   }
 }

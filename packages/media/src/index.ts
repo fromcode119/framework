@@ -5,4 +5,6 @@ export type { StorageDriver } from './storage-factory.interfaces';
 export type { StorageDriverCreator } from './storage-factory.types';
 export { MediaManager } from './media-manager';
 export { MediaImageOptimizer } from './media-image-optimizer';
+export { MediaSvgSanitizer } from './media-svg-sanitizer';
+export { MediaMagicByteValidator } from './media-magic-byte-validator';
 export type { MediaImageOptimizationOptions, MediaImageOptimizationResult } from './media-image-optimizer.interfaces';

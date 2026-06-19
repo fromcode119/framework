@@ -2,7 +2,8 @@ import { EmailManager, EmailFactory } from '@fromcode119/email';
 import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
 import { EmailGateway } from './email-gateway';
 
-export const EmailIntegrationDefinition: IntegrationTypeDefinition<EmailManager> = {
+export class EmailIntegrationDefinition {
+  static readonly definition: IntegrationTypeDefinition<EmailManager> = {
   key: 'email',
   label: 'Email Delivery',
   description: 'Provider used for outbound system and plugin emails.',
@@ -33,4 +34,5 @@ export const EmailIntegrationDefinition: IntegrationTypeDefinition<EmailManager>
         )
     }
   ]
-};
+  };
+}

@@ -1,20 +1,14 @@
 "use client";
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
-import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminConstants } from '@/lib/constants';
-import { AppEnv } from '@/lib/env';
 import { AuthUtils } from '@/lib/auth-utils';
 import { AdminComponent } from '@/components/admin-component';
+import { LoginForm } from './login-form';
+import { LoginPageHeader } from './login-page-header';
 import type { LoginFieldErrors, LoginPageProps, LoginPageState } from './login-page.interfaces';
-
-const loginInputClassName = 'bg-white text-slate-900 placeholder:text-slate-400 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:border-slate-700';
-const ATLANTIS_LOGO_SLATE_PATH = AdminPathUtils.toAdminPath('/brand/atlantis-logo-slate.png');
-const ATLANTIS_LOGO_WHITE_PATH = AdminPathUtils.toAdminPath('/brand/atlantis-logo-white.png');
 
 export default class LoginPage extends AdminComponent<LoginPageProps, LoginPageState> {
   private mounted = false;
@@ -157,140 +151,26 @@ export default class LoginPage extends AdminComponent<LoginPageProps, LoginPageS
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="text-center mb-10">
-            <div className="mb-6 inline-flex items-center justify-center px-5 py-4 ">
-              <img
-                src={ATLANTIS_LOGO_SLATE_PATH}
-                alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
-                className="h-auto w-[220px] dark:hidden"
-              />
-              <img
-                src={ATLANTIS_LOGO_WHITE_PATH}
-                alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
-                className="hidden h-auto w-[220px] dark:block"
-              />
-            </div>
-            <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-              Welcome to {AppEnv.APP_NAME}
-            </h1>
-            <p className="font-medium text-slate-500 dark:text-slate-300">
-              Sign in to manage your {AppEnv.APP_NAME} workspace powered by {AppEnv.COMPANY_NAME}.
-            </p>
-          </div>
+          <LoginPageHeader />
 
-          <div className="p-8 rounded-3xl border shadow-2xl bg-white border-slate-200 dark:bg-[#0f172a] dark:border-slate-800 dark:shadow-black/40">
-            {error && (
-              <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold animate-in fade-in zoom-in duration-300">
-                {error}
-              </div>
-            )}
-            <form onSubmit={(e) => this.handleSubmit(e)} className="space-y-6" noValidate>
-              <Input
-                label="Email Address"
-                placeholder="name@company.com"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => {
-                  this.setState({ email: e.target.value });
-                  this.resetTwoFactor();
-                 }}
-                 error={fieldErrors.email}
-                 className="group"
-                 inputClassName={loginInputClassName}
-               />
-
-               <div className="space-y-1">
-                 <div className="flex items-center justify-between">
-                   <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">Password</label>
-                   <button type="button" onClick={(e) => this.handleForgotPassword(e)} className="text-xs font-semibold text-indigo-500 hover:text-indigo-400">Forgot?</button>
-                 </div>
-                 <Input
-                  placeholder="••••••••"
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => {
-                    this.setState({ password: e.target.value });
-                    this.resetTwoFactor();
-                   }}
-                   error={fieldErrors.password}
-                   inputClassName={loginInputClassName}
-                 />
-               </div>
-
-              {requiresTwoFactor ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant={twoFactorMethod === 'totp' ? 'primary' : 'outline'}
-                      size="sm"
-                      className="rounded-lg"
-                      onClick={() => this.setState({ twoFactorMethod: 'totp' })}
-                    >
-                      Authenticator Code
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={twoFactorMethod === 'recovery' ? 'primary' : 'outline'}
-                      size="sm"
-                      className="rounded-lg"
-                      onClick={() => this.setState({ twoFactorMethod: 'recovery' })}
-                    >
-                      Recovery Code
-                    </Button>
-                  </div>
-                  {twoFactorMethod === 'totp' ? (
-                    <Input
-                      label="2FA Code"
-                      placeholder="123456"
-                      type="text"
-                      required
-                      autoComplete="one-time-code"
-                       value={totpToken}
-                       onChange={(e) => this.setState({ totpToken: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-                       error={fieldErrors.totpToken}
-                       inputClassName={loginInputClassName}
-                     />
-                   ) : (
-                     <Input
-                      label="Recovery Code"
-                      placeholder="ABCDE-12345"
-                      type="text"
-                      required
-                       value={recoveryCode}
-                       onChange={(e) => this.setState({ recoveryCode: e.target.value.toUpperCase() })}
-                       error={fieldErrors.recoveryCode}
-                       inputClassName={loginInputClassName}
-                     />
-                   )}
-                 </div>
-              ) : null}
-
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-1 rounded bg-indigo-500/10 text-indigo-500">
-                    <FrameworkIcons.Shield size={14} />
-                  </div>
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Secure Session</span>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full py-4 text-base transform hover:scale-[1.02] active:scale-[0.98]"
-                isLoading={isLoading}
-              >
-                {requiresTwoFactor
-                  ? (twoFactorMethod === 'totp' ? 'Verify 2FA & Sign In' : 'Use Recovery Code & Sign In')
-                  : 'Sign In to Portal'}
-                {!isLoading && <FrameworkIcons.ArrowRight size={18} className="ml-2" />}
-              </Button>
-            </form>
-          </div>
+          <LoginForm
+            email={email}
+            password={password}
+            totpToken={totpToken}
+            recoveryCode={recoveryCode}
+            twoFactorMethod={twoFactorMethod}
+            requiresTwoFactor={requiresTwoFactor}
+            isLoading={isLoading}
+            error={error}
+            fieldErrors={fieldErrors}
+            onSubmit={(e) => this.handleSubmit(e)}
+            onEmailChange={(value) => { this.setState({ email: value }); this.resetTwoFactor(); }}
+            onPasswordChange={(value) => { this.setState({ password: value }); this.resetTwoFactor(); }}
+            onForgotPassword={(e) => this.handleForgotPassword(e)}
+            onSelectTwoFactorMethod={(method) => this.setState({ twoFactorMethod: method })}
+            onTotpTokenChange={(value) => this.setState({ totpToken: value })}
+            onRecoveryCodeChange={(value) => this.setState({ recoveryCode: value })}
+          />
 
           <p className="text-center mt-8 text-sm text-slate-500">
             Not part of the organization? <button onClick={(e) => this.handleContactSupport(e)} className="font-semibold text-indigo-500 hover:text-indigo-400 underline decoration-indigo-500/30 underline-offset-4">Contact Support</button>

@@ -9,7 +9,6 @@ import { I18nManager } from '../i18n/i18n-manager';
 import { DatabaseFactory, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { MigrationCoordinator } from '../management/migration-coordinator';
-import { RecordVersions } from '../collections/record-versions';
 import { AuditManager } from '../security/audit-manager';
 import { SecurityMonitor } from '../security/security-monitor';
 import { MarketplaceCatalogService } from '../marketplace/marketplace-catalog-service';
@@ -28,19 +27,22 @@ import { LifecycleService } from './services/lifecycle-service';
 import { MiddlewareManager } from './services/middleware-manager';
 import { WorkflowService } from './services/workflow-service';
 import { WebhookService } from '../webhook/webhook-service';
-import { WebhooksCollection } from '../collections/webhooks';
 import { PluginRegistry } from '@fromcode119/plugins';
 import { IntegrationManager } from '../integrations';
 import { Plugins } from '../plugins';
 import { PluginsManagerResolver } from '../plugins-manager-resolver';
 import { PluginTelemetryService } from './services/plugin-telemetry-service';
 import { PluginScaffoldService } from './services/plugin-scaffold-service';
-import { PersonCatalogService } from './services/person-catalog-service';
 import { PluginAdminRuntimeService } from './services/plugin-admin-runtime-service';
 import { PluginInstallationService } from './services/plugin-installation-service';
 import { PluginRuntimeStateService } from './services/plugin-runtime-state-service';
-import { PluginPublicSettingsService } from './services/plugin-public-settings-service';
-import { PluginRuntimeRestartService } from './services/plugin-runtime-restart-service';
+import { PluginManagerInitService } from './services/plugin-manager-init-service';
+import { PluginDiscoveryCoordinatorService } from './services/plugin-discovery-coordinator-service';
+import { PluginManagerShutdownService } from './services/plugin-manager-shutdown-service';
+import { PluginExtensionArchiveInstaller } from './services/plugin-extension-archive-installer';
+import { PluginManagerServiceFactory } from './services/plugin-manager-service-factory';
+import { PluginManagerQueryService } from './services/plugin-manager-query-service';
+import type { ScaffoldPluginInput, ScaffoldPluginResult } from './services/plugin-scaffold-service.interfaces';
 
 export class PluginManager implements PluginManagerInterface {
   public audit: AuditManager;
@@ -69,7 +71,6 @@ export class PluginManager implements PluginManagerInterface {
   public projectRoot: string;
   public pluginsRoot: string;
 
-  // Refactored Services
   public runtime: RuntimeService;
   public registry: PluginStateService;
   private discovery: DiscoveryService;
@@ -81,8 +82,11 @@ export class PluginManager implements PluginManagerInterface {
   private adminRuntime: PluginAdminRuntimeService;
   private installation: PluginInstallationService;
   private runtimeState: PluginRuntimeStateService;
-  private themeArchiveInstaller: ((filePath: string, options?: { activate?: boolean }) => Promise<any>) | null = null;
-  private coreArchiveInstaller: ((filePath: string) => Promise<any>) | null = null;
+  private bootstrap: PluginManagerInitService;
+  private discoveryCoordinator: PluginDiscoveryCoordinatorService;
+  private shutdownService: PluginManagerShutdownService;
+  private archiveInstaller: PluginExtensionArchiveInstaller;
+  private query: PluginManagerQueryService;
   public get storage() { return this.integrations.storage; }
   public get email() { return this.integrations.email; }
   public get cache() { return this.integrations.cache; }
@@ -115,167 +119,37 @@ export class PluginManager implements PluginManagerInterface {
 
     this.pluginsRoot = ProjectPaths.getPluginsDir();
 
-    // Initialize Services
-    this.runtime = new RuntimeService(this.projectRoot);
-    this.registry = new PluginStateService(this.db);
-    this.discovery = new DiscoveryService(this.pluginsRoot, this.projectRoot);
-    this.marketplace = new MarketplaceCatalogService(this.discovery);
-    this.admin = new AdminMetadataService();
-    this.lifecycle = new LifecycleService(this, this.registry, this.discovery, this.schemaManager);
-    this.adminRuntime = new PluginAdminRuntimeService(
-      this.logger,
-      this.db,
-      this.admin,
-      this.lifecycle,
-      this.runtime,
-      this.security,
-      this.plugins,
-      this.registeredCollections,
-    );
-    this.runtimeState = new PluginRuntimeStateService(
-      this.logger,
-      this.db,
-      this.registry,
-      this.plugins,
-      this.headInjections,
-      this.registeredCollections,
-      this.pluginSettings,
-    );
-    this.installation = new PluginInstallationService(
-      this.logger,
-      this.marketplace,
-      this.discovery,
-      this.migrationManager,
-      this.registry,
-      new PluginRuntimeRestartService(this.logger),
-      this.plugins,
-      this.pluginsRoot,
-      this.discoverPlugins.bind(this),
-      (slug) => this.enable(slug),
-    );
-
-    // Telemetry & scaffold services (email getter deferred so integrations are ready)
-    this.telemetry = new PluginTelemetryService(this.db, () => this.email);
-    this.scaffold = new PluginScaffoldService(
-      this.logger,
-      (slug) => this.plugins.has(slug),
-      () => this.discoverPlugins(),
-      (slug) => this.enable(slug),
-    );
-
-    // Initialize Core Extension System
-    const packagesRoot = ProjectPaths.getPackagesDir();
-    this.extensions = new CoreExtensionManager(this.db, packagesRoot, this.logger);
+    // Build the refactored collaborator-service graph (see factory for wiring).
+    const services = PluginManagerServiceFactory.build(this, {
+      migrationManager: this.migrationManager,
+      coordinator: this.coordinator,
+      workflow: this.workflow,
+    });
+    this.runtime = services.runtime;
+    this.registry = services.registry;
+    this.discovery = services.discovery;
+    this.marketplace = services.marketplace;
+    this.admin = services.admin;
+    this.lifecycle = services.lifecycle;
+    this.adminRuntime = services.adminRuntime;
+    this.runtimeState = services.runtimeState;
+    this.installation = services.installation;
+    this.telemetry = services.telemetry;
+    this.scaffold = services.scaffold;
+    this.extensions = services.extensions;
+    this.bootstrap = services.bootstrap;
+    this.discoveryCoordinator = services.discoveryCoordinator;
+    this.shutdownService = services.shutdownService;
+    this.archiveInstaller = services.archiveInstaller;
+    this.query = new PluginManagerQueryService(this.logger, this.db, this.discovery, this.plugins);
   }
 
   async init() {
-    await this.migrationManager.migrate();
-    try {
-      await new PersonCatalogService(this.db as any).seedDefaults();
-    } catch (error) {
-      this.logger.warn(`[people] Failed to seed default person catalogs: ${error instanceof Error ? error.message : String(error)}`);
-    }
-    await this.coordinator.validateDatabaseState();
-    await this.integrations.initialize();
-    
-    // Discover and initialize core extensions BEFORE plugin initialization
-    // This ensures extensions like AI can register integration types before plugins need them
-    this.extensions.setServices({
-      integrations: this.integrations,
-      hooks: this.hooks,
-      plugins: this,
-    });
-    
-    try {
-      await this.extensions.discover();
-      await this.extensions.initializeAll();
-      this.logger.info('Core extensions initialized');
-    } catch (error) {
-      this.logger.error('Failed to initialize core extensions:', error);
-      // Don't fail startup if extensions fail - they're optional
-    }
-    
-    // Register background workers - MUST happen after migrations but before scheduler starts
-    this.jobs.registerWorker('scheduler', async (job) => {
-      const { taskName } = job.data;
-      await this.scheduler.runHandler(taskName);
-    });
-
-    // Register global content workflow task - MUST happen after migrations
-    await this.scheduler.register('content-workflows', '2m', async () => {
-      await this.workflow.processScheduledContent(this.getCollections());
-    });
-    await this.scheduler.register('system-email-telemetry-weekly', '0 9 * * 1', async () => {
-      await this.sendWeeklyEmailTelemetryDigest();
-    }, { type: 'cron' });
-    
-    // Register system collections
-    this.registeredCollections.set('versions', { collection: RecordVersions.collection, pluginSlug: 'system' });
-    this.registeredCollections.set('webhooks', { collection: WebhooksCollection.collection, pluginSlug: 'system' });
-    
-    for (const entry of Array.from(this.registeredCollections.values())) {
-      if (entry.pluginSlug === 'system') await this.schemaManager.syncCollection(entry.collection);
-    }
-
-    await this.webhooks.initialize();
-
-    // Start background services after migrations and system collections are ready
-    await this.scheduler.start();
-    this.security.start();
+    await this.bootstrap.init();
   }
 
   async discoverPlugins() {
-    const installedState = await this.registry.loadInstalledPluginsState();
-    const { discovered, errored } = await this.discovery.discoverPlugins(this.plugins, installedState);
-
-    // Add errored plugins to this.plugins
-    for (const error of errored) {
-      if (!this.plugins.has(error.manifest.slug)) {
-        this.plugins.set(error.manifest.slug, {
-          manifest: error.manifest,
-          path: error.path,
-          state: 'error',
-          error: error.error,
-          instanceId: `err-${error.manifest.slug}-${Date.now()}`
-        } as any);
-      }
-    }
-
-    try {
-      const sorted = this.discovery.resolveDependencies(discovered.map(d => d.plugin));
-      await this.coordinator.coordinate(sorted.map(p => p.manifest));
-
-      for (const plugin of sorted) {
-        const slug = plugin.manifest.slug;
-        const stage = discovered.find(d => d.plugin.manifest.slug === slug);
-        
-        if (!stage) {
-          this.logger.warn(`Plugin metadata found for ${slug} but path discovery failed.`);
-          continue;
-        }
-
-        const existing = this.plugins.get(slug);
-        if (existing && existing.state !== 'error') {
-          continue;
-        }
-
-        try {
-          await this.lifecycle.register(plugin, stage.path);
-        } catch (err: any) {
-          this.logger.error(`Failed to register plugin "${slug}": ${err.message}`);
-          // Mark as errored in the local registry so it shows up in UI
-          this.plugins.set(slug, {
-            manifest: plugin.manifest,
-            path: stage.path,
-            state: 'error',
-            error: err.message,
-            instanceId: `err-reg-${slug}-${Date.now()}`
-          } as any);
-        }
-      }
-    } catch (err: any) {
-      this.logger.error(`Plugin discovery coordination failed: ${err.message}`);
-    }
+    await this.discoveryCoordinator.discoverPlugins();
   }
 
   async updatePlugin(slug: string, pkg?: any): Promise<void> {
@@ -297,11 +171,11 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   setThemeArchiveInstaller(installer: (filePath: string, options?: { activate?: boolean }) => Promise<any>): void {
-    this.themeArchiveInstaller = installer;
+    this.archiveInstaller.setThemeArchiveInstaller(installer);
   }
 
   setCoreArchiveInstaller(installer: (filePath: string) => Promise<any>): void {
-    this.coreArchiveInstaller = installer;
+    this.archiveInstaller.setCoreArchiveInstaller(installer);
   }
 
   async installExtensionArchive(
@@ -309,50 +183,11 @@ export class PluginManager implements PluginManagerInterface {
     type: 'plugin' | 'theme' | 'core',
     options: { enable?: boolean; activate?: boolean } = {},
   ): Promise<any> {
-    if (type === 'core') {
-      if (!this.coreArchiveInstaller) {
-        throw new Error('Core archive installer is not configured.');
-      }
-
-      return this.coreArchiveInstaller(filePath);
-    }
-
-    if (type === 'theme') {
-      if (!this.themeArchiveInstaller) {
-        throw new Error('Theme archive installer is not configured.');
-      }
-
-      return this.themeArchiveInstaller(filePath, { activate: options.activate });
-    }
-
-    return this.installUploadedPluginArchive(filePath, { enable: options.enable });
+    return this.archiveInstaller.installExtensionArchive(filePath, type, options);
   }
 
-  /**
-   * Shuts down all active plugin manager services.
-   */
   async shutdown() {
-    this.logger.info('Shutting down PluginManager services...');
-    
-    if (this.scheduler) {
-      await this.scheduler.stop();
-    }
-    
-    if (this.security) {
-      this.security.stop();
-    }
-    
-    if (this.jobs) {
-      await this.jobs.close();
-    }
-    
-    if (this.webhooks) {
-        // Any cleanup for webhooks?
-    }
-
-    Plugins.setResolver(null);
-
-    this.logger.info('PluginManager shutdown complete.');
+    return this.shutdownService.shutdown();
   }
 
   // Delegate Lifecycle
@@ -361,20 +196,7 @@ export class PluginManager implements PluginManagerInterface {
   async delete(slug: string) { return this.lifecycle.delete(slug); }
   async register(plugin: FromcodePlugin, path?: string) { return this.lifecycle.register(plugin, path); }
 
-  async scaffoldPlugin(input: {
-    slug: string;
-    name: string;
-    description?: string;
-    version?: string;
-    activate?: boolean;
-  }): Promise<{
-    slug: string;
-    name: string;
-    path: string;
-    activated: boolean;
-    activationError: string | null;
-    manifest: any;
-  }> {
+  async scaffoldPlugin(input: ScaffoldPluginInput): Promise<ScaffoldPluginResult> {
     return this.scaffold.scaffoldPlugin(input);
   }
 
@@ -425,19 +247,8 @@ export class PluginManager implements PluginManagerInterface {
     return this.runtimeState.getAllPluginSettings();
   }
 
-  /**
-   * Resolved, security-filtered public settings for every active plugin, keyed by
-   * `namespace/slug` (and bare `slug`). Only fields flagged `public: true` in a plugin's
-   * settings schema are included; password/credential fields are always excluded.
-   * Safe to embed in the public, unauthenticated frontend metadata response.
-   */
   public async getPublicFrontendPluginSettings(): Promise<Record<string, Record<string, any>>> {
-    const activePlugins = this.getPlugins().filter((plugin) => plugin.state === 'active');
-    return PluginPublicSettingsService.resolve(
-      activePlugins,
-      (slug: string) => this.getPluginSettings(slug),
-      this.db,
-    );
+    return this.query.getPublicFrontendPluginSettings((slug: string) => this.getPluginSettings(slug));
   }
 
   async installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest> {
@@ -461,13 +272,7 @@ export class PluginManager implements PluginManagerInterface {
 
   /** Returns plugins in topological order based on their dependencies. */
   public getSortedPlugins(pluginsToSort?: LoadedPlugin[]): LoadedPlugin[] {
-    const list = pluginsToSort || Array.from(this.plugins.values());
-    try {
-      return this.discovery.resolveDependencies(list as any) as LoadedPlugin[];
-    } catch (err: any) {
-      this.logger.warn(`Topological sort failed: ${err.message}. Returning unsorted list.`);
-      return list;
-    }
+    return this.query.getSortedPlugins(pluginsToSort);
   }
 
   getRuntimeModules() { return this.adminRuntime.getRuntimeModules(); }
@@ -479,7 +284,6 @@ export class PluginManager implements PluginManagerInterface {
     return this.adminRuntime.getImportMap();
   }
 
-  // Rest of the methods...
   createContext(plugin: LoadedPlugin): PluginContext { return PluginContextFactory.createPluginContext(plugin, this, this.logger); }
   getPlugins(): LoadedPlugin[] { return Array.from(this.plugins.values()); }
   setAuth(auth: any) { this.auth = auth; }
@@ -490,18 +294,6 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   async close() {
-    const activePlugins = this.getPlugins().filter(plugin => plugin.state === 'active');
-    const shutdownOrder = this.getSortedPlugins(activePlugins).reverse();
-
-    for (const plugin of shutdownOrder) {
-      try {
-        await this.disable(plugin.manifest.slug, { persistState: false });
-      } catch (err: any) {
-        this.logger.warn(`Failed to disable plugin "${plugin.manifest.slug}" during shutdown: ${err?.message || err}`);
-      }
-    }
-    this.scheduler.stop();
-    this.security.stop();
-    await this.jobs.close();
+    return this.shutdownService.close();
   }
 }

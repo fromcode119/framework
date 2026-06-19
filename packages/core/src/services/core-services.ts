@@ -18,6 +18,8 @@ import { PluginDefaultPageContractResolutionService } from './default-page-contr
 import { SeedPageService } from './seed-page-service';
 import { ThemeLayoutOverrideRegistryService } from '../theme/theme-layout-override-registry-service';
 import { ContentResolutionGateRegistryService } from './content-resolution-gate-registry-service';
+import { PluginEntityRecordsRegistryService } from './entity-records/plugin-entity-records-registry-service';
+import { EntityRecordsResolutionService } from './entity-records/entity-records-resolution-service';
 
 /**
  * Core Services Singleton.
@@ -72,6 +74,8 @@ export class CoreServices {
   private _seedPage: SeedPageService | null = null;
   private _themeDesignOverrides: ThemeLayoutOverrideRegistryService | null = null;
   private _contentResolutionGates: ContentResolutionGateRegistryService | null = null;
+  private _entityRecords: PluginEntityRecordsRegistryService | null = null;
+  private _entityRecordsResolution: EntityRecordsResolutionService | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -261,6 +265,26 @@ export class CoreServices {
       this._contentResolutionGates = new ContentResolutionGateRegistryService();
     }
     return this._contentResolutionGates;
+  }
+
+  /**
+   * Registry of entity-record providers (lazy-loaded). Plugins register a provider
+   * that returns the records they own (invoices, declarations, orders, …) for a
+   * given person; the resolution service aggregates them into one grouped timeline.
+   * Backbone of the Person 360 / partner-CRM view.
+   */
+  get entityRecords(): PluginEntityRecordsRegistryService {
+    if (!this._entityRecords) {
+      this._entityRecords = new PluginEntityRecordsRegistryService();
+    }
+    return this._entityRecords;
+  }
+
+  get entityRecordsResolution(): EntityRecordsResolutionService {
+    if (!this._entityRecordsResolution) {
+      this._entityRecordsResolution = new EntityRecordsResolutionService(this.entityRecords);
+    }
+    return this._entityRecordsResolution;
   }
 
   /**

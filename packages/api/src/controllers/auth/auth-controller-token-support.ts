@@ -1,10 +1,9 @@
 import { randomBytes } from 'crypto';
-import * as speakeasy from 'speakeasy';
 import { SystemConstants } from '@fromcode119/core';
-import { AuthControllerPolicy } from './auth-controller-policy';
+import { AuthControllerEmailVerification } from './auth-controller-email-verification';
 import type { ApiTokenRecord } from './auth-controller.interfaces';
 
-export class AuthControllerTokenSupport extends AuthControllerPolicy {
+export class AuthControllerTokenSupport extends AuthControllerEmailVerification {
   protected getPasswordResetTokenHashKey(userId: number) {
     return `user:${userId}:password_reset_token_hash`;
   }
@@ -210,154 +209,6 @@ export class AuthControllerTokenSupport extends AuthControllerPolicy {
     }
   }
 
-  protected verifyTOTP(secret: string, token: string): boolean {
-    try {
-      return speakeasy.totp.verify({
-        secret,
-        encoding: 'base32',
-        token,
-        window: 1
-      });
-    } catch (e) {
-      this.logger.error(`[AuthController] TOTP verification failed: ${e}`);
-      return false;
-    }
-  }
-
-  protected getRecoveryCodesKey(userId: number) {
-    return `user:${userId}:2fa_recovery_codes`;
-  }
-
-  protected getEmailVerifiedKey(userId: number) {
-    return `user:${userId}:email_verified`;
-  }
-
-  protected getEmailVerifyTokenHashKey(userId: number) {
-    return `user:${userId}:email_verify_token_hash`;
-  }
-
-  protected getEmailVerifyTokenExpiresKey(userId: number) {
-    return `user:${userId}:email_verify_token_expires_at`;
-  }
-
-  protected getEmailVerifyTokenKey(tokenHash: string) {
-    return `auth:verify_email_token:${tokenHash}`;
-  }
-
-  protected async setEmailVerified(userId: number, verified: boolean) {
-    await this.upsertMeta(this.getEmailVerifiedKey(userId), verified ? 'true' : 'false');
-  }
-
-  protected async isEmailVerified(userId: number): Promise<boolean> {
-    const row = await this.readMetaRow(this.getEmailVerifiedKey(userId));
-    if (!row) return true;
-    return String(row.value || '').trim().toLowerCase() === 'true';
-  }
-
-  protected async requiresEmailVerification(userId: number): Promise<boolean> {
-    const row = await this.readMetaRow(this.getEmailVerifiedKey(userId));
-    if (!row) return false;
-    return String(row.value || '').trim().toLowerCase() !== 'true';
-  }
-
-  protected async issueEmailVerificationToken(
-    userId: number,
-    email: string,
-    context?: Record<string, any>
-  ): Promise<{ token: string; expiresAt: Date }> {
-    const token = randomBytes(32).toString('hex');
-    const tokenHash = this.hashToken(token);
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-    const previousTokenHash = String((await this.getMetaValue(this.getEmailVerifyTokenHashKey(userId))) || '').trim();
-    if (previousTokenHash && previousTokenHash !== tokenHash) {
-      await this.deleteMeta(this.getEmailVerifyTokenKey(previousTokenHash));
-    }
-
-    const payload = {
-      userId,
-      email,
-      expiresAt: expiresAt.toISOString(),
-      context: context && Object.keys(context).length ? context : undefined
-    };
-
-    await this.upsertMeta(this.getEmailVerifyTokenKey(tokenHash), JSON.stringify(payload));
-    await this.upsertMeta(this.getEmailVerifyTokenHashKey(userId), tokenHash);
-    await this.upsertMeta(this.getEmailVerifyTokenExpiresKey(userId), expiresAt.toISOString());
-    await this.setEmailVerified(userId, false);
-
-    return { token, expiresAt };
-  }
-
-  protected async consumeEmailVerificationToken(token: string): Promise<{
-    ok: boolean;
-    reason?: 'invalid' | 'expired';
-    userId?: number;
-    email?: string;
-    context?: Record<string, any>;
-  }> {
-    const tokenHash = this.hashToken(token);
-    const tokenKey = this.getEmailVerifyTokenKey(tokenHash);
-    const row = await this.readMetaRow(tokenKey);
-    if (!row?.value) {
-      return { ok: false, reason: 'invalid' };
-    }
-
-    let payload: any = null;
-    try {
-      payload = JSON.parse(String(row.value));
-    } catch {
-      return { ok: false, reason: 'invalid' };
-    }
-
-    const userId = Number(payload?.userId || 0);
-    const email = this.normalizeEmail(payload?.email);
-    const expiresAt = new Date(String(payload?.expiresAt || 0));
-    if (!userId || !email || Number.isNaN(expiresAt.getTime())) {
-      return { ok: false, reason: 'invalid' };
-    }
-
-    if (expiresAt.getTime() < Date.now()) {
-      await this.deleteMeta(tokenKey);
-      await this.deleteMeta(this.getEmailVerifyTokenHashKey(userId));
-      await this.deleteMeta(this.getEmailVerifyTokenExpiresKey(userId));
-      return { ok: false, reason: 'expired' };
-    }
-
-    await this.setEmailVerified(userId, true);
-    await this.deleteMeta(tokenKey);
-    await this.deleteMeta(this.getEmailVerifyTokenHashKey(userId));
-    await this.deleteMeta(this.getEmailVerifyTokenExpiresKey(userId));
-
-    return {
-      ok: true,
-      userId,
-      email,
-      context: payload?.context && typeof payload.context === 'object' ? payload.context : undefined
-    };
-  }
-
-  protected async consumeRecoveryCode(userId: number, code: string): Promise<boolean> {
-    const row = await this.readMetaRow(this.getRecoveryCodesKey(userId));
-    const raw = String(row?.value || '').trim();
-    if (!raw) return false;
-
-    let records: Array<{ hash: string; usedAt?: string | null; createdAt?: string }> = [];
-    try {
-      const parsed = JSON.parse(raw);
-      records = Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return false;
-    }
-
-    const targetHash = this.hashRecoveryCode(code);
-    const targetIndex = records.findIndex((entry) => entry?.hash === targetHash && !entry?.usedAt);
-    if (targetIndex < 0) return false;
-
-    records.splice(targetIndex, 1);
-    await this.upsertMeta(this.getRecoveryCodesKey(userId), JSON.stringify(records));
-    return true;
-  }
 }
 
 

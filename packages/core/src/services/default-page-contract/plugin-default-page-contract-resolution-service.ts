@@ -1,17 +1,16 @@
 import type {
   PluginDefaultPageContractResolutionInput,
-  PluginDefaultPageContractResolutionSource,
-  PluginDefaultPageContractResolutionStatus,
-  PluginDefaultPageContractSiteStateEntry,
-  PluginDefaultPageContractSiteStateMatch,
   RegisteredPluginDefaultPageContract,
   ResolvedPluginDefaultPageContract,
   ThemeDefaultPageContractOverride,
 } from '../../types';
 import { BaseService } from '../base-service';
 import { PluginDefaultPageContractRegistryService } from './plugin-default-page-contract-registry-service';
+import { PluginDefaultPageContractSiteStateResolver } from './plugin-default-page-contract-site-state-resolver';
 
 export class PluginDefaultPageContractResolutionService extends BaseService {
+  private readonly siteStateResolver = new PluginDefaultPageContractSiteStateResolver();
+
   constructor(private readonly registry: PluginDefaultPageContractRegistryService) {
     super();
   }
@@ -72,14 +71,14 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
     inputSiteState?: PluginDefaultPageContractResolutionInput['siteState'],
   ): ResolvedPluginDefaultPageContract {
     const override = overridesByKey.get(entry.canonicalKey);
-    const siteStateEntries = this.getSiteStateEntries(entry, inputSiteState);
-    const siteStateMatch = this.getSiteStateMatch(entry, inputSiteState);
+    const siteStateEntries = this.siteStateResolver.getSiteStateEntries(entry, inputSiteState);
+    const siteStateMatch = this.siteStateResolver.getSiteStateMatch(entry, inputSiteState);
     const installSource = override && typeof override.install === 'boolean' ? 'theme-override' : 'declaration';
     const install = typeof override?.install === 'boolean' ? override.install : entry.required;
-    const siteStateStatus = this.getSiteStateStatus(siteStateEntries);
-    const prerequisiteReady = this.getPrerequisiteReady(install, siteStateEntries, siteStateStatus);
-    const status = this.getResolvedStatus(install, siteStateStatus, prerequisiteReady);
-    const statusSource = this.getStatusSource(install, installSource, siteStateEntries, siteStateStatus, prerequisiteReady);
+    const siteStateStatus = this.siteStateResolver.getSiteStateStatus(siteStateEntries);
+    const prerequisiteReady = this.siteStateResolver.getPrerequisiteReady(install, siteStateEntries, siteStateStatus);
+    const status = this.siteStateResolver.getResolvedStatus(install, siteStateStatus, prerequisiteReady);
+    const statusSource = this.siteStateResolver.getStatusSource(install, installSource, siteStateEntries, siteStateStatus, prerequisiteReady);
 
     return {
       ...entry,
@@ -95,7 +94,7 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
       install,
       prerequisiteReady,
       status,
-      reasons: this.getReasons(install, siteStateEntries, status),
+      reasons: this.siteStateResolver.getReasons(install, siteStateEntries, status),
       sources: {
         effectiveSlug: override?.slug ? 'theme-override' : 'declaration',
         effectiveAliases: override?.aliases ? 'theme-override' : 'declaration',
@@ -104,7 +103,7 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
         effectiveStyleVariant: override?.styleVariant ? 'theme-override' : 'declaration',
         effectiveThemeLayout: override?.themeLayout ? 'theme-override' : 'declaration',
         install: installSource,
-        prerequisiteReady: this.getPrerequisiteSource(install, siteStateEntries),
+        prerequisiteReady: this.siteStateResolver.getPrerequisiteSource(install, siteStateEntries),
         status: statusSource,
       },
       provenance: {
@@ -112,170 +111,6 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
         overrideCanonicalKey: override ? entry.canonicalKey : undefined,
         siteStateMatch,
       },
-    };
-  }
-
-  private getSiteStateEntries(
-    entry: RegisteredPluginDefaultPageContract,
-    siteState?: PluginDefaultPageContractResolutionInput['siteState'],
-  ): PluginDefaultPageContractSiteStateEntry[] {
-    const entries: PluginDefaultPageContractSiteStateEntry[] = [];
-    const canonicalEntry = siteState?.byCanonicalKey?.[entry.canonicalKey];
-    const capabilityEntry = siteState?.byCapability?.[entry.capability];
-
-    if (canonicalEntry) {
-      entries.push(this.cloneSiteStateEntry(canonicalEntry));
-    }
-
-    if (capabilityEntry) {
-      entries.push(this.cloneSiteStateEntry(capabilityEntry));
-    }
-
-    return entries;
-  }
-
-  private getSiteStateMatch(
-    entry: RegisteredPluginDefaultPageContract,
-    siteState?: PluginDefaultPageContractResolutionInput['siteState'],
-  ): PluginDefaultPageContractSiteStateMatch {
-    const hasCanonicalKeyMatch = Boolean(siteState?.byCanonicalKey?.[entry.canonicalKey]);
-    const hasCapabilityMatch = Boolean(siteState?.byCapability?.[entry.capability]);
-
-    if (hasCanonicalKeyMatch && hasCapabilityMatch) {
-      return 'both';
-    }
-
-    if (hasCanonicalKeyMatch) {
-      return 'canonicalKey';
-    }
-
-    if (hasCapabilityMatch) {
-      return 'capability';
-    }
-
-    return 'none';
-  }
-
-  private getSiteStateStatus(
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
-  ): PluginDefaultPageContractResolutionStatus | undefined {
-    if (siteStateEntries.some((entry) => entry.status === 'blocked')) {
-      return 'blocked';
-    }
-
-    if (siteStateEntries.some((entry) => entry.status === 'skipped')) {
-      return 'skipped';
-    }
-
-    if (siteStateEntries.some((entry) => entry.status === 'ready')) {
-      return 'ready';
-    }
-
-    return undefined;
-  }
-
-  private getPrerequisiteReady(
-    install: boolean,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
-    siteStateStatus?: PluginDefaultPageContractResolutionStatus,
-  ): boolean {
-    if (!install) {
-      return false;
-    }
-
-    if (siteStateStatus === 'blocked' || siteStateStatus === 'skipped') {
-      return false;
-    }
-
-    return !siteStateEntries.some((entry) => entry.prerequisitesReady === false);
-  }
-
-  private getResolvedStatus(
-    install: boolean,
-    siteStateStatus: PluginDefaultPageContractResolutionStatus | undefined,
-    prerequisiteReady: boolean,
-  ): PluginDefaultPageContractResolutionStatus {
-    if (!install) {
-      return 'skipped';
-    }
-
-    if (siteStateStatus === 'blocked' || siteStateStatus === 'skipped') {
-      return siteStateStatus;
-    }
-
-    if (!prerequisiteReady) {
-      return 'blocked';
-    }
-
-    return 'ready';
-  }
-
-  private getReasons(
-    install: boolean,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
-    status: PluginDefaultPageContractResolutionStatus,
-  ): string[] {
-    if (!install) {
-      return ['install-disabled'];
-    }
-
-    const reasons = Array.from(
-      new Set(
-        siteStateEntries.flatMap((entry) => {
-          return (entry.reasons || []).map((reason) => String(reason || '').trim()).filter(Boolean);
-        }),
-      ),
-    );
-
-    if (reasons.length) {
-      return reasons;
-    }
-
-    if (status === 'blocked') {
-      return ['prerequisites-not-ready'];
-    }
-
-    if (status === 'skipped') {
-      return ['site-state-skipped'];
-    }
-
-    return [];
-  }
-
-  private getStatusSource(
-    install: boolean,
-    installSource: PluginDefaultPageContractResolutionSource,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
-    siteStateStatus: PluginDefaultPageContractResolutionStatus | undefined,
-    prerequisiteReady: boolean,
-  ): PluginDefaultPageContractResolutionSource {
-    if (!install) {
-      return installSource;
-    }
-
-    if (siteStateEntries.length && (siteStateStatus === 'blocked' || siteStateStatus === 'skipped' || !prerequisiteReady)) {
-      return 'site-state';
-    }
-
-    return installSource;
-  }
-
-  private getPrerequisiteSource(
-    install: boolean,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
-  ): PluginDefaultPageContractResolutionSource {
-    if (!install) {
-      return 'declaration';
-    }
-
-    return siteStateEntries.length ? 'site-state' : 'declaration';
-  }
-
-  private cloneSiteStateEntry(entry: PluginDefaultPageContractSiteStateEntry): PluginDefaultPageContractSiteStateEntry {
-    return {
-      prerequisitesReady: entry.prerequisitesReady,
-      reasons: this.normalizeOptionalStringArray(entry.reasons),
-      status: entry.status,
     };
   }
 

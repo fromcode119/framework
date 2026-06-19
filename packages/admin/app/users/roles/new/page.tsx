@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import { Badge } from '@/components/ui/badge';
 import { AdminComponent } from '@/components/admin-component';
+import { NewRolePermissionsCard } from './new-role-permissions-card';
+import { NewRoleSummarySidebar } from './new-role-summary-sidebar';
 import type { NewRoleFormData, NewRolePageState } from './new-role-page.interfaces';
 
 export default class NewRolePage extends AdminComponent<Record<string, never>, NewRolePageState> {
@@ -151,88 +152,19 @@ export default class NewRolePage extends AdminComponent<Record<string, never>, N
                 </div>
               </Card>
 
-              <Card title="Permissions">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Available Options</span>
-                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-tight">{formData.permissions.length} Selected</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {permissions.map(perm => (
-                      <div
-                        key={perm.name}
-                        onClick={() => this.togglePermission(perm.name)}
-                        className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 flex items-center justify-between group ${
-                          formData.permissions.includes(perm.name)
-                            ? (theme === 'dark' ? 'bg-indigo-500/10 border-indigo-500/40' : 'bg-indigo-50 border-indigo-200 shadow-md')
-                            : (theme === 'dark' ? 'bg-slate-950 border-slate-800 hover:border-slate-700' : 'bg-slate-50/50 border-slate-100 hover:border-slate-200')
-                        }`}
-                      >
-                        <div className="flex flex-col gap-0.5">
-                          <span className={`text-xs font-bold tracking-tight ${formData.permissions.includes(perm.name) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
-                            {perm.name}
-                          </span>
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight opacity-60">
-                            {perm.group || 'General'}
-                          </span>
-                        </div>
-                        <div className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-all ${
-                           formData.permissions.includes(perm.name)
-                             ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                             : 'bg-transparent border-slate-200 dark:border-slate-800'
-                        }`}>
-                           {formData.permissions.includes(perm.name) && <FrameworkIcons.Check size={14} strokeWidth={3} />}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
+              <NewRolePermissionsCard
+                theme={theme}
+                permissions={permissions}
+                selected={formData.permissions}
+                onToggle={(perm) => this.togglePermission(perm)}
+              />
             </div>
 
-            <div className="lg:col-span-4 space-y-8">
-              <Card title="Summary">
-                <div className="space-y-6">
-                  <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 space-y-4">
-                     <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Role Type</span>
-                        <Badge variant="amber" className="tracking-tight font-bold">Custom</Badge>
-                     </div>
-                     <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Selected Scope</span>
-                        <span className="text-xs font-bold tracking-tight text-slate-600 dark:text-slate-300">
-                          {formData.permissions.length === 0 ? 'No permissions' : `${formData.permissions.length} actions selected`}
-                        </span>
-                     </div>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <Button
-                      type="submit"
-                      className="w-full h-12 text-xs font-bold uppercase tracking-tight rounded-xl shadow-xl shadow-indigo-600/20 text-white"
-                      isLoading={loading}
-                      icon={<FrameworkIcons.Check size={18} />}
-                    >
-                      Save Role
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full h-12 text-xs font-bold tracking-tight text-slate-400 uppercase"
-                      onClick={() => this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-
-              <Card title="Help">
-                 <p className="text-xs text-slate-500 leading-relaxed font-bold tracking-tight opacity-70">
-                   Creating this role will allow you to assign these specific permissions to any user in the system.
-                 </p>
-              </Card>
-            </div>
+            <NewRoleSummarySidebar
+              permissionCount={formData.permissions.length}
+              loading={loading}
+              onCancel={() => this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST)}
+            />
           </form>
         </div>
       </div>

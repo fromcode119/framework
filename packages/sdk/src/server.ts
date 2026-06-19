@@ -16,7 +16,8 @@ export {
   ProjectPaths,
   IntegrationManager,
   RequestContextUtils,
-  PluginDefinitionUtils
+  PluginDefinitionUtils,
+  MediaPathUtils
 } from '@fromcode119/core';
 
 export type {

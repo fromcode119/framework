@@ -46,7 +46,7 @@ export class CollectionListRowActions extends React.Component<{
   const duplicateHref = `/${pluginSlug}/${slug}/new?duplicateFrom=${encodeURIComponent(String(row?.id || ''))}`;
 
   return (
-    <div className="ml-auto flex max-w-[16rem] flex-wrap items-center justify-end gap-2">
+    <div className="ml-auto flex flex-nowrap items-center justify-end gap-1 whitespace-nowrap">
       {canPreview && (
         <a
           href={previewUrl}

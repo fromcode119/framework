@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
-import { CollectionListUtils } from './collection-list-utils';
+import { CollectionListUtils } from './list/utils';
 
 interface CollectionHeaderProps {
   collection: any;
