@@ -157,7 +157,15 @@ export class RestReadController {
       await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
       const format = req.query.format || 'json';
       const table = QueryHelper.getVirtualTable(collection);
-      const docs = await this.runtime.db.find(table, { limit: 10000 });
+      let docs = await this.runtime.db.find(table, { limit: 10000 });
+      // When the admin list passes `ids` (rows the user selected), export ONLY those records;
+      // with no `ids`, export the whole collection.
+      const idsParam = String(req.query.ids || '').trim();
+      if (idsParam) {
+        const primaryKey = collection.primaryKey || 'id';
+        const selected = new Set(idsParam.split(',').map((value) => value.trim()).filter(Boolean));
+        docs = docs.filter((doc: any) => selected.has(String(doc[primaryKey])));
+      }
       if (format === 'csv') {
         const fields = collection.fields.map((field) => field.name);
         const csvRows = [
