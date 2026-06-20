@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, ThemeManager } from '@fromcode119/core';
+import { BaseController, PluginManager, ThemeManager } from '@fromcode119/core';
 import { RESTController } from '../rest/rest-controller';
 import { SystemAdminController } from './system-admin-controller';
 import { SystemControllerRuntime } from './system-controller-runtime';
@@ -9,7 +9,7 @@ import { SystemRuntimeController } from './system-runtime-controller';
 import { SystemUserController } from './system-user-controller';
 import { SystemPeopleController } from './system-people-controller';
 
-export class SystemController {
+export class SystemController extends BaseController {
   private readonly adminController: SystemAdminController;
   private readonly integrationController: SystemIntegrationController;
   private readonly runtimeController: SystemRuntimeController;
@@ -22,6 +22,7 @@ export class SystemController {
     restController: RESTController,
     auth: AuthManager
   ) {
+    super();
     const runtime = new SystemControllerRuntime(manager, themeManager, restController, auth);
     this.adminController = new SystemAdminController(runtime);
     this.integrationController = new SystemIntegrationController(runtime);

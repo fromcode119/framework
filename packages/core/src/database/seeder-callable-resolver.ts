@@ -76,7 +76,7 @@ export class SeederCallableResolver {
       const method = owner[methodName];
       if (typeof method === 'function') {
         return {
-          callable: (method as (...args: unknown[]) => unknown).bind(value),
+          callable: (...args: unknown[]) => (method as (...args: unknown[]) => unknown).apply(value, args),
           symbolName: methodName,
           sourceType: 'static'
         };

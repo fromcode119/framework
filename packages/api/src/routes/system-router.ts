@@ -56,155 +56,155 @@ export class SystemRouter extends BaseRouter {
   protected registerRoutes(): void {
     // Admin metadata and stats
     this.get(RouteConstants.SEGMENTS.ADMIN_METADATA, this.auth.requirePermission('system:view'), 
-      this.bind(this.controller.getAdminMetadata.bind(this.controller)));
+      this.controller.getAdminMetadata);
     this.get(RouteConstants.SEGMENTS.ADMIN_STATS_COLLECTIONS, this.auth.requirePermission('system:view'), 
-      this.bind(this.controller.getStats.bind(this.controller)));
+      this.controller.getStats);
     this.get(RouteConstants.SEGMENTS.ADMIN_STATS_SECURITY, this.auth.requirePermission('system:view'), 
-      this.bind(this.controller.getSecurityStats.bind(this.controller)));
+      this.controller.getSecurityStats);
     
     // Integration management
     this.get(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS, this.auth.requirePermission('integrations:view'), 
-      this.bind(this.controller.getIntegrations.bind(this.controller)));
+      this.controller.getIntegrations);
     this.get(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_TYPE, this.auth.requirePermission('integrations:view'), 
-      this.bind(this.controller.getIntegration.bind(this.controller)));
+      this.controller.getIntegration);
     this.put(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_TYPE, this.auth.requirePermission('integrations:manage'), 
-      this.bind(this.controller.updateIntegration.bind(this.controller)));
+      this.controller.updateIntegration);
     this.patch(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROVIDER, 
       this.auth.requirePermission('integrations:manage'), 
-      this.bind(this.controller.setIntegrationProviderEnabled.bind(this.controller)));
+      this.controller.setIntegrationProviderEnabled);
     this.delete(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROVIDER, 
       this.auth.requirePermission('integrations:manage'), 
-      this.bind(this.controller.removeIntegrationProvider.bind(this.controller)));
+      this.controller.removeIntegrationProvider);
     this.post(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROFILE_ACTIVATE, 
       this.auth.requirePermission('integrations:manage'), 
-      this.bind(this.controller.activateIntegrationProfile.bind(this.controller)));
+      this.controller.activateIntegrationProfile);
     this.patch(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROFILE, 
       this.auth.requirePermission('integrations:manage'), 
-      this.bind(this.controller.renameIntegrationProfile.bind(this.controller)));
+      this.controller.renameIntegrationProfile);
     this.delete(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROFILE, 
       this.auth.requirePermission('integrations:manage'), 
-      this.bind(this.controller.deleteIntegrationProfile.bind(this.controller)));
+      this.controller.deleteIntegrationProfile);
     
     // Telemetry and monitoring
     this.post(RouteConstants.SEGMENTS.ADMIN_TELEMETRY_EMAIL_TEST, this.auth.requirePermission('system:view'), 
-      this.bind(this.controller.sendTestTelemetryEmail.bind(this.controller)));
+      this.controller.sendTestTelemetryEmail);
     this.get(RouteConstants.SEGMENTS.ADMIN_ACTIVITY, this.auth.requirePermission('system:view'), 
-      this.bind(this.controller.getActivity.bind(this.controller)));
+      this.controller.getActivity);
     this.get(RouteConstants.SEGMENTS.ADMIN_LOGS, this.auth.requirePermission('system:logs'), 
-      this.bind(this.controller.getLogs.bind(this.controller)));
+      this.controller.getLogs);
     this.get(RouteConstants.SEGMENTS.ADMIN_AUDIT, this.auth.requirePermission('system:audit'), 
-      this.bind(this.controller.getAuditLogs.bind(this.controller)));
+      this.controller.getAuditLogs);
 
     // Backup management
     this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS, this.auth.requirePermission('system:backup:view'),
-      this.bind(this.backupController.listBackups.bind(this.backupController)));
+      this.backupController.listBackups);
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM, this.auth.requirePermission('system:backup:manage'),
-      this.bind(this.backupController.createSystemBackup.bind(this.backupController)));
+      this.backupController.createSystemBackup);
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_SESSION, this.auth.requirePermission('system:backup:manage'),
-      this.bind(this.backupController.startImportSession.bind(this.backupController)));
+      this.backupController.startImportSession);
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_CHUNK, this.auth.requirePermission('system:backup:manage'), this.chunkUpload.single('chunk'),
-      this.bind(this.backupController.uploadImportChunk.bind(this.backupController)));
+      this.backupController.uploadImportChunk);
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_COMPLETE, this.auth.requirePermission('system:backup:manage'),
-      this.bind(this.backupController.completeImport.bind(this.backupController)));
+      this.backupController.completeImport);
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT, this.auth.requirePermission('system:backup:manage'), this.upload.single('backup'),
-      this.bind(this.backupController.importBackup.bind(this.backupController)));
+      this.backupController.importBackup);
     this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_DOWNLOAD, this.auth.requirePermission('system:backup:view'),
-      this.bind(this.backupController.downloadBackup.bind(this.backupController)));
+      this.backupController.downloadBackup);
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_PREVIEW, this.auth.requirePermission('system:backup:restore'),
-      this.bind(this.backupController.previewRestore.bind(this.backupController)));
+      this.backupController.previewRestore);
     this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_EXECUTE, this.auth.requirePermission('system:backup:restore'),
-      this.bind(this.backupController.executeRestore.bind(this.backupController)));
+      this.backupController.executeRestore);
     this.delete(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID, this.auth.requirePermission('system:backup:manage'),
-      this.bind(this.backupController.deleteBackup.bind(this.backupController)));
+      this.backupController.deleteBackup);
     
     // System settings
     this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
-      this.bind(this.controller.getSettings.bind(this.controller)));
+      this.controller.getSettings);
     this.post(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
-      this.bind(this.controller.updateSettings.bind(this.controller)));
+      this.controller.updateSettings);
     this.put(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
-      this.bind(this.controller.updateSettings.bind(this.controller)));
+      this.controller.updateSettings);
     
     // Role management
     this.get(RouteConstants.SEGMENTS.ADMIN_ROLES, this.auth.requirePermission('roles:view'), 
-      this.bind(this.controller.getRoles.bind(this.controller)));
+      this.controller.getRoles);
     this.post(RouteConstants.SEGMENTS.ADMIN_ROLES, this.auth.requirePermission('roles:manage'), 
-      this.bind(this.controller.saveRole.bind(this.controller)));
+      this.controller.saveRole);
     this.get(RouteConstants.SEGMENTS.ADMIN_ROLES_SLUG, this.auth.requirePermission('roles:view'), 
-      this.bind(this.controller.getRole.bind(this.controller)));
+      this.controller.getRole);
     this.put(RouteConstants.SEGMENTS.ADMIN_ROLES_SLUG, this.auth.requirePermission('roles:manage'), 
-      this.bind(this.controller.saveRole.bind(this.controller)));
+      this.controller.saveRole);
     this.delete(RouteConstants.SEGMENTS.ADMIN_ROLES_SLUG, this.auth.requirePermission('roles:manage'), 
-      this.bind(this.controller.deleteRole.bind(this.controller)));
+      this.controller.deleteRole);
     this.get(RouteConstants.SEGMENTS.ADMIN_PERMISSIONS, this.auth.requirePermission('roles:view'), 
-      this.bind(this.controller.getPermissions.bind(this.controller)));
+      this.controller.getPermissions);
     this.post(RouteConstants.SEGMENTS.ADMIN_PERMISSIONS, this.auth.requirePermission('roles:manage'), 
-      this.bind(this.controller.savePermission.bind(this.controller)));
+      this.controller.savePermission);
     
     // User management
     this.get(RouteConstants.SEGMENTS.ADMIN_USERS, this.auth.requirePermission('users:view'), 
-      this.bind(this.controller.getUsers.bind(this.controller)));
+      this.controller.getUsers);
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS, this.auth.requirePermission('users:manage'), 
-      this.bind(this.controller.saveUser.bind(this.controller)));
+      this.controller.saveUser);
     this.get(RouteConstants.SEGMENTS.ADMIN_USERS_ID, this.auth.requirePermission('users:view'), 
-      this.bind(this.controller.getUser.bind(this.controller)));
+      this.controller.getUser);
     this.put(RouteConstants.SEGMENTS.ADMIN_USERS_ID, this.auth.requirePermission('users:manage'), 
-      this.bind(this.controller.saveUser.bind(this.controller)));
+      this.controller.saveUser);
     this.delete(RouteConstants.SEGMENTS.ADMIN_USERS_ID, this.auth.requirePermission('users:manage'), 
-      this.bind(this.controller.deleteUser.bind(this.controller)));
+      this.controller.deleteUser);
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS_ROLES, this.auth.requirePermission('users:manage'),
-      this.bind(this.controller.saveUserRoles.bind(this.controller)));
+      this.controller.saveUserRoles);
 
     // People management (unified identity model): list people, promote a person to a login account.
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE, this.auth.requirePermission('users:view'),
-      this.bind(this.controller.getPeople.bind(this.controller)));
+      this.controller.getPeople);
     // Static `/records` must be registered before `/:id` so it is not captured as an id.
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_RECORDS, this.auth.requirePermission('users:view'),
-      this.bind(this.controller.getRecordsByRef.bind(this.controller)));
+      this.controller.getRecordsByRef);
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:view'),
-      this.bind(this.controller.getPerson.bind(this.controller)));
+      this.controller.getPerson);
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_RECORDS, this.auth.requirePermission('users:view'),
-      this.bind(this.controller.getPersonRecords.bind(this.controller)));
+      this.controller.getPersonRecords);
     this.patch(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:manage'),
-      this.bind(this.controller.savePerson.bind(this.controller)));
+      this.controller.savePerson);
     this.post(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_CREATE_USER, this.auth.requirePermission('users:manage'),
-      this.bind(this.controller.createUserFromPerson.bind(this.controller)));
+      this.controller.createUserFromPerson);
 
     // 2FA Management
     this.get(RouteConstants.SEGMENTS.ADMIN_USERS_2FA_STATUS, this.auth.requirePermission('users:view'), 
-      this.bind(this.controller.getTwoFactorStatus.bind(this.controller)));
+      this.controller.getTwoFactorStatus);
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS_2FA_SETUP, this.auth.requirePermission('users:manage'), 
-      this.bind(this.controller.setup2FA.bind(this.controller)));
+      this.controller.setup2FA);
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS_2FA_VERIFY, this.auth.requirePermission('users:manage'), 
-      this.bind(this.controller.verify2FA.bind(this.controller)));
+      this.controller.verify2FA);
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS_2FA_RECOVERY, 
       this.auth.requirePermission('users:manage'), 
-      this.bind(this.controller.regenerateRecoveryCodes.bind(this.controller)));
+      this.controller.regenerateRecoveryCodes);
     this.delete(RouteConstants.SEGMENTS.ADMIN_USERS_2FA_DISABLE, this.auth.requirePermission('users:manage'), 
-      this.bind(this.controller.disable2FA.bind(this.controller)));
+      this.controller.disable2FA);
     
     // System updates
     this.get(RouteConstants.SEGMENTS.UPDATE_CHECK, this.auth.requirePermission('system:update'), 
-      this.bind(this.controller.checkUpdate.bind(this.controller)));
+      this.controller.checkUpdate);
     this.post(RouteConstants.SEGMENTS.UPDATE_APPLY, this.auth.requirePermission('system:update'), 
-      this.bind(this.controller.applyUpdate.bind(this.controller)));
+      this.controller.applyUpdate);
     
     // Public/frontend endpoints
-    this.get(RouteConstants.SEGMENTS.EVENTS, this.auth.guard(), this.bind(this.controller.getEvents.bind(this.controller)));
-    this.get(RouteConstants.SEGMENTS.FRONTEND, this.bind(this.controller.getFrontendMetadata.bind(this.controller)));
-    this.get(RouteConstants.SEGMENTS.I18N, this.bind(this.controller.getI18n.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.EVENTS, this.auth.guard(), this.controller.getEvents);
+    this.get(RouteConstants.SEGMENTS.FRONTEND, this.controller.getFrontendMetadata);
+    this.get(RouteConstants.SEGMENTS.I18N, this.controller.getI18n);
     
     // Content features
     this.get(RouteConstants.SEGMENTS.SHORTCODES, this.auth.requirePermission('content:read'), 
-      this.bind(this.controller.getShortcodes.bind(this.controller)));
+      this.controller.getShortcodes);
     this.get(RouteConstants.SEGMENTS.DATA_SOURCES, this.auth.requirePermission('content:read'), 
-      this.bind(this.controller.getDataSources.bind(this.controller)));
+      this.controller.getDataSources);
     this.get(RouteConstants.SEGMENTS.DATA_SOURCE_QUERY, this.auth.requirePermission('content:read'), 
-      this.bind(this.controller.queryDataSource.bind(this.controller)));
+      this.controller.queryDataSource);
     this.post(RouteConstants.SEGMENTS.DATA_SOURCE_QUERY, this.auth.requirePermission('content:read'), 
-      this.bind(this.controller.queryDataSource.bind(this.controller)));
+      this.controller.queryDataSource);
     this.post(RouteConstants.SEGMENTS.SHORTCODES_RENDER, this.auth.requirePermission('content:read'), 
-      this.bind(this.controller.renderShortcodes.bind(this.controller)));
-    this.get(RouteConstants.SEGMENTS.RESOLVE, this.bind(this.controller.resolveSlug.bind(this.controller)));
+      this.controller.renderShortcodes);
+    this.get(RouteConstants.SEGMENTS.RESOLVE, this.controller.resolveSlug);
   }
 }

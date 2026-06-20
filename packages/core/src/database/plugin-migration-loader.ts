@@ -55,8 +55,10 @@ export class PluginMigrationLoader {
         migrations.push({
           name: `plugin:${pluginSlug}:${basename}`,
           version: this.toVersionNumber(basename, fallbackIndex),
-          up: migrationModule.up.bind(migrationModule),
-          down: typeof migrationModule.down === 'function' ? migrationModule.down.bind(migrationModule) : undefined,
+          up: (...args: unknown[]) => (migrationModule.up as (...a: unknown[]) => Promise<void>)(...args),
+          down: typeof migrationModule.down === 'function'
+            ? (...args: unknown[]) => (migrationModule.down as (...a: unknown[]) => Promise<void>)(...args)
+            : undefined,
         });
       } catch (error) {
         if (this.shouldSkipImportError(error, absolutePath)) {

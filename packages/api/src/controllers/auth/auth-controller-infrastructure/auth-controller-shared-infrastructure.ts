@@ -2,6 +2,7 @@ import { Request } from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import {
   ApplicationUrlUtils,
+  BaseController,
   CookieConstants,
   Logger,
   PluginManager,
@@ -12,7 +13,7 @@ import type { IDatabaseManager } from '@fromcode119/database';
 import { ApiUrlUtils } from '../../../utils/url';
 import { AuthUtils } from '../../../utils/auth';
 
-export class AuthControllerSharedInfrastructure {
+export class AuthControllerSharedInfrastructure extends BaseController {
   protected db: IDatabaseManager;
   protected logger = new Logger({ namespace: 'auth-controller' });
   protected readonly defaultSessionDurationMinutes = 10080; // 7 days
@@ -22,6 +23,7 @@ export class AuthControllerSharedInfrastructure {
   protected readonly defaultEmailChangeExpiryMinutes = 60;
 
   constructor(protected readonly manager: PluginManager, protected readonly auth: AuthManager) {
+    super();
     this.db = manager.db;
   }
 

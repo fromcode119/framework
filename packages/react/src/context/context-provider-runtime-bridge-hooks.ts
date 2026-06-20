@@ -30,9 +30,9 @@ export class ContextProviderRuntimeBridgeHooks {
       ReactDOMRef,
       FrameworkIcons,
       FrameworkIconRegistry,
-      getIcon: FrameworkIcons.getIcon.bind(FrameworkIcons),
+      getIcon: (name: string) => FrameworkIcons.getIcon(name),
       IconNames: FrameworkIcons.iconNames(),
-      createProxyIcon: FrameworkIcons.createProxyIcon.bind(FrameworkIcons),
+      createProxyIcon: (name: string) => FrameworkIcons.createProxyIcon(name),
     });
   }
 
@@ -166,11 +166,11 @@ export class ContextProviderRuntimeBridgeHooks {
         isReady,
         PluginsProvider: providerClass,
         RuntimeConstants,
-        getIcon: FrameworkIcons.getIcon.bind(FrameworkIcons),
+        getIcon: (name: string) => FrameworkIcons.getIcon(name),
         FrameworkIconRegistry,
         FrameworkIcons,
         IconNames: FrameworkIcons.iconNames(),
-        createProxyIcon: FrameworkIcons.createProxyIcon.bind(FrameworkIcons),
+        createProxyIcon: (name: string) => FrameworkIcons.createProxyIcon(name),
         RootFramework,
         Slot,
         Override,

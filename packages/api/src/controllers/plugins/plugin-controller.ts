@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { ArchiveUploadSessionService, PluginManager, Logger, CoercionUtils } from '@fromcode119/core';
+import { ArchiveUploadSessionService, BaseController, PluginManager, Logger, CoercionUtils } from '@fromcode119/core';
 import { PluginInstallOperationService } from '../../services/plugin-install-operation-service';
 import { PluginArchiveSupport } from './plugin-archive-support';
 
-export class PluginController {
+export class PluginController extends BaseController {
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'plugin-controller' });
@@ -12,6 +12,7 @@ export class PluginController {
   private archiveSupport: PluginArchiveSupport;
 
   constructor(private manager: PluginManager) {
+    super();
     this.archiveSupport = new PluginArchiveSupport(manager);
   }
 

@@ -12,6 +12,6 @@ export class PluginAssetRouter extends BaseRouter {
   }
 
   protected registerRoutes(): void {
-    this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_UI_WILDCARD, this.bind(this.controller.serveAssets.bind(this.controller)));
+    this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_UI_WILDCARD, this.controller.serveAssets);
   }
 }

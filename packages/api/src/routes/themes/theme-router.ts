@@ -25,22 +25,22 @@ export class ThemeRouter extends BaseRouter {
 
   protected registerRoutes(): void {
     this.get(RouteConstants.SEGMENTS.THEMES_ACTIVE_ASSETS, this.auth.guard(['admin']), this.bind(this.assetsListController.listActiveThemeAssets));
-    this.get('/', this.auth.guard(['admin']), this.bind(this.controller.list.bind(this.controller)));
-    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.bind(this.controller.getMarketplace.bind(this.controller)));
-    this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CHECK_UPDATE, this.auth.guard(['admin']), this.bind(this.controller.checkUpdate.bind(this.controller)));
-    this.get(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.bind(this.controller.activate.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.bind(this.controller.activate.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_DISABLE, this.auth.guard(['admin']), this.bind(this.controller.disable.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_RESET, this.auth.guard(['admin']), this.bind(this.controller.reset.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_INSTALL, this.auth.guard(['admin']), this.bind(this.controller.install.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_SESSION, this.auth.guard(['admin']), this.bind(this.controller.startUploadSession.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_CHUNK, this.auth.guard(['admin']), this.chunkUpload.single('chunk'), this.bind(this.controller.uploadChunk.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_SESSION_INSPECT, this.auth.guard(['admin']), this.bind(this.controller.inspectStagedUpload.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_INSPECT, this.auth.guard(['admin']), this.upload.single('theme'), this.bind(this.controller.inspectUpload.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_COMPLETE, this.auth.guard(['admin']), this.bind(this.controller.completeStagedUpload.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD, this.auth.guard(['admin']), this.upload.single('theme'), this.bind(this.controller.upload.bind(this.controller)));
-    this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, this.auth.guard(['admin']), this.bind(this.controller.getConfig.bind(this.controller)));
-    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, this.auth.guard(['admin']), this.bind(this.controller.saveConfig.bind(this.controller)));
-    this.delete(RouteConstants.SEGMENTS.THEMES_SLUG, this.auth.guard(['admin']), this.bind(this.controller.delete.bind(this.controller)));
+    this.get('/', this.auth.guard(['admin']), this.controller.list);
+    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.controller.getMarketplace);
+    this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CHECK_UPDATE, this.auth.guard(['admin']), this.controller.checkUpdate);
+    this.get(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.controller.activate);
+    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.controller.activate);
+    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_DISABLE, this.auth.guard(['admin']), this.controller.disable);
+    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_RESET, this.auth.guard(['admin']), this.controller.reset);
+    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_INSTALL, this.auth.guard(['admin']), this.controller.install);
+    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_SESSION, this.auth.guard(['admin']), this.controller.startUploadSession);
+    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_CHUNK, this.auth.guard(['admin']), this.chunkUpload.single('chunk'), this.controller.uploadChunk);
+    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_SESSION_INSPECT, this.auth.guard(['admin']), this.controller.inspectStagedUpload);
+    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_INSPECT, this.auth.guard(['admin']), this.upload.single('theme'), this.controller.inspectUpload);
+    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD_COMPLETE, this.auth.guard(['admin']), this.controller.completeStagedUpload);
+    this.post(RouteConstants.SEGMENTS.THEMES_UPLOAD, this.auth.guard(['admin']), this.upload.single('theme'), this.controller.upload);
+    this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, this.auth.guard(['admin']), this.controller.getConfig);
+    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, this.auth.guard(['admin']), this.controller.saveConfig);
+    this.delete(RouteConstants.SEGMENTS.THEMES_SLUG, this.auth.guard(['admin']), this.controller.delete);
   }
 }

@@ -49,17 +49,17 @@ export class ThemeDefaultPageContractOverrideLoader {
 
   private resolveOverrideProvider(moduleExports: any): () => ThemeDefaultPageContractOverride[] {
     if (typeof moduleExports?.getOverrides === 'function') {
-      return moduleExports.getOverrides.bind(moduleExports);
+      return (...args: unknown[]) => moduleExports.getOverrides(...args);
     }
 
     if (typeof moduleExports?.default?.getOverrides === 'function') {
-      return moduleExports.default.getOverrides.bind(moduleExports.default);
+      return (...args: unknown[]) => moduleExports.default.getOverrides(...args);
     }
 
     for (const value of Object.values(moduleExports || {})) {
       const provider = value as { getOverrides?: () => ThemeDefaultPageContractOverride[] } | undefined;
       if (typeof provider?.getOverrides === 'function') {
-        return provider.getOverrides.bind(value);
+        return () => provider.getOverrides!.call(value);
       }
     }
 

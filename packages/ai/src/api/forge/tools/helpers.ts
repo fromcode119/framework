@@ -51,9 +51,9 @@ export class AssistantToolingHelpers {
       queryLower,
       queryTokens,
       basePath,
-      this.collectObjectStringMatches.bind(this),
-      this.textMatchesQuery.bind(this),
-      this.isPotentialLocaleKey.bind(this),
+      (...args: Parameters<typeof this.collectObjectStringMatches>) => this.collectObjectStringMatches(...args),
+      (value: string, queryLower: string, queryTokens: string[]) => this.textMatchesQuery(value, queryLower, queryTokens),
+      (key: string) => this.isPotentialLocaleKey(key),
       depth,
       maxDepth,
     );
@@ -242,7 +242,7 @@ export class AssistantToolingHelpers {
       value,
       queryLower,
       queryTokens,
-      this.normalizeSearchText.bind(this),
+      (value: string) => this.normalizeSearchText(value),
     );
   }
 
@@ -276,9 +276,9 @@ export class AssistantToolingHelpers {
       filePath,
       query,
       maxMatches,
-      this.normalizeSearchText.bind(this),
-      this.tokenizeSearchQuery.bind(this),
-      this.textMatchesQuery.bind(this),
+      (value: string) => this.normalizeSearchText(value),
+      (value: string) => this.tokenizeSearchQuery(value),
+      (value: string, queryLower: string, queryTokens: string[]) => this.textMatchesQuery(value, queryLower, queryTokens),
     );
   }
 

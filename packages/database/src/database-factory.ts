@@ -81,7 +81,7 @@ export class DatabaseFactory {
     for (const definition of DatabaseDialectDefinitionLoader.load()) {
       for (const protocol of definition.protocols) {
         if (!this.drivers.has(protocol)) {
-          this.register(protocol, definition.createManager.bind(definition));
+          this.register(protocol, (connection: string) => definition.createManager(connection));
         }
       }
     }

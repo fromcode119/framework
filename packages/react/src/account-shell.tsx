@@ -42,11 +42,11 @@ export class AccountShell extends React.Component<{ page?: any }, { section: str
     { component: AccountTwoFactorPanel, pluginSlug: 'framework' },
   ];
 
+  private boundPopState?: () => void;
+
   constructor(props: { page?: any }) {
     super(props);
     this.state = { section: AccountShell.readSectionFromUrl() };
-    this.handlePopState = this.handlePopState.bind(this);
-    this.handleNavClick = this.handleNavClick.bind(this);
   }
 
   static readSectionFromUrl(): string {
@@ -57,7 +57,8 @@ export class AccountShell extends React.Component<{ page?: any }, { section: str
   componentDidMount(): void {
     AccountTranslations.register();
     if (typeof window !== 'undefined') {
-      window.addEventListener('popstate', this.handlePopState);
+      this.boundPopState = () => this.handlePopState();
+      window.addEventListener('popstate', this.boundPopState);
     }
   }
 
@@ -66,8 +67,8 @@ export class AccountShell extends React.Component<{ page?: any }, { section: str
   }
 
   componentWillUnmount(): void {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('popstate', this.handlePopState);
+    if (typeof window !== 'undefined' && this.boundPopState) {
+      window.removeEventListener('popstate', this.boundPopState);
     }
   }
 

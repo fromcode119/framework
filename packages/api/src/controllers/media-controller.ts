@@ -1,16 +1,17 @@
 import { Request, Response } from 'express';
-import { PluginManager, Logger } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { media, IDatabaseManager } from '@fromcode119/database';
 import { ApiUrlUtils } from '../utils/url';
 import { MediaFolderController } from './media-folder-controller';
 
-export class MediaController {
+export class MediaController extends BaseController {
   private db: IDatabaseManager;
   private logger = new Logger({ namespace: 'media-controller' });
   private folders: MediaFolderController;
 
   constructor(private manager: PluginManager, private mediaManager: MediaManager) {
+    super();
     this.db = (manager as any).db;
     this.folders = new MediaFolderController(this.db);
   }

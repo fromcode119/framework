@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
+import { BaseController } from '@fromcode119/core';
 import type { RestoreTargetKind } from '@fromcode119/core';
 import { SystemBackupService } from '../../services/system-backup-service';
 
-export class SystemBackupController {
-  constructor(private readonly service: SystemBackupService) {}
+export class SystemBackupController extends BaseController {
+  constructor(private readonly service: SystemBackupService) {
+    super();
+  }
 
   async listBackups(req: Request, res: Response): Promise<void> {
     try {

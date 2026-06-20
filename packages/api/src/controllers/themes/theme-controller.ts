@@ -1,15 +1,16 @@
 import { Request, Response } from 'express';
-import { ArchiveUploadSessionService, ThemeManager, Logger } from '@fromcode119/core';
+import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
 import { ThemeArchiveSupport } from './theme-archive-support';
 
-export class ThemeController {
+export class ThemeController extends BaseController {
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'theme-controller' });
   private archiveSupport: ThemeArchiveSupport;
 
   constructor(private manager: ThemeManager) {
+    super();
     this.archiveSupport = new ThemeArchiveSupport(manager);
   }
 
