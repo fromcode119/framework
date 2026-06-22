@@ -9,5 +9,8 @@ import type { FieldRendererProps } from './field-renderer.interfaces';
  */
 export function FieldRenderer(props: FieldRendererProps): React.ReactElement {
   const plugins = ContextHooks.usePlugins();
-  return <FieldRendererView {...props} plugins={plugins} />;
+  // System-wide settings (timezone, measurement system, …) — threaded to custom field components so a
+  // field can read platform config (e.g. metric/imperial) without re-fetching or relying on a global.
+  const globalSettings = ContextHooks.useGlobalSettings() as Record<string, any>;
+  return <FieldRendererView {...props} plugins={plugins} globalSettings={globalSettings} />;
 }

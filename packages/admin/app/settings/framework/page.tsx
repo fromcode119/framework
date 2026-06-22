@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 
 const resources = [
   {
@@ -56,18 +57,14 @@ export default function FrameworkSettingsPage() {
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
-      <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 ${
-        theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-      }`}>
-        <h1 className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-          Framework Resources
-        </h1>
-        <p className="text-[10px] font-bold text-slate-500 tracking-tight uppercase opacity-60">
-          Admin-level docs, API and developer references
-        </p>
-      </div>
+      <CompactPageHeader
+        theme={theme}
+        icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
+        title="Framework Resources"
+        subtitle="Admin-level docs, API and developer references"
+      />
 
-      <div className="p-8 lg:p-12 max-w-5xl space-y-8">
+      <div className="p-6 w-full space-y-8">
         <Card title="Core Resources">
           <div className="space-y-4">
             {resources.map((item) => {
@@ -84,10 +81,10 @@ export default function FrameworkSettingsPage() {
                       <Icon size={18} />
                     </div>
                     <div>
-                      <h3 className={`text-sm font-bold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
+                      <h3 className={`text-sm font-semibold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
                         {item.title}
                       </h3>
-                      <p className="text-[11px] font-bold text-slate-500 tracking-tight opacity-80 mt-1">
+                      <p className="text-[13px] text-slate-500 leading-relaxed mt-0.5">
                         {item.description}
                       </p>
                     </div>

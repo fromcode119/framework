@@ -6,7 +6,7 @@ import type { FieldCustomComponentProps } from './field-renderer.interfaces';
 export class FieldCustomComponent extends React.Component<FieldCustomComponentProps> {
   render(): React.ReactNode {
     const {
-      field, currentValue, updateValue, theme, collectionSlug, pluginSettings,
+      field, currentValue, updateValue, theme, collectionSlug, pluginSettings, globalSettings,
       fieldComponents, isFieldReadOnly, record, onPatch, wrapWithReadOnlyOverride
     } = this.props;
     const componentName = field.admin!.component as string;
@@ -35,6 +35,7 @@ export class FieldCustomComponent extends React.Component<FieldCustomComponentPr
           field,
           collectionSlug,
           pluginSettings,
+          globalSettings,
           disabled: isFieldReadOnly,
           // Reactive-form props: read all sibling values + patch any of them live.
           record: record || {},

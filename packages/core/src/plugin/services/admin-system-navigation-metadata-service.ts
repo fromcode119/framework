@@ -123,6 +123,16 @@ export class AdminSystemNavigationMetadataService {
         requiredRoles: ['admin'],
       },
       {
+        id: 'appearance',
+        label: 'Appearance',
+        path: AppPathConstants.ADMIN.SETTINGS.APPEARANCE,
+        sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
+        icon: 'Palette',
+        scope: 'self',
+        priority: 135,
+        requiredRoles: ['admin'],
+      },
+      {
         id: 'routing',
         label: 'Routing',
         path: AppPathConstants.ADMIN.SETTINGS.ROUTING,

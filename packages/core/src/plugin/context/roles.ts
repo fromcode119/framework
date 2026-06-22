@@ -48,6 +48,26 @@ export class RolesContextProxy {
         return (Array.isArray(rows) ? rows : [])
           .map((row: any) => Number(NamingStrategy.denormalizeRecord(row)?.userId))
           .filter((id: number) => Number.isFinite(id) && id > 0);
+      },
+
+      /**
+       * Resolve the EMAIL addresses of users holding a role (deduped, lowercased). The framework owns
+       * the join across the `users`/`users_roles` SYSTEM tables so plugins never read them directly —
+       * use this for admin-notification recipients (e.g. `listUserEmailsWithRole('admin')`).
+       */
+      async listUserEmailsWithRole(slug: string): Promise<string[]> {
+        if (!slug) return [];
+        const roleRows = await manager.db.find(SystemConstants.TABLE.USERS_ROLES, { where: { roleSlug: slug } }).catch(() => []);
+        const ids = (Array.isArray(roleRows) ? roleRows : [])
+          .map((row: any) => Number(NamingStrategy.denormalizeRecord(row)?.userId))
+          .filter((id: number) => Number.isFinite(id) && id > 0);
+        const emails = new Set<string>();
+        for (const id of ids) {
+          const user = await manager.db.findOne(SystemConstants.TABLE.USERS, { id }).catch(() => null);
+          const email = String(NamingStrategy.denormalizeRecord(user)?.email || '').trim().toLowerCase();
+          if (email) emails.add(email);
+        }
+        return Array.from(emails);
       }
     };
 

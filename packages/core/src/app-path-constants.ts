@@ -58,7 +58,6 @@ export class AppPathConstants {
       DETAIL: (slug: string) => `/plugins/${slug}`,
       SETTINGS: (slug: string) => `/plugins/${slug}/settings`,
       SETTINGS_TAB: (slug: string) => AppPathConstants.withQuery(`/plugins/${slug}`, { tab: 'settings' }),
-      PUBLISHER: '/plugins/publisher',
     },
     SETTINGS: {
       ROOT: '/settings',
@@ -66,6 +65,7 @@ export class AppPathConstants {
       INTEGRATIONS: '/settings/integrations',
       INTEGRATIONS_BY_TYPE: (type: string) => AppPathConstants.withQuery('/settings/integrations', { type }),
       LOCALIZATION: '/settings/localization',
+      APPEARANCE: '/settings/appearance',
       ROUTING: '/settings/routing',
       SECURITY: '/settings/security',
       INFRASTRUCTURE: '/settings/infrastructure',

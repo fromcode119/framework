@@ -146,6 +146,13 @@ export class AdminConstants {
     BASE: AdminConstants.v(SystemConstants.API_PATH.COLLECTIONS.BASE),
     SETTINGS_BASE: AdminConstants.v(SystemConstants.API_PATH.COLLECTIONS.SETTINGS),
     SETTINGS: (key: string) => AdminConstants.v(ApiPathUtils.fillPath(`${SystemConstants.API_PATH.COLLECTIONS.SETTINGS}/:key`, { key })),
+    // Per-collection record + action paths (no hardcoded suffixes at call sites).
+    ITEM: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.ITEM, { slug })),
+    DETAIL: (slug: string, id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.DETAIL, { slug, id })),
+    EXPORT: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.EXPORT, { slug })),
+    IMPORT: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.IMPORT, { slug })),
+    BULK_UPDATE: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.BULK_UPDATE, { slug })),
+    BULK_DELETE: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.BULK_DELETE, { slug })),
   },
   MEDIA: {
     BASE: AdminConstants.v(SystemConstants.API_PATH.MEDIA.BASE),

@@ -51,8 +51,11 @@ export class EntityValueParserService {
   }
 
   private shouldSkipField(field: Field, options: EntityParseOptions): boolean {
-    if (field.name === 'id' || field.name === 'createdAt' || field.name === 'updatedAt') {
-      return true;
+    if (field.name === 'id') return true;
+    if (field.name === 'createdAt' || field.name === 'updatedAt') {
+      // Normally skipped as auto-managed timestamps, but let through when the caller has
+      // authorized a read-only override for them (admin unlocked + password-confirmed).
+      if (!options.allowSystemFields?.includes(field.name)) return true;
     }
     return Boolean(options.skipReadOnly && field.admin?.readOnly);
   }

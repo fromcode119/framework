@@ -5,6 +5,7 @@ export type {
   MarketplaceData,
   MarketplacePlugin,
   MarketplaceTheme,
+  MarketplaceAppearance,
 } from './marketplace-client.interfaces';
 export type {
   MarketplaceChangelogEntry,

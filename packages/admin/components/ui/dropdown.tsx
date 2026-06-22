@@ -130,21 +130,19 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
               top: coords.top,
               left: align === 'right' ? 'auto' : coords.left,
               right: align === 'right' ? window.innerWidth - (coords.left + coords.width) : 'auto',
-              minWidth: '14rem'
+              minWidth: '13rem'
             }}
-            className={`w-56 max-w-[calc(100vw-2rem)] rounded-2xl border z-[9999] animate-in zoom-in-95 duration-500 overflow-hidden ${
-              coords.direction === 'up' ? 'origin-bottom-right slide-in-from-bottom-2' : 'origin-top-right slide-in-from-top-2'
-            }}
-              bg-white/95 backdrop-blur-2xl border-slate-200/60 shadow-slate-200/50 ring-1 ring-black/[0.02] 
-              dark:bg-slate-900/95 dark:border-white/10 dark:ring-1 dark:ring-white/10 dark:shadow-black dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)]`}
+            className={`w-56 max-w-[calc(100vw-2rem)] rounded-xl border z-[9999] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150 ${
+              coords.direction === 'up' ? 'origin-bottom-right' : 'origin-top-right'
+            } bg-white border-slate-200 shadow-lg shadow-slate-900/[0.08]
+              dark:bg-slate-900 dark:border-slate-800 dark:shadow-black/40`}
           >
             {header && (
-              <div className="px-5 py-4 border-b mb-1 relative overflow-hidden border-slate-100 bg-slate-50/50 dark:border-white/5 dark:bg-white/[0.02]">
-                <div className="relative z-10">{header}</div>
-                <div className="absolute -right-4 -top-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-3xl" />
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                {header}
               </div>
             )}
-            <div className="p-2 space-y-0.5 overflow-y-auto" style={{ maxHeight: coords.maxHeight }}>
+            <div className="p-1.5 overflow-y-auto" style={{ maxHeight: coords.maxHeight }}>
               {items.map((item, idx) => {
                 const isLast = idx === items.length - 1;
                 const isDanger = item.variant === 'danger';
@@ -152,7 +150,7 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
                 return (
                   <React.Fragment key={item.label}>
                     {isLast && idx !== 0 && (
-                      <div className="my-1.5 h-[1px] mx-3 bg-slate-100 dark:bg-white/5" />
+                      <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
                     )}
                     <button
                       title={item.label}
@@ -160,26 +158,18 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
                         item.onClick();
                         this.setState({ isOpen: false });
                       }}
-                      className={`group flex items-center w-full gap-3 px-3 py-2 text-[12px] font-bold rounded-xl transition-all duration-300 overflow-hidden relative ${
-                        isDanger 
-                          ? 'text-rose-500 hover:bg-rose-500/10' 
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
+                      className={`flex items-center w-full gap-3 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
+                        isDanger
+                          ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10'
+                          : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
                       }`}
                     >
                       {item.icon && (
-                        <div className={`flex-shrink-0 transition-all duration-300 group-hover:scale-110 h-7 w-7 rounded-lg flex items-center justify-center ${
-                          isDanger 
-                            ? 'bg-rose-500/10 text-rose-500' 
-                            : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-400'
-                        }`}>
+                        <span className={`flex-shrink-0 ${isDanger ? 'text-rose-500' : 'text-slate-400'}`}>
                           {item.icon}
-                        </div>
+                        </span>
                       )}
-                      <span className="truncate text-left flex-1 font-semibold tracking-wide text-[12px]">{item.label}</span>
-                      
-                      {!isDanger && (
-                        <div className="h-1.5 w-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.4)] dark:bg-indigo-500 dark:shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
-                      )}
+                      <span className="truncate text-left flex-1">{item.label}</span>
                     </button>
                   </React.Fragment>
                 );

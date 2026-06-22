@@ -14,10 +14,10 @@ export class ThemeSettingsVariablesPanel extends React.Component<{ page: any; mo
     return (
       <>
         {Object.entries(groupedVariables).map(([group, keys]: [string, any]) => keys.length > 0 && (
-          <Card key={group} className={`border-0 p-10 rounded-[2.5rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-            <div className="flex items-center gap-4 mb-10">
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
-                <FrameworkIcons.Settings size={20} />
+          <Card key={group} className={`border-0 p-4 rounded-xl ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-9 w-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                <FrameworkIcons.Settings size={18} />
               </div>
               <div>
                 <h3 className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
@@ -27,15 +27,15 @@ export class ThemeSettingsVariablesPanel extends React.Component<{ page: any; mo
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               {keys.map((key: string) => {
                 const schema = themeDetail.variableSchema?.[key];
                 const value = tempVariables[key];
                 const type = schema?.type || (value?.startsWith('#') ? 'color' : 'text');
 
                 return (
-                  <div key={key} className={`flex items-center justify-between p-7 rounded-[2.5rem] transition-all duration-500 border group ${adminTheme === 'dark' ? 'bg-slate-800/30 border-white/5 focus-within:border-indigo-500/30' : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] focus-within:shadow-xl focus-within:shadow-indigo-500/10 focus-within:border-indigo-500/20'}`}>
-                    <div className="flex-1 mr-8">
+                  <div key={key} className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 border group ${adminTheme === 'dark' ? 'bg-slate-800/30 border-white/5 focus-within:border-indigo-500/30' : 'bg-white border-slate-100 shadow-sm focus-within:shadow-md focus-within:border-indigo-500/20'}`}>
+                    <div className="flex-1 mr-6">
                       <div className="flex items-center gap-2 mb-1">
                         <div className={`text-[10px] font-semibold uppercase tracking-wide text-slate-500`}>{schema?.label || key}</div>
                         {schema?.description && (

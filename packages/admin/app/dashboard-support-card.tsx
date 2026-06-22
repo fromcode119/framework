@@ -9,8 +9,8 @@ export class DashboardSupportCard extends React.Component<DashboardSupportCardPr
   render(): React.ReactNode {
     return (
       <Card title="Support & Docs">
-         <div className="space-y-4">
-            <div className="p-5 bg-indigo-50 dark:bg-indigo-500/5 rounded-2xl border border-indigo-100 dark:border-indigo-500/10">
+         <div className="space-y-3">
+            <div className="p-4 bg-indigo-50 dark:bg-indigo-500/5 rounded-xl border border-indigo-100 dark:border-indigo-500/10">
               <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">
                 "Need help scaling your framework? Check the documentation for architecture best practices."
               </p>

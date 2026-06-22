@@ -46,12 +46,8 @@ export class CollectionHeader extends React.Component<CollectionHeaderProps> {
   const collectionLabel = CollectionListUtils.resolveCollectionLabel(collection, slug);
 
   return (
-    <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
-      theme === 'dark' 
-        ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
-        : 'bg-white/80 border-slate-100 shadow-sm'
-    }`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
+    <div className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
         <div className="flex items-center gap-2 mb-3">
           <Link 
             href={`/${pluginSlug}/${slug}`}

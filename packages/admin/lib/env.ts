@@ -7,4 +7,6 @@ export class AppEnv {
 	static readonly APP_VERSION = '0.1.31';
 	static readonly APP_CHANNEL = 'Alpha';
 	static readonly APP_CODENAME = 'Fromcode Core';
+	/** Per-deployment default admin appearance id. Empty string = use the built-in default. */
+	static readonly ADMIN_APPEARANCE = process.env.NEXT_PUBLIC_ADMIN_APPEARANCE ?? '';
 }

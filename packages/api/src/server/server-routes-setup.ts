@@ -16,6 +16,7 @@ import { PluginSettingsRouter } from '../routes/plugins/plugin-settings-router';
 import { ThemeRouter } from '../routes/themes/theme-router';
 import { ThemeAssetRouter } from '../routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '../routes/marketplace';
+import { AppearanceRouter } from '../routes/appearances';
 import { SystemRouter } from '../routes/system-router';
 import { MediaRouter } from '../routes/media-router';
 import { VersioningRouter } from '../routes/versioning';
@@ -40,14 +41,46 @@ export class ServerRoutesSetup {
     private readonly logger: Logger,
   ) {}
 
-  async setupRoutes() {
-    let coreVersion = '0.1.0';
+  /**
+   * Resolve the framework CORE version, read fresh on each call so a core update is reflected
+   * without restarting. Walks up from `@fromcode119/core`'s resolved entry to its own
+   * package.json (its `exports` map blocks a direct subpath require of package.json), matching on
+   * `name === '@fromcode119/core'` so it never reports the root/app package.json by mistake.
+   */
+  private resolveCoreVersion(): string {
+    const readVersion = (file: string): string | null => {
+      try {
+        if (fs.existsSync(file)) {
+          const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+          if (pkg?.version) return pkg.version;
+        }
+      } catch {}
+      return null;
+    };
     try {
-      const pkgPath = path.resolve(process.cwd(), 'package.json');
-      if (fs.existsSync(pkgPath)) { const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')); coreVersion = pkg.version || coreVersion; }
-    } catch (e) {}
+      let dir = path.dirname(require.resolve('@fromcode119/core'));
+      for (let i = 0; i < 6; i++) {
+        const candidate = path.join(dir, 'package.json');
+        try {
+          if (fs.existsSync(candidate)) {
+            const pkg = JSON.parse(fs.readFileSync(candidate, 'utf8'));
+            if (pkg?.name === '@fromcode119/core' && pkg?.version) return pkg.version;
+          }
+        } catch {}
+        const parent = path.dirname(dir);
+        if (parent === dir) break;
+        dir = parent;
+      }
+    } catch {}
+    return (
+      readVersion(path.resolve(process.cwd(), 'packages/core/package.json')) ||
+      readVersion(path.resolve(process.cwd(), 'package.json')) ||
+      '0.0.0'
+    );
+  }
 
-    const healthHandler = async (req: any, res: any) => res.json({ status: 'ok', version: coreVersion, maintenance: await this.getMaintenanceStatus(), bypass: !!(req.user?.roles?.includes('admin')) });
+  async setupRoutes() {
+    const healthHandler = async (req: any, res: any) => res.json({ status: 'ok', version: this.resolveCoreVersion(), maintenance: await this.getMaintenanceStatus(), bypass: !!(req.user?.roles?.includes('admin')) });
     this.app.get(ApiConfig.getInstance().probeRoutes.HEALTH, healthHandler);
     this.app.get(ApiConfig.getInstance().probeRoutes.READY, healthHandler);
     this.app.get(`${ApiVersionUtils.API_BASE_PATH}${ApiConfig.getInstance().probeRoutes.HEALTH}`, healthHandler);
@@ -60,7 +93,7 @@ export class ServerRoutesSetup {
     const openApiHandler = (req: any, res: any) => res.json(SwaggerGenerator.generate(this.manager.getCollections()));
     this.app.get(ApiConfig.getInstance().routes.system.OPENAPI, openApiHandler);
 
-    const { AUTH, PLUGINS, MARKETPLACE, THEMES, SYSTEM, MEDIA, VERSIONS } = RouteConstants.SEGMENTS;
+    const { AUTH, PLUGINS, MARKETPLACE, THEMES, APPEARANCES, SYSTEM, MEDIA, VERSIONS } = RouteConstants.SEGMENTS;
     const vApi = express.Router();
     const pluginAssetRouter = new PluginAssetRouter(this.manager).router;
     const themeAssetRouter = new ThemeAssetRouter(this.themeManager).router;
@@ -73,6 +106,7 @@ export class ServerRoutesSetup {
     vApi.use(MARKETPLACE, new MarketplaceRouter(this.manager, this.auth).router);
     vApi.use(THEMES, themeAssetRouter);
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth).router);
+    vApi.use(APPEARANCES, new AppearanceRouter(this.auth).router);
     this.registerCoreExtensionRoutes(vApi);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);

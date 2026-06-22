@@ -77,25 +77,31 @@ export class CollectionListRelationshipCellValue extends AdminComponent<Relation
 
           for (const relationSlug of candidateSlugs) {
             const key = `${relationSlug}:${entry.value}`;
+            // Resolve via the LIST endpoint (always 200; a missing/deleted related record simply
+            // returns 0 docs) instead of findOne `/slug/:id`, which 404s for a missing record and
+            // makes the browser log a red console error even though we handle it gracefully here.
+            const pickDoc = (response: any) => (Array.isArray(response) ? response[0] : response?.docs?.[0]) || null;
             try {
-              const byId = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}/${encodeURIComponent(entry.value)}`);
-              const label = CollectionListUtils.resolveRelationDisplayLabel(byId) || entry.value;
-              updates[key] = label;
-              RELATIONSHIP_LABEL_CACHE.set(key, label);
-              return;
-            } catch {
-              try {
-                const bySlug = await AdminApi.get(
-                  `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}?slug=${encodeURIComponent(entry.value)}&limit=1`
-                );
-                const doc = Array.isArray(bySlug) ? bySlug[0] : bySlug?.docs?.[0];
-                const label = CollectionListUtils.resolveRelationDisplayLabel(doc) || entry.value;
+              const byId = pickDoc(await AdminApi.get(
+                `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}?id=${encodeURIComponent(entry.value)}&limit=1`
+              ));
+              if (byId) {
+                const label = CollectionListUtils.resolveRelationDisplayLabel(byId) || entry.value;
                 updates[key] = label;
                 RELATIONSHIP_LABEL_CACHE.set(key, label);
                 return;
-              } catch {
-                continue;
               }
+              const bySlug = pickDoc(await AdminApi.get(
+                `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}?slug=${encodeURIComponent(entry.value)}&limit=1`
+              ));
+              if (bySlug) {
+                const label = CollectionListUtils.resolveRelationDisplayLabel(bySlug) || entry.value;
+                updates[key] = label;
+                RELATIONSHIP_LABEL_CACHE.set(key, label);
+                return;
+              }
+            } catch {
+              continue;
             }
           }
 

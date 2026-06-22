@@ -12,8 +12,8 @@ export class ThemeSettingsLayoutsPanel extends React.Component<{ page: any; mode
     const { adminTheme, themeDetail, tempLayouts, allVarKeys } = model;
     return (
       <>
-        <Card className={`border-0 p-10 rounded-[2.5rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-          <div className="flex items-center gap-4 mb-10">
+        <Card className={`border-0 p-5 rounded-xl ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+          <div className="flex items-center gap-3 mb-5">
             <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
               <FrameworkIcons.Box size={20} />
             </div>
@@ -63,8 +63,8 @@ export class ThemeSettingsLayoutsPanel extends React.Component<{ page: any; mode
         </Card>
 
         {themeDetail.overrides && themeDetail.overrides.length > 0 && (
-          <Card className={`border-0 p-10 rounded-[2.5rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-            <div className="flex items-center gap-4 mb-10">
+          <Card className={`border-0 p-5 rounded-xl ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+            <div className="flex items-center gap-3 mb-5">
               <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
                 <FrameworkIcons.Zap size={20} />
               </div>

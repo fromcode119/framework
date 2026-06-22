@@ -111,7 +111,8 @@ export class RestWriteController {
         overrideMeta: extracted.overrideMeta,
       });
 
-      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: 'update' });
+      const overrideFieldNames = [...extracted.overrideMeta.fields];
+      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: 'update', allowSystemFields: overrideFieldNames });
       if (parsed.errors.length > 0) {
         if (!res) {
           const error = new Error(parsed.errors.map((entry) => entry.message).join(', '));
@@ -129,6 +130,7 @@ export class RestWriteController {
       const updateData = await this.runtime.processor.processIncomingData(collection, data, table, {
         existingRecord: existing,
         localeContext,
+        overrideFields: extracted.overrideMeta.fields,
       });
       const updated = await this.runtime.db.update(this.runtime.resolveWriteTarget(collection), where, updateData);
       if (!updated) {

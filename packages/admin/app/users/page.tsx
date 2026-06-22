@@ -102,7 +102,7 @@ export default class UsersPage extends AdminComponent<Record<string, never>, Use
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
         <UsersPageHeader theme={theme} />
 
-        <div className="flex-1 w-full px-6 lg:px-12 py-12 space-y-8">
+        <div className="flex-1 w-full px-6 lg:px-8 py-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard
               title="User Base"
@@ -132,10 +132,10 @@ export default class UsersPage extends AdminComponent<Record<string, never>, Use
                 placeholder="Search user base by name or email..."
                 value={searchQuery}
                 onChange={(e) => this.setState({ searchQuery: e.target.value })}
-                className={`w-full h-11 rounded-xl pl-12 pr-4 outline-none border transition-all text-[13px] font-bold tracking-tight ${
+                className={`w-full h-9 rounded-lg pl-11 pr-4 outline-none border transition-colors text-[13px] font-medium tracking-tight ${
                   theme === 'dark'
-                    ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900 shadow-2xl shadow-black/40'
-                    : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-xl shadow-slate-200/50'
+                    ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900'
+                    : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
                 }`}
               />
             </div>

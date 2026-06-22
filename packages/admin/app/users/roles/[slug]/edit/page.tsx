@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -116,58 +117,41 @@ export default class EditRolePage extends AdminComponent<EditRolePageProps, Edit
     }
 
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
-          theme === 'dark'
-            ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20'
-            : 'bg-white/80 border-slate-100 shadow-sm'
-        }`}>
-          <div className="w-full px-6 lg:px-12 py-10">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => this.router.back()}
-                className="h-12 w-12 rounded-2xl border border-slate-200 dark:border-slate-800"
-              >
-                <FrameworkIcons.Left size={20} strokeWidth={2} />
-              </Button>
-              <div>
-                <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  Edit Role: {formData.name}
-                </h1>
-                <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-                  Modify existing permission sets and metadata.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full flex flex-col animate-in fade-in duration-300">
+        <CompactPageHeader
+          theme={theme}
+          onBack={() => this.router.back()}
+          title={`Edit role: ${formData.name}`}
+          subtitle="Modify permission sets and metadata."
+        />
 
-        <div className="flex-1 w-full px-6 lg:px-12 py-12">
-          <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-8">
+        <div className="flex-1 w-full px-6 lg:px-8 py-6">
+          <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 space-y-6">
               <Card title="Role Details">
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       label="Name"
                       placeholder="e.g. Editor"
                       value={formData.name}
                       onChange={(e) => this.updateForm({ name: e.target.value })}
                       required
+                      size="sm"
                     />
                     <Input
                       label="Slug (System ID)"
                       placeholder="e.g. editor"
                       value={formData.slug}
                       disabled
+                      size="sm"
                       className="opacity-50 grayscale"
                     />
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-bold uppercase tracking-tight text-slate-400 pl-1">Description</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 pl-1">Description</label>
                     <textarea
-                      className={`w-full h-32 rounded-3xl p-6 border outline-none transition-all text-sm font-bold ${
+                      className={`w-full h-24 rounded-lg p-3 border outline-none transition-colors text-sm font-medium ${
                         theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
                       }`}
                       placeholder="Optional description of what this role allows..."

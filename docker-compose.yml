@@ -70,6 +70,7 @@ services:
       - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.framework.local}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
+      - APPEARANCE_DIR=/app/appearance
       # Plugin integrity: a directory-checksum mismatch (extra/changed files, or a core
       # upgrade changing the hash recipe) NO LONGER disables the plugin — by default the
       # framework re-stamps the checksum from the on-disk content and loads it. Set this to
@@ -93,6 +94,7 @@ services:
       - ./public/uploads:/app/public/uploads
       - ${SHARED_PLUGINS_DIR:-../../plugins}:/app/plugins
       - ${SHARED_THEMES_DIR:-../../themes}:/app/themes
+      - ${SHARED_APPEARANCE_DIR:-../../appearance}:/app/appearance
     networks:
       - framework
       - proxy
@@ -120,6 +122,7 @@ services:
         - NEXT_PUBLIC_ADMIN_AI_ENABLED=${NEXT_PUBLIC_ADMIN_AI_ENABLED:-false}
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
+        - NEXT_PUBLIC_ADMIN_APPEARANCE=${ADMIN_APPEARANCE:-}
     command: npm run start --workspace=@fromcode119/admin
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
@@ -130,8 +133,11 @@ services:
       - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
       - NODE_ENV=production
       - PORT=3000
+      - APPEARANCE_DIR=/app/appearance
     depends_on:
       - api
+    volumes:
+      - ${SHARED_APPEARANCE_DIR:-../../appearance}:/app/appearance
     networks:
       - framework
       - proxy

@@ -26,7 +26,8 @@ export class RestReadController {
         effectiveFilters.status = 'published';
       }
 
-      const whereClause = QueryHelper.buildWhereClause(this.runtime.db, collection, table, effectiveFilters, search);
+      const relationshipMatches = await this.resolveRelationshipSearchMatches(req, search);
+      const whereClause = QueryHelper.buildWhereClause(this.runtime.db, collection, table, effectiveFilters, search, relationshipMatches);
       const orderBy = QueryHelper.buildOrderBy(this.runtime.db, collection, table, sort);
       const defaultLimit = collection.slug === 'settings' ? 1000 : 10;
       const parsedLimit = parseInt(String(limit), 10);
@@ -81,6 +82,39 @@ export class RestReadController {
       }
       res.status(err?.statusCode || 500).json({ error: err.message });
     }
+  }
+
+  /**
+   * Resolve list-search matches that live on RELATED records. For each relationship field on the
+   * collection (descriptors attached by CollectionMiddleware), query the related table for rows whose
+   * searchable text columns match the term, and return { fieldName: [relatedIds] }. The where-builder
+   * then ORs `field IN (ids)` alongside the scalar search, so e.g. searching the inventory list by a
+   * product name matches the inventory rows that point at those products.
+   */
+  private async resolveRelationshipSearchMatches(req: any, search?: string): Promise<Record<string, any[]>> {
+    const term = String(search || '').trim();
+    const targets = Array.isArray(req?.relationshipSearchTargets) ? req.relationshipSearchTargets : [];
+    if (!term || targets.length === 0) return {};
+
+    const matches: Record<string, any[]> = {};
+    for (const target of targets) {
+      try {
+        const rows = await this.runtime.db.find(target.tableName, {
+          // Raw term (not lower-cased): SQLite LIKE only folds ASCII case, so lowering would break
+          // same-case Cyrillic matching. ASCII still matches case-insensitively via LIKE.
+          search: { columns: target.columns, value: term },
+          columns: { [target.primaryKey]: true },
+          limit: 1000,
+        });
+        const ids = rows
+          .map((row: any) => row?.[target.primaryKey])
+          .filter((value: any) => value !== undefined && value !== null);
+        if (ids.length) matches[target.field] = ids;
+      } catch (err: any) {
+        this.runtime.logger.warn(`Relationship search for "${target.field}" failed: ${err?.message}`);
+      }
+    }
+    return matches;
   }
 
   async findOne(collection: Collection, req: any, res?: Response) {

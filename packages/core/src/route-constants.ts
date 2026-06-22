@@ -6,11 +6,18 @@
  */
 export class RouteConstants {
   static readonly SEGMENTS = {
+  // ── Generic ──────────────────────────────────────────────────────────────
+  ROOT: '/',
+
   // ── Top-level mount points ───────────────────────────────────────────────
   AUTH: '/auth',
   PLUGINS: '/plugins',
   MARKETPLACE: '/marketplace',
   THEMES: '/themes',
+  APPEARANCES: '/appearances',
+  APPEARANCES_CATALOG: '/catalog',
+  APPEARANCES_INSTALL: '/install',
+  APPEARANCES_SLUG: '/:slug',
   SYSTEM: '/system',
   MEDIA: '/media',
   VERSIONS: '/versions',

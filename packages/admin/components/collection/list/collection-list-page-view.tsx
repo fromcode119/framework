@@ -2,10 +2,8 @@
 
 import React from 'react';
 
-import { AdminApi } from '@/lib/api';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
-import { AdminConstants } from '@/lib/constants';
 import { CollectionNotFound } from '@/components/collection/collection-not-found';
 
 import { CollectionListPageLayout } from './page-layout';
@@ -81,9 +79,11 @@ export class CollectionListPageView extends React.Component<CollectionListPageVi
   async handleExport(format: 'json' | 'csv', ids?: string[]): Promise<void> {
     const collection = AdminCollectionUtils.resolveCollection(this.props.collections, this.props.pluginSlug, this.props.slug);
     const resolvedSlug = collection?.slug || this.props.slug;
-    const queryParams = new URLSearchParams({ format, token: AdminApi.getAdminExportToken() });
-    if (ids?.length) queryParams.append('ids', ids.join(','));
-    window.open(`${AdminApi.getBaseUrl()}${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/export?${queryParams.toString()}`, '_blank');
+    try {
+      await CollectionListPageService.exportRecords(resolvedSlug, format, ids);
+    } catch (error: any) {
+      alert(`Export failed: ${error?.message || 'Unknown error'}`);
+    }
   }
 
   render(): React.ReactNode {

@@ -148,7 +148,7 @@ export default class ThemeMarketplaceDetailPage extends AdminComponent<ThemeMark
     const screenshots = (theme.screenshots || []).map(s => typeof s === 'string' ? s : s.url);
 
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <ThemeMarketplaceHeader
           theme={theme}
           adminTheme={adminTheme}
@@ -161,8 +161,8 @@ export default class ThemeMarketplaceDetailPage extends AdminComponent<ThemeMark
           onInstall={() => void this.handleInstall()}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-32">
-          <div className="lg:col-span-2 space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-12">
+          <div className="lg:col-span-2 space-y-6">
               <ThemeMarketplaceGallery
                 theme={theme}
                 adminTheme={adminTheme}

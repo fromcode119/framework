@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { PageHeading } from '@/components/ui/page-heading';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 
 interface PluginPageHeaderProps {
   title: string;
@@ -13,45 +13,23 @@ interface PluginPageHeaderProps {
   titleClassName?: string;
 }
 
+/**
+ * Header for plugin admin pages — a thin adapter over the shared {@link CompactPageHeader} so plugin
+ * pages get the exact same compact header as the rest of the admin. The negative-margin wrapper lets
+ * the sticky bar break out of the plugin dashboard's `p-8` content padding to span full width.
+ */
 export class PluginPageHeader extends React.Component<PluginPageHeaderProps> {
   render(): React.ReactNode {
-    const {
-  title,
-  subtitle,
-  icon,
-  actions,
-  badge,
-  subtitleClassName = 'text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight opacity-80 mt-3',
-  titleClassName = 'text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic'
-} = this.props;
-  return (
-    <div className="sticky top-0 z-30 border-b backdrop-blur-3xl transition-all duration-300 bg-white/80 border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:bg-slate-950/80 dark:border-slate-800/50 dark:shadow-2xl dark:shadow-black/20 -mx-8 -mt-8 px-8 py-8 mb-8">
-      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between md:gap-6">
-        <div className="flex-1 min-w-0">
-          <PageHeading
-            title={title}
-            subtitle={subtitle}
-            icon={
-              icon ? (
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-transform hover:rotate-0 dark:border dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 sm:h-11 sm:w-11 md:-rotate-3">
-                  <span className="flex h-5 w-5 items-center justify-center [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0">
-                    {icon}
-                  </span>
-                </div>
-              ) : undefined
-            }
-            badge={badge}
-            titleClassName={titleClassName}
-            subtitleClassName={subtitleClassName}
-          />
-        </div>
-        {actions && (
-          <div className="flex w-full flex-wrap items-center gap-3 md:w-auto md:justify-end">
-            {actions}
-          </div>
-        )}
+    const { title, subtitle, icon, actions, badge } = this.props;
+    return (
+      <div className="-mx-8 -mt-8 mb-6">
+        <CompactPageHeader
+          icon={icon}
+          title={badge ? <span className="flex items-center gap-2">{title}{badge}</span> : title}
+          subtitle={subtitle}
+          actions={actions}
+        />
       </div>
-    </div>
-  );
+    );
   }
 }

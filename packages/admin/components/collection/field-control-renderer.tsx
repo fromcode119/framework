@@ -29,6 +29,7 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
       theme,
       collectionSlug,
       pluginSettings,
+      globalSettings,
       fieldComponents,
       isFieldReadOnly,
       isNew,
@@ -80,6 +81,7 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
           theme={theme}
           collectionSlug={collectionSlug}
           pluginSettings={pluginSettings}
+          globalSettings={globalSettings}
           fieldComponents={fieldComponents}
           isFieldReadOnly={isFieldReadOnly}
           record={record}
@@ -125,6 +127,7 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
             theme={theme}
             collectionSlug={collectionSlug}
             pluginSettings={pluginSettings}
+          globalSettings={globalSettings}
             fieldComponents={fieldComponents}
           />
         )

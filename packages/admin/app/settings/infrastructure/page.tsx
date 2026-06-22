@@ -41,12 +41,12 @@ export default function InfrastructureSettingsPage() {
   if (isLoading) return <div className="p-12"><Loader label="Analyzing Cluster Health..." /></div>;
 
   return (
-    <div className="p-8 lg:p-12 animate-in fade-in duration-500 max-w-5xl">
-       <div className="mb-10">
-        <h1 className={`text-3xl font-bold tracking-tighter mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+    <div className="p-6 animate-in fade-in duration-500 w-full">
+       <div className="mb-6">
+        <h1 className={`text-2xl font-bold tracking-tight mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
           Infrastructure & Health
         </h1>
-        <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70">
+        <p className="text-slate-500 text-sm leading-relaxed">
           Monitor system clusters and perform administrative maintenance.
         </p>
       </div>

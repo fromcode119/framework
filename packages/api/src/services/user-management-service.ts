@@ -10,6 +10,7 @@ import { SystemConstants } from '@fromcode119/core';
 // apply that mapping for these keyless junction tables, producing "no such column: userId".
 const USERS_ROLES_TABLE = getTableName(systemUsersToRoles);
 const ROLES_PERMISSIONS_TABLE = getTableName(systemRolesToPermissions);
+const USERS_TABLE = getTableName(users);
 
 export class UserManagementService {
   private logger = new Logger({ namespace: 'UserManagement' });
@@ -143,12 +144,17 @@ export class UserManagementService {
   }
 
   async saveRole(slug: string, data: any) {
+    const now = new Date();
     await this.db.upsert(systemRoles, {
       slug,
       name: data.name,
       description: data.description,
       type: data.type || 'custom',
-      permissions: Array.isArray(data.permissions) ? data.permissions : []
+      permissions: Array.isArray(data.permissions) ? data.permissions : [],
+      // Provide timestamps explicitly: drizzle would otherwise emit the pg `.defaultNow()` (`now()`)
+      // for these omitted columns, which the SQLite runtime rejects ("no such function: now").
+      createdAt: now,
+      updatedAt: now,
     }, {
       target: 'slug',
       set: {
@@ -156,7 +162,7 @@ export class UserManagementService {
         description: data.description,
         type: data.type || 'custom',
         permissions: Array.isArray(data.permissions) ? data.permissions : [],
-        updatedAt: new Date()
+        updatedAt: now
       }
     });
 
@@ -236,12 +242,21 @@ export class UserManagementService {
   }
 
   async saveUserRoles(userId: number, roles: string[]) {
+    const normalized = [...new Set(
+      (Array.isArray(roles) ? roles : []).map((r) => String(r ?? '').trim().toLowerCase()).filter(Boolean),
+    )];
+
     await this.db.delete(USERS_ROLES_TABLE, { userId });
-    if (roles.length > 0) {
-      for (const roleSlug of roles) {
-        await this.db.insert(USERS_ROLES_TABLE, { userId, roleSlug });
-      }
+    for (const roleSlug of normalized) {
+      await this.db.insert(USERS_ROLES_TABLE, { userId, roleSlug });
     }
+
+    // Runtime authorization (UserPermissionChecker) reads a user's roles from the `users.roles` JSON
+    // column — NOT the junction table written above. Keep the column in sync so an assigned role
+    // actually grants its permissions; otherwise "Manage Roles" is a silent no-op for access control.
+    // Use the STRING table path: it is json-column-aware and stringifies the array exactly ONCE. The
+    // schema-object path double-encodes jsonb (normalizer stringifies, then drizzle `.set()` again).
+    await this.db.update(USERS_TABLE, { id: userId }, { roles: normalized, updatedAt: new Date() });
   }
 
   async getPermissions() {

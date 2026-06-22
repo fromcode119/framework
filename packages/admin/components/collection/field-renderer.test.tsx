@@ -134,7 +134,8 @@ describe('./field-renderer', () => {
     expect(screen.getByText('Already taken')).toBeInTheDocument();
   });
 
-  it('renders a select for checkbox type', () => {
+  it('renders a toggle (not a select) for checkbox type and reports changes', () => {
+    const onChange = vi.fn();
     const field: any = {
       name: 'required',
       type: 'checkbox',
@@ -144,15 +145,21 @@ describe('./field-renderer', () => {
       <FieldRenderer
         field={field}
         value={false}
-        onChange={vi.fn()}
+        onChange={onChange}
         theme="light"
         collectionSlug="products"
       />
     );
 
-    expect(screen.getByTestId('mock-select')).toBeInTheDocument();
-    expect(screen.getByText('Yes')).toBeInTheDocument();
+    // Booleans render the BooleanToggleField switch, never a select (CLAUDE.md: boolean -> toggle).
+    const toggle = screen.getByRole('switch');
+    expect(toggle).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByText('No')).toBeInTheDocument();
+    expect(screen.queryByTestId('mock-select')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(onChange).toHaveBeenCalledWith(true);
   });
 
   it('allows requesting a password override for read-only fields by default', () => {

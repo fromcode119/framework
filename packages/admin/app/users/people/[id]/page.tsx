@@ -8,6 +8,7 @@ import { FrameworkIcons, RecordsHub } from '@fromcode119/react';
 import type { RecordsHubItem } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { Button } from '@/components/ui/button';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 import { Input } from '@/components/ui/input';
 import { AdminComponent } from '@/components/admin-component';
 import { PersonAccountPanel } from './person-account-panel';
@@ -148,24 +149,13 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
 
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
-        <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl ${theme === 'dark' ? 'bg-slate-950/80 border-slate-800/50' : 'bg-white/80 border-slate-100 shadow-sm'}`}>
-          <div className="w-full px-6 lg:px-12 py-8">
-            <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-400 hover:text-indigo-600 mb-3">
-              <FrameworkIcons.Left size={14} /> People
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-lg ${theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-600 text-white'}`}>
-                <FrameworkIcons.Edit size={20} strokeWidth={2} />
-              </div>
-              <div>
-                <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Edit person</h1>
-                <p className="text-slate-500 font-bold text-[12px] tracking-tight opacity-70">
-                  {person.email || `Person #${person.id}`} · {person.source || 'contact'} · {linked ? `Linked (#${person.userId})` : 'No login account'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CompactPageHeader
+          theme={theme}
+          backHref={AdminConstants.ROUTES.PEOPLE.ROOT}
+          icon={<FrameworkIcons.Edit size={18} strokeWidth={2} />}
+          title="Edit person"
+          subtitle={`${person.email || `Person #${person.id}`} · ${person.source || 'contact'} · ${linked ? `Linked (#${person.userId})` : 'No login account'}`}
+        />
 
         <div className="flex-1 w-full px-6 lg:px-12 py-10">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">

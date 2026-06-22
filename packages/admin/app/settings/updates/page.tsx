@@ -11,6 +11,7 @@ import { AdminConstants } from '@/lib/constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { AppEnv } from '@/lib/env';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 
 export default function UpdatesPage() {
   const { theme } = ThemeHooks.useTheme();
@@ -66,84 +67,79 @@ export default function UpdatesPage() {
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
-      {/* Sub-Page Header */}
-      <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
-        theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-      }`}>
-        <div>
-          <h1 className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            System Updates
-          </h1>
-          <p className="text-[10px] font-bold text-slate-500 tracking-tight uppercase opacity-60">
-            Framework core & registry synchronization
-          </p>
-        </div>
-        <button 
-          onClick={fetchStatus}
-          disabled={loading}
-          className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[11px] font-bold tracking-tight transition-all shadow-lg active:scale-95 ${
-            theme === 'dark' 
-              ? 'bg-slate-800 text-slate-100 hover:bg-slate-700 shadow-slate-900/20' 
-              : 'bg-white text-slate-600 hover:bg-slate-50 shadow-slate-200/50 border border-slate-100'
-          }`}
-        >
-          <FrameworkIcons.Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Verifying Registry...' : 'Check For Updates'}
-        </button>
-      </div>
+      <CompactPageHeader
+        theme={theme}
+        icon={<FrameworkIcons.System size={18} strokeWidth={2} />}
+        title="System Updates"
+        subtitle="Framework core & registry synchronization"
+        actions={
+          <button
+            onClick={fetchStatus}
+            disabled={loading}
+            className={`flex items-center gap-2 h-9 px-4 rounded-lg text-xs font-semibold tracking-tight transition-all active:scale-95 ${
+              theme === 'dark'
+                ? 'bg-slate-800 text-slate-100 hover:bg-slate-700'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+            }`}
+          >
+            <FrameworkIcons.Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Verifying Registry...' : 'Check For Updates'}
+          </button>
+        }
+      />
 
-      <div className="p-8 lg:p-12 max-w-5xl space-y-10 pb-20">
-        <Card className={`p-10 border-0 rounded-[2.5rem] overflow-hidden relative transition-all duration-500 ${theme === 'dark' ? 'bg-slate-900/40 ring-1 ring-white/5' : 'bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)]'}`}>
+      <div className="p-6 w-full space-y-6 pb-10">
+        <Card className={`p-6 border-0 rounded-2xl overflow-hidden relative ${theme === 'dark' ? 'bg-slate-900/40 ring-1 ring-white/5' : 'bg-white shadow-sm'}`}>
           {/* Background Accent */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 blur-[80px] -translate-y-1/2 translate-x-1/2 rounded-full" />
-          
-          <div className="flex flex-col xl:flex-row items-start gap-10 relative">
-            <div className={`h-24 w-24 rounded-[1.5rem] flex items-center justify-center shrink-0 transition-all duration-700 hover:scale-110 hover:rotate-3 shadow-2xl ${theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 shadow-indigo-100'}`}>
-              <FrameworkIcons.System size={48} strokeWidth={1.5} />
+
+          <div className="flex flex-col xl:flex-row items-start gap-6 relative">
+            <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shrink-0 ${theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600'}`}>
+              <FrameworkIcons.System size={32} strokeWidth={1.5} />
             </div>
-            
-            <div className="flex-1 space-y-6">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-4">
-                  <h2 className={`text-3xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Fromcode Core Engine</h2>
-                  <Badge variant={hasUpdate ? 'warning' : 'success'} className="px-4 py-1.5 text-[10px] font-bold tracking-tight rounded-full">
+
+            <div className="flex-1 space-y-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Fromcode Core Engine</h2>
+                  <Badge variant={hasUpdate ? 'warning' : 'success'} className="px-3 py-1 text-[10px] font-bold tracking-tight rounded-full">
                     {hasUpdate ? 'Update Available' : 'Framework Up to Date'}
                   </Badge>
                 </div>
-                
-                <p className={`text-base font-bold tracking-tight leading-relaxed max-w-2xl ${theme === 'dark' ? 'text-slate-400/80' : 'text-slate-500'}`}>
+
+                <p className={`text-sm leading-relaxed max-w-2xl ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                   The core engine powers all API, Database, and Plugin infrastructure. Keeping it updated ensures
                   the highest security, stability, and performance for your enterprise platform.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className={`p-6 rounded-[1.5rem] border transition-all ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
+                <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
                   <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Installed Version</div>
                   <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{installedVersion}</div>
                 </div>
-                <div className={`p-6 rounded-[1.5rem] border transition-all ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
+                <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
                   <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Latest Registry Version</div>
                   <div className={`font-mono font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>v{latestVersion}</div>
                 </div>
               </div>
 
               {hasUpdate && (
-                <div className={`mt-8 p-8 rounded-[2rem] border transition-all transform hover:scale-[1.01] ${theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
-                  <div className="flex items-center gap-3 text-amber-600 font-bold tracking-tight mb-3">
-                    <div className="p-2 bg-amber-500/10 rounded-xl">
-                      <FrameworkIcons.Warning size={20} />
+                <div className={`mt-5 p-5 rounded-xl border ${theme === 'dark' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
+                  <div className="flex items-center gap-2.5 text-amber-600 font-semibold tracking-tight mb-2">
+                    <div className="p-1.5 bg-amber-500/10 rounded-lg">
+                      <FrameworkIcons.Warning size={18} />
                     </div>
                     <span>v{latestVersion} Recommended Update</span>
                   </div>
-                  <p className={`text-sm font-bold leading-relaxed mb-8 ${theme === 'dark' ? 'text-amber-200/60' : 'text-amber-800/70'}`}>
-                    This version introduces cumulative improvements to the plugin isolation layer 
+                  <p className={`text-sm leading-relaxed mb-5 ${theme === 'dark' ? 'text-amber-200/70' : 'text-amber-800/80'}`}>
+                    This version introduces cumulative improvements to the plugin isolation layer
                     and enhanced database driver stability. Apply this update to ensure compatibility with latest plugins.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setShowConfirm(true)}
                     disabled={updating}
-                    className="w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold tracking-tight text-[12px] transition-all shadow-2xl shadow-indigo-600/30 active:scale-95 disabled:opacity-50"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
                   >
                     {updating ? 'Applying Update...' : 'Install Core v' + latestVersion}
                   </button>

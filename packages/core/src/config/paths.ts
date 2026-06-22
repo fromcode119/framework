@@ -95,6 +95,33 @@ export class ProjectPaths {
 
   }
 
+  static getAppearancesDir(): string {
+      const root = ProjectPaths.getProjectRoot();
+      const isDev = ProjectPaths.isFrameworkRoot(root);
+      const candidates = [
+        process.env.SHARED_APPEARANCE_DIR,
+        process.env.APPEARANCE_DIR,
+        isDev ? '../../appearance' : null,
+        isDev ? '../appearance' : null,
+        'appearance'
+      ]
+        .filter((value): value is string | null => value !== null && Boolean(String(value || '').trim()))
+        .map((value) => ProjectPaths.resolveFromRoot(root, value as string));
+
+      const deduped = Array.from(new Set(candidates));
+      const ranked = deduped
+        .map((dir) => ({ dir, manifests: ProjectPaths.countAppearanceManifests(dir) }))
+        .filter((item) => item.manifests > 0)
+        .sort((a, b) => b.manifests - a.manifests);
+      if (ranked.length > 0) return ranked[0].dir;
+
+      const existing = deduped.find((dir) => fs.existsSync(dir) && fs.statSync(dir).isDirectory());
+      if (existing) return existing;
+
+      return path.resolve(root, 'appearance');
+
+  }
+
   static getPackagesDir(): string {
       // Allow explicit override via environment variable
       if (process.env.FROMCODE_PACKAGES_DIR) {
@@ -190,6 +217,25 @@ export class ProjectPaths {
         const themeDir = path.join(dir, child);
         if (!fs.existsSync(themeDir) || !fs.statSync(themeDir).isDirectory()) continue;
         if (fs.existsSync(path.join(themeDir, 'manifest.json')) || fs.existsSync(path.join(themeDir, 'theme.json'))) {
+          count += 1;
+        }
+      }
+      return count;
+    } catch {
+      return 0;
+    }
+  }
+
+  private static countAppearanceManifests(dir: string): number {
+    try {
+      if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return 0;
+      const children = fs.readdirSync(dir);
+      let count = 0;
+      for (const child of children) {
+        if (child.startsWith('.')) continue;
+        const appearanceDir = path.join(dir, child);
+        if (!fs.existsSync(appearanceDir) || !fs.statSync(appearanceDir).isDirectory()) continue;
+        if (fs.existsSync(path.join(appearanceDir, 'appearance.json')) || fs.existsSync(path.join(appearanceDir, 'manifest.json'))) {
           count += 1;
         }
       }

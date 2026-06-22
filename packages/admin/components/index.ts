@@ -8,6 +8,7 @@ export * from './ui/tag-field';
 export * from './ui/loader';
 export * from './ui/switch';
 export * from './ui/page-heading';
+export * from './ui/compact-page-header';
 export * from './ui/card';
 export * from './ui/badge';
 export * from './ui/stat-card';
@@ -32,3 +33,13 @@ export * from './notification-context-store';
 export * from './use-notification';
 export * from './plugin-dashboard';
 export * from './collection/edit/edit-page-section-nav';
+// Appearance engine — exposed on the @fromcode119/admin runtime module so externally-loaded
+// appearance bundles can import AdminComponent + the registries/keys and register themselves.
+export * from './admin-component';
+export * from '../lib/appearance/admin-component-keys';
+export * from '../lib/appearance/admin-page-keys';
+export * from '../lib/appearance/admin-appearance-registry';
+export * from '../lib/appearance/admin-shell-registry';
+export * from '../lib/appearance/admin-component-registry';
+export * from '../lib/appearance/admin-page-registry';
+export type { AppearanceShellProps } from '../lib/appearance/appearance-shell-props.interfaces';

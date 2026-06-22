@@ -21,6 +21,7 @@ import { MetaContextProxy } from './context/meta';
 import { MediaContextProxy } from './context/media';
 import { RecordVersionsContextProxy } from './context/record-versions';
 import { RolesContextProxy } from './context/roles';
+import { NotificationsContextProxy } from './context/notifications';
 import { ThemeContextProxy } from './context/theme';
 import { PluginsFacade } from '../plugins-facade';
 import { PluginsManagerResolver } from '../plugins-manager-resolver';
@@ -198,6 +199,7 @@ export class PluginContextFactory {
         media: MediaContextProxy.createMediaProxy(manager),
         recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager),
+        notifications: NotificationsContextProxy.createNotificationsProxy(manager),
         theme: ThemeContextProxy.createThemeProxy(plugin, manager),
         entities: EntitiesContextProxy.createEntitiesProxy(),
         collections: CollectionsContextProxy.createCollectionsProxy(plugin, manager, rootLogger, security),

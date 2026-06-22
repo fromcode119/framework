@@ -14,12 +14,12 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
     const { previewPrimary, previewBackground, previewForeground, previewMuted, previewCard, previewAccent } = model;
     const { isUpdating, isReseeding, isResettingTheme } = page.state;
     return (
-      <div className="space-y-8">
-        <Card className={`border-0 p-8 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-          <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-8 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+      <div className="space-y-6">
+        <Card className={`border-0 p-4 rounded-xl ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+          <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-4 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
             Metadata Artifacts
           </h3>
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Architect</span>
               <span className={`text-[11px] font-semibold uppercase tracking-wider ${adminTheme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`}>
@@ -35,11 +35,11 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
           </div>
 
           {marketplaceVersion && marketplaceVersion !== themeDetail.version && (
-            <div className={`mt-8 pt-8 border-t ${adminTheme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
+            <div className={`mt-4 pt-4 border-t ${adminTheme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
               <button
                 onClick={() => void page.handleUpdate()}
                 disabled={isUpdating}
-                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                className="w-full h-9 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
               >
                 <FrameworkIcons.Clock size={14} />
                 {isUpdating ? 'Synchronizing...' : `Upgrade to v${marketplaceVersion}`}
@@ -48,9 +48,9 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
           )}
         </Card>
 
-        <Card className={`border-0 p-8 rounded-[2rem] overflow-hidden relative ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+        <Card className={`border-0 p-4 rounded-xl overflow-hidden relative ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-          <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
               Visual Preview
             </h3>
@@ -97,15 +97,15 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
           </div>
         </Card>
 
-        <Card className={`border-0 p-8 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-          <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-6 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+        <Card className={`border-0 p-4 rounded-xl ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+          <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-4 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
             Theme Maintenance
           </h3>
           <div className="space-y-3">
             <button
               onClick={() => page.openRunSeedsConfirm()}
               disabled={isReseeding || isResettingTheme}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="w-full h-9 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
             >
               {isReseeding ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Refresh size={14} />}
               {isReseeding ? 'Running Seeds...' : 'Run Seeds'}
@@ -113,7 +113,7 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
             <button
               onClick={() => page.openResetThemeConfirm()}
               disabled={isReseeding || isResettingTheme}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="w-full h-9 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
             >
               {isResettingTheme ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Warning size={14} />}
               {isResettingTheme ? 'Resetting Theme...' : 'Reset Theme + Seeds'}
@@ -125,8 +125,8 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
         </Card>
 
         {integrationRequirements.length > 0 && (
-          <Card className={`border-0 p-8 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-            <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-6 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+          <Card className={`border-0 p-4 rounded-xl ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+            <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] mb-4 ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
               Integration Requirements
             </h3>
             <div className="space-y-3">
@@ -156,21 +156,21 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
           </Card>
         )}
 
-        <Card className={`border-0 p-10 rounded-[2rem] ${adminTheme === 'dark' ? 'bg-red-500/10 border border-red-500/20 shadow-2xl shadow-red-500/5' : 'bg-red-50 border border-red-100 shadow-sm'}`}>
-          <div className="flex items-center gap-3 mb-6">
+        <Card className={`border-0 p-4 rounded-xl ${adminTheme === 'dark' ? 'bg-red-500/10 border border-red-500/20 shadow-sm' : 'bg-red-50 border border-red-100 shadow-sm'}`}>
+          <div className="flex items-center gap-3 mb-4">
             <FrameworkIcons.Warning size={18} className="text-red-500" />
             <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${adminTheme === 'dark' ? 'text-red-400' : 'text-red-600'}`}>
               System Purge
             </h3>
           </div>
-          <p className={`text-[11px] font-bold leading-relaxed mb-8 ${adminTheme === 'dark' ? 'text-red-300/70' : 'text-red-700/70'}`}>
+          <p className={`text-[11px] font-bold leading-relaxed mb-4 ${adminTheme === 'dark' ? 'text-red-300/70' : 'text-red-700/70'}`}>
             {themeDetail.state === 'active'
               ? 'This theme is currently active. On delete, the system will switch to another theme if available, or continue with no active theme.'
               : 'Removing this theme artifact is permanent. All local layout variations will be destroyed.'}
           </p>
           <button
             onClick={() => page.openDeleteConfirm()}
-            className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-[10px] font-semibold uppercase tracking-wide rounded-2xl transition-all shadow-xl shadow-black/10 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white"
+            className="w-full h-9 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all shadow-sm hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white"
           >
             {themeDetail.state === 'active' ? 'Switch & Destroy Theme' : 'Destroy Theme'}
           </button>

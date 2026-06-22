@@ -149,7 +149,7 @@ export class CollectionListPageService {
     fieldFilters: Record<string, string>;
   }): Promise<{ docs: any[]; totalDocs: number }> {
     const queryParams = this.buildFetchQuery({ targetPage, pageSize, search, sort, statusFilter, fieldFilters });
-    const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}?${queryParams.toString()}`);
+    const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.ITEM(resolvedSlug)}?${queryParams.toString()}`);
     return result?.docs ? { docs: result.docs, totalDocs: result.totalDocs } : { docs: [], totalDocs: 0 };
   }
 
@@ -160,11 +160,35 @@ export class CollectionListPageService {
 
   static async importRecordsFromText(resolvedSlug: string, content: string): Promise<any> {
     const payload = JSON.parse(content);
-    return AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/import`, payload);
+    return AdminApi.post(AdminConstants.ENDPOINTS.COLLECTIONS.IMPORT(resolvedSlug), payload);
+  }
+
+  /**
+   * Export collection records as a real file download. Uses the authenticated `AdminApi.download`
+   * (session cookie + Bearer header, `credentials: 'include'`) and triggers a Blob download via a
+   * temporary anchor — the same pattern as the system-backup download. This replaces the old
+   * `window.open(...export?token=...)`, which opened a blank tab and frequently downloaded nothing.
+   */
+  static async exportRecords(resolvedSlug: string, format: 'json' | 'csv', ids?: string[]): Promise<void> {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams({ format });
+    if (ids?.length) params.append('ids', ids.join(','));
+    const { blob, filename } = await AdminApi.download(
+      `${AdminConstants.ENDPOINTS.COLLECTIONS.EXPORT(resolvedSlug)}?${params.toString()}`,
+    );
+    const objectUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = filename || `${resolvedSlug}_export.${format}`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
   }
 
   static async updateBulkStatus(resolvedSlug: string, ids: string[], status: string): Promise<void> {
-    await AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-update`, {
+    await AdminApi.post(AdminConstants.ENDPOINTS.COLLECTIONS.BULK_UPDATE(resolvedSlug), {
       ids,
       data: { status }
     });
@@ -175,12 +199,12 @@ export class CollectionListPageService {
     deleteDialogState: { mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] }
   ): Promise<number> {
     if (deleteDialogState.mode === 'single') {
-      await AdminApi.delete(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${deleteDialogState.id}`);
+      await AdminApi.delete(AdminConstants.ENDPOINTS.COLLECTIONS.DETAIL(resolvedSlug, deleteDialogState.id));
       return 1;
     }
 
     if (!deleteDialogState.ids.length) return 0;
-    await AdminApi.post(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/bulk-delete`, { ids: deleteDialogState.ids });
+    await AdminApi.post(AdminConstants.ENDPOINTS.COLLECTIONS.BULK_DELETE(resolvedSlug), { ids: deleteDialogState.ids });
     return deleteDialogState.ids.length;
   }
 
@@ -201,7 +225,7 @@ export class CollectionListPageService {
   }
 
   static async fetchQuickEditRecord(resolvedSlug: string, rowId: string): Promise<any> {
-    return AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${rowId}?locale_mode=raw`);
+    return AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.DETAIL(resolvedSlug, rowId)}?locale_mode=raw`);
   }
 
   static resolveQuickEditPayload(currentData: Record<string, any>, initialData: Record<string, any>): Record<string, any> {
@@ -212,7 +236,7 @@ export class CollectionListPageService {
   }
 
   static async saveQuickEditRecord(resolvedSlug: string, rowId: string, payload: Record<string, any>): Promise<void> {
-    await AdminApi.put(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${rowId}`, payload);
+    await AdminApi.put(AdminConstants.ENDPOINTS.COLLECTIONS.DETAIL(resolvedSlug, rowId), payload);
   }
 
   private static renderCellValue({

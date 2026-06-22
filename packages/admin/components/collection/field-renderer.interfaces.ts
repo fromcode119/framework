@@ -30,6 +30,7 @@ export interface FieldRendererProps {
   theme: 'light' | 'dark';
   collectionSlug: string;
   pluginSettings?: Record<string, any>;
+  globalSettings?: Record<string, any>;
   disabled?: boolean;
   isNew?: boolean;
   errors?: string[];
@@ -79,6 +80,7 @@ export interface FieldControlRendererProps {
   theme: 'light' | 'dark';
   collectionSlug: string;
   pluginSettings?: Record<string, any>;
+  globalSettings?: Record<string, any>;
   fieldComponents: Record<string, any>;
   isFieldReadOnly: boolean;
   isNew: boolean;
@@ -100,6 +102,7 @@ export interface FieldCustomComponentProps {
   theme: 'light' | 'dark';
   collectionSlug: string;
   pluginSettings?: Record<string, any>;
+  globalSettings?: Record<string, any>;
   fieldComponents: Record<string, any>;
   isFieldReadOnly: boolean;
   record?: Record<string, any>;

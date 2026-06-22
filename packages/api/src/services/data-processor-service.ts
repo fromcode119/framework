@@ -14,9 +14,11 @@ export class DataProcessorService {
     options: {
       existingRecord?: any;
       localeContext: { locale: string; defaultLocale: string };
+      overrideFields?: Set<string>;
     }
   ) {
     const processedData: any = {};
+    const overrideFields = options?.overrideFields;
 
     for (const key of Object.keys(data || {})) {
       if (!table[key]) continue;
@@ -24,9 +26,10 @@ export class DataProcessorService {
       let value = data[key];
       const fieldConfig: any = collection.fields.find((f) => f.name === key);
 
-      // Skip system fields
-      if (key === 'createdAt') continue;
-      if (key === 'updatedAt' && collection.slug !== 'settings') continue;
+      // Skip auto-managed timestamps — unless the caller authorized an explicit read-only
+      // override for them (admin unlocked "Created Date" / "Updated" + password-confirmed).
+      if (key === 'createdAt' && !overrideFields?.has('createdAt')) continue;
+      if (key === 'updatedAt' && collection.slug !== 'settings' && !overrideFields?.has('updatedAt')) continue;
 
       // Password hashing
       if (collection.slug === 'users' && key === 'password' && this.auth && value) {

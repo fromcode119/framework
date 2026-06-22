@@ -109,7 +109,7 @@ export default class ThemeSettingsPage extends AdminComponent<ThemeSettingsPageP
     ];
 
     return (
-      <div className="w-full space-y-8 animate-in fade-in duration-500">
+      <div className="w-full space-y-6 animate-in fade-in duration-500">
         <ThemeSettingsHeader page={this} model={model} />
 
         <div className={`flex gap-2 p-1.5 rounded-2xl w-fit backdrop-blur-xl border transition-all duration-300 ${adminTheme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-sm'}`}>
@@ -126,11 +126,11 @@ export default class ThemeSettingsPage extends AdminComponent<ThemeSettingsPageP
         </div>
 
         <div className="w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
-            <div className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">
+            <div className="lg:col-span-2 space-y-6">
               {activeTab === 'overview' && <ThemeSettingsOverviewPanel page={this} model={model} />}
               {activeTab === 'settings' && (
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <ThemeSettingsVariablesPanel page={this} model={model} />
                   <ThemeSettingsLayoutsPanel page={this} model={model} />
                   <ThemeSettingsExtensionsPanel page={this} model={model} />

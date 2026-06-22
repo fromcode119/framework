@@ -25,16 +25,16 @@ export default class PluginDetailHeader extends React.Component<PluginDetailHead
   const marketplaceVersion = marketplaceItem?.version || null;
 
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex items-center gap-4">
       <Link
         href={AdminConstants.ROUTES.PLUGINS.INSTALLED}
-        className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg ${theme === 'dark' ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
+        className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm ${theme === 'dark' ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 hover:shadow-indigo-500/10'}`}
       >
-        <FrameworkIcons.Left size={20} strokeWidth={2.5} />
+        <FrameworkIcons.Left size={18} strokeWidth={2.5} />
       </Link>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3">
-          <h1 className={`text-3xl font-semibold tracking-tighter truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+          <h1 className={`text-xl font-bold tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
             {plugin.manifest.name}
           </h1>
           <Badge variant={plugin.state === 'active' ? 'success' : 'gray'}>{plugin.state}</Badge>
@@ -66,7 +66,7 @@ export default class PluginDetailHeader extends React.Component<PluginDetailHead
         </div>
       </div>
       {activeTab === 'resources' && (
-        <Button onClick={onSaveSandbox} isLoading={isSaving} className="px-8 rounded-xl shadow-lg shadow-indigo-600/10">
+        <Button onClick={onSaveSandbox} isLoading={isSaving} className="px-4 rounded-lg shadow-sm shadow-indigo-600/10">
           Update Policy
         </Button>
       )}

@@ -71,9 +71,11 @@ FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ARG NEXT_PUBLIC_API_VERSION=v1
 ARG API_VERSION_PREFIX=v1
+ARG NEXT_PUBLIC_ADMIN_APPEARANCE=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_VERSION=$NEXT_PUBLIC_API_VERSION
 ENV API_VERSION_PREFIX=$API_VERSION_PREFIX
+ENV NEXT_PUBLIC_ADMIN_APPEARANCE=$NEXT_PUBLIC_ADMIN_APPEARANCE
 # Verify @fromcode119 workspace symlinks were created by npm install
 RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode119/ && echo "--- Node version ---" && node --version
 # Five separate RUN steps so each process fully releases memory before the

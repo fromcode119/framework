@@ -17,7 +17,7 @@ interface StatItem {
 
 interface PluginStatsListProps {
   stats: StatItem[];
-  columns?: 2 | 3 | 4;
+  columns?: 2 | 3 | 4 | 5 | 6;
   className?: string;
 }
 
@@ -54,10 +54,12 @@ const colorClasses = {
   },
 };
 
-const gridCols = {
+const gridCols: Record<number, string> = {
   2: 'grid-cols-1 md:grid-cols-2',
   3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-  4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+  4: 'grid-cols-2 md:grid-cols-2 lg:grid-cols-4',
+  5: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
+  6: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6',
 };
 
 function StatCard({ stat }: { stat: StatItem }) {
@@ -65,63 +67,45 @@ function StatCard({ stat }: { stat: StatItem }) {
   
   const cardClass = `
     group relative overflow-hidden
-    rounded-2xl
-    bg-white/98 dark:bg-slate-900/98
-    backdrop-blur-xl
-    p-6
-    transition-all duration-150
-    hover:shadow-2xl hover:shadow-slate-950/10 dark:hover:shadow-black/40
-    hover:-translate-y-0.5
+    rounded-xl
+    bg-white dark:bg-slate-900/60
+    p-4
+    transition-colors duration-150
     ring-1 ring-black/5 dark:ring-white/5
-    ${stat.href ? 'block no-underline cursor-pointer active:scale-[0.98]' : ''}
+    ${stat.href ? 'block no-underline cursor-pointer hover:ring-indigo-500/30' : ''}
   `;
 
   const inner = (
-    <>
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/80 to-transparent dark:from-slate-800/40 dark:to-transparent opacity-50" />
-      <div className="relative">
-        <div className="flex items-center justify-between mb-5">
-          {stat.icon && (
-            <div className={`
-              p-3.5 rounded-xl
-              ${colors.bg} ${colors.text} ${colors.ring}
-              transition-all duration-150
-              ${stat.href ? `group-hover:scale-110 ${colors.hover}` : ''}
-              shadow-sm
-            `}>
-              {stat.icon}
-            </div>
-          )}
-          {stat.trend && (
-            <div className={`
-              flex items-center gap-1.5 
-              px-3 py-1.5 
-              rounded-xl 
-              text-[10px] font-bold uppercase tracking-wider
-              transition-all duration-150
-              ${stat.trend.isPositive
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 dark:ring-emerald-400/20'
-                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 ring-1 ring-rose-500/20 dark:ring-rose-400/20'
-              }
-            `}>
-              <span className="text-sm leading-none">{stat.trend.isPositive ? '↑' : '↓'}</span>
-              <span>{Math.abs(stat.trend.value)}%</span>
-            </div>
-          )}
-        </div>
-        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.12em] uppercase mb-2.5">
-          {stat.label}
-        </p>
-        <h4 className="text-[32px] font-bold text-slate-900 dark:text-white tracking-tight leading-none">
-          {stat.value}
-        </h4>
-        {stat.subtext && (
-          <p className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/50 text-[12px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed tracking-tight">
-            {stat.subtext}
-          </p>
+    <div className="relative">
+      <div className="flex items-center justify-between mb-3">
+        {stat.icon && (
+          <div className={`h-9 w-9 flex items-center justify-center rounded-lg ${colors.bg} ${colors.text} [&_svg]:h-[18px] [&_svg]:w-[18px]`}>
+            {stat.icon}
+          </div>
+        )}
+        {stat.trend && (
+          <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+            stat.trend.isPositive
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+          }`}>
+            <span className="leading-none">{stat.trend.isPositive ? '↑' : '↓'}</span>
+            <span>{Math.abs(stat.trend.value)}%</span>
+          </div>
         )}
       </div>
-    </>
+      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.1em] uppercase mb-1">
+        {stat.label}
+      </p>
+      <h4 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+        {stat.value}
+      </h4>
+      {stat.subtext && (
+        <p className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/50 text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed tracking-tight">
+          {stat.subtext}
+        </p>
+      )}
+    </div>
   );
 
   if (stat.href) {
@@ -138,7 +122,7 @@ export class PluginStatsList extends React.Component<PluginStatsListProps> {
   className = '',
 } = this.props;
   return (
-    <div className={`grid ${gridCols[columns]} gap-6 ${className}`}>
+    <div className={`grid ${gridCols[columns] || gridCols[4]} gap-3 ${className}`}>
       {stats.map((stat, index) => (
         <StatCard key={index} stat={stat} />
       ))}

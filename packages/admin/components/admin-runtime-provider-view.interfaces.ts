@@ -12,4 +12,5 @@ export interface AdminRuntimeProviderViewProps {
   router: AdminRuntimeValue['router'];
   pathname: AdminRuntimeValue['pathname'];
   auth: AdminRuntimeValue['auth'];
+  activeAppearanceId: string;
 }

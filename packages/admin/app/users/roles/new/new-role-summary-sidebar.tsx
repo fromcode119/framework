@@ -11,34 +11,34 @@ export class NewRoleSummarySidebar extends React.Component<NewRoleSummarySidebar
   render(): React.ReactNode {
     const { permissionCount, loading, onCancel } = this.props;
     return (
-      <div className="lg:col-span-4 space-y-8">
+      <div className="lg:col-span-4 space-y-4">
         <Card title="Summary">
-          <div className="space-y-6">
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 space-y-4">
-               <div className="flex flex-col gap-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Role Type</span>
-                  <Badge variant="amber" className="tracking-tight font-bold">Custom</Badge>
+          <div className="space-y-3">
+            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3.5 border border-slate-100 dark:border-slate-800 space-y-3">
+               <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">Role Type</span>
+                  <Badge variant="amber" className="tracking-tight font-semibold">Custom</Badge>
                </div>
-               <div className="flex flex-col gap-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Selected Scope</span>
-                  <span className="text-xs font-bold tracking-tight text-slate-600 dark:text-slate-300">
-                    {permissionCount === 0 ? 'No permissions' : `${permissionCount} actions selected`}
+               <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">Scope</span>
+                  <span className="text-xs font-semibold tracking-tight text-slate-600 dark:text-slate-300">
+                    {permissionCount === 0 ? 'No permissions' : `${permissionCount} selected`}
                   </span>
                </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               <Button
                 type="submit"
-                className="w-full h-12 text-xs font-bold uppercase tracking-tight rounded-xl shadow-xl shadow-indigo-600/20 text-white"
+                className="w-full h-9 text-xs font-semibold rounded-lg text-white"
                 isLoading={loading}
-                icon={<FrameworkIcons.Check size={18} />}
+                icon={<FrameworkIcons.Check size={15} />}
               >
-                Save Role
+                Save role
               </Button>
               <Button
                 variant="ghost"
-                className="w-full h-12 text-xs font-bold tracking-tight text-slate-400 uppercase"
+                className="w-full h-9 text-xs font-semibold text-slate-500"
                 onClick={onCancel}
               >
                 Cancel
@@ -48,8 +48,8 @@ export class NewRoleSummarySidebar extends React.Component<NewRoleSummarySidebar
         </Card>
 
         <Card title="Help">
-           <p className="text-xs text-slate-500 leading-relaxed font-bold tracking-tight opacity-70">
-             Creating this role will allow you to assign these specific permissions to any user in the system.
+           <p className="text-xs text-slate-500 leading-relaxed font-medium tracking-tight">
+             Creating this role lets you assign these permissions to any user in the system.
            </p>
         </Card>
       </div>

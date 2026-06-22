@@ -15,7 +15,7 @@ export class MarketplaceSearchBar extends React.Component<MarketplaceSearchBarPr
           placeholder="Search global marketplace..."
           value={searchQuery}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full rounded-2xl py-2.5 pl-11 pr-6 outline-none border-0 font-bold transition-all ${theme === 'dark' ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/5' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-xl shadow-slate-200/50'}`}
+          className={`w-full h-9 rounded-xl pl-11 pr-4 outline-none border-0 font-bold transition-all ${theme === 'dark' ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-sm' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-sm'}`}
         />
       </div>
     );

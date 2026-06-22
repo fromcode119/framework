@@ -199,6 +199,24 @@ export interface PluginContext {
     registerModule(name: string, config: { keys: string[], type: 'icon' | 'lib' }): void;
   };
 
+  /**
+   * Platform notifications. The framework owns BOTH recipient resolution AND delivery — a plugin
+   * supplies only the message content; it never resolves users/roles or loops over recipients itself.
+   * This is the sanctioned replacement for any plugin-local "find the admins and email each one" code.
+   */
+  readonly notifications: {
+    /**
+     * Email every platform admin (all users holding the `admin` role) plus any `extraRecipients`,
+     * deduped/lowercased. Best-effort: never throws; returns how many recipients were resolved and
+     * how many sends succeeded. Pass a ready-built `message` (subject + html/text) — the plugin owns
+     * the copy/templates, the framework owns who-gets-it and the sending.
+     */
+    notifyAdmins(
+      message: { subject: string; html?: string; text?: string },
+      options?: { extraRecipients?: string[] },
+    ): Promise<{ recipients: number; sent: number }>;
+  };
+
   readonly users: {
     findAdmins(options?: { limit?: number }): Promise<Array<{ id: any; email: string; roles: string[] }>>;
     findByRole(role: string, options?: { limit?: number }): Promise<Array<{ id: any; email: string; roles: string[] }>>;

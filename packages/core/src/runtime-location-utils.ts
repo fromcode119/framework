@@ -63,8 +63,15 @@ export class RuntimeLocationUtils {
   }
 
   private static resolveCurrentAdminBasePath(): string {
-    return RuntimeLocationUtils.inferAdminBasePathFromCurrentPathname()
-      || RuntimeLocationUtils.getAdminBasePath();
+    // In a live admin runtime the current pathname is authoritative: its `/admin` segment
+    // (or the absence of one) IS the real admin base path. A dedicated admin host served at
+    // root has no `/admin` segment, so the base is '' (root) — returning the configured
+    // `/admin` default here would produce broken `/admin/...` links. Only fall back to the
+    // configured default when there is no current pathname to read (e.g. during SSR).
+    if (RuntimeLocationUtils.getCurrentPathname()) {
+      return RuntimeLocationUtils.inferAdminBasePathFromCurrentPathname();
+    }
+    return RuntimeLocationUtils.getAdminBasePath();
   }
 
   private static inferAdminBasePathFromCurrentPathname(): string {

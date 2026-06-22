@@ -16,7 +16,7 @@ export class MarketplaceScreenshots extends React.Component<MarketplaceScreensho
     if (!plugin.screenshots || plugin.screenshots.length === 0) return null;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className={`text-[11px] font-bold uppercase tracking-widest flex items-center gap-3 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
             <FrameworkIcons.Image size={14} className="text-indigo-500" />
@@ -30,8 +30,8 @@ export class MarketplaceScreenshots extends React.Component<MarketplaceScreensho
         <div className="space-y-4">
           <div
             onClick={onOpenLightbox}
-            className={`aspect-video rounded-[2.5rem] overflow-hidden border-2 relative group cursor-zoom-in transition-all duration-500 ${
-              theme === 'dark' ? 'bg-slate-900 border-white/5' : 'bg-slate-50 border-white shadow-[0_30px_60px_-20px_rgba(0,0,0,0.1)]'
+            className={`aspect-video rounded-xl overflow-hidden border-2 relative group cursor-zoom-in transition-all duration-500 ${
+              theme === 'dark' ? 'bg-slate-900 border-white/5' : 'bg-slate-50 border-white shadow-sm'
             }`}
           >
               <img

@@ -22,40 +22,30 @@ export class PluginChartCard extends React.Component<PluginChartCardProps> {
   noPadding = false
 } = this.props;
   return (
-    <div 
-      className={`
-        rounded-[2.5rem] border-2 border-slate-200/80 
-        bg-white 
-        shadow-sm 
-        transition-all duration-300 
-        hover:shadow-lg
-        dark:bg-slate-900/50 
-        dark:border-slate-700/50
-        ${noPadding ? '' : 'p-8'}
-        ${className}
-      `}
+    <div
+      className={`rounded-xl border border-slate-200/70 bg-white shadow-sm transition-colors dark:bg-slate-900/50 dark:border-slate-800 ${noPadding ? '' : 'p-4'} ${className}`}
     >
       {/* Header */}
-      <div className={`flex items-start justify-between ${noPadding ? 'px-8 pt-8 pb-6' : 'mb-6'}`}>
-        <div className="flex-1">
-          <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+      <div className={`flex items-start justify-between ${noPadding ? 'px-4 pt-4 pb-3' : 'mb-3'}`}>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[13px] font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-2 opacity-70">
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
               {subtitle}
             </p>
           )}
         </div>
         {actions && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {actions}
           </div>
         )}
       </div>
 
       {/* Content */}
-      <div className={noPadding ? 'px-8 pb-8' : ''}>
+      <div className={noPadding ? 'px-4 pb-4' : ''}>
         {children}
       </div>
     </div>

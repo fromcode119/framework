@@ -11,90 +11,55 @@ import type { RolesListCardProps } from './roles-list-card.interfaces';
 export class RolesListCard extends React.Component<RolesListCardProps> {
   render(): React.ReactNode {
     const { roles, theme, onRequestDelete } = this.props;
+    const dark = theme === 'dark';
     return (
       <Card title="System Roles & Security Groups">
-        <div className="grid grid-cols-1 gap-4">
-          {roles.map((role) => (
-            <div key={role.slug} className={`group p-4 md:p-5 rounded-2xl border transition-all duration-500 ${
-              theme === 'dark'
-                ? 'bg-slate-950/40 border-slate-800/50 hover:border-indigo-500/30'
-                : 'bg-white border-slate-200/60 hover:border-indigo-500/40 hover:shadow-[0_20px_50px_-12px_rgba(79,70,229,0.1)]'
-            }`}>
-              <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
-                <div className="flex flex-col sm:flex-row gap-4 w-full">
-                  <div className={`h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-2xl ${
-                    role.type === 'system'
-                      ? (theme === 'dark' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white shadow-indigo-600/30')
-                      : (theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')
+        <div className="space-y-2">
+          {roles.map((role) => {
+            const isSystem = role.type === 'system';
+            return (
+              <div key={role.slug} className={`flex items-center justify-between gap-4 p-3.5 rounded-xl border transition-colors ${
+                dark ? 'bg-slate-950/30 border-slate-800 hover:bg-slate-900/50' : 'bg-white border-slate-200 hover:bg-slate-50'
+              }`}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
+                    isSystem ? 'bg-indigo-600 text-white' : (dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400')
                   }`}>
-                    <FrameworkIcons.Shield size={22} />
+                    <FrameworkIcons.Shield size={16} />
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <h3 className={`font-bold text-lg tracking-tight transition-colors group-hover:text-indigo-600 ${theme === 'dark' ? 'text-white group-hover:text-indigo-400' : 'text-slate-900'}`}>{role.name}</h3>
-                      <code className={`text-[10px] font-bold uppercase tracking-tight px-3 py-1 rounded-full ${
-                        theme === 'dark' ? 'bg-slate-800 text-slate-500' : 'bg-slate-50 border border-slate-200 text-slate-500'
-                      }`}>
-                        {role.slug}
-                      </code>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className={`text-sm font-semibold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{role.name}</h3>
+                      <code className={`text-[10px] font-semibold uppercase tracking-tight px-1.5 py-0.5 rounded ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{role.slug}</code>
                     </div>
-                    <p className="text-sm font-bold text-slate-500 leading-relaxed max-w-2xl mb-4">{role.description}</p>
-
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                       <div className="flex flex-col gap-1">
-                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Active Members</span>
-                         <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{role.users || 0} Users</span>
-                       </div>
-                       <div className="flex flex-col gap-1">
-                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Scope</span>
-                         <div className="flex gap-2">
-                           <span className="text-[11px] font-bold text-indigo-500/80">
-                             {role.permissions?.length || 0} Permissions
-                           </span>
-                         </div>
-                       </div>
-                       <div className="flex flex-col gap-1">
-                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Last Modified</span>
-                         <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                           {role.updatedAt ? new Date(role.updatedAt).toLocaleDateString() : 'Initial'}
-                         </span>
-                       </div>
-                    </div>
+                    <p className="text-xs font-medium text-slate-500 truncate max-w-xl">{role.description || 'No description'}</p>
                   </div>
                 </div>
 
-                <div className="flex flex-row lg:flex-col items-center lg:items-end gap-2 w-full lg:w-auto">
-                  {role.type === 'system' ? (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
-                       <FrameworkIcons.Lock size={12} strokeWidth={2} />
-                       <span className="font-bold uppercase tracking-tight text-[10px]">Immutable</span>
-                    </div>
+                <div className="flex items-center gap-5 shrink-0">
+                  <div className="hidden md:flex items-center gap-5 text-xs font-medium">
+                    <span className="text-slate-500"><span className={dark ? 'text-slate-200 font-semibold' : 'text-slate-800 font-semibold'}>{role.users || 0}</span> users</span>
+                    <span className="text-indigo-500 font-semibold">{role.permissions?.length || 0} perms</span>
+                  </div>
+                  {isSystem ? (
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-500">
+                      <FrameworkIcons.Lock size={11} strokeWidth={2} />
+                      <span className="font-semibold uppercase tracking-tight text-[10px]">Locked</span>
+                    </span>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        as={Link}
-                        href={AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)}
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-slate-600 hover:text-indigo-600 hover:border-indigo-500/50"
-                      >
-                        <FrameworkIcons.Edit size={16} />
+                    <div className="flex items-center gap-1.5">
+                      <Button as={Link} href={AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)} variant="ghost" size="icon" className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-indigo-600">
+                        <FrameworkIcons.Edit size={14} />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onRequestDelete(role)}
-                        className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-slate-600 hover:text-rose-600 hover:border-rose-500/50"
-                      >
-                        <FrameworkIcons.Trash size={16} />
+                      <Button variant="ghost" size="icon" onClick={() => onRequestDelete(role)} className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-600">
+                        <FrameworkIcons.Trash size={14} />
                       </Button>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     );

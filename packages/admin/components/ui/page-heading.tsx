@@ -20,8 +20,8 @@ export class PageHeading extends React.Component<PageHeadingProps> {
   icon,
   badge,
   className = '',
-  titleClassName = 'text-3xl sm:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none italic',
-  subtitleClassName = 'text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight opacity-80 mt-3'
+  titleClassName = 'text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight',
+  subtitleClassName = 'text-xs font-medium text-slate-500 dark:text-slate-500 tracking-tight mt-0.5'
 } = this.props;
   return (
     <div className={className}>

@@ -9,11 +9,15 @@ import { PlatformBrandingService } from '@/lib/platform-branding-service';
 import { AdminComponent } from '@/components/admin-component';
 import { DashboardPageHeader } from './dashboard-page-header';
 import { DashboardStatsGrid } from './dashboard-stats-grid';
+import { DashboardQuickActions } from './dashboard-quick-actions';
+import { DashboardActivityChart } from './dashboard-activity-chart';
+import { DashboardActivityBreakdown } from './dashboard-activity-breakdown';
 import { DashboardUpdateAlert } from './dashboard-update-alert';
 import { DashboardCollectionsGrid } from './dashboard-collections-grid';
 import { DashboardActivityFeed } from './dashboard-activity-feed';
 import { DashboardSupportCard } from './dashboard-support-card';
 import { DashboardFooter } from './dashboard-footer';
+import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import type { AdminPageState } from './admin-page.interfaces';
 
 export default class AdminPage extends AdminComponent<Record<string, never>, AdminPageState> {
@@ -93,6 +97,10 @@ export default class AdminPage extends AdminComponent<Record<string, never>, Adm
   }
 
   render(): React.ReactElement {
+    const DashboardOverride = this.page(AdminPageKeys.DASHBOARD);
+    if (DashboardOverride) {
+      return <DashboardOverride />;
+    }
     const { user } = this.auth;
     const { slots, settings } = this.runtime.plugins;
     const { stats, activity, activePluginsCount, loadingActivity, loadingStats, updateAvailable, showAllCollections } = this.state;
@@ -107,9 +115,9 @@ export default class AdminPage extends AdminComponent<Record<string, never>, Adm
     return (
       <div className="w-full pb-24 animate-in fade-in duration-500">
         {/* Premium Dashboard Header */}
-        <DashboardPageHeader user={user} />
+        <DashboardPageHeader user={user} theme={this.theme} />
 
-        <div className="w-full px-6 lg:px-12 pt-12 space-y-8 pb-12">
+        <div className="w-full px-6 lg:px-8 pt-6 space-y-6 pb-10">
           {/* Update Alert */}
           {updateAvailable && (
             <DashboardUpdateAlert
@@ -122,14 +130,27 @@ export default class AdminPage extends AdminComponent<Record<string, never>, Adm
           {/* Stats Grid */}
           <DashboardStatsGrid userCount={userCount} loadingStats={loadingStats} activePluginsCount={activePluginsCount} />
 
+          {/* Quick Actions */}
+          <DashboardQuickActions
+            actions={[
+              { label: 'Create User', href: '/users/new', icon: 'Users' },
+              { label: 'Media Library', href: '/media', icon: 'Image' },
+              { label: 'Plugins', href: '/plugins', icon: 'Package' },
+              { label: 'Themes', href: '/themes', icon: 'Layout' },
+              { label: 'Settings', href: AdminConstants.ROUTES.SETTINGS.ROOT, icon: 'Settings' },
+              { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY, icon: 'Activity' },
+            ]}
+            onNavigate={(href) => this.router.push(href)}
+          />
+
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
               <Slot name="admin.dashboard.top" />
 
               <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="h-8 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-4 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
                   <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Content Collections</h3>
                   <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
                 </div>
@@ -150,8 +171,8 @@ export default class AdminPage extends AdminComponent<Record<string, never>, Adm
                 onNavigate={(path) => this.router.push(path)}
               />
 
-              <div className="flex items-center gap-4">
-                <div className="h-8 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
+              <div className="flex items-center gap-3">
+                <div className="h-4 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
                 <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Recent Activity</h3>
                 <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
               </div>
@@ -171,6 +192,10 @@ export default class AdminPage extends AdminComponent<Record<string, never>, Adm
 
             {/* Right Sidebar - Dynamic Content */}
             <div className="space-y-6">
+              <DashboardActivityChart activity={activity} days={14} />
+
+              <DashboardActivityBreakdown activity={activity} />
+
               <Slot name="admin.dashboard.sidebar" />
 
               <DashboardSupportCard onNavigateFramework={() => this.router.push(AdminConstants.ROUTES.SETTINGS.FRAMEWORK)} />

@@ -35,6 +35,16 @@ export class SystemAuthClient {
     return this.requester.post(SystemConstants.API_PATH.AUTH.RESEND_VERIFICATION, { email }, options);
   }
 
+  /** Request a password-reset email for the given address (always resolves with a generic message). */
+  forgotPassword(payload: { email: string; context?: string }, options?: any): Promise<any> {
+    return this.requester.post(SystemConstants.API_PATH.AUTH.FORGOT_PASSWORD, payload, options);
+  }
+
+  /** Set a new password using the token from the reset email. */
+  resetPassword(payload: { token: string; newPassword: string }, options?: any): Promise<any> {
+    return this.requester.post(SystemConstants.API_PATH.AUTH.RESET_PASSWORD, payload, options);
+  }
+
   getSecurityState(options?: any): Promise<any> {
     return this.requester.get(SystemConstants.API_PATH.AUTH.SECURITY, options);
   }

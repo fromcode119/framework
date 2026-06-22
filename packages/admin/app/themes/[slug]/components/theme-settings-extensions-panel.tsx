@@ -14,8 +14,8 @@ export class ThemeSettingsExtensionsPanel extends React.Component<{ page: any; m
     const { adminTheme, tempSettings, groupedThemeSettings, themeSettingsSchema, allThemeSettingKeys } = model;
     if (!allThemeSettingKeys.length) return null;
     return (
-      <Card className={`border-0 p-10 rounded-[2.5rem] ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-        <div className="flex items-center gap-4 mb-10">
+      <Card className={`border-0 p-5 rounded-xl ${adminTheme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+        <div className="flex items-center gap-3 mb-5">
           <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-500">
             <FrameworkIcons.Settings size={20} />
           </div>
@@ -29,7 +29,7 @@ export class ThemeSettingsExtensionsPanel extends React.Component<{ page: any; m
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-5">
           {Object.entries(groupedThemeSettings).map(([group, keys]: [string, any]) => (
             <div key={group} className="space-y-4">
               <h4 className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{group}</h4>

@@ -11,6 +11,7 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.MARKETPLACE_URL,
   SystemConstants.META_KEY.DOMAIN_ALIASES,
   SystemConstants.META_KEY.TIMEZONE,
+  SystemConstants.META_KEY.ADMIN_APPEARANCE,
   SystemConstants.META_KEY.PLATFORM_NAME,
   SystemConstants.META_KEY.PLATFORM_DOMAIN,
   SystemConstants.META_KEY.TELEMETRY_ENABLED,

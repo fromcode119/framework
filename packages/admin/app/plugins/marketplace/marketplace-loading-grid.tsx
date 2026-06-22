@@ -9,7 +9,7 @@ export class MarketplaceLoadingGrid extends React.Component<MarketplaceGridState
     return (
       <>
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className={`h-80 rounded-3xl animate-pulse ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white border-2 border-slate-50 shadow-xl shadow-slate-200/50'}`} />
+          <div key={i} className={`h-64 rounded-xl animate-pulse ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white border border-slate-100 shadow-sm'}`} />
         ))}
       </>
     );

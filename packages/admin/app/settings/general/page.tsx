@@ -12,6 +12,7 @@ import { Loader } from '@/components/ui/loader';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 import { TimezoneUtils } from '@/lib/timezone';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 import { GeneralBrandCard } from './general-brand-card';
 import { GeneralSystemCards } from './general-system-cards';
 
@@ -133,29 +134,24 @@ export default function GeneralSettingsPage() {
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
-      {/* Sub-Page Header */}
-      <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
-        theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-      }`}>
-        <div>
-          <h1 className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            General Configuration
-          </h1>
-          <p className="text-[10px] font-bold text-slate-500 tracking-tight uppercase opacity-60">
-            Brand Identity & System preferences
-          </p>
-        </div>
-        <Button
-          icon={<FrameworkIcons.Save size={14} strokeWidth={3} />}
-          onClick={handleSave}
-          isLoading={isSaving}
-          className="px-6 h-11 rounded-xl font-bold uppercase tracking-tight text-[11px] shadow-lg shadow-indigo-600/10"
-        >
-          Save Changes
-        </Button>
-      </div>
+      <CompactPageHeader
+        theme={theme}
+        icon={<FrameworkIcons.Settings size={18} strokeWidth={2} />}
+        title="General Configuration"
+        subtitle="Brand identity & system preferences"
+        actions={
+          <Button
+            icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
+            onClick={handleSave}
+            isLoading={isSaving}
+            className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
+          >
+            Save Changes
+          </Button>
+        }
+      />
 
-      <div className="p-8 lg:p-12 max-w-5xl space-y-8">
+      <div className="p-6 w-full space-y-8">
         <GeneralBrandCard
           settings={settings}
           setSettings={setSettings}

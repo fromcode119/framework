@@ -13,6 +13,7 @@ import { Loader } from '@/components/ui/loader';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { RoutingPageUtils } from './routing-page-utils';
 import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 
 const PLACEHOLDERS = [
   { label: ':slug', description: 'The sanitized post title (recommended)', example: 'hello-world' },
@@ -308,28 +309,24 @@ export default function RoutingPage() {
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
-      <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
-        theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-      }`}>
-        <div>
-          <h1 className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            Routing
-          </h1>
-          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide opacity-60">
-            Homepage Target & Permalink Configuration
-          </p>
-        </div>
-        <Button
-          icon={<FrameworkIcons.Save size={14} strokeWidth={3} />}
-          onClick={handleSave}
-          isLoading={isSaving}
-          className="px-6 rounded-xl shadow-lg shadow-indigo-600/10"
-        >
-          Apply Routing
-        </Button>
-      </div>
+      <CompactPageHeader
+        theme={theme}
+        icon={<FrameworkIcons.Map size={18} strokeWidth={2} />}
+        title="Routing"
+        subtitle="Homepage target & permalink configuration"
+        actions={
+          <Button
+            icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
+            onClick={handleSave}
+            isLoading={isSaving}
+            className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
+          >
+            Apply Routing
+          </Button>
+        }
+      />
 
-      <div className="p-8 lg:p-12 max-w-5xl space-y-8">
+      <div className="p-6 w-full space-y-8">
         <Card title="Homepage Target">
           <div className="space-y-5 py-2">
             <div>

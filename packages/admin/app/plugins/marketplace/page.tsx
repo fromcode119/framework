@@ -118,15 +118,38 @@ export default class MarketplacePage extends AdminComponent<Record<string, never
     const { loading, installing, searchQuery, installedPlugins, imageErrors } = this.state;
     const filtered = this.filtered;
 
+    const installedCount = filtered.filter((p) => installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug)).length;
+    const updateCount = filtered.filter((p) => {
+      const inst = installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug);
+      return inst && VersionComparisonService.isGreater(p.version, inst.manifest?.version || inst.version);
+    }).length;
+    const isDark = theme === 'dark';
+    const summary: Array<{ label: string; value: number; tone: string }> = [
+      { label: 'Available', value: filtered.length, tone: isDark ? 'text-white' : 'text-slate-900' },
+      { label: 'Installed', value: installedCount, tone: 'text-emerald-500' },
+      { label: 'Updates', value: updateCount, tone: 'text-amber-500' },
+    ];
+
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="space-y-4 animate-in fade-in duration-500">
         <MarketplaceSearchBar
           theme={theme}
           searchQuery={searchQuery}
           onChange={(value) => this.setState({ searchQuery: value })}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        {!loading && filtered.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {summary.map((s) => (
+              <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
+                <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
+                <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
           {loading ? (
             <MarketplaceLoadingGrid theme={theme} />
           ) : filtered.length === 0 ? (

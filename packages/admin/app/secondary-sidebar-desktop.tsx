@@ -23,7 +23,7 @@ export default function SecondarySidebarDesktop(props: SecondarySidebarDesktopPr
     // 4px sliver was effectively invisible, so users couldn't find any way to re-open the panel.)
     const collapsedLabel = (props.sourceLabel || 'Menu').trim();
     return (
-      <div className="sticky top-16 z-40 h-[calc(100vh-4rem)] w-0 shrink-0 self-start overflow-visible">
+      <div className="sticky top-16 z-50 h-[calc(100vh-4rem)] w-0 shrink-0 self-start overflow-visible">
         <button
           ref={props.triggerRef}
           type="button"
@@ -32,7 +32,7 @@ export default function SecondarySidebarDesktop(props: SecondarySidebarDesktopPr
           aria-expanded="false"
           aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
           onClick={props.onOpen}
-          className="group absolute left-0 top-8 z-40 inline-flex flex-col items-center gap-2 rounded-r-xl border border-l-0 border-indigo-200 bg-white py-3 pl-1 pr-1.5 text-indigo-600 shadow-[6px_0_20px_-10px_rgba(79,70,229,0.45)] transition-all hover:bg-indigo-50 hover:pr-2.5 dark:border-indigo-500/40 dark:bg-[#020617] dark:text-indigo-300 dark:hover:bg-indigo-500/10"
+          className="group absolute left-0 top-20 z-50 inline-flex flex-col items-center gap-2 rounded-r-xl border border-l-0 border-indigo-200 bg-white py-3 pl-1 pr-1.5 text-indigo-600 shadow-[6px_0_20px_-10px_rgba(79,70,229,0.45)] transition-all hover:bg-indigo-50 hover:pr-2.5 dark:border-indigo-500/40 dark:bg-[#020617] dark:text-indigo-300 dark:hover:bg-indigo-500/10"
         >
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/15 dark:text-indigo-300">
             <Right size={14} />

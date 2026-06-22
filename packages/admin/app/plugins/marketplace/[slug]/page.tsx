@@ -155,17 +155,17 @@ export default class MarketplaceDetailPage extends AdminComponent<MarketplaceDet
     const hasUpdate = Boolean(installedVersion && VersionComparisonService.isGreater(plugin.version, installedVersion));
 
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="space-y-4 animate-in fade-in duration-500">
         <button
           onClick={() => this.router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border font-semibold transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}
+          className={`flex items-center gap-2 h-9 px-4 rounded-lg border font-semibold transition-all ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}
         >
           <FrameworkIcons.Left size={16} />
           Back to Marketplace
         </button>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-1 space-y-8">
+        <div className="flex flex-col lg:flex-row gap-5 items-start">
+          <div className="flex-1 space-y-5 w-full">
             <MarketplaceDetailHeader
               plugin={plugin}
               theme={theme}

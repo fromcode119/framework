@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { CoreServices, PluginManager } from '@fromcode119/core';
+import { NamingStrategy } from '@fromcode119/database';
 import { BaseMiddleware } from './base-middleware';
+
+const RELATIONSHIP_SEARCH_TEXT_TYPES = new Set(['text', 'textarea', 'select']);
 
 /**
  * Middleware for collection lookup and validation.
@@ -84,7 +87,51 @@ export class CollectionMiddleware extends BaseMiddleware {
     }
 
     req.collection = collectionEntry.collection;
+    // Resolve each relationship field's related table + searchable text columns so the list search
+    // can match by the RELATED record's name (e.g. inventory by product name), not just scalar
+    // columns on this table. The middleware owns the registry, so it does the relationTo resolution.
+    req.relationshipSearchTargets = this.buildRelationshipSearchTargets(collectionEntry.collection);
     next();
+  }
+
+  /**
+   * For every single-value relationship field, resolve the related collection and return a descriptor
+   * { field, tableName, columns, primaryKey } the read controller uses to find matching related ids.
+   * hasMany relationships are skipped (they store JSON arrays, not a scalar id `inArray` can match).
+   */
+  private buildRelationshipSearchTargets(
+    collection: any,
+  ): Array<{ field: string; tableName: string; columns: string[]; primaryKey: string }> {
+    const targets: Array<{ field: string; tableName: string; columns: string[]; primaryKey: string }> = [];
+    // Collections are registered under their PHYSICAL slug (e.g. `fcp_ecommerce_products`), but a
+    // relationship's `relationTo` is the logical collection slug (`ecommerce-products`). Resolve by
+    // matching `.slug`/`.shortSlug` across the registry rather than a direct key lookup, which misses.
+    const allCollections = this.manager.getCollections();
+    const collectionIdentity = CoreServices.getInstance().collectionIdentity;
+    for (const field of (collection?.fields || [])) {
+      if (field?.type !== 'relationship' || !field?.relationTo || field?.hasMany) continue;
+      // `relationTo` is the logical slug (`ecommerce-products`); registered collections are keyed by
+      // their PHYSICAL slug (`fcp_ecommerce_products`). Resolve logical→registered the same way the
+      // request slug is resolved, then fetch the registered collection.
+      const resolvedSlug = collectionIdentity.resolveRegisteredSlug(field.relationTo, allCollections, undefined);
+      const related = resolvedSlug ? this.manager.getCollection(resolvedSlug)?.collection : undefined;
+      if (!related) continue;
+      const columns = new Set<string>();
+      if (related.admin?.useAsTitle) columns.add(NamingStrategy.toSnakeCase(related.admin.useAsTitle));
+      for (const relatedField of (related.fields || [])) {
+        if (RELATIONSHIP_SEARCH_TEXT_TYPES.has(relatedField?.type)) {
+          columns.add(NamingStrategy.toSnakeCase(relatedField.name));
+        }
+      }
+      if (!columns.size) continue;
+      targets.push({
+        field: field.name,
+        tableName: related.tableName || related.slug,
+        columns: [...columns],
+        primaryKey: related.primaryKey || 'id',
+      });
+    }
+    return targets;
   }
 
   /**

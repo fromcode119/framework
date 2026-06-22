@@ -7,9 +7,9 @@ export class DashboardFooter extends React.Component<DashboardFooterProps> {
   render(): React.ReactNode {
     const { platformName } = this.props;
     return (
-      <div className="p-10 border-t mt-auto bg-slate-50/50 border-slate-100 dark:bg-slate-950/20 dark:border-slate-800">
-        <div className="w-full px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+      <div className="p-6 border-t mt-auto bg-slate-50/50 border-slate-100 dark:bg-slate-950/20 dark:border-slate-800">
+        <div className="w-full px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />

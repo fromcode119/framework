@@ -10,6 +10,7 @@ import { AdminConstants } from '@/lib/constants';
 import { Loader } from '@/components/ui/loader';
 import { SecurityDashboard } from './security-dashboard';
 import { SecuritySettingsCards } from './security-settings-cards';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 
 export default function SecuritySettingsPage() {
   const { theme } = ThemeHooks.useTheme();
@@ -86,49 +87,42 @@ export default function SecuritySettingsPage() {
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
-      {/* Sub-Page Header */}
-      <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
-        theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-      }`}>
-        <div className="flex items-center gap-6">
-          <div>
-            <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              Security & Defense
-            </h1>
-            <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
-              Runtime isolation and protection
-            </p>
-          </div>
-          
-          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-white/5">
-              <button 
+      <CompactPageHeader
+        theme={theme}
+        icon={<FrameworkIcons.Shield size={18} strokeWidth={2} />}
+        title="Security & Defense"
+        subtitle="Runtime isolation and protection"
+        actions={
+          <>
+            <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-white/5">
+              <button
                 onClick={() => setActiveTab('dashboard')}
                 className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === 'dashboard' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
               >
                 Dashboard
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab('settings')}
                 className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === 'settings' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
               >
                 Settings
               </button>
-          </div>
-        </div>
-        
-        {activeTab === 'settings' && (
-          <Button 
-            icon={<FrameworkIcons.Shield size={14} strokeWidth={3} />}
-            onClick={handleSave}
-            isLoading={isSaving}
-            className="px-6 rounded-xl shadow-lg shadow-indigo-600/10"
-          >
-            Update Security
-          </Button>
-        )}
-      </div>
+            </div>
+            {activeTab === 'settings' && (
+              <Button
+                icon={<FrameworkIcons.Shield size={15} strokeWidth={2} />}
+                onClick={handleSave}
+                isLoading={isSaving}
+                className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
+              >
+                Update Security
+              </Button>
+            )}
+          </>
+        }
+      />
 
-      <div className="p-8 lg:p-12 max-w-5xl space-y-8 pb-24">
+      <div className="p-6 w-full space-y-8 pb-24">
         {activeTab === 'dashboard' && stats && (
           <SecurityDashboard stats={stats} />
         )}

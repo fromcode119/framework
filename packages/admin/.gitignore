@@ -1,0 +1,4 @@
+
+# Staged external appearances (copied in by build-appearances.sh) — keep only the generated index.
+components/_appearances/*
+!components/_appearances/index.generated.ts

@@ -19,10 +19,10 @@ export default class PluginDetailSidebar extends React.Component<PluginDetailSid
   theme,
 } = this.props;
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {activeTab === 'settings' && (
-        <Card className={`border-0 p-6 animate-in fade-in duration-300 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-          <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-5 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Save Changes</h3>
+        <Card className={`border-0 p-4 rounded-xl animate-in fade-in duration-300 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+          <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-4 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Save Changes</h3>
           {settingsDirty && (
             <div className="flex items-center gap-2 mb-4">
               <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
@@ -39,9 +39,9 @@ export default class PluginDetailSidebar extends React.Component<PluginDetailSid
           </div>
         </Card>
       )}
-      <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-        <h3 className={`text-[11px] font-semibold tracking-wider mb-8 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Manifest Details</h3>
-        <div className="space-y-8">
+      <Card className={`border-0 p-4 rounded-xl ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+        <h3 className={`text-[11px] font-semibold tracking-wider mb-4 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Manifest Details</h3>
+        <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-xs font-semibold tracking-wider text-slate-500">Capabilities</span>
             {plugin.manifest.capabilities && plugin.manifest.capabilities.length > 0 ? (
@@ -60,19 +60,19 @@ export default class PluginDetailSidebar extends React.Component<PluginDetailSid
             </span>
           </div>
         </div>
-        <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
-          <button onClick={onOpenDefinition} className={`w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl border font-semibold uppercase tracking-wider text-[11px] transition-all ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'}`}>
+        <div className={`mt-6 pt-4 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
+          <button onClick={onOpenDefinition} className={`w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border font-semibold uppercase tracking-wider text-[11px] transition-all ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'}`}>
             <FrameworkIcons.Code size={16} strokeWidth={2.5} />
             View Definition
           </button>
         </div>
       </Card>
-      <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-red-500/10' : 'bg-red-50'} ring-1 ring-red-500/20`}>
-        <h3 className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-4">System Removal</h3>
-        <p className="text-xs font-medium text-red-500/80 leading-relaxed mb-8">
+      <Card className={`border-0 p-4 rounded-xl ${theme === 'dark' ? 'bg-red-500/10' : 'bg-red-50'} ring-1 ring-red-500/20`}>
+        <h3 className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-3">System Removal</h3>
+        <p className="text-xs font-medium text-red-500/80 leading-relaxed mb-4">
           Uninstalling will permanently remove all configuration, caches and local state associated with this plugin.
         </p>
-        <button onClick={onOpenDeleteConfirm} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all shadow-xl shadow-red-600/20 active:scale-95">
+        <button onClick={onOpenDeleteConfirm} className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-all shadow-sm shadow-red-600/20 active:scale-95">
           Uninstall Plugin
         </button>
       </Card>

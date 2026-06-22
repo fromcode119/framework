@@ -31,8 +31,8 @@ export class AdminRuntimeProviderView extends React.Component<AdminRuntimeProvid
   }
 
   render(): React.ReactElement {
-    const { children, theme, toggleTheme, notify, globalSettings, plugins, collections, router, pathname, auth } = this.props;
-    const value: AdminRuntimeValue = { theme, toggleTheme, notify, globalSettings, plugins, collections, router, pathname, auth };
+    const { children, theme, toggleTheme, notify, globalSettings, plugins, collections, router, pathname, auth, activeAppearanceId } = this.props;
+    const value: AdminRuntimeValue = { theme, toggleTheme, notify, globalSettings, plugins, collections, router, pathname, auth, activeAppearanceId };
     return <AdminRuntimeContext.context.Provider value={value}>{children}</AdminRuntimeContext.context.Provider>;
   }
 }

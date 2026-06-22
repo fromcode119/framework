@@ -16,9 +16,10 @@ export class PluginAssetLoaderService {
     const { plugins, refreshVersion, callbacks } = ctx;
     if (!Array.isArray(plugins)) return;
 
+    void refreshVersion;
     PluginAssetLoaderService.applyCollections(plugins, callbacks);
-    PluginAssetLoaderService.injectAssetLinks(plugins, refreshVersion);
-    PluginAssetLoaderService.importEntries(plugins, refreshVersion, callbacks);
+    PluginAssetLoaderService.injectAssetLinks(plugins);
+    PluginAssetLoaderService.importEntries(plugins, callbacks);
   }
 
   private static applyCollections(plugins: AdminPluginMetadata[], callbacks: PluginAssetLoaderCallbacks): void {
@@ -45,13 +46,16 @@ export class PluginAssetLoaderService {
     }
   }
 
-  private static injectAssetLinks(plugins: AdminPluginMetadata[], refreshVersion: number): void {
-    // Pass 1: add all modulepreload and CSS links before any dynamic import
+  private static injectAssetLinks(plugins: AdminPluginMetadata[]): void {
+    // Pass 1: add all modulepreload and CSS links before any dynamic import.
+    // The entryUrl/cssUrl already carry their own `?v=<mtime>` cache-buster from
+    // admin-metadata-service, so we do NOT append the volatile refreshVersion — doing
+    // so changed the URL on every refresh tick and re-imported an unchanged bundle,
+    // re-registering slots and remounting the plugin page (a visible flash).
     for (const plugin of plugins) {
       const entryUrl = plugin.ui?.entryUrl;
       if (entryUrl) {
-        const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
-        const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
+        const src = `${AdminConstants.API_BASE_URL}${entryUrl}`;
         if (!PluginAssetLoaderService.loadedPluginEntryUrls.has(src)) {
           document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`).forEach(el => el.remove());
           const link = document.createElement('link');
@@ -64,8 +68,7 @@ export class PluginAssetLoaderService {
 
       if (plugin.ui?.cssUrls) {
         plugin.ui.cssUrls.forEach((cssUrl, index) => {
-          const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
-          const href = `${AdminConstants.API_BASE_URL}${cssUrl}${cacheBreaker}`;
+          const href = `${AdminConstants.API_BASE_URL}${cssUrl}`;
           console.debug(`[Admin] Loading plugin CSS from: ${href}`);
           if (!PluginAssetLoaderService.loadedPluginCssUrls.has(href)) {
             PluginAssetLoaderService.loadedPluginCssUrls.add(href);
@@ -82,13 +85,14 @@ export class PluginAssetLoaderService {
     }
   }
 
-  private static importEntries(plugins: AdminPluginMetadata[], refreshVersion: number, callbacks: PluginAssetLoaderCallbacks): void {
-    // Pass 2: fire all dynamic imports concurrently
+  private static importEntries(plugins: AdminPluginMetadata[], callbacks: PluginAssetLoaderCallbacks): void {
+    // Pass 2: fire all dynamic imports concurrently. Dedupe on the entryUrl (already
+    // mtime-versioned) so a bundle is imported at most once per session — a genuine
+    // update yields a new entryUrl (new mtime) and re-imports correctly.
     for (const plugin of plugins) {
       const entryUrl = plugin.ui?.entryUrl;
       if (!entryUrl) continue;
-      const cacheBreaker = refreshVersion > 0 ? `?v=${refreshVersion}` : '';
-      const src = `${AdminConstants.API_BASE_URL}${entryUrl}${cacheBreaker}`;
+      const src = `${AdminConstants.API_BASE_URL}${entryUrl}`;
       if (PluginAssetLoaderService.loadedPluginEntryUrls.has(src)) continue;
       PluginAssetLoaderService.loadedPluginEntryUrls.add(src);
 

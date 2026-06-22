@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
@@ -11,51 +10,42 @@ import type { InstalledThemeCardProps } from '../installed-themes-page.interface
 export default class InstalledThemeCard extends React.Component<InstalledThemeCardProps> {
   render(): React.ReactNode {
     const { isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion } = this.props;
-  const isActive = theme.state === 'active';
+    const isActive = theme.state === 'active';
 
-  return (
-    <Card className={`group flex flex-col border-0 relative transition-all duration-500 overflow-hidden rounded-[2.5rem] ${isActive ? (isDark ? 'bg-indigo-500/5 ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/10' : 'bg-white ring-2 ring-indigo-500/10 shadow-2xl shadow-indigo-500/5') : (isDark ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-xl shadow-slate-200/50 hover:shadow-indigo-500/10')}`}>
-      <div className="p-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg transform transition-transform group-hover:rotate-6 ${isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600')}`}>
-            {theme.iconUrl ? <img src={theme.iconUrl} className="w-8 h-8 rounded-lg" alt="" /> : <FrameworkIcons.Palette size={28} />}
-          </div>
+    return (
+      <div className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'} ${isActive ? (isDark ? 'bg-indigo-500/5' : 'bg-indigo-50/40') : ''}`}>
+        <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600')}`}>
+          {theme.iconUrl ? <img src={theme.iconUrl} className="w-5 h-5 rounded" alt="" /> : <FrameworkIcons.Palette size={18} />}
+        </div>
+
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            {updateVersion ? <Badge variant="warning" className="animate-pulse">Update</Badge> : null}
-            <Badge variant={isActive ? 'blue' : 'gray'} className="font-semibold uppercase tracking-wider text-[9px]">{isActive ? 'Active Core' : 'Installed'}</Badge>
+            <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors no-underline ${isDark ? 'text-white' : 'text-slate-900'}`}>{theme.name}</Link>
+            {updateVersion ? <Badge variant="warning" className="shrink-0">Update</Badge> : null}
           </div>
+          <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{theme.description || 'A clean and modern theme for your Fromcode frontend.'}</p>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className={`group/title flex items-center gap-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} hover:text-indigo-600 transition-colors`}>
-              {theme.name}
-              <FrameworkIcons.Right size={18} className="opacity-0 -translate-x-2 group-hover/title:opacity-100 group-hover/title:translate-x-0 transition-all text-indigo-500" />
-            </Link>
-            <span className="text-[10px] font-bold text-slate-400">v{theme.version}</span>
-          </div>
-          <p className={`text-sm leading-relaxed font-medium line-clamp-2 italic ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{theme.description || 'A clean and modern theme for your Fromcode frontend.'}</p>
-          {theme.author ? <div className="flex items-center gap-2"><div className="h-1 w-4 bg-indigo-500 rounded-full" /><p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider">Architect: {theme.author}</p></div> : null}
-        </div>
+        <span className={`hidden lg:inline text-[11px] tabular-nums shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>v{theme.version}</span>
+        {theme.author ? <span className={`hidden xl:inline text-[11px] truncate max-w-[120px] shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{theme.author}</span> : null}
+        <Badge variant={isActive ? 'blue' : 'gray'} className="shrink-0 w-[64px] justify-center">{isActive ? 'Active' : 'Installed'}</Badge>
 
-        <div className="pt-4 mt-auto">
-          {updateVersion ? <button onClick={() => onUpdate(theme.slug)} className="w-full mb-3 py-4 rounded-2xl font-semibold uppercase tracking-wider text-[11px] bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"><FrameworkIcons.Clock size={16} />Upgrade to v{updateVersion}</button> : null}
+        <div className="flex items-center gap-1 shrink-0">
+          {updateVersion ? (
+            <button onClick={() => onUpdate(theme.slug)} title={`Upgrade to v${updateVersion}`} className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"><FrameworkIcons.Clock size={14} />Upgrade</button>
+          ) : null}
           {isActive ? (
-            <div className="flex gap-3">
-              <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="flex-1 py-4 rounded-2xl font-semibold uppercase tracking-wider text-[11px] bg-indigo-600 text-white text-center shadow-xl shadow-indigo-600/20 hover:scale-[1.02] transition-transform">Manage Layout</Link>
-              <Link href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} className={`p-4 rounded-2xl flex items-center justify-center transition-all ${isDark ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'} shadow-sm`}><FrameworkIcons.Settings size={18} /></Link>
-              <button onClick={() => onDisable(theme.slug)} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-950' : 'bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white shadow-sm'}`} title="Disable active theme"><FrameworkIcons.Close size={18} /></button>
-              <button onClick={() => onDelete(theme.slug, true)} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' : 'bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white shadow-sm'}`} title="Delete theme"><FrameworkIcons.Trash size={18} /></button>
-            </div>
+            <>
+              <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors no-underline">Manage</Link>
+              <Link href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} title="Settings" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
+              <button onClick={() => onDisable(theme.slug)} title="Disable" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-amber-400 hover:bg-amber-500/20' : 'text-amber-600 hover:bg-amber-50'}`}><FrameworkIcons.Close size={15} /></button>
+            </>
           ) : (
-            <div className="flex gap-3">
-              <button onClick={() => onActivate(theme.slug)} className="flex-1 py-4 rounded-2xl font-semibold uppercase tracking-wider text-[11px] bg-slate-900 dark:bg-white dark:text-slate-900 text-white transition-all transform hover:scale-[1.02] shadow-xl shadow-slate-900/20">Activate System</button>
-              <button onClick={() => onDelete(theme.slug, false)} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' : 'bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white shadow-sm'}`}><FrameworkIcons.Trash size={18} /></button>
-            </div>
+            <button onClick={() => onActivate(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:bg-slate-800 transition-colors">Activate</button>
           )}
+          <button onClick={() => onDelete(theme.slug, isActive)} title="Delete" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button>
         </div>
       </div>
-    </Card>
-  );
+    );
   }
 }

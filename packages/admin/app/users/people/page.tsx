@@ -8,6 +8,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { StatCard } from '@/components/ui/stat-card';
 import { Loader } from '@/components/ui/loader';
 import { Button } from '@/components/ui/button';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { AdminPageFooter } from '@/components/ui/admin-page-footer';
 import { AdminComponent } from '@/components/admin-component';
@@ -145,21 +146,14 @@ export default class PeoplePage extends AdminComponent<Record<string, never>, Pe
 
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
-        <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl ${theme === 'dark' ? 'bg-slate-950/80 border-slate-800/50' : 'bg-white/80 border-slate-100 shadow-sm'}`}>
-          <div className="w-full px-6 lg:px-12 py-10">
-            <div className="flex items-center gap-3">
-              <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-lg ${theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-600 text-white'}`}>
-                <FrameworkIcons.Users size={20} strokeWidth={2} />
-              </div>
-              <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>People</h1>
-            </div>
-            <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70 mt-1">
-              Everyone in the unified identity model — customers, subscribers and contacts, with or without a login account.
-            </p>
-          </div>
-        </div>
+        <CompactPageHeader
+          theme={theme}
+          icon={<FrameworkIcons.Users size={18} strokeWidth={2} />}
+          title="People"
+          subtitle="Everyone in the unified identity model — customers, subscribers and contacts."
+        />
 
-        <div className="flex-1 w-full px-6 lg:px-12 py-12 space-y-8">
+        <div className="flex-1 w-full px-6 lg:px-8 py-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard title="People" value={stats.total.toLocaleString()} icon={<FrameworkIcons.Users size={20} />} />
             <StatCard title="With login account" value={stats.linked.toLocaleString()} icon={<FrameworkIcons.UserCheck size={20} />} />
@@ -173,11 +167,11 @@ export default class PeoplePage extends AdminComponent<Record<string, never>, Pe
             <input
               type="text" placeholder="Search people by name or email…" value={searchQuery}
               onChange={(e) => this.setState({ searchQuery: e.target.value, page: 1 })}
-              className={`w-full h-11 rounded-xl pl-12 pr-4 outline-none border text-[13px] font-bold tracking-tight ${theme === 'dark' ? 'bg-slate-900/50 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+              className={`w-full h-9 rounded-lg pl-11 pr-4 outline-none border text-[13px] font-medium tracking-tight ${theme === 'dark' ? 'bg-slate-900/50 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
             />
           </div>
 
-          <div className={`rounded-3xl border overflow-hidden ${theme === 'dark' ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
+          <div className={`rounded-xl border overflow-hidden ${theme === 'dark' ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-slate-200 shadow-sm'}`}>
             <DataTable
               columns={this.columns}
               data={pageItems}

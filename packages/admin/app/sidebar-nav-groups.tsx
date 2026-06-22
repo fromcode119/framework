@@ -46,7 +46,7 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
           return (
             <React.Fragment key={group}>
               {!isMini && !isRedundantHeader && (
-                <div className={`px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5 ${groupIdx === 0 ? 'mt-4' : 'mt-6'}`}>
+                <div className={`px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1 ${groupIdx === 0 ? 'mt-2' : 'mt-4'}`}>
                   {displayGroup}
                 </div>
               )}
@@ -100,9 +100,9 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
           </>
         )}
 
-        <div className="mt-auto pt-6 space-y-1">
+        <div className="mt-auto pt-4 space-y-1">
           {!isMini && (
-            <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5">
+            <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1">
               System
             </div>
           )}

@@ -8,10 +8,10 @@ export class ThemeMarketplaceVerifiedCard extends React.Component<ThemeMarketpla
   render(): React.ReactNode {
     const { adminTheme } = this.props;
     return (
-      <div className={`p-8 rounded-[2.5rem] border-2 border-dashed ${adminTheme === 'dark' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
-        <div className="flex items-center gap-4 mb-4">
-          <div className="h-12 w-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30">
-            <FrameworkIcons.Shield size={24} strokeWidth={2.5} />
+      <div className={`p-4 rounded-xl border-2 border-dashed ${adminTheme === 'dark' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-9 w-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+            <FrameworkIcons.Shield size={18} strokeWidth={2.5} />
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Verified</div>

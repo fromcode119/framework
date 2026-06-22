@@ -25,4 +25,6 @@ export interface AdminRuntimeValue {
   pathname: string;
   /** Auth context (`useAuth`) — context-backed, so classes read it via `this.auth` not a hook. */
   auth: AuthContextType;
+  /** Resolved active admin appearance id (selection result). 'default' = built-in appearance. */
+  activeAppearanceId: string;
 }

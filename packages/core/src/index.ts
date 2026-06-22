@@ -8,6 +8,11 @@ export { PluginManager } from './plugin/plugin-manager';
 export type { PluginManagerInterface } from './plugin/context/utils.interfaces';
 export { ThemeManager } from './theme/theme-manager';
 export { ThemeDefaultPageContractOverrideLoader } from './theme/theme-default-page-contract-override-loader';
+export { AppearanceManager } from './appearance/appearance-manager';
+export { AppearanceInstallerService } from './appearance/appearance-installer-service';
+export type { AppearanceSummary } from './appearance/appearance-summary.interfaces';
+export type { AppearanceManifest } from './appearance/appearance-manifest.interfaces';
+export type { AppearanceCatalogEntry } from './appearance/appearance-catalog-entry.interfaces';
 export { CoreExtensionManager } from './extensions/extension-manager';
 export type {
   CoreExtensionManifest,

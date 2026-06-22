@@ -20,20 +20,20 @@ export class MarketplacePluginCard extends React.Component<MarketplacePluginCard
     return (
       <Card
         onClick={onOpenDetail}
-        className={`group flex flex-col h-full border-0 relative transition-all duration-700 cursor-pointer overflow-hidden rounded-[2rem] ${theme === 'dark' ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-2xl shadow-slate-200/50 hover:shadow-indigo-500/10'}`}
+        className={`group flex flex-col h-full border-0 relative transition-all duration-300 cursor-pointer overflow-hidden rounded-xl ${theme === 'dark' ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-sm hover:shadow-indigo-500/10'}`}
       >
-        <div className="p-8 space-y-6 flex-1 relative">
-          <div className="flex items-start justify-between gap-4">
-            <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-all duration-700 group-hover:rotate-3 group-hover:scale-110 shadow-lg flex-shrink-0 ${theme === 'dark' ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 shadow-indigo-100'}`}>
+        <div className="p-3.5 space-y-3 flex-1 relative">
+          <div className="flex items-start justify-between gap-3">
+            <div className={`h-10 w-10 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 ${theme === 'dark' ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
               {plugin.iconUrl && !hasImageError ? (
                 <img
                   src={plugin.iconUrl}
                   alt={plugin.name}
-                  className="w-10 h-10 object-contain"
+                  className="w-6 h-6 object-contain"
                   onError={onImageError}
                 />
               ) : (
-                <FrameworkIcons.Box size={32} strokeWidth={1.5} />
+                <FrameworkIcons.Box size={22} strokeWidth={1.5} />
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -48,23 +48,23 @@ export class MarketplacePluginCard extends React.Component<MarketplacePluginCard
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <h3 className={`text-xl font-bold tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-2 min-h-[4rem] flex-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              <h3 className={`text-base font-bold tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-1 flex-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 {plugin.name}
               </h3>
               {isVerified && (
-                <div className="bg-emerald-500/10 p-1.5 rounded-full text-emerald-500" title="Verified Publisher">
-                  <FrameworkIcons.Shield size={18} fill="currentColor" className="opacity-80" />
+                <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-500" title="Verified Publisher">
+                  <FrameworkIcons.Shield size={14} fill="currentColor" className="opacity-80" />
                 </div>
               )}
             </div>
-            <p className={`text-sm leading-relaxed font-medium line-clamp-3 h-[4rem] transition-colors duration-300 ${theme === 'dark' ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>
+            <p className={`text-xs leading-snug font-medium line-clamp-2 transition-colors duration-300 ${theme === 'dark' ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>
               {plugin.description}
             </p>
           </div>
 
-          <div className={`flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+          <div className={`flex flex-wrap items-center gap-2.5 text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
             {installed ? (
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <FrameworkIcons.Check size={12} className="text-emerald-500/80" />

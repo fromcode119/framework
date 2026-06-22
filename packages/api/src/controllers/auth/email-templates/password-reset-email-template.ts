@@ -22,6 +22,7 @@ export class PasswordResetEmailTemplate {
         resetUrl: options.resetUrl,
       }).trim(),
       html: AuthEmailTemplateRenderService.render(htmlTemplate, {
+        appName: AuthEmailTemplateRenderService.escapeHtml(options.appName),
         greeting: AuthEmailTemplateRenderService.escapeHtml(options.greeting),
         resetUrl: AuthEmailTemplateRenderService.escapeHtml(options.resetUrl),
       }).trim(),

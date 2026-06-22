@@ -44,10 +44,24 @@ export interface MarketplaceTheme {
   changelog?: MarketplaceChangelogEntry[];
 }
 
+export interface MarketplaceAppearance {
+  slug: string;
+  name: string;
+  version: string;
+  description: string;
+  screenshots?: ScreenshotEntry[];
+  author: string;
+  downloadUrl?: string;
+  previewUrl?: string;
+  isFeatured?: boolean;
+  downloads?: number;
+}
+
 export interface MarketplaceData {
   version?: string;
   lastUpdated?: string;
   core?: MarketplaceCoreInfo;
   plugins: MarketplacePlugin[];
   themes: MarketplaceTheme[];
+  appearances?: MarketplaceAppearance[];
 }

@@ -59,13 +59,9 @@ export class EditHeader extends React.Component<EditHeaderProps> {
   const hideHeaderPrimaryAction = collection?.admin?.hideHeaderPrimaryAction === true;
 
   return (
-    <div data-edit-header className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
-      theme === 'dark' 
-        ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20' 
-        : 'bg-white/80 border-slate-100 shadow-sm'
-    }`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
-        <div className="flex items-center gap-2 mb-4">
+    <div data-edit-header className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+        <div className="flex items-center gap-2 mb-2">
           <Link 
             href={`/${pluginSlug}/${slug}`}
             className={`flex items-center gap-1.5 text-[10px] font-semibold transition-all hover:-translate-x-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}
@@ -79,20 +75,20 @@ export class EditHeader extends React.Component<EditHeaderProps> {
           </span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              {isNew 
-                ? `Create ${singularCollectionLabel}` 
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className={`text-xl font-bold tracking-tight leading-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              {isNew
+                ? `Create ${singularCollectionLabel}`
                 : (resolvedTitleValue || `Untitled ${singularCollectionLabel}`)
               }
             </h1>
-            <p className="text-slate-500 font-medium text-sm tracking-tight opacity-70 mt-1">
+            <p className="text-slate-500 font-medium text-xs tracking-tight mt-0.5">
               {isNew ? `Define a new record for ${collectionLabel.toLowerCase()}` : `Modify existing ${resolvedTitleValue || singularCollectionLabel.toLowerCase()}`}
             </p>
           </div>
-          
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2">
             {!isNew && (
               <div className="hidden lg:block relative group">
                  <Input 

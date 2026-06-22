@@ -23,23 +23,23 @@ export default class PluginDetailOverview extends React.Component<PluginDetailOv
 
   return (
     <>
-      <Card className={`border-0 relative overflow-hidden p-8 transition-all duration-500 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-        <div className="flex items-start gap-8">
-          <div className={`h-24 w-24 rounded-[2rem] flex items-center justify-center shadow-2xl transition-transform hover:scale-105 ${theme === 'dark' ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 shadow-indigo-100'}`}>
-            <FrameworkIcons.Plugins size={48} strokeWidth={1} />
+      <Card className={`border-0 relative overflow-hidden p-4 transition-all duration-300 rounded-xl ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+        <div className="flex items-start gap-6">
+          <div className={`h-16 w-16 rounded-xl flex items-center justify-center shadow-sm transition-transform ${theme === 'dark' ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
+            <FrameworkIcons.Plugins size={32} strokeWidth={1} />
           </div>
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-3">
             <Badge variant="blue" className="px-3 py-1 font-semibold uppercase tracking-wider text-[10px] rounded-lg">
               {plugin.manifest.category || 'Core Plugin'}
             </Badge>
-            <p className={`text-xl leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+            <p className={`text-sm leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
               {plugin.manifest.description || 'No description provided for this plugin.'}
             </p>
           </div>
         </div>
 
         {hasUpdate && marketplaceItem?.changelog && (
-          <div className={`mt-10 p-6 rounded-3xl border-2 border-dashed ${theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-100'}`}>
+          <div className={`mt-6 p-4 rounded-xl border-2 border-dashed ${theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-100'}`}>
             <h4 className="text-[11px] font-semibold uppercase tracking-wider text-indigo-500 mb-4 flex items-center gap-2">
               <FrameworkIcons.Zap size={14} /> New in v{marketplaceItem.version}
             </h4>
@@ -54,7 +54,7 @@ export default class PluginDetailOverview extends React.Component<PluginDetailOv
           </div>
         )}
 
-        <div className={`mt-10 pt-8 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} flex items-center justify-between`}>
+        <div className={`mt-6 pt-4 border-t ${theme === 'dark' ? 'border-slate-800/80' : 'border-slate-100'} flex items-center justify-between`}>
           <div className="space-y-1">
             <div className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Runtime Status</div>
             <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export default class PluginDetailOverview extends React.Component<PluginDetailOv
               <span className={`text-sm font-semibold uppercase tracking-tighter ${plugin.state === 'active' ? 'text-green-500' : 'text-slate-500'}`}>{plugin.state}</span>
             </div>
           </div>
-          <div className={`flex items-center gap-4 p-3 rounded-2xl border transition-all duration-300 ${theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-inner'}`}>
+          <div className={`flex items-center gap-4 p-2.5 rounded-lg border transition-all duration-300 ${theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-inner'}`}>
             <span className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
               {plugin.state === 'active' ? 'Active' : 'Disabled'}
             </span>
@@ -71,17 +71,17 @@ export default class PluginDetailOverview extends React.Component<PluginDetailOv
         </div>
       </Card>
 
-      <Card className={`border-0 p-8 ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-        <div className="flex items-center justify-between mb-8">
+      <Card className={`border-0 p-4 rounded-xl ${theme === 'dark' ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+        <div className="flex items-center justify-between mb-4">
           <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Active Activity Logs</h3>
-          <button onClick={onRefreshLogs} className={`h-10 px-4 rounded-xl text-[10px] font-semibold uppercase tracking-wider transition-all flex items-center gap-2 border ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-indigo-400 hover:bg-slate-700' : 'bg-white border-slate-200 text-indigo-500 hover:text-indigo-600 shadow-sm hover:shadow-md'}`}>
+          <button onClick={onRefreshLogs} className={`h-9 px-4 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all flex items-center gap-2 border ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-indigo-400 hover:bg-slate-700' : 'bg-white border-slate-200 text-indigo-500 hover:text-indigo-600 shadow-sm hover:shadow-md'}`}>
             Refresh {loadingLogs ? <FrameworkIcons.Loader size={12} className="animate-spin" /> : <FrameworkIcons.Refresh size={12} />}
           </button>
         </div>
-        <div className={`rounded-2xl border-2 transition-all duration-300 ${theme === 'dark' ? 'border-slate-800/50 bg-slate-950/40' : 'border-slate-100 bg-white shadow-inner shadow-slate-200/20'} overflow-hidden`}>
+        <div className={`rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-white'} overflow-hidden`}>
           <div className="max-h-[300px] overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar">
             {loadingLogs ? (
-              <div className="p-10 text-center text-slate-500 font-semibold uppercase tracking-wider">Analyzing stream...</div>
+              <div className="p-6 text-center text-slate-500 font-semibold uppercase tracking-wider">Analyzing stream...</div>
             ) : logs.length > 0 ? (
               <table className="w-full border-collapse">
                 <tbody>
@@ -99,7 +99,7 @@ export default class PluginDetailOverview extends React.Component<PluginDetailOv
                 </tbody>
               </table>
             ) : (
-              <div className="p-10 text-center text-slate-500 italic">Idle. No recent events recorded.</div>
+              <div className="p-6 text-center text-slate-500 italic">Idle. No recent events recorded.</div>
             )}
           </div>
         </div>

@@ -9,18 +9,21 @@ vi.mock('@fromcode119/react', async (importOriginal) => {
   const actual = await importOriginal() as any;
   return {
     ...actual,
-    usePlugins: () => ({
-      triggerRefresh: vi.fn(),
-    }),
+    ContextHooks: {
+      ...actual.ContextHooks,
+      usePlugins: () => ({
+        triggerRefresh: vi.fn(),
+      }),
+    },
   };
 });
 
 vi.mock('@/lib/api', () => ({
-  api: {
+  AdminApi: {
     get: vi.fn(),
     put: vi.fn(),
     post: vi.fn(),
-    getURL: vi.fn((path) => `http://localhost:3000${path}`),
+    getURL: vi.fn((path: string) => `http://localhost:3000${path}`),
     getBaseUrl: vi.fn().mockReturnValue('http://localhost:3000/api')
   }
 }));
@@ -33,8 +36,10 @@ vi.mock('@/lib/constants', async () => {
   };
 });
 
-vi.mock('@/components/theme-context', () => ({
-  useTheme: () => ({ theme: 'light' })
+vi.mock('@/components/use-theme', () => ({
+  ThemeHooks: {
+    useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() })
+  }
 }));
 
 vi.mock('@/components/collection/field-renderer', () => ({

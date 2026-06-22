@@ -10,6 +10,9 @@ import { LocalizationSettingsIo } from './localization-settings-io';
 import { SettingsRegistrationService } from '@/lib/settings/settings-registration-service';
 import { LocaleRegistryCard } from './locale-registry-card';
 import { LocaleTargetsCard } from './locale-targets-card';
+import { MeasurementSystemCard } from './measurement-system-card';
+import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 import type { LocaleItem, LocaleUrlStrategy } from './localization.types';
 
 const FALLBACK_LOCALES: LocaleItem[] = [
@@ -31,6 +34,7 @@ export default function LocalizationSettingsPage() {
   const [adminDefaultLocale, setAdminDefaultLocale] = useState('en');
   const [frontendDefaultLocale, setFrontendDefaultLocale] = useState('en');
   const [localeUrlStrategy, setLocaleUrlStrategy] = useState<LocaleUrlStrategy>('query');
+  const [measurementSystem, setMeasurementSystem] = useState<'metric' | 'imperial'>('metric');
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -41,6 +45,8 @@ export default function LocalizationSettingsPage() {
         setAdminDefaultLocale(loaded.adminDefaultLocale);
         setFrontendDefaultLocale(loaded.frontendDefaultLocale);
         setLocaleUrlStrategy(loaded.localeUrlStrategy);
+        const all = await AdminSystemSettingsClient.getAll().catch(() => ({} as Record<string, any>));
+        setMeasurementSystem(String(all?.measurement_system || '').toLowerCase() === 'imperial' ? 'imperial' : 'metric');
       } finally {
         setIsLoading(false);
       }
@@ -109,7 +115,8 @@ export default function LocalizationSettingsPage() {
         default_locale: saved.defaultLocale,
         admin_default_locale: saved.adminDefaultLocale,
         frontend_default_locale: saved.frontendDefaultLocale,
-        locale_url_strategy: localeUrlStrategy
+        locale_url_strategy: localeUrlStrategy,
+        measurement_system: measurementSystem
       });
 
       addNotification({
@@ -138,28 +145,24 @@ export default function LocalizationSettingsPage() {
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
-      <div className={`sticky top-0 z-30 border-b backdrop-blur-md px-8 py-6 flex items-center justify-between ${
-        theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-white/50 border-slate-100'
-      }`}>
-        <div>
-          <h1 className={`text-xl font-bold tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            Localization
-          </h1>
-          <p className="text-[10px] font-semibold text-slate-500 tracking-wide opacity-60">
-            Locale Registry & Language Defaults
-          </p>
-        </div>
-        <Button
-          icon={<FrameworkIcons.Save size={14} strokeWidth={3} />}
-          onClick={handleSave}
-          isLoading={isSaving}
-          className="px-6 rounded-xl shadow-lg shadow-indigo-600/10"
-        >
-          Save Localization
-        </Button>
-      </div>
+      <CompactPageHeader
+        theme={theme}
+        icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
+        title="Localization"
+        subtitle="Locale registry & language defaults"
+        actions={
+          <Button
+            icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
+            onClick={handleSave}
+            isLoading={isSaving}
+            className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
+          >
+            Save Localization
+          </Button>
+        }
+      />
 
-      <div className="p-8 lg:p-12 max-w-5xl space-y-8">
+      <div className="p-6 w-full space-y-8">
         <LocaleRegistryCard
           locales={locales}
           theme={theme}
@@ -179,6 +182,12 @@ export default function LocalizationSettingsPage() {
           setFrontendDefaultLocale={setFrontendDefaultLocale}
           localeUrlStrategy={localeUrlStrategy}
           setLocaleUrlStrategy={setLocaleUrlStrategy}
+        />
+
+        <MeasurementSystemCard
+          theme={theme}
+          measurementSystem={measurementSystem}
+          setMeasurementSystem={setMeasurementSystem}
         />
       </div>
     </div>

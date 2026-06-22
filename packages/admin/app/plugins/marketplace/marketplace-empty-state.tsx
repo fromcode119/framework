@@ -8,7 +8,7 @@ export class MarketplaceEmptyState extends React.Component<MarketplaceGridStateP
   render(): React.ReactNode {
     const { theme } = this.props;
     return (
-      <div className="col-span-full py-20 text-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+      <div className="col-span-full py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
         <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
           <FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" />
         </div>

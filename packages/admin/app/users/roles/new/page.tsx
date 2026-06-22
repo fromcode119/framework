@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
+import { CompactPageHeader } from '@/components/ui/compact-page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -76,9 +77,10 @@ export default class NewRolePage extends AdminComponent<Record<string, never>, N
     this.setState({ loading: true });
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.ROLES, this.state.formData);
+      this.runtime.notify.notify('success', 'Role created', `"${this.state.formData.name}" was created.`);
       this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
-    } catch (e) {
-      console.error("Failed to save role", e);
+    } catch (e: any) {
+      this.runtime.notify.notify('error', 'Could not create role', e?.message || 'Failed to save role.');
     } finally {
       this.setState({ loading: false });
     }
@@ -88,46 +90,27 @@ export default class NewRolePage extends AdminComponent<Record<string, never>, N
     const theme = this.theme;
     const { loading, permissions, formData } = this.state;
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className={`sticky top-0 z-40 border-b backdrop-blur-3xl transition-all duration-300 ${
-          theme === 'dark'
-            ? 'bg-slate-950/80 border-slate-800/50 shadow-2xl shadow-black/20'
-            : 'bg-white/80 border-slate-100 shadow-sm'
-        }`}>
-          <div className="w-full px-6 lg:px-12 py-10">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => this.router.back()}
-                className="h-12 w-12 rounded-2xl border border-slate-200 dark:border-slate-800"
-              >
-                <FrameworkIcons.Left size={20} strokeWidth={2} />
-              </Button>
-              <div>
-                <h1 className={`text-2xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  Create New Role
-                </h1>
-                <p className="text-slate-500 font-bold text-sm tracking-tight opacity-70">
-                  Define sets of permissions to assign to your users.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full flex flex-col animate-in fade-in duration-300">
+        <CompactPageHeader
+          theme={theme}
+          onBack={() => this.router.back()}
+          title="Create new role"
+          subtitle="Define a set of permissions to assign to users."
+        />
 
-        <div className="flex-1 w-full px-6 lg:px-12 py-12">
-          <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-8">
+        <div className="flex-1 w-full px-6 lg:px-8 py-6">
+          <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 space-y-6">
               <Card title="Role Details">
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       label="Name"
                       placeholder="e.g. Editor"
                       value={formData.name}
                       onChange={(e) => this.handleNameChange(e.target.value)}
                       required
-                      className="h-11 rounded-xl font-semibold"
+                      size="sm"
                     />
                     <Input
                       label="Slug (System ID)"
@@ -135,14 +118,14 @@ export default class NewRolePage extends AdminComponent<Record<string, never>, N
                       value={formData.slug}
                       onChange={(e) => this.patchForm({ slug: e.target.value })}
                       required
-                      className="h-11 rounded-xl font-semibold"
+                      size="sm"
                     />
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-bold uppercase tracking-tight text-slate-400 pl-1">Description</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 pl-1">Description</label>
                     <textarea
-                      className={`w-full h-32 rounded-2xl p-6 border outline-none transition-all text-sm font-semibold tracking-tight ${
-                        theme === 'dark' ? 'bg-slate-950/50 border-slate-800 text-white focus:border-indigo-500 shadow-2xl shadow-black/40' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-xl shadow-slate-200/50'
+                      className={`w-full h-24 rounded-lg p-3 border outline-none transition-colors text-sm font-medium ${
+                        theme === 'dark' ? 'bg-slate-950/50 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
                       }`}
                       placeholder="Optional description of what this role allows..."
                       value={formData.description}

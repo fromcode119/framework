@@ -5,9 +5,11 @@ import { PluginsProvider, PluginRuntimeProvider } from '@fromcode119/react';
 import { ThemeProvider } from '@/components/theme-context';
 import { AdminRuntimeProvider } from '@/components/admin-runtime-provider';
 import * as SharedComponents from '@/components';
+import { AdminServices } from '@/lib/admin-services';
 import { AdminConstants } from '@/lib/constants';
 import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
-import ClientLayoutShell from './client-layout-shell';
+import AppearanceShellHost from './appearance-shell-host';
+import { AppearanceRuntimeLoader } from './appearance-runtime-loader';
 import { AdminIconRegistryBootstrapService } from './services/admin-icon-registry-bootstrap-service';
 import { AdminThemeEntryScriptGuardService } from './services/admin-theme-entry-script-guard-service';
 import { ClientLayoutRuntimeService } from './services/client-layout-runtime-service';
@@ -17,7 +19,10 @@ AdminThemeEntryScriptGuardService.install();
 
 export default function ClientLayout({ children }: ClientLayoutChildrenProps) {
   const runtimeModules = React.useMemo(() => {
-    const source = SharedComponents as Record<string, unknown>;
+    // AdminServices lives in @/lib (not the @/components barrel), but plugins import it from
+    // `@fromcode119/sdk/admin` (which re-exports it from `@fromcode119/admin/services`). Merge it
+    // into the runtime source so the bridge exposes it on the admin runtime modules.
+    const source = { ...(SharedComponents as Record<string, unknown>), AdminServices };
     const modules = ClientLayoutRuntimeService.buildRuntimeModules(source);
     ClientLayoutRuntimeService.seedWindowRuntimeModules(modules['@fromcode119/admin']);
     return modules;
@@ -29,13 +34,15 @@ export default function ClientLayout({ children }: ClientLayoutChildrenProps) {
       clientType="admin-ui"
       runtimeModules={runtimeModules}
     >
-      <ThemeProvider>
-        <AdminRuntimeProvider>
-          <PluginRuntimeProvider>
-            <ClientLayoutShell>{children}</ClientLayoutShell>
-          </PluginRuntimeProvider>
-        </AdminRuntimeProvider>
-      </ThemeProvider>
+      <AppearanceRuntimeLoader>
+        <ThemeProvider>
+          <AdminRuntimeProvider>
+            <PluginRuntimeProvider>
+              <AppearanceShellHost>{children}</AppearanceShellHost>
+            </PluginRuntimeProvider>
+          </AdminRuntimeProvider>
+        </ThemeProvider>
+      </AppearanceRuntimeLoader>
     </PluginsProvider>
   );
 }

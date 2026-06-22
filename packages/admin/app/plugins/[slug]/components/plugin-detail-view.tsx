@@ -72,13 +72,13 @@ export default class PluginDetailView extends AdminComponent<PluginDetailViewPro
     const { isCopyingError } = this.state;
 
     return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {isUpdating && installOperation ? <Loader fullPage label={installOperation.message} /> : null}
       <PluginDetailHeader activeTab={activeTab} isSaving={isSaving} isUpdating={isUpdating} marketplaceItem={marketplaceItem} onSaveSandbox={onSaveSandbox} onUpdate={onUpdate} plugin={plugin} theme={theme} />
       {plugin.error ? (
-        <div className={`rounded-[2rem] border px-6 py-5 ${theme === 'dark' ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+        <div className={`rounded-xl border px-4 py-4 ${theme === 'dark' ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
           <div className="flex items-start gap-4">
-            <div className={`rounded-2xl p-3 ${theme === 'dark' ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
+            <div className={`rounded-lg p-2 ${theme === 'dark' ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
               <FrameworkIcons.Alert size={18} />
             </div>
             <div className="min-w-0">
@@ -97,7 +97,7 @@ export default class PluginDetailView extends AdminComponent<PluginDetailViewPro
               <p className={`mt-2 text-sm font-medium leading-relaxed ${theme === 'dark' ? 'text-rose-100/90' : 'text-rose-700'}`}>
                 This plugin is installed, but its initialization failed during boot. Fix the underlying plugin error and reload or reactivate it.
               </p>
-              <pre className={`mt-4 overflow-x-auto whitespace-pre-wrap rounded-2xl px-4 py-3 text-xs font-medium leading-relaxed ${theme === 'dark' ? 'bg-slate-950/50 text-rose-100' : 'bg-white text-rose-700 shadow-inner shadow-rose-100/60'}`}>
+              <pre className={`mt-4 overflow-x-auto whitespace-pre-wrap rounded-xl px-4 py-3 text-xs font-medium leading-relaxed ${theme === 'dark' ? 'bg-slate-950/50 text-rose-100' : 'bg-white text-rose-700 shadow-inner shadow-rose-100/60'}`}>
                 {plugin.error}
               </pre>
             </div>
@@ -105,8 +105,8 @@ export default class PluginDetailView extends AdminComponent<PluginDetailViewPro
         </div>
       ) : null}
       <PluginDetailTabs activeTab={activeTab} onTabChange={onTabChange} theme={theme} />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-12">
+        <div className="lg:col-span-2 space-y-6">
           {activeTab === 'overview' && <PluginDetailOverview loadingLogs={loadingLogs} logs={logs} marketplaceItem={marketplaceItem} onRefreshLogs={onRefreshLogs} onToggle={onToggle} plugin={plugin} theme={theme} />}
           {activeTab === 'settings' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">

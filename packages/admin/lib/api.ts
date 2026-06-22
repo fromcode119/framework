@@ -18,10 +18,6 @@ export class AdminApi {
     return AdminApiHttpService.getURL(path);
   }
 
-  static getAdminExportToken(): string {
-    return AdminApi.browserState.readCookie(CookieConstants.ADMIN_EXPORT_AUTH_TOKEN);
-  }
-
   static async get(path: string, options?: RequestInit & { noDedupe?: boolean }): Promise<any> {
     if (options?.noDedupe) {
       return AdminApi.request(path, { ...options, method: 'GET' });

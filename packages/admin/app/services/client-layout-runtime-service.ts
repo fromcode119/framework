@@ -6,6 +6,7 @@ export class ClientLayoutRuntimeService {
       'PluginPageHeader',
       'PluginOverviewCard',
       'PluginStatsList',
+      'PluginTrendChart',
       'PluginChartCard',
       'PluginEmptyState',
       'MediaPicker',
@@ -53,6 +54,9 @@ export class ClientLayoutRuntimeService {
     return {
       '@fromcode119/admin': adminRuntimeModule,
       '@fromcode119/admin/components': adminRuntimeModule,
+      // `@fromcode119/sdk/admin` re-exports AdminServices from this sub-path; plugins (e.g. privacy
+      // banner/policy editors) crash with `AdminServices is undefined` if it isn't registered.
+      '@fromcode119/admin/services': adminRuntimeModule,
     };
   }
 
@@ -64,5 +68,8 @@ export class ClientLayoutRuntimeService {
     const runtimeRegistry = (((window as any)[RuntimeConstants.GLOBALS.MODULES] ||= {}) as Record<string, unknown>);
     runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN] = runtimeModule;
     runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] = runtimeModule;
+    // The SDK re-exports AdminServices from `@fromcode119/admin/services`; register it so dynamic
+    // plugin imports resolve it instead of crashing on `undefined.getInstance()`.
+    runtimeRegistry['@fromcode119/admin/services'] = runtimeModule;
   }
 }

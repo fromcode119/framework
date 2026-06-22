@@ -292,6 +292,7 @@ export class FieldRendererView extends React.Component<FieldRendererViewProps, F
           theme={theme}
           collectionSlug={collectionSlug}
           pluginSettings={pluginSettings}
+          globalSettings={this.props.globalSettings}
           fieldComponents={fieldComponents}
           isFieldReadOnly={this.isFieldReadOnly}
           isNew={isNew}

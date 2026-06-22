@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import { ProjectPaths } from '../config/paths';
 import { SafeArchive } from '../security/safe-archive';
 import { PlatformSettingsService } from './platform-settings-service';
+import { PluginRuntimeRestartService } from '../plugin/services/plugin-runtime-restart-service';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
@@ -155,7 +156,11 @@ export class SystemUpdateService {
     this.logger.info(`Applying update files to system root: ${rootDir}`);
     this.moveDir(tempDir, rootDir);
     const resolvedVersion = version || this.resolveInstalledVersion();
-    this.logger.info(`Framework Core successfully updated to v${resolvedVersion}. A system restart may be required.`);
+    // Schedule an automatic restart so the new core code is actually loaded (the running process
+    // still holds the old core in memory). process.exit → the container's restart policy brings it
+    // back; honors the same FROMCODE_DISABLE_PLUGIN_RUNTIME_RESTART / test guards as plugin updates.
+    this.logger.info(`Framework Core successfully updated to v${resolvedVersion}. Scheduling restart to load it.`);
+    new PluginRuntimeRestartService(this.logger).scheduleRestart(`Framework Core updated to v${resolvedVersion}.`);
     return { success: true, version: resolvedVersion };
   }
 

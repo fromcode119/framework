@@ -56,6 +56,7 @@ export class SystemConstants {
   MARKETPLACE_URL: 'marketplace_url',
   DOMAIN_ALIASES: 'domain_aliases',
   TIMEZONE: 'timezone',
+  ADMIN_APPEARANCE: 'admin_appearance',
   PLATFORM_NAME: 'platform_name',
   PLATFORM_DOMAIN: 'platform_domain',
   TELEMETRY_ENABLED: 'telemetry_enabled',
@@ -68,6 +69,9 @@ export class SystemConstants {
   ADMIN_DEFAULT_LOCALE: 'admin_default_locale',
   FRONTEND_DEFAULT_LOCALE: 'frontend_default_locale',
   LOCALE_URL_STRATEGY: 'locale_url_strategy',
+  // Platform-wide measurement system (metric cm/kg | imperial in/lb). A regional format like locale —
+  // domain plugins (e.g. ecommerce package dimensions) read it; the framework stays domain-agnostic.
+  MEASUREMENT_SYSTEM: 'measurement_system',
   
   // Security & Auth
   AUTH_SECURITY_NOTIFICATIONS: 'auth_security_notifications',
@@ -181,7 +185,14 @@ export class SystemConstants {
     SETTINGS: `${COLLECTIONS_BASE}/settings`,
     BASE: COLLECTIONS_BASE,
     ITEM: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG,
-    DETAIL: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_ID
+    DETAIL: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_ID,
+    // `:slug`-templated action routes (fill via ApiPathUtils.fillPath) so callers never hardcode the
+    // `/import`, `/export`, `/bulk-*` suffixes.
+    EXPORT: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_EXPORT,
+    IMPORT: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_IMPORT,
+    BULK_UPDATE: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_BULK_UPDATE,
+    BULK_DELETE: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_BULK_DELETE,
+    SUGGESTIONS: ROUTE_SEGMENTS.GLOBAL_COLLECTIONS_SLUG_SUGGESTIONS_FIELD
   },
   PLUGINS: {
     BASE: PLUGINS_BASE,
