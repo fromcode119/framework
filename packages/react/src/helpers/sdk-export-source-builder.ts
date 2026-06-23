@@ -6,6 +6,7 @@ export class SdkExportSourceBuilder {
     'CoercionUtils',
     'StringUtils',
     'NumberUtils',
+    'MeasurementSystemUtils',
     'FormatUtils',
     'ApiRequestError',
     'ApiRequestService',

@@ -58,6 +58,7 @@ export { PublicRouteConstants } from './public-route-constants';
 export { CoercionUtils } from './coercion-utils';
 export { StringUtils } from './string-utils';
 export { NumberUtils } from './number-utils';
+export { MeasurementSystemUtils } from './measurement-system-utils';
 export { FormatUtils } from './format-utils';
 export { ApiRequestError, ApiRequestService, ApiQueryUtils, ApiPathUtils } from './api';
 export {

@@ -44,6 +44,7 @@ export { EntityColumn } from '@fromcode119/core/client';
 export { CoercionUtils } from '@fromcode119/core/client';
 export { StringUtils } from '@fromcode119/core/client';
 export { NumberUtils } from '@fromcode119/core/client';
+export { MeasurementSystemUtils } from '@fromcode119/core/client';
 export { FormatUtils } from '@fromcode119/core/client';
 export { ApiRequestError } from '@fromcode119/core/client';
 export { ApiRequestService } from '@fromcode119/core/client';
