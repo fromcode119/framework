@@ -44,6 +44,12 @@ export class CollectionFieldGuard {
     if (typeof value === 'string') {
       const trimmed = value.trim();
       if (!trimmed) return null;
+      // Boolean-as-string → 0/1 so a stored TEXT 'true'/'false' (e.g. MLM consent flags) compares equal
+      // to a form BOOLEAN (`true` → 1). Without this, editing ANY other field on the record falsely
+      // trips the "requires password override confirmation" guard on the unchanged consent field.
+      const lower = trimmed.toLowerCase();
+      if (lower === 'true') return 1;
+      if (lower === 'false') return 0;
       if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
       if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) { const p = new Date(trimmed); if (!Number.isNaN(p.getTime())) return p.toISOString(); }
       return trimmed;
