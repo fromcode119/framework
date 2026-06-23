@@ -26,6 +26,8 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
     loading: true,
     saving: false,
     granting: false,
+    sendingReset: false,
+    notice: '',
     error: '',
     notFound: false,
   };
@@ -93,6 +95,24 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
     }
   }
 
+  /** Admin-trigger: (re)send the linked user a password-reset / set-password email. */
+  private async sendPasswordReset(): Promise<void> {
+    const userId = this.state.person?.userId;
+    if (userId == null || userId === '') return;
+    this.setState({ sendingReset: true, error: '', notice: '' });
+    try {
+      const res: any = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.ADMIN_SEND_PASSWORD_RESET, { userId });
+      this.setState({
+        sendingReset: false,
+        notice: res?.emailSent === false
+          ? 'Reset link generated, but the email could not be sent — check SMTP settings.'
+          : `Password reset email sent to ${res?.email || this.state.person?.email || 'the user'}.`,
+      });
+    } catch (err: any) {
+      this.setState({ sendingReset: false, error: String(err?.message || 'Failed to send password reset email') });
+    }
+  }
+
   /** Open a hub record: navigate to its admin page (href) or download its document (downloadUrl). */
   private async openRecord(item: RecordsHubItem): Promise<void> {
     if (item.downloadUrl) {
@@ -130,7 +150,7 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
 
   render(): React.ReactElement {
     const theme = this.theme;
-    const { person, loading, saving, granting, error, notFound } = this.state;
+    const { person, loading, saving, granting, sendingReset, notice, error, notFound } = this.state;
 
     if (loading) {
       return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Loading person…" /></div>;
@@ -162,6 +182,7 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
             <form onSubmit={(e) => this.save(e)} className={`rounded-3xl border p-8 space-y-5 ${theme === 'dark' ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
               <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Identity</h3>
               {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{error}</div> : null}
+              {notice ? <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2.5 text-[12px] font-bold dark:bg-emerald-500/10">{notice}</div> : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {this.field('First name', 'firstName')}
                 {this.field('Last name', 'lastName')}
@@ -171,8 +192,12 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
                 {this.field('Phone', 'phone', 'tel')}
                 {this.field('Birth date', 'birthDate', 'date')}
               </div>
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Button variant="primary" type="submit" isLoading={saving} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">Save changes</Button>
+                {linked ? (
+                  <Button variant="secondary" type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}
+                    className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">Send password reset email</Button>
+                ) : null}
                 <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">Cancel</Link>
               </div>
             </form>

@@ -80,6 +80,47 @@ export class AuthControllerSso extends AuthControllerRegistration {
     }
   }
 
+  /**
+   * Admin-triggered "send a password-reset / set-password email" for a specific user. Reuses the exact
+   * same token + email flow as the public forgot-password handler, but is admin-authoritative: it is
+   * guarded by the admin role at the route, targets a user by id (or email), and does not mask the result
+   * behind the generic "if an account exists" message — the admin chose the recipient. Use to (re)send a
+   * partner/customer their set-password link when the original was missed/delayed.
+   */
+  async adminSendPasswordReset(req: Request, res: Response) {
+    const userId = req.body?.userId != null && String(req.body.userId).trim() !== '' ? req.body.userId : null;
+    const email = this.normalizeEmail(req.body?.email);
+    try {
+      const user = userId != null
+        ? await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId })
+        : (email ? await this.db.findOne(SystemConstants.TABLE.USERS, { email }) : null);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+
+      const targetEmail = this.normalizeEmail(user.email);
+      if (!targetEmail) return res.status(400).json({ error: 'User has no email address' });
+
+      const issued = await this.issuePasswordResetToken(user.id, targetEmail);
+      const resetUrl = await this.buildPasswordResetUrl(req, issued.token, 'frontend');
+      const emailSent = await this.sendPasswordResetEmail({
+        to: targetEmail,
+        resetUrl,
+        firstName: this.readUserFirstName(user)
+      });
+
+      await this.manager.writeLog(
+        'INFO',
+        `Admin sent password reset for ${targetEmail}`,
+        'system',
+        { userId: user.id, byAdmin: (req as any).user?.id, emailSent }
+      ).catch(() => {});
+
+      return res.json({ success: true, emailSent, email: targetEmail });
+    } catch (error) {
+      this.logger.error(`[AuthController] adminSendPasswordReset failed: ${error}`);
+      return res.status(500).json({ error: 'Failed to send password reset email' });
+    }
+  }
+
   async resetPassword(req: Request, res: Response) {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) {
       return res.status(404).json({ error: 'Not found' });

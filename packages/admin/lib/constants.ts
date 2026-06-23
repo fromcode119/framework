@@ -36,6 +36,7 @@ export class AdminConstants {
     RESEND_VERIFICATION: AdminConstants.v(SystemConstants.API_PATH.AUTH.RESEND_VERIFICATION),
     FORGOT_PASSWORD: AdminConstants.v(SystemConstants.API_PATH.AUTH.FORGOT_PASSWORD),
     RESET_PASSWORD: AdminConstants.v(SystemConstants.API_PATH.AUTH.RESET_PASSWORD),
+    ADMIN_SEND_PASSWORD_RESET: AdminConstants.v(SystemConstants.API_PATH.AUTH.ADMIN_SEND_PASSWORD_RESET),
     VERIFY_PASSWORD: AdminConstants.v(SystemConstants.API_PATH.AUTH.VERIFY_PASSWORD),
     CHANGE_PASSWORD: AdminConstants.v(SystemConstants.API_PATH.AUTH.CHANGE_PASSWORD),
     SECURITY: AdminConstants.v(SystemConstants.API_PATH.AUTH.SECURITY),

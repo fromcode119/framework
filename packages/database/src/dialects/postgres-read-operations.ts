@@ -159,12 +159,22 @@ export class PostgresReadOperations extends BaseDialect {
       }
     }
 
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where);
+    // Snake-case the where keys for string (plugin) tables before building drizzle conditions.
+    // `buildWhereConditions` emits `eq(sql.identifier(key), value)` verbatim, and Postgres quotes
+    // identifiers case-sensitively — so a camelCase schema field like `affiliateCode` becomes the
+    // non-existent column `"affiliateCode"` and the count throws (`find` avoids this via its raw-SQL
+    // path that already snake-cases). Mirror that here so db.count(table, { where: { affiliateCode } })
+    // resolves to `affiliate_code`.
+    const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
+    const isPlainWhere = !!normalizedWhere && typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype;
+    const effectiveWhere = isString && isPlainWhere
+      ? Object.fromEntries(Object.entries(normalizedWhere).map(([k, v]) => [NamingStrategy.toSnakeCase(k), v]))
+      : normalizedWhere;
+    const conditions = this.buildWhereConditions(effectiveWhere);
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
-    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
-      query = query.where(where);
+    } else if (effectiveWhere && (!isPlainWhere || Object.keys(effectiveWhere).length > 0)) {
+      query = query.where(effectiveWhere);
     }
 
     const [result] = await query;

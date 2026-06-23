@@ -11,6 +11,8 @@ export interface PersonEditPageState {
   loading: boolean;
   saving: boolean;
   granting: boolean;
+  sendingReset: boolean;
+  notice: string;
   error: string;
   notFound: boolean;
 }

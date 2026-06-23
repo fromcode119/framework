@@ -69,6 +69,23 @@ describe('PeopleContextProxy.upsert', () => {
     expect(mgr.db.update).toHaveBeenCalled();
     expect(p.id).toBe(5);
   });
+
+  it('does NOT overwrite displayName on an existing person (user-owned)', async () => {
+    const mgr = makeManager([{ id: 5, email: 'dup@x.com', displayName: 'Set By User' }]);
+    const people = PeopleContextProxy.createPeopleProxy({} as any, mgr);
+    const p = await people.upsert({ email: 'dup@x.com', firstName: 'Fresh', displayName: 'Plugin Derived Name' });
+    const updateArg = mgr.db.update.mock.calls[0][2];
+    expect('displayName' in updateArg).toBe(false);
+    expect(p.displayName).toBe('Set By User');
+  });
+
+  it('still seeds displayName when inserting a brand-new person', async () => {
+    const mgr = makeManager([]);
+    const people = PeopleContextProxy.createPeopleProxy({} as any, mgr);
+    const p = await people.upsert({ email: 'fresh@x.com', displayName: 'Seeded Name' });
+    expect(mgr.db.insert).toHaveBeenCalledTimes(1);
+    expect(p.displayName).toBe('Seeded Name');
+  });
 });
 
 describe('PeopleContextProxy.upsert blank userId', () => {

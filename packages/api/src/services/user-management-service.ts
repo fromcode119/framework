@@ -237,6 +237,11 @@ export class UserManagementService {
   }
 
   async deleteUser(id: number) {
+    // Unlink any unified `people` row from this user BEFORE deleting it, so the person record does not
+    // dangle on a now-deleted user id. A stale link is what blocks recreating the same person/partner
+    // later (the new affiliate re-matches the old person, which still points at the deleted account) and
+    // makes the old identity stick. The person is kept as a contact; only the account link is cleared.
+    await this.db.update(SystemConstants.TABLE.PEOPLE, { userId: id }, { userId: null }).catch(() => undefined);
     await this.db.delete(users, { id });
     return true;
   }

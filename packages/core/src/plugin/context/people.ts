@@ -57,8 +57,17 @@ export class PeopleContextProxy {
         const data = PeopleContextProxy.normalizeWrite(input);
         const existing = await match({ userId: input?.userId, email: input?.email, phone: input?.phone });
         if (existing) {
-          await db.update(SystemConstants.TABLE.PEOPLE, { id: existing.id }, data);
-          return { ...existing, ...data };
+          // `displayName` is USER-OWNED: it is set/cleared only via the admin person editor (which writes
+          // through db.update, not this upsert). Plugin people-backfills funnel here every boot with a
+          // plugin-derived name; letting them overwrite displayName clobbered an admin-set name and made a
+          // deliberately CLEARED displayName reappear on the next backfill. Seed it on first insert, but
+          // never mutate it for an existing person — the person row owns it from then on.
+          const update = { ...data };
+          delete (update as any).displayName;
+          if (Object.keys(update).length > 0) {
+            await db.update(SystemConstants.TABLE.PEOPLE, { id: existing.id }, update);
+          }
+          return { ...existing, ...update };
         }
         return PeopleContextProxy.toPerson(await db.insert(SystemConstants.TABLE.PEOPLE, data));
       },

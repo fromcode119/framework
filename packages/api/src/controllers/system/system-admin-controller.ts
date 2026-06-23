@@ -29,6 +29,12 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.EMAIL_NOTIFICATIONS,
   SystemConstants.META_KEY.NOTIFICATION_EMAIL,
   SystemConstants.META_KEY.NOTIFICATION_EMAIL_CC,
+  // Security group (admin Settings → Security) — all consumed: rate limit by the rate-limit middleware,
+  // session duration by the auth policy, and the 2FA toggle gates new enrolment in SystemTwoFactorService.
+  SystemConstants.META_KEY.RATE_LIMIT_MAX,
+  SystemConstants.META_KEY.RATE_LIMIT_WINDOW,
+  SystemConstants.META_KEY.AUTH_SESSION_DURATION,
+  SystemConstants.META_KEY.TWO_FACTOR_ENABLED,
 ]);
 
 export class SystemAdminController {

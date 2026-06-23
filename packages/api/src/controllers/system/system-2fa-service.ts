@@ -68,6 +68,14 @@ export class SystemTwoFactorService {
   }
 
   async setupForUser(userId: number): Promise<{ secret: string; qrCode: string }> {
+    // Honor the platform `two_factor_enabled` toggle (admin Settings → Security). When it is explicitly
+    // off, new 2FA enrolment is refused — the global switch was previously persisted but never enforced.
+    // Existing 2FA users are unaffected (verify/disable still work); only NEW setup is gated.
+    const globalToggle = await this.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.TWO_FACTOR_ENABLED });
+    if (globalToggle && String(globalToggle.value).trim().toLowerCase() === 'false') {
+      throw new Error('Two-factor authentication is disabled by the administrator.');
+    }
+
     const user = await this.users.getUser(userId);
     if (!user) {
       throw new Error('User not found');
@@ -174,6 +182,9 @@ export class SystemTwoFactorService {
     const message = String(error?.message || '').trim().toLowerCase();
     if (message.includes('user not found')) {
       return 404;
+    }
+    if (message.includes('disabled by the administrator')) {
+      return 403;
     }
     if (
       message.includes('invalid') ||

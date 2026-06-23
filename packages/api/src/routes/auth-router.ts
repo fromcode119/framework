@@ -78,5 +78,6 @@ export class AuthRouter extends BaseRouter {
     // Admin-only endpoints
     this.get(RouteConstants.SEGMENTS.SESSIONS, this.auth.guard(['admin']), this.controller.getSessions);
     this.post(RouteConstants.SEGMENTS.SESSIONS_ID_KILL, this.auth.guard(['admin']), this.controller.killSession);
+    this.post(RouteConstants.SEGMENTS.ADMIN_SEND_PASSWORD_RESET, this.auth.guard(['admin']), this.controller.adminSendPasswordReset);
   }
 }

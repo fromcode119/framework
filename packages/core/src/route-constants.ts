@@ -47,6 +47,7 @@ export class RouteConstants {
   RESEND_VERIFICATION: '/resend-verification',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
+  ADMIN_SEND_PASSWORD_RESET: '/admin/send-password-reset',
   LOGIN: '/login',
   LOGOUT: '/logout',
   SSO_PROVIDERS: '/sso/providers',
