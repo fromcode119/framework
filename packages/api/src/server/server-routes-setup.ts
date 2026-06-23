@@ -48,15 +48,20 @@ export class ServerRoutesSetup {
    * `name === '@fromcode119/core'` so it never reports the root/app package.json by mistake.
    */
   private resolveCoreVersion(): string {
-    const readVersion = (file: string): string | null => {
+    const readPkg = (file: string): { name?: string; version?: string } | null => {
       try {
-        if (fs.existsSync(file)) {
-          const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
-          if (pkg?.version) return pkg.version;
-        }
+        if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8'));
       } catch {}
       return null;
     };
+    const readVersion = (file: string): string | null => readPkg(file)?.version ?? null;
+    // The framework ROOT package (@fromcode119/framework) is the canonical engine version — it is what
+    // gets bumped on release. Individual packages (@fromcode119/core, …) may lag behind it, so read the
+    // root FIRST (by name, so a stray package.json can't masquerade as it); packages are only fallbacks.
+    for (const rootCandidate of [path.resolve(process.cwd(), 'package.json'), path.resolve(process.cwd(), '../../package.json')]) {
+      const rootPkg = readPkg(rootCandidate);
+      if (rootPkg?.name === '@fromcode119/framework' && rootPkg?.version) return rootPkg.version;
+    }
     try {
       let dir = path.dirname(require.resolve('@fromcode119/core'));
       for (let i = 0; i < 6; i++) {

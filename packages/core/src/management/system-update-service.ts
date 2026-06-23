@@ -25,11 +25,26 @@ export class SystemUpdateService {
 
   private static resolveInstalledVersion(): string {
     const rootDir = ProjectPaths.getProjectRoot();
+    // The framework ROOT package (@fromcode119/framework) is the canonical engine version — it is what
+    // gets bumped on release and what the registry compares against. Individual packages/* may lag, so
+    // read the root FIRST; otherwise the update check compares against a stale package version and can
+    // offer an OLDER registry release as an "upgrade" (a silent downgrade).
+    const rootPkgPath = path.resolve(rootDir, 'package.json');
+    try {
+      if (fs.existsSync(rootPkgPath)) {
+        const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8')) as { name?: string; version?: string };
+        const version = String(rootPkg.version || '').trim();
+        if (rootPkg.name === '@fromcode119/framework' && version && semver.valid(version)) {
+          return version;
+        }
+      }
+    } catch { /* fall through to package fallbacks */ }
+
     const candidatePaths = [
       path.resolve(rootDir, 'packages/core/package.json'),
       path.resolve(rootDir, 'packages/admin/package.json'),
       path.resolve(rootDir, 'packages/api/package.json'),
-      path.resolve(rootDir, 'package.json'),
+      rootPkgPath,
     ];
 
     for (const candidatePath of candidatePaths) {
