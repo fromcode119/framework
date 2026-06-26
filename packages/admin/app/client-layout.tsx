@@ -8,7 +8,7 @@ import * as SharedComponents from '@/components';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminConstants } from '@/lib/constants';
 import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
-import AppearanceShellHost from './appearance-shell-host';
+import AppearanceShellHostShim from './appearance-shell-host-shim';
 import { AppearanceRuntimeLoader } from './appearance-runtime-loader';
 import { AdminIconRegistryBootstrapService } from './services/admin-icon-registry-bootstrap-service';
 import { AdminThemeEntryScriptGuardService } from './services/admin-theme-entry-script-guard-service';
@@ -38,7 +38,7 @@ export default function ClientLayout({ children }: ClientLayoutChildrenProps) {
         <ThemeProvider>
           <AdminRuntimeProvider>
             <PluginRuntimeProvider>
-              <AppearanceShellHost>{children}</AppearanceShellHost>
+              <AppearanceShellHostShim>{children}</AppearanceShellHostShim>
             </PluginRuntimeProvider>
           </AdminRuntimeProvider>
         </ThemeProvider>

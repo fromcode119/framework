@@ -9,7 +9,7 @@ import {
   RecordVersions, 
   WebSocketManager, 
 } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, LocalizationUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -227,6 +227,13 @@ export class APIServer {
   private async setupSettingsSync() {
     await this.settingsService.setupSettingsSync();
     this.settingsInterval = (this.settingsService as any).settingsInterval;
+    // Seed the i18n manager's default locale from the configured platform setting (admin Settings →
+    // Localization) so server-rendered legal documents (invoices, payout statements) render in the
+    // PLATFORM language rather than the env default — exposed to plugins via context.i18n.defaultLocale().
+    const configuredLocale = LocalizationUtils.normalizeLocaleCode(
+      this.settingsCache.get(SystemConstants.META_KEY.DEFAULT_LOCALE) || '', { short: true },
+    );
+    if (configuredLocale) this.manager.i18n.setLocale(configuredLocale);
   }
 
   private setupAuthIntegration() {

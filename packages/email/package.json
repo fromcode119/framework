@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/email",
-  "version": "0.1.71",
+  "version": "0.1.73",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

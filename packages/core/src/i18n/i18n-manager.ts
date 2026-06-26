@@ -21,6 +21,15 @@ export class I18nManager {
     this.currentLocale = locale;
   }
 
+  /**
+   * The platform's configured default locale — seeded from the `default_locale` system setting at boot
+   * (admin Settings → Localization). Use this for server-rendered legal/official documents (invoices,
+   * payout statements) that must render in the PLATFORM language, not the viewer's request locale.
+   */
+  getDefaultLocale(): string {
+    return this.currentLocale;
+  }
+
   translate(key: string, params: Record<string, any> = {}, locale?: string): string {
     const targetLocale = locale || RequestContextUtils.getLocale() || this.currentLocale;
     const localeMap = this.translations.get(targetLocale) || this.translations.get('en');

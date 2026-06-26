@@ -3,9 +3,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Semantic presentation contract shared by the default admin, installable appearances,
+ * and plugin UI. An active frontend theme can replace these values at runtime; components
+ * should consume the semantic names instead of baking a product brand into their own CSS.
+ */
+:root {
+  /* shadcn-compatible semantic contract. Values are supplied by the active theme at runtime. */
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 243 75% 59%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 347 77% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 243 75% 59%;
+  --radius: 0.875rem;
+  --fc-brand: #4f46e5;
+  --fc-brand-contrast: #ffffff;
+  --fc-accent: #0f766e;
+  --fc-surface: #ffffff;
+  --fc-surface-muted: #f8fafc;
+  --fc-canvas: #f8fafc;
+  --fc-text: #0f172a;
+  --fc-text-muted: #64748b;
+  --fc-border: #e2e8f0;
+  --fc-success: #059669;
+  --fc-warning: #d97706;
+  --fc-danger: #e11d48;
+  --fc-radius: var(--radius);
+  --fc-shadow: 0 18px 50px rgb(15 23 42 / 0.12);
+  --fc-font-body: ui-sans-serif, system-ui, sans-serif;
+  --fc-font-display: ui-sans-serif, system-ui, sans-serif;
+}
+
 @layer base {
   body {
     @apply antialiased text-slate-900;
+    background: var(--fc-canvas);
+    color: var(--fc-text);
+    font-family: var(--fc-font-body);
   }
 }
 

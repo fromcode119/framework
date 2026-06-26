@@ -27,11 +27,11 @@ export class Button extends React.Component<ButtonProps> {
   ...props 
 } = this.props;
   const variants = {
-    primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20',
-    secondary: 'bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:border-transparent',
-    danger: 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20',
-    ghost: 'hover:bg-slate-100/80 text-slate-600 hover:text-slate-900 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-100',
-    outline: 'border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800',
+    primary: 'bg-[var(--primary)] hover:brightness-95 text-[var(--primary-foreground)] shadow-sm',
+    secondary: 'bg-[var(--secondary)] border border-[var(--border)] text-[var(--secondary-foreground)] shadow-sm hover:brightness-98',
+    danger: 'bg-[var(--destructive)] hover:brightness-95 text-[var(--destructive-foreground)] shadow-sm',
+    ghost: 'hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
+    outline: 'border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)]',
   };
 
   const sizes = {
@@ -43,11 +43,11 @@ export class Button extends React.Component<ButtonProps> {
 
   const spinnerColor = variant === 'primary' || variant === 'danger' 
     ? 'border-white/20 border-t-white' 
-    : 'border-indigo-600/20 border-t-indigo-600 dark:border-indigo-400/20 dark:border-t-indigo-400';
+    : 'border-[color-mix(in_srgb,var(--primary)_20%,transparent)] border-t-[var(--primary)]';
 
   return (
     <Component
-      className={`inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {isLoading ? (

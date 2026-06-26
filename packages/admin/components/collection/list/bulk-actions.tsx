@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { FrameworkIcons } from '@fromcode119/react';
+import { FrameworkIcons, Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/button';
 
 interface BulkActionsProps {
@@ -12,6 +12,11 @@ interface BulkActionsProps {
   handleExport: (format: 'json' | 'csv', ids?: string[]) => void;
   handleBulkDelete: () => void;
   setSelectedIds: (ids: string[]) => void;
+  // Domain-agnostic: a plugin can contribute its own action on the current selection (e.g. "create X from
+  // selection") via a slot. The framework never knows what — it just forwards the selection + collection.
+  collection?: any;
+  slotSlug?: string;
+  resolvedSlug?: string;
 }
 
 export class BulkActions extends React.Component<BulkActionsProps> {
@@ -23,7 +28,10 @@ export class BulkActions extends React.Component<BulkActionsProps> {
   handleBulkStatusChange,
   handleExport,
   handleBulkDelete,
-  setSelectedIds
+  setSelectedIds,
+  collection,
+  slotSlug,
+  resolvedSlug
 } = this.props;
   if (selectedIds.length === 0) return null;
 
@@ -64,16 +72,19 @@ export class BulkActions extends React.Component<BulkActionsProps> {
       >
         Export
       </Button>
-      <Button 
-        variant="secondary" 
-        size="sm" 
+      <Button
+        variant="secondary"
+        size="sm"
         className="rounded-xl h-11 px-4 text-[12px] font-bold tracking-tight text-rose-500 hover:text-rose-600"
         icon={<FrameworkIcons.Trash size={14} />}
         onClick={handleBulkDelete}
       >
         Delete
       </Button>
-      <button 
+      {/* Plugin-contributed actions on the current selection (domain-agnostic — the owning plugin fills it). */}
+      <Slot name={`admin.collection.${slotSlug}.list.bulk.actions`} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
+      <Slot name="admin.collection.list.bulk.actions" props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
+      <button
         onClick={() => setSelectedIds([])}
         className="h-11 w-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
         title="Clear selection"

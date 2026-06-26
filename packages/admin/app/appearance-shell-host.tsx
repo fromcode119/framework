@@ -4,16 +4,26 @@ import React from 'react';
 import { AdminComponent } from '@/components/admin-component';
 import { AdminShellRegistry } from '@/lib/appearance/admin-shell-registry';
 import ClientLayoutShell from './client-layout-shell';
-import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
+import AppearanceSecurityGate from './appearance-security-gate';
+import type { AppearanceShellProps } from '@/lib/appearance/appearance-shell-props.interfaces';
 
 /**
- * Renders the chrome for the active appearance: its registered shell if any, else the framework's
- * default ClientLayoutShell. The single place the host delegates the shell to the appearance system;
- * with no appearance shell registered this renders exactly today's ClientLayoutShell (zero change).
+ * Chooses the chrome for the active appearance. With NO appearance shell registered, it renders
+ * today's `ClientLayoutShell` exactly — which owns its own auth gating — so the default admin is
+ * byte-for-byte unchanged. With an appearance shell active, the shared `AppearanceSecurityGate`
+ * enforces auth (so the appearance never re-owns it) and then renders the appearance shell as a
+ * presentation-only layer with the read-only nav/user model.
  */
-export default class AppearanceShellHost extends AdminComponent<ClientLayoutChildrenProps> {
+export default class AppearanceShellHost extends AdminComponent<AppearanceShellProps> {
   render(): React.ReactNode {
-    const Shell = AdminShellRegistry.shared.resolve(this.activeAppearanceId) ?? ClientLayoutShell;
-    return <Shell>{this.props.children}</Shell>;
+    const AppearanceShell = AdminShellRegistry.shared.resolve(this.activeAppearanceId);
+    if (!AppearanceShell) {
+      return <ClientLayoutShell>{this.props.children}</ClientLayoutShell>;
+    }
+    return (
+      <AppearanceSecurityGate Shell={AppearanceShell} nav={this.props.nav} user={this.props.user}>
+        {this.props.children}
+      </AppearanceSecurityGate>
+    );
   }
 }

@@ -33,7 +33,7 @@ export class CollectionListPageProps {
         prettifyColumnName: CollectionListUtils.prettifyColumnName
       },
       bulkActionsProps: {
-        selectedIds, statusOptions,
+        selectedIds, statusOptions, collection, slotSlug, resolvedSlug,
         handleBulkStatusChange: (newStatus: string) => CollectionListPageActions.handleBulkStatusChange({ resolvedSlug, selectedIds, newStatus, page, setLoading, setSelectedIds, fetchData }),
         handleExport,
         handleBulkDelete: () => selectedIds.length && setDeleteDialogState({ mode: 'bulk', ids: [...selectedIds] }),

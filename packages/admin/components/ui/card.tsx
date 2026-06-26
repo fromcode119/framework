@@ -16,9 +16,9 @@ export class Card extends React.Component<CardProps> {
   return (
     <div
       {...props}
-      className={`rounded-xl border bg-white border-slate-200/60 shadow-sm dark:bg-slate-900/50 dark:border-slate-800 dark:shadow-none ${noPadding ? '' : 'p-4'} ${className}`}
+      className={`rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] text-[var(--card-foreground)] shadow-sm ${noPadding ? '' : 'p-4'} ${className}`}
     >
-      {title && <h3 className="font-semibold tracking-tight text-[13px] mb-3 text-slate-800 dark:text-slate-100">{title}</h3>}
+      {title && <h3 className="mb-3 text-[13px] font-semibold tracking-tight text-[var(--card-foreground)]">{title}</h3>}
       {children}
     </div>
   );

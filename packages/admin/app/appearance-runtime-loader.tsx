@@ -5,6 +5,9 @@ import { AppEnv } from '@/lib/env';
 import { AppearanceBundleLoaderService } from '@/app/services/appearance-bundle-loader-service';
 import { ActiveAdminAppearanceService } from '@/lib/appearance/active-admin-appearance-service';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants';
+import { BrandTokenStyleService } from '@/lib/theme/brand-token-style-service';
 import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
 
 /**
@@ -33,6 +36,11 @@ export function AppearanceRuntimeLoader({ children }: ClientLayoutChildrenProps)
         desired = String((settings as Record<string, unknown>)?.admin_appearance || '').trim() || deploymentDefault;
       } catch {
         /* settings fetch failed — fall back to the first-paint hint */
+      }
+      try {
+        BrandTokenStyleService.install((await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.FRONTEND) as Record<string, unknown>)?.cssVariables);
+      } catch {
+        /* The default token contract remains available when public theme metadata is unreachable. */
       }
       if (!active) return;
       ActiveAdminAppearanceService.rememberHint(desired);

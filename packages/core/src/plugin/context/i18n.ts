@@ -99,6 +99,10 @@ export class I18nContextProxy {
           if (!hasCapability('i18n')) handleViolation('i18n');
           return manager.i18n.translate(scopePluginKey(key), params);
         },
+        /** The platform's configured default locale (admin Settings → Localization `default_locale`).
+         *  Use for server-rendered legal documents that must render in the PLATFORM language, not the
+         *  viewer's request locale — instead of hardcoding a country/locale literal. */
+        defaultLocale: (): string => manager.i18n.getDefaultLocale(),
         registerTranslations: (localeOrDirectory: string = 'i18n', translations?: Record<string, any>) => {
           if (!hasCapability('i18n')) handleViolation('i18n');
           if (translations === undefined) {
