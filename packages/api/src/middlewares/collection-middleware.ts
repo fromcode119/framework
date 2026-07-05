@@ -138,6 +138,25 @@ export class CollectionMiddleware extends BaseMiddleware {
    * Handle collection not found error with helpful diagnostics.
    */
   private handleCollectionNotFound(slug: string, requestedPluginSlug: string | undefined, req: any, res: Response) {
+    // A plugin-scoped path (/:pluginSlug/:slug) reaches here only when the plugin's OWN routes did not
+    // match. If that plugin exists but is not active, the request is almost certainly a plugin API call
+    // (e.g. a build-server `/status` poll) that fell through because the plugin's routes are not mounted
+    // yet — typically the brief window while the API restarts after a marketplace install. Report that as
+    // a retryable "plugin not ready" 503 instead of a misleading "collection not found", so the UI backs
+    // off and retries rather than surfacing a scary error the moment a new version is installed.
+    if (requestedPluginSlug && requestedPluginSlug.toLowerCase() !== 'collections') {
+      const plugin = this.manager.getPlugins().find(
+        p => p.manifest.slug?.toLowerCase() === requestedPluginSlug.toLowerCase(),
+      );
+      if (plugin && plugin.state !== 'active') {
+        res.status(503).json({
+          error: `Plugin "${requestedPluginSlug}" is not ready (state: ${plugin.state}). Retry shortly.`,
+          code: 'PLUGIN_UNAVAILABLE',
+        });
+        return;
+      }
+    }
+
     const registeredCollections = (this.manager as any).registeredCollections as Map<string, any>;
     const allRegistered = Array.from(registeredCollections.entries());
     const publicCollections = allRegistered

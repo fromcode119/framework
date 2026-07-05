@@ -48,6 +48,43 @@
   --fc-font-display: ui-sans-serif, system-ui, sans-serif;
 }
 
+/*
+ * Dark mode. ThemeProvider toggles `.dark` on <html>. `html.dark` (specificity 0,1,1) intentionally
+ * out-ranks both this file's `:root` and the runtime `:root` mapping that BrandTokenStyleService
+ * appends to <head> — so these win regardless of source order. We flip only the surface/text tokens
+ * and KEEP the active theme's brand/accent hues, then derive the semantic contract from the tokens
+ * (mirroring BrandTokenStyleService) so components styled with var(--background/--muted-foreground/
+ * --primary/…) get dark values even when no frontend theme has injected its mapping.
+ */
+html.dark {
+  --fc-surface: #0f172a;
+  --fc-surface-muted: #1e293b;
+  --fc-canvas: #020617;
+  --fc-text: #e2e8f0;
+  --fc-text-muted: #94a3b8;
+  --fc-border: #1e293b;
+  --fc-shadow: 0 18px 50px rgb(0 0 0 / 0.5);
+  --background: var(--fc-canvas);
+  --foreground: var(--fc-text);
+  --card: var(--fc-surface);
+  --card-foreground: var(--fc-text);
+  --popover: var(--fc-surface);
+  --popover-foreground: var(--fc-text);
+  --primary: var(--fc-brand);
+  --primary-foreground: var(--fc-brand-contrast);
+  --secondary: var(--fc-surface-muted);
+  --secondary-foreground: var(--fc-text);
+  --muted: var(--fc-surface-muted);
+  --muted-foreground: var(--fc-text-muted);
+  --accent: var(--fc-accent);
+  --accent-foreground: var(--fc-text);
+  --destructive: var(--fc-danger);
+  --destructive-foreground: var(--fc-brand-contrast);
+  --border: var(--fc-border);
+  --input: var(--fc-border);
+  --ring: var(--fc-brand);
+}
+
 @layer base {
   body {
     @apply antialiased text-slate-900;
