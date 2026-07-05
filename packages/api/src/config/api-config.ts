@@ -181,6 +181,7 @@ export class ApiConfig {
         HEALTH: withVersion(SystemConstants.API_PATH.SYSTEM.HEALTH),
         STATUS: withVersion(SystemConstants.API_PATH.SYSTEM.STATUS),
         OPENAPI: withVersion(SystemConstants.API_PATH.SYSTEM.OPENAPI),
+        DOCS: withVersion(SystemConstants.API_PATH.SYSTEM.DOCS),
         I18N: withVersion(SystemConstants.API_PATH.SYSTEM.I18N),
         EVENTS: withVersion(SystemConstants.API_PATH.SYSTEM.EVENTS),
       },

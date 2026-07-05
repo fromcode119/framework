@@ -1,7 +1,7 @@
 /** ServerAuthSetup — configures auth validators and permission checker. Extracted from APIServer (ARC-007). */
 
 import { Logger } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core';
+import { SystemConstants, ApiAccessGate } from '@fromcode119/core';
 import { AuthManager, UserPermissionChecker } from '@fromcode119/auth';
 import { systemSessions } from '@fromcode119/database';
 import { createHash } from 'crypto';
@@ -14,7 +14,11 @@ export class ServerAuthSetup {
   ) {}
 
   configure() {
-    this.auth.setPermissionChecker(new UserPermissionChecker(this.db));
+    const permissionChecker = new UserPermissionChecker(this.db);
+    this.auth.setPermissionChecker(permissionChecker);
+    // Wire the same checker into the central plugin-route access gate so `{ access: { permission } }`
+    // declarations can be enforced once ENFORCE_AUTHZ_GATEWAY is enabled.
+    ApiAccessGate.setPermissionChecker((userId, permission) => permissionChecker.hasPermission(userId, permission));
     this.logger.info('Permission checker initialized and configured');
 
     this.auth.setSessionValidator(async (jti: string) => {

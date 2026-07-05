@@ -17,6 +17,11 @@ export class AppPathConstants {
     ] as const,
   } as const;
 
+  /** Frontend (storefront) app routes referenced from other apps (e.g. admin linking to self-service). */
+  static readonly FRONTEND = {
+    ACCOUNT: '/account',
+  } as const;
+
   static readonly ADMIN = {
     ROOT: '/',
     MINIMAL: '/atlantis',

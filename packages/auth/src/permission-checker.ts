@@ -1,34 +1,45 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '@fromcode119/core';
+import { Logger, StringUtils } from '@fromcode119/core';
 
 export class UserPermissionChecker {
   private logger = new Logger({ namespace: 'permission-checker' });
 
   constructor(private db: IDatabaseManager) {}
-  
+
+  /**
+   * Effective role slugs for a user = the legacy `users.roles` JSON column UNION the assignable
+   * `_system_users_roles` junction (managed by the admin Roles UI and plugins like MLM). Without this
+   * union, roles granted only through the junction would never reach permission checks — a silent
+   * no-op. Junction rows are snake_case (`role_slug`), the framework-internal raw-manager convention.
+   */
+  private async resolveUserRoleSlugs(userId: number, user: any): Promise<string[]> {
+    let assigned: unknown[] = [];
+    try {
+      const rows = await this.db.find('_system_users_roles', { where: { userId } });
+      assigned = (Array.isArray(rows) ? rows : []).map((row: any) => row?.role_slug);
+    } catch {
+      // Junction table may be absent on older installs — fall back to the JSON column only.
+    }
+    // `user.roles` may be an array or a JSON-array string; normalizeSlugList handles both + the junction.
+    return StringUtils.normalizeSlugList(user?.roles, assigned);
+  }
+
   async hasPermission(userId: number, permission: string): Promise<boolean> {
     this.logger.debug(`Checking permission "${permission}" for userId ${userId}`);
-    
+
     // 1. Get user and their roles using database SDK (table prefix added automatically)
     const user = await this.db.findOne('users', { id: userId });
-    
+
     if (!user) {
       this.logger.debug(`User ${userId} not found`);
       return false;
     }
-    
-    // Parse roles from JSON array
-    let userRoles: string[];
-    try {
-      userRoles = typeof user.roles === 'string' 
-        ? JSON.parse(user.roles) 
-        : (user.roles || []);
-    } catch {
-      userRoles = [];
-    }
-    
+
+    // Effective roles = users.roles JSON ∪ _system_users_roles junction
+    const userRoles = await this.resolveUserRoleSlugs(userId, user);
+
     this.logger.debug(`User ${userId} has ${userRoles.length} role(s)`);
-    
+
     if (userRoles.length === 0) return false;
     
     // 2. Get all permissions for those roles from systemRoles table
@@ -83,18 +94,11 @@ export class UserPermissionChecker {
   async getUserPermissions(userId: number): Promise<string[]> {
     // Get user and their roles
     const user = await this.db.findOne('users', { id: userId });
-    
+
     if (!user) return [];
-    
-    let userRoles: string[];
-    try {
-      userRoles = typeof user.roles === 'string' 
-        ? JSON.parse(user.roles) 
-        : (user.roles || []);
-    } catch {
-      userRoles = [];
-    }
-    
+
+    const userRoles = await this.resolveUserRoleSlugs(userId, user);
+
     if (userRoles.length === 0) return [];
     
     // Get all roles and filter by user's roles

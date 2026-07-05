@@ -24,6 +24,7 @@ import { CollectionRouter } from '../routes/collection-router';
 import { BaseCollectionRouter } from '../routes/base-collection-router';
 import { CollectionMiddleware } from '../middlewares/collection-middleware';
 import { SwaggerGenerator } from '../swagger';
+import { DeveloperPortalHtml } from '../utils/developer-portal-html';
 import { GraphQLService } from '../services/graph-ql-service';
 import { createHandler } from 'graphql-http/lib/use/express';
 
@@ -95,8 +96,11 @@ export class ServerRoutesSetup {
     const vPrefix = ApiConfig.getInstance().prefixes.VERSIONED;
     this.app.all(`${vPrefix}/graphql`, (req, res, next) => { createHandler({ schema: this.graphQLService.generateSchema(), context: { req } })(req, res, next); });
 
-    const openApiHandler = (req: any, res: any) => res.json(SwaggerGenerator.generate(this.manager.getCollections()));
-    this.app.get(ApiConfig.getInstance().routes.system.OPENAPI, openApiHandler);
+    // Live OpenAPI spec (self-generates from the running collection schemas) and its public Redoc
+    // developer portal. Both paths come from the route config — no string-munging one from the other.
+    const systemRoutes = ApiConfig.getInstance().routes.system;
+    this.app.get(systemRoutes.OPENAPI, (_req, res) => res.json(SwaggerGenerator.generate(this.manager.getCollections())));
+    this.app.get(systemRoutes.DOCS, (_req, res) => res.type('html').send(DeveloperPortalHtml.render(systemRoutes.OPENAPI)));
 
     const { AUTH, PLUGINS, MARKETPLACE, THEMES, APPEARANCES, SYSTEM, MEDIA, VERSIONS } = RouteConstants.SEGMENTS;
     const vApi = express.Router();

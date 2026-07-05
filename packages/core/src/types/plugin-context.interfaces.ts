@@ -23,9 +23,9 @@ export interface PluginContext {
   readonly hooks: PluginContextHooks;
   readonly auth: PluginContextAuth;
   readonly logger: {
-    info: (message: string) => void;
-    warn: (message: string) => void;
-    error: (message: string) => void;
+    info: (message: string, ...meta: unknown[]) => void;
+    warn: (message: string, ...meta: unknown[]) => void;
+    error: (message: string, ...meta: unknown[]) => void;
   };
 
   readonly integrations: {
@@ -176,15 +176,16 @@ export interface PluginContext {
       locale?: string,
       scope?: 'plugin' | 'theme' | null,
     ): string;
-    t(key: string, params?: Record<string, any>): string;
+    t(key: string, params?: Record<string, any>, locale?: string): string;
     registerTranslations(pluginDirectory?: string): void;
     registerTranslations(locale: string, translations: Record<string, any>): void;
   };
 
   /**
-   * Shortcut for i18n.t
+   * Shortcut for i18n.t. Optional `locale` renders in a specific language (e.g. a customer's locale for an
+   * order email) instead of the platform default.
    */
-  readonly t: (key: string, params?: Record<string, any>) => string;
+  readonly t: (key: string, params?: Record<string, any>, locale?: string) => string;
 
   readonly ui: {
     registerHeadInjection(injection: {
@@ -307,6 +308,8 @@ export interface PluginContext {
    */
   readonly media: {
     findById(id: any): Promise<Record<string, any> | null>;
+    list(options?: { limit?: number; offset?: number }): Promise<Array<Record<string, any>>>;
+    count(): Promise<number>;
   };
 
   /**

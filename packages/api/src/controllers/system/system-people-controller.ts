@@ -100,4 +100,32 @@ export class SystemPeopleController {
       res.status(400).json({ error: error.message });
     }
   }
+
+  async deletePerson(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (Number.isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid person id' });
+      }
+      await this.runtime.people.deletePerson(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  async linkUser(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (Number.isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid person id' });
+      }
+      const rawUserId = (req.body || {}).userId;
+      const userId = rawUserId == null || rawUserId === '' ? null : parseInt(String(rawUserId), 10);
+      const person = await this.runtime.people.linkUser(id, userId);
+      res.json({ success: true, person });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
 }

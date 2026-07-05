@@ -24,7 +24,8 @@ export class AppearanceBundleLoaderService {
     const link = document.createElement('link');
     link.id = linkId;
     link.rel = 'stylesheet';
-    link.href = `${origin}/appearances/${encodeURIComponent(id)}/ui/appearance.css`;
+    // Cache-bust per full page load so a rebuilt appearance CSS is always fetched fresh (never stale).
+    link.href = `${origin}/appearances/${encodeURIComponent(id)}/ui/appearance.css?v=${Date.now()}`;
     document.head.appendChild(link);
   }
 
@@ -35,7 +36,7 @@ export class AppearanceBundleLoaderService {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     // Inject the appearance's own compiled CSS (LESS → dist/appearance.css), then load its bundle.
     AppearanceBundleLoaderService.injectStylesheet(origin, desired);
-    const url = `${origin}/appearances/${encodeURIComponent(desired)}/ui/bundle.js`;
+    const url = `${origin}/appearances/${encodeURIComponent(desired)}/ui/bundle.js?v=${Date.now()}`;
     try {
       await import(/* webpackIgnore: true */ url);
       AppearanceBundleLoaderService.loaded.add(desired);

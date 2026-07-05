@@ -18,6 +18,7 @@ import { PluginDefaultPageContractResolutionService } from './default-page-contr
 import { SeedPageService } from './seed-page-service';
 import { ThemeLayoutOverrideRegistryService } from '../theme/theme-layout-override-registry-service';
 import { ContentResolutionGateRegistryService } from './content-resolution-gate-registry-service';
+import { RedirectResolverRegistryService } from './redirect-resolver-registry-service';
 import { PluginEntityRecordsRegistryService } from './entity-records/plugin-entity-records-registry-service';
 import { EntityRecordsResolutionService } from './entity-records/entity-records-resolution-service';
 
@@ -74,6 +75,7 @@ export class CoreServices {
   private _seedPage: SeedPageService | null = null;
   private _themeDesignOverrides: ThemeLayoutOverrideRegistryService | null = null;
   private _contentResolutionGates: ContentResolutionGateRegistryService | null = null;
+  private _redirectResolvers: RedirectResolverRegistryService | null = null;
   private _entityRecords: PluginEntityRecordsRegistryService | null = null;
   private _entityRecordsResolution: EntityRecordsResolutionService | null = null;
 
@@ -278,6 +280,18 @@ export class CoreServices {
       this._entityRecords = new PluginEntityRecordsRegistryService();
     }
     return this._entityRecords;
+  }
+
+  /**
+   * Registry of redirect resolvers (lazy-loaded). Plugins register a resolver that maps a would-be-404
+   * request path to a redirect target (e.g. an SEO plugin's retired-URL rules). The framework stays
+   * plugin-agnostic: it only runs the resolvers and returns the first match at the routing layer.
+   */
+  get redirectResolvers(): RedirectResolverRegistryService {
+    if (!this._redirectResolvers) {
+      this._redirectResolvers = new RedirectResolverRegistryService();
+    }
+    return this._redirectResolvers;
   }
 
   get entityRecordsResolution(): EntityRecordsResolutionService {

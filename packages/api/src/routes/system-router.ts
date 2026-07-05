@@ -54,8 +54,10 @@ export class SystemRouter extends BaseRouter {
   }
 
   protected registerRoutes(): void {
-    // Admin metadata and stats
-    this.get(RouteConstants.SEGMENTS.ADMIN_METADATA, this.auth.requirePermission('system:view'), 
+    // Admin metadata: any authenticated user may fetch it — the admin client permission-scopes the nav
+    // it renders (scoped operators see only their areas; a user with no admin permissions gets the
+    // self-service account view). Stats below stay system:view (admin dashboards).
+    this.get(RouteConstants.SEGMENTS.ADMIN_METADATA, this.auth.guard(),
       this.controller.getAdminMetadata);
     this.get(RouteConstants.SEGMENTS.ADMIN_STATS_COLLECTIONS, this.auth.requirePermission('system:view'), 
       this.controller.getStats);
@@ -169,6 +171,10 @@ export class SystemRouter extends BaseRouter {
       this.controller.savePerson);
     this.post(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_CREATE_USER, this.auth.requirePermission('users:manage'),
       this.controller.createUserFromPerson);
+    this.post(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_LINK_USER, this.auth.requirePermission('users:manage'),
+      this.controller.linkUser);
+    this.delete(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:manage'),
+      this.controller.deletePerson);
 
     // 2FA Management
     this.get(RouteConstants.SEGMENTS.ADMIN_USERS_2FA_STATUS, this.auth.requirePermission('users:view'), 

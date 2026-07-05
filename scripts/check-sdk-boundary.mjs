@@ -42,6 +42,30 @@ const STRING_PATTERNS = [
     label: 'direct framework auth API path in plugin/theme code',
   },
 ];
+// Patterns that are violations ONLY in frontend (plugin UI + theme) code — a plugin's own backend may
+// legitimately reference its own versioned path. Same `{ regex, label }` shape as STRING_PATTERNS.
+const FRONTEND_STRING_PATTERNS = [
+  {
+    regex: /ApiPathUtils\.pluginPath\s*\(/g,
+    label: 'plugin UI/theme code should not compose plugin paths with ApiPathUtils.pluginPath()',
+  },
+  {
+    // A literal versioned plugin API path in FRONTEND code (with OR without a leading slash — the no-slash
+    // form slips past the global `/api/v\d+/` rule when built via joinApiPath(base, 'api/v1/...')). Frontend
+    // must call a plugin through its namespace client (`runtime.fromcode.<slug>` / a passed scope client),
+    // which owns the base + version + auth.
+    regex: /\bapi\/v\d+\/plugins\/[a-z0-9-]+/gi,
+    label: 'hardcoded plugin API path in frontend code — call the plugin via its namespace client, not a literal api/v1/plugins/<slug> string',
+  },
+  {
+    // Secret credentials (Stripe/API secret keys) are resolved SERVER-SIDE only. A browser/theme bundle
+    // must never call a `get…SecretKey()` accessor — that would pull a server secret into the client.
+    // Domain-agnostic by design: matches the accessor SHAPE, so it catches ANY plugin's secret-key getter
+    // without this framework scanner naming a specific plugin or provider.
+    regex: /\bget\w*SecretKey\s*\(/gi,
+    label: 'secret-key accessor called in frontend code — secret credentials are server-side only and must never be resolved in a browser/theme bundle',
+  },
+];
 const PLUGIN_UI_FILE_PATTERN = /\/plugins\/[^/]+\/ui\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/;
 const THEME_SOURCE_FILE_PATTERN = /\/themes\/[^/]+\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/;
 const BROWSER_STATE_PATTERNS = [
@@ -185,12 +209,15 @@ function collectLineViolations(filePath, lineText, lineNumber, ownPackageName) {
   }
 
   if (isPluginUiFile || isThemeSourceFile) {
-    for (const match of lineText.matchAll(/ApiPathUtils\.pluginPath\s*\(/g)) {
-      violations.push({
-        filePath,
-        lineNumber,
-        label: 'plugin UI/theme code should not compose plugin paths with ApiPathUtils.pluginPath()',
-      });
+    // Comments are stripped before this runs, so a match is a real literal in frontend code.
+    for (const candidate of FRONTEND_STRING_PATTERNS) {
+      for (const match of lineText.matchAll(candidate.regex)) {
+        violations.push({
+          filePath,
+          lineNumber,
+          label: candidate.label,
+        });
+      }
     }
   }
 

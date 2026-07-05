@@ -92,6 +92,29 @@ export class DynamicPageResolver {
     };
   }
 
+  /**
+   * Looks up a configured redirect rule for a would-be-404 path via the framework's OWN resolve endpoint.
+   * The framework's route resolver consults a plugin-agnostic redirect registry (an SEO plugin, a CMS
+   * table, … register into it) and returns a `redirect` resolution — so the frontend never names a plugin.
+   * Returns the target + whether it's permanent (308) or temporary (307), or null when no rule matches.
+   * Failures resolve to null so a lookup error never breaks the page.
+   */
+  static async resolveRedirect(slug: string): Promise<{ target: string; permanent: boolean } | null> {
+    try {
+      const query = new URLSearchParams();
+      query.set('slug', String(slug || '').replace(/^\/+/, ''));
+      const result = await ServerApiUtils.serverFetchJson(
+        ServerApiUtils.buildSystemResolvePath(query),
+      ) as { type?: string; redirect?: { target?: string; permanent?: boolean } } | null;
+      if (result?.type === 'redirect' && result.redirect?.target) {
+        return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false };
+      }
+    } catch {
+      /* lookup failed — fall through to the normal 404 */
+    }
+    return null;
+  }
+
   static async resolveDocWithPermalinkFallback(
     slug: string,
     searchParams: SearchParams | undefined,

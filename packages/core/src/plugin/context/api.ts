@@ -6,6 +6,9 @@ import type { PluginManagerInterface } from './utils.interfaces';
 import type { PluginHealthProbeResult } from '../../plugin-health-route-handler.interfaces';
 import { ContextSecurityProxy } from './utils';
 import { RateLimiter } from '../../security/rate-limiter';
+import { ApiAccessGate } from './api-access-gate';
+import { AccessLevel } from './api-access-gate.enums';
+import type { ApiAccessLevel } from './api-access-gate.types';
 
 const apiLimiter = new RateLimiter(1000, 60000);
 const reservedPaths = ['config', 'settings', 'toggle', 'logs', 'sandbox', 'active', 'marketplace', 'install', 'upload'];
@@ -22,6 +25,15 @@ export class ApiContextProxy {
       const createApiWrapper = (method: string) => (path: string, ...handlers: any[]) => {
         if (!hasCapability('api')) {
           handleViolation('api');
+        }
+
+        // A route may DECLARE its access as a leading `{ access }` descriptor. The central fail-closed
+        // gate (ApiAccessGate) enforces it when ENFORCE_AUTHZ_GATEWAY=true; undeclared => admin-only.
+        // `use` (raw middleware) is exempt — it is not a terminal route.
+        let access: ApiAccessLevel | undefined;
+        if (method !== 'use' && ApiAccessGate.isDescriptor(handlers[0])) {
+          access = handlers[0].access;
+          handlers = handlers.slice(1);
         }
 
         if (!apiLimiter.check(plugin.manifest.slug)) {
@@ -61,7 +73,8 @@ export class ApiContextProxy {
           }
         });
 
-        manager.apiHost[method](fullPath, ...wrappedHandlers);
+        const gate = method === 'use' ? null : ApiAccessGate.build(access);
+        manager.apiHost[method](fullPath, ...(gate ? [gate, ...wrappedHandlers] : wrappedHandlers));
       };
 
       return {
@@ -69,6 +82,7 @@ export class ApiContextProxy {
         health: (probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>) => {
           createApiWrapper('get')(
             RouteConstants.SEGMENTS.HEALTH,
+            { access: AccessLevel.Public },
             PluginHealthRouteHandler.createForPlugin(plugin.manifest, probe),
           );
         },
@@ -79,6 +93,7 @@ export class ApiContextProxy {
         status: (probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>) => {
           createApiWrapper('get')(
             RouteConstants.SEGMENTS.STATUS,
+            { access: AccessLevel.Public },
             PluginHealthRouteHandler.createForPlugin(plugin.manifest, probe),
           );
         },

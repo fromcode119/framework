@@ -55,6 +55,14 @@ export class SystemController extends BaseController {
     return this.peopleController.createUserFromPerson(req, res);
   }
 
+  async deletePerson(req: Request, res: Response) {
+    return this.peopleController.deletePerson(req, res);
+  }
+
+  async linkUser(req: Request, res: Response) {
+    return this.peopleController.linkUser(req, res);
+  }
+
   async getAdminMetadata(req: Request, res: Response) {
     return this.adminController.getAdminMetadata(req, res);
   }

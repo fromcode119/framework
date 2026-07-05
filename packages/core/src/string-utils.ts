@@ -1,3 +1,5 @@
+import { CoercionUtils } from './coercion-utils';
+
 /**
  * String manipulation utilities.
  *
@@ -7,6 +9,28 @@
  * StringUtils.parseCsv("1,2,3")             // ["1", "2", "3"]
  */
 export class StringUtils {
+  /**
+   * Merge and normalize one or more slug sources into a clean list: trim, lowercase, drop empties,
+   * dedupe. Each source may be an array, a JSON-array string (e.g. the `users.roles` column), or a
+   * single slug — callers never have to branch on the shape themselves.
+   *
+   * @example StringUtils.normalizeSlugList('["Admin"]', ['admin', ' partner ']) // ["admin", "partner"]
+   */
+  static normalizeSlugList(...sources: unknown[]): string[] {
+    const flat: unknown[] = [];
+    for (const source of sources) {
+      if (Array.isArray(source)) {
+        flat.push(...source);
+      } else if (typeof source === 'string') {
+        const parsed = CoercionUtils.parseJson<unknown>(source, null);
+        Array.isArray(parsed) ? flat.push(...parsed) : flat.push(source);
+      } else if (source != null) {
+        flat.push(source);
+      }
+    }
+    return [...new Set(flat.map((entry) => String(entry ?? '').trim().toLowerCase()).filter(Boolean))];
+  }
+
   /**
    * Convert camelCase / mixed strings to snake_case.
    */

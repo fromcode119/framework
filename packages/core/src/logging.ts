@@ -48,4 +48,15 @@ export class Logger {
       minLevel: this.minLevel,
     });
   }
+
+  /** Flatten a message plus its extra args into ONE string, for log sinks that accept only a single string
+   *  (e.g. a DB log writer). Console-based methods above take varargs natively and don't need this. */
+  static renderLine(message: string, meta: unknown[]): string {
+    if (!meta.length) return message;
+    const rendered = meta.map((m) => {
+      if (typeof m === 'string') return m;
+      try { return JSON.stringify(m); } catch { return String(m); }
+    }).join(' ');
+    return `${message} ${rendered}`;
+  }
 }

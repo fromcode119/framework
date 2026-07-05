@@ -33,6 +33,20 @@ export class AuthManager {
     this.permissionChecker = checker;
   }
 
+  /**
+   * Resolve a user's effective permissions (from their roles). Used to bake permissions into the login
+   * session so the admin client can decide console entry + permission-scoped nav. Returns [] if no
+   * checker is configured or on error.
+   */
+  async getUserPermissions(userId: number): Promise<string[]> {
+    if (!this.permissionChecker) return [];
+    try {
+      return await this.permissionChecker.getUserPermissions(userId);
+    } catch {
+      return [];
+    }
+  }
+
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 12);
   }

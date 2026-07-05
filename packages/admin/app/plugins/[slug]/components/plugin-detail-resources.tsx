@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { PluginDetailResourcesProps } from '../plugin-detail-page.interfaces';
@@ -31,7 +32,7 @@ export default class PluginDetailResources extends React.Component<PluginDetailR
                 <p className="text-sm text-slate-500 mt-1 max-w-sm">Maximum RAM allocated to the V8 isolate. (MB)</p>
               </div>
             </div>
-            <input type="number" value={sandboxSettings.memoryLimit} disabled={!sandboxSettings.enabled} onChange={(event) => onSandboxSettingsChange({ ...sandboxSettings, memoryLimit: Number.isFinite(parseInt(event.target.value, 10)) ? parseInt(event.target.value, 10) : 128 })} className={`w-full md:w-32 px-4 py-2 rounded-xl text-center font-bold ${theme === 'dark' ? 'bg-slate-800 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+            <NumberStepper min={0} value={sandboxSettings.memoryLimit} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, memoryLimit: Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : 128 })} />
           </div>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex gap-4">
@@ -41,7 +42,7 @@ export default class PluginDetailResources extends React.Component<PluginDetailR
                 <p className="text-sm text-slate-500 mt-1 max-w-sm">Kill plugin execution if it takes longer than this. (ms)</p>
               </div>
             </div>
-            <input type="number" value={sandboxSettings.timeout} disabled={!sandboxSettings.enabled} onChange={(event) => onSandboxSettingsChange({ ...sandboxSettings, timeout: Number.isFinite(parseInt(event.target.value, 10)) ? parseInt(event.target.value, 10) : 1000 })} className={`w-full md:w-32 px-4 py-2 rounded-xl text-center font-bold ${theme === 'dark' ? 'bg-slate-800 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`} />
+            <NumberStepper min={0} value={sandboxSettings.timeout} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, timeout: Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : 1000 })} />
           </div>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
             <div className="flex gap-4">

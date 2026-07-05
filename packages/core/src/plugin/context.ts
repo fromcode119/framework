@@ -94,6 +94,11 @@ export class PluginContextFactory {
           }
         },
         auth: manager.auth || {
+          // Pre-init stub. `guard`/`requirePermission` are FAIL-CLOSED so a plugin can always call
+          // `context.auth.guard([...])` directly (no defensive `typeof` check) — a request that somehow
+          // arrives before auth is wired is denied, never allowed through.
+          guard: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
+          requirePermission: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
           hashPassword: () => { throw new Error('Auth service not initialized'); },
           comparePassword: () => { throw new Error('Auth service not initialized'); },
           generateToken: () => { throw new Error('Auth service not initialized'); },
@@ -126,17 +131,17 @@ export class PluginContextFactory {
         jobs: JobsContextProxy.createJobsProxy(plugin, manager, security) as any,
         scheduler: SchedulerContextProxy.createSchedulerProxy(plugin, manager, security),
         logger: {
-          info: (msg: string) => {
-            pluginLogger.info(msg);
-            manager.writeLog('INFO', msg, plugin.manifest.slug);
+          info: (msg: string, ...meta: unknown[]) => {
+            pluginLogger.info(msg, ...meta);
+            manager.writeLog('INFO', Logger.renderLine(msg, meta), plugin.manifest.slug);
           },
-          warn: (msg: string) => {
-            pluginLogger.warn(msg);
-            manager.writeLog('WARN', msg, plugin.manifest.slug);
+          warn: (msg: string, ...meta: unknown[]) => {
+            pluginLogger.warn(msg, ...meta);
+            manager.writeLog('WARN', Logger.renderLine(msg, meta), plugin.manifest.slug);
           },
-          error: (msg: string) => {
-            pluginLogger.error(msg);
-            manager.writeLog('ERROR', msg, plugin.manifest.slug);
+          error: (msg: string, ...meta: unknown[]) => {
+            pluginLogger.error(msg, ...meta);
+            manager.writeLog('ERROR', Logger.renderLine(msg, meta), plugin.manifest.slug);
           },
         },
         plugin: {
@@ -205,9 +210,9 @@ export class PluginContextFactory {
         collections: CollectionsContextProxy.createCollectionsProxy(plugin, manager, rootLogger, security),
         settings: SettingsContextProxy.createSettingsProxy(plugin, manager),
         i18n: I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security),
-        t: (key: string, params?: Record<string, any>) => {
+        t: (key: string, params?: Record<string, any>, locale?: string) => {
           const i18n = I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security);
-          return i18n.t(key, params);
+          return i18n.t(key, params, locale);
         },
         ui: UiContextProxy.createUiProxy(plugin, manager),
         runtime: {

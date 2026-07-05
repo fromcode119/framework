@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Input } from './input';
+import { NumberStepper } from './number-stepper';
 import { Select } from './select';
 import { BooleanToggleField } from './boolean-toggle-field';
 import { TagField } from './tag-field';
@@ -129,10 +130,26 @@ export class ArrayFieldRowRenderer extends React.Component<ArrayFieldRowRenderer
         );
     }
 
+    if (f.type === 'number') {
+      const numAdmin = (f.admin || {}) as Record<string, any>;
+      return (
+        <NumberStepper
+          value={val}
+          onChange={(next) => onUpdateItem(index, f.name, next)}
+          disabled={Boolean(f.admin?.readOnly)}
+          placeholder={fieldProps.placeholder}
+          step={numAdmin.step}
+          min={numAdmin.min}
+          max={numAdmin.max}
+          size="sm"
+        />
+      );
+    }
+
     return (
       <Input
         {...fieldProps}
-        type={f.type === 'number' ? 'number' : 'text'}
+        type="text"
         size="sm"
       />
     );

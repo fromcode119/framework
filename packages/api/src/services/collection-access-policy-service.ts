@@ -1,4 +1,4 @@
-import { Collection } from '@fromcode119/core';
+import { Collection, EnvUtils } from '@fromcode119/core';
 
 type AccessConstraint = Record<string, unknown>;
 
@@ -19,6 +19,19 @@ export class CollectionAccessPolicyService {
       }
 
       this.throwAuthError(req, `Authentication is required to read system collection "${collection.slug}".`);
+    }
+
+    // Fail-closed (flag-gated): a non-system collection whose read access is undeclared (no access.read)
+    // or explicitly denied is admin-only when enforced. Public/content collections opt in with
+    // `access.read` returning true (or a row-scoping constraint). This uses its OWN flag
+    // (ENFORCE_COLLECTION_READ_AUTHZ), SEPARATE from the route gateway, because server-side content
+    // resolution reads content collections (cms pages/posts, products) anonymously — so this must stay
+    // off until those collections are tagged with `access.read`. Inert by default.
+    if (EnvUtils.flag('ENFORCE_COLLECTION_READ_AUTHZ') && (accessResult === false || accessResult === null)) {
+      if (this.isAdmin(req?.user)) {
+        return {};
+      }
+      this.throwAuthError(req, `Read access to collection "${collection.slug}" requires permission.`);
     }
 
     return {};

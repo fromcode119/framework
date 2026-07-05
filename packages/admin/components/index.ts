@@ -33,6 +33,15 @@ export * from './notification-context-store';
 export * from './use-notification';
 export * from './plugin-dashboard';
 export * from './collection/edit/edit-page-section-nav';
+// The full, schema-driven field renderer (relationship, array, date, media, custom admin.component, …).
+// Exposed so appearance shells edit records through the SAME renderer as the default admin instead of a
+// limited hand-rolled control set (which silently drops most fields).
+export * from './collection/field-renderer';
+export * from './collection/field-renderer.interfaces';
+// The platform number stepper + preset color control, exposed so appearance screens use the SAME controls
+// as the field renderer (not raw <input type=number> / text) — one look everywhere.
+export * from './ui/number-stepper';
+export * from './ui/color-field';
 // Appearance engine — exposed on the @fromcode119/admin runtime module so externally-loaded
 // appearance bundles can import AdminComponent + the registries/keys and register themselves.
 export * from './admin-component';

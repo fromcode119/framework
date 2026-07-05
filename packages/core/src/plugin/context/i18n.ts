@@ -95,9 +95,9 @@ export class I18nContextProxy {
             normalizeLocale(locale),
           );
         },
-        t: (key: string, params?: Record<string, any>) => {
+        t: (key: string, params?: Record<string, any>, locale?: string) => {
           if (!hasCapability('i18n')) handleViolation('i18n');
-          return manager.i18n.translate(scopePluginKey(key), params);
+          return manager.i18n.translate(scopePluginKey(key), params, normalizeLocale(locale));
         },
         /** The platform's configured default locale (admin Settings → Localization `default_locale`).
          *  Use for server-rendered legal documents that must render in the PLATFORM language, not the

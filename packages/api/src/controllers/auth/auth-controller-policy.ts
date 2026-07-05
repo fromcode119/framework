@@ -14,6 +14,9 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     // Bake EFFECTIVE roles (legacy column ∪ `_system_users_roles` junction) into the session token so
     // role assignments from the admin Roles UI / plugins actually drive guards and runtime behavior.
     const roles = await this.resolveEffectiveRoles(user);
+    // Bake effective PERMISSIONS too so the admin client can decide console entry + permission-scoped
+    // nav without an extra round-trip. Admins get ['*']; scoped operators get their set.
+    const permissions = await this.auth.getUserPermissions(Number(user.id)).catch(() => [] as string[]);
     const jti = randomUUID();
     const userResponse = {
       id: String(user.id),
@@ -21,6 +24,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
       firstName: this.readUserFirstName(user),
       lastName: this.readUserLastName(user),
       roles,
+      permissions,
       jti,
     };
     const sessionDurationMinutes = await this.getSessionDurationMinutes();

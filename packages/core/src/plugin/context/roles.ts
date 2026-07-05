@@ -1,6 +1,7 @@
 import { NamingStrategy } from '@fromcode119/database';
 import type { PluginManagerInterface } from './utils.interfaces';
 import { SystemConstants } from '../../constants';
+import { StringUtils } from '../../string-utils';
 
 
 export class RolesContextProxy {
@@ -10,6 +11,19 @@ export class RolesContextProxy {
    * Plugins should use context.roles.ensure() instead of querying the system roles table directly.
    */
   static createRolesProxy(manager: PluginManagerInterface) {
+    // Runtime authorization (UserPermissionChecker) reads a user's roles from the `users.roles` JSON
+    // column — NOT the junction table. assign/removeRole must keep that column in sync or granting/
+    // revoking a role is a silent no-op for access control (mirrors the API's saveUserRoles fix). Reads
+    // the current JSON, applies the mutation, and writes back via the STRING-table path (stringifies once).
+    const syncUsersRolesJson = async (uid: number, mutate: (roles: string[]) => string[]): Promise<void> => {
+      const user = await manager.db.findOne(SystemConstants.TABLE.USERS, { id: uid }).catch(() => null);
+      if (!user) return;
+      // `users.roles` may be an array or a JSON-array string; the util handles both.
+      const current = StringUtils.normalizeSlugList((user as any).roles);
+      const next = StringUtils.normalizeSlugList(mutate(current));
+      await manager.db.update(SystemConstants.TABLE.USERS, { id: uid }, { roles: next, updatedAt: new Date() });
+    };
+
     return {
       async ensure(slug: string, data: { name: string; description?: string; type?: string; permissions?: any[] }): Promise<void> {
         const existing = await manager.db.findOne(SystemConstants.TABLE.ROLES, { slug });
@@ -24,21 +38,25 @@ export class RolesContextProxy {
         }
       },
 
-      /** Grant a role to a user (idempotent). Writes the user↔role junction via the string-table path. */
+      /** Grant a role to a user (idempotent). Writes the junction AND the `users.roles` JSON column. */
       async assignRole(userId: number | string, slug: string): Promise<void> {
         const uid = Number(userId);
         if (!uid || !slug) return;
-        const existing = await manager.db.findOne(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug: slug });
+        const roleSlug = String(slug).trim().toLowerCase();
+        const existing = await manager.db.findOne(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
         if (!existing) {
-          await manager.db.insert(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug: slug });
+          await manager.db.insert(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
         }
+        await syncUsersRolesJson(uid, (roles) => (roles.includes(roleSlug) ? roles : [...roles, roleSlug]));
       },
 
-      /** Revoke a role from a user (no-op if not assigned). */
+      /** Revoke a role from a user (no-op if not assigned). Updates the junction AND the `users.roles` JSON. */
       async removeRole(userId: number | string, slug: string): Promise<void> {
         const uid = Number(userId);
         if (!uid || !slug) return;
-        await manager.db.delete(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug: slug });
+        const roleSlug = String(slug).trim().toLowerCase();
+        await manager.db.delete(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
+        await syncUsersRolesJson(uid, (roles) => roles.filter((r) => r !== roleSlug));
       },
 
       /** List the user ids that currently hold a given role (via the user↔role junction). */

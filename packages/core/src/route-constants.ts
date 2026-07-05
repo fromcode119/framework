@@ -100,6 +100,7 @@ export class RouteConstants {
   ADMIN_PEOPLE_RECORDS: '/admin/people/records',
   ADMIN_PEOPLE_ID: '/admin/people/:id',
   ADMIN_PEOPLE_ID_CREATE_USER: '/admin/people/:id/create-user',
+  ADMIN_PEOPLE_ID_LINK_USER: '/admin/people/:id/link-user',
   ADMIN_PEOPLE_ID_RECORDS: '/admin/people/:id/records',
   ADMIN_USERS_ROLES: '/admin/users/roles',
   ADMIN_USERS_2FA_STATUS: '/admin/users/:id/2fa/status',

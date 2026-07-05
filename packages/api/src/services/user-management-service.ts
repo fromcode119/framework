@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, users, systemRoles, systemUsersToRoles, systemRolesToPermissions } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger } from '@fromcode119/core';
+import { PluginManager, Logger, StringUtils } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
@@ -247,9 +247,7 @@ export class UserManagementService {
   }
 
   async saveUserRoles(userId: number, roles: string[]) {
-    const normalized = [...new Set(
-      (Array.isArray(roles) ? roles : []).map((r) => String(r ?? '').trim().toLowerCase()).filter(Boolean),
-    )];
+    const normalized = StringUtils.normalizeSlugList(roles);
 
     await this.db.delete(USERS_ROLES_TABLE, { userId });
     for (const roleSlug of normalized) {

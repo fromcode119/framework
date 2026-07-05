@@ -2,7 +2,7 @@ import React from 'react';
 import { TextArea } from '@/components/ui/text-area';
 import { BooleanToggleField } from '@/components/ui/boolean-toggle-field';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
-import { ColorPicker } from '@/components/ui/color-picker';
+import { ColorField } from '@/components/ui/color-field';
 import { CodeEditor } from '@/components/ui/code-editor';
 import { LocalizedTextField } from './fields/localized-text-field';
 import { ArrayField } from '@/components/ui/array-field';
@@ -73,7 +73,7 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
             collectionSlug={collectionSlug}
           />
         )
-      ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'CodeEditor' && field.admin?.component !== 'LocalizedText' && field.admin?.component !== 'LocalizedTextarea' ? (
+      ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'ColorField' && field.admin?.component !== 'CodeEditor' && field.admin?.component !== 'LocalizedText' && field.admin?.component !== 'LocalizedTextarea' ? (
         <FieldCustomComponent
           field={field}
           currentValue={currentValue}
@@ -173,12 +173,13 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
             disabled={isFieldReadOnly}
           />
         )
-      ) : (field.type === 'color' || field.admin?.component === 'ColorPicker') ? (
+      ) : (field.type === 'color' || field.admin?.component === 'ColorPicker' || field.admin?.component === 'ColorField') ? (
         wrapWithReadOnlyOverride(
-          <ColorPicker
+          <ColorField
             value={currentValue}
             onChange={updateValue}
             disabled={isFieldReadOnly}
+            field={field}
           />
         )
       ) : (field.admin?.component === 'LocalizedText' || field.admin?.component === 'LocalizedTextarea') ? (

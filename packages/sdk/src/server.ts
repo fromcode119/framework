@@ -3,10 +3,12 @@
 // These exports transitively depend on express, fs, path, or server-only @fromcode119/* packages.
 export { APIServer } from '@fromcode119/api';
 export { AuthManager } from '@fromcode119/auth';
-export { 
-  BasePluginRouter, 
-  BaseRouter, 
+export {
+  BasePluginRouter,
+  BaseRouter,
   BaseController,
+  AccessLevel,
+  EnvUtils,
   PluginHealthResponseBuilder,
   PluginHealthRouteHandler,
   PluginManager,

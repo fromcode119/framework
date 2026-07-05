@@ -15,6 +15,12 @@ export interface PersonEditPageState {
   notice: string;
   error: string;
   notFound: boolean;
+  users: Array<{ id: number; email?: string; username?: string }>;
+  confirmDelete: boolean;
+  deleting: boolean;
+  reassignOpen: boolean;
+  reassignTo: string;
+  reassigning: boolean;
 }
 
 export interface PersonEditPageFields {

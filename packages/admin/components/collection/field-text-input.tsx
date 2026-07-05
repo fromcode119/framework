@@ -1,5 +1,6 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { FieldTextInputProps } from './field-renderer.interfaces';
 
@@ -10,6 +11,22 @@ export class FieldTextInput extends React.Component<FieldTextInputProps> {
       label, slugWarning, slugManuallyEdited, isLocalizedField, shouldInlineLocaleSwitcher,
       localeSwitcher, wrapWithReadOnlyOverride
     } = this.props;
+    // Number fields use the platform stepper (input + explicit +/- controls), not the bare browser input.
+    if (field.type === 'number') {
+      const admin = (field.admin || {}) as Record<string, any>;
+      return wrapWithReadOnlyOverride(
+        <NumberStepper
+          value={typeof currentValue === 'number' || typeof currentValue === 'string' ? currentValue : ''}
+          onChange={updateValue}
+          disabled={isFieldReadOnly}
+          error={errors?.[0]}
+          placeholder={`Enter ${label}...`}
+          step={admin.step ?? (field as any).step}
+          min={admin.min ?? (field as any).min}
+          max={admin.max ?? (field as any).max}
+        />
+      );
+    }
     return wrapWithReadOnlyOverride(
       <div className="relative">
         <Input

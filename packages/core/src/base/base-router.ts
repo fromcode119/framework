@@ -2,6 +2,12 @@ import express, { Router, RequestHandler, Request, Response, NextFunction } from
 import { PluginHealthRouteHandler } from '../plugin-health-route-handler';
 import type { PluginHealthRouteHandlerOptions } from '../plugin-health-route-handler.interfaces';
 import { RouteConstants } from '../route-constants';
+import { ApiAccessGate } from '../plugin/context/api-access-gate';
+import { AccessLevel } from '../plugin/context/api-access-gate.enums';
+import type { ApiAccessDescriptor, ApiAccessLevel } from '../plugin/context/api-access-gate.types';
+
+/** A route handler list that may begin with an `{ access }` declaration. */
+type RouteHandlers = Array<RequestHandler | ApiAccessDescriptor>;
 
 /**
  * Base class for all API routers.
@@ -71,24 +77,40 @@ export abstract class BaseRouter {
   protected abstract registerRoutes(): void;
 
   /**
+   * Strip a leading `{ access }` declaration and prepend the central fail-closed gate (inert unless
+   * ENFORCE_AUTHZ_GATEWAY=true). Undeclared routes default to admin-only inside the gate.
+   */
+  private gated(handlers: RouteHandlers): RequestHandler[] {
+    let list = handlers;
+    let access: ApiAccessLevel | undefined;
+    if (ApiAccessGate.isDescriptor(list[0])) {
+      access = (list[0] as ApiAccessDescriptor).access;
+      list = list.slice(1);
+    }
+    const gate = ApiAccessGate.build(access);
+    const rest = list as RequestHandler[];
+    return gate ? [gate, ...rest] : rest;
+  }
+
+  /**
    * Register a GET route.
    */
-  protected get(path: string, ...handlers: RequestHandler[]): void {
-    this.router.get(path, ...handlers);
+  protected get(path: string, ...handlers: RouteHandlers): void {
+    this.router.get(path, ...this.gated(handlers));
   }
 
   /**
-   * Register the standard plugin health route.
+   * Register the standard plugin health route. Always public — probes must not require auth.
    */
   protected health(...handlers: RequestHandler[]): void {
-    this.get(RouteConstants.SEGMENTS.HEALTH, ...handlers);
+    this.get(RouteConstants.SEGMENTS.HEALTH, { access: AccessLevel.Public }, ...handlers);
   }
 
   /**
-   * Register the standard plugin status route.
+   * Register the standard plugin status route. Always public — probes must not require auth.
    */
   protected status(...handlers: RequestHandler[]): void {
-    this.get(RouteConstants.SEGMENTS.STATUS, ...handlers);
+    this.get(RouteConstants.SEGMENTS.STATUS, { access: AccessLevel.Public }, ...handlers);
   }
 
   /**
@@ -108,29 +130,29 @@ export abstract class BaseRouter {
   /**
    * Register a POST route.
    */
-  protected post(path: string, ...handlers: RequestHandler[]): void {
-    this.router.post(path, ...handlers);
+  protected post(path: string, ...handlers: RouteHandlers): void {
+    this.router.post(path, ...this.gated(handlers));
   }
 
   /**
    * Register a PUT route.
    */
-  protected put(path: string, ...handlers: RequestHandler[]): void {
-    this.router.put(path, ...handlers);
+  protected put(path: string, ...handlers: RouteHandlers): void {
+    this.router.put(path, ...this.gated(handlers));
   }
 
   /**
    * Register a PATCH route.
    */
-  protected patch(path: string, ...handlers: RequestHandler[]): void {
-    this.router.patch(path, ...handlers);
+  protected patch(path: string, ...handlers: RouteHandlers): void {
+    this.router.patch(path, ...this.gated(handlers));
   }
 
   /**
    * Register a DELETE route.
    */
-  protected delete(path: string, ...handlers: RequestHandler[]): void {
-    this.router.delete(path, ...handlers);
+  protected delete(path: string, ...handlers: RouteHandlers): void {
+    this.router.delete(path, ...this.gated(handlers));
   }
 
   /**

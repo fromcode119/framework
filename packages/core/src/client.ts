@@ -27,6 +27,7 @@ export type { CapabilityMetadata } from './capabilities.interfaces';
 // ── Logging ───────────────────────────────────────────────────────────────────
 export { Logger } from './logging';
 export { LogLevel } from './logging.enums';
+export { AccessLevel } from './plugin/context/api-access-gate.enums';
 export type { LoggerOptions } from './logging.interfaces';
 
 // ── Constants ─────────────────────────────────────────────────────────────────

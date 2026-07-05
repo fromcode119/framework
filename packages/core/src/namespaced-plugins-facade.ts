@@ -1,6 +1,12 @@
 import type { PluginApiResolver } from './plugin-api-resolver.interfaces';
 
 export class NamespacedPluginsFacade {
+  // The facade is Proxy-backed: `namespace('org.fromcode').finance` resolves the `finance` plugin's public
+  // API dynamically by slug. Cross-plugin API shapes aren't statically known, so dynamic slug access is
+  // typed `any` — this index signature is the facade's honest contract (the named methods below keep their
+  // precise types for direct calls).
+  [pluginSlug: string]: any;
+
   constructor(
     private readonly resolver: PluginApiResolver,
     private readonly namespaceValue: string,

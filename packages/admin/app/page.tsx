@@ -74,6 +74,19 @@ export default class AdminPage extends AdminComponent<Record<string, never>, Adm
     this.fetchUpdate();
   }
 
+  /**
+   * Permission check for role-protected dashboard controls. Admins (role 'admin' or '*') pass; otherwise
+   * the user must hold the exact permission or a matching `<namespace>:*` wildcard.
+   */
+  private userHasPermission(user: any, required: string): boolean {
+    const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
+    if (roles.includes('admin')) return true;
+    const permissions: string[] = Array.isArray(user?.permissions) ? user.permissions : [];
+    return permissions.some(
+      (p) => p === '*' || p === required || (p.endsWith(':*') && required.startsWith(p.slice(0, -1))),
+    );
+  }
+
   private async fetchStats(): Promise<void> {
     const sorted = await DashboardDataService.fetchStats();
     if (this.mounted && sorted) this.setState({ stats: sorted });
@@ -130,18 +143,25 @@ export default class AdminPage extends AdminComponent<Record<string, never>, Adm
           {/* Stats Grid */}
           <DashboardStatsGrid userCount={userCount} loadingStats={loadingStats} activePluginsCount={activePluginsCount} />
 
-          {/* Quick Actions */}
-          <DashboardQuickActions
-            actions={[
-              { label: 'Create User', href: '/users/new', icon: 'Users' },
-              { label: 'Media Library', href: '/media', icon: 'Image' },
-              { label: 'Plugins', href: '/plugins', icon: 'Package' },
-              { label: 'Themes', href: '/themes', icon: 'Layout' },
-              { label: 'Settings', href: AdminConstants.ROUTES.SETTINGS.ROOT, icon: 'Settings' },
-              { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY, icon: 'Activity' },
-            ]}
-            onNavigate={(href) => this.router.push(href)}
-          />
+          {/* Quick Actions — each card is a role-protected resource; only show the ones this user is
+              actually permitted to use (admins hold '*', scoped staff hold their plugin permissions). */}
+          {(() => {
+            const quickActions = [
+              { label: 'Create User', href: '/users/new', icon: 'Users', permission: 'users:manage' },
+              { label: 'Media Library', href: '/media', icon: 'Image', permission: 'media:manage' },
+              { label: 'Plugins', href: '/plugins', icon: 'Package', permission: 'plugins:manage' },
+              { label: 'Themes', href: '/themes', icon: 'Layout', permission: 'themes:manage' },
+              { label: 'Settings', href: AdminConstants.ROUTES.SETTINGS.ROOT, icon: 'Settings', permission: 'settings:manage' },
+              { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY, icon: 'Activity', permission: 'system:view' },
+            ].filter((a) => this.userHasPermission(user, a.permission));
+            if (!quickActions.length) return null;
+            return (
+              <DashboardQuickActions
+                actions={quickActions.map(({ label, href, icon }) => ({ label, href, icon }))}
+                onNavigate={(href) => this.router.push(href)}
+              />
+            );
+          })()}
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

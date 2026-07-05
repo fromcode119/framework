@@ -29,6 +29,9 @@ export type {
   ContentResolutionResult,
 } from './content-resolution-gate.types';
 
+export { RedirectResolverRegistryService } from './redirect-resolver-registry-service';
+export type { RedirectResolution, RedirectResolver } from './redirect-resolver.types';
+
 export { PluginEntityRecordsRegistryService } from './entity-records/plugin-entity-records-registry-service';
 export { EntityRecordsResolutionService } from './entity-records/entity-records-resolution-service';
 export type {

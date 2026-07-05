@@ -64,6 +64,7 @@ export class PublicSystemRouteUtils {
       path === apiConfig.probeRoutes.READY ||
       path === apiConfig.routes.system.HEALTH ||
       path === apiConfig.routes.system.OPENAPI ||
+      path === apiConfig.routes.system.DOCS ||
       PublicSystemRouteUtils.isAuthPath(path) ||
       PublicSystemRouteUtils.isI18nPath(path) ||
       PublicSystemRouteUtils.isEventsPath(path) ||

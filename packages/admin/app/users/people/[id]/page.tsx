@@ -30,6 +30,12 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
     notice: '',
     error: '',
     notFound: false,
+    users: [],
+    confirmDelete: false,
+    deleting: false,
+    reassignOpen: false,
+    reassignTo: '',
+    reassigning: false,
   };
 
   async componentDidMount(): Promise<void> {
@@ -49,6 +55,9 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
       const person: Person = res?.person;
       if (!this.mounted) return;
       this.setState({ person, fields: PersonEditPage.toFields(person), loading: false, notFound: !person });
+      void AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS)
+        .then((u: any) => { if (this.mounted) this.setState({ users: Array.isArray(u?.docs) ? u.docs : (Array.isArray(u) ? u : []) }); })
+        .catch(() => undefined);
     } catch {
       if (this.mounted) this.setState({ loading: false, notFound: true });
     }
@@ -113,6 +122,30 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
     }
   }
 
+  /** Delete this person (the linked login account, if any, is kept). */
+  private async remove(): Promise<void> {
+    this.setState({ deleting: true, error: '' });
+    try {
+      await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.PERSON(this.state.routeId));
+      this.router?.push(AdminConstants.ROUTES.PEOPLE.ROOT);
+    } catch (err: any) {
+      this.setState({ deleting: false, confirmDelete: false, error: String(err?.message || 'Failed to delete person') });
+    }
+  }
+
+  /** Reassign (or clear, when reassignTo === '__none__') the linked login account. */
+  private async reassign(): Promise<void> {
+    const userId = this.state.reassignTo === '__none__' ? null : this.state.reassignTo;
+    this.setState({ reassigning: true, error: '', notice: '' });
+    try {
+      await AdminApi.post(`${AdminConstants.ENDPOINTS.SYSTEM.PERSON(this.state.routeId)}/link-user`, { userId });
+      this.setState({ reassigning: false, reassignOpen: false, notice: userId ? 'Login account reassigned.' : 'Login account unlinked.' });
+      await this.fetchPerson();
+    } catch (err: any) {
+      this.setState({ reassigning: false, error: String(err?.message || 'Failed to reassign the login account') });
+    }
+  }
+
   /** Open a hub record: navigate to its admin page (href) or download its document (downloadUrl). */
   private async openRecord(item: RecordsHubItem): Promise<void> {
     if (item.downloadUrl) {
@@ -150,7 +183,7 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
 
   render(): React.ReactElement {
     const theme = this.theme;
-    const { person, loading, saving, granting, sendingReset, notice, error, notFound } = this.state;
+    const { person, loading, saving, granting, sendingReset, notice, error, notFound, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this.state;
 
     if (loading) {
       return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Loading person…" /></div>;
@@ -202,6 +235,36 @@ export default class PersonEditPage extends AdminComponent<PersonEditPageProps, 
               </div>
             </form>
             <PersonAccountPanel person={person} theme={theme} granting={granting} onGrantLogin={() => this.grantLogin()} />
+          </div>
+
+          <div className={`mt-6 rounded-3xl border p-6 ${theme === 'dark' ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
+            <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'} mb-4`}>Account management</h3>
+            <div className="flex flex-wrap items-center gap-3">
+              {reassignOpen ? (
+                <>
+                  <select value={reassignTo} onChange={(e) => this.setState({ reassignTo: e.target.value })}
+                    className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-[12px] font-bold">
+                    <option value="__none__">— No login account (unlink) —</option>
+                    {users.map((u) => <option key={u.id} value={String(u.id)}>{u.email || u.username || `user #${u.id}`} · #{u.id}</option>)}
+                  </select>
+                  <Button variant="primary" type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-bold text-[12px]">Apply</Button>
+                  <Button variant="secondary" type="button" onClick={() => this.setState({ reassignOpen: false })} className="h-10 px-5 rounded-xl font-bold text-[12px]">Cancel</Button>
+                </>
+              ) : (
+                <Button variant="secondary" type="button" icon={<FrameworkIcons.UserCheck size={14} />}
+                  onClick={() => this.setState({ reassignOpen: true, reassignTo: linked ? String(person.userId) : '__none__' })}
+                  className="h-10 px-5 rounded-xl font-bold text-[12px]">Reassign / unlink login</Button>
+              )}
+              {confirmDelete ? (
+                <>
+                  <Button variant="danger" type="button" isLoading={deleting} onClick={() => this.remove()} className="h-10 px-5 rounded-xl font-bold text-[12px]">Confirm — delete person</Button>
+                  <Button variant="secondary" type="button" onClick={() => this.setState({ confirmDelete: false })} className="h-10 px-5 rounded-xl font-bold text-[12px]">Keep</Button>
+                </>
+              ) : (
+                <Button variant="danger" type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => this.setState({ confirmDelete: true })} className="h-10 px-5 rounded-xl font-bold text-[12px]">Delete person</Button>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-3">Deleting removes the person record permanently; the linked login account is kept.</p>
           </div>
 
           <div className="mt-6">

@@ -1,18 +1,34 @@
 export class ResolvedDocResponseService {
-  static normalizeResult(result: { type?: unknown; plugin?: unknown; doc?: unknown } | null): {
+  static normalizeResult(result: { type?: unknown; plugin?: unknown; doc?: unknown; redirect?: unknown } | null): {
     type: string;
     plugin: string;
     doc: Record<string, unknown> | null;
+    redirect?: { target: string; permanent: boolean };
   } | null {
     if (!result) {
       return null;
     }
 
-    return {
+    const normalized: {
+      type: string;
+      plugin: string;
+      doc: Record<string, unknown> | null;
+      redirect?: { target: string; permanent: boolean };
+    } = {
       type: String(result.type || '').trim(),
       plugin: String(result.plugin || '').trim(),
       doc: this.normalizeDoc(this.toRecord(result.doc)),
     };
+
+    const redirect = this.toRecord(result.redirect);
+    if (redirect && this.readString(redirect.target)) {
+      normalized.redirect = {
+        target: this.readString(redirect.target),
+        permanent: redirect.permanent === true,
+      };
+    }
+
+    return normalized;
   }
 
   static normalizeDoc(doc: Record<string, unknown> | null): Record<string, unknown> | null {

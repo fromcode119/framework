@@ -1,5 +1,5 @@
 import { LocalizationUtils } from '@fromcode119/core/client';
-import { notFound } from 'next/navigation';
+import { notFound, redirect, permanentRedirect } from 'next/navigation';
 import DynamicContentClient from '../dynamic-content-client';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
@@ -103,6 +103,13 @@ export default async function DynamicContentPage({
   const content = await DynamicPageResolver.resolveDocWithPermalinkFallback(slug, resolvedSearchParams, locale, routingConfig.strategy);
   if (content) {
     return <DynamicContentClient content={content} />;
+  }
+
+  // Nothing resolved at this path — honour a configured SEO redirect (retired URL) before 404ing.
+  const redirectRule = await DynamicPageResolver.resolveRedirect(slug);
+  if (redirectRule) {
+    if (redirectRule.permanent) permanentRedirect(redirectRule.target);
+    redirect(redirectRule.target);
   }
 
   notFound();

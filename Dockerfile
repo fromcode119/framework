@@ -90,6 +90,13 @@ RUN ./node_modules/.bin/tsc -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:api FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:api OK ==="
 
+# `tsc -b` compiles TS but does NOT copy non-TS assets, so mirror the api's template files into dist
+# (Handlebars templates for auth emails + the developer portal). Keeps dist self-contained.
+RUN npm run copy:templates --workspace=@fromcode119/api > /tmp/copy-templates.log 2>&1; ec=$?; \
+    cat /tmp/copy-templates.log; \
+    [ $ec -ne 0 ] && echo "=== copy:templates FAILED (exit $ec) ===" && exit $ec; \
+    echo "=== copy:templates OK ==="
+
 # Step 2: Build React package FIRST — the SDK (and AI extension) consume its built type
 # declarations (e.g. PluginContextRegistry), so react must be compiled before sdk.
 RUN npm run build --workspace=@fromcode119/react > /tmp/build-react.log 2>&1; ec=$?; \

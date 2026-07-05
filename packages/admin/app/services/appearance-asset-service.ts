@@ -29,7 +29,9 @@ export class AppearanceAssetService {
     return new Response(body, {
       headers: {
         'content-type': AppearanceAssetService.contentType(parts.join('/')),
-        'cache-control': 'no-cache',
+        // Never cache appearance assets — they are bind-mounted and rebuilt in place; a stale bundle
+        // makes admins see an old UI after a rebuild. The loader also appends a per-load ?v= buster.
+        'cache-control': 'no-store, must-revalidate',
       },
     });
   }

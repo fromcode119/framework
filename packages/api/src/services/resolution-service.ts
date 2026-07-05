@@ -34,10 +34,26 @@ export class ResolutionService {
     // Run the resolved document through any plugin-registered content-resolution
     // gates (e.g. members-only paywall gating). The framework holds no knowledge
     // of what the gates do; plugins register them via CoreServices during onInit.
-    return CoreServices.getInstance().contentResolutionGates.apply(resolved, {
+    const gated = await CoreServices.getInstance().contentResolutionGates.apply(resolved, {
       user: options.user,
       preview: options.preview,
     });
+    if (gated) return gated;
+
+    // Nothing resolved to content — consult plugin-registered redirect resolvers
+    // (e.g. an SEO plugin's retired-URL rules) before returning null. The framework
+    // stays plugin-agnostic: it only asks the registry and shapes a redirect result.
+    const redirect = await this.resolveRedirect(slug);
+    if (redirect) {
+      return { type: 'redirect', plugin: '', doc: null, redirect };
+    }
+    return gated;
+  }
+
+  private async resolveRedirect(slug: string): Promise<{ target: string; permanent: boolean } | null> {
+    const rawSlug = String(slug || '').trim();
+    const path = rawSlug.startsWith('/') ? rawSlug : `/${rawSlug.replace(/^\/+/, '')}`;
+    return CoreServices.getInstance().redirectResolvers.resolve(path);
   }
 
   private async resolveSlugRaw(slug: string, options: {

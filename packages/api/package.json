@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/api",
-  "version": "0.1.73",
+  "version": "0.1.74",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -10,7 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "copy:templates": "mkdir -p dist/controllers/auth/email-templates/templates && cp -r src/controllers/auth/email-templates/templates/. dist/controllers/auth/email-templates/templates/",
+    "copy:templates": "mkdir -p dist/controllers/auth/email-templates/templates && cp -r src/controllers/auth/email-templates/templates/. dist/controllers/auth/email-templates/templates/ && mkdir -p dist/utils/templates && cp -r src/utils/templates/. dist/utils/templates/",
     "build": "tsc && npm run copy:templates",
     "prepack": "npm run copy:templates",
     "dev": "tsx watch src/server.ts",

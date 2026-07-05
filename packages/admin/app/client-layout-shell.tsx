@@ -10,6 +10,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/loader';
 import { AdminConstants } from '@/lib/constants';
 import { AuthUtils } from '@/lib/auth-utils';
+import { ApplicationUrlUtils, AppPathConstants } from '@fromcode119/core/client';
 import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
 import { ClientLayoutAuthStateHooks } from './services/client-layout-auth-state-hooks';
 import { ClientLayoutNavigationStateHooks } from './services/client-layout-navigation-state-hooks';
@@ -23,27 +24,50 @@ export default function ClientLayoutShell({ children }: ClientLayoutChildrenProp
     user: authState.user,
   });
 
-  if (authState.user && !authState.isAuthPage && !authState.user.roles?.includes('admin')) {
+  // Admit admins AND scoped-staff users (anyone holding at least one admin-area permission). Users with
+  // NO admin permissions (e.g. plain customers/partners) fall through to the self-service account view.
+  // Backward-safe: sessions issued before permissions were baked lack `permissions`, so this reduces to
+  // the prior admin-only check for them.
+  const userPermissions = Array.isArray((authState.user as { permissions?: unknown } | null)?.permissions)
+    ? ((authState.user as { permissions?: string[] }).permissions as string[])
+    : [];
+  const canAccessAdmin = !!authState.user?.roles?.includes('admin') || userPermissions.length > 0;
+
+  if (authState.user && !authState.isAuthPage && !canAccessAdmin) {
+    // No admin permissions — this account isn't staff, but it can still manage its own profile,
+    // security and orders on the self-service account page (frontend). Send them there instead of a
+    // dead-end. joinApiPath cleanly joins the (possibly empty) frontend base with the account path,
+    // yielding a relative '/account' when the base is unresolved.
+    const accountUrl = ApplicationUrlUtils.joinApiPath(
+      ApplicationUrlUtils.inferBrowserBaseUrl('frontend'),
+      AppPathConstants.FRONTEND.ACCOUNT,
+    );
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#020617]">
         <div className="max-w-md space-y-6 p-12 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-rose-500/10 text-rose-500 shadow-xl shadow-rose-500/10">
-            <FrameworkIcons.Zap size={40} />
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-500/10 text-indigo-500 shadow-xl shadow-indigo-500/10">
+            <FrameworkIcons.User size={40} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Access Restricted</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Your account</h1>
             <p className="text-sm font-medium leading-relaxed text-slate-500">
-              Your account <span className="font-bold text-indigo-500">{authState.user.email}</span> does not have the required admin privileges to access this console.
+              You're signed in as <span className="font-bold text-indigo-500">{authState.user.email}</span>. This area is for staff — manage your own profile, security and activity from your account.
             </p>
           </div>
+          <button
+            onClick={() => { window.location.href = accountUrl; }}
+            className="w-full rounded-2xl bg-slate-900 py-4 text-[11px] font-semibold tracking-wide text-white shadow-2xl transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
+          >
+            Go to my account
+          </button>
           <button
             onClick={() => {
               AuthUtils.purgeAuth();
               authState.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
             }}
-            className="w-full rounded-2xl bg-slate-900 py-4 text-[11px] font-semibold tracking-wide text-white shadow-2xl transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
+            className="w-full text-[11px] font-semibold tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
           >
-            Switch Account
+            Sign out
           </button>
         </div>
       </div>

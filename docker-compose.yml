@@ -78,6 +78,17 @@ services:
       # Real tamper protection is signature signing (ENFORCE_PLUGIN_SIGNATURES), which a core
       # upgrade cannot false-positive. Leave false unless you have a specific reason.
       - ENFORCE_PLUGIN_INTEGRITY=${ENFORCE_PLUGIN_INTEGRITY:-false}
+      # Default-deny authorization gateway: every plugin API route + collection read requires an explicit
+      # access declaration (public/authenticated/self/permission); undeclared => admin-only. Off falls back
+      # to legacy per-route guards. See SECURITY-AUTHZ-REMEDIATION-PLAN.md.
+      # Default-deny plugin-route authz. Secure-by-default (ON). Set to false to fall back to legacy
+      # per-route guards. Verified live 2026-07-01: anon → public routes work, admin routes 401.
+      - ENFORCE_AUTHZ_GATEWAY=${ENFORCE_AUTHZ_GATEWAY:-true}
+      # Collection READ lockdown. Content collections that must be public declare `static access =
+      # { read: () => true }` (cms pages/posts/categories/tags/navigation/post-meta, ecommerce
+      # products/categories/product-tags/reviews, lms catalog). Everything else is admin-read.
+      # Secure-by-default (ON). If a public frontend surface 404s, tag its collection then keep this on.
+      - ENFORCE_COLLECTION_READ_AUTHZ=${ENFORCE_COLLECTION_READ_AUTHZ:-true}
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}

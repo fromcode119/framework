@@ -1,4 +1,5 @@
 export interface SidebarNavGroupsProps {
+  isAdmin?: boolean;
   isMini?: boolean;
   pathname: string;
   sortedGroups: string[];

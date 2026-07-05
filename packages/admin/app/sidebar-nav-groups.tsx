@@ -14,6 +14,7 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
   render(): React.ReactNode {
     const props = this.props;
     const {
+      isAdmin,
       isMini,
       pathname,
       sortedGroups,
@@ -83,8 +84,10 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
           );
         })}
 
-        {/* If Core group doesn't exist for some reason, ensure basic nav is there */}
-        {!groupedMenu['core'] && (
+        {/* If Core group doesn't exist for some reason, ensure basic nav is there — ADMINS ONLY.
+            For scoped-staff users the core group is intentionally absent (Dashboard/Plugins are
+            admin-only), so this fallback must not re-inject those system links for them. */}
+        {isAdmin && !groupedMenu['core'] && (
           <>
             {!isMini && (
               <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5 mt-4">
@@ -100,6 +103,9 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
           </>
         )}
 
+        {/* System section: Activity is admin-only; Settings only appears if it survived nav
+            authorization (admins). Hide the whole section for scoped users who have neither. */}
+        {(isAdmin || footerSettingsItem) && (
         <div className="mt-auto pt-4 space-y-1">
           {!isMini && (
             <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1">
@@ -108,7 +114,9 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
           )}
           {(!collapsedGroups.includes('system') || isMini) && (
             <>
-              <NavItem icon={<Activity size={18}/>} label="Activity" href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
+              {isAdmin && (
+                <NavItem icon={<Activity size={18}/>} label="Activity" href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
+              )}
               {footerSettingsItem && (
                 <NavItem
                   icon={<Icon name={footerSettingsItem.icon || 'Settings'} size={18} />}
@@ -132,6 +140,7 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
             </>
           )}
         </div>
+        )}
       </>
     );
   }

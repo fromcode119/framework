@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from './setting-row';
@@ -18,13 +18,11 @@ export class SecuritySettingsCards extends React.Component<SecuritySettingsCards
             title="Login Session Duration (minutes)"
             description="How long a user stays logged in before re-authentication is required."
           >
-            <Input
-              type="number"
+            <NumberStepper
               min={15}
               max={43200}
               value={settings.auth_session_duration_minutes}
-              onChange={(e) => setSettings(prev => ({ ...prev, auth_session_duration_minutes: e.target.value }))}
-              className="w-full md:w-40"
+              onChange={(v) => setSettings(prev => ({ ...prev, auth_session_duration_minutes: v === '' ? '' : String(v) }))}
             />
           </SettingRow>
 
@@ -48,11 +46,10 @@ export class SecuritySettingsCards extends React.Component<SecuritySettingsCards
             title="Rate Limit (Max Requests)"
             description="The maximum number of requests a single IP can make."
           >
-            <Input
-              type="number"
+            <NumberStepper
+              min={0}
               value={settings.rate_limit_max}
-              onChange={(e) => setSettings(prev => ({ ...prev, rate_limit_max: e.target.value }))}
-              className="w-full md:w-32"
+              onChange={(v) => setSettings(prev => ({ ...prev, rate_limit_max: v === '' ? '' : String(v) }))}
             />
           </SettingRow>
 
@@ -62,11 +59,10 @@ export class SecuritySettingsCards extends React.Component<SecuritySettingsCards
             title="Rate Limit Window"
             description="Per IP, the request counter resets after this window elapses. Example: 900000 = 15 minutes."
           >
-            <Input
-              type="number"
+            <NumberStepper
+              min={0}
               value={settings.rate_limit_window}
-              onChange={(e) => setSettings(prev => ({ ...prev, rate_limit_window: e.target.value }))}
-              className="w-full md:w-32"
+              onChange={(v) => setSettings(prev => ({ ...prev, rate_limit_window: v === '' ? '' : String(v) }))}
             />
           </SettingRow>
         </Card>

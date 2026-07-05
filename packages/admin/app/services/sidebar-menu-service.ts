@@ -30,14 +30,19 @@ export class SidebarMenuService {
   ];
 
   static authorizeMenuItems(menuItems: any[], user: any): any[] {
-    // Filter out items the user shouldn't see. For now, only 'admin' can see
-    // platform/system routes. In the future, this will be more granular.
+    // Admins see everything.
+    const isAdmin = !!user?.roles?.includes('admin');
+    if (isAdmin) return menuItems;
+
+    // For scoped-staff users: framework/system items (Dashboard, Users, Plugins, Media, Themes, Activity,
+    // Settings) carry NO pluginSlug — those stay admin-only (hidden here). A PLUGIN item is shown only if
+    // the user holds a permission for that plugin (`*`, `<slug>:*`, or any `<slug>:...`), matching the API
+    // gate's per-plugin `<slug>:manage` derivation. Fail-closed: no explicit pluginSlug ⇒ hidden.
+    const permissions: string[] = Array.isArray(user?.permissions) ? user.permissions : [];
     return menuItems.filter(item => {
-      const isAdminRoute = SidebarMenuService.adminProtectedPaths.some(path => item.path === path || item.path?.startsWith(path + '/'));
-      if (isAdminRoute && !user?.roles?.includes('admin')) {
-        return false;
-      }
-      return true;
+      const slug = String(item?.pluginSlug || '').trim().toLowerCase();
+      if (!slug) return false;
+      return permissions.some((p) => p === '*' || p === `${slug}:*` || p.startsWith(`${slug}:`));
     });
   }
 

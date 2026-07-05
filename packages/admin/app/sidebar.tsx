@@ -108,6 +108,7 @@ export default function Sidebar(props: SidebarProps) {
         </div>
 
         <SidebarNavGroups
+          isAdmin={!!user?.roles?.includes('admin')}
           isMini={isMini}
           pathname={pathname}
           sortedGroups={sortedGroups}

@@ -78,6 +78,34 @@ export class PeopleManagementService {
     return PeopleSelfService.toCamel(await this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: personId }));
   }
 
+  /** Permanently delete a person record. The linked login user (if any) is left intact. */
+  async deletePerson(personId: number): Promise<void> {
+    const raw = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: personId });
+    if (!raw) throw new Error('Person not found');
+    await this.db.delete(SystemConstants.TABLE.PEOPLE, { id: personId });
+  }
+
+  /**
+   * Reassign (or clear) the login account linked to a person. Pass a userId to link an existing
+   * user; pass null/0 to unlink. Validates the target user exists and is not already linked to a
+   * different person, so the people↔users link stays one-to-one.
+   */
+  async linkUser(personId: number, userId: number | null): Promise<any> {
+    const raw = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: personId });
+    if (!raw) throw new Error('Person not found');
+    const uid = Number(userId) || 0;
+    if (uid) {
+      const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: uid }).catch(() => null);
+      if (!user) throw new Error('That user account does not exist');
+      const other = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { userId: uid }).catch(() => null);
+      if (other && Number(other.id) !== Number(personId)) {
+        throw new Error('That user is already linked to another person');
+      }
+    }
+    await this.db.update(SystemConstants.TABLE.PEOPLE, { id: personId }, { userId: uid || null });
+    return this.getPerson(personId);
+  }
+
   /**
    * Promote a person to a login account: create the user (random password if none supplied) and
    * link it back onto the person row. Refuses if the person is missing, has no email, or is already

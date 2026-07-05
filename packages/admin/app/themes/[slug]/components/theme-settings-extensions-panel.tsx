@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -70,11 +71,10 @@ export class ThemeSettingsExtensionsPanel extends React.Component<{ page: any; m
                         className="w-full"
                       />
                     ) : type === 'number' ? (
-                      <input
-                        type="number"
+                      <NumberStepper
+                        min={0}
                         value={rawValue ?? ''}
-                        onChange={(e) => { const next = e.target.value; page.handleSettingChange(key, next === '' ? '' : Number(next)); }}
-                        className={`w-full rounded-xl px-4 py-2 text-sm font-semibold border ${adminTheme === 'dark' ? 'bg-slate-900/50 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                        onChange={(v) => page.handleSettingChange(key, v === '' ? '' : Number(v))}
                       />
                     ) : type === 'json' ? (
                       <textarea

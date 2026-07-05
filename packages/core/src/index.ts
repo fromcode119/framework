@@ -4,6 +4,10 @@ export type { PluginInstallProgress, PluginInstallProgressReporter } from './plu
 export { RecordVersions } from './collections/record-versions';
 
 // Core Classes (Server-only)
+export { ApiAccessGate } from './plugin/context/api-access-gate';
+export { AccessLevel } from './plugin/context/api-access-gate.enums';
+export { EnvUtils } from './utils/env-utils';
+export type { ApiAccessLevel, ApiAccessDescriptor, ApiPermissionCheck } from './plugin/context/api-access-gate.types';
 export { PluginManager } from './plugin/plugin-manager';
 export type { PluginManagerInterface } from './plugin/context/utils.interfaces';
 export { ThemeManager } from './theme/theme-manager';
