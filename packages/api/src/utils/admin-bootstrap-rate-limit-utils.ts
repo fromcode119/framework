@@ -1,4 +1,4 @@
-import { RouteConstants, SystemConstants } from '@fromcode119/core';
+import { CookieConstants, RouteConstants, SystemConstants } from '@fromcode119/core';
 
 export class AdminBootstrapRateLimitUtils {
   static readonly AUTH_STATUS_PATH = SystemConstants.API_PATH.AUTH.STATUS;
@@ -26,6 +26,7 @@ export class AdminBootstrapRateLimitUtils {
     ip?: unknown;
     method?: unknown;
     headers?: Record<string, unknown>;
+    cookies?: Record<string, unknown>;
     originalUrl?: unknown;
     url?: unknown;
     path?: unknown;
@@ -33,7 +34,34 @@ export class AdminBootstrapRateLimitUtils {
   }): string {
     const clientKey = AdminBootstrapRateLimitUtils.resolveClientKey(requestLike.ip);
     const bootstrapGroup = AdminBootstrapRateLimitUtils.resolveBootstrapGroup(requestLike);
-    return bootstrapGroup ? `admin-bootstrap:${clientKey}:${bootstrapGroup}` : `ip:${clientKey}`;
+    if (bootstrapGroup) return `admin-bootstrap:${clientKey}:${bootstrapGroup}`;
+    // Authenticated (token-bearing) traffic gets its OWN bucket per ip+token so a busy admin session —
+    // or several users behind one NAT/proxy (all sharing one client IP) — can never starve each other or
+    // be throttled by the strict anonymous IP cap. The key stays bound to the IP so rotating tokens from
+    // one machine multiplies buckets but not across IPs, and only JWT-shaped tokens qualify — garbage
+    // Authorization headers still land in the anonymous ip bucket.
+    const tokenKey = AdminBootstrapRateLimitUtils.resolveAuthTokenKey(requestLike);
+    if (tokenKey) return `tok:${clientKey}:${tokenKey}`;
+    return `ip:${clientKey}`;
+  }
+
+  /** True when the request carries a JWT-shaped auth token (Authorization Bearer or the session cookie). */
+  static hasAuthToken(requestLike: { headers?: Record<string, unknown>; cookies?: Record<string, unknown> }): boolean {
+    return AdminBootstrapRateLimitUtils.resolveAuthTokenKey(requestLike) !== '';
+  }
+
+  private static resolveAuthTokenKey(requestLike: { headers?: Record<string, unknown>; cookies?: Record<string, unknown> }): string {
+    const header = String(requestLike.headers?.authorization || '');
+    const bearer = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+    const cookieToken = String(requestLike.cookies?.[CookieConstants.cookie('token')] || '');
+    const token = bearer || cookieToken;
+    // JWT shape: three non-empty dot-separated base64url segments. Cheap structural gate only — real
+    // validation happens in auth middleware; a forged-but-shaped token gets 401s within its own budget.
+    if (!/^[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}$/.test(token)) return '';
+    // Short stable digest — do not keep raw tokens as limiter keys.
+    let hash = 0;
+    for (let i = 0; i < token.length; i++) hash = ((hash << 5) - hash + token.charCodeAt(i)) | 0;
+    return (hash >>> 0).toString(36);
   }
 
   static isAdminBootstrapRead(requestLike: {

@@ -216,6 +216,15 @@ export interface PluginContext {
       message: { subject: string; html?: string; text?: string },
       options?: { extraRecipients?: string[] },
     ): Promise<{ recipients: number; sent: number }>;
+    /**
+     * Persist an in-app inbox notification for ONE user (framework `_system_notifications`; surfaced by
+     * the admin/portal bell). Best-effort: never throws. The plugin supplies content + an optional
+     * in-admin link; the framework owns storage and read-state.
+     */
+    notifyUser(
+      userId: number,
+      message: { title: string; body?: string; link?: string },
+    ): Promise<{ success: boolean }>;
   };
 
   readonly users: {

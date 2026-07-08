@@ -7,6 +7,32 @@ import { StringUtils } from '../../string-utils';
 export class RolesContextProxy {
 
   /**
+   * User ids holding a role — the UNION of the `users_roles` junction and the `users.roles` JSON
+   * column (the JSON is what the permission checker reads; the junction is only guaranteed for rows
+   * written via assignRole). Static so both the id and email proxy methods share it without relying
+   * on `this` (proxy methods may be detached by callers).
+   */
+  private static async resolveUserIdsWithRole(manager: PluginManagerInterface, slug: string): Promise<number[]> {
+    const roleSlug = String(slug).trim().toLowerCase();
+    if (!roleSlug) return [];
+    const ids = new Set<number>();
+    const rows = await manager.db.find(SystemConstants.TABLE.USERS_ROLES, { where: { roleSlug } }).catch(() => []);
+    for (const row of (Array.isArray(rows) ? rows : [])) {
+      const id = Number(NamingStrategy.denormalizeRecord(row)?.userId);
+      if (Number.isFinite(id) && id > 0) ids.add(id);
+    }
+    const users = await manager.db.find(SystemConstants.TABLE.USERS, { limit: 5000 }).catch(() => []);
+    for (const user of (Array.isArray(users) ? users : [])) {
+      const record = NamingStrategy.denormalizeRecord(user);
+      if (StringUtils.normalizeSlugList((record as any)?.roles).includes(roleSlug)) {
+        const id = Number(record?.id);
+        if (Number.isFinite(id) && id > 0) ids.add(id);
+      }
+    }
+    return Array.from(ids);
+  }
+
+  /**
    * Creates a roles proxy for plugins.
    * Plugins should use context.roles.ensure() instead of querying the system roles table directly.
    */
@@ -59,13 +85,15 @@ export class RolesContextProxy {
         await syncUsersRolesJson(uid, (roles) => roles.filter((r) => r !== roleSlug));
       },
 
-      /** List the user ids that currently hold a given role (via the user↔role junction). */
+      /**
+       * List the user ids that currently hold a given role. Roles live in TWO places — the
+       * `users_roles` junction AND the `users.roles` JSON column (the JSON is what the permission
+       * checker reads; the junction is only guaranteed for rows written via assignRole) — so this
+       * resolves the UNION of both. Otherwise a user granted `admin` outside assignRole (seed, direct
+       * save) would be invisible to role-targeted notifications.
+       */
       async listUserIdsWithRole(slug: string): Promise<number[]> {
-        if (!slug) return [];
-        const rows = await manager.db.find(SystemConstants.TABLE.USERS_ROLES, { where: { roleSlug: slug } }).catch(() => []);
-        return (Array.isArray(rows) ? rows : [])
-          .map((row: any) => Number(NamingStrategy.denormalizeRecord(row)?.userId))
-          .filter((id: number) => Number.isFinite(id) && id > 0);
+        return RolesContextProxy.resolveUserIdsWithRole(manager, slug);
       },
 
       /**
@@ -75,10 +103,8 @@ export class RolesContextProxy {
        */
       async listUserEmailsWithRole(slug: string): Promise<string[]> {
         if (!slug) return [];
-        const roleRows = await manager.db.find(SystemConstants.TABLE.USERS_ROLES, { where: { roleSlug: slug } }).catch(() => []);
-        const ids = (Array.isArray(roleRows) ? roleRows : [])
-          .map((row: any) => Number(NamingStrategy.denormalizeRecord(row)?.userId))
-          .filter((id: number) => Number.isFinite(id) && id > 0);
+        // Same junction+JSON union as listUserIdsWithRole — email resolution must see the same users.
+        const ids = await RolesContextProxy.resolveUserIdsWithRole(manager, slug);
         const emails = new Set<string>();
         for (const id of ids) {
           const user = await manager.db.findOne(SystemConstants.TABLE.USERS, { id }).catch(() => null);

@@ -136,7 +136,7 @@ export class AuthControllerSharedInfrastructure extends BaseController {
       return envAppName;
     }
 
-    return 'Fromcode';
+    return 'Platform';
   }
 
   protected async resolveFrameworkSenderAddress(): Promise<string> {

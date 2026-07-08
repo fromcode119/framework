@@ -55,7 +55,7 @@ export class RuntimeConstants {
   ]);
 
   static readonly ADMIN_RUNTIME_EXPORT_KEYS = [
-    'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch',
+    'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'NumberStepper',
     'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
     'CodeEditor', 'CurrencySelect', 'MoneyInput', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
     'NotificationContext', 'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',

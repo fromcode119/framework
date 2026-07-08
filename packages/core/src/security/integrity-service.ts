@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { Logger } from '../logging';
+import { EnvUtils } from '../utils/env-utils';
 
 export class IntegrityService {
   private static logger = new Logger({ namespace: 'integrity-service' });
@@ -89,7 +90,7 @@ export class IntegrityService {
     const flag = String(process.env.ENFORCE_PLUGIN_INTEGRITY || '').trim().toLowerCase();
     if (flag === 'true') return true;
     if (flag === 'false') return false;
-    return process.env.NODE_ENV === 'production';
+    return EnvUtils.isProduction();
   }
 
   /**

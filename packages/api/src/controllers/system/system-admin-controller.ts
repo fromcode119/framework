@@ -40,6 +40,58 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
 export class SystemAdminController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
+  /** Global admin search — the command-palette data source. */
+  async search(req: Request, res: Response) {
+    try {
+      res.json(await this.runtime.search.search(req.query?.q));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /** Per-user UI preference (saved views etc.) — always scoped to the authenticated user. */
+  async getPreference(req: Request, res: Response) {
+    try {
+      res.json(await this.runtime.preferences.get(Number((req as any).user?.id), String(req.params.key || '')));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async setPreference(req: Request, res: Response) {
+    try {
+      const result = await this.runtime.preferences.set(Number((req as any).user?.id), String(req.params.key || ''), (req.body as any)?.value);
+      res.status(result.success ? 200 : 400).json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /** In-app inbox: the authenticated user's notifications + unread count (bell UI). */
+  async getNotifications(req: Request, res: Response) {
+    try {
+      res.json(await this.runtime.inbox.list(Number((req as any).user?.id)));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async markNotificationRead(req: Request, res: Response) {
+    try {
+      res.json(await this.runtime.inbox.markRead(Number((req as any).user?.id), Number(req.params.id)));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async markAllNotificationsRead(req: Request, res: Response) {
+    try {
+      res.json(await this.runtime.inbox.markAllRead(Number((req as any).user?.id)));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async getAdminMetadata(req: Request, res: Response) {
     try {
       const metadata = await this.runtime.manager.getAdminMetadata() as any;
@@ -107,23 +159,32 @@ export class SystemAdminController {
       const preparedPayload = await this.prepareSettingsPayload(payload as Record<string, unknown>);
       const timestamp = new Date();
 
+      const actor = (req as any).user || {};
       for (const [key, value] of Object.entries(preparedPayload)) {
         const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
         const existing = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
+        const previousValue = existing ? String((existing as any).value ?? '') : undefined;
 
         if (existing) {
           await this.runtime.db.update(SystemConstants.TABLE.META, { key }, {
             value: serializedValue,
             updated_at: timestamp,
           });
-          continue;
+        } else {
+          await this.runtime.db.insert(SystemConstants.TABLE.META, {
+            key,
+            value: serializedValue,
+            updated_at: timestamp,
+          });
         }
 
-        await this.runtime.db.insert(SystemConstants.TABLE.META, {
-          key,
-          value: serializedValue,
-          updated_at: timestamp,
-        });
+        // Audit every setting change WITH the actor + old→new. This is what finally attributes
+        // "who flipped admin_appearance" — and every other settings mystery — to a person.
+        if (previousValue !== serializedValue) {
+          void this.runtime.manager.audit.logAction('system', 'settings.update', key, 'allowed', {
+            userId: actor.id, email: actor.email, from: previousValue ?? null, to: serializedValue,
+          });
+        }
       }
 
       res.json({ success: true });

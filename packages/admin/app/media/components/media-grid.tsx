@@ -27,6 +27,7 @@ export default class MediaGrid extends React.Component<MediaGridProps> {
       setIsMoveDialogOpen,
       setDeletingId,
       setIsDeleteDialogOpen,
+      setEditingItem,
       handleOptimize,
     } = this.props;
 
@@ -83,6 +84,7 @@ export default class MediaGrid extends React.Component<MediaGridProps> {
             setIsMoveDialogOpen={setIsMoveDialogOpen}
             setDeletingId={setDeletingId}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+            setEditingItem={setEditingItem}
             handleOptimize={handleOptimize}
           />
         ))}

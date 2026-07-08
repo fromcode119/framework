@@ -26,6 +26,7 @@ export class SystemConstants {
     SESSIONS: '_system_sessions',
     LOGS: '_system_logs',
     AUDIT_LOGS: '_system_audit_logs',
+    NOTIFICATIONS: '_system_notifications',
     META: '_system_meta',
     MEDIA: 'media',
     MEDIA_FOLDERS: 'media_folders',

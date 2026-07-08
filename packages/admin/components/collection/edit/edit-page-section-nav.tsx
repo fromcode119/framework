@@ -111,22 +111,29 @@ export class EditPageSectionNav extends React.Component<EditPageSectionNavProps,
           <FrameworkIcons.ChevronUp size={11} strokeWidth={2.5} />
         </button>
 
-        {/* Dots */}
+        {/* Dots — no connecting rail line: the active dot changes size as you scroll, which shifted the
+            stack against the fixed line and made the line look like it was sliding around. */}
         <div className="relative flex flex-col items-center">
-          <div className={`absolute top-2 bottom-2 w-px ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
           {sections.map((section) => {
             const isActive = section.key === activeKey;
             return (
               <div key={section.key} className="relative group flex items-center justify-center py-[5px]">
+                {/* The button keeps a CONSTANT 10px footprint; only the inner dot scales. If the dot
+                    itself changed size, every row's height would change as the active section moves,
+                    shifting the whole stack on scroll (the "shaking" this replaced). */}
                 <button
                   onClick={() => scrollToSection(section.key)}
                   style={{ position: 'relative', zIndex: 10 }}
-                  className={`rounded-full transition-all duration-200 ${
-                    isActive
-                      ? `w-2.5 h-2.5 ${isDark ? 'bg-indigo-400' : 'bg-indigo-500'} shadow-sm shadow-indigo-500/40`
-                      : `w-1.5 h-1.5 ${isDark ? 'bg-slate-600 hover:bg-slate-400' : 'bg-slate-300 hover:bg-slate-500'}`
-                  }`}
-                />
+                  className="w-2.5 h-2.5 flex items-center justify-center"
+                >
+                  <span
+                    className={`rounded-full transition-all duration-200 ${
+                      isActive
+                        ? `w-2.5 h-2.5 ${isDark ? 'bg-indigo-400' : 'bg-indigo-500'} shadow-sm shadow-indigo-500/40`
+                        : `w-1.5 h-1.5 ${isDark ? 'bg-slate-600 group-hover:bg-slate-400' : 'bg-slate-300 group-hover:bg-slate-500'}`
+                    }`}
+                  />
+                </button>
                 {/* Tooltip — must escape the nav's stacking context */}
                 <div
                   style={{ position: 'absolute', left: 20, zIndex: 9999, top: '50%', transform: 'translateY(-50%)' }}

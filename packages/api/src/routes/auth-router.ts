@@ -3,6 +3,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { AuthController } from '../controllers/auth';
 import { RouteConstants } from '@fromcode119/core';
+import { SsoUserResolverService } from '../controllers/auth/sso/sso-user-resolver-service';
 
 /**
  * Authentication router (class-based implementation).
@@ -30,6 +31,10 @@ export class AuthRouter extends BaseRouter {
   ) {
     super();
     this.controller = new AuthController(manager, auth);
+    // Wire the Google/Apple id-token verifier onto the SSO resolution hook that AuthControllerSso.ssoLogin
+    // calls. Registered once here; the resolver reads accepted client IDs from the `sso` integration config.
+    const ssoResolver = new SsoUserResolverService(manager);
+    manager.hooks.on('auth:sso:resolve-user', (payload: any) => ssoResolver.resolve(payload));
   }
 
   protected registerRoutes(): void {

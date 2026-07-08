@@ -5,6 +5,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PromptDialog } from '@/components/ui/prompt-dialog';
 import { MoveDialog } from '@/components/ui/move-dialog';
 import { FrameworkIcons } from '@fromcode119/react';
+import MediaDetailsDialog from './media-details-dialog';
 import type { MediaDialogsProps } from '../media-page.interfaces';
 
 const { FolderPlus, Edit } = FrameworkIcons;
@@ -13,6 +14,9 @@ export default class MediaDialogs extends React.Component<MediaDialogsProps> {
   render(): React.ReactNode {
     const {
       editingFolder,
+      editingItem,
+      setEditingItem,
+      handleUpdateDetails,
       isActionLoading,
       isMoveDialogOpen,
       isFolderPromptOpen,
@@ -36,6 +40,13 @@ export default class MediaDialogs extends React.Component<MediaDialogsProps> {
 
     return (
       <>
+        <MediaDetailsDialog
+          item={editingItem}
+          isLoading={isActionLoading}
+          onClose={() => setEditingItem(null)}
+          onConfirm={handleUpdateDetails}
+        />
+
         <MoveDialog
           isOpen={isMoveDialogOpen}
           onClose={() => {

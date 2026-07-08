@@ -22,6 +22,14 @@ module.exports = {
     { pattern: /^blur-\[/ },
     { pattern: /^shadow-\[/, variants: ['hover'] },
     { pattern: /^aspect-\[/ },
+    // Plugin admin cards use arbitrary corner radii (rounded-[32px], rounded-l-[4px], …). These MUST
+    // be LITERAL strings, not a { pattern } — a safelist regex only matches candidates Tailwind already
+    // generates from scanned content; it does NOT synthesize arbitrary values. The Docker-built admin
+    // CSS can't scan plugins/, so without these literals every such card renders SQUARE. Keep in sync
+    // with: grep -rEoh 'rounded(-[a-z]+)?-\[[0-9]+px\]' plugins/*/src/ui
+    'rounded-[1px]', 'rounded-[20px]', 'rounded-[24px]', 'rounded-[28px]', 'rounded-[32px]',
+    'rounded-[36px]', 'rounded-[40px]', 'rounded-[48px]', 'rounded-[50px]', 'rounded-[56px]',
+    'rounded-l-[4px]', 'rounded-r-[4px]',
   ],
   theme: {
     extend: {

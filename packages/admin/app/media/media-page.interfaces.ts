@@ -19,6 +19,8 @@ export interface MediaItem {
   optimizedSize?: number | null;
   optimizedWidth?: number | null;
   optimizedHeight?: number | null;
+  alt?: string | null;
+  caption?: string | null;
   folderId: number | null;
   createdAt: string;
 }
@@ -57,6 +59,8 @@ export interface MediaPageModel {
   setDeletingId: (id: number | null) => void;
   editingFolder: MediaFolder | null;
   setEditingFolder: (folder: MediaFolder | null) => void;
+  editingItem: MediaItem | null;
+  setEditingItem: (item: MediaItem | null) => void;
   setMovingItem: (item: MovingItem | null) => void;
   isActionLoading: boolean;
   optimizingId: number | null;
@@ -72,6 +76,7 @@ export interface MediaPageModel {
   handleDrop: (e: DragEvent) => Promise<void>;
   handleDelete: () => Promise<void>;
   handleOptimize: (item: MediaItem) => Promise<void>;
+  handleUpdateDetails: (alt: string, caption: string) => Promise<void>;
 }
 
 export interface MediaToolbarProps {
@@ -111,6 +116,7 @@ export interface MediaGridProps {
   setIsMoveDialogOpen: (value: boolean) => void;
   setDeletingId: (id: number | null) => void;
   setIsDeleteDialogOpen: (value: boolean) => void;
+  setEditingItem: (item: MediaItem | null) => void;
   handleOptimize: (item: MediaItem) => Promise<void>;
 }
 
@@ -135,12 +141,28 @@ export interface MediaItemCardProps {
   setIsMoveDialogOpen: (value: boolean) => void;
   setDeletingId: (id: number | null) => void;
   setIsDeleteDialogOpen: (value: boolean) => void;
+  setEditingItem: (item: MediaItem | null) => void;
   handleOptimize: (item: MediaItem) => Promise<void>;
+}
+
+export interface MediaDetailsDialogProps {
+  item: MediaItem | null;
+  isLoading: boolean;
+  onClose: () => void;
+  onConfirm: (alt: string, caption: string) => void;
+}
+
+export interface MediaDetailsDialogState {
+  alt: string;
+  caption: string;
 }
 
 export interface MediaDialogsProps {
   theme: string;
   editingFolder: MediaFolder | null;
+  editingItem: MediaItem | null;
+  setEditingItem: (item: MediaItem | null) => void;
+  handleUpdateDetails: (alt: string, caption: string) => Promise<void>;
   isActionLoading: boolean;
   isMoveDialogOpen: boolean;
   isFolderPromptOpen: boolean;

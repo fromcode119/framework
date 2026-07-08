@@ -7,6 +7,9 @@ import { ShortcodeService } from '../../services/shortcode-service';
 import { SystemService } from '../../services/system-service';
 import { UserManagementService } from '../../services/user-management-service';
 import { PeopleManagementService } from '../../services/people-management-service';
+import { AdminSearchService } from '../../services/admin-search-service';
+import { NotificationInboxService } from '../../services/notification-inbox-service';
+import { UserPreferencesService } from '../../services/user-preferences-service';
 import { RESTController } from '../rest/rest-controller';
 import { SystemTwoFactorService } from './system-2fa-service';
 
@@ -16,6 +19,9 @@ export class SystemControllerRuntime {
   readonly system: SystemService;
   readonly users: UserManagementService;
   readonly people: PeopleManagementService;
+  readonly search: AdminSearchService;
+  readonly inbox: NotificationInboxService;
+  readonly preferences: UserPreferencesService;
   readonly resolution: ResolutionService;
   readonly twoFactor: SystemTwoFactorService;
   readonly publicFrontendSettings: PublicFrontendSettingsService;
@@ -32,6 +38,9 @@ export class SystemControllerRuntime {
     this.system = new SystemService(dbWrapper);
     this.users = new UserManagementService(dbWrapper, auth, manager);
     this.people = new PeopleManagementService(dbWrapper, this.users);
+    this.search = new AdminSearchService(manager, dbWrapper);
+    this.inbox = new NotificationInboxService(dbWrapper);
+    this.preferences = new UserPreferencesService(dbWrapper);
     this.resolution = new ResolutionService(manager, themeManager, restController);
     this.twoFactor = new SystemTwoFactorService(dbWrapper, () => manager.email, this.users);
     this.publicFrontendSettings = new PublicFrontendSettingsService();

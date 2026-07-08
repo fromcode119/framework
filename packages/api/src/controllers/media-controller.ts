@@ -172,13 +172,16 @@ export class MediaController extends BaseController {
 
   async updateFile(req: Request, res: Response) {
     const { id } = req.params;
-    const { folderId } = req.body;
+    const { folderId, alt, caption } = req.body ?? {};
+    const patch: Record<string, any> = {};
+    if (folderId !== undefined) patch.folderId = folderId === 'null' || folderId === null ? null : Number(folderId);
+    if (alt !== undefined) patch.alt = alt === null || alt === '' ? null : String(alt);
+    if (caption !== undefined) patch.caption = caption === null || caption === '' ? null : String(caption);
+    if (Object.keys(patch).length === 0) {
+      return res.status(400).json({ error: 'No supported fields to update' });
+    }
     try {
-      const updated = await this.db.update(
-        media,
-        { id: Number(id) },
-        { folderId: folderId === 'null' ? null : Number(folderId) }
-      );
+      const updated = await this.db.update(media, { id: Number(id) }, patch);
       res.json(updated);
     } catch (err: any) {
       res.status(500).json({ error: err.message });

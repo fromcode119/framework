@@ -82,6 +82,7 @@ export default class MediaPageView extends React.Component<MediaPageViewProps> {
             setIsMoveDialogOpen={m.setIsMoveDialogOpen}
             setDeletingId={m.setDeletingId}
             setIsDeleteDialogOpen={m.setIsDeleteDialogOpen}
+            setEditingItem={m.setEditingItem}
             handleOptimize={m.handleOptimize}
           />
         </div>
@@ -110,6 +111,9 @@ export default class MediaPageView extends React.Component<MediaPageViewProps> {
         <MediaDialogs
           theme={m.theme}
           editingFolder={m.editingFolder}
+          editingItem={m.editingItem}
+          setEditingItem={m.setEditingItem}
+          handleUpdateDetails={m.handleUpdateDetails}
           isActionLoading={m.isActionLoading}
           isMoveDialogOpen={m.isMoveDialogOpen}
           isFolderPromptOpen={m.isFolderPromptOpen}

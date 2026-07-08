@@ -143,12 +143,12 @@ export class MediaPicker extends React.Component<MediaPickerProps, MediaPickerSt
               accept="image/*,video/*,application/pdf"
             />
             <Button
+              variant="primary"
               onClick={() => this.fileInputRef.current?.click()}
               disabled={uploading}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
             >
               {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-              <span className="text-[11px] font-semibold">Upload New</span>
+              Upload New
             </Button>
           </div>
 

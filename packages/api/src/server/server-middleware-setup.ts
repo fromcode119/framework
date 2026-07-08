@@ -18,6 +18,7 @@ export class ServerMiddlewareSetup {
     private readonly manager: PluginManager,
     private readonly getMaintenanceStatus: () => Promise<boolean>,
     private readonly logger: Logger,
+    private readonly getDefaultLocale: () => string = () => '',
   ) {}
 
   setup() {
@@ -25,7 +26,9 @@ export class ServerMiddlewareSetup {
     this.app.use((req, res, next) => this.manager.middlewares.dispatch('pre_auth' as any, req, res, next));
 
     this.app.use((req: any, res, next) => {
-      const locale = this.requestLocale.resolveRequestLocale(req);
+      // Prefer the platform's configured `default_locale` system setting; the
+      // service's own 'en' default is only the last resort when none is configured.
+      const locale = this.requestLocale.resolveRequestLocale(req, this.getDefaultLocale() || 'en');
       req.locale = locale;
       RequestContextUtils.storage.run({ locale }, () => next());
     });

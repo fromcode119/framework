@@ -96,6 +96,25 @@ export class PluginTelemetryService {
     return upper === 'ERROR' || upper === 'FATAL' || upper === 'CRITICAL' || upper === 'ALERT';
   }
 
+  /**
+   * Resolve the platform display name for email subjects/bodies: the configured
+   * `platform_name` setting, then `site_name`, then the APP_NAME env var, then a
+   * generic 'Platform' — never a hardcoded brand.
+   */
+  private async resolveAppName(): Promise<string> {
+    const platformName = await this.getMetaValue(SystemConstants.META_KEY.PLATFORM_NAME);
+    if (platformName) {
+      return platformName;
+    }
+
+    const siteName = await this.getMetaValue(SystemConstants.META_KEY.SITE_NAME);
+    if (siteName) {
+      return siteName;
+    }
+
+    return String(process.env.APP_NAME || '').trim() || 'Platform';
+  }
+
   private resolveSenderAddress(): string {
     const configuredSender = String(process.env.EMAIL_FROM || process.env.SMTP_FROM || '').trim();
     if (configuredSender) {
@@ -129,8 +148,8 @@ export class PluginTelemetryService {
     if (previousAt && now - previousAt < 10 * 60 * 1000) return;
     await this.upsertMetaValue(dedupeKey, new Date(now).toISOString());
 
-    const appName = process.env.APP_NAME || 'Fromcode';
-  const from = this.resolveSenderAddress();
+    const appName = await this.resolveAppName();
+    const from = this.resolveSenderAddress();
     const pluginLabel = String(pluginSlug || 'system').trim() || 'system';
     const headline = String(message || '').trim() || 'Critical system log entry';
     const shortHeadline = headline.length > 140 ? `${headline.slice(0, 137)}...` : headline;
@@ -169,7 +188,7 @@ export class PluginTelemetryService {
 
     const topPlugins = Object.entries(pluginCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
     const criticalRows = recent.filter((row: any) => this.isCriticalLevel(String(row?.level || ''))).slice(0, 8);
-    const appName = process.env.APP_NAME || 'Fromcode';
+    const appName = await this.resolveAppName();
     const from = this.resolveSenderAddress();
     const fromIso = new Date(weekAgo).toISOString();
     const toIso = new Date(now).toISOString();
@@ -195,8 +214,8 @@ export class PluginTelemetryService {
     }
 
     const nowIso = new Date().toISOString();
-    const appName = process.env.APP_NAME || 'Fromcode';
-  const from = this.resolveSenderAddress();
+    const appName = await this.resolveAppName();
+    const from = this.resolveSenderAddress();
     const actorEmail = this.normalizeEmailAddress(triggeredBy?.email) || 'unknown';
     const actorId = String(triggeredBy?.id || '').trim() || 'unknown';
     const actorRoles = Array.isArray(triggeredBy?.roles) ? triggeredBy.roles.join(', ') : '';

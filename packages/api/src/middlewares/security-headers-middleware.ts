@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { Logger } from '@fromcode119/core';
+import { EnvUtils, Logger } from '@fromcode119/core';
 import { ApiUrlUtils } from '../utils/url';
 import { BaseMiddleware } from './base-middleware';
 
@@ -29,7 +29,7 @@ export class SecurityHeadersMiddleware extends BaseMiddleware {
       req.secure ||
       req.get('x-forwarded-proto') === 'https' ||
       req.get('x-forwarded-port') === '443';
-    if (process.env.NODE_ENV === 'production' && isHttps) {
+    if (EnvUtils.isProduction() && isHttps) {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
 

@@ -22,4 +22,12 @@ export class EnvUtils {
   static isProduction(): boolean {
     return String(process.env.NODE_ENV).trim().toLowerCase() === 'production';
   }
+
+  /**
+   * True when running in a development deployment (`NODE_ENV=development`). Use this instead of raw
+   * `process.env.NODE_ENV` comparisons — e.g. to decide whether to emit verbose debug logging.
+   */
+  static isDevelopment(): boolean {
+    return String(process.env.NODE_ENV).trim().toLowerCase() === 'development';
+  }
 }

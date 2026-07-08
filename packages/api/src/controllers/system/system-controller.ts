@@ -67,6 +67,30 @@ export class SystemController extends BaseController {
     return this.adminController.getAdminMetadata(req, res);
   }
 
+  async search(req: Request, res: Response) {
+    return this.adminController.search(req, res);
+  }
+
+  async getNotifications(req: Request, res: Response) {
+    return this.adminController.getNotifications(req, res);
+  }
+
+  async getPreference(req: Request, res: Response) {
+    return this.adminController.getPreference(req, res);
+  }
+
+  async setPreference(req: Request, res: Response) {
+    return this.adminController.setPreference(req, res);
+  }
+
+  async markNotificationRead(req: Request, res: Response) {
+    return this.adminController.markNotificationRead(req, res);
+  }
+
+  async markAllNotificationsRead(req: Request, res: Response) {
+    return this.adminController.markAllNotificationsRead(req, res);
+  }
+
   async getSettings(req: Request, res: Response) {
     return this.adminController.getSettings(req, res);
   }

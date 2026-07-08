@@ -9,8 +9,42 @@ import { SystemConstants } from '../../constants';
  * A plugin supplies only the message content; the framework owns recipient resolution and delivery.
  */
 export class NotificationsContextProxy {
-  static createNotificationsProxy(manager: PluginManagerInterface) {
+  /** Persist one in-app inbox row. Framework-internal; best-effort (a missing table never throws). */
+  private static async persistInApp(
+    manager: PluginManagerInterface,
+    userId: number,
+    message: { title: string; body?: string; link?: string },
+    source: string,
+  ): Promise<boolean> {
+    const id = Number(userId);
+    const title = String(message?.title ?? '').trim();
+    if (!Number.isFinite(id) || id <= 0 || !title) return false;
+    try {
+      await manager.db.insert(SystemConstants.TABLE.NOTIFICATIONS, {
+        user_id: id,
+        title,
+        body: String(message?.body ?? ''),
+        link: String(message?.link ?? ''),
+        source,
+        read_at: null,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  static createNotificationsProxy(manager: PluginManagerInterface, sourceSlug = '') {
     return {
+      /** Persist an in-app inbox notification for one user (surfaced by the admin/portal bell). */
+      async notifyUser(
+        userId: number,
+        message: { title: string; body?: string; link?: string },
+      ): Promise<{ success: boolean }> {
+        const success = await NotificationsContextProxy.persistInApp(manager, userId, message, sourceSlug);
+        return { success };
+      },
+
       async notifyAdmins(
         message: { subject: string; html?: string; text?: string },
         options: { extraRecipients?: string[] } = {},
@@ -41,6 +75,19 @@ export class NotificationsContextProxy {
           const adminEmails = await RolesContextProxy.createRolesProxy(manager).listUserEmailsWithRole('admin');
           for (const adminEmail of (Array.isArray(adminEmails) ? adminEmails : [])) addEmails(adminEmail);
         } catch { /* best-effort — fall through to whatever recipients we already have */ }
+
+        // In-app inbox rows for every admin user (bell badge) — alongside the emails, best-effort.
+        try {
+          const adminIds = await RolesContextProxy.createRolesProxy(manager).listUserIdsWithRole('admin');
+          for (const adminId of (Array.isArray(adminIds) ? adminIds : [])) {
+            await NotificationsContextProxy.persistInApp(
+              manager,
+              Number(adminId),
+              { title: message.subject, body: String(message.text ?? '') },
+              sourceSlug,
+            );
+          }
+        } catch { /* best-effort */ }
 
         const list = Array.from(recipients);
         if (!list.length) {

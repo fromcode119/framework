@@ -7,7 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
 import type { MediaItemCardProps } from '../media-page.interfaces';
 
-const { File, Download, Trash, Loader, External, Zap } = FrameworkIcons;
+const { File, Download, Trash, Loader, External, Zap, Edit } = FrameworkIcons;
 
 export default class MediaItemCard extends React.Component<MediaItemCardProps> {
   render(): React.ReactNode {
@@ -20,6 +20,7 @@ export default class MediaItemCard extends React.Component<MediaItemCardProps> {
       setIsMoveDialogOpen,
       setDeletingId,
       setIsDeleteDialogOpen,
+      setEditingItem,
       handleOptimize,
     } = this.props;
 
@@ -58,6 +59,13 @@ export default class MediaItemCard extends React.Component<MediaItemCardProps> {
                   {optimizingId === item.id ? <Loader size={18} className="animate-spin" /> : <Zap size={18} />}
                 </button>
               )}
+              <button
+                onClick={() => setEditingItem(item)}
+                title="Edit details (alt text, caption)"
+                className="p-2 bg-white rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <Edit size={18} />
+              </button>
               <button
                 onClick={() => {
                   setMovingItem({ id: item.id, type: 'file' });
@@ -125,6 +133,13 @@ export default class MediaItemCard extends React.Component<MediaItemCardProps> {
                 {optimizingId === item.id ? <Loader size={16} className="animate-spin" /> : <Zap size={16} />}
               </button>
             )}
+            <button
+              onClick={() => setEditingItem(item)}
+              title="Edit details (alt text, caption)"
+              className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500"
+            >
+              <Edit size={16} />
+            </button>
             <button
               onClick={() => {
                 setMovingItem({ id: item.id, type: 'file' });

@@ -27,6 +27,7 @@ export class MediaPageController {
     const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [editingFolder, setEditingFolder] = useState<MediaFolder | null>(null);
+    const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
     const [movingItem, setMovingItem] = useState<MovingItem | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [optimizingId, setOptimizingId] = useState<number | null>(null);
@@ -228,6 +229,24 @@ export class MediaPageController {
       }
     };
 
+    const handleUpdateDetails = async (alt: string, caption: string) => {
+      if (!editingItem) return;
+      setIsActionLoading(true);
+      setError(null);
+      try {
+        await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${editingItem.id}`, { alt, caption });
+        setItems(prev => prev.map(i => i.id === editingItem.id
+          ? { ...i, alt: alt || null, caption: caption || null }
+          : i));
+        setEditingItem(null);
+      } catch (err: any) {
+        console.error('Failed to update media details:', err);
+        setError(err?.message || 'Failed to update media details');
+      } finally {
+        setIsActionLoading(false);
+      }
+    };
+
     const handleOptimize = async (item: MediaItem) => {
       setOptimizingId(item.id);
       setError(null);
@@ -277,6 +296,8 @@ export class MediaPageController {
       setDeletingId,
       editingFolder,
       setEditingFolder,
+      editingItem,
+      setEditingItem,
       setMovingItem,
       isActionLoading,
       optimizingId,
@@ -292,6 +313,7 @@ export class MediaPageController {
       handleDrop,
       handleDelete,
       handleOptimize,
+      handleUpdateDetails,
     };
   }
 }

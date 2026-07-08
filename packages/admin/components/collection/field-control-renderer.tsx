@@ -45,7 +45,29 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
     } = this.props;
     return (
       <>
-      {field.type === 'relationship' && field.relationTo === 'media' ? (
+      {/* A registered custom component wins over every built-in control (incl. the media
+          relationship picker) — except the names below, which are aliases for built-ins
+          handled by their own branches further down. */}
+      {field.admin?.component &&
+        field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'ColorField' &&
+        field.admin?.component !== 'CodeEditor' && field.admin?.component !== 'LocalizedText' &&
+        field.admin?.component !== 'LocalizedTextarea' && field.admin?.component !== 'TagField' &&
+        field.admin?.component !== 'Tags' ? (
+        <FieldCustomComponent
+          field={field}
+          currentValue={currentValue}
+          updateValue={updateValue}
+          theme={theme}
+          collectionSlug={collectionSlug}
+          pluginSettings={pluginSettings}
+          globalSettings={globalSettings}
+          fieldComponents={fieldComponents}
+          isFieldReadOnly={isFieldReadOnly}
+          record={record}
+          onPatch={onPatch}
+          wrapWithReadOnlyOverride={wrapWithReadOnlyOverride}
+        />
+      ) : field.type === 'relationship' && field.relationTo === 'media' ? (
         wrapWithReadOnlyOverride(
           <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} hasMany={Boolean(field.hasMany)} />
         )
@@ -73,21 +95,6 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
             collectionSlug={collectionSlug}
           />
         )
-      ) : field.admin?.component && field.admin?.component !== 'ColorPicker' && field.admin?.component !== 'ColorField' && field.admin?.component !== 'CodeEditor' && field.admin?.component !== 'LocalizedText' && field.admin?.component !== 'LocalizedTextarea' ? (
-        <FieldCustomComponent
-          field={field}
-          currentValue={currentValue}
-          updateValue={updateValue}
-          theme={theme}
-          collectionSlug={collectionSlug}
-          pluginSettings={pluginSettings}
-          globalSettings={globalSettings}
-          fieldComponents={fieldComponents}
-          isFieldReadOnly={isFieldReadOnly}
-          record={record}
-          onPatch={onPatch}
-          wrapWithReadOnlyOverride={wrapWithReadOnlyOverride}
-        />
       ) : (field.type === 'textarea' || field.type === 'richText') ? (
         <FieldTextualControl
           kind="textarea"

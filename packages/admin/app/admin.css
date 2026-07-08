@@ -42,7 +42,11 @@
   --fc-success: #059669;
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
-  --fc-radius: var(--radius);
+  /* Concrete value, NOT var(--radius): BrandTokenStyleService appends `--radius: var(--fc-radius)`
+     at runtime, so a var() here creates a custom-property cycle whenever the active theme defines
+     no --theme-radius — both variables go invalid and every rounded-[var(--radius)] corner renders
+     square. Keep in sync with --radius above. */
+  --fc-radius: 0.875rem;
   --fc-shadow: 0 18px 50px rgb(15 23 42 / 0.12);
   --fc-font-body: ui-sans-serif, system-ui, sans-serif;
   --fc-font-display: ui-sans-serif, system-ui, sans-serif;

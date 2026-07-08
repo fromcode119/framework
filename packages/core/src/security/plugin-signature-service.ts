@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { EnvUtils } from '../utils/env-utils';
 
 /**
  * Plugin Signature Service
@@ -38,7 +39,7 @@ export class PluginSignatureService {
    * Usually true in production, false in development
    */
   static isEnforced(): boolean {
-    return process.env.NODE_ENV === 'production' && process.env.ENFORCE_PLUGIN_SIGNATURES === 'true';
+    return EnvUtils.isProduction() && EnvUtils.flag('ENFORCE_PLUGIN_SIGNATURES');
   }
 
   /** Sign a payload using HMAC-SHA256. */

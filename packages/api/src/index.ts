@@ -9,7 +9,7 @@ import {
   RecordVersions, 
   WebSocketManager, 
 } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, LocalizationUtils } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -67,7 +67,8 @@ export class APIServer {
         this.settingsCache.set(key, value);
         await this.cache.set(`system_setting:${key}`, value);
       },
-      manager.hooks
+      manager.hooks,
+      manager.audit
     );
 
     this.graphQLService = new GraphQLService(manager, this.restController);
@@ -77,17 +78,29 @@ export class APIServer {
     this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger);
     this.maintenanceService = new ServerMaintenanceService(this.manager, this.cache, this.settingsCache, this.logger);
     this.authSetup = new ServerAuthSetup(this.auth, (manager as any).db, this.logger);
-    this.middlewareSetup = new ServerMiddlewareSetup(this.app, this.auth, manager, () => this.maintenanceService.getStatus(), this.logger);
+    this.middlewareSetup = new ServerMiddlewareSetup(
+      this.app,
+      this.auth,
+      manager,
+      () => this.maintenanceService.getStatus(),
+      this.logger,
+      () => this.settingsCache.get(SystemConstants.META_KEY.DEFAULT_LOCALE) || '',
+    );
     this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, manager, themeManager, this.auth, null as any, this.restController, this.graphQLService, () => this.maintenanceService.getStatus(), this.logger);
   }
 
   public async initialize() {
     this.logger.info('Initializing API Server infrastructure...');
     
-    // Support nested proxies (e.g. Traefik -> Nginx -> Node)
+    // Support nested proxies (e.g. Traefik -> Nginx -> Node). In containerized deployments the reverse
+    // proxy connects from a PRIVATE subnet address (compose/Coolify networks live in 172.16/12 etc.),
+    // not loopback — trusting only 127.0.0.1 made req.ip resolve to the proxy for every request, so ALL
+    // visitors shared a single anonymous rate-limit bucket (100 req/15min for the whole storefront).
+    // Trusting loopback + RFC1918 ranges restores per-visitor IPs from the edge proxy's X-Forwarded-For.
     this.app.set('trust proxy', (ip: string) => {
-      if (process.env.NODE_ENV === 'development') return true;
-      return ip === '127.0.0.1' || ip === '::1';
+      if (EnvUtils.isDevelopment()) return true;
+      if (ip === '127.0.0.1' || ip === '::1') return true;
+      return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip) || /^::ffff:(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip);
     });
     
     // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
@@ -164,6 +177,13 @@ export class APIServer {
       windowMs: parseInt(this.settingsCache.get('rate_limit_window') || process.env.RATE_LIMIT_WINDOW_MS || '900000'),
       limit: (req) => {
         if (process.env.NODE_ENV === 'development') return 10000;
+        // Token-bearing requests are keyed per ip+token (see AdminBootstrapRateLimitUtils.resolveKey) and
+        // get a far higher budget: one admin page load fans out dozens of plugin API calls, and the strict
+        // anonymous cap (100/15min) throttled the ENTIRE admin behind a shared proxy IP (429 storms —
+        // "Failed to load datasource catalog" etc.). Anonymous traffic keeps the strict IP cap.
+        if (AdminBootstrapRateLimitUtils.hasAuthToken(req as any)) {
+          return parseInt(this.settingsCache.get('rate_limit_max_authenticated') || process.env.RATE_LIMIT_MAX_AUTHENTICATED || '5000');
+        }
         return parseInt(this.settingsCache.get('rate_limit_max') || process.env.RATE_LIMIT_MAX || '100');
       },
       keyGenerator: (req) => AdminBootstrapRateLimitUtils.resolveKey(req),

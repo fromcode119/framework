@@ -59,7 +59,22 @@ export class SystemRouter extends BaseRouter {
     // self-service account view). Stats below stay system:view (admin dashboards).
     this.get(RouteConstants.SEGMENTS.ADMIN_METADATA, this.auth.guard(),
       this.controller.getAdminMetadata);
-    this.get(RouteConstants.SEGMENTS.ADMIN_STATS_COLLECTIONS, this.auth.requirePermission('system:view'), 
+    // Global admin search (command palette). system:view — spans record labels across every collection.
+    this.get(RouteConstants.SEGMENTS.ADMIN_SEARCH, this.auth.requirePermission('system:view'),
+      this.controller.search);
+    // In-app notification inbox — per-user, so any authenticated user (admins AND partners).
+    this.get(RouteConstants.SEGMENTS.ADMIN_NOTIFICATIONS, this.auth.guard(),
+      this.controller.getNotifications);
+    // Per-user UI preferences (saved views etc.) — key namespace embeds the user id.
+    this.get(RouteConstants.SEGMENTS.ADMIN_PREFERENCES_KEY, this.auth.guard(),
+      this.controller.getPreference);
+    this.put(RouteConstants.SEGMENTS.ADMIN_PREFERENCES_KEY, this.auth.guard(),
+      this.controller.setPreference);
+    this.post(RouteConstants.SEGMENTS.ADMIN_NOTIFICATIONS_READ_ALL, this.auth.guard(),
+      this.controller.markAllNotificationsRead);
+    this.post(RouteConstants.SEGMENTS.ADMIN_NOTIFICATIONS_ID_READ, this.auth.guard(),
+      this.controller.markNotificationRead);
+    this.get(RouteConstants.SEGMENTS.ADMIN_STATS_COLLECTIONS, this.auth.requirePermission('system:view'),
       this.controller.getStats);
     this.get(RouteConstants.SEGMENTS.ADMIN_STATS_SECURITY, this.auth.requirePermission('system:view'), 
       this.controller.getSecurityStats);

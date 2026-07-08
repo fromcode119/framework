@@ -1,3 +1,5 @@
+import { EnvUtils } from '../utils/env-utils';
+
 /**
  * Base class for all core services.
  * Provides common utilities and patterns.
@@ -12,7 +14,7 @@ export abstract class BaseService {
    * Log a debug message (only in development).
    */
   protected debug(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV === 'development') {
+    if (EnvUtils.isDevelopment()) {
       console.log(`[${this.serviceName}] ${message}`, ...args);
     }
   }

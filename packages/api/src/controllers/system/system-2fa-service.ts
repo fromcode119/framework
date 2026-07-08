@@ -1,6 +1,9 @@
 /** SystemTwoFactorService — 2FA management endpoints. Extracted from SystemController (ARC-007). */
 
 import { Request, Response } from 'express';
+import Handlebars from 'handlebars';
+import { promises as fs } from 'fs';
+import path from 'path';
 import { ApplicationUrlUtils, SystemConstants, SecretService } from '@fromcode119/core';
 import { createHash, randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
@@ -81,7 +84,8 @@ export class SystemTwoFactorService {
       throw new Error('User not found');
     }
 
-    const secret = speakeasy.generateSecret({ name: `Fromcode (${user.email})`, length: 32 });
+    const issuer = await this.resolveFrameworkAppName();
+    const secret = speakeasy.generateSecret({ name: `${issuer} (${user.email})`, length: 32 });
     const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
     const key = `user:${userId}:totp_secret_pending`;
     const encryptedSecret = SecretService.encrypt(secret.base32);
@@ -206,12 +210,31 @@ export class SystemTwoFactorService {
       const appName = await this.resolveFrameworkAppName();
       const from = await this.resolveFrameworkSenderIdentity();
       const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
-      await this.emailGetter().send({
+      const html = await this.renderSecurityNotificationHtml(options.title, details);
+      const payload: Record<string, any> = {
         to: recipient, from, subject: `${appName}: ${options.subject}`,
         text: `${options.title}\n\n${details.join('\n')}`,
-        html: `<p>${options.title}</p>${details.length > 0 ? `<ul>${details.map((l) => `<li>${l}</li>`).join('')}</ul>` : ''}`,
-      });
+      };
+      if (html) {
+        payload.html = html;
+      }
+      await this.emailGetter().send(payload);
     } catch {}
+  }
+
+  /**
+   * Render the security-notification email body from its Handlebars template file.
+   * Fail-safe: returns an empty string when the template cannot be read/compiled,
+   * so the caller falls back to a text-only email instead of crashing.
+   */
+  private async renderSecurityNotificationHtml(title: string, details: string[]): Promise<string> {
+    try {
+      const templatePath = path.join(__dirname, 'templates', 'security-notification.html');
+      const templateSource = await fs.readFile(templatePath, 'utf-8');
+      return Handlebars.compile(templateSource)({ title, details }).trim();
+    } catch {
+      return '';
+    }
   }
 
   private async resolveFrameworkAppName(): Promise<string> {
@@ -225,7 +248,7 @@ export class SystemTwoFactorService {
       return siteName;
     }
 
-    return String(process.env.APP_NAME || '').trim() || 'Fromcode';
+    return String(process.env.APP_NAME || '').trim() || 'Platform';
   }
 
   private async resolveFrameworkSenderAddress(): Promise<string> {
