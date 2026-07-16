@@ -1,4 +1,5 @@
 import type { ChangeEvent, DragEvent, RefObject } from 'react';
+import type { AdminPageHost } from '@/components/admin-page-host.interfaces';
 
 export interface MediaFolder {
   id: number;
@@ -28,6 +29,41 @@ export interface MediaItem {
 export interface MovingItem {
   id: number;
   type: 'file' | 'folder';
+}
+
+export interface MediaPageClientState {
+  items: MediaItem[];
+  folders: MediaFolder[];
+  currentFolderId: number | null;
+  folderPath: MediaFolder[];
+  loading: boolean;
+  uploading: boolean;
+  searchQuery: string;
+  viewMode: 'grid' | 'list';
+  error: string | null;
+  isDragOver: boolean;
+  isFolderPromptOpen: boolean;
+  isRenamePromptOpen: boolean;
+  isDeleteDialogOpen: boolean;
+  isFolderDeleteDialogOpen: boolean;
+  isMoveDialogOpen: boolean;
+  deletingId: number | null;
+  editingFolder: MediaFolder | null;
+  editingItem: MediaItem | null;
+  movingItem: MovingItem | null;
+  isActionLoading: boolean;
+  optimizingId: number | null;
+}
+
+export interface MediaLibraryPage {
+  items: MediaItem[];
+  folders: MediaFolder[];
+}
+
+/** What {@link MediaPageActions} needs from the page-client to drive it, hook-free. */
+export interface MediaPageHost extends AdminPageHost<MediaPageClientState> {
+  /** Re-read the current folder/search view into state. */
+  refresh(): Promise<void>;
 }
 
 export interface MediaPageModel {

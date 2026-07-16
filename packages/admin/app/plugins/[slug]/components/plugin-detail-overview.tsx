@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@fromcode119/react';
+import { PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailOverviewProps } from '../plugin-detail-page.interfaces';
 
@@ -20,6 +21,8 @@ export default class PluginDetailOverview extends React.Component<PluginDetailOv
   theme,
 } = this.props;
   const hasUpdate = Boolean(marketplaceItem?.version && VersionComparisonService.isGreater(marketplaceItem.version, plugin.manifest.version));
+  const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
+  const toggleLabel = isHeld ? 'Approve & enable' : plugin.state === PluginState.ACTIVE ? 'Active' : 'Disabled';
 
   return (
     <>
@@ -58,15 +61,15 @@ export default class PluginDetailOverview extends React.Component<PluginDetailOv
           <div className="space-y-1">
             <div className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Runtime Status</div>
             <div className="flex items-center gap-3">
-              <div className={`h-3 w-3 rounded-full ${plugin.state === 'active' ? 'bg-green-500' : 'bg-slate-500'} shadow-[0_0_12px_rgba(34,197,94,0.3)]`} />
-              <span className={`text-sm font-semibold uppercase tracking-tighter ${plugin.state === 'active' ? 'text-green-500' : 'text-slate-500'}`}>{plugin.state}</span>
+              <div className={`h-3 w-3 rounded-full ${plugin.state === PluginState.ACTIVE ? 'bg-green-500' : 'bg-slate-500'} shadow-[0_0_12px_rgba(34,197,94,0.3)]`} />
+              <span className={`text-sm font-semibold uppercase tracking-tighter ${plugin.state === PluginState.ACTIVE ? 'text-green-500' : 'text-slate-500'}`}>{plugin.state}</span>
             </div>
           </div>
           <div className={`flex items-center gap-4 p-2.5 rounded-lg border transition-all duration-300 ${theme === 'dark' ? 'bg-slate-800/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-inner'}`}>
-            <span className={`text-[11px] font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-              {plugin.state === 'active' ? 'Active' : 'Disabled'}
+            <span className={`text-[11px] font-semibold uppercase tracking-wider ${isHeld ? 'text-amber-600 dark:text-amber-400' : theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+              {toggleLabel}
             </span>
-            <Switch checked={plugin.state === 'active'} onChange={(_: boolean) => onToggle()} className="scale-110" />
+            <Switch checked={plugin.state === PluginState.ACTIVE} onChange={(_: boolean) => onToggle()} className="scale-110" />
           </div>
         </div>
       </Card>

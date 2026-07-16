@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { ArchiveUploadSessionService, BaseController, PluginManager, Logger, CoercionUtils } from '@fromcode119/core';
+import { ArchiveUploadSessionService, BaseController, PluginManager, Logger, CoercionUtils, PluginHealthReportService, PluginRegistryHealth, PluginState } from '@fromcode119/core';
 import { PluginInstallOperationService } from '../../services/plugin-install-operation-service';
 import { PluginArchiveSupport } from './plugin-archive-support';
 
@@ -33,13 +33,14 @@ export class PluginController extends BaseController {
       path: p.path,
       error: p.error,
       approvedCapabilities: p.approvedCapabilities,
-      healthStatus: p.healthStatus || 'healthy'
+      healthStatus: p.healthStatus || PluginRegistryHealth.HEALTHY,
+      heldReason: p.heldReason
     })));
   }
 
   async active(req: Request, res: Response) {
     const activePlugins = this.manager.getSortedPlugins(
-      this.manager.getPlugins().filter(p => p.state === 'active')
+      this.manager.getPlugins().filter(p => p.state === PluginState.ACTIVE)
     ).map(p => ({
         slug: p.manifest.slug,
         version: p.manifest.version,
@@ -86,6 +87,40 @@ export class PluginController extends BaseController {
       this.logger.error(`Toggle failed for plugin "${slug}": ${err.message}`);
       res.status(status).json({ error: err.message });
     }
+  }
+
+  /** Re-approve + enable every plugin currently held on the warning axis (capability drift).
+   *  enable() advances approvedCapabilities to the current manifest, so the hold clears. */
+  async reapproveAll(_req: Request, res: Response) {
+    const held = this.manager.getPlugins().filter(
+      (p) => p.healthStatus === PluginRegistryHealth.WARNING || Boolean(p.heldReason),
+    );
+    const results: Array<{ slug: string; ok: boolean; error?: string }> = [];
+    for (const p of held) {
+      const slug = p.manifest.slug;
+      try {
+        await this.manager.enable(slug, { force: false, recursive: false });
+        results.push({ slug, ok: true });
+      } catch (err: any) {
+        results.push({ slug, ok: false, error: err?.message || String(err) });
+      }
+    }
+    res.json({ success: results.every((r) => r.ok), reapproved: results });
+  }
+
+  async health(_req: Request, res: Response) {
+    const report = PluginHealthReportService.buildReport(
+      this.manager.getPlugins().map((p) => ({
+        slug: p.manifest.slug,
+        state: p.state,
+        healthStatus: p.healthStatus,
+        heldReason: p.heldReason,
+        error: p.error,
+        manifestCapabilities: (p.manifest.capabilities as string[]) || [],
+        approvedCapabilities: p.approvedCapabilities || [],
+      })),
+    );
+    res.json(report);
   }
 
   async getConfig(req: Request, res: Response) {

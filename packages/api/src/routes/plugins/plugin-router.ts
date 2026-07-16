@@ -29,6 +29,8 @@ export class PluginRouter extends BaseRouter {
     this.get('/', this.auth.guard(['admin']), this.controller.list);
     this.get(RouteConstants.SEGMENTS.ACTIVE, this.controller.active);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_TOGGLE, this.auth.guard(['admin']), this.controller.toggle);
+    this.post(RouteConstants.SEGMENTS.PLUGINS_REAPPROVE_ALL, this.auth.guard(['admin']), this.controller.reapproveAll);
+    this.get(RouteConstants.SEGMENTS.PLUGINS_HEALTH, this.auth.guard(['admin']), this.controller.health);
     this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), this.controller.getConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), this.controller.saveConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SANDBOX, this.auth.guard(['admin']), this.controller.saveSandboxConfig);

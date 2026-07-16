@@ -3,11 +3,35 @@ import type { LoadedPlugin } from '@fromcode119/core/client';
 import type { DependencyIssue } from '@/components/ui/dependency-dialog.interfaces';
 import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
 import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
+import type { NotificationContextType } from '@/components/notification-context.interfaces';
+import type { AdminPageHost } from '@/components/admin-page-host.interfaces';
 
 export interface InstalledPluginMarketplaceItem {
   slug: string;
   version: string;
   dependencies?: Record<string, string>;
+}
+
+export interface PluginReapprovalEntry {
+  slug: string;
+  ok: boolean;
+  error?: string;
+}
+
+export interface InstalledPluginsArchiveInspection {
+  supported: boolean;
+  uploadId?: string;
+  previewTitle?: string;
+  previewDescription?: string;
+  previewSections?: UploadPreviewSection[];
+}
+
+/** What {@link InstalledPluginsPageActions} needs from the page-client to drive it, hook-free. */
+export interface InstalledPluginsPageHost extends AdminPageHost<InstalledPluginsPageClientState> {
+  readonly notify: NotificationContextType;
+  triggerRefresh(): void;
+  /** Reload installed plugins + marketplace registry into state. */
+  refresh(): Promise<void>;
 }
 
 export interface InstalledPluginCardProps {
@@ -28,6 +52,8 @@ export interface InstalledPluginsViewProps {
   deleteConfirmDescription: string;
   dependencyIssues: DependencyIssue[];
   failedPluginsCount: number;
+  heldPluginsCount: number;
+  onReapproveAll: () => Promise<void>;
   filteredPlugins: LoadedPlugin[];
   fileInputRef: RefObject<HTMLInputElement | null>;
   handleDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;
@@ -63,6 +89,32 @@ export interface InstalledPluginsViewProps {
   uploadPreviewTitle: string;
 }
 
+export interface InstalledPluginsPageClientState {
+  plugins: LoadedPlugin[];
+  marketplaceData: InstalledPluginMarketplaceItem[];
+  loading: boolean;
+  searchQuery: string;
+  showDeleteConfirm: boolean;
+  showDependencyConfirm: boolean;
+  dependencyIssues: DependencyIssue[];
+  targetPlugin: string | null;
+  pluginToDelete: string | null;
+  isDeleting: boolean;
+  isActivating: boolean;
+  isUploading: boolean;
+  isInspectingUpload: boolean;
+  isDropActive: boolean;
+  pendingUploadId: string | null;
+  uploadProgressLabel: string | null;
+  uploadProgressPercent: number | null;
+  showUploadPreview: boolean;
+  uploadPreviewTitle: string;
+  uploadPreviewDescription: string;
+  uploadPreviewSections: UploadPreviewSection[];
+  operationStatus: PluginInstallOperation | null;
+  imageErrors: Record<string, boolean>;
+}
+
 export interface InstalledPluginsPageModel {
   closeDeleteConfirm: () => void;
   closeDependencyConfirm: () => void;
@@ -71,6 +123,8 @@ export interface InstalledPluginsPageModel {
   deleteConfirmDescription: string;
   dependencyIssues: DependencyIssue[];
   failedPluginsCount: number;
+  heldPluginsCount: number;
+  onReapproveAll: () => Promise<void>;
   filteredPlugins: LoadedPlugin[];
   fileInputRef: RefObject<HTMLInputElement | null>;
   handleDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;

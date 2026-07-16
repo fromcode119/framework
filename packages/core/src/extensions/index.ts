@@ -1,4 +1,5 @@
 export { CoreExtensionManager } from './extension-manager';
+export { ExtensionState } from './extension-state.enums';
 export type {
   CoreExtensionManifest,
   LoadedCoreExtension,

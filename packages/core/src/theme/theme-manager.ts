@@ -14,6 +14,7 @@ import { PluginDefaultPageMaterializationRuntimeService } from '../services/defa
 import { ThemeConfigService } from './theme-config-service';
 import { ThemeUpdateService } from './theme-update-service';
 import type { ThemeDefaultPageContractOverride } from '../types';
+import { ThemeState } from './theme-state.enums';
 
 export class ThemeManager {
   private activeTheme: string | null = null;
@@ -122,7 +123,7 @@ export class ThemeManager {
 
   private async loadActiveTheme() {
     try {
-      const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: 'active' });
+      const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE });
       if (row) {
         this.activeTheme = row.slug;
         this.logger.info(`Active theme set to: ${row.slug}`);
@@ -137,19 +138,19 @@ export class ThemeManager {
 
     const timestamp = new Date();
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-    const activeThemeRow = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: 'active' });
+    const activeThemeRow = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE });
 
     if (activeThemeRow && activeThemeRow.slug !== slug) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug: activeThemeRow.slug }, { state: 'inactive', updated_at: timestamp });
+      await this.db.update(SystemConstants.TABLE.THEMES, { slug: activeThemeRow.slug }, { state: ThemeState.INACTIVE, updated_at: timestamp });
     }
 
     if (existing) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: timestamp });
+      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE, updated_at: timestamp });
     } else {
-      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: 'active', created_at: timestamp, updated_at: timestamp });
+      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.ACTIVE, created_at: timestamp, updated_at: timestamp });
     }
 
-    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'active', updated_at: timestamp });
+    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE, updated_at: timestamp });
     this.activeTheme = slug;
     await this.materializeDefaultPages();
     this.logger.info(`Theme "${slug}" activated.`);
@@ -165,7 +166,7 @@ export class ThemeManager {
       return;
     }
 
-    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: 'inactive', updated_at: new Date() });
+    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.INACTIVE, updated_at: new Date() });
     if (this.activeTheme === slug) {
       this.activeTheme = null;
     }
@@ -206,7 +207,7 @@ export class ThemeManager {
         this.logger.info(`Theme "${slug}" is active. Activating fallback theme "${fallbackSlug}" before deletion.`);
         await this.activateTheme(fallbackSlug);
       } else {
-        await this.db.update(SystemConstants.TABLE.THEMES, { state: 'active' }, { state: 'inactive' });
+        await this.db.update(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE }, { state: ThemeState.INACTIVE });
         this.activeTheme = null;
       }
     }
@@ -222,10 +223,10 @@ export class ThemeManager {
     return this.loadThemeManifestFromDisk(this.activeTheme) || this.themes.get(this.activeTheme) || null;
   }
 
-  getThemes(): (ThemeManifest & { state: 'active' | 'inactive' })[] {
+  getThemes(): (ThemeManifest & { state: ThemeState })[] {
     return Array.from(this.themes.values()).map((theme) => ({
       ...theme,
-      state: theme.slug === this.activeTheme ? 'active' : 'inactive',
+      state: theme.slug === this.activeTheme ? ThemeState.ACTIVE : ThemeState.INACTIVE,
     }));
   }
 

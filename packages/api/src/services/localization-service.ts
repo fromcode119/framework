@@ -113,11 +113,13 @@ export class LocalizationService {
 
     const cleanData = { ...data };
     collection.fields.forEach((field: any) => {
-      if (field.admin?.hidden && !options.rawLocalized) {
-        delete cleanData[field.name];
-        return;
-      }
-
+      // NOTE: `admin.hidden` is an ADMIN-FORM presentation flag ("don't render this input"), NOT a
+      // serialization or access rule. This used to `delete cleanData[field.name]` here, which silently
+      // stripped such fields from every localized (public/frontend) response while the admin — which
+      // reads with rawLocalized:true — still saw them. That broke routing: `pages.slug` is marked
+      // admin.hidden purely to avoid a duplicate permalink editor, so the frontend received pages with
+      // NO slug and every slug-routed static page (login, about, contact, cart, …) fell back to the
+      // generic block flow. Field visibility belongs to access control, not to an admin-UI flag.
       let value = cleanData[field.name];
       if (field.type === 'array' && typeof value === 'string') {
         try {

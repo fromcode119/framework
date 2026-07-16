@@ -4,6 +4,7 @@ import { PluginSignatureService } from '../security/plugin-signature-service';
 import { SecretService } from '../security/secret-service';
 import { HookEventUtils } from '../hook-events';
 import { WebhooksCollection } from '../collections/webhooks';
+import { SystemConstants } from '../constants';
 
 export class WebhookService {
     private logger = new Logger({ namespace: 'webhook-service' });
@@ -79,10 +80,10 @@ export class WebhookService {
         return regex.test(event);
     }
 
-    private async executeWebhook(webhook: any, event: string, payload: any) {
+    private async executeWebhook(webhook: any, event: string, payload: any, prebuiltBody?: string) {
         this.logger.debug(`Triggering webhook "${webhook.name}" for event "${event}" to ${webhook.url}`);
 
-        const body = JSON.stringify({
+        const body = prebuiltBody ?? JSON.stringify({
             event,
             timestamp: new Date().toISOString(),
             payload
@@ -112,13 +113,15 @@ export class WebhookService {
             });
 
             clearTimeout(timeout);
+            const text = (await response.text()).substring(0, 1000);
 
             // Update stats
             await this.db.update(WebhooksCollection.slug, { id: webhook.id }, {
                 lastTriggeredAt: new Date(),
                 lastStatus: response.status,
-                lastResponse: (await response.text()).substring(0, 1000) // Keep first 1k chars
+                lastResponse: text
             });
+            await this.logDelivery(webhook.id, event, response.status, response.ok, text, body);
 
         } catch (err: any) {
             this.logger.error(`Failed to dispatch webhook ${webhook.name}: ${err.message}`);
@@ -127,6 +130,46 @@ export class WebhookService {
                 lastStatus: 0,
                 lastResponse: err.message
             });
+            await this.logDelivery(webhook.id, event, 0, false, String(err.message || 'error'), body);
         }
+    }
+
+    /** Append a delivery-log row (best-effort; the delivery itself never fails on a log error). */
+    private async logDelivery(webhookId: number, event: string, status: number, ok: boolean, response: string, requestBody: string) {
+        try {
+            await this.db.insert(SystemConstants.TABLE.WEBHOOK_DELIVERIES, {
+                webhook_id: webhookId, event, status, ok: ok ? 1 : 0,
+                response: String(response || '').substring(0, 1000),
+                request_body: String(requestBody || '').substring(0, 4000),
+            });
+        } catch (err) {
+            this.logger.error('Failed to write webhook delivery log:', err);
+        }
+    }
+
+    /** Fire a synthetic test event at ONE webhook (bypasses the active/event-match filters). */
+    public async testWebhook(webhookId: number): Promise<{ success: boolean; error?: string }> {
+        const webhook = await this.db.findOne(WebhooksCollection.slug, { id: Number(webhookId) }).catch(() => null);
+        if (!webhook) return { success: false, error: 'webhook_not_found' };
+        await this.executeWebhook(webhook, 'system:webhook:test', { message: 'Test delivery from Fromcode.', at: new Date().toISOString() });
+        return { success: true };
+    }
+
+    /** Re-send a past delivery using its stored request body against its (current) webhook config. */
+    public async resendDelivery(deliveryId: number): Promise<{ success: boolean; error?: string }> {
+        const delivery = await this.db.findOne(SystemConstants.TABLE.WEBHOOK_DELIVERIES, { id: Number(deliveryId) }).catch(() => null);
+        if (!delivery) return { success: false, error: 'delivery_not_found' };
+        const record = (delivery as any);
+        const webhook = await this.db.findOne(WebhooksCollection.slug, { id: Number(record.webhookId ?? record.webhook_id) }).catch(() => null);
+        if (!webhook) return { success: false, error: 'webhook_not_found' };
+        await this.executeWebhook(webhook, String(record.event || 'resend'), null, String(record.requestBody ?? record.request_body ?? ''));
+        return { success: true };
+    }
+
+    /** Recent deliveries, newest first — the whole log or scoped to one webhook. */
+    public async listDeliveries(webhookId?: number, limit = 50): Promise<any[]> {
+        const where = webhookId ? { webhook_id: Number(webhookId) } : {};
+        const rows = await this.db.find(SystemConstants.TABLE.WEBHOOK_DELIVERIES, { where, orderBy: { id: 'desc' }, limit }).catch(() => []);
+        return Array.isArray(rows) ? rows : [];
     }
 }

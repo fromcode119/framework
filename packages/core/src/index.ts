@@ -6,6 +6,9 @@ export { RecordVersions } from './collections/record-versions';
 // Core Classes (Server-only)
 export { ApiAccessGate } from './plugin/context/api-access-gate';
 export { AccessLevel } from './plugin/context/api-access-gate.enums';
+export { PluginRegistryHealth, PluginHeldReason, PluginHealthBucket } from './plugin/services/plugin-health.enums';
+export { PluginState } from './plugin/services/plugin-state.enums';
+export { ThemeState } from './theme/theme-state.enums';
 export { EnvUtils } from './utils/env-utils';
 export type { ApiAccessLevel, ApiAccessDescriptor, ApiPermissionCheck } from './plugin/context/api-access-gate.types';
 export { PluginManager } from './plugin/plugin-manager';
@@ -18,6 +21,7 @@ export type { AppearanceSummary } from './appearance/appearance-summary.interfac
 export type { AppearanceManifest } from './appearance/appearance-manifest.interfaces';
 export type { AppearanceCatalogEntry } from './appearance/appearance-catalog-entry.interfaces';
 export { CoreExtensionManager } from './extensions/extension-manager';
+export { ExtensionState } from './extensions/extension-state.enums';
 export type {
   CoreExtensionManifest,
   LoadedCoreExtension,
@@ -144,6 +148,8 @@ export { RuntimeService } from './plugin/services/runtime-service';
 export { LifecycleService } from './plugin/services/lifecycle-service';
 export { MiddlewareManager } from './plugin/services/middleware-manager';
 export { AdminMetadataService } from './plugin/services/admin-metadata-service';
+export { PluginHealthReportService } from './plugin/services/plugin-health-report-service';
+export type { PluginHealthEntryInput, PluginHealthEntry, PluginHealthReport } from './plugin/services/plugin-health-report.interfaces';
 
 // Security (Server-only)
 export { AuditManager } from './security/audit-manager';

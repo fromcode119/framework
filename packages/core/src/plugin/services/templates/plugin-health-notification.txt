@@ -1,0 +1,7 @@
+The following plugins are not active after the last boot:
+
+{{#each plugins}}
+- {{#if slug}}{{slug}}{{else}}unknown plugin{{/if}}: {{#if held}}HELD ({{#if reason}}{{reason}}{{else}}held{{/if}}) — capability change needs re-approval; the plugin is disabled until an admin re-approves it.{{else}}ERROR — {{#if error}}{{error}}{{else}}failed to register{{/if}}{{/if}}
+{{/each}}
+
+Open Admin → Plugins to review and re-approve.

@@ -23,6 +23,8 @@ export interface AdminRuntimeValue {
   router: ReturnType<typeof useRouter>;
   /** Current pathname (`usePathname`) — published so classes need no hook. */
   pathname: string;
+  /** Current route params (`useParams`) — context-backed like router/pathname, so classes need no hook. */
+  params: Record<string, string | string[]>;
   /** Auth context (`useAuth`) — context-backed, so classes read it via `this.auth` not a hook. */
   auth: AuthContextType;
   /** Resolved active admin appearance id (selection result). 'default' = built-in appearance. */

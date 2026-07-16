@@ -1,3 +1,17 @@
+import type { NotificationContextType } from '@/components/notification-context.interfaces';
+import type { AdminPageHost } from '@/components/admin-page-host.interfaces';
+
+/** What {@link UserSecurityPageActions} needs from the page-client to drive it, hook-free. */
+export interface UserSecurityPageHost extends AdminPageHost<UserSecurityPageClientState> {
+  readonly notify: NotificationContextType;
+  /** Route param `[id]` — the user whose security page this is. */
+  readonly id: string;
+  /** True when the admin is viewing their own security page. */
+  readonly isSelf: boolean;
+  /** Navigate away (used when the caller revokes its own session). */
+  redirectToLogin(): void;
+}
+
 export interface AuthActivityEntry {
   context?: {
     email?: string;
@@ -48,6 +62,29 @@ export interface UserTwoFactorStatusResponse {
 
 export interface UserTwoFactorVerifyResponse {
   recoveryCodes?: string[];
+}
+
+export interface UserSecurityPageClientState {
+  loading: boolean;
+  user: SecurityUserRecord | null;
+  twoFactorEnabled: boolean;
+  qrCode: string | null;
+  secret: string | null;
+  verificationCode: string;
+  isEnabling: boolean;
+  isVerifying: boolean;
+  isRegeneratingCodes: boolean;
+  recoveryCodesRemaining: number;
+  generatedRecoveryCodes: string[];
+  authActivity: AuthActivityEntry[];
+  authActivityLoading: boolean;
+  mySessions: UserSessionRecord[];
+  sessionsLoading: boolean;
+  myApiTokens: UserApiTokenRecord[];
+  tokensLoading: boolean;
+  tokenName: string;
+  tokenDays: string;
+  createdToken: string;
 }
 
 export interface UserSecurityPageModel {

@@ -1,5 +1,5 @@
 import { PluginManager } from '@fromcode119/core';
-import { IDatabaseManager } from '@fromcode119/database';
+import { IDatabaseManager, PhysicalTableNameUtils } from '@fromcode119/database';
 import { AdminSearchResponse, AdminSearchResult } from './admin-search-service.interfaces';
 
 /**
@@ -105,13 +105,33 @@ export class AdminSearchService {
     const label = String(read(titleField) || read(fieldNames[0]) || `#${row?.id}`);
     const sublabel = fieldNames.map(read).map((v) => String(v ?? '')).find((v) => v && v !== label) || '';
     return {
-      group: String(collection?.name || collection?.slug || 'Records'),
+      group: this.groupLabel(collection, pluginSlug),
       source: String(collection?.slug || ''),
       pluginSlug: String(pluginSlug || ''),
       id: row?.id,
       label,
       sublabel,
     };
+  }
+
+  /**
+   * A human group label — never a raw machine slug. Prefer a display name the owning collection
+   * declares; otherwise humanize the slug (drop the `fcp_`/plugin prefix, split, Title Case) so the
+   * palette shows "Tiers", not "mlm-tiers"/"fcp_mlm_tiers". Generic — no plugin names hardcoded.
+   */
+  private groupLabel(collection: any, pluginSlug: string): string {
+    const declared = collection?.admin?.label || collection?.labels?.plural || collection?.label || collection?.name;
+    if (declared) return String(declared);
+    const slug = String(collection?.slug || '').trim();
+    if (!slug) return 'Records';
+    const withoutPlatformPrefix = slug.startsWith(PhysicalTableNameUtils.PLATFORM_PREFIX)
+      ? slug.slice(PhysicalTableNameUtils.PLATFORM_PREFIX.length)
+      : slug;
+    const stripped = withoutPlatformPrefix
+      .replace(new RegExp(`^${String(pluginSlug || '').toLowerCase()}[-_]`), '');
+    const words = (stripped || slug).split(/[-_]+/).filter(Boolean);
+    if (!words.length) return 'Records';
+    return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
   private toSnake(name: string): string {

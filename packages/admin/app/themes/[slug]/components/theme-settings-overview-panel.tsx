@@ -4,6 +4,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@fromcode119/react';
+import { ThemeState } from '@fromcode119/core/client';
 
 export class ThemeSettingsOverviewPanel extends React.Component<{ page: any; model: any }> {
   render(): React.ReactNode {
@@ -41,13 +42,13 @@ export class ThemeSettingsOverviewPanel extends React.Component<{ page: any; mod
           <div className="space-y-1">
             <div className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Deployment Status</div>
             <div className="flex items-center gap-3">
-              <div className={`h-3 w-3 rounded-full ${themeDetail.state === 'active' ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]' : 'bg-slate-500'}`} />
-              <span className={`text-sm font-semibold uppercase tracking-tight ${themeDetail.state === 'active' ? 'text-green-500' : 'text-slate-500'}`}>
+              <div className={`h-3 w-3 rounded-full ${themeDetail.state === ThemeState.ACTIVE ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]' : 'bg-slate-500'}`} />
+              <span className={`text-sm font-semibold uppercase tracking-tight ${themeDetail.state === ThemeState.ACTIVE ? 'text-green-500' : 'text-slate-500'}`}>
                 System {themeDetail.state}
               </span>
             </div>
           </div>
-          {themeDetail.state !== 'active' && (
+          {themeDetail.state !== ThemeState.ACTIVE && (
             <button
               onClick={() => void page.handleActivate()}
               className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all shadow-sm active:scale-95"

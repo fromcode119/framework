@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { BackupService, PluginManager, SafeArchive } from '@fromcode119/core';
+import { BackupService, PluginManager, PluginState, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
 import { ArchiveUploadRequestParser } from '../archive-upload-request-parser';
 
@@ -29,7 +29,7 @@ export class PluginArchiveSupport {
   serveAssets(req: Request, res: Response) {
     const { slug } = req.params;
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
-    if (!plugin || !plugin.path || plugin.state !== 'active') {
+    if (!plugin || !plugin.path || plugin.state !== PluginState.ACTIVE) {
       return res.status(404).json({ error: 'Not found or disabled' });
     }
 

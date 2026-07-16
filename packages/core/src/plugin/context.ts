@@ -27,6 +27,7 @@ import { PluginsFacade } from '../plugins-facade';
 import { PluginsManagerResolver } from '../plugins-manager-resolver';
 import { PluginPathContextProxy } from './context/paths';
 import { EntitiesContextProxy } from './context/entities';
+import { PluginState } from './services/plugin-state.enums';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -75,7 +76,7 @@ export class PluginContextFactory {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             const wrappedHandler = async (payload: any, ev: string) => {
               const currentPlugin = manager.plugins.get(plugin.manifest.slug);
-              if (!currentPlugin || currentPlugin.state !== 'active') return;
+              if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) return;
               return handler(payload, ev);
             };
             (handler as any)._wrapped = wrappedHandler;
@@ -170,7 +171,7 @@ export class PluginContextFactory {
           optional: optionalDependency,
           isEnabled: (slug: string) => {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
-            return manager.plugins.get(slug)?.state === 'active';
+            return manager.plugins.get(slug)?.state === PluginState.ACTIVE;
           },
           emit: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');

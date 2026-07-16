@@ -65,6 +65,18 @@ export class SystemRouter extends BaseRouter {
     // In-app notification inbox — per-user, so any authenticated user (admins AND partners).
     this.get(RouteConstants.SEGMENTS.ADMIN_NOTIFICATIONS, this.auth.guard(),
       this.controller.getNotifications);
+    // Webhooks: delivery log + test + resend (system:manage — outbound integration config).
+    this.get(RouteConstants.SEGMENTS.ADMIN_WEBHOOKS, this.auth.requirePermission('system:view'),
+      this.controller.getWebhooks);
+    this.post(RouteConstants.SEGMENTS.ADMIN_WEBHOOKS_ID_TEST, this.auth.requirePermission('system:manage'),
+      this.controller.testWebhook);
+    this.post(RouteConstants.SEGMENTS.ADMIN_WEBHOOK_DELIVERIES_ID_RESEND, this.auth.requirePermission('system:manage'),
+      this.controller.resendWebhookDelivery);
+    // SCIM provisioning config: status (system:view) + rotate the bearer token (system:manage).
+    this.get(RouteConstants.SEGMENTS.ADMIN_SCIM, this.auth.requirePermission('system:view'),
+      this.controller.getScim);
+    this.post(RouteConstants.SEGMENTS.ADMIN_SCIM_ROTATE, this.auth.requirePermission('system:manage'),
+      this.controller.rotateScimToken);
     // Per-user UI preferences (saved views etc.) — key namespace embeds the user id.
     this.get(RouteConstants.SEGMENTS.ADMIN_PREFERENCES_KEY, this.auth.guard(),
       this.controller.getPreference);

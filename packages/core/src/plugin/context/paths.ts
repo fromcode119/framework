@@ -5,6 +5,7 @@ import { ProjectPaths } from '../../config/paths';
 import type { LoadedPlugin } from '../../types';
 import { PluginContextFileReader } from './plugin-context-file-reader';
 import type { PluginManagerInterface } from './utils.interfaces';
+import { ThemeState } from '../../theme/theme-state.enums';
 
 export class PluginPathContextProxy {
   private readonly fileReader: PluginContextFileReader;
@@ -50,7 +51,7 @@ export class PluginPathContextProxy {
   }
 
   async resolveActiveThemeSlug(): Promise<string | null> {
-    const activeTheme = await this.manager.db.findOne(SystemConstants.TABLE.THEMES, { state: 'active' });
+    const activeTheme = await this.manager.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE });
     const slug = String(activeTheme?.slug || '').trim();
     return slug || null;
   }

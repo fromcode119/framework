@@ -1,5 +1,6 @@
 import { ThemeManifest } from '../types';
 import { SystemConstants } from '../constants';
+import { ThemeState } from './theme-state.enums';
 
 /**
  * ThemeConfigService
@@ -32,7 +33,7 @@ export class ThemeConfigService {
       await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: JSON.stringify(config), updated_at: new Date() });
     } else {
       const manifest = this.themes.get(slug)!;
-      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: 'inactive', config: JSON.stringify(config), created_at: new Date(), updated_at: new Date() });
+      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.INACTIVE, config: JSON.stringify(config), created_at: new Date(), updated_at: new Date() });
     }
   }
 

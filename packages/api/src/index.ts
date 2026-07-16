@@ -9,7 +9,7 @@ import {
   RecordVersions, 
   WebSocketManager, 
 } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, RouteConstants } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -283,7 +283,7 @@ export class APIServer {
     server.on('upgrade', (request, socket, head) => {
       const pathname = new URL(request.url || '', `http://${host}:${port}`).pathname;
 
-      if (pathname === '/socket' && wss) {
+      if (pathname === RouteConstants.SEGMENTS.WEBSOCKET && wss) {
         wss.handleUpgrade(request, socket, head, (ws) => {
           wss.emit('connection', ws, request);
         });

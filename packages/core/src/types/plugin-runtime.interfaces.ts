@@ -1,5 +1,7 @@
 import { PluginManifest } from './manifests.interfaces';
 import { PluginContext } from './plugin-context.interfaces';
+import { PluginRegistryHealth, PluginHeldReason } from '../plugin/services/plugin-health.enums';
+import { PluginState } from '../plugin/services/plugin-state.enums';
 
 export interface FromcodePlugin {
   manifest: PluginManifest;
@@ -19,13 +21,15 @@ export interface FromcodePlugin {
  */
 export interface LoadedPlugin extends FromcodePlugin {
   instanceId: string;
-  state: 'inactive' | 'loading' | 'active' | 'error';
+  state: PluginState;
   path?: string; // Absolute path to the plugin folder
   approvedCapabilities?: string[];
-  error?: string; // Error message if state is 'error'
+  error?: string; // Error message when state is PluginState.ERROR
   isSandboxed?: boolean;
   entryPath?: string;
-  healthStatus?: 'healthy' | 'warning' | 'error';
+  healthStatus?: PluginRegistryHealth;
+  /** When health is WARNING, the machine-readable reason the plugin is held. */
+  heldReason?: PluginHeldReason;
   iconUrl?: string; // Resolved absolute URL for the plugin icon
   // Runtime-populated fields from API/management
   config?: Record<string, any>;

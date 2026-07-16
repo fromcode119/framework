@@ -1,5 +1,6 @@
 import type { PluginApiResolver } from './plugin-api-resolver.interfaces';
 import type { LoadedPlugin } from './types';
+import { PluginState } from './plugin/services/plugin-state.enums';
 
 export class PluginsManagerResolver implements PluginApiResolver {
   constructor(private readonly plugins: Map<string, LoadedPlugin>) {}
@@ -13,7 +14,7 @@ export class PluginsManagerResolver implements PluginApiResolver {
     const normalizedSlug = String(slug || '').trim().toLowerCase();
 
     for (const plugin of this.plugins.values()) {
-      if (plugin.state !== 'active' || !plugin.publicAPI) {
+      if (plugin.state !== PluginState.ACTIVE || !plugin.publicAPI) {
         continue;
       }
 

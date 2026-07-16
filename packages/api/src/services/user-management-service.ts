@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, users, systemRoles, systemUsersToRoles, systemRolesToPermissions } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger, StringUtils } from '@fromcode119/core';
+import { PluginManager, Logger, PluginState, StringUtils } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
@@ -263,7 +263,7 @@ export class UserManagementService {
   }
 
   async getPermissions() {
-    const plugins = this.manager.getPlugins().filter(p => p.state === 'active');
+    const plugins = this.manager.getPlugins().filter(p => p.state === PluginState.ACTIVE);
     const dbPermissions = await this.db.find(SystemConstants.TABLE.PERMISSIONS);
     const permissionNames = new Set(dbPermissions.map((permission: any) => String(permission?.name || '').trim()).filter(Boolean));
     

@@ -20,6 +20,46 @@ export class AuthControllerAccount extends AuthControllerSession {
     return res.json({ success: true });
   }
 
+  /** GDPR data export — the signed-in user's own account + person record as JSON (no password/secrets). */
+  async exportMyData(req: any, res: Response) {
+    const userId = this.parseUserId(req.user?.id);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    let person: any = null;
+    try { person = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { userId }); } catch { person = null; }
+    const account = {
+      id: user.id, email: this.normalizeEmail(user.email), username: user.username ?? null,
+      firstName: user.firstName ?? user.first_name ?? null, lastName: user.lastName ?? user.last_name ?? null,
+      roles: this.readRoles(user), createdAt: user.createdAt ?? user.created_at ?? null,
+    };
+    return res.json({ exportedAt: new Date().toISOString(), account, person: person || null });
+  }
+
+  /** GDPR erasure — the signed-in user deletes their OWN account. Requires the current password. We
+   *  anonymise (strip PII, free the email) and lock sign-in (random unusable password) rather than a hard
+   *  row delete, then revoke every session. A destructive, irreversible action — password-gated. */
+  async deleteMyAccount(req: any, res: Response) {
+    const userId = this.parseUserId(req.user?.id);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const password = String(req.body?.password || '');
+    if (!password) return res.status(400).json({ error: 'Password is required' });
+    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const matches = await this.auth.comparePassword(password, String(user.password || ''));
+    if (!matches) return res.status(400).json({ error: 'Current password is invalid' });
+
+    const tombstone = `deleted-${userId}-${Date.now()}@deleted.invalid`;
+    const lockedHash = await this.auth.hashPassword(`deleted-${userId}-${Math.random().toString(36).slice(2)}`);
+    await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, {
+      email: tombstone, username: tombstone, firstName: null, lastName: null,
+      password: lockedHash, roles: '[]', permissions: '[]', updatedAt: new Date(),
+    });
+    await this.revokeAllSessionsForUser(userId);
+    await this.manager.writeLog('INFO', `Account self-deleted for user ${userId}`, 'system', { userId, ip: req.ip }).catch(() => {});
+    return res.json({ success: true, message: 'Your account has been deleted.' });
+  }
+
   async changePassword(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });

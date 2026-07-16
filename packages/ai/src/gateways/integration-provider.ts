@@ -2,6 +2,7 @@ import { OllamaGateway } from './ollama';
 import { OpenAiGateway } from './openai';
 import { AnthropicGateway } from './anthropic';
 import { GeminiGateway } from './gemini';
+import { AiActComplianceWrapper } from './ai-act-compliance-wrapper';
 import type { AssistantClient } from '../types.interfaces';
 import type { ProviderCapabilities } from '../admin-assistant-runtime/types';
 import type { IntegrationTypeDefinition } from './integration-provider.types';
@@ -113,7 +114,7 @@ export class ProviderCapabilitiesUtils {
           { name: 'maxTokens', label: 'Max Tokens', type: 'number', placeholder: '1200' },
         ],
         normalizeConfig: OpenAiGateway.normalizeOpenAiConfig as any,
-        create: (config) => OpenAiGateway.createOpenAiClient(config),
+        create: (config) => AiActComplianceWrapper.wrap(OpenAiGateway.createOpenAiClient(config), 'openai'),
       },
       {
         key: 'ollama',
@@ -126,7 +127,7 @@ export class ProviderCapabilitiesUtils {
           { name: 'maxTokens', label: 'Max Tokens', type: 'number', placeholder: '1200' },
         ],
         normalizeConfig: OllamaGateway.normalizeOllamaConfig as any,
-        create: (config) => OllamaGateway.createOllamaClient(config),
+        create: (config) => AiActComplianceWrapper.wrap(OllamaGateway.createOllamaClient(config), 'ollama'),
       },
       {
         key: 'anthropic',
@@ -141,7 +142,7 @@ export class ProviderCapabilitiesUtils {
           { name: 'maxTokens', label: 'Max Tokens', type: 'number', placeholder: '1200' },
         ],
         normalizeConfig: AnthropicGateway.normalizeAnthropicConfig as any,
-        create: (config) => AnthropicGateway.createAnthropicClient(config),
+        create: (config) => AiActComplianceWrapper.wrap(AnthropicGateway.createAnthropicClient(config), 'anthropic'),
       },
       {
         key: 'gemini',
@@ -155,7 +156,7 @@ export class ProviderCapabilitiesUtils {
           { name: 'maxTokens', label: 'Max Tokens', type: 'number', placeholder: '1200' },
         ],
         normalizeConfig: GeminiGateway.normalizeGeminiConfig as any,
-        create: (config) => GeminiGateway.createGeminiClient(config),
+        create: (config) => AiActComplianceWrapper.wrap(GeminiGateway.createGeminiClient(config), 'gemini'),
       },
     ],
   };

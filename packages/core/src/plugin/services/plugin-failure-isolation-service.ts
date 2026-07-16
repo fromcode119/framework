@@ -3,6 +3,8 @@ import { CoreServices } from '../../services/core-services';
 import { LoadedPlugin } from '../../types';
 import type { PluginManagerInterface } from '../context/utils.interfaces';
 import { PluginStateService } from './plugin-state-service';
+import { PluginRegistryHealth } from './plugin-health.enums';
+import { PluginState } from './plugin-state.enums';
 
 export class PluginFailureIsolationService {
   constructor(
@@ -16,9 +18,9 @@ export class PluginFailureIsolationService {
     // the admin UI shows it as failed. The DB only records health='error' and PRESERVES the
     // desired `state` column, so the plugin recovers to exactly where it was (active stays
     // active, inactive stays inactive) on the next clean boot, instead of being stuck.
-    plugin.state = 'error';
+    plugin.state = PluginState.ERROR;
     plugin.error = message;
-    plugin.healthStatus = 'error';
+    plugin.healthStatus = PluginRegistryHealth.ERROR;
     await this.registry.markPluginHealthError(plugin.manifest.slug);
     await this.registry.writeLog('ERROR', `Plugin "${plugin.manifest.slug}" failed: ${message}`, plugin.manifest.slug);
   }

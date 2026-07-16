@@ -2,6 +2,7 @@ import { LoadedPlugin } from '../../types';
 import { Logger } from '../../logging';
 import { DiscoveryService } from './discovery-service';
 import { PluginPublicSettingsService } from './plugin-public-settings-service';
+import { PluginState } from './plugin-state.enums';
 
 /**
  * PluginManagerQueryService
@@ -38,7 +39,7 @@ export class PluginManagerQueryService {
   async getPublicFrontendPluginSettings(
     getPluginSettings: (slug: string) => any | undefined,
   ): Promise<Record<string, Record<string, any>>> {
-    const activePlugins = Array.from(this.plugins.values()).filter((plugin) => plugin.state === 'active');
+    const activePlugins = Array.from(this.plugins.values()).filter((plugin) => plugin.state === PluginState.ACTIVE);
     return PluginPublicSettingsService.resolve(activePlugins, getPluginSettings, this.db);
   }
 }

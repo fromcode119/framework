@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Logger } from '../logging';
 import { CoreExtensionManifest, LoadedCoreExtension } from './types';
+import { ExtensionState } from './extension-state.enums';
 
 /**
  * CoreExtensionDiscoveryService
@@ -63,7 +64,7 @@ export class CoreExtensionDiscoveryService {
         const extension: LoadedCoreExtension = {
           manifest,
           path: path.join(resolvedRoot, dir.name),
-          state: 'discovered',
+          state: ExtensionState.DISCOVERED,
         };
 
         extensions.set(manifest.slug, extension);

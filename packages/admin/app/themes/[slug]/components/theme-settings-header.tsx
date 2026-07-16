@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@fromcode119/react';
+import { ThemeState } from '@fromcode119/core/client';
 
 export class ThemeSettingsHeader extends React.Component<{ page: any; model: any }> {
   render(): React.ReactNode {
@@ -23,7 +24,7 @@ export class ThemeSettingsHeader extends React.Component<{ page: any; model: any
             <h1 className={`text-xl font-bold tracking-tight truncate ${adminTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
               {themeDetail.name}
             </h1>
-            <Badge variant={themeDetail.state === 'active' ? 'success' : 'gray'}>
+            <Badge variant={themeDetail.state === ThemeState.ACTIVE ? 'success' : 'gray'}>
               {themeDetail.state}
             </Badge>
           </div>

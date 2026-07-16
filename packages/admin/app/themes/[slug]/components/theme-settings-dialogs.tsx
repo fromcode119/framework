@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ThemeState } from '@fromcode119/core/client';
 
 export class ThemeSettingsDialogs extends React.Component<{ page: any; model: any }> {
   render(): React.ReactNode {
@@ -40,7 +41,7 @@ export class ThemeSettingsDialogs extends React.Component<{ page: any; model: an
           onConfirm={() => void page.handleDelete()}
           title="Delete Theme?"
           description={
-            themeDetail?.state === 'active'
+            themeDetail?.state === ThemeState.ACTIVE
               ? `Theme "${themeDetail?.name || 'this theme'}" is active. The system will activate another theme if available, or continue with no active theme. Continue?`
               : `Are you sure you want to delete "${themeDetail?.name || 'this theme'}"? This action cannot be undone.`
           }

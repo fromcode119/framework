@@ -73,6 +73,14 @@ export class WebSocketManager {
   }
 
   private setupHooks() {
+    // Generic real-time bridge: ANY plugin can push a live event to connected websocket clients by emitting
+    // a `realtime:<name>` hook (e.g. `realtime:mlm_commission_earned`). This is the reusable substrate for
+    // real-time dashboards — a plugin never owns a socket; it just emits the hook and the framework fans it
+    // out. (HookManager's `*` matches one non-colon segment, so use single-segment realtime event names.)
+    this.hooks.on('realtime:*', (data: any, event: string) => {
+      this.broadcast(event, data);
+    });
+
     // Automatically broadcast certain system events
     this.hooks.on('system:hmr:reload', (data) => {
       this.broadcast('system:hmr:reload', data);

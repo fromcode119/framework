@@ -1,5 +1,6 @@
 import { Logger } from '../../logging';
 import { Plugins } from '../../plugins';
+import { PluginState } from './plugin-state.enums';
 
 /**
  * PluginManagerShutdownService
@@ -41,7 +42,7 @@ export class PluginManagerShutdownService {
 
   async close(): Promise<void> {
     const manager = this.manager;
-    const activePlugins = manager.getPlugins().filter((plugin: any) => plugin.state === 'active');
+    const activePlugins = manager.getPlugins().filter((plugin: any) => plugin.state === PluginState.ACTIVE);
     const shutdownOrder = manager.getSortedPlugins(activePlugins).reverse();
 
     for (const plugin of shutdownOrder) {

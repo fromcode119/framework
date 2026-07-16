@@ -62,6 +62,8 @@ export class AuthRouter extends BaseRouter {
     this.patch(RouteConstants.SEGMENTS.ME_PERSON, this.auth.guard(), this.controller.updateMyPerson);
     this.post(RouteConstants.SEGMENTS.VERIFY_PASSWORD, this.auth.guard(), this.controller.verifyPassword);
     this.post(RouteConstants.SEGMENTS.CHANGE_PASSWORD, this.auth.guard(), this.controller.changePassword);
+    this.get(RouteConstants.SEGMENTS.ACCOUNT_EXPORT, this.auth.guard(), this.controller.exportMyData);
+    this.post(RouteConstants.SEGMENTS.ACCOUNT_DELETE, this.auth.guard(), this.controller.deleteMyAccount);
     this.post(RouteConstants.SEGMENTS.EMAIL_CHANGE_REQUEST, this.auth.guard(), this.controller.requestEmailChange);
     this.post(RouteConstants.SEGMENTS.EMAIL_CHANGE_CONFIRM, this.controller.confirmEmailChange);
     this.get(RouteConstants.SEGMENTS.TWO_FACTOR_STATUS, this.auth.guard(), this.controller.getMyTwoFactorStatus);

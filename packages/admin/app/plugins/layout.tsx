@@ -13,19 +13,22 @@ export default function PluginsLayout({ children }: { children: React.ReactNode 
 
   const tabs = [
     { label: 'Installed', href: AdminConstants.ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
+    { label: 'Health', href: AdminConstants.ROUTES.PLUGINS.HEALTH, icon: <FrameworkIcons.Activity size={16} /> },
     { label: 'Marketplace', href: AdminConstants.ROUTES.PLUGINS.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
   ];
 
   const isMarketplace = pathname.startsWith(AdminConstants.ROUTES.PLUGINS.MARKETPLACE);
+  const isHealth = pathname.startsWith(AdminConstants.ROUTES.PLUGINS.HEALTH);
   const isInstalled =
     pathname === AdminConstants.ROUTES.PLUGINS.ROOT ||
     pathname.startsWith(AdminConstants.ROUTES.PLUGINS.INSTALLED) ||
-    (pathname.startsWith(`${AdminConstants.ROUTES.PLUGINS.ROOT}/`) && !isMarketplace);
+    (pathname.startsWith(`${AdminConstants.ROUTES.PLUGINS.ROOT}/`) && !isMarketplace && !isHealth);
   const isPluginDetail =
     pathname.startsWith(`${AdminConstants.ROUTES.PLUGINS.ROOT}/`) &&
     !pathname.startsWith(AdminConstants.ROUTES.PLUGINS.INSTALLED) &&
+    !pathname.startsWith(AdminConstants.ROUTES.PLUGINS.HEALTH) &&
     !pathname.startsWith(AdminConstants.ROUTES.PLUGINS.MARKETPLACE);
-  const activeTab = isMarketplace ? tabs[1] : tabs[0];
+  const activeTab = isMarketplace ? tabs[2] : isHealth ? tabs[1] : tabs[0];
 
   return (
     <div className="w-full pb-24 animate-in fade-in duration-700">
@@ -44,7 +47,9 @@ export default function PluginsLayout({ children }: { children: React.ReactNode 
               <p className={`text-xs font-medium max-w-2xl ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                 {isMarketplace
                   ? 'Discover and install power-ups to expand your platform capability.'
-                  : 'Manage your existing installation, updates and configuration.'}
+                  : isHealth
+                    ? 'Monitor plugin health, held capability changes and boot failures.'
+                    : 'Manage your existing installation, updates and configuration.'}
               </p>
             </div>
 
@@ -54,7 +59,7 @@ export default function PluginsLayout({ children }: { children: React.ReactNode 
                 : 'bg-slate-100/80 border-slate-200/60 shadow-sm'
             }`}>
               {tabs.map(tab => {
-                const isActive = tab.href === AdminConstants.ROUTES.PLUGINS.INSTALLED ? isInstalled : (tab.href === AdminConstants.ROUTES.PLUGINS.MARKETPLACE ? isMarketplace : false);
+                const isActive = tab.href === AdminConstants.ROUTES.PLUGINS.INSTALLED ? isInstalled : (tab.href === AdminConstants.ROUTES.PLUGINS.HEALTH ? isHealth : (tab.href === AdminConstants.ROUTES.PLUGINS.MARKETPLACE ? isMarketplace : false));
 
                 return (
                   <Link

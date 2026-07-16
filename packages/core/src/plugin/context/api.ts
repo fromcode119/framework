@@ -9,6 +9,7 @@ import { RateLimiter } from '../../security/rate-limiter';
 import { ApiAccessGate } from './api-access-gate';
 import { AccessLevel } from './api-access-gate.enums';
 import type { ApiAccessLevel } from './api-access-gate.types';
+import { PluginState } from '../services/plugin-state.enums';
 
 const apiLimiter = new RateLimiter(1000, 60000);
 const reservedPaths = ['config', 'settings', 'toggle', 'logs', 'sandbox', 'active', 'marketplace', 'install', 'upload'];
@@ -61,7 +62,7 @@ export class ApiContextProxy {
         const wrappedHandlers = handlers.map(handler => async (req: any, res: any, next: any) => {
           try {
             const currentPlugin = manager.plugins.get(plugin.manifest.slug);
-            if (!currentPlugin || currentPlugin.state !== 'active') {
+            if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) {
               return res.status(403).json({
                 error: `Plugin "${plugin.manifest.slug}" is disabled`,
                 code: 'PLUGIN_DISABLED'
@@ -106,7 +107,7 @@ export class ApiContextProxy {
           const originalHandler = config.handler;
           config.handler = (req: any, res: any, next: any) => {
             const currentPlugin = manager.plugins.get(plugin.manifest.slug);
-            if (!currentPlugin || currentPlugin.state !== 'active') {
+            if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) {
               return next();
             }
             return originalHandler(req, res, next);

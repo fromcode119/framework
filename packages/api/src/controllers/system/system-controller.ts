@@ -75,6 +75,26 @@ export class SystemController extends BaseController {
     return this.adminController.getNotifications(req, res);
   }
 
+  async getWebhooks(req: Request, res: Response) {
+    return this.adminController.getWebhooks(req, res);
+  }
+
+  async testWebhook(req: Request, res: Response) {
+    return this.adminController.testWebhook(req, res);
+  }
+
+  async resendWebhookDelivery(req: Request, res: Response) {
+    return this.adminController.resendWebhookDelivery(req, res);
+  }
+
+  async getScim(req: Request, res: Response) {
+    return this.adminController.getScim(req, res);
+  }
+
+  async rotateScimToken(req: Request, res: Response) {
+    return this.adminController.rotateScimToken(req, res);
+  }
+
   async getPreference(req: Request, res: Response) {
     return this.adminController.getPreference(req, res);
   }

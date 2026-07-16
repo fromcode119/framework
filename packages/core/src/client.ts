@@ -92,6 +92,9 @@ export type { PluginManifestInput, ThemeManifestInput } from './types/manifests.
 export { PluginHealthResponseBuilder } from './plugin-health-response';
 export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse } from './plugin-health-response.interfaces';
 export type { PluginHealthStatus } from './plugin-health-response.types';
+export { PluginRegistryHealth, PluginHeldReason, PluginHealthBucket } from './plugin/services/plugin-health.enums';
+export { PluginState } from './plugin/services/plugin-state.enums';
+export { ThemeState } from './theme/theme-state.enums';
 export { Plugins } from './plugins';
 export { PluginsFacade } from './plugins-facade';
 export { NamespacedPluginsFacade } from './namespaced-plugins-facade';

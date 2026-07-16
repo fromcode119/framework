@@ -13,6 +13,7 @@ import { AdminSecondaryPanelPrecedenceService } from './admin-secondary-panel-pr
 import { AdminSecondaryPanelResolver } from './admin-secondary-panel-resolver';
 import { AdminSystemNavigationMetadataService } from './admin-system-navigation-metadata-service';
 import { AdminMenuBuilderService } from './admin-menu-builder-service';
+import { PluginState } from './plugin-state.enums';
 
 export class AdminMetadataService {
   private logger = new Logger({ namespace: 'admin-metadata-service' });
@@ -31,7 +32,7 @@ export class AdminMetadataService {
     allowlistEntries: AdminSecondaryPanelAllowlistEntry[] = []
   ) {
     const pluginMetadata = allPlugins
-      .filter(p => p.state === 'active' && p.manifest.admin)
+      .filter(p => p.state === PluginState.ACTIVE && p.manifest.admin)
       .map(p => {
         const collections = Array.from(registeredCollections.values())
           .filter(c => String(c.pluginSlug).toLowerCase() === String(p.manifest.slug).toLowerCase())
@@ -74,7 +75,7 @@ export class AdminMetadataService {
     const normalizedItems = [
       ...this.systemNavigationMetadata.getSecondaryPanelInputs(),
       ...allPlugins
-        .filter(plugin => plugin.state === 'active')
+        .filter(plugin => plugin.state === PluginState.ACTIVE)
         .flatMap((plugin) => this.getSecondaryPanelInputs(plugin)),
     ]
       .map((input) => this.secondaryPanelNormalizer.normalize(input));

@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { SystemConstants } from '@fromcode119/core';
+import { PluginState, SystemConstants } from '@fromcode119/core';
 import { CliUtils } from '../utils';
 
 /**
@@ -45,7 +45,7 @@ export class PluginStateCommandService {
       console.log(chalk.gray('--------------------------------------------------'));
       for (const row of rows) {
         const state = String(row.state || 'unknown');
-        const color = state === PluginStateCommandService.STATE_ACTIVE ? chalk.green : state === 'error' ? chalk.red : chalk.yellow;
+        const color = state === PluginStateCommandService.STATE_ACTIVE ? chalk.green : state === PluginState.ERROR ? chalk.red : chalk.yellow;
         const health = row.healthStatus ? chalk.gray(` health:${row.healthStatus}`) : '';
         console.log(`${color(state.padEnd(9))} ${chalk.bold(row.slug)} ${chalk.gray('v' + (row.version || '?'))}${health}`);
       }

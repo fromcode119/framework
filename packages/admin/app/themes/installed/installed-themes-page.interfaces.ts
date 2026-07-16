@@ -1,11 +1,35 @@
 import type { RefObject } from 'react';
 import type { ThemeManifest } from '@fromcode119/core/client';
 import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
+import type { NotificationContextType } from '@/components/notification-context.interfaces';
+import type { AdminPageHost } from '@/components/admin-page-host.interfaces';
+import { ThemeState } from '@fromcode119/core/client';
 
 export interface InstalledThemeManifest extends ThemeManifest {
   downloadUrl?: string;
   iconUrl?: string;
-  state?: 'active' | 'inactive';
+  state?: ThemeState;
+}
+
+/** What {@link InstalledThemesPageActions} needs from the page-client to drive it, hook-free. */
+export interface InstalledThemesPageHost extends AdminPageHost<InstalledThemesPageClientState> {
+  readonly notify: NotificationContextType;
+  triggerRefresh(): void;
+  /** Reload installed + marketplace themes into state. */
+  refresh(): Promise<void>;
+}
+
+export interface InstalledThemesFetchResult {
+  themes: InstalledThemeManifest[];
+  marketplaceThemes: InstalledThemeManifest[];
+}
+
+export interface InstalledThemesArchiveInspection {
+  supported: boolean;
+  uploadId?: string;
+  previewTitle?: string;
+  previewDescription?: string;
+  previewSections?: UploadPreviewSection[];
 }
 
 export interface InstalledThemeCardProps {
@@ -44,6 +68,22 @@ export interface InstalledThemesViewProps {
   uploadPreviewSections: UploadPreviewSection[];
   uploadPreviewTitle: string;
   updateVersionForTheme: (theme: InstalledThemeManifest) => string | null;
+}
+
+export interface InstalledThemesPageClientState {
+  themes: InstalledThemeManifest[];
+  marketplaceThemes: InstalledThemeManifest[];
+  loading: boolean;
+  isUploading: boolean;
+  isInspectingUpload: boolean;
+  isDropActive: boolean;
+  pendingUploadId: string | null;
+  uploadProgressLabel: string | null;
+  uploadProgressPercent: number | null;
+  showUploadPreview: boolean;
+  uploadPreviewTitle: string;
+  uploadPreviewDescription: string;
+  uploadPreviewSections: UploadPreviewSection[];
 }
 
 export interface InstalledThemesPageModel {

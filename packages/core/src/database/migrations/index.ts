@@ -19,6 +19,8 @@ export class MigrationLoader {
         file.startsWith('index.') ||
         file.endsWith('.d.ts') ||
         file.endsWith('.map') ||
+        file.includes('.test.') ||
+        file.includes('.spec.') ||
         (!file.endsWith('.ts') && !file.endsWith('.js'))
       ) {
         continue;

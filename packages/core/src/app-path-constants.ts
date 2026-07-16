@@ -1,6 +1,13 @@
 import { RouteConstants } from './route-constants';
 
 export class AppPathConstants {
+  /** File names an appearance's built `dist/` exposes under its `/ui/` asset route. */
+  static readonly APPEARANCE_ASSETS = {
+    UI_SEGMENT: 'ui',
+    BUNDLE: 'bundle.js',
+    STYLESHEET: 'appearance.css',
+  } as const;
+
   static readonly AUTH = {
     LOGIN: '/login',
     SETUP: '/setup',
@@ -58,6 +65,7 @@ export class AppPathConstants {
     PLUGINS: {
       ROOT: '/plugins',
       INSTALLED: '/plugins/installed',
+      HEALTH: '/plugins/health',
       MARKETPLACE: '/plugins/marketplace',
       MARKETPLACE_DETAIL: (slug: string) => `/plugins/marketplace/${slug}`,
       DETAIL: (slug: string) => `/plugins/${slug}`,
@@ -78,6 +86,15 @@ export class AppPathConstants {
       UPDATES: '/settings/updates',
       FRAMEWORK: '/settings/framework',
     },
+    /**
+     * External appearance runtime assets, served by the admin appearance asset route
+     * (`/appearances/<id>/ui/<file>`). The id is URL-encoded — callers pass a raw appearance id.
+     */
+    APPEARANCES: {
+      ROOT: RouteConstants.SEGMENTS.APPEARANCES,
+      UI_BUNDLE: (id: string) => AppPathConstants.appearanceAsset(id, AppPathConstants.APPEARANCE_ASSETS.BUNDLE),
+      UI_STYLESHEET: (id: string) => AppPathConstants.appearanceAsset(id, AppPathConstants.APPEARANCE_ASSETS.STYLESHEET),
+    },
     THEMES: {
       ROOT: '/themes',
       INSTALLED: '/themes/installed',
@@ -87,6 +104,16 @@ export class AppPathConstants {
       SETTINGS_TAB: (slug: string) => AppPathConstants.withQuery(`/themes/${slug}`, { tab: 'settings' }),
     },
   } as const;
+
+  private static appearanceAsset(id: string, file: string): string {
+    const segments = [
+      RouteConstants.SEGMENTS.APPEARANCES,
+      encodeURIComponent(String(id || '')),
+      AppPathConstants.APPEARANCE_ASSETS.UI_SEGMENT,
+      file,
+    ];
+    return segments.join('/').replace(/\/{2,}/g, '/');
+  }
 
   private static withFragment(path: string, fragment: string): string {
     return `${path}#${fragment}`;

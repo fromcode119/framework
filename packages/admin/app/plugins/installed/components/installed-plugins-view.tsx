@@ -4,6 +4,7 @@ import React from 'react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { DependencyDialog } from '@/components/ui/dependency-dialog';
 import { FrameworkIcons } from '@fromcode119/react';
+import { PluginState } from '@fromcode119/core/client';
 import { Loader } from '@/components/ui/loader';
 import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
 import InstalledPluginCard from './installed-plugin-card';
@@ -19,6 +20,8 @@ export default class InstalledPluginsView extends React.Component<InstalledPlugi
   deleteConfirmDescription,
   dependencyIssues,
   failedPluginsCount,
+  heldPluginsCount,
+  onReapproveAll,
   filteredPlugins,
   fileInputRef,
   handleDragLeave,
@@ -54,8 +57,8 @@ export default class InstalledPluginsView extends React.Component<InstalledPlugi
   uploadPreviewTitle,
 } = this.props;
   const isDark = theme === 'dark';
-  const activeCount = filteredPlugins.filter((p) => p.state === 'active' && !p.error).length;
-  const inactiveCount = filteredPlugins.filter((p) => p.state !== 'active' && !(Boolean(p.error) || p.state === 'error')).length;
+  const activeCount = filteredPlugins.filter((p) => p.state === PluginState.ACTIVE && !p.error).length;
+  const inactiveCount = filteredPlugins.filter((p) => p.state !== PluginState.ACTIVE && !(Boolean(p.error) || p.state === PluginState.ERROR)).length;
   const updateCount = filteredPlugins.filter((p) => hasPluginUpdate(p)).length;
   const summaryStats: Array<{ label: string; value: number; tone: string }> = [
     { label: 'Total', value: filteredPlugins.length, tone: isDark ? 'text-white' : 'text-slate-900' },
@@ -81,6 +84,25 @@ export default class InstalledPluginsView extends React.Component<InstalledPlugi
                     {failedPluginsCount} installed {failedPluginsCount === 1 ? 'plugin has' : 'plugins have'} startup or initialization errors. Open the plugin detail page to see the full boot failure.
                   </p>
                 </div>
+              </div>
+            </div>
+          ) : null}
+          {heldPluginsCount > 0 ? (
+            <div className={`rounded-xl border px-4 py-3 ${theme === 'dark' ? 'border-amber-500/20 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
+              <div className="flex items-start gap-3">
+                <div className={`rounded-lg p-2 ${theme === 'dark' ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}>
+                  <FrameworkIcons.Alert size={18} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-500">Capability Change Detected</h3>
+                  <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === 'dark' ? 'text-amber-100/90' : 'text-amber-700'}`}>
+                    {heldPluginsCount} {heldPluginsCount === 1 ? 'plugin is' : 'plugins are'} held pending re-approval after their requested capabilities changed. They stay disabled until an admin re-approves them.
+                  </p>
+                </div>
+                <button onClick={onReapproveAll} disabled={isActivating} className="shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+                  {isActivating ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
+                  <span>Re-approve all held</span>
+                </button>
               </div>
             </div>
           ) : null}

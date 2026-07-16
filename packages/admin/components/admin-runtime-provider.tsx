@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import { ContextHooks } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/use-theme';
 import { NotificationHooks } from '@/components/use-notification';
@@ -39,6 +39,7 @@ export function AdminRuntimeProvider({ children }: AdminRuntimeProviderProps): R
   const collections = ContextHooks.useCollections() as any[];
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams() as Record<string, string | string[]>;
   const auth = AuthHooks.useAuth();
   const activeAppearanceId = ActiveAdminAppearanceService.select(globalSettings as Record<string, unknown>);
 
@@ -52,6 +53,7 @@ export function AdminRuntimeProvider({ children }: AdminRuntimeProviderProps): R
       collections={collections}
       router={router}
       pathname={pathname}
+      params={params}
       auth={auth}
       activeAppearanceId={activeAppearanceId}
     >

@@ -9,6 +9,7 @@ import { BackupService } from '../management/backup-service';
 import { SafeArchive } from '../security/safe-archive';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { Seeder } from '../database/seeder';
+import { PluginState } from '../plugin/services/plugin-state.enums';
 
 export class ThemeInstallerService {
   constructor(
@@ -91,7 +92,7 @@ export class ThemeInstallerService {
         try {
           const existing = this.pluginManager.plugins.get(depSlug);
           if (existing) {
-            if (existing.state !== 'active') await this.pluginManager.enable(depSlug);
+            if (existing.state !== PluginState.ACTIVE) await this.pluginManager.enable(depSlug);
             else await this.pluginManager.enable(depSlug, { force: true });
             continue;
           }

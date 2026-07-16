@@ -66,6 +66,8 @@ export class AdminConstants {
     STAGED: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PLUGINS),
     INSTALL: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.INSTALL, { slug })),
     TOGGLE: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.TOGGLE, { slug })),
+    REAPPROVE_ALL: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_REAPPROVE_ALL),
+    HEALTH: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_HEALTH),
     CONFIG: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.CONFIG, { slug })),
     LOGS: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_LOGS, { slug }),
     DELETE: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.DELETE, { slug })),

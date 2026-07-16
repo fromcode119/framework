@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FrameworkIcons } from '@fromcode119/react';
+import { PluginState } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 import type { PluginDetailHeaderProps } from '../plugin-detail-page.interfaces';
@@ -37,7 +38,7 @@ export default class PluginDetailHeader extends React.Component<PluginDetailHead
           <h1 className={`text-xl font-bold tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
             {plugin.manifest.name}
           </h1>
-          <Badge variant={plugin.state === 'active' ? 'success' : 'gray'}>{plugin.state}</Badge>
+          <Badge variant={plugin.state === PluginState.ACTIVE ? 'success' : 'gray'}>{plugin.state}</Badge>
         </div>
         <div className="flex items-center gap-2 mt-2">
           <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.manifest.slug}</span>

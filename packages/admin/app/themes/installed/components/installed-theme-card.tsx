@@ -6,11 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
 import type { InstalledThemeCardProps } from '../installed-themes-page.interfaces';
+import { ThemeState } from '@fromcode119/core/client';
 
 export default class InstalledThemeCard extends React.Component<InstalledThemeCardProps> {
   render(): React.ReactNode {
     const { isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion } = this.props;
-    const isActive = theme.state === 'active';
+    const isActive = theme.state === ThemeState.ACTIVE;
 
     return (
       <div className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'} ${isActive ? (isDark ? 'bg-indigo-500/5' : 'bg-indigo-50/40') : ''}`}>

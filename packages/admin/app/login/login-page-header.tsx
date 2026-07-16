@@ -8,12 +8,12 @@ export class LoginPageHeader extends React.Component {
       <div className="text-center mb-10">
         <div className="mb-6 inline-flex items-center justify-center px-5 py-4 ">
           <img
-            src={LoginPageConstants.ATLANTIS_LOGO_SLATE_PATH}
+            src={LoginPageConstants.BRAND_LOGO_LIGHT_PATH}
             alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
             className="h-auto w-[220px] dark:hidden"
           />
           <img
-            src={LoginPageConstants.ATLANTIS_LOGO_WHITE_PATH}
+            src={LoginPageConstants.BRAND_LOGO_DARK_PATH}
             alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
             className="hidden h-auto w-[220px] dark:block"
           />

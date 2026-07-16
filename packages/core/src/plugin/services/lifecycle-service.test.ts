@@ -83,6 +83,8 @@ const buildService = (savedState: Record<string, any> = {}) => {
   const registry = {
     loadInstalledPluginsState: vi.fn().mockResolvedValue(savedState),
     savePluginState: vi.fn().mockResolvedValue(undefined),
+    markPluginHeld: vi.fn().mockResolvedValue(undefined),
+    clearPluginHeld: vi.fn().mockResolvedValue(undefined),
     getPluginConfig: vi.fn().mockResolvedValue({}),
     writeLog: vi.fn().mockResolvedValue(undefined),
   };
@@ -146,6 +148,23 @@ describe('LifecycleService.register() — install/update hooks', () => {
     const onInstall = vi.fn().mockRejectedValue(new Error('setup failed'));
 
     await expect(service.register(makePlugin({ onInstall }))).rejects.toThrow('onInstall/onInit');
+  });
+
+  it('rehydrates a persisted capability-drift hold across reboot (stays held + warning) and self-heals stale health', async () => {
+    const { service, manager, registry } = buildService({
+      'test-plugin': { state: 'inactive', approvedCapabilities: [], healthStatus: 'healthy', heldReason: 'capability_drift', version: '1.0.0' },
+    });
+
+    await service.register(makePlugin());
+
+    const loaded = manager.plugins.get('test-plugin');
+    expect(loaded?.state).toBe('inactive');
+    expect(loaded?.heldReason).toBe('capability_drift');
+    expect(loaded?.healthStatus).toBe('warning');
+    // saved health was 'healthy' (stale) → re-assert the hold so the DB axis matches
+    expect(registry.markPluginHeld).toHaveBeenCalledWith('test-plugin', 'capability_drift');
+    // must NOT run the healthy-reset savePluginState that would clobber the hold
+    expect(registry.savePluginState).not.toHaveBeenCalledWith('test-plugin', 'inactive', undefined, '1.0.0');
   });
 });
 

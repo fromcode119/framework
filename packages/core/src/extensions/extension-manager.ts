@@ -7,6 +7,7 @@ import {
   CoreExtensionModule,
 } from './types';
 import { CoreExtensionStateStore } from './core-extension-state-store';
+import { ExtensionState } from './extension-state.enums';
 import { CoreExtensionContextFactory } from './core-extension-context-factory';
 import { CoreExtensionDiscoveryService } from './core-extension-discovery-service';
 
@@ -115,7 +116,7 @@ export class CoreExtensionManager {
       throw new Error(`Core extension not found: ${slug}`);
     }
     
-    if (extension.state === 'active' || extension.state === 'loaded') {
+    if (extension.state === ExtensionState.ACTIVE || extension.state === ExtensionState.LOADED) {
       this.logger.warn(`Extension ${slug} already initialized`);
       return;
     }
@@ -141,7 +142,7 @@ export class CoreExtensionManager {
         ('onInit' in rawExports[0] || 'onEnable' in rawExports[0] || 'onDisable' in rawExports[0])
       ) ? (rawExports[0] as CoreExtensionModule) : rawModule;
       extension.module = module;
-      extension.state = 'loaded';
+      extension.state = ExtensionState.LOADED;
       
       // Create extension context
       const context = this.contextFactory.create(extension);
@@ -156,11 +157,11 @@ export class CoreExtensionManager {
         await module.onEnable(context);
       }
       
-      extension.state = 'active';
+      extension.state = ExtensionState.ACTIVE;
       this.logger.info(`Extension ${slug} initialized successfully`);
       
     } catch (error) {
-      extension.state = 'error';
+      extension.state = ExtensionState.ERROR;
       extension.error = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to initialize extension ${slug}:`, error);
       throw error;
@@ -181,7 +182,7 @@ export class CoreExtensionManager {
     await this.stateStore.updateExtensionState(slug, { enabled: true });
 
     // Initialize if not already
-    if (extension.state !== 'active') {
+    if (extension.state !== ExtensionState.ACTIVE) {
       await this.initializeExtension(slug);
     }
   }
@@ -203,7 +204,7 @@ export class CoreExtensionManager {
         await extension.module.onDisable(context);
       }
 
-      extension.state = 'disabled';
+      extension.state = ExtensionState.DISABLED;
       this.registeredApiRoutes.delete(slug);
 
       // Update state
@@ -236,7 +237,7 @@ export class CoreExtensionManager {
    */
   public isExtensionActive(slug: string): boolean {
     const extension = this.extensions.get(slug);
-    return extension?.state === 'active';
+    return extension?.state === ExtensionState.ACTIVE;
   }
 
   /**
@@ -285,7 +286,7 @@ export class CoreExtensionManager {
    */
   getExtensionModule(slug: string): any {
     const ext = this.extensions.get(slug);
-    if (!ext || ext.state !== 'active') {
+    if (!ext || ext.state !== ExtensionState.ACTIVE) {
       return null;
     }
     return ext.module;
@@ -295,6 +296,6 @@ export class CoreExtensionManager {
    * Get all active extensions
    */
   getActiveExtensions(): LoadedCoreExtension[] {
-    return Array.from(this.extensions.values()).filter((ext) => ext.state === 'active');
+    return Array.from(this.extensions.values()).filter((ext) => ext.state === ExtensionState.ACTIVE);
   }
 }

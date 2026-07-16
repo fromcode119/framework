@@ -5,6 +5,7 @@ import { PluginMarketplaceCommandService } from './plugin-marketplace-command-se
 import { PluginBuildCommandService } from './plugin-build-command-service';
 import { PluginStateCommandService } from '../services/plugin-state-command-service';
 import { PluginUpdateCommandService } from '../services/plugin-update-command-service';
+import { PluginPreflightCommandService } from '../services/plugin-preflight-command-service';
 
 export class PluginCommands {
   static registerPluginCommands(program: Command) {
@@ -16,5 +17,6 @@ export class PluginCommands {
     PluginBuildCommandService.register(plugin, dependencyService);
     PluginStateCommandService.register(plugin);
     PluginUpdateCommandService.register(plugin);
+    PluginPreflightCommandService.register(plugin);
   }
 }

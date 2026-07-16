@@ -52,3 +52,5 @@ export * from '../lib/appearance/admin-shell-registry';
 export * from '../lib/appearance/admin-component-registry';
 export * from '../lib/appearance/admin-page-registry';
 export type { AppearanceShellProps } from '../lib/appearance/appearance-shell-props.interfaces';
+export type { AdminAppearanceManifest, AppearanceSurfaces } from '../lib/appearance/admin-appearance-manifest.interfaces';
+export * from '../lib/appearance/appearance-surface-policy';

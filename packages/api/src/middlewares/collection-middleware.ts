@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { CoreServices, PluginManager } from '@fromcode119/core';
+import { CoreServices, PluginManager, PluginState } from '@fromcode119/core';
 import { NamingStrategy } from '@fromcode119/database';
 import { BaseMiddleware } from './base-middleware';
 
@@ -77,7 +77,7 @@ export class CollectionMiddleware extends BaseMiddleware {
     // Check if the plugin that registered this collection is active
     if (collectionEntry.pluginSlug !== 'system') {
       const plugin = this.manager.getPlugins().find(p => p.manifest.slug === collectionEntry.pluginSlug);
-      if (!plugin || plugin.state !== 'active') {
+      if (!plugin || plugin.state !== PluginState.ACTIVE) {
         res.status(403).json({ 
           error: `Collection "${slug}" is unavailable because plugin "${collectionEntry.pluginSlug}" is ${plugin?.state || 'missing'}`,
           code: 'PLUGIN_DISABLED'
@@ -148,7 +148,7 @@ export class CollectionMiddleware extends BaseMiddleware {
       const plugin = this.manager.getPlugins().find(
         p => p.manifest.slug?.toLowerCase() === requestedPluginSlug.toLowerCase(),
       );
-      if (plugin && plugin.state !== 'active') {
+      if (plugin && plugin.state !== PluginState.ACTIVE) {
         res.status(503).json({
           error: `Plugin "${requestedPluginSlug}" is not ready (state: ${plugin.state}). Retry shortly.`,
           code: 'PLUGIN_UNAVAILABLE',

@@ -4,6 +4,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@fromcode119/react';
+import { PluginState } from '@fromcode119/core/client';
 import type { MarketplaceDetailSidebarProps } from './marketplace-detail-sections.interfaces';
 
 export class MarketplaceDetailSidebar extends React.Component<MarketplaceDetailSidebarProps> {
@@ -61,18 +62,18 @@ export class MarketplaceDetailSidebar extends React.Component<MarketplaceDetailS
                   </div>
                 ) : (
                   <div className={`w-full flex flex-col items-center justify-center gap-2 py-6 rounded-xl border-2 border-dashed transition-all duration-500 ${
-                    installedPlugin.state === 'active'
+                    installedPlugin.state === PluginState.ACTIVE
                       ? (theme === 'dark' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600 shadow-emerald-500/5')
                       : (theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600')
                   }`}>
                     <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-current/10' : 'bg-white shadow-sm ring-1 ring-slate-100'}`}>
-                      {installedPlugin.state === 'active' ? (
+                      {installedPlugin.state === PluginState.ACTIVE ? (
                         <FrameworkIcons.CheckCircle2 size={24} strokeWidth={3.5} />
                       ) : (
                         <FrameworkIcons.Box size={24} strokeWidth={3.5} />
                       )}
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest">{installedPlugin.state === 'active' ? 'Fully Active' : 'Installed'}</span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest">{installedPlugin.state === PluginState.ACTIVE ? 'Fully Active' : 'Installed'}</span>
                   </div>
                 )}
 

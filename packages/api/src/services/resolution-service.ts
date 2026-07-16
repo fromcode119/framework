@@ -6,6 +6,7 @@ import {
   ThemeManager,
   SystemConstants,
   type Collection,
+  PluginState,
 } from '@fromcode119/core';
 import { RESTController } from '../controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from './helpers/resolution-contract-match-service';
@@ -94,7 +95,7 @@ export class ResolutionService {
 
     const resolvedContracts = await this.resolveDefaultPageContracts();
 
-    const activePlugins = new Set(this.manager.getPlugins().filter(p => p.state === 'active').map(p => p.manifest.slug));
+    const activePlugins = new Set(this.manager.getPlugins().filter(p => p.state === PluginState.ACTIVE).map(p => p.manifest.slug));
     const collections = this.manager.registeredCollections;
 
     // 1. Priority Search (Custom Permalinks)
@@ -146,7 +147,10 @@ export class ResolutionService {
               return {
                 type: collection.shortSlug || collection.slug,
                 plugin: pluginSlug,
-                doc: this.applyExactPageContractPresentation(doc, collection, normalizedInput, resolvedContracts),
+                doc: ResolutionService.withResolvedSlug(
+                  this.applyExactPageContractPresentation(doc, collection, normalizedInput, resolvedContracts),
+                  candidate,
+                ),
               };
             }
           }
@@ -243,6 +247,20 @@ export class ResolutionService {
     }
 
     return null;
+  }
+
+  /**
+   * Guarantee the resolved document reports the slug it was matched by. Route resolution is a contract:
+   * "this path resolved to this document" — consumers (the frontend layout/router) key off `doc.slug`,
+   * so it must never be absent just because a collection marked the field hidden for its admin form.
+   * Only fills a MISSING slug; never overwrites the document's own value.
+   */
+  private static withResolvedSlug(doc: any, resolvedSlug: string): any {
+    if (!doc || typeof doc !== 'object') return doc;
+    const existing = String(doc.slug ?? '').trim();
+    if (existing) return doc;
+    const fallback = String(resolvedSlug ?? '').trim();
+    return fallback ? { ...doc, slug: fallback } : doc;
   }
 
   private applyExactPageContractPresentation(

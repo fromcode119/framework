@@ -6,6 +6,7 @@ import { AdminMetadataService } from './admin-metadata-service';
 import { LifecycleService } from './lifecycle-service';
 import { RuntimeService } from './runtime-service';
 import { SecurityMonitor } from '../../security/security-monitor';
+import { PluginState } from './plugin-state.enums';
 
 export class PluginAdminRuntimeService {
   constructor(
@@ -21,7 +22,7 @@ export class PluginAdminRuntimeService {
 
   async getSecuritySummary(): Promise<any> {
     const all = Array.from(this.plugins.values());
-    const active = all.filter((plugin) => plugin.state === 'active');
+    const active = all.filter((plugin) => plugin.state === PluginState.ACTIVE);
     const isSandboxed = (plugin: LoadedPlugin) => plugin.manifest?.sandbox !== false;
     const mismatch = active.filter(isSandboxed).filter((plugin) => !plugin.isSandboxed);
     const sandbox = await this.lifecycle.getSandboxStats();
@@ -56,7 +57,7 @@ export class PluginAdminRuntimeService {
   }
 
   getRuntimeModules(): Record<string, any> {
-    return this.runtime.getModules(Array.from(this.plugins.values()).filter((plugin) => plugin.state === 'active'));
+    return this.runtime.getModules(Array.from(this.plugins.values()).filter((plugin) => plugin.state === PluginState.ACTIVE));
   }
 
   async getAdminMetadata(getSortedPlugins: () => LoadedPlugin[]): Promise<any> {

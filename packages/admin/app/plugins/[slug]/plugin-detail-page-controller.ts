@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ContextHooks } from '@fromcode119/react';
 import type { LoadedPlugin } from '@fromcode119/core/client';
+import { PluginState } from '@fromcode119/core/client';
 import { ThemeHooks } from '@/components/use-theme';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { NotificationHooks } from '@/components/use-notification';
@@ -121,13 +122,13 @@ export class PluginDetailPageController {
     const handleToggle = async () => {
       if (!plugin) return;
       try {
-        const newState = plugin.state === 'active' ? false : true;
+        const newState = plugin.state === PluginState.ACTIVE ? false : true;
         await PluginDetailPageService.togglePlugin(plugin.manifest.slug, newState);
-        const status = newState ? 'active' : 'inactive';
+        const status = newState ? PluginState.ACTIVE : PluginState.INACTIVE;
         setPlugin({
           ...plugin,
           state: status,
-          approvedCapabilities: status === 'active' ? [...(plugin.manifest.capabilities || [])] : plugin.approvedCapabilities,
+          approvedCapabilities: status === PluginState.ACTIVE ? [...(plugin.manifest.capabilities || [])] : plugin.approvedCapabilities,
         });
         notify('success', 'Status Updated', `${plugin.manifest.name} is now ${status}.`);
         triggerRefresh();

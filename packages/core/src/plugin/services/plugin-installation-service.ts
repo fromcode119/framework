@@ -10,6 +10,7 @@ import type { LoadedPlugin, PluginManifest } from '../../types';
 import type { PluginInstallProgressReporter } from '../plugin-installation.interfaces';
 import { PluginStateService } from './plugin-state-service';
 import { PluginRuntimeRestartService } from './plugin-runtime-restart-service';
+import { PluginState } from './plugin-state.enums';
 
 export class PluginInstallationService {
   constructor(
@@ -61,7 +62,7 @@ export class PluginInstallationService {
 
     const manifest = await this.marketplace.downloadAndInstall(slug, new Set(), options.progressReporter, options.version);
     await this.finalizeInstalledPlugin(manifest.slug, {
-      enable: options.enable ?? existing?.state === 'active',
+      enable: options.enable ?? existing?.state === PluginState.ACTIVE,
       progressReporter: options.progressReporter,
     });
     return manifest;
@@ -96,11 +97,11 @@ export class PluginInstallationService {
     const pluginPath = path.dirname(manifestPath);
     await this.runPluginMigrations(slug, pluginPath, manifest, options.progressReporter);
 
-    if (existingPlugin && existingPlugin.state !== 'error') {
+    if (existingPlugin && existingPlugin.state !== PluginState.ERROR) {
       const desiredState = options.enable === true
-        ? 'active'
+        ? PluginState.ACTIVE
         : options.enable === false
-          ? 'inactive'
+          ? PluginState.INACTIVE
           : existingPlugin.state;
 
       await this.registry.savePluginState(

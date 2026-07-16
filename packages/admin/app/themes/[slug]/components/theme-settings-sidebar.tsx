@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants';
+import { ThemeState } from '@fromcode119/core/client';
 
 export class ThemeSettingsSidebar extends React.Component<{ page: any; model: any }> {
   render(): React.ReactNode {
@@ -164,7 +165,7 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
             </h3>
           </div>
           <p className={`text-[11px] font-bold leading-relaxed mb-4 ${adminTheme === 'dark' ? 'text-red-300/70' : 'text-red-700/70'}`}>
-            {themeDetail.state === 'active'
+            {themeDetail.state === ThemeState.ACTIVE
               ? 'This theme is currently active. On delete, the system will switch to another theme if available, or continue with no active theme.'
               : 'Removing this theme artifact is permanent. All local layout variations will be destroyed.'}
           </p>
@@ -172,7 +173,7 @@ export class ThemeSettingsSidebar extends React.Component<{ page: any; model: an
             onClick={() => page.openDeleteConfirm()}
             className="w-full h-9 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all shadow-sm hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white"
           >
-            {themeDetail.state === 'active' ? 'Switch & Destroy Theme' : 'Destroy Theme'}
+            {themeDetail.state === ThemeState.ACTIVE ? 'Switch & Destroy Theme' : 'Destroy Theme'}
           </button>
         </Card>
       </div>

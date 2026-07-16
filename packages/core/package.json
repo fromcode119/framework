@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/core",
-  "version": "0.1.76",
+  "version": "0.1.77",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -63,9 +63,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy:templates",
     "dev": "tsc -w",
-    "test": "vitest run"
+    "test": "vitest run",
+    "copy:templates": "mkdir -p dist/plugin/services/templates && cp -r src/plugin/services/templates/. dist/plugin/services/templates/",
+    "prepack": "npm run copy:templates"
   },
   "dependencies": {
     "@fromcode119/cache": "*",
@@ -87,7 +89,8 @@
     "tar": "^7.5.7",
     "uuid": "^9.0.1",
     "ws": "^8.19.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "handlebars": "^4.7.9"
   },
   "peerDependencies": {
     "express": ">=4.0.0"

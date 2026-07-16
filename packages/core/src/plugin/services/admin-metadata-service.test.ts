@@ -16,17 +16,19 @@ describe('AdminMetadataService', () => {
     const settingsItems = systemItems.filter((item) => item.sourcePaths.includes(AppPathConstants.ADMIN.SETTINGS.ROOT));
 
     expect(result.secondaryPanel.contexts['org.fromcode:system']).toBeDefined();
-    expect(userItems.map((item) => item.id)).toEqual(['users-list', 'roles', 'permissions']);
-    expect(userItems.map((item) => item.label)).toEqual(['Users List', 'Roles', 'Permissions']);
+    expect(userItems.map((item) => item.id)).toEqual(['users-list', 'people', 'roles', 'permissions']);
+    expect(userItems.map((item) => item.label)).toEqual(['Users List', 'People', 'Roles', 'Permissions']);
     expect(userItems.every((item) => item.sourcePaths.every((path) => path === AppPathConstants.ADMIN.USERS.ROOT))).toBe(true);
     expect(settingsItems.map((item) => item.id)).toEqual([
       'general',
       'framework',
       'integrations',
       'localization',
+      'appearance',
       'routing',
       'security',
       'infrastructure',
+      'backups',
       'updates',
     ]);
     expect(settingsItems.map((item) => item.label)).toEqual([
@@ -34,9 +36,11 @@ describe('AdminMetadataService', () => {
       'Framework',
       'Integrations',
       'Localization',
+      'Appearance',
       'Routing',
       'Security',
       'Infrastructure',
+      'Backups',
       'Updates',
     ]);
     expect(settingsItems.every((item) => item.sourcePaths.every((path) => path === AppPathConstants.ADMIN.SETTINGS.ROOT))).toBe(true);

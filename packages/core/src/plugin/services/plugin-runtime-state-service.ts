@@ -2,6 +2,7 @@ import { SystemConstants } from '../../constants';
 import { Logger } from '../../logging';
 import { PluginStateService } from './plugin-state-service';
 import type { Collection, LoadedPlugin } from '../../types';
+import { PluginState } from './plugin-state.enums';
 
 export class PluginRuntimeStateService {
   constructor(
@@ -95,7 +96,7 @@ export class PluginRuntimeStateService {
     // In-memory state goes 'error' (runtime excludes it); the DB only flips health to
     // 'error' and KEEPS the desired `state` column so the plugin recovers to its prior
     // active/inactive state on the next clean boot instead of being stuck in error.
-    plugin.state = 'error';
+    plugin.state = PluginState.ERROR;
     await this.db.update(SystemConstants.TABLE.PLUGINS, { slug }, {
       health_status: 'error',
       updated_at: new Date(),

@@ -1,319 +1,91 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ThemeHooks } from '@/components/use-theme';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants';
-import type { MediaFolder, MediaItem, MediaPageModel, MovingItem } from './media-page.interfaces';
+import type { MediaFolder, MediaItem, MediaLibraryPage, MovingItem } from './media-page.interfaces';
 
+/**
+ * Data access + business logic for the media library. Hook-free by contract: the page-client class
+ * owns React state and lifecycle; this controller owns "how to fetch/do it".
+ */
 export class MediaPageController {
-  static useModel(): MediaPageModel {
-    const { theme } = ThemeHooks.useTheme();
-    const [items, setItems] = useState<MediaItem[]>([]);
-    const [folders, setFolders] = useState<MediaFolder[]>([]);
-    const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
-    const [folderPath, setFolderPath] = useState<MediaFolder[]>([]);
+  private static get base(): string {
+    return AdminConstants.ENDPOINTS.MEDIA.BASE;
+  }
 
-    const [loading, setLoading] = useState(true);
-    const [uploading, setUploading] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [error, setError] = useState<string | null>(null);
-    const [isDragOver, setIsDragOver] = useState(false);
+  /**
+   * Items + folders for a folder/search view. With no folder and no query the listing is pinned to
+   * the root (`folderId=null`); a search deliberately spans every folder.
+   */
+  static async fetchLibrary(currentFolderId: number | null, searchQuery: string): Promise<MediaLibraryPage> {
+    const q = searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : '';
+    const f = currentFolderId !== null ? `&folderId=${currentFolderId}` : (searchQuery ? '' : '&folderId=null');
 
-    // Dialog States
-    const [isFolderPromptOpen, setIsFolderPromptOpen] = useState(false);
-    const [isRenamePromptOpen, setIsRenamePromptOpen] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [isFolderDeleteDialogOpen, setIsFolderDeleteDialogOpen] = useState(false);
-    const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [editingFolder, setEditingFolder] = useState<MediaFolder | null>(null);
-    const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
-    const [movingItem, setMovingItem] = useState<MovingItem | null>(null);
-    const [isActionLoading, setIsActionLoading] = useState(false);
-    const [optimizingId, setOptimizingId] = useState<number | null>(null);
+    const [items, folders] = await Promise.all([
+      AdminApi.get(`${MediaPageController.base}?${q}${f}`),
+      AdminApi.get(`${MediaPageController.base}/folders?parentId=${currentFolderId || 'null'}`),
+    ]);
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const dragDepthRef = useRef(0);
+    return { items, folders };
+  }
 
-    const fetchMedia = async () => {
-      setLoading(true);
-      try {
-        const q = searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : '';
-        const f = currentFolderId !== null ? `&folderId=${currentFolderId}` : (searchQuery ? '' : '&folderId=null');
+  /** Breadcrumb trail for a folder. The root has no trail. */
+  static async fetchFolderPath(currentFolderId: number | null): Promise<MediaFolder[]> {
+    if (!currentFolderId) return [];
+    return AdminApi.get(`${MediaPageController.base}/folders/${currentFolderId}/path`);
+  }
 
-        const [mediaData, folderData] = await Promise.all([
-          AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?${q}${f}`),
-          AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders?parentId=${currentFolderId || 'null'}`)
-        ]);
+  static async createFolder(name: string, parentId: number | null): Promise<void> {
+    await AdminApi.post(`${MediaPageController.base}/folders`, { name, parentId });
+  }
 
-        setItems(mediaData);
-        setFolders(folderData);
+  static async renameFolder(folderId: number, name: string): Promise<void> {
+    await AdminApi.patch(`${MediaPageController.base}/folders/${folderId}`, { name });
+  }
 
-        if (currentFolderId) {
-          const pathData = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${currentFolderId}/path`);
-          setFolderPath(pathData);
-        } else {
-          setFolderPath([]);
-        }
-      } catch (err) {
-        console.error('Failed to fetch media:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  static async deleteFolder(folderId: number): Promise<void> {
+    await AdminApi.delete(`${MediaPageController.base}/folders/${folderId}`);
+  }
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        fetchMedia();
-      }, 300);
-      return () => clearTimeout(timer);
-    }, [currentFolderId, searchQuery]);
+  /** Re-parent a file or folder. The API expects the string `'null'` to mean "the root". */
+  static async move(movingItem: MovingItem, targetFolderId: number | null): Promise<void> {
+    const target = targetFolderId === null ? 'null' : targetFolderId;
+    if (movingItem.type === 'file') {
+      await AdminApi.patch(`${MediaPageController.base}/${movingItem.id}`, { folderId: target });
+      return;
+    }
+    await AdminApi.patch(`${MediaPageController.base}/folders/${movingItem.id}`, { parentId: target });
+  }
 
-    const handleCreateFolder = async (name: string) => {
-      setIsActionLoading(true);
-      setError(null);
-      try {
-        await AdminApi.post(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders`, {
-          name,
-          parentId: currentFolderId
-        });
-        setIsFolderPromptOpen(false);
-        fetchMedia();
-      } catch (err: any) {
-        console.error('Failed to create folder:', err);
-        setError(err.message || 'Failed to create folder');
-      } finally {
-        setIsActionLoading(false);
-      }
-    };
+  /** Upload sequentially — the API assigns folder placement per file. */
+  static async uploadFiles(files: File[], currentFolderId: number | null): Promise<void> {
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (currentFolderId) formData.append('folderId', currentFolderId.toString());
+      await AdminApi.upload(AdminConstants.ENDPOINTS.MEDIA.UPLOAD, formData);
+    }
+  }
 
-    const handleRenameFolder = async (name: string) => {
-      if (!editingFolder) return;
-      setIsActionLoading(true);
-      setError(null);
-      try {
-        await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${editingFolder.id}`, {
-          name
-        });
-        setIsRenamePromptOpen(false);
-        setEditingFolder(null);
-        fetchMedia();
-      } catch (err: any) {
-        console.error('Failed to rename folder:', err);
-        setError(err.message || 'Failed to rename folder');
-      } finally {
-        setIsActionLoading(false);
-      }
-    };
+  static async deleteItem(itemId: number): Promise<void> {
+    await AdminApi.delete(`${MediaPageController.base}/${itemId}`);
+  }
 
-    const handleDeleteFolder = async () => {
-      if (!editingFolder) return;
-      setIsActionLoading(true);
-      try {
-        await AdminApi.delete(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${editingFolder.id}`);
-        setIsFolderDeleteDialogOpen(false);
-        setEditingFolder(null);
-        fetchMedia();
-      } catch (err: any) {
-        console.error('Delete folder failed:', err);
-        setError(err.message || 'Failed to delete folder');
-      } finally {
-        setIsActionLoading(false);
-      }
-    };
+  static async updateDetails(itemId: number, alt: string, caption: string): Promise<void> {
+    await AdminApi.patch(`${MediaPageController.base}/${itemId}`, { alt, caption });
+  }
 
-    const handleMove = async (targetFolderId: number | null) => {
-      if (!movingItem) return;
-      setIsActionLoading(true);
-      try {
-        if (movingItem.type === 'file') {
-          await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${movingItem.id}`, {
-            folderId: targetFolderId === null ? 'null' : targetFolderId
-          });
-        } else {
-          await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/folders/${movingItem.id}`, {
-            parentId: targetFolderId === null ? 'null' : targetFolderId
-          });
-        }
-        setIsMoveDialogOpen(false);
-        setMovingItem(null);
-        fetchMedia();
-      } catch (err: any) {
-        console.error('Failed to move item:', err);
-        setError(err.message || 'Failed to move item');
-      } finally {
-        setIsActionLoading(false);
-      }
-    };
-
-    const uploadFiles = async (files: FileList | File[]) => {
-      const list = Array.from(files);
-      if (list.length === 0) return;
-      setUploading(true);
-      setError(null);
-      try {
-        for (const file of list) {
-          const formData = new FormData();
-          formData.append('file', file);
-          if (currentFolderId) formData.append('folderId', currentFolderId.toString());
-          await AdminApi.upload(AdminConstants.ENDPOINTS.MEDIA.UPLOAD, formData);
-        }
-
-        fetchMedia();
-      } catch (err: any) {
-        console.error('Upload failed:', err);
-        setError(err?.message || 'Upload failed');
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (!files?.length) return;
-      await uploadFiles(files);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-
-    const isFileDrag = (e: React.DragEvent) => e.dataTransfer?.types?.includes('Files');
-
-    const handleDragEnter = (e: React.DragEvent) => {
-      if (!isFileDrag(e)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      dragDepthRef.current += 1;
-      setIsDragOver(true);
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-      if (!isFileDrag(e)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      e.dataTransfer.dropEffect = 'copy';
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-      if (!isFileDrag(e)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
-      if (dragDepthRef.current === 0) {
-        setIsDragOver(false);
-      }
-    };
-
-    const handleDrop = async (e: React.DragEvent) => {
-      if (!isFileDrag(e)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      dragDepthRef.current = 0;
-      setIsDragOver(false);
-
-      const files = e.dataTransfer.files;
-      if (!files?.length) return;
-      await uploadFiles(files);
-    };
-
-    const handleDelete = async () => {
-      if (!deletingId) return;
-      setIsActionLoading(true);
-      try {
-        await AdminApi.delete(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${deletingId}`);
-        setItems(items.filter(i => i.id !== deletingId));
-        setIsDeleteDialogOpen(false);
-        setDeletingId(null);
-      } catch (err) {
-        console.error('Delete failed:', err);
-      } finally {
-        setIsActionLoading(false);
-      }
-    };
-
-    const handleUpdateDetails = async (alt: string, caption: string) => {
-      if (!editingItem) return;
-      setIsActionLoading(true);
-      setError(null);
-      try {
-        await AdminApi.patch(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${editingItem.id}`, { alt, caption });
-        setItems(prev => prev.map(i => i.id === editingItem.id
-          ? { ...i, alt: alt || null, caption: caption || null }
-          : i));
-        setEditingItem(null);
-      } catch (err: any) {
-        console.error('Failed to update media details:', err);
-        setError(err?.message || 'Failed to update media details');
-      } finally {
-        setIsActionLoading(false);
-      }
-    };
-
-    const handleOptimize = async (item: MediaItem) => {
-      setOptimizingId(item.id);
-      setError(null);
-      try {
-        const result = await AdminApi.post(`${AdminConstants.ENDPOINTS.MEDIA.BASE}/${item.id}/optimize`, {});
-        setItems(prev => prev.map(i => i.id === item.id ? {
-          ...i,
-          optimizedUrl: result.optimizedUrl,
-          optimizedSize: result.optimizedSize,
-          optimizedWidth: result.optimizedWidth,
-          optimizedHeight: result.optimizedHeight,
-        } : i));
-      } catch (err: any) {
-        console.error('Optimize failed:', err);
-        setError(err?.message || 'Failed to optimize image');
-      } finally {
-        setOptimizingId(null);
-      }
-    };
-
+  /** Generate an optimized derivative; returns the fields to merge into the cached item. */
+  static async optimize(itemId: number): Promise<Partial<MediaItem>> {
+    const result = await AdminApi.post(`${MediaPageController.base}/${itemId}/optimize`, {});
     return {
-      theme,
-      items,
-      folders,
-      currentFolderId,
-      setCurrentFolderId,
-      folderPath,
-      loading,
-      uploading,
-      searchQuery,
-      setSearchQuery,
-      viewMode,
-      setViewMode,
-      error,
-      setError,
-      isDragOver,
-      isFolderPromptOpen,
-      setIsFolderPromptOpen,
-      isRenamePromptOpen,
-      setIsRenamePromptOpen,
-      isDeleteDialogOpen,
-      setIsDeleteDialogOpen,
-      isFolderDeleteDialogOpen,
-      setIsFolderDeleteDialogOpen,
-      isMoveDialogOpen,
-      setIsMoveDialogOpen,
-      setDeletingId,
-      editingFolder,
-      setEditingFolder,
-      editingItem,
-      setEditingItem,
-      setMovingItem,
-      isActionLoading,
-      optimizingId,
-      fileInputRef,
-      handleCreateFolder,
-      handleRenameFolder,
-      handleDeleteFolder,
-      handleMove,
-      handleUpload,
-      handleDragEnter,
-      handleDragOver,
-      handleDragLeave,
-      handleDrop,
-      handleDelete,
-      handleOptimize,
-      handleUpdateDetails,
+      optimizedUrl: result.optimizedUrl,
+      optimizedSize: result.optimizedSize,
+      optimizedWidth: result.optimizedWidth,
+      optimizedHeight: result.optimizedHeight,
     };
+  }
+
+  /** True only for an OS file drag — ignores internal element drags. */
+  static isFileDrag(types?: readonly string[]): boolean {
+    return Boolean(types?.includes('Files'));
   }
 }

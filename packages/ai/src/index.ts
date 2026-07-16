@@ -5,6 +5,7 @@ export * from './gateways/ollama';
 export * from './gateways/anthropic';
 export * from './gateways/gemini';
 export * from './gateways/integration-provider';
+export { AiActComplianceWrapper } from './gateways/ai-act-compliance-wrapper';
 export { AdminAssistantRuntime } from './admin-assistant-runtime';
 export { AdminAssistantRuntimeEngine } from './admin-assistant-runtime-engine';
 export { AdminExtensionRegistry } from './admin-extension';

@@ -18,6 +18,7 @@ import { ThemeAssetRouter } from '../routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '../routes/marketplace';
 import { AppearanceRouter } from '../routes/appearances';
 import { SystemRouter } from '../routes/system-router';
+import { ScimRouter } from '../routes/scim-router';
 import { MediaRouter } from '../routes/media-router';
 import { VersioningRouter } from '../routes/versioning';
 import { CollectionRouter } from '../routes/collection-router';
@@ -118,6 +119,8 @@ export class ServerRoutesSetup {
     vApi.use(APPEARANCES, new AppearanceRouter(this.auth).router);
     this.registerCoreExtensionRoutes(vApi);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
+    // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.
+    vApi.use(RouteConstants.SEGMENTS.SCIM_BASE, new ScimRouter(this.manager, this.auth).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
     vApi.use(VERSIONS, new VersioningRouter(this.manager, this.auth, this.restController).router);
 

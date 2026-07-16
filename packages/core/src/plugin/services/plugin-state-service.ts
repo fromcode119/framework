@@ -2,13 +2,15 @@ import { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '../../logging';
 import { SystemConstants } from '../../constants';
 import { PluginConfigValueService } from './plugin-config-value-service';
+import { PluginRegistryHealth, PluginHeldReason } from './plugin-health.enums';
+import { PluginState } from './plugin-state.enums';
 
 export class PluginStateService {
   private logger = new Logger({ namespace: 'PluginState' });
 
   constructor(private db: IDatabaseManager) {}
 
-  async loadInstalledPluginsState(): Promise<Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any; version?: string }>> {
+  async loadInstalledPluginsState(): Promise<Record<string, { state: PluginState; approvedCapabilities: string[]; healthStatus: PluginRegistryHealth; heldReason?: PluginHeldReason; sandboxConfig?: any; version?: string; signatureVerified?: boolean }>> {
     try {
       const result = await this.db.find(SystemConstants.TABLE.PLUGINS, {
         columns: {
@@ -16,22 +18,26 @@ export class PluginStateService {
           state: true,
           capabilities: true,
           health_status: true,
+          held_reason: true,
           sandbox_config: true,
-          version: true
+          version: true,
+          signature_verified: true
         }
       });
 
-      const registry: Record<string, { state: string; approvedCapabilities: string[]; healthStatus: 'healthy' | 'warning' | 'error'; sandboxConfig?: any; version?: string }> = {};
+      const registry: Record<string, { state: PluginState; approvedCapabilities: string[]; healthStatus: PluginRegistryHealth; heldReason?: PluginHeldReason; sandboxConfig?: any; version?: string; signatureVerified?: boolean }> = {};
       result.forEach((row) => {
         // Use lowercase slug for the registry key to ensure case-insensitive lookup
         const slug = row.slug?.toLowerCase();
         if (slug) {
-          registry[slug] = { 
-            state: row.state,
+          registry[slug] = {
+            state: (row.state as PluginState),
             approvedCapabilities: row.capabilities ? (typeof row.capabilities === 'string' ? JSON.parse(row.capabilities) : row.capabilities) : [],
-            healthStatus: row.health_status || 'healthy',
+            healthStatus: (row.health_status as PluginRegistryHealth) || PluginRegistryHealth.HEALTHY,
+            heldReason: (row.held_reason as PluginHeldReason) || undefined,
             sandboxConfig: row.sandbox_config,
-            version: row.version
+            version: row.version,
+            signatureVerified: Boolean(row.signature_verified)
           };
         }
       });
@@ -42,10 +48,10 @@ export class PluginStateService {
     }
   }
 
-  async savePluginState(slug: string, state: string, capabilities?: string[], version?: string) {
+  async savePluginState(slug: string, state: PluginState, capabilities?: string[], version?: string) {
     const normSlug = slug.toLowerCase();
     try {
-      const healthStatus = state === 'error' ? 'error' : 'healthy';
+      const healthStatus = state === PluginState.ERROR ? PluginRegistryHealth.ERROR : PluginRegistryHealth.HEALTHY;
       const values: any = { 
         slug: normSlug, 
         state, 
@@ -89,12 +95,55 @@ export class PluginStateService {
       const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
       if (existing) {
         await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, {
-          health_status: 'error',
+          health_status: PluginRegistryHealth.ERROR,
           updated_at: new Date(),
         });
       }
     } catch (err) {
       this.logger.error(`Failed to mark plugin health error for ${normSlug} in DB`, err);
+    }
+  }
+
+  /**
+   * Mark a plugin as HELD: not activated (`state='inactive'`, stays fail-closed) but flagged on the
+   * orthogonal health axis (`health_status='warning'`) with a machine-readable `held_reason`, so the
+   * operator sees WHY it isn't running (vs. a silent, deliberate-looking disable). Distinct from
+   * savePluginState (which would reset health to 'healthy') and from markPluginHealthError (which
+   * preserves state and sets 'error'). `capabilities`/`version` are intentionally left untouched so
+   * re-approval via enable() is the single place that advances the approved set.
+   */
+  async markPluginHeld(slug: string, heldReason: PluginHeldReason): Promise<void> {
+    const normSlug = slug.toLowerCase();
+    try {
+      const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
+      if (existing) {
+        await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, {
+          state: PluginState.INACTIVE,
+          health_status: PluginRegistryHealth.WARNING,
+          held_reason: heldReason,
+          updated_at: new Date(),
+        });
+      }
+    } catch (err) {
+      this.logger.error(`Failed to mark plugin held for ${normSlug} in DB`, err);
+    }
+  }
+
+  /** Clear a capability-drift hold: reset health to healthy and null the reason. State is left as-is
+   *  (enable() sets 'active' separately). Best-effort. */
+  async clearPluginHeld(slug: string): Promise<void> {
+    const normSlug = slug.toLowerCase();
+    try {
+      const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
+      if (existing) {
+        await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, {
+          health_status: PluginRegistryHealth.HEALTHY,
+          held_reason: null,
+          updated_at: new Date(),
+        });
+      }
+    } catch (err) {
+      this.logger.error(`Failed to clear plugin held for ${normSlug} in DB`, err);
     }
   }
 

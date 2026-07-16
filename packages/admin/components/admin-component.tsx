@@ -39,6 +39,11 @@ export abstract class AdminComponent<P = Record<string, unknown>, S = Record<str
     return this.context?.pathname ?? '';
   }
 
+  /** Current route params — replaces `useParams()` for hook-free classes. */
+  protected get params(): AdminRuntimeValue['params'] {
+    return this.context?.params ?? {};
+  }
+
   /** Auth context — replaces `AuthHooks.useAuth()` for hook-free classes. */
   protected get auth(): AdminRuntimeValue['auth'] {
     return this.context?.auth;

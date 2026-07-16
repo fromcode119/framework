@@ -8,6 +8,7 @@ import type { DependencyIssue } from './discovery-service.interfaces';
 import { PluginDependencyInstallerService } from './plugin-dependency-installer-service';
 import { PluginArchiveInstallerService } from './plugin-archive-installer-service';
 import { PluginDirectoryScannerService } from './plugin-directory-scanner-service';
+import { PluginState } from './plugin-state.enums';
 
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
@@ -118,7 +119,7 @@ export class DiscoveryService {
         continue;
       }
 
-      if (options.checkActive && dependency.state !== 'active') {
+      if (options.checkActive && dependency.state !== PluginState.ACTIVE) {
         issues.push({ slug: depSlug, expected: versionRange, type: 'inactive' });
       }
     }

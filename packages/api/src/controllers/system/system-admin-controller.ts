@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { ApplicationDomainSettingsUtils, SystemConstants } from '@fromcode119/core';
+import { ApiVersionUtils, ApplicationDomainSettingsUtils, PluginState, RouteConstants, SystemConstants } from '@fromcode119/core';
 import { SystemControllerRuntime } from './system-controller-runtime';
+import { ScimTokenService } from '../../services/scim-token-service';
 
 const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.MAINTENANCE_MODE,
@@ -44,6 +45,69 @@ export class SystemAdminController {
   async search(req: Request, res: Response) {
     try {
       res.json(await this.runtime.search.search(req.query?.q));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * The SCIM base path an IdP is pointed at — the mount point under the versioned API prefix,
+   * derived from the same constants the router mounts with (never a hardcoded `/api/v1/...`).
+   */
+  private get scimBaseUrl(): string {
+    return ApiVersionUtils.withVersion(RouteConstants.SEGMENTS.SCIM_BASE);
+  }
+
+  /** SCIM provisioning status — whether a bearer token is configured + the SCIM base path. */
+  async getScim(_req: Request, res: Response) {
+    try {
+      const configured = await new ScimTokenService(this.runtime.db).isConfigured();
+      res.json({ configured, baseUrl: this.scimBaseUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /** Rotate (or first-create) the SCIM bearer token — returned ONCE for the admin to paste into the IdP. */
+  async rotateScimToken(_req: Request, res: Response) {
+    try {
+      const token = await new ScimTokenService(this.runtime.db).rotate();
+      res.json({ token, baseUrl: this.scimBaseUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /** Webhooks + their recent deliveries (Workbench-style delivery log). */
+  async getWebhooks(_req: Request, res: Response) {
+    try {
+      const webhooks = await this.runtime.db.find('_system_webhooks', { limit: 200 }).catch(() => []);
+      const deliveries = await this.runtime.manager.webhooks.listDeliveries(undefined, 60);
+      res.json({
+        webhooks: (Array.isArray(webhooks) ? webhooks : []).map((w: any) => ({
+          id: w.id, name: w.name, url: w.url, method: w.method, active: Boolean(w.active),
+          events: w.events, lastStatus: w.lastStatus, lastTriggeredAt: w.lastTriggeredAt,
+        })),
+        deliveries,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async testWebhook(req: Request, res: Response) {
+    try {
+      const result = await this.runtime.manager.webhooks.testWebhook(Number(req.params.id));
+      res.status(result.success ? 200 : 404).json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async resendWebhookDelivery(req: Request, res: Response) {
+    try {
+      const result = await this.runtime.manager.webhooks.resendDelivery(Number(req.params.id));
+      res.status(result.success ? 200 : 404).json(result);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -264,7 +328,7 @@ export class SystemAdminController {
     // namespace/slug — consumed by the storefront via `runtime.globalSettings`.
     const pluginPublicSettings = await this.runtime.manager.getPublicFrontendPluginSettings();
     const plugins = this.runtime.manager.getSortedPlugins(
-      this.runtime.manager.getPlugins().filter((plugin: any) => plugin.state === 'active')
+      this.runtime.manager.getPlugins().filter((plugin: any) => plugin.state === PluginState.ACTIVE)
     ).map((plugin: any) => ({
       namespace: plugin.manifest.namespace,
       slug: plugin.manifest.slug,

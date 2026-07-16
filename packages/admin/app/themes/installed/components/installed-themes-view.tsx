@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { UploadPreviewDialog } from '@/components/ui/upload-preview-dialog';
 import InstalledThemeCard from './installed-theme-card';
 import type { InstalledThemesViewProps } from '../installed-themes-page.interfaces';
+import { ThemeState } from '@fromcode119/core/client';
 
 export default class InstalledThemesView extends React.Component<InstalledThemesViewProps> {
   render(): React.ReactNode {
@@ -36,7 +37,7 @@ export default class InstalledThemesView extends React.Component<InstalledThemes
   updateVersionForTheme,
 } = this.props;
   const isDark = themeMode === 'dark';
-  const activeCount = themes.filter((t) => t.state === 'active').length;
+  const activeCount = themes.filter((t) => t.state === ThemeState.ACTIVE).length;
   const updateCount = themes.filter((t) => updateVersionForTheme(t)).length;
   const summaryStats: Array<{ label: string; value: number; tone: string }> = [
     { label: 'Total', value: themes.length, tone: isDark ? 'text-white' : 'text-slate-900' },

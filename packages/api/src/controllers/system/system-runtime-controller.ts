@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CoercionUtils, SystemUpdateService } from '@fromcode119/core';
+import { CoercionUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
 import { ResolvedDocResponseService } from '../../services/resolved-doc-response-service';
 import { SystemControllerRuntime } from './system-controller-runtime';
 
@@ -114,7 +114,7 @@ export class SystemRuntimeController {
   async getI18n(req: Request, res: Response) {
     const locale = (req.query.locale as string) || 'en';
     const activeSlugs = new Set(
-      this.runtime.manager.getPlugins().filter((plugin) => plugin.state === 'active').map((plugin) => plugin.manifest.slug)
+      this.runtime.manager.getPlugins().filter((plugin) => plugin.state === PluginState.ACTIVE).map((plugin) => plugin.manifest.slug)
     );
     const translations = (this.runtime.manager as any).i18n.translations.get(locale) || {};
     const filtered: any = {};

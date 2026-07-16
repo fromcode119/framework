@@ -3,6 +3,7 @@ import { Logger } from '../../logging';
 import { LoadedPlugin, FromcodePlugin } from '../../types';
 import { SystemConstants } from '../../constants';
 import type { PluginManagerInterface } from '../context/utils.interfaces';
+import { NotificationsContextProxy } from '../context/notifications';
 import { PluginStateService } from './plugin-state-service';
 import { DiscoveryService } from './discovery-service';
 import { SchemaManager } from '../../database/schema-manager';
@@ -13,6 +14,12 @@ import { Seeder } from '../../database/seeder';
 import { PluginFailureIsolationService } from './plugin-failure-isolation-service';
 import { PluginCollectionActivationService } from './plugin-collection-activation-service';
 import { PluginRegistrationSecurityService } from './plugin-registration-security-service';
+import { PluginCapabilityApprovalPolicy } from './plugin-capability-approval-policy';
+import { PluginRegistryHealth, PluginHeldReason } from './plugin-health.enums';
+import { PluginHealthNotificationTemplateService } from './plugin-health-notification-template-service';
+import type { PluginHealthNotificationData } from './plugin-health-notification-template.interfaces';
+import { PluginHealthReportService } from './plugin-health-report-service';
+import { PluginState } from './plugin-state.enums';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -37,6 +44,69 @@ export class LifecycleService {
     }
   }
 
+  /** Pure set-diff of manifest vs approved capabilities. Order-independent; used by the held gate. */
+  static computeCapabilityDiff(current: string[], approved: string[]): { added: string[]; removed: string[]; changed: boolean } {
+    const cur = new Set(current || []);
+    const app = new Set(approved || []);
+    const added = [...cur].filter((c) => !app.has(c)).sort();
+    const removed = [...app].filter((c) => !cur.has(c)).sort();
+    return { added, removed, changed: added.length > 0 || removed.length > 0 };
+  }
+
+  /** Decide what to do when a plugin's capabilities drifted from approval: 'auto-approve' (trusted +
+   *  opt-in) or 'hold'. Pure wrapper over PluginCapabilityApprovalPolicy for testability. */
+  static resolveDriftAction(slug: string, signatureVerified: boolean): 'auto-approve' | 'hold' {
+    return PluginCapabilityApprovalPolicy.shouldAutoApprove(slug, signatureVerified) ? 'auto-approve' : 'hold';
+  }
+
+  /**
+   * Collect the held/errored plugins as DATA for the admin alert, or null when everything is healthy.
+   * Deliberately returns no markup or copy — `PluginHealthNotificationTemplateService` owns those via
+   * Handlebars template files (repo rule: code computes data, template files own the rendering).
+   */
+  static summarizeHeldPlugins(plugins: Map<string, LoadedPlugin>): PluginHealthNotificationData | null {
+    const flagged = [...plugins.values()].filter(
+      (p) => p.healthStatus === PluginRegistryHealth.WARNING || p.healthStatus === PluginRegistryHealth.ERROR || p.state === PluginState.ERROR,
+    );
+    if (!flagged.length) return null;
+
+    return {
+      count: flagged.length,
+      plugins: flagged.map((p) => {
+        const isError = p.state === PluginState.ERROR || p.healthStatus === PluginRegistryHealth.ERROR;
+        // Pass raw values through — the fallback WORDING ("held", "failed to register") is copy and
+        // lives in the template, not here.
+        return {
+          slug: p.manifest?.slug,
+          held: !isError,
+          reason: p.heldReason,
+          error: p.error,
+        };
+      }),
+    };
+  }
+
+  /** After a discovery pass, alert admins ONCE if any plugin is held/errored. Best-effort, never throws. */
+  async reportBootPluginHealth(): Promise<void> {
+    try {
+      const report = PluginHealthReportService.buildReport(
+        [...this.manager.plugins.values()].map((p) => ({
+          slug: p.manifest.slug, state: p.state, healthStatus: p.healthStatus, heldReason: p.heldReason,
+          error: p.error, manifestCapabilities: (p.manifest.capabilities as string[]) || [], approvedCapabilities: p.approvedCapabilities || [],
+        })),
+      );
+      this.logger.info(`[plugin-health] ${report.counts.active} active, ${report.counts.held} held, ${report.counts.error} error, ${report.counts.inactive} inactive`);
+      const summary = LifecycleService.summarizeHeldPlugins(this.manager.plugins);
+      if (!summary) return;
+      const message = PluginHealthNotificationTemplateService.render(summary);
+      const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
+      await notifications.notifyAdmins({ subject: message.subject, text: message.text, html: message.html });
+      this.logger.warn(message.subject);
+    } catch (err) {
+      this.logger.error('reportBootPluginHealth failed', err as any);
+    }
+  }
+
   public async getSandboxStats() {
     return this.sandbox ? await this.sandbox.getStats() : null;
   }
@@ -47,7 +117,7 @@ export class LifecycleService {
     
     // Only throw if the plugin is already registered AND it's not in an error state.
     // If it's in an error state, we want to allow re-registration to attempt recovery.
-    if (existingEntry && existingEntry.state !== 'error') {
+    if (existingEntry && existingEntry.state !== PluginState.ERROR) {
       throw new Error(`Plugin with slug "${slug}" is already registered.`);
     }
 
@@ -64,7 +134,7 @@ export class LifecycleService {
     const registryData = await this.registry.loadInstalledPluginsState();
     const normSlug = slug.toLowerCase();
     const saved = registryData[normSlug];
-    let state = saved?.state || 'inactive';
+    let state: PluginState = saved?.state || PluginState.INACTIVE;
 
     // Failures now only flip health_status to 'error' and PRESERVE the desired `state`
     // (see PluginStateService.markPluginHealthError), so saved.state is normally a real
@@ -73,27 +143,60 @@ export class LifecycleService {
     // defensive fallback for legacy rows persisted with state='error' before that change —
     // recover them conservatively to 'inactive' rather than guess. A tampered/malicious
     // plugin never reaches here (the integrity check above throws first).
-    if (state === 'error') {
-      state = 'inactive';
+    if (state === PluginState.ERROR) {
+      state = PluginState.INACTIVE;
     }
 
-    if (state === 'active') {
-      const currentCaps = [...(plugin.manifest.capabilities || [])].sort().join(',');
-      const approvedCaps = [...(saved?.approvedCapabilities || [])].sort().join(',');
-
-      if (currentCaps !== approvedCaps) {
-        state = 'inactive';
-        await this.registry.savePluginState(slug, 'inactive', undefined, plugin.manifest.version); 
+    // Rehydrate a persisted hold so it STAYS visibly held across reboots: a plugin held for capability
+    // drift is saved inactive + held_reason. On the next boot the drift gate below is skipped (state is
+    // no longer 'active'), so without this the in-memory plugin would look like a plain inactive one and
+    // the held signal (and its 'warning' health) would vanish until re-approved. Only rehydrate for
+    // non-active rows; enable()/clearPluginHeld nulls held_reason on re-approval so it won't re-apply.
+    let heldReason: PluginHeldReason | undefined = state !== PluginState.ACTIVE ? saved?.heldReason : undefined;
+    if (state === PluginState.ACTIVE) {
+      const diff = LifecycleService.computeCapabilityDiff(
+        (plugin.manifest.capabilities as string[]) || [],
+        saved?.approvedCapabilities || [],
+      );
+      if (diff.changed) {
+        const action = LifecycleService.resolveDriftAction(slug, Boolean(saved?.signatureVerified));
+        if (action === 'auto-approve') {
+          const currentCaps = (plugin.manifest.capabilities as string[]) || [];
+          this.logger.warn(
+            `Plugin "${slug}" AUTO-APPROVED capability change (added: [${diff.added.join(', ')}], removed: [${diff.removed.join(', ')}]) — AUTO_APPROVE_PLUGIN_CAPABILITIES is on and the plugin is trusted.`,
+          );
+          await this.registry.savePluginState(slug, PluginState.ACTIVE, currentCaps, plugin.manifest.version);
+          await this.registry.writeLog('WARN', `Auto-approved capability change for "${slug}": +[${diff.added.join(', ')}] -[${diff.removed.join(', ')}]`, slug);
+          try {
+            const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
+            await notifications.notifyAdmins({
+              subject: `[Fromcode] Auto-approved new capabilities for "${slug}"`,
+              text: `"${slug}" gained capabilities [${diff.added.join(', ')}] and was auto-approved (AUTO_APPROVE_PLUGIN_CAPABILITIES on, plugin trusted). Review in Admin -> Plugins if unexpected.`,
+            });
+          } catch { /* best-effort */ }
+          // state stays 'active' -> the existing active path enables it below.
+        } else {
+          // Capability set changed since it was last approved. Do NOT silently deactivate (that looked
+          // like a deliberate disable and caused a prod outage). Hold it: inactive + health 'warning' +
+          // reason, so the admin sees it and one-click re-approves (enable() advances the approved set).
+          state = PluginState.INACTIVE;
+          heldReason = PluginHeldReason.CAPABILITY_DRIFT;
+          this.logger.warn(
+            `Plugin "${slug}" HELD: capabilities changed since approval (added: [${diff.added.join(', ')}], removed: [${diff.removed.join(', ')}]). Re-approve to activate.`,
+          );
+          await this.registry.markPluginHeld(slug, heldReason);
+        }
       }
     }
 
     const loadedPlugin: LoadedPlugin = {
       ...plugin,
       instanceId: uuidv4(),
-      state: 'inactive',
+      state: PluginState.INACTIVE,
       path: pluginPath,
       approvedCapabilities: saved?.approvedCapabilities || [],
-      healthStatus: saved?.healthStatus || 'healthy'
+      healthStatus: heldReason ? PluginRegistryHealth.WARNING : (saved?.healthStatus || PluginRegistryHealth.HEALTHY),
+      heldReason
     };
 
     const hasSavedSandboxConfig = !!saved && Object.prototype.hasOwnProperty.call(saved, 'sandboxConfig') && saved.sandboxConfig !== undefined;
@@ -128,7 +231,7 @@ export class LifecycleService {
       throw new Error(`Plugin "${slug}" failed during ${hook}: ${err.message}`);
     }
 
-    if (state === 'active') {
+    if (state === PluginState.ACTIVE) {
       try {
         await this.enable(slug);
       } catch (err: any) {
@@ -138,11 +241,26 @@ export class LifecycleService {
       return;
     }
 
+    // A held plugin (capability drift) was already persisted by markPluginHeld with
+    // state='inactive' + health_status='warning' + held_reason. Do NOT run the healthy-reset
+    // below: savePluginState forces health='healthy' for any non-error state and would clobber
+    // the 'warning', collapsing the held signal on the health axis. Keep the in-memory value in
+    // sync with what markPluginHeld persisted.
+    if (heldReason) {
+      loadedPlugin.healthStatus = PluginRegistryHealth.WARNING;
+      // Self-heal a stale health axis: markPluginHeld persists 'warning', but a row held before that
+      // write path existed (or by a legacy path) may still read 'healthy'. Re-assert so the DB matches.
+      if (saved?.healthStatus !== PluginRegistryHealth.WARNING) {
+        await this.registry.markPluginHeld(slug, heldReason);
+      }
+      return;
+    }
+
     // Registration succeeded: clear any stale health-error carried over from a prior
     // failure so a recovered (now inactive) plugin reports healthy. savePluginState
     // persists health='healthy' for any non-error state. (The active path resets these
     // inside enable().)
-    loadedPlugin.healthStatus = 'healthy';
+    loadedPlugin.healthStatus = PluginRegistryHealth.HEALTHY;
     loadedPlugin.error = undefined;
     await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
   }
@@ -150,7 +268,7 @@ export class LifecycleService {
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
-    if (plugin.state === 'active') {
+    if (plugin.state === PluginState.ACTIVE) {
       if (options.force) {
         this.logger.info(`Plugin "${slug}" already active; forcing collection schema sync.`);
         await this.activation.syncPluginCollections(slug);
@@ -182,7 +300,7 @@ export class LifecycleService {
     const ctx = (this.manager as any).createContext(plugin);
     
     try {
-      plugin.state = 'loading';
+      plugin.state = PluginState.LOADING;
       if (plugin.isSandboxed && plugin.entryPath && this.sandbox) {
         this.logger.info(`Initializing sandbox for "${slug}"...`);
         await this.sandbox.initPluginContext(slug, ctx, plugin.manifest);
@@ -195,13 +313,17 @@ export class LifecycleService {
       await this.activation.runSeeds(slug);
       await this.activation.materializeDefaultPages();
 
-      plugin.state = 'active';
+      plugin.state = PluginState.ACTIVE;
       plugin.error = undefined;
-      plugin.healthStatus = 'healthy';
+      // Enabling re-approves capabilities, so any capability-drift hold is resolved: reset the health
+      // axis (in-memory + DB via clearPluginHeld) alongside the state.
+      plugin.healthStatus = PluginRegistryHealth.HEALTHY;
+      plugin.heldReason = undefined;
       const currentCaps = plugin.manifest.capabilities as string[] || [];
       plugin.approvedCapabilities = currentCaps;
-      
-      await this.registry.savePluginState(slug, 'active', currentCaps, plugin.manifest.version);
+
+      await this.registry.savePluginState(slug, PluginState.ACTIVE, currentCaps, plugin.manifest.version);
+      await this.registry.clearPluginHeld(slug);
       await this.registry.writeLog('INFO', `Plugin "${slug}" successfully enabled.`, slug);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -212,11 +334,11 @@ export class LifecycleService {
 
   async disable(slug: string, options: { persistState?: boolean } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
-    if (!plugin || plugin.state !== 'active') return;
+    if (!plugin || plugin.state !== PluginState.ACTIVE) return;
 
     // Check if any active plugins depend on this one
     const activeDependents = Array.from(this.manager.plugins.values()).filter(p => 
-      p.state === 'active' && 
+      p.state === PluginState.ACTIVE && 
       p.manifest.dependencies && 
       p.manifest.dependencies[slug]
     );
@@ -236,10 +358,10 @@ export class LifecycleService {
       } else {
         if (plugin.onDisable) await plugin.onDisable(ctx);
       }
-      plugin.state = 'inactive';
+      plugin.state = PluginState.INACTIVE;
       this.manager.middlewares.unregisterByPlugin(slug);
       if (options.persistState !== false) {
-        await this.registry.savePluginState(slug, 'inactive', undefined, plugin.manifest.version);
+        await this.registry.savePluginState(slug, PluginState.INACTIVE, undefined, plugin.manifest.version);
         await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);
       }
     } catch (error) {
@@ -256,7 +378,7 @@ export class LifecycleService {
       if (dependents.length > 0) {
         throw new Error(`Cannot delete plugin "${slug}" because it is required by: ${dependents.map(p => p.manifest.slug).join(', ')}`);
       }
-      if (plugin.state === 'active') await this.disable(slug);
+      if (plugin.state === PluginState.ACTIVE) await this.disable(slug);
 
       if (plugin.onUninstall) {
         const ctx = (this.manager as any).createContext(plugin);

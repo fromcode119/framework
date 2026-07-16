@@ -78,3 +78,7 @@ public/uploads/
 
 # Backups
 /backups/
+
+# Generated service worker — built from packages/admin/service-worker/service-worker.ts
+# by `npm run build:sw` (chained into admin's build/prepack). Never hand-edit or commit.
+packages/admin/public/sw.js

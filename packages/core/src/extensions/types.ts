@@ -5,6 +5,8 @@
  * enabled/disabled at runtime. Similar to plugins but part of the monorepo.
  */
 
+import { ExtensionState } from './extension-state.enums';
+
 export interface CoreExtensionManifest {
   /** Unique identifier (matches package directory name) */
   slug: string;
@@ -70,9 +72,9 @@ export interface LoadedCoreExtension {
   path: string;
   
   /** Current state */
-  state: 'discovered' | 'loaded' | 'active' | 'disabled' | 'error';
-  
-  /** Error message if state is 'error' */
+  state: ExtensionState;
+
+  /** Error message if state is ExtensionState.ERROR */
   error?: string;
   
   /** Loaded module exports (onInit, onEnable, onDisable functions) */

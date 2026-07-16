@@ -5,15 +5,21 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { FrameworkIcons } from '@fromcode119/react';
+import { PluginHeldReason, PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants';
 import type { InstalledPluginCardProps } from '../installed-plugins-page.interfaces';
 
 export default class InstalledPluginCard extends React.Component<InstalledPluginCardProps> {
   render(): React.ReactNode {
     const { hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin } = this.props;
-    const hasRuntimeError = Boolean(plugin.error) || plugin.state === 'error';
-    const statusLabel = hasRuntimeError ? 'Error' : plugin.state === 'active' ? 'Active' : 'Inactive';
-    const statusVariant = hasRuntimeError ? 'danger' : plugin.state === 'active' ? 'success' : 'gray';
+    const hasRuntimeError = Boolean(plugin.error) || plugin.state === PluginState.ERROR;
+    const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
+    const heldLabel = plugin.heldReason === PluginHeldReason.CAPABILITY_DRIFT ? 'Needs re-approval' : 'Held';
+    const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
+    const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
+    const driftSummary = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
+    const statusLabel = hasRuntimeError ? 'Error' : isHeld ? heldLabel : plugin.state === PluginState.ACTIVE ? 'Active' : 'Inactive';
+    const statusVariant = hasRuntimeError ? 'danger' : isHeld ? 'amber' : plugin.state === PluginState.ACTIVE ? 'success' : 'gray';
     const author = typeof plugin.manifest.author === 'object'
       ? (plugin.manifest.author as { name?: string }).name
       : (plugin.manifest.author || 'Official');
@@ -34,8 +40,14 @@ export default class InstalledPluginCard extends React.Component<InstalledPlugin
                 <FrameworkIcons.Loader size={8} className="animate-spin" />Update
               </Link>
             )}
-            {plugin.healthStatus && plugin.healthStatus !== 'healthy' && (
-              <Badge variant={plugin.healthStatus === 'error' ? 'danger' : 'amber'} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{plugin.healthStatus === 'error' ? 'Security' : 'Warning'}</Badge>
+            {plugin.healthStatus === PluginRegistryHealth.ERROR && (
+              <Badge variant="danger" className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />Security</Badge>
+            )}
+            {isHeld && plugin.healthStatus !== PluginRegistryHealth.ERROR && (
+              <Badge variant="amber" className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{heldLabel}</Badge>
+            )}
+            {isHeld && driftSummary && (
+              <span title={`Capability change since approval: ${driftSummary}`} className="shrink-0 text-[10px] font-semibold tabular-nums text-amber-600 dark:text-amber-400">{driftSummary}</span>
             )}
           </div>
           <p className={`text-xs leading-snug truncate ${plugin.error ? 'text-rose-500 font-medium' : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
@@ -45,9 +57,9 @@ export default class InstalledPluginCard extends React.Component<InstalledPlugin
 
         <span className={`hidden lg:inline text-[11px] tabular-nums shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>v{plugin.manifest.version}</span>
         <span className={`hidden xl:inline text-[11px] truncate max-w-[120px] shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{author}</span>
-        <Badge variant={statusVariant} className="shrink-0 w-[68px] justify-center">{statusLabel}</Badge>
+        <Badge variant={statusVariant} className={`shrink-0 justify-center ${isHeld ? 'min-w-[68px] px-2' : 'w-[68px]'}`}>{statusLabel}</Badge>
 
-        <Switch checked={plugin.state === 'active'} onChange={(_: boolean) => onToggle(plugin.manifest.slug, plugin.state === 'active')} className="scale-75 origin-right shrink-0" />
+        <Switch checked={plugin.state === PluginState.ACTIVE} onChange={(_: boolean) => onToggle(plugin.manifest.slug, plugin.state === PluginState.ACTIVE)} className="scale-75 origin-right shrink-0" />
 
         <div className="flex items-center gap-1 shrink-0">
           <Link href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title="Open" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></Link>

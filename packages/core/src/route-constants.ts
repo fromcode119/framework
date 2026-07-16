@@ -22,6 +22,9 @@ export class RouteConstants {
   MEDIA: '/media',
   VERSIONS: '/versions',
 
+  /** Websocket upgrade path served by the API alongside the HTTP routes. */
+  WEBSOCKET: '/socket',
+
   // ── Admin ───────────────────────────────────────────────────────────────
   ADMIN_BASE: '/admin',
   HEALTH: '/health',
@@ -30,6 +33,13 @@ export class RouteConstants {
   // ── Account (frontend page slugs) ────────────────────────────────────────
   ACCOUNT: '/account',
   ACCOUNT_SECTION: '/account/:section',
+  /** Self-service GDPR endpoints on the auth router (authenticated, act on the CURRENT user). */
+  ACCOUNT_EXPORT: '/account/export',
+  ACCOUNT_DELETE: '/account/delete',
+
+  // ── SCIM 2.0 provisioning ────────────────────────────────────────────────
+  /** Standard SCIM base, mounted under the versioned API prefix and authenticated by bearer token. */
+  SCIM_BASE: '/scim/v2',
 
   // ── Core / Auth ───────────────────────────────────────────────────────────
   ACTIVE: '/active',
@@ -72,6 +82,11 @@ export class RouteConstants {
   ADMIN_SEARCH: '/admin/search',
   ADMIN_NOTIFICATIONS: '/admin/notifications',
   ADMIN_PREFERENCES_KEY: '/admin/preferences/:key',
+  ADMIN_WEBHOOKS: '/admin/webhooks',
+  ADMIN_WEBHOOKS_ID_TEST: '/admin/webhooks/:id/test',
+  ADMIN_WEBHOOK_DELIVERIES_ID_RESEND: '/admin/webhook-deliveries/:id/resend',
+  ADMIN_SCIM: '/admin/scim',
+  ADMIN_SCIM_ROTATE: '/admin/scim/rotate',
   ADMIN_NOTIFICATIONS_ID_READ: '/admin/notifications/:id/read',
   ADMIN_NOTIFICATIONS_READ_ALL: '/admin/notifications/read-all',
   ADMIN_STATS_COLLECTIONS: '/admin/stats/collections',
@@ -137,6 +152,8 @@ export class RouteConstants {
   PLUGINS_UPLOAD_INSPECT: '/upload/inspect',
   PLUGINS_UPLOAD_COMPLETE: '/upload/complete',
   PLUGINS_UPLOAD: '/upload',
+  PLUGINS_REAPPROVE_ALL: '/reapprove-all',
+  PLUGINS_HEALTH: '/health',
   PLUGINS_SLUG_TOGGLE: '/:slug/toggle',
   PLUGINS_SLUG_CONFIG: '/:slug/config',
   PLUGINS_SLUG_SANDBOX: '/:slug/sandbox',

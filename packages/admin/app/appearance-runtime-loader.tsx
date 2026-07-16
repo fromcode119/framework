@@ -25,6 +25,7 @@ import type { ClientLayoutChildrenProps } from './client-layout.interfaces';
  */
 export function AppearanceRuntimeLoader({ children }: ClientLayoutChildrenProps): React.ReactElement {
   const [resolved, setResolved] = React.useState(false);
+  const [loadFailed, setLoadFailed] = React.useState(false);
 
   React.useEffect(() => {
     let active = true;
@@ -44,14 +45,39 @@ export function AppearanceRuntimeLoader({ children }: ClientLayoutChildrenProps)
       }
       if (!active) return;
       ActiveAdminAppearanceService.rememberHint(desired);
+      // Load the appearance bundle (with retry). If a NON-default appearance can't load, fail CLOSED — a
+      // contained "workspace unavailable" screen — rather than falling through to the full default admin,
+      // which would silently defeat the appearance's surface containment.
+      let loaded = true;
       if (AppearanceBundleLoaderService.needsLoad(desired)) {
-        await AppearanceBundleLoaderService.ensureLoaded(desired);
+        loaded = await AppearanceBundleLoaderService.ensureLoaded(desired);
       }
-      if (active) setResolved(true);
+      if (!active) return;
+      setLoadFailed(desired !== 'default' && !loaded);
+      setResolved(true);
     })();
     return () => { active = false; };
   }, []);
 
   if (!resolved) return <div className="min-h-screen bg-slate-50 dark:bg-[#020617]" />;
+  if (loadFailed) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Workspace unavailable</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            The admin workspace couldn’t be loaded. This is usually temporary — reload to try again.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-6 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+          >
+            Reload
+          </button>
+        </div>
+      </div>
+    );
+  }
   return <>{children}</>;
 }

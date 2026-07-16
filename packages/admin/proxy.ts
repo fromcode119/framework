@@ -20,8 +20,10 @@ export const config = {
      * - _next/webpack-hmr (hot module replacement)
      * - icons-registry (framework internal icons)
      * - favicon.ico (favicon file)
-     * - Global JS/CSS and assets (Common file extensions)
+     * - Global JS/CSS and assets (Common file extensions, incl. .webmanifest so the
+     *   PWA manifest is readable pre-login and the install prompt works from the login page;
+     *   sw.js and /brand/*.png are already covered by the .js / .png extensions)
      */
-    '/((?!api|_next/static|_next/image|_next/webpack-hmr|icons-registry|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf)).*)',
+    '/((?!api|_next/static|_next/image|_next/webpack-hmr|icons-registry|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf|webmanifest)).*)',
   ],
 };

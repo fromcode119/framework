@@ -1,9 +1,10 @@
+import { ThemeState } from '@fromcode119/core/client';
 export interface Theme {
   slug: string;
   name: string;
   version: string;
   description?: string;
-  state: 'active' | 'inactive';
+  state: ThemeState;
   author?: string;
   variables?: Record<string, string>;
   variableSchema?: Record<string, {

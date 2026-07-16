@@ -4,6 +4,7 @@ import { MigrationCoordinator } from '../../management/migration-coordinator';
 import { PluginStateService } from './plugin-state-service';
 import { DiscoveryService } from './discovery-service';
 import { LifecycleService } from './lifecycle-service';
+import { PluginState } from './plugin-state.enums';
 
 /**
  * PluginDiscoveryCoordinatorService
@@ -34,7 +35,7 @@ export class PluginDiscoveryCoordinatorService {
         this.plugins.set(error.manifest.slug, {
           manifest: error.manifest,
           path: error.path,
-          state: 'error',
+          state: PluginState.ERROR,
           error: error.error,
           instanceId: `err-${error.manifest.slug}-${Date.now()}`
         } as any);
@@ -55,7 +56,7 @@ export class PluginDiscoveryCoordinatorService {
         }
 
         const existing = this.plugins.get(slug);
-        if (existing && existing.state !== 'error') {
+        if (existing && existing.state !== PluginState.ERROR) {
           continue;
         }
 
@@ -67,12 +68,15 @@ export class PluginDiscoveryCoordinatorService {
           this.plugins.set(slug, {
             manifest: plugin.manifest,
             path: stage.path,
-            state: 'error',
+            state: PluginState.ERROR,
             error: err.message,
             instanceId: `err-reg-${slug}-${Date.now()}`
           } as any);
         }
       }
+
+      // One consolidated admin alert for anything held/errored this pass (never mid-loop).
+      await this.lifecycle.reportBootPluginHealth();
     } catch (err: any) {
       this.logger.error(`Plugin discovery coordination failed: ${err.message}`);
     }

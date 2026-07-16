@@ -10,4 +10,21 @@ export interface AdminAppearanceManifest {
   readonly label: string;
   /** Optional one-line description. */
   readonly description?: string;
+  /**
+   * Optional allowlist of the admin surfaces this appearance exposes. When PRESENT, the appearance is a
+   * curated workspace: only the listed plugin areas / path prefixes are reachable while it is active, and
+   * any other admin route is blocked (default-deny containment — NOT an authorization change; role/permission
+   * gates still apply server-side). When ABSENT, the appearance exposes every route (legacy passthrough).
+   * A newly scaffolded appearance should ship an empty allowlist (`{ plugins: [], paths: [] }`) so it starts
+   * exposing nothing until the author opts in.
+   */
+  readonly surfaces?: AppearanceSurfaces;
+}
+
+/** The set of admin surfaces an appearance exposes. See `AdminAppearanceManifest.surfaces`. */
+export interface AppearanceSurfaces {
+  /** Plugin slugs whose `/<slug>/*` admin routes this appearance exposes (matched on the first path segment). */
+  readonly plugins?: readonly string[];
+  /** Framework path prefixes this appearance exposes (e.g. '/my', '/settings/integrations', '/media'). */
+  readonly paths?: readonly string[];
 }
