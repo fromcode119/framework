@@ -1,5 +1,6 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import HomeClient from './home-client';
+import SsrContentShell from '@/components/ssr-content-shell';
 import { HomePageResolver } from './home-page-resolver';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
 import type { HomePageProps } from './home-page.types';
@@ -12,5 +13,11 @@ export async function generateMetadata({ searchParams }: HomePageProps) {
 export default async function HomePage({ searchParams }: HomePageProps) {
   noStore();
   const { content, forcedLayout } = await HomePageResolver.resolve(searchParams);
-  return <HomeClient initialContent={content} forcedLayout={forcedLayout} />;
+  return (
+    <>
+      {/* Static RSC sibling: server-painted above-the-fold shell, hidden by the theme on first paint. */}
+      <SsrContentShell content={content} />
+      <HomeClient initialContent={content} forcedLayout={forcedLayout} />
+    </>
+  );
 }

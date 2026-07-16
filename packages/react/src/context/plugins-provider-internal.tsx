@@ -16,6 +16,7 @@ import { FrontendI18nService } from './frontend-i18n-service';
 import { CollectionsContext } from './collections-context';
 import { MenuContext } from './menu-context';
 import { OverridesContext } from './overrides-context';
+import { PluginApiRegistryStore } from './plugin-api-registry-store';
 import { PluginStateContext } from './plugin-state-context';
 import { SettingsContext } from './settings-context';
 import { SlotsContext } from './slots-context';
@@ -44,7 +45,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
   const [locale, setLocale] = React.useState<string>(() => FrontendI18nService.detectInitialLocale());
   const [refreshVersion, setRefreshVersion] = React.useState(0);
   const [isReady, setIsReady] = React.useState(false);
-  const [pluginAPIs] = React.useState<Record<string, any>>({});
+  const [pluginApiStore] = React.useState(() => new PluginApiRegistryStore());
   const [events] = React.useState(() => new Map<string, Set<(data: any) => void>>());
   const [serverRuntimeModules, setServerRuntimeModules] = React.useState<Record<string, any>>({});
   const inFlightConfigLoadsRef = React.useRef<Map<string, Promise<any>>>(new Map());
@@ -73,7 +74,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
   });
   const registrationRuntime = ContextProviderRegistrationHooks.useRegistrationRuntime({
     events,
-    pluginAPIs,
+    pluginApiStore,
     setCollections,
     setFieldComponents,
     setMenuItems,
@@ -101,6 +102,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     registerMenuItem,
     registerOverride,
     registerPluginApi,
+    registerPluginApiFromRender,
     registerPlugins,
     registerSettings,
     registerTranslations,
@@ -128,7 +130,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
 
   const { stableT, stableLoadConfig, stableGetFrontendMetadata, stableApiBridge } = ContextProviderStabilityHooks.useStableHandles({ stabilityRef });
 
-  ContextProviderRuntimeBridgeHooks.usePluginApiRegistration({ plugins, hasPluginApi, registerPluginApi, stableApiBridge });
+  ContextProviderRuntimeBridgeHooks.usePluginApiRegistration({ plugins, hasPluginApi, registerPluginApi: registerPluginApiFromRender, stableApiBridge });
 
   ContextProviderRuntimeBridgeHooks.setupGlobalStubs(ReactDOM);
 
@@ -151,7 +153,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
     slots, overrides, themeVariables, themeLayouts, themeStyleVariants, activeTheme, menuItems,
     secondaryPanel, collections, fieldComponents, plugins, settings, pluginState, effectiveTranslations,
     locale, refreshVersion, isReady, triggerRefresh, setLocale, t, emit, on, registerPluginApi,
-    getPluginApi, hasPluginApi, setPluginState, registerContentTransformer, registerSlotComponent,
+    getPluginApi, hasPluginApi, pluginApiSubscription: pluginApiStore, setPluginState, registerContentTransformer, registerSlotComponent,
     registerFieldComponent, registerOverride, registerMenuItem, replaceMenuItems, registerCollection,
     replaceCollections, registerPlugins, registerTheme, registerSettings, loadConfig, getFrontendMetadata,
     resolveContent, api,

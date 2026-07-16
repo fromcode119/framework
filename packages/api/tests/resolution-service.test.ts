@@ -3,6 +3,17 @@ jest.mock('@fromcode119/core', () => ({
     getInstance: jest.fn(),
     reset: jest.fn(),
   },
+  PluginState: {
+    ACTIVE: 'active',
+  },
+  EnvUtils: {
+    number: jest.fn((name: string, fallback: number) => {
+      const raw = process.env[name];
+      if (raw === undefined || raw === null || String(raw).trim() === '') return fallback;
+      const parsed = Number(String(raw).trim());
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }),
+  },
   CoercionUtils: {
     toBoolean: jest.fn((value: unknown, fallback = false) => {
       if (typeof value === 'boolean') return value;
@@ -66,6 +77,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -121,6 +134,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -172,6 +187,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -246,6 +263,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -318,6 +337,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -387,6 +408,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -449,6 +472,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -503,6 +528,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {
@@ -574,6 +601,8 @@ describe('ResolutionService default page contract routing', () => {
     };
 
     jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: jest.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: jest.fn().mockReturnValue([
           {

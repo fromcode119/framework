@@ -1,12 +1,9 @@
 import { cache } from 'react';
-import { ServerApiUtils } from './server-api';
+import { FrontendConfigCache } from './frontend-config-cache';
 
 export class FrontendPublicSettings {
   private static readonly settingsMapCache = cache(async (): Promise<Map<string, string>> => {
-    const internalResponse = await ServerApiUtils.serverFetchInternalResponse(ServerApiUtils.buildSystemFrontendPath());
-    const result = internalResponse?.ok
-      ? await internalResponse.json() as Record<string, unknown>
-      : await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemFrontendPath()) as Record<string, unknown> | null;
+    const result = await FrontendConfigCache.read();
     const rawSettings = result?.publicSettings as Record<string, unknown> | undefined;
     const map = new Map<string, string>();
 

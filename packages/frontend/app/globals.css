@@ -85,3 +85,89 @@ body {
 .btn-secondary:active {
   transform: scale(0.95);
 }
+
+/* ---------------------------------------------------------------------------
+ * SSR above-the-fold content shell (#fc-ssr-shell)
+ * Server-painted paint placeholder (nav + h1 + intro text) rendered by the
+ * SsrContentShell server component before the client-only theme boots.
+ * The theme marks its first real paint by setting `data-fc-theme-live` on
+ * <html>; the shell is then hidden via CSS (the node is never removed, so
+ * React's hydrated tree stays intact). Neutral system-font styling only —
+ * this is a placeholder, not a design replica. Light + dark aware.
+ * ------------------------------------------------------------------------- */
+#fc-ssr-shell {
+  /* Reserve a full viewport: keeps anything AFTER the shell (the theme footer once it mounts)
+     starting below the fold, so the shell→theme handoff and progressive content loading never
+     shift a viewport-visible element (CLS). The shell is hidden the moment the theme paints,
+     so the reserved space never shows as a gap. */
+  min-height: 100svh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Follow the injected theme tokens so the shell is readable on the theme's own
+     server-inlined background (dark themes included); neutral fallback otherwise. */
+  color: var(--theme-foreground, #0f172a);
+  background: transparent;
+}
+
+html[data-fc-theme-live] #fc-ssr-shell {
+  display: none !important;
+}
+
+#fc-ssr-shell .fc-ssr-shell-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+#fc-ssr-shell .fc-ssr-shell-brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+#fc-ssr-shell .fc-ssr-shell-nav ul {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#fc-ssr-shell .fc-ssr-shell-nav a {
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+#fc-ssr-shell .fc-ssr-shell-main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 2rem;
+}
+
+#fc-ssr-shell .fc-ssr-shell-main h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 800;
+  margin: 0 0 1rem;
+}
+
+#fc-ssr-shell .fc-ssr-shell-main p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.85;
+}
+
+@media (prefers-color-scheme: dark) {
+  #fc-ssr-shell {
+    /* Same theme token; only the NEUTRAL fallback flips for dark scheme. */
+    color: var(--theme-foreground, #e2e8f0);
+  }
+}

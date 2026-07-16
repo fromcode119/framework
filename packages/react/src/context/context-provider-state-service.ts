@@ -30,6 +30,26 @@ export class ContextProviderStateService {
     };
   }
 
+  static resolveNextSecondaryPanelState(previous: SecondaryPanelState, next: unknown): SecondaryPanelState {
+    if (next && typeof next === 'object') {
+      return next as SecondaryPanelState;
+    }
+
+    return ContextProviderStateService.isEmptySecondaryPanelState(previous)
+      ? previous
+      : ContextProviderStateService.createEmptySecondaryPanelState();
+  }
+
+  static isEmptySecondaryPanelState(state: SecondaryPanelState): boolean {
+    if (!state) {
+      return false;
+    }
+
+    return Object.keys(state.contexts || {}).length === 0
+      && Object.keys(state.itemsByContext || {}).length === 0
+      && (state.globalItems || []).length === 0;
+  }
+
   static getFrontendConfigPath(): string {
     const path = SystemConstants?.API_PATH?.SYSTEM?.FRONTEND;
     if (!path) {

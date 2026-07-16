@@ -110,10 +110,21 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Hashed build chunks are content-addressed (filename changes on every build),
+        // so they are safe to cache immutably for a year. This restores Next's own
+        // default for `/_next/static/*`, which the document-route rule below would
+        // otherwise clobber.
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
         // Override Next.js force-dynamic's `no-store` header to allow bfcache.
         // `private, no-cache` lets the browser use bfcache (back/forward navigation)
         // while still revalidating with the server on normal navigations.
-        source: '/(.*)',
+        // Scoped to exclude `/_next/static/*` so hashed assets keep the immutable
+        // rule above — HTML/data routes stay private/no-cache (they can contain
+        // user-gated content).
+        source: '/((?!_next/static/).*)',
         headers: [{ key: 'Cache-Control', value: 'private, no-cache' }],
       },
     ];

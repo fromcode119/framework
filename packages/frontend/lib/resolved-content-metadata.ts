@@ -1,5 +1,7 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { ServerApiUtils } from './server-api';
+import { FrontendConfigCache } from './frontend-config-cache';
 
 interface SeoHeadData {
   title: string;
@@ -29,8 +31,9 @@ export class ResolvedContentMetadata {
   }
 
   /**
-   * Server-side enriched metadata: merges the base (breadcrumb `other` tags) with the SEO
-   * plugin's resolved head data (`/head-data`) so the INITIAL server HTML carries a proper
+   * Server-side enriched metadata: merges the base (breadcrumb `other` tags) with the
+   * head-data provider plugin's resolved head data (manifest `ui.headDataPath`, e.g. the
+   * SEO plugin) so the INITIAL server HTML carries a proper
    * title, description, Open Graph, Twitter card, canonical, and robots — not just a title.
    */
   static async buildEnriched(
@@ -82,6 +85,42 @@ export class ResolvedContentMetadata {
     return ResolvedContentMetadata.fetchSeoHeadData({ url: '/', contentType: '', contentId: '', title: '', description: '' });
   }
 
+  /**
+   * Per-request memoized SEO head-data fetch (React `cache()`), keyed by the full
+   * query string (a primitive, so layout `fetchSite` and page `buildEnriched` dedupe
+   * whenever they build the identical query). Per-request only — no cross-request
+   * persistence (storefront-performance-audit.md §1.2 / Phase 1.2).
+   */
+  private static readonly seoHeadDataCache = cache(async (queryString: string): Promise<SeoHeadData | null> => {
+    const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
+    if (!provider) return null;
+    const path = ServerApiUtils.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);
+    const data = (await ServerApiUtils.serverFetchJson(path)) as SeoHeadData | null;
+    return data && typeof data === 'object' && typeof data.title === 'string' ? data : null;
+  });
+
+  /**
+   * Discovers the head-data provider from `/system/frontend` plugin metadata (via the
+   * per-request cached FrontendConfigCache — no extra fetch). A plugin opts in by
+   * declaring `ui.headDataPath` in its manifest (e.g. the SEO plugin's `"head-data"`);
+   * the first declaring plugin in the API's plugin order (`getSortedPlugins`, a
+   * deterministic priority sort) wins. No plugin declaring it means head-data is
+   * skipped and callers fall back to base metadata.
+   */
+  private static async resolveHeadDataProvider(): Promise<{ pluginSlug: string; headDataPath: string } | null> {
+    const config = await FrontendConfigCache.read();
+    const plugins = Array.isArray(config?.plugins) ? config?.plugins as Array<Record<string, unknown>> : [];
+    for (const plugin of plugins) {
+      const pluginSlug = String(plugin?.slug || '').trim();
+      const ui = plugin?.ui as Record<string, unknown> | undefined;
+      const headDataPath = String(ui?.headDataPath || '').trim().replace(/^\/+/, '');
+      if (pluginSlug && headDataPath) {
+        return { pluginSlug, headDataPath };
+      }
+    }
+    return null;
+  }
+
   private static async fetchSeoHeadData(params: {
     url: string;
     contentType: string;
@@ -95,9 +134,7 @@ export class ResolvedContentMetadata {
     if (params.contentId) query.set('contentId', params.contentId);
     if (params.title) query.set('title', params.title);
     if (params.description) query.set('description', params.description);
-    const path = ServerApiUtils.buildPluginPath('seo', 'head-data', query);
-    const data = (await ServerApiUtils.serverFetchJson(path)) as SeoHeadData | null;
-    return data && typeof data === 'object' && typeof data.title === 'string' ? data : null;
+    return ResolvedContentMetadata.seoHeadDataCache(query.toString());
   }
 
   private static parseRobots(robots: string): Metadata['robots'] {

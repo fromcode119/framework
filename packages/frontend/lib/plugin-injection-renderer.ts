@@ -1,5 +1,5 @@
 import React from 'react';
-import { ServerApiUtils } from './server-api';
+import { FrontendConfigCache } from './frontend-config-cache';
 
 export class PluginInjectionRenderer {
   static async loadHeadElements(): Promise<React.ReactElement[]> {
@@ -19,7 +19,7 @@ export class PluginInjectionRenderer {
   }
 
   private static async readRenderableInjections(): Promise<Array<Record<string, unknown>>> {
-    const metadata = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemFrontendPath()) as Record<string, unknown> | null;
+    const metadata = await FrontendConfigCache.read();
     const plugins = Array.isArray(metadata?.plugins) ? metadata.plugins : [];
 
     return plugins.flatMap((plugin) => {

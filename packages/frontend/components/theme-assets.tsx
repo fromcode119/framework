@@ -1,6 +1,8 @@
 import { preconnect, preload } from 'react-dom';
 import { ServerApiUtils } from '@/lib/server-api';
+import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
+import { ThemePrefetchRequestCache } from '@/lib/theme/theme-prefetch-request-cache';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 import { ApiPathUtils } from '@fromcode119/core/client';
 
@@ -28,7 +30,7 @@ import { ApiPathUtils } from '@fromcode119/core/client';
  */
 export default async function ThemeAssets() {
   try {
-    const config = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemFrontendPath()) as Record<string, any>;
+    const config = await FrontendConfigCache.read() as Record<string, any>;
     const theme = config?.activeTheme;
 
     if (!theme?.slug) {
@@ -123,7 +125,23 @@ export default async function ThemeAssets() {
         })
       : [];
 
-    const prefetchData = await ThemeDataPrefetcher.prefetch(theme);
+    // Preload the REAL entry + its static chunk dependencies (index-<hash>.js,
+    // vendor chunks), derived server-side by the api from the theme's ui/ directory
+    // (`ui.modulepreload`). bundle.js stays the loader contract; preloading its
+    // target kills the 60-byte shim's serialized RTT plus the entry->vendor wave.
+    const modulePreloadUrls: string[] = (Array.isArray(theme.ui?.modulepreload) ? theme.ui.modulepreload : [])
+      .map((file: string) => {
+        const fileName = String(file || '').trim();
+        if (!fileName || fileName.includes('/') || fileName.includes('\\')) return '';
+        return FrontendAssetVersionUrlService.appendVersion(
+          ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, fileName),
+          theme.version,
+        );
+      })
+      .filter(Boolean);
+
+    // Shared per-request prefetch — same pass feeds the SsrContentShell body shell.
+    const prefetchData = await ThemePrefetchRequestCache.read();
     const prefetchScript = Object.keys(prefetchData).length > 0
       ? `window.__FROMCODE_PAGE_PREFETCH__=${ThemeDataPrefetcher.safeSerialize(prefetchData)};`
       : null;
@@ -153,7 +171,7 @@ export default async function ThemeAssets() {
           // modulepreload: bypasses crossOrigin stripping that would cause credentials-mode mismatch.
           // stylesheets: media="print" trick defers rendering until after fonts load — no FCP penalty.
           <script dangerouslySetInnerHTML={{ __html:
-            `(function(){var l=document.createElement('link');l.rel='modulepreload';l.href=${JSON.stringify(versionedEntryUrl)};document.head.appendChild(l);${
+            `(function(){var u=${JSON.stringify([versionedEntryUrl, ...modulePreloadUrls])};for(var i=0;i<u.length;i++){var l=document.createElement('link');l.rel='modulepreload';l.href=u[i];document.head.appendChild(l);}${
               externalStylesheets.length > 0
                 ? externalStylesheets.map((href: string) =>
                     `var f=document.createElement('link');f.rel='stylesheet';f.href=${JSON.stringify(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`

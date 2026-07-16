@@ -1,6 +1,7 @@
 import { LocalizationUtils } from '@fromcode119/core/client';
 import { notFound, redirect, permanentRedirect } from 'next/navigation';
 import DynamicContentClient from '../dynamic-content-client';
+import SsrContentShell from '@/components/ssr-content-shell';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
@@ -97,12 +98,24 @@ export default async function DynamicContentPage({
   if (!slug) {
     const { content } = await DynamicPageResolver.resolveHomeTarget(locale, fallbackLocale, resolvedSearchParams);
     if (!content) notFound();
-    return <DynamicContentClient content={content} />;
+    return (
+      <>
+        {/* Static RSC sibling: server-painted above-the-fold shell, hidden by the theme on first paint. */}
+        <SsrContentShell content={content} locale={locale} />
+        <DynamicContentClient content={content} />
+      </>
+    );
   }
 
   const content = await DynamicPageResolver.resolveDocWithPermalinkFallback(slug, resolvedSearchParams, locale, routingConfig.strategy);
   if (content) {
-    return <DynamicContentClient content={content} />;
+    return (
+      <>
+        {/* Static RSC sibling: server-painted above-the-fold shell, hidden by the theme on first paint. */}
+        <SsrContentShell content={content} locale={locale} />
+        <DynamicContentClient content={content} />
+      </>
+    );
   }
 
   // Nothing resolved at this path — honour a configured SEO redirect (retired URL) before 404ing.

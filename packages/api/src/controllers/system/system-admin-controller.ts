@@ -251,6 +251,10 @@ export class SystemAdminController {
         }
       }
 
+      // Announce the settings change so in-process caches (e.g. the route-resolution
+      // permalink-structure cache) can invalidate immediately instead of waiting out a TTL.
+      this.runtime.manager.hooks.emit('system:settings:updated', { keys: Object.keys(preparedPayload) });
+
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

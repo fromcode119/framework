@@ -12,6 +12,7 @@ import { ThemeScaffoldService } from './theme-scaffold-service';
 import { ThemeDefaultPageContractOverrideLoader } from './theme-default-page-contract-override-loader';
 import { PluginDefaultPageMaterializationRuntimeService } from '../services/default-page-contract/plugin-default-page-materialization-runtime-service';
 import { ThemeConfigService } from './theme-config-service';
+import { ThemeEntryPreloadService } from './theme-entry-preload-service';
 import { ThemeUpdateService } from './theme-update-service';
 import type { ThemeDefaultPageContractOverride } from '../types';
 import { ThemeState } from './theme-state.enums';
@@ -231,7 +232,22 @@ export class ThemeManager {
   }
 
   async getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
-    return this.configService.getFrontendMetadata(this.getActiveThemeManifest(), runtimeModules);
+    const manifest = this.getActiveThemeManifest();
+    const metadata = await this.configService.getFrontendMetadata(manifest, runtimeModules);
+    // Expose the real entry + its static chunk dependencies so the frontend can emit
+    // `<link rel="modulepreload">` hints and skip the shim's serialized round-trip.
+    // Server-derived from the active theme's own ui/ directory only — never request input.
+    const activeTheme = (metadata as any)?.activeTheme;
+    if (activeTheme && manifest?.slug) {
+      const modulepreload = ThemeEntryPreloadService.resolveModulePreloadList(
+        this.getThemeDirectory(manifest.slug),
+        String((manifest.ui as any)?.entry || ''),
+      );
+      if (modulepreload.length > 0) {
+        activeTheme.ui = { ...(activeTheme.ui || {}), modulepreload };
+      }
+    }
+    return metadata;
   }
 
   async scaffoldTheme(input: {

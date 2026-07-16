@@ -5,6 +5,7 @@ import { Slot, ContextHooks } from '@fromcode119/react';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import DefaultPageDesignRenderer from './default-page-design-renderer';
+import { PassthroughLayout } from '@/components/passthrough-layout';
 
 type DynamicContentClientProps = {
   content: any;
@@ -18,7 +19,7 @@ export default function DynamicContentClient({ content }: DynamicContentClientPr
   const LayoutComponent =
     themeLayouts?.[selectedLayoutName] ||
     themeLayouts?.DefaultLayout ||
-    (({ children }: any) => <>{children}</>);
+    PassthroughLayout;
   const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, normalizedContent);
   const renderableContent = shouldBypassDefaultContent
     ? null

@@ -16,6 +16,19 @@ export class EnvUtils {
   }
 
   /**
+   * Read a numeric setting from the environment. Unset, blank, or non-numeric ⇒ `fallback`.
+   * Centralizes numeric env parsing the same way `flag()` centralizes booleans.
+   *
+   * @example EnvUtils.number('RESOLVE_CACHE_TTL_MS', 30000)
+   */
+  static number(name: string, fallback: number): number {
+    const raw = process.env[name];
+    if (raw === undefined || raw === null || String(raw).trim() === '') return fallback;
+    const parsed = Number(String(raw).trim());
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  /**
    * True when running in a production deployment (`NODE_ENV=production`). Use this instead of raw
    * `process.env.NODE_ENV` comparisons — e.g. to decide whether cookies should be `secure`.
    */

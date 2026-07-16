@@ -33,8 +33,8 @@ export class ContextHooks {
   }
 
   static usePluginsNamespace(namespace: string) {
-    const { getPluginApi, hasPluginApi } = ContextHooks.usePlugins() as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    return ContextHooksSdkService.usePluginsNamespace(namespace, getPluginApi, hasPluginApi);
+    const { getPluginApi, hasPluginApi, pluginApiSubscription } = ContextHooks.usePlugins() as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    return ContextHooksSdkService.usePluginsNamespace(namespace, getPluginApi, hasPluginApi, pluginApiSubscription);
   }
 
   static usePlugin(slug: string) {

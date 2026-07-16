@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { LocalizationUtils } from '@fromcode119/core/client';
 import { FrontendPublicSettings } from './frontend-public-settings';
 import { FrontendLocaleService } from './frontend-locale-service';
@@ -7,6 +8,21 @@ import { ResolvedContentShape } from './resolved-content-shape';
 import type { SearchParams, LocaleStrategy, ResolvedDocResult } from './dynamic-page-resolver.types';
 
 export class DynamicPageResolver {
+  /**
+   * Per-request memoized `/system/resolve` fetch (React `cache()`), keyed by the
+   * FULL query string (slug + locale + fallback_locale + preview) — a primitive key,
+   * so `generateMetadata` and the page body dedupe to ONE API round-trip for the
+   * identical query (storefront-performance-audit.md §1.2 / Phase 1.2). Per-request
+   * only: nothing persists across requests, and the underlying fetch still forwards
+   * the visitor's auth cookie and keeps `no-store`, so members-only gating is
+   * evaluated with the visitor's identity exactly as before.
+   */
+  private static readonly resolveFetchCache = cache(async (queryString: string): Promise<Record<string, any> | null> => {
+    const response = await ServerApiUtils.serverFetchResponse(ServerApiUtils.buildSystemResolvePath(queryString));
+    if (!response || !response.ok) return null;
+    return await response.json() as Record<string, any>;
+  });
+
   static async readSettingValue(key: string): Promise<string> {
     return FrontendPublicSettings.readSettingValue(key);
   }
@@ -81,10 +97,9 @@ export class DynamicPageResolver {
     if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
     if (QueryParamUtils.isPreviewMode(searchParams)) query.set('preview', '1');
 
-    const response = await ServerApiUtils.serverFetchResponse(ServerApiUtils.buildSystemResolvePath(query));
-    if (!response || !response.ok) return null;
+    const result = await DynamicPageResolver.resolveFetchCache(query.toString());
+    if (!result) return null;
 
-    const result = await response.json();
     return {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
@@ -103,9 +118,8 @@ export class DynamicPageResolver {
     try {
       const query = new URLSearchParams();
       query.set('slug', String(slug || '').replace(/^\/+/, ''));
-      const result = await ServerApiUtils.serverFetchJson(
-        ServerApiUtils.buildSystemResolvePath(query),
-      ) as { type?: string; redirect?: { target?: string; permanent?: boolean } } | null;
+      const result = await DynamicPageResolver.resolveFetchCache(query.toString()) as
+        { type?: string; redirect?: { target?: string; permanent?: boolean } } | null;
       if (result?.type === 'redirect' && result.redirect?.target) {
         return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false };
       }
@@ -153,7 +167,7 @@ export class DynamicPageResolver {
     if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
     if (QueryParamUtils.isPreviewMode(searchParams)) query.set('preview', '1');
 
-    const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemResolvePath(query)) as Record<string, any>;
+    const result = await DynamicPageResolver.resolveFetchCache(query.toString());
     return ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null);
   }
 
@@ -169,7 +183,7 @@ export class DynamicPageResolver {
     if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
     if (QueryParamUtils.isPreviewMode(searchParams)) query.set('preview', '1');
 
-    const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemResolvePath(query)) as Record<string, unknown>;
+    const result = await DynamicPageResolver.resolveFetchCache(query.toString());
     return {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),

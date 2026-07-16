@@ -106,7 +106,17 @@ export class DataProcessorService {
     }
 
     const transformed = this.localization.transformOutgoingData(collection, data, options);
-    
+
+    // SECURITY: `type: 'password'` fields (e.g. the users bcrypt hash) NEVER leave the API —
+    // unconditionally stripped from every outgoing document (reads AND the echoed doc in write
+    // responses), regardless of admin.hidden or access flags. This is a data-type rule: a stored
+    // secret/credential hash is write-only through this layer.
+    collection.fields.forEach((field) => {
+      if (field.type === 'password') {
+        delete transformed[field.name];
+      }
+    });
+
     // Ensure array fields are parsed if they came back as strings
     collection.fields.filter(f => f.type === 'array').forEach((field) => {
         const value = transformed[field.name];

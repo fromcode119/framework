@@ -6,6 +6,7 @@ import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import DefaultPageDesignRenderer from './default-page-design-renderer';
 import StarterHero from './starter-hero';
+import { PassthroughLayout } from '@/components/passthrough-layout';
 
 type HomeClientProps = {
   initialContent: any | null;
@@ -55,7 +56,7 @@ export default function HomeClient({ initialContent, forcedLayout }: HomeClientP
     const LayoutComponent =
       themeLayouts?.[selectedLayoutName] ||
       themeLayouts?.DefaultLayout ||
-      (({ children }: any) => <>{children}</>);
+      PassthroughLayout;
     const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, normalizedContent);
 
     return (

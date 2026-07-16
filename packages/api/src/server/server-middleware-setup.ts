@@ -7,10 +7,12 @@ import { ApiConfig } from '../config/api-config';
 import { RequestCookieService } from '../services/request/request-cookie-service';
 import { RequestLocaleService } from '../services/request/request-locale-service';
 import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
+import { JsonCompressionMiddleware } from '../middlewares/json-compression-middleware';
 
 export class ServerMiddlewareSetup {
   private readonly requestCookies = new RequestCookieService();
   private readonly requestLocale = new RequestLocaleService();
+  private readonly jsonCompression = new JsonCompressionMiddleware();
 
   constructor(
     private readonly app: express.Application,
@@ -22,6 +24,10 @@ export class ServerMiddlewareSetup {
   ) {}
 
   setup() {
+    // Gzip for anonymous public JSON GETs (e.g. /system/frontend) — BREACH-scoped:
+    // requests carrying auth credentials are never compressed. See the middleware class.
+    this.app.use(this.jsonCompression.middleware());
+
     // Dynamic pre-auth plugin middlewares
     this.app.use((req, res, next) => this.manager.middlewares.dispatch('pre_auth' as any, req, res, next));
 

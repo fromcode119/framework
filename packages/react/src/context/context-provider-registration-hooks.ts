@@ -1,14 +1,14 @@
 import React from 'react';
 import { RenderableContentTransformerRegistry } from '../renderable-content-transformer-registry';
 import type { CollectionMetadata, MenuItem, SlotComponent } from '../context.interfaces';
-import { ContextProviderStateService } from './context-provider-state-service';
 import { FrontendI18nService } from './frontend-i18n-service';
+import type { PluginApiRegistryStore } from './plugin-api-registry-store';
 import { ContextProviderSlotRegistrationHooks } from './context-provider-slot-registration-hooks';
 
 export class ContextProviderRegistrationHooks {
   static useRegistrationRuntime(args: {
     events: Map<string, Set<(data: any) => void>>;
-    pluginAPIs: Record<string, any>;
+    pluginApiStore: PluginApiRegistryStore;
     setCollections: React.Dispatch<React.SetStateAction<CollectionMetadata[]>>;
     setFieldComponents: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setMenuItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
@@ -25,7 +25,7 @@ export class ContextProviderRegistrationHooks {
   }) {
     const {
       events,
-      pluginAPIs,
+      pluginApiStore,
       setCollections,
       setFieldComponents,
       setMenuItems,
@@ -41,17 +41,27 @@ export class ContextProviderRegistrationHooks {
       setThemeVariables,
     } = args;
 
+    // Delegates to the subscribable store: registrations coalesce into ONE post-commit
+    // notification per batch, and `usePluginsNamespace` consumers subscribe via
+    // `useSyncExternalStore` instead of relying on unrelated provider re-renders.
     const registerPluginApi = React.useCallback((namespace: string, slug: string, api: any) => {
-      pluginAPIs[ContextProviderStateService.getPluginApiRegistryKey(namespace, slug)] = api;
-    }, [pluginAPIs]);
+      pluginApiStore.register(namespace, slug, api);
+    }, [pluginApiStore]);
 
     const getPluginApi = React.useCallback((namespace: string, slug: string) => {
-      return pluginAPIs[ContextProviderStateService.getPluginApiRegistryKey(namespace, slug)];
-    }, [pluginAPIs]);
+      return pluginApiStore.get(namespace, slug);
+    }, [pluginApiStore]);
 
     const hasPluginApi = React.useCallback((namespace: string, slug: string) => {
-      return getPluginApi(namespace, slug) !== undefined;
-    }, [getPluginApi]);
+      return pluginApiStore.has(namespace, slug);
+    }, [pluginApiStore]);
+
+    // Render-phase variant (see PluginApiRegistryStore.registerFromRender) used by
+    // usePluginApiRegistration — no subscriber notification needed for registrations
+    // committed with the same render pass.
+    const registerPluginApiFromRender = React.useCallback((namespace: string, slug: string, api: any) => {
+      pluginApiStore.registerFromRender(namespace, slug, api);
+    }, [pluginApiStore]);
 
     const setPluginState = React.useCallback((pluginSlug: string, key: string, value: any) => {
       setPluginStateInternal((prev) => ({
@@ -123,6 +133,7 @@ export class ContextProviderRegistrationHooks {
       registerMenuItem: slotRegistration.registerMenuItem,
       registerOverride: slotRegistration.registerOverride,
       registerPluginApi,
+      registerPluginApiFromRender,
       registerPlugins: slotRegistration.registerPlugins,
       registerSettings: slotRegistration.registerSettings,
       registerTranslations,

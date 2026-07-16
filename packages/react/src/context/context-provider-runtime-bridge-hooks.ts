@@ -44,7 +44,24 @@ export class ContextProviderRuntimeBridgeHooks {
   }) {
     const { plugins, hasPluginApi, registerPluginApi, stableApiBridge } = args;
 
-    React.useEffect(() => {
+    // Registered DURING render (not in an effect) so the very first render that sees a plugin list
+    // already has its API clients in the registry — children below this provider resolve plugin
+    // namespaces on their first render instead of after a post-hydration effect flushes. The effect
+    // form caused a render waterfall (hydrate -> effect -> register -> consumers re-render -> only
+    // then discover their lazy chunks) and a post-hydration race where a theme component could read
+    // an unregistered namespace.
+    //
+    // Safe in the render phase because it is a pure-ish, idempotent registry write:
+    //   - `registerPluginApi` writes into the provider's `PluginApiRegistryStore`; it never calls
+    //     setState, so there is no render-phase update of another component. The store bumps its
+    //     version synchronously (children rendering in this same pass read the fresh snapshot) and
+    //     notifies `useSyncExternalStore` subscribers post-commit via one coalesced microtask.
+    //   - the `hasPluginApi` guard makes repeats (StrictMode double render, discarded concurrent
+    //     renders) no-ops.
+    //   - `ApiScopeClient`'s constructor only stores its arguments — it touches no browser globals.
+    // `useMemo` keeps this off unrelated re-renders while still covering late-arriving plugins:
+    // new plugins can only appear via a `setPlugins` call, which yields a fresh `plugins` identity.
+    React.useMemo(() => {
       plugins.forEach((plugin: any) => {
         const namespace = String(plugin?.namespace || '').trim();
         const slug = String(plugin?.slug || '').trim();

@@ -71,6 +71,17 @@ export interface SecondaryPanelState {
   };
 }
 
+/**
+ * Subscription surface of the plugin API registry (implemented by `PluginApiRegistryStore`).
+ * Exposed on the context so `usePluginsNamespace` consumers can subscribe via
+ * `useSyncExternalStore` and re-render exactly once per registration batch.
+ */
+export interface PluginApiSubscription {
+  subscribe: (listener: () => void) => () => void;
+  getSnapshot: () => number;
+  getServerSnapshot: () => number;
+}
+
 export interface PluginContextValue {
   slots: Record<string, SlotComponent[]>;
   overrides: Record<string, SlotComponent>;
@@ -97,6 +108,8 @@ export interface PluginContextValue {
   registerPluginApi: (namespace: string, slug: string, api: any) => void;
   getPluginApi: (namespace: string, slug: string) => any;
   hasPluginApi: (namespace: string, slug: string) => boolean;
+  /** Optional so external context-shaped stubs (e.g. theme null facades) stay valid. */
+  pluginApiSubscription?: PluginApiSubscription;
   setPluginState: (pluginSlug: string, key: string, value: any) => void;
   registerContentTransformer: (name: string, transform: (content: unknown, currentContent: unknown) => unknown, priority?: number) => void;
   registerSlotComponent: (slotName: string, component: any, pluginSlug?: string, priority?: number) => void;

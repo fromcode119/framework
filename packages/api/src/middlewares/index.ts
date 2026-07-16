@@ -17,6 +17,7 @@ export { CollectionMiddleware } from './collection-middleware';
 export { CSRFMiddleware } from './csrf-middleware';
 export { XSSMiddleware } from './xss-middleware';
 export { SecurityHeadersMiddleware } from './security-headers-middleware';
+export { JsonCompressionMiddleware } from './json-compression-middleware';
 
 // Rate limiting
 export { 

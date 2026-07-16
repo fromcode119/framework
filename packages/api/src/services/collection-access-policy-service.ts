@@ -13,6 +13,18 @@ export class CollectionAccessPolicyService {
       return accessResult;
     }
 
+    // An EXPLICIT deny from a declared access.read always gates (admins bypass, same as mutations).
+    // Collections holding secrets/PII declare `access.read` returning false for non-admins; that
+    // declaration must hold unconditionally. The ENFORCE_COLLECTION_READ_AUTHZ flag below covers
+    // only the UNDECLARED (null) case, which stays opt-in because anonymous content resolution
+    // still reads untagged collections.
+    if (accessResult === false) {
+      if (this.isAdmin(req?.user)) {
+        return {};
+      }
+      this.throwAuthError(req, `Read access to collection "${collection.slug}" requires permission.`);
+    }
+
     if (collection.system) {
       if (this.isAdmin(req?.user)) {
         return {};
@@ -22,12 +34,12 @@ export class CollectionAccessPolicyService {
     }
 
     // Fail-closed (flag-gated): a non-system collection whose read access is undeclared (no access.read)
-    // or explicitly denied is admin-only when enforced. Public/content collections opt in with
+    // is admin-only when enforced (explicit denies are handled unconditionally above). Public/content collections opt in with
     // `access.read` returning true (or a row-scoping constraint). This uses its OWN flag
     // (ENFORCE_COLLECTION_READ_AUTHZ), SEPARATE from the route gateway, because server-side content
     // resolution reads content collections (cms pages/posts, products) anonymously — so this must stay
     // off until those collections are tagged with `access.read`. Inert by default.
-    if (EnvUtils.flag('ENFORCE_COLLECTION_READ_AUTHZ') && (accessResult === false || accessResult === null)) {
+    if (EnvUtils.flag('ENFORCE_COLLECTION_READ_AUTHZ') && accessResult === null) {
       if (this.isAdmin(req?.user)) {
         return {};
       }

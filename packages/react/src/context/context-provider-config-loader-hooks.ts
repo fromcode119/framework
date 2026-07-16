@@ -121,7 +121,10 @@ export class ContextProviderConfigLoaderHooks {
             setMenuItems(data.menu);
           }
 
-          setSecondaryPanel(data.secondaryPanel || ContextProviderStateService.createEmptySecondaryPanelState());
+          // Identity-preserving: keeps the previous state object when nothing changed, so a
+          // config (re)load without secondary-panel data does not churn the context value.
+          const nextSecondaryPanel = data.secondaryPanel;
+          setSecondaryPanel((prev) => ContextProviderStateService.resolveNextSecondaryPanelState(prev, nextSecondaryPanel));
 
           if (data.settings) {
             setSettings(data.settings);

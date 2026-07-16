@@ -18,6 +18,13 @@ export interface ThemePrefetchApiEntry {
   query?: Record<string, string>;
   /** Optional LCP image extraction config for server-side `<link rel="preload" as="image">` */
   lcp?: ThemeLcpConfig;
+  /**
+   * Marks this entry's payload as the primary navigation menu for the server-rendered
+   * above-the-fold shell (`#fc-ssr-shell`). The framework stays menu-source-agnostic:
+   * the theme declares WHICH prefetched payload is its main nav; the shell only reads
+   * the generic `{ items: [{ label, url|href }] }` shape from it.
+   */
+  ssrShellNav?: boolean;
 }
 
 export interface LcpImagePreload {
