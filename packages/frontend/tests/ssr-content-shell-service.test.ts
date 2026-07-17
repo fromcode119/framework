@@ -54,21 +54,23 @@ describe('SsrContentShellService.isEnabled', () => {
     else process.env.SSR_CONTENT_SHELL = original;
   });
 
-  it('defaults ON when the env flag is absent', () => {
+  it('defaults OFF when unset — no deployment should have to know this flag exists', () => {
     delete process.env.SSR_CONTENT_SHELL;
-    expect(SsrContentShellService.isEnabled()).toBe(true);
+    expect(SsrContentShellService.isEnabled()).toBe(false);
   });
 
-  it('is disabled by false/0/off', () => {
-    for (const value of ['false', '0', 'off', 'FALSE', ' Off ']) {
+  it('stays OFF for empty/garbage values (an empty env var must not read as enabled)', () => {
+    for (const value of ['', '   ', 'false', '0', 'off', 'FALSE', ' Off ', 'yes', 'maybe']) {
       process.env.SSR_CONTENT_SHELL = value;
       expect(SsrContentShellService.isEnabled()).toBe(false);
     }
   });
 
-  it('stays enabled for any other value', () => {
-    process.env.SSR_CONTENT_SHELL = 'true';
-    expect(SsrContentShellService.isEnabled()).toBe(true);
+  it('is enabled only by an explicit opt-in', () => {
+    for (const value of ['true', '1', 'on', 'TRUE', ' On ']) {
+      process.env.SSR_CONTENT_SHELL = value;
+      expect(SsrContentShellService.isEnabled()).toBe(true);
+    }
   });
 });
 

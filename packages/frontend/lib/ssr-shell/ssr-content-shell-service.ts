@@ -24,10 +24,19 @@ import type {
  * which the framework legitimately owns.
  */
 export class SsrContentShellService {
-  /** Opt-out env flag — `SSR_CONTENT_SHELL=false|0|off` disables the shell without a rebuild. */
+  /**
+   * OFF unless explicitly enabled (`SSR_CONTENT_SHELL=true|1|on`).
+   *
+   * The shell paints an approximation of the theme's design before the theme boots, so the page
+   * visibly changes from one design to another. That is a defect no amount of template fidelity
+   * fixes, and it buys nothing measurable: the shell paints an early FCP/LCP candidate that the
+   * theme's own later paint overrides, so the scored LCP is identical with it and without it.
+   * A blank first frame is the honest state until the theme itself renders server-side.
+   * Default-off means no deployment has to know this flag exists.
+   */
   static isEnabled(): boolean {
     const flag = String(process.env.SSR_CONTENT_SHELL ?? '').trim().toLowerCase();
-    return flag !== 'false' && flag !== '0' && flag !== 'off';
+    return flag === 'true' || flag === '1' || flag === 'on';
   }
 
   /**
