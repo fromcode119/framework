@@ -1,3 +1,4 @@
+import { RuntimeConstants } from '@fromcode119/core/client';
 export interface ThemeLcpConfig {
   /** Dot-notation path into the API response, e.g. "items.0.imageUrl" */
   imagePath: string;
@@ -11,6 +12,22 @@ export interface ThemeLcpConfig {
   defaultWidth?: number;
 }
 
+export interface ThemePrefetchFromPageConfig {
+  /** Query param the derived values are joined into (comma-separated), e.g. "slugs". */
+  queryParam: string;
+  /**
+   * Where the values come from on the RESOLVED page document (framework stays
+   * domain-agnostic — these are generic document/block shapes, not plugin keys):
+   *  - 'pageSlug': the document's own slug.
+   *  - 'blockSlugs': slug references found in the document's content blocks
+   *    (generic `slugs`/`productSlugs`/`productSlug`/`slug` keys under block `data`).
+   * Defaults to ['pageSlug'].
+   */
+  sources?: ('pageSlug' | 'blockSlugs')[];
+  /** Cap on derived values (default 3) so the injected payload stays small. */
+  maxValues?: number;
+}
+
 export interface ThemePrefetchApiEntry {
   key: string;
   pluginSlug: string;
@@ -19,12 +36,13 @@ export interface ThemePrefetchApiEntry {
   /** Optional LCP image extraction config for server-side `<link rel="preload" as="image">` */
   lcp?: ThemeLcpConfig;
   /**
-   * Marks this entry's payload as the primary navigation menu for the server-rendered
-   * above-the-fold shell (`#fc-ssr-shell`). The framework stays menu-source-agnostic:
-   * the theme declares WHICH prefetched payload is its main nav; the shell only reads
-   * the generic `{ items: [{ label, url|href }] }` shape from it.
+   * Per-page prefetch: derive an extra query param from the resolved page document.
+   * Entries WITH `fromPage` are skipped by the static per-request prefetch pass
+   * (ThemeDataPrefetcher) and instead fetched by PageDocPrefetcher, which has the
+   * resolved document; their payloads are merged into `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}`
+   * from the page body before the theme boots.
    */
-  ssrShellNav?: boolean;
+  fromPage?: ThemePrefetchFromPageConfig;
 }
 
 export interface LcpImagePreload {

@@ -145,7 +145,18 @@ export class ContextProviderConfigLoaderHooks {
             setThemeVariables(data.activeTheme.variables || {});
 
             const theme = data.activeTheme;
-            if (theme.ui?.css) {
+            // Skip entirely when the server already inlined this theme's css as
+            // `<style data-theme="<slug>">` (the frontend's theme-assets.tsx does this to
+            // kill the render-blocking external stylesheet). Re-mounting it as a
+            // cross-origin <link> does not just re-download the css: `ui.css` may declare
+            // `@font-face` with ROOT-RELATIVE `src` urls, which resolve against the
+            // document origin when inlined but against the API origin over this <link> —
+            // two urls for one file, so the cache can never dedupe and every face
+            // downloads twice. The registry below cannot catch this: it only knows urls
+            // IT mounted, and an inlined <style> has no url at all.
+            const inlinedThemeCss = typeof document !== 'undefined'
+              && !!document.head.querySelector(`style[data-theme="${CSS.escape(String(theme.slug || ''))}"]`);
+            if (theme.ui?.css && !inlinedThemeCss) {
               const cssRegistry = ((window as any).__fromcodeLoadedThemeCss ||= new Set<string>()) as Set<string>;
               theme.ui.css.forEach((cssPath: string) => {
                 const fullUrl = cssPath.startsWith('http')

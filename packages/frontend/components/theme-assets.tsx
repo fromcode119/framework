@@ -4,7 +4,7 @@ import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import { ThemePrefetchRequestCache } from '@/lib/theme/theme-prefetch-request-cache';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
-import { ApiPathUtils } from '@fromcode119/core/client';
+import { ApiPathUtils, RuntimeConstants} from '@fromcode119/core/client';
 
 /**
  * Server Component: injects active theme CSS and head link hints into <head>.
@@ -129,21 +129,25 @@ export default async function ThemeAssets() {
     // vendor chunks), derived server-side by the api from the theme's ui/ directory
     // (`ui.modulepreload`). bundle.js stays the loader contract; preloading its
     // target kills the 60-byte shim's serialized RTT plus the entry->vendor wave.
+    //
+    // These are deliberately NOT `?v=`-versioned. They are content-hashed by the theme
+    // bundler (`index-<hash>.js`), so the filename already busts the cache, and — decisive
+    // here — bundle.js imports them RELATIVELY and unversioned (`import "./index-<hash>.js"`).
+    // A modulepreload only pays off when its url is byte-identical to the url the importer
+    // later requests; appending `?v=` produced a url nothing ever imported, so the entry
+    // chunk was downloaded TWICE (measured: 65 KiB gz duplicated on every storefront view).
     const modulePreloadUrls: string[] = (Array.isArray(theme.ui?.modulepreload) ? theme.ui.modulepreload : [])
       .map((file: string) => {
         const fileName = String(file || '').trim();
         if (!fileName || fileName.includes('/') || fileName.includes('\\')) return '';
-        return FrontendAssetVersionUrlService.appendVersion(
-          ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, fileName),
-          theme.version,
-        );
+        return ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, fileName);
       })
       .filter(Boolean);
 
     // Shared per-request prefetch — same pass feeds the SsrContentShell body shell.
     const prefetchData = await ThemePrefetchRequestCache.read();
     const prefetchScript = Object.keys(prefetchData).length > 0
-      ? `window.__FROMCODE_PAGE_PREFETCH__=${ThemeDataPrefetcher.safeSerialize(prefetchData)};`
+      ? `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}=${ThemeDataPrefetcher.safeSerialize(prefetchData)};`
       : null;
 
     const prefetchApis = Array.isArray(theme.ui?.prefetchApis) ? theme.ui.prefetchApis : [];

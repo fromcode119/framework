@@ -1,15 +1,27 @@
-import type { ThemePrefetchApiEntry } from '../theme/theme-data-prefetcher.interfaces';
-import type { SsrShellBuildOptions, SsrShellModel, SsrShellNavItem } from './ssr-content-shell.types';
+import { SsrShellPathResolver } from './ssr-shell-path-resolver';
+import { SsrShellUrlSanitizer } from './ssr-shell-url-sanitizer';
+import type { SsrShellBuildOptions, SsrShellModel, SsrShellSources } from './ssr-content-shell.types';
+import type {
+  SsrShellListConfig,
+  SsrShellSourceKind,
+  SsrShellThemeConfig,
+  SsrShellTokenConfig,
+  SsrShellValueSpec,
+} from './ssr-shell-theme-template.types';
 
 /**
- * Pure builder for the server-rendered above-the-fold shell (`#fc-ssr-shell`).
+ * Builds the server-rendered above-the-fold shell model.
  *
  * The client-only theme paints everything after the JS chain, so the SSR HTML is
  * visually empty (FCP/LCP = theme boot). This service turns data the server ALREADY
- * has — the resolved page document and the theme-declared nav prefetch payload — into
- * a tiny generic model (nav labels/hrefs + h1 + intro text) that a server component
- * renders as static HTML before the client tree. Domain-agnostic by construction:
- * it only reads generic document/menu shapes, never plugin- or theme-specific keys.
+ * has into the model a server component renders as static HTML before the client tree.
+ *
+ * Domain-agnostic BY CONSTRUCTION: it contains no content-field names and no
+ * "find the interesting block" heuristic. It only resolves the paths the THEME
+ * declared (`theme.json` → `ui.ssrShell`) against framework-owned sources (the
+ * resolved document, site settings, prefetch payloads). The only document keys it
+ * reads itself are the document's generic identity — `title`/`name` and `slug` —
+ * which the framework legitimately owns.
  */
 export class SsrContentShellService {
   /** Opt-out env flag — `SSR_CONTENT_SHELL=false|0|off` disables the shell without a rebuild. */
@@ -18,123 +30,137 @@ export class SsrContentShellService {
     return flag !== 'false' && flag !== '0' && flag !== 'off';
   }
 
-  static build(doc: unknown, options: SsrShellBuildOptions = {}): SsrShellModel {
-    const record = SsrContentShellService.asRecord(doc);
+  /**
+   * Resolves every theme-declared token/list. A missing/unparseable config yields an
+   * empty model — the caller then falls back to the framework's generic shell.
+   */
+  static build(
+    sources: SsrShellSources,
+    config: SsrShellThemeConfig | null,
+    options: SsrShellBuildOptions = {},
+  ): SsrShellModel {
     const locale = String(options.locale || '').trim();
-    const title = SsrContentShellService.readText(record?.title ?? record?.name, locale);
-    const blocks = SsrContentShellService.resolveBlocks(record?.content, locale);
-    const hero = SsrContentShellService.extractHero(blocks, locale);
+    const tokens: Record<string, string> = {};
+    let preloadImageUrl = '';
 
-    return {
-      siteName: String(options.siteName || '').trim(),
-      title,
-      heading: hero.heading,
-      text: hero.text,
-      navItems: Array.isArray(options.navItems) ? options.navItems : [],
-    };
+    for (const entry of config?.tokens || []) {
+      const value = SsrContentShellService.resolveToken(entry, sources, locale, options);
+      tokens[entry.name] = value;
+      if (entry.preload && value && !preloadImageUrl) preloadImageUrl = value;
+    }
+
+    const lists: Record<string, Array<Record<string, string>>> = {};
+    for (const entry of config?.lists || []) {
+      lists[entry.name] = SsrContentShellService.resolveList(entry, sources, locale, options);
+    }
+
+    return { tokens, lists, preloadImageUrl };
   }
 
   static hasRenderableShell(model: SsrShellModel): boolean {
-    return Boolean(model.title || model.heading || model.text || model.navItems.length);
+    return Boolean(
+      model.preloadImageUrl
+      || Object.values(model.tokens).some((value) => String(value || '').trim())
+      || Object.values(model.lists).some((items) => items.length > 0),
+    );
   }
 
-  /**
-   * Picks the theme-flagged (`ssrShellNav: true`) prefetch payloads and normalizes their
-   * top-level items to `{ label, href }`. Payload shape is the generic navigation
-   * contract (`{ items: [...] }` or a bare array); anything else yields no items.
-   */
-  static extractNavItems(
-    prefetchData: Record<string, unknown>,
-    apis: ThemePrefetchApiEntry[],
-  ): SsrShellNavItem[] {
-    const items: SsrShellNavItem[] = [];
-    for (const entry of Array.isArray(apis) ? apis : []) {
-      if (!entry?.ssrShellNav) continue;
-      const payload = prefetchData?.[String(entry.key || '').trim()];
-      const rawItems = Array.isArray(payload)
-        ? payload
-        : (SsrContentShellService.asRecord(payload)?.items as unknown);
-      if (!Array.isArray(rawItems)) continue;
-      for (const raw of rawItems) {
-        const item = SsrContentShellService.normalizeNavItem(raw);
-        if (item) items.push(item);
+  /** Generic document identity — the `<h1>` of the framework's fallback shell. */
+  static readTitle(doc: unknown, locale = ''): string {
+    const record = SsrContentShellService.asRecord(doc);
+    return SsrShellPathResolver.readText(record?.title ?? record?.name, String(locale || '').trim());
+  }
+
+  /** Resolved page slug (generic doc key) — used by `pageMatchPath` guards + template matching. */
+  static readSlug(doc: unknown): string {
+    return String(SsrContentShellService.asRecord(doc)?.slug ?? '').trim();
+  }
+
+  private static resolveToken(
+    entry: SsrShellTokenConfig,
+    sources: SsrShellSources,
+    locale: string,
+    options: SsrShellBuildOptions,
+  ): string {
+    const source = SsrContentShellService.readSource(entry.from, entry.key, sources);
+    if (!SsrContentShellService.matchesPage(entry, source, sources.doc, locale)) return '';
+    return SsrContentShellService.resolveValue(source, entry, locale, options);
+  }
+
+  private static resolveList(
+    entry: SsrShellListConfig,
+    sources: SsrShellSources,
+    locale: string,
+    options: SsrShellBuildOptions,
+  ): Array<Record<string, string>> {
+    const source = SsrContentShellService.readSource(entry.from, entry.key, sources);
+    const rows = SsrShellPathResolver.resolveArray(source, entry.paths, locale);
+    const fieldNames = Object.keys(entry.fields || {});
+    if (!fieldNames.length) return [];
+
+    const items: Array<Record<string, string>> = [];
+    for (const row of rows) {
+      const item: Record<string, string> = {};
+      let complete = true;
+      for (const name of fieldNames) {
+        const value = SsrContentShellService.resolveValue(row, entry.fields[name], locale, options);
+        // A declared field that does not resolve (or a rejected URL) invalidates the whole
+        // item — this is what drops nav entries without a label or with an unsafe href.
+        if (!value) {
+          complete = false;
+          break;
+        }
+        item[name] = value;
       }
+      if (complete) items.push(item);
     }
     return items;
   }
 
-  private static normalizeNavItem(raw: unknown): SsrShellNavItem | null {
-    const record = SsrContentShellService.asRecord(raw);
-    if (!record) return null;
-    const label = String(record.label ?? record.title ?? '').trim();
-    const href = String(record.url ?? record.href ?? '').trim();
-    if (!label || !href) return null;
-    // Only same-app paths and absolute http(s) links — never javascript:/data: schemes.
-    if (!href.startsWith('/') && !/^https?:\/\//i.test(href)) return null;
-    return { label, href };
+  private static resolveValue(
+    source: unknown,
+    spec: SsrShellValueSpec,
+    locale: string,
+    options: SsrShellBuildOptions,
+  ): string {
+    const raw = SsrShellPathResolver.resolveSpec(source, spec, locale);
+    if (!raw) return '';
+    const kind = SsrContentShellService.urlKind(spec);
+    return kind ? SsrShellUrlSanitizer.sanitize(raw, kind, options) : raw;
   }
 
-  /** Content may be a block array, an HTML string, or a locale-keyed map of either. */
-  private static resolveBlocks(content: unknown, locale: string): unknown[] {
-    if (Array.isArray(content)) return content;
-    const record = SsrContentShellService.asRecord(content);
-    if (record) {
-      if (locale && Array.isArray(record[locale])) return record[locale] as unknown[];
-      for (const value of Object.values(record)) {
-        if (Array.isArray(value)) return value;
-      }
-    }
-    return [];
+  /** `preload` implies asset semantics — the framework fetches that URL itself. */
+  private static urlKind(spec: SsrShellValueSpec): SsrShellValueSpec['url'] {
+    if (spec?.url) return spec.url;
+    return (spec as SsrShellTokenConfig)?.preload ? 'asset' : undefined;
+  }
+
+  private static readSource(
+    from: SsrShellSourceKind,
+    key: string | undefined,
+    sources: SsrShellSources,
+  ): unknown {
+    if (from === 'doc') return sources.doc;
+    if (from === 'site') return sources.site;
+    return sources.prefetch?.[String(key || '').trim()];
   }
 
   /**
-   * Extracts a heading + intro text from the first meaningful block. Reads only the
-   * generic key candidates shared by the block system (`heading`/`title`,
-   * `description`/`text`, top-level or under `data`, plus a slider's first slide).
+   * `pageMatchPath` guard: resolve only when the payload's own slug equals the resolved
+   * page slug or its last permalink segment (`numerology/consultation` matches a record
+   * slug `consultation`). No guard configured → always resolve.
    */
-  private static extractHero(blocks: unknown[], locale: string): { heading: string; text: string } {
-    for (const block of blocks.slice(0, SsrContentShellService.MAX_HERO_CANDIDATE_BLOCKS)) {
-      const record = SsrContentShellService.asRecord(block);
-      if (!record) continue;
-      const data = SsrContentShellService.asRecord(record.data) || {};
-      const slides = Array.isArray(record.slides) ? record.slides : (Array.isArray(data.slides) ? data.slides : []);
-      const slide = SsrContentShellService.asRecord(slides[0]) || {};
-
-      const heading = SsrContentShellService.firstText(
-        [record.heading, data.heading, data.title, record.title, slide.heading],
-        locale,
-      );
-      const text = SsrContentShellService.firstText(
-        [record.description, data.description, data.text, record.text, slide.description],
-        locale,
-      );
-      if (heading || text) return { heading, text };
-    }
-    return { heading: '', text: '' };
-  }
-
-  private static readonly MAX_HERO_CANDIDATE_BLOCKS = 3;
-
-  private static firstText(candidates: unknown[], locale: string): string {
-    for (const candidate of candidates) {
-      const value = SsrContentShellService.readText(candidate, locale);
-      if (value) return value;
-    }
-    return '';
-  }
-
-  /** Reads a plain string or a locale-keyed `{ [locale]: string }` map. */
-  private static readText(value: unknown, locale: string): string {
-    if (typeof value === 'string') return value.trim();
-    const record = SsrContentShellService.asRecord(value);
-    if (record) {
-      const localized = locale ? record[locale] : undefined;
-      if (typeof localized === 'string' && localized.trim()) return localized.trim();
-      for (const entry of Object.values(record)) {
-        if (typeof entry === 'string' && entry.trim()) return entry.trim();
-      }
-    }
-    return '';
+  private static matchesPage(
+    entry: SsrShellTokenConfig,
+    source: unknown,
+    doc: unknown,
+    locale: string,
+  ): boolean {
+    if (!entry.pageMatchPath) return true;
+    const matchValue = SsrShellPathResolver.resolveText(source, entry.pageMatchPath, locale);
+    const slug = SsrContentShellService.readSlug(doc);
+    if (!matchValue || !slug) return false;
+    return matchValue === slug || matchValue === slug.split('/').pop();
   }
 
   private static asRecord(value: unknown): Record<string, unknown> | null {

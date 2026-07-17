@@ -8,6 +8,7 @@ import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { PluginInjectionRenderer } from '@/lib/plugin-injection-renderer';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
+import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
 
 export async function generateMetadata(): Promise<Metadata> {
   // Brand defaults come from the SEO plugin settings (site name/description/OG), not a
@@ -44,6 +45,11 @@ export default async function RootLayout({
   return (
     <html lang={documentLocale} suppressHydrationWarning>
       <head>
+        {/* Pre-paint color-scheme restore (generic, theme-agnostic contract) — see
+            `ColorSchemeBootScript`. Serialized from real TypeScript, with the shared
+            contract keys supplied from ClientRuntimeConstants; no request/user data
+            is interpolated. Must stay synchronous and ahead of any paint. */}
+        <script dangerouslySetInnerHTML={{ __html: ColorSchemeBootScript.inlineScript() }} />
         <ThemeAssets />
         {headElements}
       </head>

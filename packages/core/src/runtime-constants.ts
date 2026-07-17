@@ -4,6 +4,9 @@ export class RuntimeConstants {
   static readonly GLOBALS = {
     FROMCODE: 'Fromcode',
     MODULES: '__fromcodeRuntimeModules',
+    /** Window global carrying server-prefetched page data (nav menus, page-scoped products, …).
+     *  The ONLY place this name is defined — framework injectors and theme readers both use it. */
+    PAGE_PREFETCH: '__FROMCODE_PAGE_PREFETCH__',
   } as const;
 
   static readonly ADMIN_UI = ClientRuntimeConstants.ADMIN_UI;

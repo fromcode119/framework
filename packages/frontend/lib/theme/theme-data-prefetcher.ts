@@ -1,4 +1,4 @@
-import { ApiVersionUtils } from '@fromcode119/core/client';
+import { ApiVersionUtils, RuntimeConstants} from '@fromcode119/core/client';
 import { ServerApiUtils } from '../server-api';
 import type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefetcher.interfaces';
 
@@ -6,7 +6,7 @@ import type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefet
  * Fetches plugin data server-side based on theme.json `ui.prefetchApis` config
  * and returns a record keyed by the declared entry `key`.
  *
- * The caller should inject the result as `window.__FROMCODE_PAGE_PREFETCH__`
+ * The caller should inject the result as `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}`
  * so theme components can hydrate immediately without waiting for a client-side
  * API round-trip.
  *
@@ -36,6 +36,8 @@ export class ThemeDataPrefetcher {
         const key = String(entry?.key || '').trim();
         const pluginSlug = String(entry?.pluginSlug || '').trim();
         if (!key || !pluginSlug) return;
+        // Page-scoped entries need the resolved document — PageDocPrefetcher owns them.
+        if (entry?.fromPage) return;
 
         const query = new URLSearchParams(
           typeof entry.query === 'object' && entry.query !== null ? entry.query : {},

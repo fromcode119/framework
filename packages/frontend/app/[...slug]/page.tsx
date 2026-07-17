@@ -2,6 +2,7 @@ import { LocalizationUtils } from '@fromcode119/core/client';
 import { notFound, redirect, permanentRedirect } from 'next/navigation';
 import DynamicContentClient from '../dynamic-content-client';
 import SsrContentShell from '@/components/ssr-content-shell';
+import PageDocPrefetch from '@/components/page-doc-prefetch';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
@@ -102,6 +103,8 @@ export default async function DynamicContentPage({
       <>
         {/* Static RSC sibling: server-painted above-the-fold shell, hidden by the theme on first paint. */}
         <SsrContentShell content={content} locale={locale} />
+        {/* Page-scoped data prefetch (theme.json `fromPage` entries) — body script, pre-theme-boot. */}
+        <PageDocPrefetch content={content} />
         <DynamicContentClient content={content} />
       </>
     );
@@ -113,6 +116,8 @@ export default async function DynamicContentPage({
       <>
         {/* Static RSC sibling: server-painted above-the-fold shell, hidden by the theme on first paint. */}
         <SsrContentShell content={content} locale={locale} />
+        {/* Page-scoped data prefetch (theme.json `fromPage` entries) — body script, pre-theme-boot. */}
+        <PageDocPrefetch content={content} />
         <DynamicContentClient content={content} />
       </>
     );

@@ -1,23 +1,34 @@
-export type SsrShellNavItem = {
-  label: string;
-  href: string;
-};
+import type { SsrShellUrlOptions } from './ssr-shell-theme-template.types';
 
+/**
+ * The shell model is entirely generic: the framework resolves what the THEME declared
+ * and names nothing itself. There are no content fields here by design — a theme that
+ * wants a rich shell declares tokens/lists and a template (see
+ * `ssr-shell-theme-template.types.ts`).
+ */
 export type SsrShellModel = {
-  /** Site brand text for the shell's minimal top bar (from SEO site settings). */
-  siteName: string;
-  /** Resolved document title (used as `<h1>` fallback when no hero heading exists). */
-  title: string;
-  /** Hero heading extracted from the document's first meaningful content block. */
-  heading: string;
-  /** Hero/intro text extracted from the document's first meaningful content block. */
-  text: string;
-  /** Top-level navigation items (labels + hrefs) from the theme-declared nav prefetch. */
-  navItems: SsrShellNavItem[];
+  /** Theme-declared token name → resolved, sanitized value. */
+  tokens: Record<string, string>;
+  /** Theme-declared list name → resolved items (field name → value). */
+  lists: Record<string, Array<Record<string, string>>>;
+  /**
+   * Resolved value of the token flagged `preload: true` — the page's LCP image.
+   * Rendering it in the initial HTML plus a matching `<link rel=preload as=image>`
+   * makes the real LCP image request-discoverable before the theme JS chain boots.
+   */
+  preloadImageUrl: string;
 };
 
-export type SsrShellBuildOptions = {
+/** The framework-owned sources a declared `from` selects between. */
+export type SsrShellSources = {
+  /** The resolved page document. */
+  doc: unknown;
+  /** Site settings. */
+  site: unknown;
+  /** `ui.prefetchApis` payloads, keyed by entry key (static + page-scoped merged). */
+  prefetch: Record<string, unknown>;
+};
+
+export type SsrShellBuildOptions = SsrShellUrlOptions & {
   locale?: string;
-  siteName?: string;
-  navItems?: SsrShellNavItem[];
 };

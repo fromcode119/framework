@@ -21,8 +21,24 @@ export class PluginLoaderMountService {
       !!(window as any).__fromcodeRuntimeModules?.['@fromcode119/sdk/react']
     );
   }
+  /**
+   * Mounts the theme's `ui.css` as `<link rel=stylesheet>` — but ONLY when the server
+   * did not already inline it.
+   *
+   * `theme-assets.tsx` fetches `ui.css` server-side and emits it as
+   * `<style data-theme="<slug>">` to kill the render-blocking external stylesheet. The
+   * old dedupe guard below only looked for a matching `link[href]`, which a `<style>`
+   * tag never satisfies — so every inlined stylesheet was ALSO downloaded again here,
+   * cross-origin from the api. That is not merely a redundant css fetch: `ui.css` may
+   * declare `@font-face` with ROOT-RELATIVE `src` urls, which resolve against the
+   * document origin when inlined but against the API origin when loaded via this
+   * `<link>` — two different urls for the same file, so the browser cache can never
+   * dedupe them and EVERY font downloads twice (measured: 18 font requests / 491 KiB
+   * for 9 faces on the storefront). Bail out when the inline `<style>` is present.
+   */
   static mountThemeCss(theme: any, apiUrl: string): void {
     if (!theme?.slug) return;
+    if (document.head.querySelector(`style[data-theme="${CSS.escape(String(theme.slug))}"]`)) return;
     const themeCss = Array.isArray(theme?.ui?.css) ? theme.ui.css : [];
     themeCss.forEach((style: string) => {
       const href = style.startsWith('http') ? style : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, style);
