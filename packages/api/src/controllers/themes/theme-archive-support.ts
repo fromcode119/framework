@@ -5,6 +5,7 @@ import path from 'path';
 import { BackupService, ThemeManager, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
 import { ArchiveUploadRequestParser } from '../archive-upload-request-parser';
+import { AssetCacheHeaderService } from '../../services/asset-cache-header-service';
 
 /**
  * Archive inspection/extraction, upload-request parsing, asset serving and
@@ -13,8 +14,6 @@ import { ArchiveUploadRequestParser } from '../archive-upload-request-parser';
  * the same ThemeManager and delegates, so behavior is unchanged.
  */
 export class ThemeArchiveSupport {
-  private static readonly PRODUCTION_ASSET_CACHE_HEADER = 'public, max-age=2592000';
-  private static readonly IMMUTABLE_ASSET_CACHE_HEADER = 'public, max-age=31536000, immutable';
 
   private static readonly COMPRESSIBLE_MIME: Record<string, string> = {
     '.js': 'application/javascript',
@@ -52,7 +51,7 @@ export class ThemeArchiveSupport {
       const gzPath = absolutePath + '.gz';
       const acceptsGzip = String(req.headers['accept-encoding'] || '').includes('gzip');
 
-      const cacheHeader = this.resolveAssetCacheHeader(req);
+      const cacheHeader = AssetCacheHeaderService.resolve(absolutePath);
 
       if (mimeType && acceptsGzip && fs.existsSync(gzPath)) {
         const headers: Record<string, string> = {
@@ -87,18 +86,6 @@ export class ThemeArchiveSupport {
     res.status(404).end();
   }
 
-  /**
-   * `?v=<version>`-busted asset URLs are effectively content-addressed (the frontend
-   * always bumps `v` on release), so a year-long `immutable` cache is safe — the URL
-   * itself changes whenever the content does. Unversioned requests keep the shorter
-   * revalidating header. Asset files only; API JSON routes never pass through here.
-   */
-  private resolveAssetCacheHeader(req: Request): string {
-    const version = String((req.query as Record<string, unknown> | undefined)?.v ?? '').trim();
-    return version
-      ? ThemeArchiveSupport.IMMUTABLE_ASSET_CACHE_HEADER
-      : ThemeArchiveSupport.PRODUCTION_ASSET_CACHE_HEADER;
-  }
 
   private shouldDisableAssetCache(req: Request): boolean {
     if (process.env.NODE_ENV !== 'production') {

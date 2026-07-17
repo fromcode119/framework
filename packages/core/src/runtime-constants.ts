@@ -9,6 +9,7 @@ export class RuntimeConstants {
     PAGE_PREFETCH: '__FROMCODE_PAGE_PREFETCH__',
   } as const;
 
+  static readonly CLIENT_TYPES = ClientRuntimeConstants.CLIENT_TYPES;
   static readonly ADMIN_UI = ClientRuntimeConstants.ADMIN_UI;
   static readonly FRONTEND = ClientRuntimeConstants.FRONTEND;
 

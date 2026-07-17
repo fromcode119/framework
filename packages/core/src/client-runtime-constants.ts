@@ -13,6 +13,16 @@ export class ClientRuntimeConstants {
     LOCALE: `${ClientRuntimeConstants.STORAGE_PREFIX}locale`,
   } as const;
 
+  /**
+   * Which app a `PluginsProvider` is running as. The two apps differ in what they load: only the
+   * storefront mounts plugin frontend runtime modules (see `PluginFrontendRuntimeUtils`), so code
+   * that depends on that difference keys off these instead of a bare string literal.
+   */
+  static readonly CLIENT_TYPES = {
+    ADMIN_UI: 'admin-ui',
+    FRONTEND_UI: 'frontend-ui',
+  } as const;
+
   static readonly ADMIN_UI = {
     EVENTS: {
       MODE_CHANGED: `${ClientRuntimeConstants.EVENT_PREFIX}admin-mode-change`,

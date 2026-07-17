@@ -62,6 +62,7 @@ export {
   SystemAuthSession,
 } from './clients';
 export type { BrowserCookieOptions } from './clients';
+export { PluginFrontendRuntimeUtils } from './plugin-frontend-runtime-utils';
 export { RouteUtils } from './route-utils';
 export { UrlUtils } from './url-utils';
 export { ApplicationUrlUtils } from './application-url-utils';

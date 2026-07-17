@@ -130,7 +130,7 @@ function PluginsProviderInternalComponent({ children, apiUrl, clientType, provid
 
   const { stableT, stableLoadConfig, stableGetFrontendMetadata, stableApiBridge } = ContextProviderStabilityHooks.useStableHandles({ stabilityRef });
 
-  ContextProviderRuntimeBridgeHooks.usePluginApiRegistration({ plugins, hasPluginApi, registerPluginApi: registerPluginApiFromRender, stableApiBridge });
+  ContextProviderRuntimeBridgeHooks.usePluginApiRegistration({ clientType, plugins, hasPluginApi, registerPluginApi: registerPluginApiFromRender, stableApiBridge });
 
   ContextProviderRuntimeBridgeHooks.setupGlobalStubs(ReactDOM);
 

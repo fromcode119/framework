@@ -12,9 +12,9 @@ import { ArchiveUploadRequestParser } from '../archive-upload-request-parser';
  * keep each file under the size limit; PluginController instantiates this with
  * the same PluginManager and delegates, so behavior is unchanged.
  */
+import { AssetCacheHeaderService } from '../../services/asset-cache-header-service';
+
 export class PluginArchiveSupport {
-  private static readonly PRODUCTION_ASSET_CACHE_HEADER = 'public, max-age=2592000';
-  private static readonly IMMUTABLE_ASSET_CACHE_HEADER = 'public, max-age=31536000, immutable';
 
   private static readonly COMPRESSIBLE_MIME: Record<string, string> = {
     '.js': 'application/javascript',
@@ -47,7 +47,7 @@ export class PluginArchiveSupport {
       const gzPath = abs + '.gz';
       const acceptsGzip = String(req.headers['accept-encoding'] || '').includes('gzip');
 
-      const cacheHeader = this.resolveAssetCacheHeader(req);
+      const cacheHeader = AssetCacheHeaderService.resolve(abs);
 
       if (mimeType && acceptsGzip && fs.existsSync(gzPath)) {
         const headers: Record<string, string> = {
@@ -78,18 +78,6 @@ export class PluginArchiveSupport {
     return res.status(404).json({ error: 'Asset not found' });
   }
 
-  /**
-   * `?v=<version>`-busted asset URLs are effectively content-addressed (the frontend
-   * always bumps `v` on release), so a year-long `immutable` cache is safe — the URL
-   * itself changes whenever the content does. Unversioned requests keep the shorter
-   * revalidating header. Asset files only; API JSON routes never pass through here.
-   */
-  private resolveAssetCacheHeader(req: Request): string {
-    const version = String((req.query as Record<string, unknown> | undefined)?.v ?? '').trim();
-    return version
-      ? PluginArchiveSupport.IMMUTABLE_ASSET_CACHE_HEADER
-      : PluginArchiveSupport.PRODUCTION_ASSET_CACHE_HEADER;
-  }
 
   private shouldDisableAssetCache(req: Request): boolean {
     if (process.env.NODE_ENV !== 'production') {

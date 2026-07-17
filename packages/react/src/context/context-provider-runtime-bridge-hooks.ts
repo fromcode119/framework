@@ -10,6 +10,7 @@ import {
   LocalizationUtils,
   NumberUtils,
   PaginationUtils,
+  PluginFrontendRuntimeUtils,
   RelationUtils,
   RuntimeConstants,
   StringUtils,
@@ -37,12 +38,14 @@ export class ContextProviderRuntimeBridgeHooks {
   }
 
   static usePluginApiRegistration(args: {
+    clientType: string;
     plugins: any[];
     hasPluginApi: (namespace: string, slug: string) => boolean;
     registerPluginApi: (namespace: string, slug: string, client: any) => void;
     stableApiBridge: any;
   }) {
-    const { plugins, hasPluginApi, registerPluginApi, stableApiBridge } = args;
+    const { clientType, plugins, hasPluginApi, registerPluginApi, stableApiBridge } = args;
+    const loadsPluginRuntimes = clientType === RuntimeConstants.CLIENT_TYPES.FRONTEND_UI;
 
     // Registered DURING render (not in an effect) so the very first render that sees a plugin list
     // already has its API clients in the registry — children below this provider resolve plugin
@@ -61,6 +64,16 @@ export class ContextProviderRuntimeBridgeHooks {
     //   - `ApiScopeClient`'s constructor only stores its arguments — it touches no browser globals.
     // `useMemo` keeps this off unrelated re-renders while still covering late-arriving plugins:
     // new plugins can only appear via a `setPlugins` call, which yields a fresh `plugins` identity.
+    //
+    // What it registers is a GENERIC `ApiScopeClient` — the bare REST surface, and nothing else. That
+    // is the right client only for a plugin that never registers one itself. A plugin whose frontend
+    // runtime module this app loads DOES register its own (method-rich) client when that module
+    // evaluates, a few hundred ms later; pre-filling its key with the generic stand-in publishes an
+    // object that is truthy but missing the plugin's real API for the whole gap. Consumers cannot
+    // defend against that: the correct presence check (`if (!api) return fallback;`) passes, and the
+    // next line throws (`ecommerce.storefront(...)` -> "is not a function"), taking out the render
+    // tree. Leaving the key EMPTY until the real client lands is the honest state — "absent" is what
+    // consumers already fall back on, and the registry notifies them the moment it resolves.
     React.useMemo(() => {
       plugins.forEach((plugin: any) => {
         const namespace = String(plugin?.namespace || '').trim();
@@ -69,10 +82,14 @@ export class ContextProviderRuntimeBridgeHooks {
           return;
         }
 
+        if (loadsPluginRuntimes && PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime(plugin)) {
+          return;
+        }
+
         const client = new ApiScopeClient(stableApiBridge, ApiPathUtils.pluginPath(slug));
         registerPluginApi(namespace, slug, client);
       });
-    }, [hasPluginApi, plugins, registerPluginApi, stableApiBridge]);
+    }, [hasPluginApi, loadsPluginRuntimes, plugins, registerPluginApi, stableApiBridge]);
   }
 
   static useRuntimeBridgeInstall(args: {

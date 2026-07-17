@@ -1,4 +1,4 @@
-import { ApiPathUtils } from '@fromcode119/core/client';
+import { ApiPathUtils, PluginFrontendRuntimeUtils } from '@fromcode119/core/client';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 
 export class PluginLoaderMountService {
@@ -115,9 +115,9 @@ export class PluginLoaderMountService {
   static loadPluginRuntimes(pluginList: any[], apiUrl: string, loadModule: (key: string, url: string) => Promise<void>): void {
     pluginList.forEach((plugin: any) => {
       // Frontend-only plugins ship only a `frontendEntry` (no admin `entry`); still load them.
-      if (!plugin?.ui?.entry && !plugin?.ui?.frontendEntry) return;
-      const caps: string[] = Array.isArray(plugin.capabilities) ? plugin.capabilities : [];
-      if (caps.length > 0 && !caps.includes('frontend')) return;
+      // Shared with the plugin API registry, which leaves these plugins' keys empty until the module
+      // below registers their real client — the two decisions MUST agree, so both ask the same class.
+      if (!PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime(plugin)) return;
 
       const entryFile = String(plugin.ui.frontendEntry || plugin.ui.entry).trim();
       const moduleUrl = FrontendAssetVersionUrlService.appendVersion(
@@ -125,9 +125,8 @@ export class PluginLoaderMountService {
         plugin.version || plugin.manifest?.version,
       );
       const key = `plugin:${plugin.slug}:${entryFile}`;
+      // `none` is already excluded by loadsOwnFrontendRuntime above.
       const strategy = String(plugin?.ui?.loadStrategy || 'eager').trim();
-
-      if (strategy === 'none') return;
 
       if (strategy === 'idle') {
         if (typeof requestIdleCallback !== 'undefined') {
