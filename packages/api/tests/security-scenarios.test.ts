@@ -1,6 +1,6 @@
 import { CSRFMiddleware } from '../src/middlewares/csrf-middleware';
-import { CookieConstants } from '../../core/src/cookie-constants';
-import { Request, Response, NextFunction } from 'express';
+import { CookieConstants } from '../../core/src/constants/cookie.constants';
+import { NextFunction } from 'express';
 
 describe('CSRF Middleware Security Scenarios', () => {
     let req: any;

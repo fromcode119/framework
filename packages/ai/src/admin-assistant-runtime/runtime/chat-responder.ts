@@ -1,20 +1,27 @@
-import type { AssistantPromptCopy, AssistantPromptProfile } from '../types';
-import { ModelRouter } from './model-router';
-import { WorkspaceMapService } from './workspace-map';
-import { ChatHelpers } from './helpers/chat-helpers';
-import { FactualQueryHelpers } from './factual-query-helpers';
-import type { RuntimeContext, RuntimeDependencies, RuntimeIntent } from './types.types';
-import type { ChatReply } from './chat-responder.types';
-import { ReadOnlyChatToolLoop } from './read-only-chat-tool-loop';
+import { ResponderRoute } from '@ai/admin-assistant-runtime/enums/responder-route.enum';
+import { AnswerGrounding } from '@ai/admin-assistant-runtime/enums/answer-grounding.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+
+import { ModelRouter } from '@ai/admin-assistant-runtime/runtime/model-router';
+import { WorkspaceMapService } from '@ai/admin-assistant-runtime/runtime/workspace-map';
+import { ChatHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/chat-helpers';
+import { FactualQueryHelpers } from '@ai/admin-assistant-runtime/runtime/factual-query-helpers';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IRuntimeDependencies } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-dependencies.interface';
+import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
+import type { IChatReply } from '@ai/admin-assistant-runtime/runtime/interfaces/chat-reply.interface';
+import { ReadOnlyChatToolLoop } from '@ai/admin-assistant-runtime/runtime/read-only-chat-tool-loop';
+import { RuntimeIntentKind } from '@ai/admin-assistant-runtime/runtime/enums/runtime-intent-kind.enum';
 
 export class ChatResponder {
   static async generateChatReply(
-  context: RuntimeContext,
-  deps: RuntimeDependencies,
-  intent: RuntimeIntent,
+  context: IRuntimeContext,
+  deps: IRuntimeDependencies,
+  intent: IRuntimeIntent,
   message: string,
-  agentMode: 'basic' | 'advanced',
-): Promise<ChatReply> {
+  agentMode: ContextLevel,
+): Promise<IChatReply> {
       const aiClient = context.options.aiClient;
       if (!aiClient || typeof aiClient.chat !== 'function') {
         return ChatResponder.buildFallbackReply();
@@ -38,10 +45,10 @@ export class ChatResponder {
       });
       const effectiveSystemPrompt = ChatResponder.appendClassifierHint(systemPrompt, intent);
       const history = ChatHelpers.normalizeChatHistory(context.history);
-      const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
-        { role: 'system', content: effectiveSystemPrompt },
+      const messages: Array<{ role: AssistantRole; content: string }> = [
+        { role: AssistantRole.SYSTEM, content: effectiveSystemPrompt },
         ...history,
-        { role: 'user', content: message },
+        { role: AssistantRole.USER, content: message },
       ];
 
       const readOnlyReply = await ReadOnlyChatToolLoop.generateReply({
@@ -66,7 +73,7 @@ export class ChatResponder {
             message,
             provider,
             maxTokens: Math.min(320, generation.maxTokens),
-            mode: 'grounded',
+            mode: AnswerGrounding.GROUNDED,
             context,
           });
           if (groundedRecovery) {
@@ -88,14 +95,14 @@ export class ChatResponder {
           return {
             message: content,
             model: String(response?.model || provider || 'ai'),
-            source: 'model',
+            source: ResponderRoute.MODEL,
           };
         }
       } catch {
         // Fall through to AI recovery prompt.
       }
 
-      if (intent.kind !== 'factual_qa' || FactualQueryHelpers.looksLikeEntityDetailQuestion(message)) {
+      if (intent.kind !== RuntimeIntentKind.FACTUAL_QA || FactualQueryHelpers.looksLikeEntityDetailQuestion(message)) {
         const recoveryReply = await ChatResponder.generateRecoveryReply({
           aiClient,
           systemPrompt: effectiveSystemPrompt,
@@ -103,7 +110,7 @@ export class ChatResponder {
           message,
           provider,
           maxTokens: Math.min(240, generation.maxTokens),
-          mode: intent.kind === 'factual_qa' ? 'grounded' : 'general',
+          mode: intent.kind === RuntimeIntentKind.FACTUAL_QA ? AnswerGrounding.GROUNDED : AnswerGrounding.GENERAL,
           context,
         });
         if (recoveryReply) {
@@ -115,19 +122,19 @@ export class ChatResponder {
   }
 
   private static async generateRecoveryReply(input: {
-    aiClient: { chat: (params: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
+    aiClient: { chat: (params: { messages: Array<{ role: AssistantRole; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
     systemPrompt: string;
-    history: Array<{ role: 'user' | 'assistant'; content: string }>;
+    history: Array<{ role: AssistantRole; content: string }>;
     message: string;
     provider: string;
     maxTokens: number;
-    mode: 'grounded' | 'general';
-    context: RuntimeContext;
-  }): Promise<ChatReply | null> {
+    mode: AnswerGrounding;
+    context: IRuntimeContext;
+  }): Promise<IChatReply | null> {
     const recoveryPrompt = [
       input.systemPrompt,
       '',
-      input.mode === 'grounded'
+      input.mode === AnswerGrounding.GROUNDED
         ? 'The user expects a grounded workspace answer.'
         : 'The previous response attempt failed or was empty.',
       'Do not use generic fallback language.',
@@ -141,9 +148,9 @@ export class ChatResponder {
     try {
       const response = await input.aiClient.chat({
         messages: [
-          { role: 'system', content: recoveryPrompt },
+          { role: AssistantRole.SYSTEM, content: recoveryPrompt },
           ...input.history,
-          { role: 'user', content: input.message },
+          { role: AssistantRole.USER, content: input.message },
         ],
         json: false,
         temperature: 0.1,
@@ -156,14 +163,14 @@ export class ChatResponder {
       return {
         message: content,
         model: String(response?.model || input.provider || 'ai'),
-        source: 'model',
+        source: ResponderRoute.MODEL,
       };
     } catch {
       return null;
     }
   }
 
-  private static serializeCheckpointContext(context: RuntimeContext): string {
+  private static serializeCheckpointContext(context: IRuntimeContext): string {
     const memory = context.checkpoint?.memory;
     if (!memory || typeof memory !== 'object') {
       return 'none';
@@ -171,7 +178,7 @@ export class ChatResponder {
     return JSON.stringify(memory);
   }
 
-  private static serializeReadOnlyTools(context: RuntimeContext): string {
+  private static serializeReadOnlyTools(context: IRuntimeContext): string {
     const tools = (Array.isArray(context.tools) ? context.tools : [])
       .filter((tool) => tool?.readOnly === true)
       .slice(0, 12)
@@ -191,7 +198,7 @@ export class ChatResponder {
     return tools.length > 0 ? JSON.stringify(tools) : 'none';
   }
 
-  private static appendClassifierHint(systemPrompt: string, intent: RuntimeIntent): string {
+  private static appendClassifierHint(systemPrompt: string, intent: IRuntimeIntent): string {
     const hint = String(intent.quickAnswer || '').trim();
     if (!hint) {
       return systemPrompt;
@@ -199,7 +206,7 @@ export class ChatResponder {
     return `${systemPrompt}\n\nClassifier hint: ${hint}`;
   }
 
-  private static buildClarificationReply(): ChatReply {
+  private static buildClarificationReply(): IChatReply {
     return {
       message: 'I need one more concrete detail or a successful tool pass before I can answer that reliably.',
       model: 'system',
@@ -207,11 +214,11 @@ export class ChatResponder {
     };
   }
 
-  private static buildFallbackReply(): ChatReply {
+  private static buildFallbackReply(): IChatReply {
     return {
       message: 'The AI model is unavailable right now, so I cannot answer reliably yet.',
       model: 'system',
-      source: 'fallback',
+      source: ResponderRoute.FALLBACK,
     };
   }
 }

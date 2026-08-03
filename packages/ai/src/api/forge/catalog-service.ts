@@ -1,13 +1,13 @@
 import { PluginManager, ThemeManager } from '@fromcode119/core';
-import type { AssistantCollectionContext } from '../../admin-assistant-runtime/types';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
 import { Request } from 'express';
-import type { RESTController } from '../controller.types';
+import type { IRestController } from '@ai/api/interfaces/rest-controller.interface';
 
 export class AssistantCatalogService {
   constructor(
     private manager: PluginManager,
     private themeManager: ThemeManager,
-    private restController: RESTController,
+    private restController: IRestController,
     private normalizeText: (value: string) => string,
   ) {}
 
@@ -20,7 +20,7 @@ export class AssistantCatalogService {
     });
   }
 
-  private getCollectionsFromPlugins(pluginSlugs: string[]): AssistantCollectionContext[] {
+  private getCollectionsFromPlugins(pluginSlugs: string[]): IAssistantCollectionContext[] {
     return this.getCollectionsContext().filter(
       (collection) => pluginSlugs.includes(collection.pluginSlug)
     );
@@ -33,7 +33,7 @@ export class AssistantCatalogService {
     return true;
   }
 
-  getCollectionsContext(): AssistantCollectionContext[] {
+  getCollectionsContext(): IAssistantCollectionContext[] {
     return this.manager
       .getCollections()
       .filter((collection: any) => this.isCollectionAllowed(collection))
@@ -46,7 +46,7 @@ export class AssistantCatalogService {
       }));
   }
 
-  findCollectionBySlug(source: string): AssistantCollectionContext | null {
+  findCollectionBySlug(source: string): IAssistantCollectionContext | null {
     const normalized = String(source || '').trim().toLowerCase();
     const collection = this.manager.getCollections().find((entry: any) => {
       const slug = String(entry.slug || '').toLowerCase();
@@ -165,7 +165,7 @@ export class AssistantCatalogService {
     );
 
     // If plugins declare email/forms capability, use their collections; otherwise fallback to keyword search
-    let candidates: AssistantCollectionContext[] = [];
+    let candidates: IAssistantCollectionContext[] = [];
     if (relevantPluginSlugs.length > 0) {
       candidates = this.getCollectionsFromPlugins(relevantPluginSlugs).slice(0, 12);
     } else {
@@ -235,7 +235,7 @@ export class AssistantCatalogService {
     ].join('\n');
   }
 
-  private collectionMatchesKeywords(collection: AssistantCollectionContext, keywords: string[]): boolean {
+  private collectionMatchesKeywords(collection: IAssistantCollectionContext, keywords: string[]): boolean {
     const haystack = this.normalizeText(
       [
         collection.slug,

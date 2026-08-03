@@ -1,13 +1,13 @@
-import { FactualQueryHelpers } from './factual-query-helpers';
-import { FactualQueryToolService } from './factual-query-tool-service';
-import type { RuntimeContext } from './types.types';
-import type { AssistantSessionEntityMemory } from '../types';
+import { FactualQueryHelpers } from '@ai/admin-assistant-runtime/runtime/factual-query-helpers';
+import { FactualQueryToolService } from '@ai/admin-assistant-runtime/runtime/factual-query-tool-service';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IAssistantSessionEntityMemory } from '@ai/admin-assistant-runtime/interfaces/assistant-session-entity-memory.interface';
 
 export class FactualQueryService {
   static async resolveReply(
-    context: RuntimeContext,
+    context: IRuntimeContext,
     message: string,
-  ): Promise<{ message: string; model: string; memory?: AssistantSessionEntityMemory['factual'] } | null> {
+  ): Promise<{ message: string; model: string; memory?: IAssistantSessionEntityMemory['factual'] } | null> {
     const followupReply = await FactualQueryService.resolveFollowupReply(context, message);
     if (followupReply) {
       return followupReply;
@@ -22,9 +22,9 @@ export class FactualQueryService {
   }
 
   private static async resolveFollowupReply(
-    context: RuntimeContext,
+    context: IRuntimeContext,
     message: string,
-  ): Promise<{ message: string; model: string; memory?: AssistantSessionEntityMemory['factual'] } | null> {
+  ): Promise<{ message: string; model: string; memory?: IAssistantSessionEntityMemory['factual'] } | null> {
     const factualMemory = context.checkpoint?.memory?.factual;
     if (!factualMemory?.tool || !FactualQueryHelpers.looksLikeFactualFollowup(message)) {
       return null;
@@ -82,9 +82,9 @@ export class FactualQueryService {
     };
   }
   private static async resolvePluginAccessReply(
-    context: RuntimeContext,
+    context: IRuntimeContext,
     message: string,
-  ): Promise<{ message: string; model: string; memory?: AssistantSessionEntityMemory['factual'] } | null> {
+  ): Promise<{ message: string; model: string; memory?: IAssistantSessionEntityMemory['factual'] } | null> {
     if (!/\b(can you access|do you have access|can you use|can you see|do you see|is .* available|is .* enabled|is .* installed)\b/i.test(message)) {
       return null;
     }
@@ -125,9 +125,9 @@ export class FactualQueryService {
   }
 
   private static async resolveReadOnlyDataReply(
-    context: RuntimeContext,
+    context: IRuntimeContext,
     message: string,
-  ): Promise<{ message: string; model: string; memory?: AssistantSessionEntityMemory['factual'] } | null> {
+  ): Promise<{ message: string; model: string; memory?: IAssistantSessionEntityMemory['factual'] } | null> {
     if (!FactualQueryHelpers.looksLikeReadOnlyDataQuestion(message) || FactualQueryHelpers.looksLikeEntityDetailQuestion(message)) {
       return null;
     }
@@ -160,7 +160,7 @@ export class FactualQueryService {
     output: unknown,
     toolInput?: Record<string, unknown>,
     preferredMetricPath?: string,
-  ): { message: string; memory?: AssistantSessionEntityMemory['factual'] } | null {
+  ): { message: string; memory?: IAssistantSessionEntityMemory['factual'] } | null {
     if (typeof output === 'string') {
       const value = output.trim();
       return value
@@ -253,7 +253,7 @@ export class FactualQueryService {
     output: Record<string, unknown>,
     primaryMetricPath: string,
     primitiveEntries: Array<{ path: string; value: string | number | boolean }>,
-  ): AssistantSessionEntityMemory['factual'] {
+  ): IAssistantSessionEntityMemory['factual'] {
     const range = output?.range && typeof output.range === 'object' ? output.range as Record<string, unknown> : {};
     return {
       tool: toolName,
@@ -269,7 +269,7 @@ export class FactualQueryService {
 
   private static formatMemoryReply(
     message: string,
-    factualMemory: NonNullable<AssistantSessionEntityMemory['factual']>,
+    factualMemory: NonNullable<IAssistantSessionEntityMemory['factual']>,
   ): string | null {
     const metrics = (Array.isArray(factualMemory.metrics) ? factualMemory.metrics : [])
       .filter((entry): entry is { path: string; value: number } => typeof entry?.value === 'number' && Number.isFinite(entry.value))

@@ -1,12 +1,12 @@
-import { UserSecurityPageController } from './user-security-page-controller';
-import type { UserSecurityPageHost } from './user-security-page.interfaces';
-
+import { NotificationType } from '@/components/enums/notification-type.enum';
+import { UserSecurityPageController } from '@/app/users/[id]/security/user-security-page-controller';
+import type { IUserSecurityPageHost } from '@/app/users/[id]/security/interfaces/user-security-page-host.interface';
 /**
  * Orchestration for the user security page: binds {@link UserSecurityPageController} I/O to the
  * page-client's state and notifications. Hook-free — it only touches React through the host.
  */
 export class UserSecurityPageActions {
-  constructor(private readonly host: UserSecurityPageHost) {}
+  constructor(private readonly host: IUserSecurityPageHost) {}
 
   private async fetchAuthActivity(email: string): Promise<void> {
     if (!email.trim()) {
@@ -41,7 +41,7 @@ export class UserSecurityPageActions {
       });
     } catch (error) {
       console.error('[UserSecurityPage] Failed to fetch user security:', error);
-      addNotification({ title: 'Error', message: 'Failed to load security settings', type: 'error' });
+      addNotification({ title: 'Error', message: 'Failed to load security settings', type: NotificationType.ERROR });
     } finally {
       if (this.host.mounted) this.host.patch({ loading: false });
     }
@@ -79,29 +79,29 @@ export class UserSecurityPageActions {
 
   async copyRecoveryCodes(): Promise<void> {
     const { addNotification } = this.host.notify;
-    const { generatedRecoveryCodes } = this.host.state;
+    const { generatedRecoveryCodes } = this.host;
     if (!generatedRecoveryCodes.length) return;
     if (await UserSecurityPageController.copyRecoveryCodes(generatedRecoveryCodes)) {
-      addNotification({ title: 'Copied', message: 'Recovery codes copied to clipboard.', type: 'success' });
+      addNotification({ title: 'Copied', message: 'Recovery codes copied to clipboard.', type: NotificationType.SUCCESS });
       return;
     }
-    addNotification({ title: 'Copy Failed', message: 'Please copy the recovery codes manually.', type: 'error' });
+    addNotification({ title: 'Copy Failed', message: 'Please copy the recovery codes manually.', type: NotificationType.ERROR });
   }
 
   async createApiToken(): Promise<void> {
     const { addNotification } = this.host.notify;
-    const { tokenName, tokenDays } = this.host.state;
+    const { tokenName, tokenDays } = this.host;
     try {
       if (!tokenName.trim()) {
-        addNotification({ title: 'Name Required', message: 'Enter a token name first.', type: 'error' });
+        addNotification({ title: 'Name Required', message: 'Enter a token name first.', type: NotificationType.ERROR });
         return;
       }
       const createdToken = await UserSecurityPageController.createApiToken(tokenName, tokenDays);
       if (this.host.mounted) this.host.patch({ createdToken, tokenName: '' });
-      addNotification({ title: 'Token Created', message: 'Copy the token now. It is shown once.', type: 'success' });
+      addNotification({ title: 'Token Created', message: 'Copy the token now. It is shown once.', type: NotificationType.SUCCESS });
       await this.fetchMyApiTokens();
     } catch (error: any) {
-      addNotification({ title: 'Error', message: error?.message || 'Failed to create API token', type: 'error' });
+      addNotification({ title: 'Error', message: error?.message || 'Failed to create API token', type: NotificationType.ERROR });
     }
   }
 
@@ -119,9 +119,9 @@ export class UserSecurityPageActions {
           recoveryCodesRemaining: 0,
         });
       }
-      addNotification({ title: '2FA Disabled', message: 'Two-factor authentication has been removed', type: 'info' });
+      addNotification({ title: '2FA Disabled', message: 'Two-factor authentication has been removed', type: NotificationType.INFO });
     } catch (error: any) {
-      addNotification({ title: 'Error', message: error.message || 'Failed to disable 2FA', type: 'error' });
+      addNotification({ title: 'Error', message: error.message || 'Failed to disable 2FA', type: NotificationType.ERROR });
     }
   }
 
@@ -131,9 +131,9 @@ export class UserSecurityPageActions {
     try {
       const response = await UserSecurityPageController.setupTwoFactor(this.host.id);
       if (this.host.mounted) this.host.patch({ qrCode: response.qrCode || null, secret: response.secret || null });
-      addNotification({ title: 'Setup Started', message: 'Scan the QR code with your authenticator app', type: 'info' });
+      addNotification({ title: 'Setup Started', message: 'Scan the QR code with your authenticator app', type: NotificationType.INFO });
     } catch (error: any) {
-      addNotification({ title: 'Setup Failed', message: error.message || 'Failed to generate 2FA setup', type: 'error' });
+      addNotification({ title: 'Setup Failed', message: error.message || 'Failed to generate 2FA setup', type: NotificationType.ERROR });
     } finally {
       if (this.host.mounted) this.host.patch({ isEnabling: false });
     }
@@ -146,9 +146,9 @@ export class UserSecurityPageActions {
     try {
       const codes = await UserSecurityPageController.regenerateRecoveryCodes(this.host.id);
       if (this.host.mounted) this.host.patch({ generatedRecoveryCodes: codes, recoveryCodesRemaining: codes.length });
-      addNotification({ title: 'Recovery Codes Regenerated', message: 'Save the new codes now. Old codes are invalid.', type: 'success' });
+      addNotification({ title: 'Recovery Codes Regenerated', message: 'Save the new codes now. Old codes are invalid.', type: NotificationType.SUCCESS });
     } catch (error: any) {
-      addNotification({ title: 'Regeneration Failed', message: error.message || 'Unable to regenerate recovery codes.', type: 'error' });
+      addNotification({ title: 'Regeneration Failed', message: error.message || 'Unable to regenerate recovery codes.', type: NotificationType.ERROR });
     } finally {
       if (this.host.mounted) this.host.patch({ isRegeneratingCodes: false });
     }
@@ -156,9 +156,9 @@ export class UserSecurityPageActions {
 
   async verifyTwoFactor(): Promise<void> {
     const { addNotification } = this.host.notify;
-    const { verificationCode } = this.host.state;
+    const { verificationCode } = this.host;
     if (!UserSecurityPageController.isCompleteVerificationCode(verificationCode)) {
-      addNotification({ title: 'Invalid Code', message: 'Please enter a 6-digit verification code', type: 'error' });
+      addNotification({ title: 'Invalid Code', message: 'Please enter a 6-digit verification code', type: NotificationType.ERROR });
       return;
     }
     this.host.patch({ isVerifying: true });
@@ -174,9 +174,9 @@ export class UserSecurityPageActions {
           recoveryCodesRemaining: recoveryCodes.length,
         });
       }
-      addNotification({ title: '2FA Enabled', message: 'Two-factor authentication is now active', type: 'success' });
+      addNotification({ title: '2FA Enabled', message: 'Two-factor authentication is now active', type: NotificationType.SUCCESS });
     } catch (error: any) {
-      addNotification({ title: 'Verification Failed', message: error.message || 'Invalid verification code', type: 'error' });
+      addNotification({ title: 'Verification Failed', message: error.message || 'Invalid verification code', type: NotificationType.ERROR });
     } finally {
       if (this.host.mounted) this.host.patch({ isVerifying: false });
     }
@@ -186,10 +186,10 @@ export class UserSecurityPageActions {
     const { addNotification } = this.host.notify;
     try {
       await UserSecurityPageController.revokeApiToken(tokenId);
-      addNotification({ title: 'Token Revoked', message: 'API token revoked successfully.', type: 'success' });
+      addNotification({ title: 'Token Revoked', message: 'API token revoked successfully.', type: NotificationType.SUCCESS });
       await this.fetchMyApiTokens();
     } catch (error: any) {
-      addNotification({ title: 'Error', message: error?.message || 'Failed to revoke API token', type: 'error' });
+      addNotification({ title: 'Error', message: error?.message || 'Failed to revoke API token', type: NotificationType.ERROR });
     }
   }
 
@@ -197,10 +197,10 @@ export class UserSecurityPageActions {
     const { addNotification } = this.host.notify;
     try {
       await UserSecurityPageController.revokeOtherSessions();
-      addNotification({ title: 'Done', message: 'Other sessions revoked.', type: 'success' });
+      addNotification({ title: 'Done', message: 'Other sessions revoked.', type: NotificationType.SUCCESS });
       await this.fetchMySessions();
     } catch (error: any) {
-      addNotification({ title: 'Error', message: error?.message || 'Failed to revoke other sessions', type: 'error' });
+      addNotification({ title: 'Error', message: error?.message || 'Failed to revoke other sessions', type: NotificationType.ERROR });
     }
   }
 
@@ -208,14 +208,14 @@ export class UserSecurityPageActions {
     const { addNotification } = this.host.notify;
     try {
       const revokedCurrent = await UserSecurityPageController.revokeSession(sessionId);
-      addNotification({ title: 'Session Revoked', message: 'Device session revoked successfully.', type: 'success' });
+      addNotification({ title: 'Session Revoked', message: 'Device session revoked successfully.', type: NotificationType.SUCCESS });
       if (revokedCurrent) {
         this.host.redirectToLogin();
         return;
       }
       await this.fetchMySessions();
     } catch (error: any) {
-      addNotification({ title: 'Error', message: error?.message || 'Failed to revoke session', type: 'error' });
+      addNotification({ title: 'Error', message: error?.message || 'Failed to revoke session', type: NotificationType.ERROR });
     }
   }
 }

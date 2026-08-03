@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class PeopleIdentityMigration extends BaseMigration {
+export class PeopleIdentityMigration extends BaseMigration {
   readonly version = 9;
   readonly name = 'People identity schema';
 
@@ -178,5 +178,3 @@ class PeopleIdentityMigration extends BaseMigration {
     }
   }
 }
-
-export default new PeopleIdentityMigration();

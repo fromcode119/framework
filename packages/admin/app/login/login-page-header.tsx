@@ -1,9 +1,11 @@
-import React from 'react';
-import { AppEnv } from '@/lib/env';
-import { LoginPageConstants } from './login-page.constants';
+import type { ReactNode } from 'react';
+import { PureReactor } from '@fromcode119/reactor';
 
-export class LoginPageHeader extends React.Component {
-  render(): React.ReactNode {
+import { AppEnv } from '@/lib/env';
+import { LoginPageConstants } from '@/app/login/constants/login-page.constants';
+
+export class LoginPageHeader extends PureReactor {
+  render(): ReactNode {
     return (
       <div className="text-center mb-10">
         <div className="mb-6 inline-flex items-center justify-center px-5 py-4 ">

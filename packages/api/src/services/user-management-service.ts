@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
-import { IDatabaseManager, users, systemRoles, systemUsersToRoles, systemRolesToPermissions } from '@fromcode119/database';
+import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger, PluginState, StringUtils } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
@@ -8,11 +8,12 @@ import { SystemConstants } from '@fromcode119/core';
 // Physical table names for the composite-key junction tables. Writes go through the string-table
 // path (which maps camelCase → snake_case columns); the drizzle schema-object write path does not
 // apply that mapping for these keyless junction tables, producing "no such column: userId".
-const USERS_ROLES_TABLE = getTableName(systemUsersToRoles);
-const ROLES_PERMISSIONS_TABLE = getTableName(systemRolesToPermissions);
-const USERS_TABLE = getTableName(users);
 
 export class UserManagementService {
+  private static readonly USERS_ROLES_TABLE = getTableName(Schema.systemUsersToRoles);
+  private static readonly ROLES_PERMISSIONS_TABLE = getTableName(Schema.systemRolesToPermissions);
+  private static readonly USERS_TABLE = getTableName(Schema.users);
+
   private logger = new Logger({ namespace: 'UserManagement' });
 
   constructor(
@@ -34,11 +35,11 @@ export class UserManagementService {
   }
 
   async getUsers() {
-    const allUsers = await this.db.find(users);
+    const allUsers = await this.db.find(Schema.users);
     return Promise.all(allUsers.map(async (user: any) => {
-      const userRoles = await this.db.find(systemUsersToRoles, {
+      const userRoles = await this.db.find(Schema.systemUsersToRoles, {
         columns: { roleSlug: true },
-        where: this.db.eq(systemUsersToRoles.userId, user.id)
+        where: this.db.eq(Schema.systemUsersToRoles.userId, user.id)
       });
       const { password, ...safeUser } = user;
       const [accountStatus, forcePasswordReset] = await Promise.all([
@@ -55,12 +56,12 @@ export class UserManagementService {
   }
 
   async getUser(id: number) {
-    const user = await this.db.findOne(users, { id });
+    const user = await this.db.findOne(Schema.users, { id });
     if (!user) return null;
     
-    const userRoles = await this.db.find(systemUsersToRoles, {
+    const userRoles = await this.db.find(Schema.systemUsersToRoles, {
       columns: { roleSlug: true },
-      where: this.db.eq(systemUsersToRoles.userId, user.id)
+      where: this.db.eq(Schema.systemUsersToRoles.userId, user.id)
     });
     const { password, ...safeUser } = user;
     const [accountStatus, forcePasswordReset] = await Promise.all([
@@ -91,10 +92,10 @@ export class UserManagementService {
 
     let userId = id;
     if (userId) {
-      await this.db.update(users, { id: userId }, updateData);
+      await this.db.update(Schema.users, { id: userId }, updateData);
     } else {
       const initialPassword = data.password || randomBytes(24).toString('hex');
-      const newUser = await this.db.insert(users, {
+      const newUser = await this.db.insert(Schema.users, {
           email: data.email,
           username: data.username ?? null,
           password: await this.auth.hashPassword(initialPassword),
@@ -119,10 +120,10 @@ export class UserManagementService {
     }
 
     if (Array.isArray(data.roles)) {
-      await this.db.delete(USERS_ROLES_TABLE, { userId });
+      await this.db.delete(UserManagementService.USERS_ROLES_TABLE, { userId });
       if (data.roles.length > 0) {
         for (const roleSlug of data.roles) {
-          await this.db.insert(USERS_ROLES_TABLE, { userId, roleSlug });
+          await this.db.insert(UserManagementService.USERS_ROLES_TABLE, { userId, roleSlug });
         }
       }
     }
@@ -130,14 +131,14 @@ export class UserManagementService {
   }
 
   async getRoles() {
-    const dbRoles = await this.db.find(systemRoles);
+    const dbRoles = await this.db.find(Schema.systemRoles);
     return Promise.all(dbRoles.map(async (role: any) => {
-      const userCount = await this.db.count(systemUsersToRoles, {
-        where: this.db.eq(systemUsersToRoles.roleSlug, role.slug)
+      const userCount = await this.db.count(Schema.systemUsersToRoles, {
+        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug)
       });
-      const permsResult = await this.db.find(systemRolesToPermissions, {
+      const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
         columns: { permissionName: true },
-        where: this.db.eq(systemRolesToPermissions.roleSlug, role.slug)
+        where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
       });
       return { ...role, permissions: permsResult.map((r: any) => r.permissionName), users: userCount };
     }));
@@ -145,7 +146,7 @@ export class UserManagementService {
 
   async saveRole(slug: string, data: any) {
     const now = new Date();
-    await this.db.upsert(systemRoles, {
+    await this.db.upsert(Schema.systemRoles, {
       slug,
       name: data.name,
       description: data.description,
@@ -167,25 +168,25 @@ export class UserManagementService {
     });
 
     if (Array.isArray(data.permissions)) {
-      await this.db.delete(ROLES_PERMISSIONS_TABLE, { roleSlug: slug });
+      await this.db.delete(UserManagementService.ROLES_PERMISSIONS_TABLE, { roleSlug: slug });
       if (data.permissions.length > 0) {
         for (const perm of data.permissions) {
-          await this.db.insert(ROLES_PERMISSIONS_TABLE, { roleSlug: slug, permissionName: perm });
+          await this.db.insert(UserManagementService.ROLES_PERMISSIONS_TABLE, { roleSlug: slug, permissionName: perm });
         }
       }
     }
   }
 
   async getRole(slug: string) {
-    const role = await this.db.findOne(systemRoles, { slug });
+    const role = await this.db.findOne(Schema.systemRoles, { slug });
     if (!role) return null;
 
-    const userCount = await this.db.count(systemUsersToRoles, {
-      where: this.db.eq(systemUsersToRoles.roleSlug, role.slug)
+    const userCount = await this.db.count(Schema.systemUsersToRoles, {
+      where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug)
     });
-    const permsResult = await this.db.find(systemRolesToPermissions, {
+    const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
       columns: { permissionName: true },
-      where: this.db.eq(systemRolesToPermissions.roleSlug, role.slug)
+      where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
     });
 
     return {
@@ -196,7 +197,7 @@ export class UserManagementService {
   }
 
   async deleteRole(slug: string) {
-    await this.db.delete(systemRoles, { slug });
+    await this.db.delete(Schema.systemRoles, { slug });
     return true;
   }
 
@@ -242,16 +243,16 @@ export class UserManagementService {
     // later (the new affiliate re-matches the old person, which still points at the deleted account) and
     // makes the old identity stick. The person is kept as a contact; only the account link is cleared.
     await this.db.update(SystemConstants.TABLE.PEOPLE, { userId: id }, { userId: null }).catch(() => undefined);
-    await this.db.delete(users, { id });
+    await this.db.delete(Schema.users, { id });
     return true;
   }
 
   async saveUserRoles(userId: number, roles: string[]) {
     const normalized = StringUtils.normalizeSlugList(roles);
 
-    await this.db.delete(USERS_ROLES_TABLE, { userId });
+    await this.db.delete(UserManagementService.USERS_ROLES_TABLE, { userId });
     for (const roleSlug of normalized) {
-      await this.db.insert(USERS_ROLES_TABLE, { userId, roleSlug });
+      await this.db.insert(UserManagementService.USERS_ROLES_TABLE, { userId, roleSlug });
     }
 
     // Runtime authorization (UserPermissionChecker) reads a user's roles from the `users.roles` JSON
@@ -259,7 +260,7 @@ export class UserManagementService {
     // actually grants its permissions; otherwise "Manage Roles" is a silent no-op for access control.
     // Use the STRING table path: it is json-column-aware and stringifies the array exactly ONCE. The
     // schema-object path double-encodes jsonb (normalizer stringifies, then drizzle `.set()` again).
-    await this.db.update(USERS_TABLE, { id: userId }, { roles: normalized, updatedAt: new Date() });
+    await this.db.update(UserManagementService.USERS_TABLE, { id: userId }, { roles: normalized, updatedAt: new Date() });
   }
 
   async getPermissions() {

@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { TypeUtils } from '@fromcode119/core';
-import type { ControllerDeps } from './controller-deps';
+import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 
 /** Handles the executeAssistantActions endpoint logic. */
 export class ExecuteActionsHandler {
-  static async handle(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async handle(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     const startedAt = Date.now();
     try {
       const normalizedBody = deps.payloadService.normalizeLegacyAssistantExecutePayload(req.body || {});

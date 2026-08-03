@@ -1,11 +1,11 @@
-import { BaseRouter } from '../../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import multer from 'multer';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
-import { PluginController } from '../../controllers/plugins/plugin-controller';
+import { PluginController } from '@api/controllers/plugins/plugin-controller';
 import { RouteConstants } from '@fromcode119/core';
 
 export class PluginRouter extends BaseRouter {

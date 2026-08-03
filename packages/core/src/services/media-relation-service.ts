@@ -1,5 +1,5 @@
-import { BaseService } from '../base/base-service';
-import { CoercionUtils } from '../coercion-utils';
+import { BaseService } from '@core/base/base-service';
+import { CoercionUtils } from '@core/coercion-utils';
 
 export class MediaRelationService extends BaseService {
   async loadRecords(values: unknown[]): Promise<Map<string, any>> {

@@ -1,11 +1,12 @@
-import { McpBridgeFactory, type McpBridge, type McpToolDefinition } from '@fromcode119/mcp';
-import type { AdminAssistantRuntimeOptions, AssistantToolSummary } from '../admin-assistant-runtime/types';
+import { McpBridgeFactory, type IMcpBridge, type IMcpToolDefinition } from '@fromcode119/mcp';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
 
 export class AdminAssistantRuntimeBridgeService {
-  constructor(private readonly options: AdminAssistantRuntimeOptions) {}
+  constructor(private readonly options: IAdminAssistantRuntimeOptions) {}
 
-  async buildBridge(dryRun: boolean): Promise<McpBridge> {
-    const tools: McpToolDefinition[] = [];
+  async buildBridge(dryRun: boolean): Promise<IMcpBridge> {
+    const tools: IMcpToolDefinition[] = [];
     const extraTools = await Promise.resolve(this.options.resolveAdditionalTools?.({ dryRun }) || []);
     if (Array.isArray(extraTools)) {
       for (const tool of extraTools) {
@@ -34,7 +35,7 @@ export class AdminAssistantRuntimeBridgeService {
     return McpBridgeFactory.create({ tools });
   }
 
-  async listTools(dryRun: boolean = true): Promise<AssistantToolSummary[]> {
+  async listTools(dryRun: boolean = true): Promise<IAssistantToolSummary[]> {
     const bridge = await this.buildBridge(dryRun);
     return (Array.isArray(bridge.listTools()) ? bridge.listTools() : [])
       .map((tool: any) => ({
@@ -48,7 +49,7 @@ export class AdminAssistantRuntimeBridgeService {
       .filter((tool) => !!tool.tool);
   }
 
-  private hasTool(tools: McpToolDefinition[], name: string): boolean {
+  private hasTool(tools: IMcpToolDefinition[], name: string): boolean {
     return tools.some((tool) => String(tool?.tool || '').trim() === name);
   }
 }

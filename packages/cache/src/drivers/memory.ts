@@ -1,6 +1,6 @@
-import { CacheDriver } from '../index';
+import { ICacheDriver } from '@cache/index';
 
-export class MemoryCacheDriver implements CacheDriver {
+export class MemoryCacheDriver implements ICacheDriver {
   private cache = new Map<string, { value: string; expiry: number | null }>();
 
   async get(key: string): Promise<string | null> {

@@ -1,5 +1,6 @@
-import type { PluginContext } from '../types';
-import { NumberUtils } from '../number-utils';
+import { SortOrder } from '@core/enums/sort-order.enum';
+import type { PluginContext } from '@core/plugin-context';
+import { NumberUtils } from '@core/number-utils';
 
 /**
  * Abstract base class for all plugin data repositories.
@@ -74,9 +75,9 @@ export abstract class BaseRepository<TRow, TQuery = Record<string, unknown>> {
    * Parses a sort direction from a raw query value.
    * Accepts 'asc'/'desc' (case-insensitive), defaults to 'desc'.
    */
-  protected parseSortDir(value: unknown): 'asc' | 'desc' {
+  protected parseSortDir(value: unknown): SortOrder {
     const v = String(value || '').toLowerCase().trim();
-    return v === 'asc' ? 'asc' : 'desc';
+    return SortOrder.resolve(v);
   }
 
   /**

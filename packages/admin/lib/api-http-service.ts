@@ -1,6 +1,6 @@
-import { AdminConstants } from './constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
-import { AdminUrlUtils } from './url-utils';
+import { AdminUrlUtils } from '@/lib/url-utils';
 
 export class AdminApiHttpService {
   private static readonly browserState = new BrowserStateClient();

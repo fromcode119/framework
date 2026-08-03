@@ -1,8 +1,8 @@
-export { ServerAuthSetup } from './server-auth-setup';
-export { ApiBootstrapService } from './api-bootstrap-service';
-export { ServerCorsSetup } from './server-cors-setup';
-export { ServerMaintenanceService } from './server-maintenance-service';
-export { ServerMiddlewareSetup } from './server-middleware-setup';
-export { ServerRoutesSetup } from './server-routes-setup';
-export { ServerSettingsService } from './server-settings-service';
-export { ServerUploadsConfigService } from './server-uploads-config-service';
+export { ServerAuthSetup } from '@api/server/server-auth-setup';
+export { ApiBootstrapService } from '@api/server/api-bootstrap-service';
+export { ServerCorsSetup } from '@api/server/server-cors-setup';
+export { ServerMaintenanceService } from '@api/server/server-maintenance-service';
+export { ServerMiddlewareSetup } from '@api/server/server-middleware-setup';
+export { ServerRoutesSetup } from '@api/server/server-routes-setup';
+export { ServerSettingsService } from '@api/server/server-settings-service';
+export { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';

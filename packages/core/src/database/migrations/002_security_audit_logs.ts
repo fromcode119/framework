@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class SecurityAuditLogsMigration extends BaseMigration {
+export class SecurityAuditLogsMigration extends BaseMigration {
   readonly version = 2;
   readonly name = 'Security audit logs schema';
 
@@ -48,5 +48,3 @@ class SecurityAuditLogsMigration extends BaseMigration {
     await db.execute(sql`DROP TABLE IF EXISTS "_system_audit_logs";`);
   }
 }
-
-export default new SecurityAuditLogsMigration();

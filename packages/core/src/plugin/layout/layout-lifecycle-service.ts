@@ -1,5 +1,5 @@
-import { ThemeLayoutOverrideRegistryService } from '../../theme/theme-layout-override-registry-service';
-import { PluginLayoutRegistryService } from './plugin-layout-registry-service';
+import { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
+import { PluginLayoutRegistryService } from '@core/plugin/layout/plugin-layout-registry-service';
 
 export class LayoutLifecycleService {
   constructor(

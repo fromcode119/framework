@@ -3,7 +3,7 @@
 import { Logger } from '@fromcode119/core';
 import { SystemConstants, ApiAccessGate } from '@fromcode119/core';
 import { AuthManager, UserPermissionChecker } from '@fromcode119/auth';
-import { systemSessions } from '@fromcode119/database';
+import { Schema } from '@fromcode119/database';
 import { createHash } from 'crypto';
 
 export class ServerAuthSetup {
@@ -23,8 +23,8 @@ export class ServerAuthSetup {
 
     this.auth.setSessionValidator(async (jti: string) => {
       try {
-        const results = await this.db.find(systemSessions, {
-          where: this.db.eq(systemSessions.tokenId, jti),
+        const results = await this.db.find(Schema.systemSessions, {
+          where: this.db.eq(Schema.systemSessions.tokenId, jti),
           limit: 1,
         });
         const session = results[0];

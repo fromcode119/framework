@@ -1,6 +1,6 @@
-import { BaseService } from './base-service';
+import { BaseService } from '@/lib/services/base-service';
 import { LocalizationUtils } from '@fromcode119/core/client';
-import type { ResolveAnyStringOptions } from '@fromcode119/core/client';
+import type { IResolveAnyStringOptions } from '@fromcode119/core/client';
 
 /**
  * Service for localization and internationalization.
@@ -154,7 +154,7 @@ export class LocalizationService extends BaseService {
    * resolveAnyString('plain') // "plain"
    */
   resolveAnyString(value: unknown, locale?: string): string {
-    const options: ResolveAnyStringOptions = locale ? { preferredLocale: locale } : {};
+    const options: IResolveAnyStringOptions = locale ? { preferredLocale: locale } : {};
     return LocalizationUtils.resolveAnyString(value, options);
   }
 

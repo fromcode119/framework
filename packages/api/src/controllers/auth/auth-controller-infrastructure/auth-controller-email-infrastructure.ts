@@ -1,9 +1,9 @@
 import { SystemConstants } from '@fromcode119/core';
-import { EmailChangeVerificationTemplate } from '../email-templates/email-change-verification-template';
-import { PasswordResetEmailTemplate } from '../email-templates/password-reset-email-template';
-import { SecurityNotificationEmailTemplate } from '../email-templates/security-notification-email-template';
-import { VerifyEmailFallbackTemplate } from '../email-templates/verify-email-fallback-template';
-import { AuthControllerThemeEmailInfrastructure } from './auth-controller-theme-email-infrastructure';
+import { EmailChangeVerificationTemplate } from '@api/controllers/auth/email-templates/email-change-verification-template';
+import { PasswordResetEmailTemplate } from '@api/controllers/auth/email-templates/password-reset-email-template';
+import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
+import { VerifyEmailFallbackTemplate } from '@api/controllers/auth/email-templates/verify-email-fallback-template';
+import { AuthControllerThemeEmailInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-theme-email-infrastructure';
 
 export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailInfrastructure {
   protected async sendVerificationEmail(options: { to: string; verificationUrl: string; firstName?: string }): Promise<boolean> {

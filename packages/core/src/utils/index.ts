@@ -1,6 +1,6 @@
 // ── Barrel file (re-exports only) ──────────────────────────────────────────
-export { CoreServices } from '../services/core-services';
-export { CoercionUtils } from '../coercion-utils';
-export { StringUtils } from '../string-utils';
-export { TypeUtils } from './type-utils';
-export { EnvUtils } from './env-utils';
+export { CoreServices } from '@core/services/core-services';
+export { CoercionUtils } from '@core/coercion-utils';
+export { StringUtils } from '@core/string-utils';
+export { TypeUtils } from '@core/utils/type-utils';
+export { EnvUtils } from '@core/utils/env-utils';

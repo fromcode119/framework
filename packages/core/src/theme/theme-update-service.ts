@@ -1,5 +1,5 @@
-import { ThemeManifest } from '../types';
-import { Logger } from '../logging';
+import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import { Logger } from '@core/logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 
 /**
@@ -11,7 +11,7 @@ import { MarketplaceClient } from '@fromcode119/marketplace-client';
  */
 export class ThemeUpdateService {
   constructor(
-    private themes: Map<string, ThemeManifest>,
+    private themes: Map<string, IThemeManifest>,
     private client: MarketplaceClient,
     private logger: Logger,
   ) {}

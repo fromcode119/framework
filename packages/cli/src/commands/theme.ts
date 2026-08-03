@@ -4,8 +4,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import archiver from 'archiver';
 import * as esbuild from 'esbuild';
-import { CliUtils } from '../utils';
-
+import { CliUtils } from '@cli/utils';
+import { ThemeSeedCommandService } from '@cli/services/theme-seed-command-service';
 
 export class ThemeCommands {
   static registerThemeCommands(program: Command) {
@@ -269,6 +269,16 @@ export const init = () => {
         } catch (error) {
           console.error(chalk.red('Error packing theme:'), error);
         }
+      });
+
+    theme
+      .command('seed')
+      .description('Seed a theme (pages, navigation, categories) into the running site')
+      .allowUnknownOption(true)
+      .helpOption(false)
+      .argument('[args...]', 'Seed flags: --theme <slug> [--no-restart] [--container <name>] [--database-url <url>] [--help]')
+      .action(async (args: string[]) => {
+        await ThemeSeedCommandService.run(args ?? []);
       });
   }
 }

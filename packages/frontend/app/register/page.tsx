@@ -1,12 +1,14 @@
 import { notFound } from 'next/navigation';
-import RegisterClient from './register-client';
+import { RegisterPage as RegisterClient } from '@/app/register/components/view/register-client.client';
 import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
-import DynamicContentClient from '../dynamic-content-client';
+import { connection } from 'next/server';
+import { DynamicContentClient } from '@/app/components/view/dynamic-content-client.client';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 
-export const dynamic = 'force-dynamic';
-
-export default async function RegisterPage() {
+export class RegisterPageRoute {
+  static async render() {
+  // Opt into dynamic rendering without a route-segment `export const` (see `connection()` docs).
+  await connection();
   const [authEnabled, registrationEnabled] = await Promise.all([
     FrontendAuthUtils.isFrontendAuthEnabled(),
     FrontendAuthUtils.isFrontendRegistrationEnabled()
@@ -24,4 +26,5 @@ export default async function RegisterPage() {
   }
 
   return <RegisterClient />;
+}
 }

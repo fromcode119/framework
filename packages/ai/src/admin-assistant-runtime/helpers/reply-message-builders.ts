@@ -1,7 +1,12 @@
-import type { AssistantMessage } from '../../types.interfaces';
-import type { AssistantCollectionContext, AssistantPluginContext, AssistantThemeContext, AssistantToolSummary } from '../types';
-import { AssistantConstants } from '../constants';
-import { ReplaceContentHelpers } from './replace-content-helpers';
+import { ReplyIntent } from '@ai/admin-assistant-runtime/enums/reply-intent.enum';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+import type { IAssistantPluginContext } from '@ai/admin-assistant-runtime/interfaces/assistant-plugin-context.interface';
+import type { IAssistantThemeContext } from '@ai/admin-assistant-runtime/interfaces/assistant-theme-context.interface';
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
+
+import { ReplaceContentHelpers } from '@ai/admin-assistant-runtime/helpers/replace-content-helpers';
 
 /** Message building helpers extracted from AdminAssistantRuntime. */
 export class ReplyMessageBuilders {
@@ -10,8 +15,8 @@ export class ReplyMessageBuilders {
   }
 
   static buildCapabilityOverviewMessage(
-    collections: AssistantCollectionContext[], plugins: AssistantPluginContext[],
-    themes: AssistantThemeContext[], tools: AssistantToolSummary[],
+    collections: IAssistantCollectionContext[], plugins: IAssistantPluginContext[],
+    themes: IAssistantThemeContext[], tools: IAssistantToolSummary[],
   ): string {
     const writableTools = (tools || []).filter((t) => !t?.readOnly).map((t) => String(t?.tool || '').trim()).filter(Boolean);
     const readTools = (tools || []).filter((t) => !!t?.readOnly).map((t) => String(t?.tool || '').trim()).filter(Boolean);
@@ -26,8 +31,8 @@ export class ReplyMessageBuilders {
   }
 
   static buildStrategicAdviceFallbackMessage(
-    collections: AssistantCollectionContext[], plugins: AssistantPluginContext[],
-    themes: AssistantThemeContext[], tools: AssistantToolSummary[],
+    collections: IAssistantCollectionContext[], plugins: IAssistantPluginContext[],
+    themes: IAssistantThemeContext[], tools: IAssistantToolSummary[],
   ): string {
     const writeCount = (tools || []).filter((t) => !t?.readOnly).length;
     const readCount = (tools || []).filter((t) => !!t?.readOnly).length;
@@ -44,11 +49,11 @@ export class ReplyMessageBuilders {
   }
 
   static buildClarificationRequest(
-    intent: 'homepage_draft' | 'general', candidateCollections: string[],
+    intent: ReplyIntent, candidateCollections: string[],
   ): { question: string; missingInputs: string[]; resumePrompt: string } {
     const collectionHint = candidateCollections.length
       ? ` Candidate collections: ${candidateCollections.slice(0, 3).join(', ')}.` : '';
-    if (intent === 'homepage_draft') {
+    if (intent === ReplyIntent.HOMEPAGE_DRAFT) {
       return {
         question: `Which collection should store this homepage draft? Reply with collection slug.${collectionHint} If you want to update an existing page instead of creating a draft record, also include record id/slug.`,
         missingInputs: ['collection slug'],
@@ -80,10 +85,10 @@ export class ReplyMessageBuilders {
   }
 
   static deriveReplaceContinuation(
-    message: string, history: AssistantMessage[],
+    message: string, history: IAssistantMessage[],
   ): { instruction: { from: string; to: string }; composedPrompt: string } | null {
     if (!ReplyMessageBuilders.isReplaceFollowupIntent(message)) return null;
-    const userHistory = (Array.isArray(history) ? history : []).filter((e) => e?.role === 'user');
+    const userHistory = (Array.isArray(history) ? history : []).filter((e) => e?.role === AssistantRole.USER);
     if (!userHistory.length) return null;
     let latestReplacePrompt = '';
     let latestUrlPrompt = '';
@@ -105,9 +110,9 @@ export class ReplyMessageBuilders {
     return { instruction, composedPrompt: parts.join('\n') };
   }
 
-  static countRecentReplacementPauseMessages(history: AssistantMessage[]): number {
+  static countRecentReplacementPauseMessages(history: IAssistantMessage[]): number {
     return (Array.isArray(history) ? history : [])
-      .filter((e) => e?.role === 'assistant')
+      .filter((e) => e?.role === AssistantRole.ASSISTANT)
       .slice(-8)
       .filter((e) => ReplyMessageBuilders.isGenericPauseCopy(String(e?.content || '')))
       .length;

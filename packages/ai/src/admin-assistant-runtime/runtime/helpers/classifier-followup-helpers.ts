@@ -1,4 +1,4 @@
-import { TextHelpers } from './text-helpers';
+import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
 
 /**
  * Short follow-up / match-inquiry detection helpers for the AI runtime classifier.

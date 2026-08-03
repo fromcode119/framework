@@ -1,11 +1,9 @@
-import { CoreServices } from '../../services/core-services';
-import type {
-  ThemeFrontendLayoutRegistrarOptions,
-  ThemeFrontendLayoutRegistration,
-} from './theme-frontend-layout-registrar.interfaces';
+import { CoreServices } from '@core/services/core-services';
+import type { IThemeFrontendLayoutRegistrarOptions } from '@core/theme/layout/interfaces/theme-frontend-layout-registrar-options.interface';
+import type { IThemeFrontendLayoutRegistration } from '@core/theme/layout/interfaces/theme-frontend-layout-registration.interface';
 
 export abstract class ThemeFrontendLayoutRegistrar {
-  constructor(private readonly options: ThemeFrontendLayoutRegistrarOptions) {}
+  constructor(private readonly options: IThemeFrontendLayoutRegistrarOptions) {}
 
   get serviceName(): string {
     return 'ThemeFrontendLayoutRegistrar';
@@ -17,15 +15,15 @@ export abstract class ThemeFrontendLayoutRegistrar {
     CoreServices.getInstance().defaultDesignRuntimeBridge.registerThemeOverrides(registration);
   }
 
-  protected buildDisables(): ThemeFrontendLayoutRegistration['disables'] {
+  protected buildDisables(): IThemeFrontendLayoutRegistration['disables'] {
     return [];
   }
 
-  protected buildReplacements(): ThemeFrontendLayoutRegistration['replacements'] {
+  protected buildReplacements(): IThemeFrontendLayoutRegistration['replacements'] {
     return [];
   }
 
-  protected getRegistration(): ThemeFrontendLayoutRegistration {
+  protected getRegistration(): IThemeFrontendLayoutRegistration {
     return {
       themeSlug: this.options.themeSlug,
       disables: this.buildDisables(),

@@ -7,26 +7,22 @@
  */
 
 // Base classes
-export { BaseMiddleware } from './base-middleware';
-export { FunctionalMiddleware } from './functional-middleware';
+export { BaseMiddleware } from '@api/middlewares/base-middleware';
+export { FunctionalMiddleware } from '@api/middlewares/functional-middleware';
 
 // Collection middleware
-export { CollectionMiddleware } from './collection-middleware';
+export { CollectionMiddleware } from '@api/middlewares/collection-middleware';
 
 // Security middlewares
-export { CSRFMiddleware } from './csrf-middleware';
-export { XSSMiddleware } from './xss-middleware';
-export { SecurityHeadersMiddleware } from './security-headers-middleware';
-export { JsonCompressionMiddleware } from './json-compression-middleware';
+export { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
+export { XSSMiddleware } from '@api/middlewares/xss-middleware';
+export { SecurityHeadersMiddleware } from '@api/middlewares/security-headers-middleware';
+export { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 
 // Rate limiting
-export { 
-  RateLimitMiddleware, 
-} from './rate-limit-middleware';
+export { RateLimitMiddleware } from '@api/middlewares/rate-limit-middleware';
 
 // Validation
-export { 
-  ValidationMiddleware, 
-} from './validation/validation-middleware';
+export { ValidationMiddleware } from '@api/middlewares/validation/validation-middleware';
 
-export { Validators } from './validators';
+export { Validators } from '@api/middlewares/validators';

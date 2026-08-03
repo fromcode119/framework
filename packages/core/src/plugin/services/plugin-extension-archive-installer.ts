@@ -1,3 +1,5 @@
+import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+
 /**
  * PluginExtensionArchiveInstaller
  *
@@ -25,10 +27,10 @@ export class PluginExtensionArchiveInstaller {
 
   async installExtensionArchive(
     filePath: string,
-    type: 'plugin' | 'theme' | 'core',
+    type: ExtensionScope,
     options: { enable?: boolean; activate?: boolean } = {},
   ): Promise<any> {
-    if (type === 'core') {
+    if (ExtensionScope.resolve(type) === ExtensionScope.CORE) {
       if (!this.coreArchiveInstaller) {
         throw new Error('Core archive installer is not configured.');
       }
@@ -36,7 +38,7 @@ export class PluginExtensionArchiveInstaller {
       return this.coreArchiveInstaller(filePath);
     }
 
-    if (type === 'theme') {
+    if (ExtensionScope.resolve(type) === ExtensionScope.THEME) {
       if (!this.themeArchiveInstaller) {
         throw new Error('Theme archive installer is not configured.');
       }

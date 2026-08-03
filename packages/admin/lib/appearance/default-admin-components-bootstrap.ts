@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { AdminComponentKeys } from './admin-component-keys';
-import { AdminComponentRegistry } from './admin-component-registry';
+import { Button } from '@/components/ui/view/button.client';
+import { Input } from '@/components/ui/view/input.client';
+import { AdminComponentKeys } from '@/lib/appearance/admin-component-keys';
+import { AdminComponentRegistry } from '@/lib/appearance/admin-component-registry';
 
 /**
  * Registers the framework's built-in admin primitives as the default component set. Called once at

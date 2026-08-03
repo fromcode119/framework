@@ -1,11 +1,11 @@
-import { ApiPathUtils } from '../api/api-path-utils';
-import { AdminUserClient } from './admin-user-client';
-import { ApiScopeClient } from './api-scope-client';
-import { BrowserStateClient } from './browser-state-client';
-import { CollectionScopeClient } from './collection-scope-client';
-import { SettingsScopeClient } from './settings-scope-client';
-import { SystemAuthClient } from './system-auth-client';
-import { SystemAuthSession } from './system-auth-session';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { AdminUserClient } from '@core/clients/admin-user-client';
+import { ApiScopeClient } from '@core/clients/api-scope-client';
+import { BrowserStateClient } from '@core/clients/browser-state-client';
+import { CollectionScopeClient } from '@core/clients/collection-scope-client';
+import { SettingsScopeClient } from '@core/clients/settings-scope-client';
+import { SystemAuthClient } from '@core/clients/system-auth-client';
+import { SystemAuthSession } from '@core/clients/system-auth-session';
 
 export class SdkClient {
   constructor(

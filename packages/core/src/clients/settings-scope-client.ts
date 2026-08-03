@@ -1,4 +1,4 @@
-import { ApiPathUtils } from '../api/api-path-utils';
+import { ApiPathUtils } from '@core/api/api-path-utils';
 
 export class SettingsScopeClient {
   constructor(

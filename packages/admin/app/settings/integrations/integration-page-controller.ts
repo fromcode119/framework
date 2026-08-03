@@ -1,29 +1,14 @@
-import { AdminConstants } from '@/lib/constants';
+import type { IIntegrationControllerHost } from '@/app/settings/integrations/interfaces/integration-controller-host.interface';
+import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
+import { NotificationType } from '@/components/enums/notification-type.enum';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminApi } from '@/lib/api';
-import { IntegrationsPageUtils } from './IntegrationsPageUtils';
-import { IntegrationProviderFormHelper } from './integration-provider-form-helper';
-import { IntegrationSelectors } from './integration-selectors';
-import type {
-  IntegrationRecord,
-  ProviderEditorState,
-  StoredProvider,
-  IntegrationsSettingsPageClientState,
-} from './integrations-settings-page-client.interfaces';
-
-type Notify = (notification: { type: string; title: string; message: string }) => void;
-type SetState = (
-  patch:
-    | Partial<IntegrationsSettingsPageClientState>
-    | ((previous: IntegrationsSettingsPageClientState) => Partial<IntegrationsSettingsPageClientState> | null),
-) => void;
-
-export interface IntegrationControllerHost {
-  getState: () => IntegrationsSettingsPageClientState;
-  setState: SetState;
-  notify: Notify;
-  replaceRoute: (path: string) => void;
-  isMounted: () => boolean;
-}
+import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-page-utils';
+import { IntegrationProviderFormHelper } from '@/app/settings/integrations/integration-provider-form-helper';
+import { IntegrationSelectors } from '@/app/settings/integrations/integration-selectors';
+import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
+import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
+import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
 
 /**
  * Orchestrates data-mutation actions (load, save, toggle, remove, editor
@@ -31,14 +16,14 @@ export interface IntegrationControllerHost {
  * host adapter so the React component stays a thin shell.
  */
 export class IntegrationPageController {
-  constructor(private readonly host: IntegrationControllerHost) {}
+  constructor(private readonly host: IIntegrationControllerHost) {}
 
-  private get activeIntegration(): IntegrationRecord | null {
+  private get activeIntegration(): IIntegrationRecord | null {
     const { integrations, activeType } = this.host.getState();
     return IntegrationSelectors.activeIntegration(integrations, activeType);
   }
 
-  private applyIntegrationUpdate(updated: IntegrationRecord): void {
+  private applyIntegrationUpdate(updated: IIntegrationRecord): void {
     this.host.setState((previous) => {
       const exists = previous.integrations.some((integration) => integration.key === updated.key);
       if (!exists) return null;
@@ -60,7 +45,8 @@ export class IntegrationPageController {
       const docs = Array.isArray(response?.docs) ? response.docs : [];
       const sorted = docs
         .filter((doc: any) => doc && typeof doc.key === 'string')
-        .sort((a: IntegrationRecord, b: IntegrationRecord) => a.label.localeCompare(b.label));
+        .sort((a: IIntegrationRecord, b: IIntegrationRecord) => a.label.localeCompare(b.label));
+      sorted.forEach((integration: any) => integration.providers?.forEach((p: any) => p.fields?.forEach((fld: any) => { fld.type = IntegrationFieldType.resolve(fld.type); })));
       if (!this.host.isMounted()) return;
       this.host.setState({ integrations: sorted });
       if (!sorted.length) {
@@ -69,13 +55,13 @@ export class IntegrationPageController {
       }
 
       const queryType = this.host.getState().queryType;
-      const preferredType = queryType && sorted.some((integration: IntegrationRecord) => integration.key === queryType)
+      const preferredType = queryType && sorted.some((integration: IIntegrationRecord) => integration.key === queryType)
         ? queryType
         : sorted[0].key;
       this.host.setState({ activeType: preferredType });
     } catch (error: any) {
       this.host.notify({
-        type: 'error',
+        type: NotificationType.ERROR,
         title: 'Failed to load integrations',
         message: error?.message || 'Unable to read integration configuration.'
       });
@@ -135,13 +121,13 @@ export class IntegrationPageController {
     if (!activeIntegration || !editor) return;
     const providerDefinition = activeIntegration.providers.find((provider) => provider.key === editor.providerKey);
     if (!providerDefinition) {
-      this.host.notify({ type: 'error', title: 'Invalid provider', message: 'Selected provider is not available for this integration type.' });
+      this.host.notify({ type: NotificationType.ERROR, title: 'Invalid provider', message: 'Selected provider is not available for this integration type.' });
       return;
     }
 
     const validationErrors = IntegrationProviderFormHelper.validate(providerDefinition.fields || [], editor);
     if (validationErrors.length) {
-      this.host.notify({ type: 'error', title: 'Configuration invalid', message: validationErrors[0] });
+      this.host.notify({ type: NotificationType.ERROR, title: 'Configuration invalid', message: validationErrors[0] });
       return;
     }
 
@@ -155,18 +141,18 @@ export class IntegrationPageController {
       const nextProviderId = IntegrationProviderFormHelper.resolveNextProviderId(updatedIntegration, editor);
       this.host.setState({ selectedProviderId: nextProviderId, editor: null, removeCandidateId: null });
       this.host.notify({
-        type: 'success',
+        type: NotificationType.SUCCESS,
         title: editor.isNew ? 'Provider added' : 'Provider updated',
         message: `${providerDefinition.label} configuration saved.`
       });
     } catch (error: any) {
-      this.host.notify({ type: 'error', title: 'Save failed', message: error?.message || 'Unable to save provider configuration.' });
+      this.host.notify({ type: NotificationType.ERROR, title: 'Save failed', message: error?.message || 'Unable to save provider configuration.' });
     } finally {
       this.host.setState({ saving: false });
     }
   }
 
-  async toggleProvider(provider: StoredProvider): Promise<void> {
+  async toggleProvider(provider: IStoredProvider): Promise<void> {
     const activeIntegration = this.activeIntegration;
     if (!activeIntegration) return;
     this.host.setState({ changingProviderId: provider.id });
@@ -178,18 +164,18 @@ export class IntegrationPageController {
       const updatedIntegration = IntegrationProviderFormHelper.extractUpdatedIntegration(response);
       this.applyIntegrationUpdate(updatedIntegration);
       this.host.notify({
-        type: 'success',
+        type: NotificationType.SUCCESS,
         title: 'Provider status updated',
         message: `${provider.name || provider.providerKey} is now ${provider.enabled === false ? 'enabled' : 'disabled'}.`
       });
     } catch (error: any) {
-      this.host.notify({ type: 'error', title: 'Status update failed', message: error?.message || 'Unable to change provider status.' });
+      this.host.notify({ type: NotificationType.ERROR, title: 'Status update failed', message: error?.message || 'Unable to change provider status.' });
     } finally {
       this.host.setState({ changingProviderId: null });
     }
   }
 
-  async removeProvider(provider: StoredProvider): Promise<void> {
+  async removeProvider(provider: IStoredProvider): Promise<void> {
     const activeIntegration = this.activeIntegration;
     if (!activeIntegration) return;
     this.host.setState({ changingProviderId: provider.id });
@@ -201,18 +187,18 @@ export class IntegrationPageController {
       const nextSelected = (updatedIntegration.storedProviders || [])[0]?.id || '';
       this.host.setState({ selectedProviderId: nextSelected, editor: null, removeCandidateId: null });
       this.host.notify({
-        type: 'success',
+        type: NotificationType.SUCCESS,
         title: 'Provider removed',
         message: `${provider.name || provider.providerKey} has been removed.`
       });
     } catch (error: any) {
-      this.host.notify({ type: 'error', title: 'Remove failed', message: error?.message || 'Unable to remove provider.' });
+      this.host.notify({ type: NotificationType.ERROR, title: 'Remove failed', message: error?.message || 'Unable to remove provider.' });
     } finally {
       this.host.setState({ changingProviderId: null });
     }
   }
 
-  patchEditor(patch: Partial<ProviderEditorState> | ((prev: ProviderEditorState) => ProviderEditorState)): void {
+  patchEditor(patch: Partial<IProviderEditorState> | ((prev: IProviderEditorState) => IProviderEditorState)): void {
     this.host.setState((previous) => {
       if (!previous.editor) return null;
       const nextEditor = typeof patch === 'function' ? patch(previous.editor) : { ...previous.editor, ...patch };

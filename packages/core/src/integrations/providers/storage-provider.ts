@@ -1,9 +1,10 @@
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import { MediaManager, StorageFactory } from '@fromcode119/media';
-import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
+import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 import path from 'path';
 
 export class StorageIntegrationDefinition {
-  static readonly definition: IntegrationTypeDefinition<MediaManager> = {
+  static readonly definition: IIntegrationTypeDefinition<MediaManager> = {
   key: 'storage',
   label: 'File Storage',
   description: 'Provider used for storing and retrieving uploaded media and files.',
@@ -35,14 +36,14 @@ export class StorageIntegrationDefinition {
         {
           name: 'uploadDir',
           label: 'Upload Directory',
-          type: 'text',
+          type: IntegrationConfigFieldType.TEXT,
           required: true,
           placeholder: 'public/uploads'
         },
         {
           name: 'publicUrlBase',
           label: 'Public URL Base',
-          type: 'text',
+          type: IntegrationConfigFieldType.TEXT,
           required: true,
           placeholder: '/uploads'
         }
@@ -59,12 +60,12 @@ export class StorageIntegrationDefinition {
       label: 'S3 Compatible Storage',
       description: 'Cloud storage using AWS S3 or compatible services (DigitalOcean Spaces, MinIO, etc.).',
       fields: [
-        { name: 'region', label: 'Region', type: 'text', required: true, placeholder: 'us-east-1' },
-        { name: 'bucket', label: 'Bucket Name', type: 'text', required: true },
-        { name: 'endpoint', label: 'Endpoint URL', type: 'text', placeholder: 'https://...' },
-        { name: 'accessKeyId', label: 'Access Key ID', type: 'text', required: true },
-        { name: 'secretAccessKey', label: 'Secret Access Key', type: 'password', required: true },
-        { name: 'publicUrlBase', label: 'Public URL Base', type: 'text', placeholder: 'https://cdn.example.com' }
+        { name: 'region', label: 'Region', type: IntegrationConfigFieldType.TEXT, required: true, placeholder: 'us-east-1' },
+        { name: 'bucket', label: 'Bucket Name', type: IntegrationConfigFieldType.TEXT, required: true },
+        { name: 'endpoint', label: 'Endpoint URL', type: IntegrationConfigFieldType.TEXT, placeholder: 'https://...' },
+        { name: 'accessKeyId', label: 'Access Key ID', type: IntegrationConfigFieldType.TEXT, required: true },
+        { name: 'secretAccessKey', label: 'Secret Access Key', type: IntegrationConfigFieldType.PASSWORD, required: true },
+        { name: 'publicUrlBase', label: 'Public URL Base', type: IntegrationConfigFieldType.TEXT, placeholder: 'https://cdn.example.com' }
       ],
       create: (config) => {
         const s3Config = {

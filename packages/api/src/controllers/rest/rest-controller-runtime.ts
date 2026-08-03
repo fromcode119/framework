@@ -1,15 +1,15 @@
 import { AuthManager } from '@fromcode119/auth';
 import { HookManager, Logger } from '@fromcode119/core';
-import { Collection, HookEventUtils } from '@fromcode119/core';
+import { ICollection, HookEventUtils } from '@fromcode119/core';
 import { CollectionHookPhase } from '@fromcode119/core';
 import { IDatabaseManager } from '@fromcode119/database';
-import { ActivityService } from '../../services/activity-service';
-import { CollectionAccessPolicyService } from '../../services/collection-access-policy-service';
-import { DataProcessorService } from '../../services/data-processor-service';
-import { LocalizationService } from '../../services/localization-service';
-import { SuggestionService } from '../../services/suggestion-service';
-import { VersioningService } from '../../services/versioning-service';
-import { CollectionFieldGuard } from '../collection-field-guard';
+import { ActivityService } from '@api/services/activity-service';
+import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
+import { DataProcessorService } from '@api/services/data-processor-service';
+import { LocalizationService } from '@api/services/localization-service';
+import { SuggestionService } from '@api/services/suggestion-service';
+import { VersioningService } from '@api/services/versioning-service';
+import { CollectionFieldGuard } from '@api/controllers/collection-field-guard';
 
 export class RestControllerRuntime {
   readonly logger = new Logger({ namespace: 'REST' });
@@ -36,28 +36,28 @@ export class RestControllerRuntime {
     this.accessPolicy = new CollectionAccessPolicyService();
   }
 
-  async callCollectionHook<T>(collection: Collection, phase: CollectionHookPhase, payload: T): Promise<T> {
+  async callCollectionHook<T>(collection: ICollection, phase: CollectionHookPhase, payload: T): Promise<T> {
     if (!this.hooks) {
       return payload;
     }
     return await this.hooks.call(HookEventUtils.event(collection.slug, phase), payload) as T;
   }
 
-  resolveWriteTarget(collection: Collection): string {
+  resolveWriteTarget(collection: ICollection): string {
     return collection.tableName || collection.slug;
   }
 
-  resolveRecordIdentifier(collection: Collection, item: any): any {
+  resolveRecordIdentifier(collection: ICollection, item: any): any {
     const primaryKey = collection.primaryKey || 'id';
     return item?.[primaryKey];
   }
 
-  parseRecordIdentifier(collection: Collection, id: string): any {
+  parseRecordIdentifier(collection: ICollection, id: string): any {
     const primaryKey = collection.primaryKey || 'id';
     return primaryKey === 'id' ? parseInt(id, 10) : id;
   }
 
-  requireRecordIdentifier(collection: Collection, id: string): any {
+  requireRecordIdentifier(collection: ICollection, id: string): any {
     const primaryKey = collection.primaryKey || 'id';
     const parsedId = this.parseRecordIdentifier(collection, id);
     if (primaryKey === 'id') {
@@ -73,7 +73,7 @@ export class RestControllerRuntime {
     throw error;
   }
 
-  async insertCollectionRecord(collection: Collection, table: any, data: any): Promise<any> {
+  async insertCollectionRecord(collection: ICollection, table: any, data: any): Promise<any> {
     const primaryKey = collection.primaryKey;
     if (!primaryKey || primaryKey === 'id' || data[primaryKey] === undefined) {
       return this.db.insert(this.resolveWriteTarget(collection), data);
@@ -85,7 +85,7 @@ export class RestControllerRuntime {
     });
   }
 
-  emitCollectionEvent(collection: Collection, action: string, payload: any): void {
+  emitCollectionEvent(collection: ICollection, action: string, payload: any): void {
     if (this.hooks) {
       this.hooks.emit(`collection:${collection.slug}:${action}`, payload);
     }

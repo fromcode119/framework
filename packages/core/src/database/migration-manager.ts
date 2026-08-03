@@ -1,9 +1,9 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
-import { Logger } from '../logging';
-import { SystemMigration } from '../types';
-import { MigrationLoader } from './migrations';
-import { SystemConstants } from '../constants';
-import type { PluginInstallProgressReporter } from '../plugin/plugin-installation.interfaces';
+import { Logger } from '@core/logging';
+import type { ISystemMigration } from '@core/interfaces/system-migration.interface';
+import { MigrationLoader } from '@core/database/migrations';
+import { SystemConstants } from '@core/constants/system.constants';
+import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 
 export class MigrationManager {
   private logger = new Logger({ namespace: 'migration-manager' });
@@ -14,7 +14,7 @@ export class MigrationManager {
     await this.db.ensureMigrationTable(SystemConstants.TABLE.MIGRATIONS);
   }
 
-  async migrate(pluginMigrations: SystemMigration[] = [], progressReporter?: PluginInstallProgressReporter) {
+  async migrate(pluginMigrations: ISystemMigration[] = [], progressReporter?: IPluginInstallProgressReporter) {
     await this.init();
     const systemMigrations = MigrationLoader.load();
     const allMigrations = [...systemMigrations, ...pluginMigrations];

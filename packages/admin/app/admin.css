@@ -29,7 +29,9 @@
   --border: 214 32% 91%;
   --input: 214 32% 91%;
   --ring: 243 75% 59%;
-  --radius: 0.875rem;
+  /* ONE surface radius, equal to Tailwind's `rounded-xl` — the class the whole admin was swept to.
+     A token that disagrees with the utility class is how every panel ended up a slightly different shape. */
+  --radius: 0.75rem;
   --fc-brand: #4f46e5;
   --fc-brand-contrast: #ffffff;
   --fc-accent: #0f766e;
@@ -46,7 +48,7 @@
      at runtime, so a var() here creates a custom-property cycle whenever the active theme defines
      no --theme-radius — both variables go invalid and every rounded-[var(--radius)] corner renders
      square. Keep in sync with --radius above. */
-  --fc-radius: 0.875rem;
+  --fc-radius: 0.75rem;
   --fc-shadow: 0 18px 50px rgb(15 23 42 / 0.12);
   --fc-font-body: ui-sans-serif, system-ui, sans-serif;
   --fc-font-display: ui-sans-serif, system-ui, sans-serif;
@@ -144,3 +146,52 @@ html.dark {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+
+/* ── The surface ────────────────────────────────────────────────────────────
+   ONE definition of what a raised panel looks like in this admin, so a card cannot be "nearly" the same
+   as the card next to it. `Card` renders it, and any bespoke panel opts in with `className="fc-surface"`
+   instead of writing its own `rounded-xl border bg-white shadow-…` chain — which is how the admin ended
+   up with panels at four different depths and three different edges. */
+/* ── Elevation ────────────────────────────────────────────────────────────────
+   Two tokens carry every shadow in the admin: panels use --fc-elevation-surface,
+   controls (buttons, inputs) use --fc-elevation-control. Nothing hardcodes a
+   box-shadow, so turning elevation off is a single switch rather than a sweep. */
+:root {
+  --fc-elevation-surface: 0 20px 40px -18px rgb(15 23 42 / 0.16), 0 2px 6px -3px rgb(15 23 42 / 0.08);
+  --fc-elevation-control: 0 1px 2px 0 rgb(15 23 42 / 0.06), 0 1px 3px 0 rgb(15 23 42 / 0.10);
+}
+
+.dark,
+:root[data-theme='dark'] {
+  --fc-elevation-surface: 0 20px 40px -18px rgb(0 0 0 / 0.5), 0 2px 6px -3px rgb(0 0 0 / 0.4);
+  --fc-elevation-control: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 1px 3px 0 rgb(0 0 0 / 0.3);
+}
+
+/* The off switch. `SurfaceElevationService` stamps data-fc-shadows on <html> from the
+   `admin_shadows` system setting; flat mode keeps every border and radius and drops only depth. */
+:root[data-fc-shadows='off'] {
+  --fc-elevation-surface: none;
+  --fc-elevation-control: none;
+}
+
+.fc-surface {
+  border-radius: var(--radius);
+  border: 1px solid #fff;
+  background: var(--card);
+  box-shadow: var(--fc-elevation-surface);
+}
+
+.dark .fc-surface,
+:root[data-theme='dark'] .fc-surface {
+  border-color: rgb(30 41 59 / 0.5);
+}
+
+/* Controls opt in by class, so a button is elevated by the same token as a panel. */
+.fc-elevated-control {
+  box-shadow: var(--fc-elevation-control);
+}
+
+/* A surface that sits INSIDE another surface gets the edge but not a second shadow — stacked elevation
+   is what makes a panel look like it is floating off the page. */
+.fc-surface .fc-surface { box-shadow: none; border-color: var(--border); }

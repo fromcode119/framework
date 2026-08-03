@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/core",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -27,6 +27,18 @@
       "import": "./dist/client.js",
       "require": "./dist/client.js",
       "types": "./dist/client.d.ts"
+    },
+    "./route-constants": {
+      "development": "./src/constants/route.constants.ts",
+      "import": "./dist/constants/route.constants.js",
+      "require": "./dist/constants/route.constants.js",
+      "types": "./dist/constants/route.constants.d.ts"
+    },
+    "./api-version-defaults": {
+      "development": "./src/constants/api-version-defaults.constants.ts",
+      "import": "./dist/constants/api-version-defaults.constants.js",
+      "require": "./dist/constants/api-version-defaults.constants.js",
+      "types": "./dist/constants/api-version-defaults.constants.d.ts"
     }
   },
   "browser": {
@@ -63,13 +75,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && npm run copy:templates",
+    "build": "node ../typor/dist/typor-cli.cjs build && npm run copy:templates",
     "dev": "tsc -w",
     "test": "vitest run",
     "copy:templates": "mkdir -p dist/plugin/services/templates && cp -r src/plugin/services/templates/. dist/plugin/services/templates/",
     "prepack": "npm run copy:templates"
   },
   "dependencies": {
+    "@fromcode119/reactor": "*",
     "@fromcode119/cache": "*",
     "@fromcode119/database": "*",
     "@fromcode119/email": "*",
@@ -90,7 +103,8 @@
     "uuid": "^9.0.1",
     "ws": "^8.19.0",
     "zod": "^3.22.4",
-    "handlebars": "^4.7.9"
+    "handlebars": "^4.7.9",
+    "@fromcode119/typor": "*"
   },
   "peerDependencies": {
     "express": ">=4.0.0"

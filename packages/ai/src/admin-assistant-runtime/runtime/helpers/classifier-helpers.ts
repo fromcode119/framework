@@ -1,7 +1,10 @@
-import { ClassifierUrlHelpers } from './classifier-url-helpers';
-import { ClassifierReplaceHelpers } from './classifier-replace-helpers';
-import { ClassifierFollowupHelpers } from './classifier-followup-helpers';
-import { ClassifierClarificationHelpers } from './classifier-clarification-helpers';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import type { AssistantRole } from '@ai/enums/assistant-role.enum';
+import { ClassifierUrlHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/classifier-url-helpers';
+import { ClassifierReplaceHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/classifier-replace-helpers';
+import { ClassifierFollowupHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/classifier-followup-helpers';
+import { ClassifierClarificationHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/classifier-clarification-helpers';
 
 /**
  * Classifier utilities for AI runtime
@@ -38,7 +41,7 @@ export class ClassifierHelpers {
 
   /** @see ClassifierReplaceHelpers.findLatestReplaceFromHistory */
   static findLatestReplaceFromHistory(
-    history: Array<{ role?: string; content?: string }>,
+    history: Array<{ role?: AssistantRole; content?: string }>,
   ): { from: string; to: string } | null {
     return ClassifierReplaceHelpers.findLatestReplaceFromHistory(history);
   }
@@ -56,27 +59,27 @@ export class ClassifierHelpers {
   /** @see ClassifierClarificationHelpers.shouldResumeFromClarification */
   static shouldResumeFromClarification(input: {
     message: string;
-    checkpointReason?: string;
-    checkpointStage?: string;
+    checkpointReason?: CheckpointReason;
+    checkpointStage?: RuntimeStage;
   }): boolean {
     return ClassifierClarificationHelpers.shouldResumeFromClarification(input);
   }
 
   /** @see ClassifierClarificationHelpers.isClarificationFlow */
-  static isClarificationFlow(checkpoint?: { reason?: string; stage?: string }): boolean {
+  static isClarificationFlow(checkpoint?: { reason?: CheckpointReason; stage?: RuntimeStage }): boolean {
     return ClassifierClarificationHelpers.isClarificationFlow(checkpoint);
   }
 
   /** @see ClassifierClarificationHelpers.getLatestAssistantMessage */
-  static getLatestAssistantMessage(history: Array<{ role?: string; content?: string }>): string {
+  static getLatestAssistantMessage(history: Array<{ role?: AssistantRole; content?: string }>): string {
     return ClassifierClarificationHelpers.getLatestAssistantMessage(history);
   }
 
   /** @see ClassifierClarificationHelpers.buildClarificationQuickAnswer */
   static buildClarificationQuickAnswer(input: {
     message: string;
-    history?: Array<{ role?: string; content?: string }>;
-    checkpoint?: { reason?: string; stage?: string };
+    history?: Array<{ role?: AssistantRole; content?: string }>;
+    checkpoint?: { reason?: CheckpointReason; stage?: RuntimeStage };
   }): string | null {
     return ClassifierClarificationHelpers.buildClarificationQuickAnswer(input);
   }

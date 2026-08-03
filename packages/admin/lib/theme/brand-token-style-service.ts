@@ -1,10 +1,12 @@
+import { Platform } from '@fromcode119/reactor';
+
 /**
  * Installs the active frontend theme's semantic CSS variables into the admin document.
  * The theme configuration remains the source of truth; appearances only consume it.
  */
 export class BrandTokenStyleService {
   static install(cssVariables: unknown): void {
-    if (typeof document === 'undefined' || typeof cssVariables !== 'string' || !cssVariables.trim()) return;
+    if (!Platform.isBrowser || typeof cssVariables !== 'string' || !cssVariables.trim()) return;
     const id = 'fc-brand-token-contract';
     const existing = document.getElementById(id) ?? document.head.appendChild(document.createElement('style'));
     existing.id = id;

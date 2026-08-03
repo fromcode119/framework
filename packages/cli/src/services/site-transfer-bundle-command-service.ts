@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 import { SiteTransferBundleService } from '@fromcode119/core';
-import type { SiteTransferBundleOptions } from '@fromcode119/core';
-import { CliUtils } from '../utils';
+import type { ISiteTransferBundleOptions } from '@fromcode119/core';
+import { CliUtils } from '@cli/utils';
 
 export class SiteTransferBundleCommandService {
-  async execute(options: SiteTransferBundleOptions): Promise<void> {
+  async execute(options: ISiteTransferBundleOptions): Promise<void> {
     const database = await CliUtils.getDatabase();
     const service = new SiteTransferBundleService(database);
 

@@ -1,17 +1,16 @@
-import type {
-  PluginLayoutDefinition,
-  PluginLayoutRegistration,
-  RegisteredPluginLayoutDefinition,
-} from '../../types';
+import { LayoutTargetKind } from '@core/layout/enums/layout-target-kind.enum';
+import type { IPluginLayoutDefinition } from '@core/layout/interfaces/plugin-layout-definition.interface';
+import type { IPluginLayoutRegistration } from '@core/layout/interfaces/plugin-layout-registration.interface';
+import type { IRegisteredPluginLayoutDefinition } from '@core/layout/interfaces/registered-plugin-layout-definition.interface';
 
 export class PluginLayoutRegistryService {
-  private readonly entries = new Map<string, RegisteredPluginLayoutDefinition>();
+  private readonly entries = new Map<string, IRegisteredPluginLayoutDefinition>();
 
   get serviceName(): string {
     return 'PluginLayoutRegistryService';
   }
 
-  register(registration: PluginLayoutRegistration): RegisteredPluginLayoutDefinition[] {
+  register(registration: IPluginLayoutRegistration): IRegisteredPluginLayoutDefinition[] {
     const normalizedEntries = this.createEntries(registration);
     this.assertNoDuplicateKeys(normalizedEntries);
 
@@ -22,15 +21,15 @@ export class PluginLayoutRegistryService {
     return normalizedEntries.map((entry) => ({ ...entry }));
   }
 
-  list(): RegisteredPluginLayoutDefinition[] {
+  list(): IRegisteredPluginLayoutDefinition[] {
     return Array.from(this.entries.values()).map((entry) => ({ ...entry }));
   }
 
-  listPages(): RegisteredPluginLayoutDefinition[] {
-    return this.list().filter((entry) => entry.targetKind === 'page');
+  listPages(): IRegisteredPluginLayoutDefinition[] {
+    return this.list().filter((entry) => entry.targetKind === LayoutTargetKind.PAGE);
   }
 
-  listByTargetKind(targetKind: RegisteredPluginLayoutDefinition['targetKind']): RegisteredPluginLayoutDefinition[] {
+  listByTargetKind(targetKind: IRegisteredPluginLayoutDefinition['targetKind']): IRegisteredPluginLayoutDefinition[] {
     return this.list().filter((entry) => entry.targetKind === targetKind);
   }
 
@@ -49,7 +48,7 @@ export class PluginLayoutRegistryService {
     this.entries.clear();
   }
 
-  private createEntries(registration: PluginLayoutRegistration): RegisteredPluginLayoutDefinition[] {
+  private createEntries(registration: IPluginLayoutRegistration): IRegisteredPluginLayoutDefinition[] {
     const namespace = this.normalizeRequiredString(registration.namespace, 'namespace');
     const pluginSlug = this.normalizeRequiredString(registration.pluginSlug, 'pluginSlug');
     const layouts = Array.isArray(registration.layouts) ? registration.layouts : [];
@@ -64,11 +63,11 @@ export class PluginLayoutRegistryService {
   private createEntry(
     namespace: string,
     pluginSlug: string,
-    design: PluginLayoutDefinition,
-  ): RegisteredPluginLayoutDefinition {
-    const targetKind = this.normalizeRequiredString(design.targetKind, 'design.targetKind') as RegisteredPluginLayoutDefinition['targetKind'];
+    design: IPluginLayoutDefinition,
+  ): IRegisteredPluginLayoutDefinition {
+    const targetKind = LayoutTargetKind.resolve(this.normalizeRequiredString(String(design.targetKind ?? ''), 'design.targetKind'));
     const targetKey = this.normalizeRequiredString(design.targetKey, 'design.targetKey');
-    this.assertTargetKey(pluginSlug, targetKind, targetKey);
+    this.assertTargetKey(pluginSlug, targetKind.value, targetKey);
 
     return {
       namespace,
@@ -82,7 +81,7 @@ export class PluginLayoutRegistryService {
     };
   }
 
-  private assertNoDuplicateKeys(entries: RegisteredPluginLayoutDefinition[]): void {
+  private assertNoDuplicateKeys(entries: IRegisteredPluginLayoutDefinition[]): void {
     const incomingKeys = new Set<string>();
 
     for (const entry of entries) {

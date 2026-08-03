@@ -1,30 +1,64 @@
+import { ClientType } from '@fromcode119/core/client';
 import React from 'react';
-import {
-  ApiPathUtils,
-  ApiScopeClient,
-  ApiVersionUtils,
-  CoercionUtils,
-  CollectionUtils,
-  FormatUtils,
-  HookEventUtils,
-  LocalizationUtils,
-  NumberUtils,
-  PaginationUtils,
-  PluginFrontendRuntimeUtils,
-  RelationUtils,
-  RuntimeConstants,
-  StringUtils,
-} from '@fromcode119/core/client';
-import { BrowserLocalization } from '../browser-localization';
-import { CollectionQueryUtils } from '../collection-queries';
-import { ContextRuntimeBridge } from '../context-runtime-bridge';
-import { FrameworkIconRegistry } from '../framework-icon-registry';
-import { FrameworkIcons } from '../framework-icons';
-import { RootFramework } from '../root-framework';
-import { SystemShortcodes } from '../system-shortcodes';
-import { ContextBridgeHooks } from './context-bridge-hooks';
+// reactor is the OOP base layer; plugins may only import @fromcode119/sdk, so its surface is
+// republished through this bridge. Imported statically — a require() here is interop-shimmed by
+// Turbopack in the browser bundle and broke module evaluation.
+import { Reactor, PureReactor, Provider, Bridge, Enum, Context, prop, state, bound, watch, ref } from '@fromcode119/reactor';
+import { ApiPathUtils, ApiScopeClient, ApiVersionUtils, CoercionUtils, CollectionUtils, FormatUtils, HookEventUtils, LocalizationUtils, NumberUtils, PaginationUtils, PluginFrontendRuntimeUtils, RelationUtils, RuntimeConstants, StringUtils } from '@fromcode119/core/client';
+import { BrowserLocalization } from '@react/browser-localization';
+import { CollectionQueryUtils } from '@react/collection-queries';
+import { ContextRuntimeBridge } from '@react/context-runtime-bridge';
+import { FrameworkIconRegistry } from '@react/icons/framework-icon-registry';
+import { AccountShellPlaceholder } from '@react/account/account-shell-placeholder';
+import { AccountShellSkeleton } from '@react/account/account-shell-skeleton';
+import { Platform } from '@fromcode119/reactor';
+import { SlotsContext } from '@react/context/slots-context';
+import { AccountShellDefault } from '@react/account/account-shell-default';
+import { AccountSectionRegistry } from '@react/account/account-section-registry';
+import { AccountSection } from '@react/account/account-section';
+import { AccountSectionIcons } from '@react/account/account-section-icons';
+import { AccountClass } from '@react/account/account-class';
+import { FrameworkIcons } from '@react/icons/view/framework-icons.client';
+import { RootFramework } from '@react/root-framework';
+import { SystemShortcodes } from '@react/system-shortcodes';
+import { ContextBridgeHooks } from '@react/context/context-bridge-hooks';
 
 export class ContextProviderRuntimeBridgeHooks {
+  /**
+   * A route-level shell, code-split and memoised per loader.
+   *
+   * Memoised because the bridge is reinstalled whenever its dependencies change, and a fresh
+   * `React.lazy` on every install is a NEW component type — React would unmount and remount whatever a
+   * theme had rendered with the previous one, which for `/account` means losing the panel's state.
+   */
+  private static readonly lazyShells = new Map<string, unknown>();
+
+  /**
+   * A code-split shell, wrapped in the Suspense boundary it needs plus a fallback that has the shell's
+   * SHAPE. Without a fallback the boundary renders nothing — on the server (which cannot resolve a
+   * dynamic import mid-render) and in the window before the chunk lands — which is what left an account
+   * URL showing a navbar, a footer and a hole. `Fallback` keeps the page structurally complete
+   * throughout, so nothing moves when the real shell arrives.
+   */
+  private static lazyShell(
+    loader: () => Promise<{ default: unknown }>,
+    Fallback?: React.ComponentType<any>,
+  ): unknown {
+    const key = String(loader);
+    const cached = ContextProviderRuntimeBridgeHooks.lazyShells.get(key);
+    if (cached) return cached;
+    const Lazy = React.lazy(loader as never) as unknown as React.ComponentType<any>;
+    const Shell = (props: any) => (
+      React.createElement(
+        React.Suspense,
+        { fallback: Fallback ? React.createElement(Fallback, props) : null },
+        React.createElement(Lazy, props),
+      )
+    );
+    ContextProviderRuntimeBridgeHooks.lazyShells.set(key, Shell);
+    return Shell;
+  }
+
   static setupGlobalStubs(ReactDOMRef: any): void {
     ContextRuntimeBridge.setupGlobalStubs({
       ReactRef: React,
@@ -38,14 +72,14 @@ export class ContextProviderRuntimeBridgeHooks {
   }
 
   static usePluginApiRegistration(args: {
-    clientType: string;
+    clientType: ClientType;
     plugins: any[];
     hasPluginApi: (namespace: string, slug: string) => boolean;
     registerPluginApi: (namespace: string, slug: string, client: any) => void;
     stableApiBridge: any;
   }) {
     const { clientType, plugins, hasPluginApi, registerPluginApi, stableApiBridge } = args;
-    const loadsPluginRuntimes = clientType === RuntimeConstants.CLIENT_TYPES.FRONTEND_UI;
+    const loadsPluginRuntimes = clientType === ClientType.FRONTEND_UI;
 
     // Registered DURING render (not in an effect) so the very first render that sees a plugin list
     // already has its API clients in the registry — children below this provider resolve plugin
@@ -150,10 +184,23 @@ export class ContextProviderRuntimeBridgeHooks {
     const { stableLoadConfig, stableGetFrontendMetadata, stableT, stableApiBridge, setLocale } = stable;
 
     React.useEffect(() => {
-      const Slot = require('../slot').Slot;
-      const Override = require('../override').Override;
-      const AccountShell = require('../account-shell').AccountShell;
-      const RecordsHub = require('../records-hub').RecordsHub;
+      const Slot = require('@react/slot').Slot;
+      const Override = require('@react/view/override.client').Override;
+      // LAZY on purpose. A literal `require()` is a STATIC dependency to the bundler even inside an
+      // effect, so these three shipped in the storefront's first chunk — ~400 KB of account/auth/records
+      // UI parsed and evaluated on a product page that renders none of it, which is what the LCP
+      // "render delay" phase was mostly made of. They are only ever rendered by a theme layout inside a
+      // Suspense boundary (`/account`, `/login`), which is exactly what `React.lazy` needs.
+      const AccountShell = ContextProviderRuntimeBridgeHooks.lazyShell(
+        () => import('@react/account-shell').then((m) => ({ default: m.AccountShell })),
+        AccountShellPlaceholder,
+      );
+      const AuthShell = ContextProviderRuntimeBridgeHooks.lazyShell(
+        () => import('@react/auth/auth-shell').then((m) => ({ default: m.AuthShell })),
+      );
+      const RecordsHub = ContextProviderRuntimeBridgeHooks.lazyShell(
+        () => import('@react/records-hub').then((m) => ({ default: m.RecordsHub })),
+      );
       const ReactDOM = require('react-dom');
 
       ContextRuntimeBridge.installRuntimeBridge({
@@ -209,7 +256,28 @@ export class ContextProviderRuntimeBridgeHooks {
         Slot,
         Override,
         AccountShell,
+        AccountShellSkeleton,
+        AccountShellPlaceholder,
+        SlotsContext,
+        Platform,
+        AccountShellDefault,
+        AccountSectionRegistry,
+        AccountSection,
+        AccountSectionIcons,
+        AccountClass,
+        AuthShell,
         RecordsHub,
+        Reactor,
+        PureReactor,
+        Provider,
+        Bridge,
+        Enum,
+        Context,
+        prop,
+        state,
+        bound,
+        watch,
+        ref,
         ReactRef: React,
         ReactDOMRef: ReactDOM,
         runtimeModules,

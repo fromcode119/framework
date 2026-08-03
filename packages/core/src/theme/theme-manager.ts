@@ -1,25 +1,25 @@
-import { ThemeManifest, IDatabaseManager } from '../types';
-import { ManifestNormalizer } from '../manifest-normalizer';
-import { SystemConstants } from '../constants';
+import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import { ManifestNormalizer } from '@core/manifest-normalizer';
+import { SystemConstants } from '@core/constants/system.constants';
 import path from 'path';
 import fs from 'fs';
-import { Logger } from '../logging';
+import { Logger } from '@core/logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
-import { Seeder } from '../database/seeder';
-import { ProjectPaths } from '../config/paths';
-import { ThemeInstallerService } from './theme-installer-service';
-import { ThemeScaffoldService } from './theme-scaffold-service';
-import { ThemeDefaultPageContractOverrideLoader } from './theme-default-page-contract-override-loader';
-import { PluginDefaultPageMaterializationRuntimeService } from '../services/default-page-contract/plugin-default-page-materialization-runtime-service';
-import { ThemeConfigService } from './theme-config-service';
-import { ThemeEntryPreloadService } from './theme-entry-preload-service';
-import { ThemeUpdateService } from './theme-update-service';
-import type { ThemeDefaultPageContractOverride } from '../types';
-import { ThemeState } from './theme-state.enums';
+import { Seeder } from '@core/database/seeder';
+import { ProjectPaths } from '@core/config/paths';
+import { ThemeInstallerService } from '@core/theme/theme-installer-service';
+import { ThemeScaffoldService } from '@core/theme/theme-scaffold-service';
+import { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
+import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
+import { ThemeConfigService } from '@core/theme/theme-config-service';
+import { ThemeEntryPreloadService } from '@core/theme/theme-entry-preload-service';
+import { ThemeUpdateService } from '@core/theme/theme-update-service';
+import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
+import { ThemeState } from '@core/theme/enums/theme-state.enum';
 
 export class ThemeManager {
   private activeTheme: string | null = null;
-  private themes: Map<string, ThemeManifest> = new Map();
+  private themes: Map<string, IThemeManifest> = new Map();
   private themesRoot: string;
   private logger = new Logger({ namespace: 'theme-manager' });
   private client: MarketplaceClient;
@@ -80,7 +80,7 @@ export class ThemeManager {
     return this.installer.installTheme(pkg);
   }
 
-  async installFromZip(filePath: string): Promise<ThemeManifest> {
+  async installFromZip(filePath: string): Promise<IThemeManifest> {
     return this.installer.installFromZip(filePath, this.themes);
   }
 
@@ -95,7 +95,7 @@ export class ThemeManager {
       const manifestPath = path.join(themePath, 'theme.json');
       if (fs.existsSync(manifestPath)) {
         try {
-          const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themePath);
+          const manifest: IThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themePath);
           this.themes.set(manifest.slug, manifest);
           this.logger.info(`Discovered theme: ${manifest.slug} v${manifest.version}`);
         } catch (e) {
@@ -105,7 +105,7 @@ export class ThemeManager {
     }
   }
 
-  private loadThemeManifestFromDisk(slug: string): ThemeManifest | null {
+  private loadThemeManifestFromDisk(slug: string): IThemeManifest | null {
     try {
       const themeDirectory = this.resolveThemeDirectory(slug);
       const manifestPath = path.join(themeDirectory, 'theme.json');
@@ -113,7 +113,7 @@ export class ThemeManager {
         return null;
       }
 
-      const manifest: ThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themeDirectory);
+      const manifest: IThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themeDirectory);
       this.themes.set(manifest.slug, manifest);
       return manifest;
     } catch (error) {
@@ -124,7 +124,7 @@ export class ThemeManager {
 
   private async loadActiveTheme() {
     try {
-      const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE });
+      const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
       if (row) {
         this.activeTheme = row.slug;
         this.logger.info(`Active theme set to: ${row.slug}`);
@@ -139,19 +139,19 @@ export class ThemeManager {
 
     const timestamp = new Date();
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-    const activeThemeRow = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE });
+    const activeThemeRow = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
 
     if (activeThemeRow && activeThemeRow.slug !== slug) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug: activeThemeRow.slug }, { state: ThemeState.INACTIVE, updated_at: timestamp });
+      await this.db.update(SystemConstants.TABLE.THEMES, { slug: activeThemeRow.slug }, { state: ThemeState.INACTIVE.value, updated_at: timestamp });
     }
 
     if (existing) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE, updated_at: timestamp });
+      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE.value, updated_at: timestamp });
     } else {
-      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.ACTIVE, created_at: timestamp, updated_at: timestamp });
+      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.ACTIVE.value, created_at: timestamp, updated_at: timestamp });
     }
 
-    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE, updated_at: timestamp });
+    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE.value, updated_at: timestamp });
     this.activeTheme = slug;
     await this.materializeDefaultPages();
     this.logger.info(`Theme "${slug}" activated.`);
@@ -167,7 +167,7 @@ export class ThemeManager {
       return;
     }
 
-    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.INACTIVE, updated_at: new Date() });
+    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.INACTIVE.value, updated_at: new Date() });
     if (this.activeTheme === slug) {
       this.activeTheme = null;
     }
@@ -208,7 +208,7 @@ export class ThemeManager {
         this.logger.info(`Theme "${slug}" is active. Activating fallback theme "${fallbackSlug}" before deletion.`);
         await this.activateTheme(fallbackSlug);
       } else {
-        await this.db.update(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE }, { state: ThemeState.INACTIVE });
+        await this.db.update(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value }, { state: ThemeState.INACTIVE.value });
         this.activeTheme = null;
       }
     }
@@ -219,12 +219,12 @@ export class ThemeManager {
     this.logger.info(`Theme "${slug}" deleted.`);
   }
 
-  getActiveThemeManifest(): ThemeManifest | null {
+  getActiveThemeManifest(): IThemeManifest | null {
     if (!this.activeTheme) return null;
     return this.loadThemeManifestFromDisk(this.activeTheme) || this.themes.get(this.activeTheme) || null;
   }
 
-  getThemes(): (ThemeManifest & { state: ThemeState })[] {
+  getThemes(): (IThemeManifest & { state: ThemeState })[] {
     return Array.from(this.themes.values()).map((theme) => ({
       ...theme,
       state: theme.slug === this.activeTheme ? ThemeState.ACTIVE : ThemeState.INACTIVE,
@@ -258,7 +258,7 @@ export class ThemeManager {
 
   public getThemeDirectory(slug: string): string { return this.resolveThemeDirectory(slug); }
 
-  async getActiveThemeDefaultPageContractOverrides(): Promise<ThemeDefaultPageContractOverride[]> {
+  async getActiveThemeDefaultPageContractOverrides(): Promise<IThemeDefaultPageContractOverride[]> {
     const manifest = this.getActiveThemeManifest();
     if (!manifest) {
       return [];

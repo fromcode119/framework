@@ -1,6 +1,11 @@
 import { pgTable, text, timestamp, pgSchema, serial, boolean, integer, jsonb, uuid } from 'drizzle-orm/pg-core';
 
-export const users = pgTable('users', {
+/**
+ * The framework's system tables. Drizzle needs the table objects as values; they live as static
+ * members of this class so the codebase exposes only classes (no bare `export const`).
+ */
+export class Schema {
+  static readonly users = pgTable('users', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
   username: text('username').unique(),
@@ -12,17 +17,17 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
-export const systemRecordVersions = pgTable('_system_record_versions', {
+  static readonly systemRecordVersions = pgTable('_system_record_versions', {
   id: serial('id').primaryKey(),
   refId: text('ref_id').notNull(),
   refCollection: text('ref_collection').notNull(),
   version: integer('version').notNull().default(1),
   versionData: jsonb('version_data').notNull(),
-  updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+  updatedBy: integer('updated_by').references(() => Schema.users.id, { onDelete: 'set null' }),
   changeSummary: text('change_summary'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
-export const systemRoles = pgTable('_system_roles', {
+  static readonly systemRoles = pgTable('_system_roles', {
   slug: text('slug').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
@@ -32,7 +37,7 @@ export const systemRoles = pgTable('_system_roles', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const systemPermissions = pgTable('_system_permissions', {
+  static readonly systemPermissions = pgTable('_system_permissions', {
   name: text('name').primaryKey(),
   description: text('description'),
   pluginSlug: text('plugin_slug'),
@@ -42,21 +47,21 @@ export const systemPermissions = pgTable('_system_permissions', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const systemUsersToRoles = pgTable('_system_users_roles', {
-  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  roleSlug: text('role_slug').notNull().references(() => systemRoles.slug, { onDelete: 'cascade' }),
+  static readonly systemUsersToRoles = pgTable('_system_users_roles', {
+  userId: integer('user_id').notNull().references(() => Schema.users.id, { onDelete: 'cascade' }),
+  roleSlug: text('role_slug').notNull().references(() => Schema.systemRoles.slug, { onDelete: 'cascade' }),
 }, (t) => ({
   pk: [t.userId, t.roleSlug],
 }));
 
-export const systemRolesToPermissions = pgTable('_system_roles_permissions', {
-  roleSlug: text('role_slug').notNull().references(() => systemRoles.slug, { onDelete: 'cascade' }),
-  permissionName: text('permission_name').notNull().references(() => systemPermissions.name, { onDelete: 'cascade' }),
+  static readonly systemRolesToPermissions = pgTable('_system_roles_permissions', {
+  roleSlug: text('role_slug').notNull().references(() => Schema.systemRoles.slug, { onDelete: 'cascade' }),
+  permissionName: text('permission_name').notNull().references(() => Schema.systemPermissions.name, { onDelete: 'cascade' }),
 }, (t) => ({
   pk: [t.roleSlug, t.permissionName],
 }));
 
-export const systemPlugins = pgTable('_system_plugins', {
+  static readonly systemPlugins = pgTable('_system_plugins', {
   slug: text('slug').primaryKey(),
   version: text('version'),
   state: text('state').notNull().default('inactive'),
@@ -70,7 +75,7 @@ export const systemPlugins = pgTable('_system_plugins', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const trustedPublishers = pgTable('_system_trusted_publishers', {
+  static readonly trustedPublishers = pgTable('_system_trusted_publishers', {
   publisherId: text('publisher_id').primaryKey(),
   name: text('name').notNull(),
   email: text('email'),
@@ -80,15 +85,15 @@ export const trustedPublishers = pgTable('_system_trusted_publishers', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const systemPluginSettings = pgTable('_system_plugin_settings', {
-  pluginSlug: text('plugin_slug').primaryKey().references(() => systemPlugins.slug, { onDelete: 'cascade' }),
+  static readonly systemPluginSettings = pgTable('_system_plugin_settings', {
+  pluginSlug: text('plugin_slug').primaryKey().references(() => Schema.systemPlugins.slug, { onDelete: 'cascade' }),
   settings: jsonb('settings').notNull().default({}),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const systemSessions = pgTable('_system_sessions', {
+  static readonly systemSessions = pgTable('_system_sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => Schema.users.id, { onDelete: 'cascade' }),
   tokenId: text('token_id').notNull().unique(),
   userAgent: text('user_agent'),
   ipAddress: text('ip_address'),
@@ -98,7 +103,7 @@ export const systemSessions = pgTable('_system_sessions', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const systemMeta = pgTable('_system_meta', {
+  static readonly systemMeta = pgTable('_system_meta', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
   description: text('description'),
@@ -106,7 +111,7 @@ export const systemMeta = pgTable('_system_meta', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const systemLogs = pgTable('_system_logs', {
+  static readonly systemLogs = pgTable('_system_logs', {
   id: serial('id').primaryKey(),
   pluginSlug: text('plugin_slug'),
   level: text('level').notNull(),
@@ -115,7 +120,7 @@ export const systemLogs = pgTable('_system_logs', {
   timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow(),
 });
 
-export const systemAuditLogs = pgTable('_system_audit_logs', {
+  static readonly systemAuditLogs = pgTable('_system_audit_logs', {
   id: serial('id').primaryKey(),
   pluginSlug: text('plugin_slug'),
   action: text('action').notNull(),
@@ -125,14 +130,14 @@ export const systemAuditLogs = pgTable('_system_audit_logs', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
-export const systemThemes = pgTable('_system_themes', {
+  static readonly systemThemes = pgTable('_system_themes', {
   slug: text('slug').primaryKey(),
   state: text('state').notNull().default('inactive'),
   config: jsonb('config'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const mediaFolders = pgTable('media_folders', {
+  static readonly mediaFolders = pgTable('media_folders', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   parentId: integer('parent_id'),
@@ -140,7 +145,7 @@ export const mediaFolders = pgTable('media_folders', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-export const media = pgTable('media', {
+  static readonly media = pgTable('media', {
   id: serial('id').primaryKey(),
   filename: text('filename').notNull(),
   originalName: text('original_name').notNull(),
@@ -151,7 +156,7 @@ export const media = pgTable('media', {
   alt: text('alt'),
   caption: text('caption'),
   path: text('path').notNull(),
-  folderId: integer('folder_id').references(() => mediaFolders.id, { onDelete: 'set null' }),
+  folderId: integer('folder_id').references(() => Schema.mediaFolders.id, { onDelete: 'set null' }),
   optimizedPath: text('optimized_path'),
   optimizedSize: integer('optimized_size'),
   optimizedWidth: integer('optimized_width'),
@@ -161,13 +166,14 @@ export const media = pgTable('media', {
 });
 
 // Introspection Schema for info-schema queries
-export const infoSchema = pgSchema('information_schema');
-export const infoTables = infoSchema.table('tables', {
+  static readonly infoSchema = pgSchema('information_schema');
+  static readonly infoTables = Schema.infoSchema.table('tables', {
   tableName: text('table_name'),
   tableSchema: text('table_schema'),
 });
-export const infoColumns = infoSchema.table('columns', {
+  static readonly infoColumns = Schema.infoSchema.table('columns', {
   tableName: text('table_name'),
   columnName: text('column_name'),
   tableSchema: text('table_schema'),
 });
+}

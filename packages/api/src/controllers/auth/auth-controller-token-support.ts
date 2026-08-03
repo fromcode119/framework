@@ -1,7 +1,8 @@
+import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import { randomBytes } from 'crypto';
 import { SystemConstants } from '@fromcode119/core';
-import { AuthControllerEmailVerification } from './auth-controller-email-verification';
-import type { ApiTokenRecord } from './auth-controller.interfaces';
+import { AuthControllerEmailVerification } from '@api/controllers/auth/auth-controller-email-verification';
+import type { IApiTokenRecord } from '@api/controllers/auth/interfaces/api-token-record.interface';
 
 export class AuthControllerTokenSupport extends AuthControllerEmailVerification {
   protected getPasswordResetTokenHashKey(userId: number) {
@@ -33,30 +34,30 @@ export class AuthControllerTokenSupport extends AuthControllerEmailVerification 
     return { token, expiresAt };
   }
 
-  protected async consumePasswordResetToken(token: string): Promise<{ ok: boolean; reason?: 'invalid' | 'expired'; userId?: number; email?: string }> {
+  protected async consumePasswordResetToken(token: string): Promise<{ ok: boolean; reason?: TokenErrorReason; userId?: number; email?: string }> {
     const tokenHash = this.hashToken(token);
     const tokenKey = this.getPasswordResetTokenKey(tokenHash);
     const row = await this.readMetaRow(tokenKey);
-    if (!row?.value) return { ok: false, reason: 'invalid' };
+    if (!row?.value) return { ok: false, reason: TokenErrorReason.INVALID };
 
     let payload: any;
     try {
       payload = JSON.parse(String(row.value));
     } catch {
-      return { ok: false, reason: 'invalid' };
+      return { ok: false, reason: TokenErrorReason.INVALID };
     }
 
     const userId = Number(payload?.userId || 0);
     const email = this.normalizeEmail(payload?.email);
     const expiresAt = new Date(String(payload?.expiresAt || 0));
     if (!userId || !email || Number.isNaN(expiresAt.getTime())) {
-      return { ok: false, reason: 'invalid' };
+      return { ok: false, reason: TokenErrorReason.INVALID };
     }
 
     if (expiresAt.getTime() < Date.now()) {
       await this.deleteMeta(tokenKey);
       await this.deleteMeta(this.getPasswordResetTokenHashKey(userId));
-      return { ok: false, reason: 'expired' };
+      return { ok: false, reason: TokenErrorReason.EXPIRED };
     }
 
     await this.deleteMeta(tokenKey);
@@ -93,17 +94,17 @@ export class AuthControllerTokenSupport extends AuthControllerEmailVerification 
     return { token, expiresAt };
   }
 
-  protected async consumeEmailChangeToken(token: string): Promise<{ ok: boolean; reason?: 'invalid' | 'expired'; userId?: number; oldEmail?: string; newEmail?: string }> {
+  protected async consumeEmailChangeToken(token: string): Promise<{ ok: boolean; reason?: TokenErrorReason; userId?: number; oldEmail?: string; newEmail?: string }> {
     const tokenHash = this.hashToken(token);
     const tokenKey = this.getEmailChangeTokenKey(tokenHash);
     const row = await this.readMetaRow(tokenKey);
-    if (!row?.value) return { ok: false, reason: 'invalid' };
+    if (!row?.value) return { ok: false, reason: TokenErrorReason.INVALID };
 
     let payload: any;
     try {
       payload = JSON.parse(String(row.value));
     } catch {
-      return { ok: false, reason: 'invalid' };
+      return { ok: false, reason: TokenErrorReason.INVALID };
     }
 
     const userId = Number(payload?.userId || 0);
@@ -111,13 +112,13 @@ export class AuthControllerTokenSupport extends AuthControllerEmailVerification 
     const newEmail = this.normalizeEmail(payload?.newEmail);
     const expiresAt = new Date(String(payload?.expiresAt || 0));
     if (!userId || !oldEmail || !newEmail || Number.isNaN(expiresAt.getTime())) {
-      return { ok: false, reason: 'invalid' };
+      return { ok: false, reason: TokenErrorReason.INVALID };
     }
 
     if (expiresAt.getTime() < Date.now()) {
       await this.deleteMeta(tokenKey);
       await this.deleteMeta(this.getEmailChangeTokenHashKey(userId));
-      return { ok: false, reason: 'expired' };
+      return { ok: false, reason: TokenErrorReason.EXPIRED };
     }
 
     await this.deleteMeta(tokenKey);
@@ -133,7 +134,7 @@ export class AuthControllerTokenSupport extends AuthControllerEmailVerification 
     return `auth:api_token:${tokenHash}`;
   }
 
-  protected async readApiTokenRecords(userId: number): Promise<ApiTokenRecord[]> {
+  protected async readApiTokenRecords(userId: number): Promise<IApiTokenRecord[]> {
     const row = await this.readMetaRow(this.getApiTokensKey(userId));
     if (!row?.value) return [];
     try {
@@ -152,13 +153,13 @@ export class AuthControllerTokenSupport extends AuthControllerEmailVerification 
           revokedAt: entry?.revokedAt ? String(entry.revokedAt) : null,
           lastUsedAt: entry?.lastUsedAt ? String(entry.lastUsedAt) : null
         }))
-        .filter((entry: ApiTokenRecord) => !!entry.id && !!entry.hash);
+        .filter((entry: IApiTokenRecord) => !!entry.id && !!entry.hash);
     } catch {
       return [];
     }
   }
 
-  protected async writeApiTokenRecords(userId: number, records: ApiTokenRecord[]) {
+  protected async writeApiTokenRecords(userId: number, records: IApiTokenRecord[]) {
     await this.upsertMeta(this.getApiTokensKey(userId), JSON.stringify(records));
   }
 

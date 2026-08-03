@@ -1,23 +1,25 @@
-import React from 'react';
+import type { ReactNode } from 'react';
+
 import { FrameworkIcons } from '@fromcode119/react';
+import { PureReactor, prop } from '@fromcode119/reactor';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
-import type { SidebarBrandHeaderProps } from './sidebar-brand-header.interfaces';
+import { AdminClass } from '@/lib/admin-class';
+export class SidebarBrandHeader extends PureReactor {
+  private static readonly BRAND_MARK_PATH = AdminPathUtils.toAdminPath(AppEnv.BRAND_MARK_PATH);
+  @prop declare isMini: boolean | undefined;
+  @prop declare platformName: string;
+  @prop declare onClose: (() => void) | undefined;
 
-const BRAND_MARK_PATH = AdminPathUtils.toAdminPath(AppEnv.BRAND_MARK_PATH);
-
-const {
-  Close = () => null,
-} = (FrameworkIcons || {}) as any;
-
-export class SidebarBrandHeader extends React.Component<SidebarBrandHeaderProps> {
-  render(): React.ReactNode {
-    const { isMini, platformName, onClose } = this.props;
+  render(): ReactNode {
+    const isMini = this.isMini;
+    const platformName = this.platformName;
+    const onClose = this.onClose;
     return (
       <div className={`px-4 py-3.5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
         <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
-          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30">
-            <img src={BRAND_MARK_PATH} alt={`${platformName} mark`} className="h-7 w-7 rounded-lg" />
+          <div className={`flex h-9 w-9 items-center justify-center overflow-hidden ${AdminClass.SURFACE}`}>
+            <img src={SidebarBrandHeader.BRAND_MARK_PATH} alt={`${platformName} mark`} className="h-7 w-7 rounded-lg" />
           </div>
           {!isMini && (
             <div className={`flex flex-col`}>
@@ -34,7 +36,7 @@ export class SidebarBrandHeader extends React.Component<SidebarBrandHeaderProps>
           onClick={onClose}
           className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
         >
-          <Close size={20} />
+          <FrameworkIcons.Close size={20} />
         </button>
       </div>
     );

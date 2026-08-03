@@ -1,10 +1,15 @@
-import type { AssistantAction, AdminAssistantRuntimeOptions, AssistantToolSummary, AssistantSettingValue, AssistantCollectionContext } from '../types';
-import { PathObjectHelpers } from './path-object-helpers';
-import { RuntimeMiscHelpers } from './runtime-misc-helpers';
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
+import type { IAssistantSettingValue } from '@ai/admin-assistant-runtime/interfaces/assistant-setting-value.interface';
+
+import { PathObjectHelpers } from '@ai/admin-assistant-runtime/helpers/path-object-helpers';
+import { RuntimeMiscHelpers } from '@ai/admin-assistant-runtime/helpers/runtime-misc-helpers';
 
 /** Action safety/filtering helpers extracted from AdminAssistantRuntime. */
 export class ActionSafetyHelpers {
-  static validateWritableSettingKey(key: string, existing: AssistantSettingValue): string | null {
+  static validateWritableSettingKey(key: string, existing: IAssistantSettingValue): string | null {
     const normalized = String(key || '').trim();
     if (!normalized) return 'Missing setting key';
     if (normalized.startsWith('_')) return `Setting key "${normalized}" is reserved/internal and cannot be updated via assistant.`;
@@ -36,30 +41,30 @@ export class ActionSafetyHelpers {
   }
 
   static async filterUnsafeStagedActions(
-    actions: AssistantAction[], availableTools: AssistantToolSummary[],
-    options: Pick<AdminAssistantRuntimeOptions, 'findCollectionBySlug' | 'resolveContent' | 'getSetting'>,
-  ): Promise<AssistantAction[]> {
+    actions: IAssistantAction[], availableTools: IAssistantToolSummary[],
+    options: Pick<IAdminAssistantRuntimeOptions, 'findCollectionBySlug' | 'resolveContent' | 'getSetting'>,
+  ): Promise<IAssistantAction[]> {
     const toolMap = new Map(
       (availableTools || []).map((t) => [String(t?.tool || '').trim(), !!t?.readOnly] as const).filter(([t]) => Boolean(t)),
     );
-    const filtered: AssistantAction[] = [];
+    const filtered: IAssistantAction[] = [];
     for (const action of actions) {
       if (!action || typeof action !== 'object') continue;
-      if (action.type === 'create_content') {
+      if (action.type === AssistantActionType.CREATE_CONTENT) {
         const collectionSlug = String(action.collectionSlug || '').trim();
         const payload = action.data && typeof action.data === 'object' ? action.data : null;
         if (!collectionSlug || !payload || Object.keys(payload).length === 0) continue;
         if (!options.findCollectionBySlug(collectionSlug)) continue;
         filtered.push(action); continue;
       }
-      if (action.type === 'update_setting') {
+      if (action.type === AssistantActionType.UPDATE_SETTING) {
         const key = String(action.key || '').trim();
         const existing = await options.getSetting(key);
         const err = ActionSafetyHelpers.validateWritableSettingKey(key, existing);
         if (err) continue;
         filtered.push(action); continue;
       }
-      if (action.type === 'mcp_call') {
+      if (action.type === AssistantActionType.MCP_CALL) {
         const tool = String(action.tool || '').trim();
         const input = action.input && typeof action.input === 'object' ? action.input : {};
         if (!tool || !toolMap.has(tool) || toolMap.get(tool) === true) continue;

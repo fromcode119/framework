@@ -1,12 +1,13 @@
-import { Logger } from '../../logging';
-import { SystemConstants } from '../../constants';
-import type { Collection, LoadedPlugin } from '../../types';
-import type { AdminSecondaryPanelAllowlistEntry } from './admin-secondary-panel.interfaces';
-import { AdminMetadataService } from './admin-metadata-service';
-import { LifecycleService } from './lifecycle-service';
-import { RuntimeService } from './runtime-service';
-import { SecurityMonitor } from '../../security/security-monitor';
-import { PluginState } from './plugin-state.enums';
+import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IAdminSecondaryPanelAllowlistEntry } from '@core/plugin/services/interfaces/admin-secondary-panel-allowlist-entry.interface';
+import { AdminMetadataService } from '@core/plugin/services/admin-metadata-service';
+import { LifecycleService } from '@core/plugin/services/lifecycle-service';
+import { RuntimeService } from '@core/plugin/services/runtime-service';
+import { SecurityMonitor } from '@core/security/security-monitor';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class PluginAdminRuntimeService {
   constructor(
@@ -16,14 +17,14 @@ export class PluginAdminRuntimeService {
     private readonly lifecycle: LifecycleService,
     private readonly runtime: RuntimeService,
     private readonly security: SecurityMonitor,
-    private readonly plugins: Map<string, LoadedPlugin>,
-    private readonly registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>,
+    private readonly plugins: Map<string, ILoadedPlugin>,
+    private readonly registeredCollections: Map<string, { collection: ICollection; pluginSlug: string }>,
   ) {}
 
   async getSecuritySummary(): Promise<any> {
     const all = Array.from(this.plugins.values());
     const active = all.filter((plugin) => plugin.state === PluginState.ACTIVE);
-    const isSandboxed = (plugin: LoadedPlugin) => plugin.manifest?.sandbox !== false;
+    const isSandboxed = (plugin: ILoadedPlugin) => plugin.manifest?.sandbox !== false;
     const mismatch = active.filter(isSandboxed).filter((plugin) => !plugin.isSandboxed);
     const sandbox = await this.lifecycle.getSandboxStats();
     const memoryUsage = process.memoryUsage();
@@ -60,7 +61,7 @@ export class PluginAdminRuntimeService {
     return this.runtime.getModules(Array.from(this.plugins.values()).filter((plugin) => plugin.state === PluginState.ACTIVE));
   }
 
-  async getAdminMetadata(getSortedPlugins: () => LoadedPlugin[]): Promise<any> {
+  async getAdminMetadata(getSortedPlugins: () => ILoadedPlugin[]): Promise<any> {
     const allowlistEntries = await this.getSecondaryPanelAllowlistEntries();
     return this.admin.getAdminMetadata(
       getSortedPlugins(),
@@ -85,7 +86,7 @@ export class PluginAdminRuntimeService {
     return { imports };
   }
 
-  private async getSecondaryPanelAllowlistEntries(): Promise<AdminSecondaryPanelAllowlistEntry[]> {
+  private async getSecondaryPanelAllowlistEntries(): Promise<IAdminSecondaryPanelAllowlistEntry[]> {
     try {
       const records = await this.db.find(SystemConstants.TABLE.META);
       const row = (records || []).find((entry: any) => String(entry?.key || '') === 'admin.secondaryPanel.allowlist.v1');

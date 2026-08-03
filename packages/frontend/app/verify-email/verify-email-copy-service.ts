@@ -1,6 +1,6 @@
 import { LocalizationUtils } from '@fromcode119/core/client';
-import bg from './i18n/bg.json';
-import en from './i18n/en.json';
+import bg from '@/app/verify-email/i18n/bg.json';
+import en from '@/app/verify-email/i18n/en.json';
 
 export class VerifyEmailCopyService {
   static getCopy(locale?: string) {

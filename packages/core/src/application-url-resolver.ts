@@ -1,4 +1,4 @@
-import { UrlUtils } from './url-utils';
+import { UrlUtils } from '@core/url-utils';
 
 /**
  * Internal resolution helpers for {@link ApplicationUrlUtils}. Not part of the

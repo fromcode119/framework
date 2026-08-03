@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PublicRouteProxy } from '../lib/public-route-proxy';
-import { GET as getPublicXmlRoute } from '../app/[publicRoute].xml/route';
-import { GET as getMainSitemap } from '../app/sitemap.xml/route';
+import { PublicRouteProxy } from '@/lib/public-route-proxy';
+// Route files export only the class; bind the statics locally.
+import { PublicXmlRoute } from '@/app/[publicRoute].xml/route';
+import { SitemapRoute } from '@/app/sitemap.xml/route';
+const getPublicXmlRoute = PublicXmlRoute.GET;
+const getMainSitemap = SitemapRoute.GET;
 
 describe('Public route handlers', () => {
   afterEach(() => {

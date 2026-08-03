@@ -1,10 +1,8 @@
-import type {
-  RenderableContentTransformer,
-  RenderableContentTransformerMetadata,
-} from './renderable-content-transformer.interfaces';
+import type { IRenderableContentTransformer } from '@react/interfaces/renderable-content-transformer.interface';
+import type { IRenderableContentTransformerMetadata } from '@react/interfaces/renderable-content-transformer-metadata.interface';
 
 export class RenderableContentTransformerRegistry {
-  private static readonly transformers = new Map<string, RenderableContentTransformer>();
+  private static readonly transformers = new Map<string, IRenderableContentTransformer>();
 
   static register(
     name: string,
@@ -45,14 +43,14 @@ export class RenderableContentTransformerRegistry {
     RenderableContentTransformerRegistry.transformers.clear();
   }
 
-  static getMetadata(): RenderableContentTransformerMetadata[] {
+  static getMetadata(): IRenderableContentTransformerMetadata[] {
     return RenderableContentTransformerRegistry.getAll().map((transformer) => ({
       name: transformer.name,
       priority: transformer.priority,
     }));
   }
 
-  private static getAll(): RenderableContentTransformer[] {
+  private static getAll(): IRenderableContentTransformer[] {
     return Array.from(RenderableContentTransformerRegistry.transformers.values())
       .sort((left, right) => left.priority - right.priority);
   }

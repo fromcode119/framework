@@ -1,11 +1,10 @@
-import type {
-  PluginDefaultPageContractBackfillCandidatePage,
-  PluginDefaultPageContractBackfillPageMatch,
-  PluginDefaultPageContractBackfillPlanInput,
-  ResolvedPluginDefaultPageContract,
-} from '../../types';
-import { BaseService } from '../base-service';
-import { SeedPageService } from '../seed-page-service';
+import type { IPluginDefaultPageContractBackfillCandidatePage } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-candidate-page.interface';
+import type { IPluginDefaultPageContractBackfillPageMatch } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-page-match.interface';
+import type { IPluginDefaultPageContractBackfillPlanInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-plan-input.interface';
+import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
+import { BaseService } from '@core/services/base-service';
+import { SeedPageService } from '@core/services/seed-page-service';
+import { PluginDefaultPageContractBackfillMatchSource } from '@core/default-page-contract/enums/plugin-default-page-contract-backfill-match-source.enum';
 
 export class PluginDefaultPageBackfillMatchingService extends BaseService {
   constructor(private readonly seedPageService: SeedPageService) {
@@ -17,8 +16,8 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
   }
 
   createCandidatePages(
-    existingPages: PluginDefaultPageContractBackfillPlanInput['existingPages'],
-  ): PluginDefaultPageContractBackfillCandidatePage[] {
+    existingPages: IPluginDefaultPageContractBackfillPlanInput['existingPages'],
+  ): IPluginDefaultPageContractBackfillCandidatePage[] {
     return existingPages.map((page) => {
       return {
         id: page.id,
@@ -36,7 +35,7 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
     });
   }
 
-  buildLookupCandidates(contract: ResolvedPluginDefaultPageContract): string[] {
+  buildLookupCandidates(contract: IResolvedPluginDefaultPageContract): string[] {
     const baseCandidates = [...contract.effectiveAliases, ...contract.adoptionHints];
 
     return this.seedPageService.buildPageLookupCandidates(baseCandidates, {
@@ -47,11 +46,11 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
 
   findMatches(
     lookupCandidates: string[],
-    pages: PluginDefaultPageContractBackfillCandidatePage[],
-  ): PluginDefaultPageContractBackfillPageMatch[] {
+    pages: IPluginDefaultPageContractBackfillCandidatePage[],
+  ): IPluginDefaultPageContractBackfillPageMatch[] {
     const allMatches = pages
       .map((page) => this.getPageMatch(page, lookupCandidates))
-      .filter((match): match is PluginDefaultPageContractBackfillPageMatch => Boolean(match));
+      .filter((match): match is IPluginDefaultPageContractBackfillPageMatch => Boolean(match));
 
     if (!allMatches.length) {
       return [];
@@ -65,14 +64,14 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
   }
 
   private getPageMatch(
-    page: PluginDefaultPageContractBackfillCandidatePage,
+    page: IPluginDefaultPageContractBackfillCandidatePage,
     lookupCandidates: string[],
-  ): PluginDefaultPageContractBackfillPageMatch | undefined {
+  ): IPluginDefaultPageContractBackfillPageMatch | undefined {
     if (this.hasCandidateMatch(lookupCandidates, page.customPermalinkCandidates)) {
       return {
         matchedPageId: page.id,
         priority: 0,
-        source: 'customPermalink',
+        source: PluginDefaultPageContractBackfillMatchSource.CUSTOM_PERMALINK,
       };
     }
 
@@ -80,7 +79,7 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
       return {
         matchedPageId: page.id,
         priority: 1,
-        source: 'slug',
+        source: PluginDefaultPageContractBackfillMatchSource.SLUG,
       };
     }
 

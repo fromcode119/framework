@@ -1,8 +1,8 @@
-import { LoadedPlugin } from '../../types';
-import { Logger } from '../../logging';
-import { DiscoveryService } from './discovery-service';
-import { PluginPublicSettingsService } from './plugin-public-settings-service';
-import { PluginState } from './plugin-state.enums';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { Logger } from '@core/logging';
+import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { PluginPublicSettingsService } from '@core/plugin/services/plugin-public-settings-service';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 /**
  * PluginManagerQueryService
@@ -16,14 +16,14 @@ export class PluginManagerQueryService {
     private logger: Logger,
     private db: any,
     private discovery: DiscoveryService,
-    private plugins: Map<string, LoadedPlugin>,
+    private plugins: Map<string, ILoadedPlugin>,
   ) {}
 
   /** Returns plugins in topological order based on their dependencies. */
-  getSortedPlugins(pluginsToSort?: LoadedPlugin[]): LoadedPlugin[] {
+  getSortedPlugins(pluginsToSort?: ILoadedPlugin[]): ILoadedPlugin[] {
     const list = pluginsToSort || Array.from(this.plugins.values());
     try {
-      return this.discovery.resolveDependencies(list as any) as LoadedPlugin[];
+      return this.discovery.resolveDependencies(list as any) as ILoadedPlugin[];
     } catch (err: any) {
       this.logger.warn(`Topological sort failed: ${err.message}. Returning unsorted list.`);
       return list;

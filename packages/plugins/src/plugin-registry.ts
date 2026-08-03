@@ -1,7 +1,6 @@
 import { IDatabaseManager, TableResolver, NamingStrategy, PhysicalTableNameUtils } from '@fromcode119/database';
 
-import { CollectionQueryBuilder } from './types';
-
+import type { ICollectionQueryBuilder } from '@plugins/interfaces/collection-query-builder.interface';
 /**
  * Registry for plugins and their associated entities (tables).
  * 
@@ -138,7 +137,7 @@ export class PluginRegistry {
             if (!record) throw new Error(`Record not found in ${resolvedTable} with criteria: ${JSON.stringify(where)}`);
             return record;
           },
-        } as CollectionQueryBuilder;
+        } as ICollectionQueryBuilder;
       }
     };
 

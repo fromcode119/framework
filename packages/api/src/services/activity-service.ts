@@ -1,10 +1,10 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
-import { Collection } from '@fromcode119/core';
+import { ICollection } from '@fromcode119/core';
 
 export class ActivityService {
   constructor(private db: IDatabaseManager) {}
 
-  async getGlobalActivity(collections: Collection[]) {
+  async getGlobalActivity(collections: ICollection[]) {
     const allActivity: any[] = [];
     
     // We'll fetch the last 5 items from each collection

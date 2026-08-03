@@ -1,1 +1,0 @@
-export type RestoreTargetKind = 'system' | `plugin:${string}` | `theme:${string}`;

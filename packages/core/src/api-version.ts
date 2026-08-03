@@ -1,4 +1,5 @@
-import { ApplicationUrlUtils } from './application-url-utils';
+import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApiVersionDefaults } from '@core/constants/api-version-defaults.constants';
 
 /**
  * API versioning utilities.
@@ -8,8 +9,8 @@ import { ApplicationUrlUtils } from './application-url-utils';
  * ApiVersionUtils.withVersion('/users') // "/api/v1/users"
  */
 export class ApiVersionUtils {
-  static readonly DEFAULT_API_BASE_PATH = '/api';
-  static readonly DEFAULT_API_VERSION = 'v1';
+  static readonly DEFAULT_API_BASE_PATH = ApiVersionDefaults.BASE_PATH;
+  static readonly DEFAULT_API_VERSION = ApiVersionDefaults.VERSION;
 
   static get API_BASE_PATH(): string {
     return ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.API_APP)

@@ -1,6 +1,10 @@
 import { CoercionUtils } from '@fromcode119/core/client';
-import { RenderableContentTransformerRegistry } from '@fromcode119/react';
-import { ResolvedContentShape } from './resolved-content-shape';
+// The MODULE, not the package barrel. `@fromcode119/react`'s index pulls in client-only components
+// (anything calling `createContext`), and this file is reached from a SERVER component — the theme
+// server render composes the same page body the client component does. Importing the barrel there fails
+// the build with "You're importing a component that needs `createContext`".
+import { RenderableContentTransformerRegistry } from '@fromcode119/react/renderable-content-transformer-registry';
+import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 
 /**
  * Utilities for rendering content blocks and resolving display metadata.

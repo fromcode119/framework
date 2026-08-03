@@ -1,12 +1,8 @@
 import { useCallback, useMemo } from 'react';
-import { 
-  ShortcodeUtils,
-  type RenderShortcodesPayload,
-  type RenderShortcodesResponse,
-  type ShortcodeCatalogResponse
-} from '@fromcode119/core/client';
-import { ContextHooks } from './context-hooks';
-import type { ListShortcodesOptions, RenderShortcodesOptions } from './system-shortcodes.types';
+import { ShortcodeUtils, type IRenderShortcodesPayload, type IRenderShortcodesResponse, type IShortcodeCatalogResponse } from '@fromcode119/core/client';
+import { ContextHooks } from '@react/context-hooks/context-hooks';
+import type { IListShortcodesOptions } from '@react/interfaces/list-shortcodes-options.interface';
+import type { IRenderShortcodesOptions } from '@react/interfaces/render-shortcodes-options.interface';
 
 /**
  * Shared shortcode API wrapper so plugins do not hardcode system endpoints.
@@ -16,19 +12,19 @@ export class SystemShortcodes {
     const { api } = ContextHooks.usePlugins();
 
     const list = useCallback(
-      async (options: ListShortcodesOptions = {}): Promise<ShortcodeCatalogResponse> => {
-        return api.get(ShortcodeUtils.SYSTEM_SHORTCODES_PATH, { silent: options.silent ?? true }) as Promise<ShortcodeCatalogResponse>;
+      async (options: IListShortcodesOptions = {}): Promise<IShortcodeCatalogResponse> => {
+        return api.get(ShortcodeUtils.SYSTEM_SHORTCODES_PATH, { silent: options.silent ?? true }) as Promise<IShortcodeCatalogResponse>;
       },
       [api]
     );
 
     const render = useCallback(
-      async (payload: RenderShortcodesPayload, options: RenderShortcodesOptions = {}): Promise<RenderShortcodesResponse> => {
+      async (payload: IRenderShortcodesPayload, options: IRenderShortcodesOptions = {}): Promise<IRenderShortcodesResponse> => {
         return api.post(
           ShortcodeUtils.SYSTEM_SHORTCODES_RENDER_PATH,
           payload,
           { silent: options.silent ?? true }
-        ) as Promise<RenderShortcodesResponse>;
+        ) as Promise<IRenderShortcodesResponse>;
       },
       [api]
     );

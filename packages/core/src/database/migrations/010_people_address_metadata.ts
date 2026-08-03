@@ -1,5 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
  * Additive: add a `metadata` JSON column to `people_addresses`. The shared address book exposes a
@@ -8,7 +8,7 @@ import { DialectHelper } from '../helpers/dialect';
  * here as a JSON blob so the shared table never grows a per-plugin column. Idempotent — runs once and
  * tolerates the column already existing.
  */
-class PeopleAddressMetadataMigration extends BaseMigration {
+export class PeopleAddressMetadataMigration extends BaseMigration {
   readonly version = 10;
   readonly name = 'Add metadata JSON column to people_addresses';
 
@@ -41,5 +41,3 @@ class PeopleAddressMetadataMigration extends BaseMigration {
     });
   }
 }
-
-export default new PeopleAddressMetadataMigration();

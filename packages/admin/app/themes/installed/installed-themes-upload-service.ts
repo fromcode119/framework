@@ -1,6 +1,6 @@
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
-import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 
 export class InstalledThemesUploadService {
   private static readonly MAX_CHUNK_RETRIES = 3;
@@ -70,7 +70,7 @@ export class InstalledThemesUploadService {
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 
-  static buildPreviewSections(info: any): UploadPreviewSection[] {
+  static buildPreviewSections(info: any): IUploadPreviewSection[] {
     const dependencies = Array.isArray(info?.dependencies) ? info.dependencies : [];
     const bundled = Array.isArray(info?.bundledPlugins) ? info.bundledPlugins : [];
     const existing = info?.existing || { installed: false };

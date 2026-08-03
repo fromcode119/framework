@@ -1,8 +1,8 @@
-import { type Collection } from '@fromcode119/core';
-import { ApiConfig } from './config/api-config';
+import { FieldType, type ICollection } from '@fromcode119/core';
+import { ApiConfig } from '@api/config/api-config';
 
 export class SwaggerGenerator {
-  static generate(collections: Collection[]) {
+  static generate(collections: ICollection[]) {
   const paths: any = {};
   const components: any = {
     schemas: {}
@@ -24,7 +24,7 @@ export class SwaggerGenerator {
       if (field.admin?.hidden) continue;
 
       properties[field.name] = {
-        type: SwaggerGenerator.mapTypeToOpenAPI(field.type),
+        type: SwaggerGenerator.mapTypeToOpenAPI(FieldType.resolve(field.type).value),
         description: field.label
       };
     }

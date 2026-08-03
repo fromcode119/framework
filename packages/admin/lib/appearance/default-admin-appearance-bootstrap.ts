@@ -1,5 +1,5 @@
-import { AdminAppearanceConstants } from './admin-appearance-constants';
-import { AdminAppearanceRegistry } from './admin-appearance-registry';
+import { AdminAppearanceConstants } from '@/lib/appearance/constants/admin-appearance.constants';
+import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';
 
 /**
  * Registers the framework's built-in default admin appearance. Called once at admin boot. The default

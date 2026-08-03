@@ -1,13 +1,14 @@
-import { Logger } from '../logging';
-import { QueueAdapter } from './types';
-import { QueueAdapterFactory } from './queue-adapter-factory';
-import type { QueueOptions } from './queue-manager.interfaces';
+
+import { Logger } from '@core/logging';
+import { IQueueAdapter } from '@core/queue/interfaces/queue-adapter.interface';
+import { QueueAdapterFactory } from '@core/queue/queue-adapter-factory';
+import type { IQueueOptions } from '@core/queue/interfaces/queue-options.interface';
 
 export class QueueManager {
-  private adapter: QueueAdapter;
+  private adapter: IQueueAdapter;
   private logger = new Logger({ namespace: 'queue-manager' });
 
-  constructor(options: QueueOptions = {}) {
+  constructor(options: IQueueOptions = {}) {
     this.adapter = QueueAdapterFactory.create(options.type, options);
   }
 

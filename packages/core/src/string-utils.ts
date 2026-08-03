@@ -1,4 +1,4 @@
-import { CoercionUtils } from './coercion-utils';
+import { CoercionUtils } from '@core/coercion-utils';
 
 /**
  * String manipulation utilities.

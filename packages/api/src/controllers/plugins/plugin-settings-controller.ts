@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
-import { PluginSettingsSupport } from './plugin-settings-support';
+import { PluginSettingsSupport } from '@api/controllers/plugins/plugin-settings-support';
 
 export class PluginSettingsController {
   private logger = new Logger({ namespace: 'plugin-settings-controller' });

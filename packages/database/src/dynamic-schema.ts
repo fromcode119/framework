@@ -1,17 +1,9 @@
-import { 
-  pgTable, 
-  serial, 
-  text, 
-  numeric, 
-  boolean, 
-  timestamp, 
-  jsonb 
-} from 'drizzle-orm/pg-core';
-import type { DynamicField, DynamicTableOptions } from './dynamic-schema.interfaces';
+import { pgTable, serial, text, numeric, boolean, timestamp, jsonb } from 'drizzle-orm/pg-core';
 
+import type { IDynamicTableOptions } from '@database/interfaces/dynamic-table-options.interface';
 
 export class DynamicSchema {
-  static createDynamicTable(options: DynamicTableOptions) {
+  static createDynamicTable(options: IDynamicTableOptions) {
       const { slug, fields, timestamps = true, workflow = false, primaryKey = 'id' } = options;
 
       // Helper to convert camelCase to snake_case

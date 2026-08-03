@@ -1,11 +1,11 @@
-import { AdminSecondaryPanelNormalizedItem } from './admin-secondary-panel.interfaces';
+import type { IAdminSecondaryPanelNormalizedItem } from '@core/plugin/services/interfaces/admin-secondary-panel-normalized-item.interface';
 
 export class AdminSecondaryPanelPrecedenceService {
-  apply(items: AdminSecondaryPanelNormalizedItem[]): AdminSecondaryPanelNormalizedItem[] {
+  apply(items: IAdminSecondaryPanelNormalizedItem[]): IAdminSecondaryPanelNormalizedItem[] {
     const ranked = items.slice().sort((a, b) => this.compareByPrecedence(a, b));
 
     const dedupedByCanonicalId = new Set<string>();
-    const canonicalFiltered: AdminSecondaryPanelNormalizedItem[] = [];
+    const canonicalFiltered: IAdminSecondaryPanelNormalizedItem[] = [];
     for (const item of ranked) {
       if (dedupedByCanonicalId.has(item.canonicalId)) {
         continue;
@@ -15,7 +15,7 @@ export class AdminSecondaryPanelPrecedenceService {
     }
 
     const dedupedByComposite = new Set<string>();
-    const compositeFiltered: AdminSecondaryPanelNormalizedItem[] = [];
+    const compositeFiltered: IAdminSecondaryPanelNormalizedItem[] = [];
     for (const item of canonicalFiltered) {
       const compositeKey = this.compositeKey(item);
       if (dedupedByComposite.has(compositeKey)) {
@@ -28,7 +28,7 @@ export class AdminSecondaryPanelPrecedenceService {
     return compositeFiltered;
   }
 
-  private compareByPrecedence(a: AdminSecondaryPanelNormalizedItem, b: AdminSecondaryPanelNormalizedItem): number {
+  private compareByPrecedence(a: IAdminSecondaryPanelNormalizedItem, b: IAdminSecondaryPanelNormalizedItem): number {
     const scopeDiff = this.scopeRank(a.scope) - this.scopeRank(b.scope);
     if (scopeDiff !== 0) {
       return scopeDiff;
@@ -42,7 +42,7 @@ export class AdminSecondaryPanelPrecedenceService {
     return a.canonicalId.localeCompare(b.canonicalId);
   }
 
-  private compositeKey(item: AdminSecondaryPanelNormalizedItem): string {
+  private compositeKey(item: IAdminSecondaryPanelNormalizedItem): string {
     const normalizedPath = String(item.path || '').trim().toLowerCase();
     const normalizedLabel = String(item.label || '').trim().toLowerCase();
     const contextKey = item.scope === 'global' ? 'global' : item.targetCanonicalKey;

@@ -1,5 +1,4 @@
-import type { AdminAppearanceManifest } from './admin-appearance-manifest.interfaces';
-
+import type { IAdminAppearanceManifest } from '@/lib/appearance/interfaces/admin-appearance-manifest.interface';
 /**
  * In-memory registry of selectable admin appearances. The built-in default registers at boot;
  * additional appearances (admin-appearances/<slug>/) register their manifest here. A shared singleton is
@@ -8,9 +7,9 @@ import type { AdminAppearanceManifest } from './admin-appearance-manifest.interf
 export class AdminAppearanceRegistry {
   static readonly shared = new AdminAppearanceRegistry();
 
-  private readonly appearances = new Map<string, AdminAppearanceManifest>();
+  private readonly appearances = new Map<string, IAdminAppearanceManifest>();
 
-  register(manifest: AdminAppearanceManifest): void {
+  register(manifest: IAdminAppearanceManifest): void {
     this.appearances.set(manifest.id, manifest);
   }
 
@@ -18,11 +17,11 @@ export class AdminAppearanceRegistry {
     return this.appearances.has(id);
   }
 
-  get(id: string): AdminAppearanceManifest | undefined {
+  get(id: string): IAdminAppearanceManifest | undefined {
     return this.appearances.get(id);
   }
 
-  list(): AdminAppearanceManifest[] {
+  list(): IAdminAppearanceManifest[] {
     return Array.from(this.appearances.values());
   }
 

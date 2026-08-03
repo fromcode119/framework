@@ -1,6 +1,6 @@
 import { RuntimeConstants } from '@fromcode119/core/client';
 import { describe, it, expect } from 'vitest';
-import { PageDocPrefetcher } from '../lib/theme/page-doc-prefetcher';
+import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
 
 describe('PageDocPrefetcher.deriveValues', () => {
   it('derives the page slug by default', () => {

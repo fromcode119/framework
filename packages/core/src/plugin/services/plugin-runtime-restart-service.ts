@@ -1,4 +1,4 @@
-import { Logger } from '../../logging';
+import { Logger } from '@core/logging';
 
 export class PluginRuntimeRestartService {
   private restartTimer: NodeJS.Timeout | null = null;

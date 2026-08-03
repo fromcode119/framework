@@ -1,12 +1,12 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { CollectionsContext } from '../context/collections-context';
-import { MenuContext } from '../context/menu-context';
-import { PluginStateContext } from '../context/plugin-state-context';
-import { SettingsContext } from '../context/settings-context';
-import { TranslationContext } from '../context/translation-context';
-import { PluginContextRegistry } from '../plugin-context';
-import { ContextHooksPluginStateService } from './context-hooks-plugin-state-service';
-import { ContextHooksSdkService } from './context-hooks-sdk-service';
+import { CollectionsContext } from '@react/context/collections-context';
+import { MenuContext } from '@react/context/menu-context';
+import { PluginStateContext } from '@react/context/plugin-state-context';
+import { SettingsContext } from '@react/context/settings-context';
+import { TranslationContext } from '@react/context/translation-context';
+import { PluginContextRegistry } from '@react/plugin-context';
+import { ContextHooksPluginStateService } from '@react/context-hooks/context-hooks-plugin-state-service';
+import { ContextHooksSdkService } from '@react/context-hooks/context-hooks-sdk-service';
 
 export class ContextHooks {
   static usePlugins() {

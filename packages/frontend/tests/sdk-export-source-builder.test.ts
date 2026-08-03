@@ -19,7 +19,7 @@ describe('SdkExportSourceBuilder', () => {
     const source = SdkExportSourceBuilder.build("window.__modules__ && window.__modules__['@fromcode119/react']");
 
     expect(source).toContain(
-      "export const BrowserStateClient = (window.__modules__ && window.__modules__['@fromcode119/react']) ? (window.__modules__ && window.__modules__['@fromcode119/react']).BrowserStateClient : (window.Fromcode && window.Fromcode.BrowserStateClient);",
+      "export const BrowserStateClient = (window.__modules__ && window.__modules__['@fromcode119/react']) ? (window.__modules__ && window.__modules__['@fromcode119/react']).BrowserStateClient : undefined;",
     );
   });
 });

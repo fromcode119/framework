@@ -1,45 +1,46 @@
+import { PluginSettingsForm } from '@/components/plugins/view/plugin-settings-form.client';
+import { NotificationType } from '@/components/enums/notification-type.enum';
 import { useEffect, useRef, useState } from 'react';
+
 import { ContextHooks } from '@fromcode119/react';
-import type { LoadedPlugin } from '@fromcode119/core/client';
+import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { PluginState } from '@fromcode119/core/client';
-import { ThemeHooks } from '@/components/use-theme';
+import { ThemeHooks } from '@/components/view/use-theme.client';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { NotificationHooks } from '@/components/use-notification';
-import type { PluginSettingsFormHandle } from '@/components/plugins/plugin-settings-form.interfaces';
+import { NotificationHooks } from '@/components/view/use-notification.client';
+
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
-import type { PluginInstallOperation } from '@/lib/plugin-install-operation.interfaces';
-import type { PluginDetailTab } from './plugin-detail-page.types';
-import type {
-  PluginDetailPageModel,
-  PluginLogEntry,
-  PluginMarketplaceItem,
-  PluginSandboxSettings,
-} from './plugin-detail-page.interfaces';
-import { PluginDetailPageService } from './plugin-detail-page-service';
+import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
+import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
+import type { IPluginDetailPageModel } from '@/app/plugins/[slug]/interfaces/plugin-detail-page-model.interface';
+import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log-entry.interface';
+import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
+import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
+import { PluginDetailPageService } from '@/app/plugins/[slug]/plugin-detail-page-service';
 
 export class PluginDetailPageController {
-  static useModel(slug: string): PluginDetailPageModel {
+  static useModel(slug: string): IPluginDetailPageModel {
     const router = useRouter();
     const pathname = usePathname();
     const { notify } = NotificationHooks.useNotify();
     const { triggerRefresh, refreshVersion } = ContextHooks.usePlugins();
     const searchParams = useSearchParams();
-    const [plugin, setPlugin] = useState<LoadedPlugin | null>(null);
+    const [plugin, setPlugin] = useState<ILoadedPlugin | null>(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [installOperation, setInstallOperation] = useState<PluginInstallOperation | null>(null);
+    const [installOperation, setInstallOperation] = useState<IPluginInstallOperation | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [settingsDirty, setSettingsDirty] = useState(false);
     const [settingsSaving, setSettingsSaving] = useState(false);
-    const settingsFormRef = useRef<PluginSettingsFormHandle>(null);
+    const settingsFormRef = useRef<PluginSettingsForm>(null);
     const [showDefinition, setShowDefinition] = useState(false);
-    const [marketplaceItem, setMarketplaceItem] = useState<PluginMarketplaceItem | null>(null);
-    const [activeTab, setActiveTab] = useState<PluginDetailTab>('overview');
-    const [logs, setLogs] = useState<PluginLogEntry[]>([]);
+    const [marketplaceItem, setMarketplaceItem] = useState<IPluginMarketplaceItem | null>(null);
+    const [activeTab, setActiveTab] = useState<PluginDetailTab>(PluginDetailTab.OVERVIEW);
+    const [logs, setLogs] = useState<IPluginLogEntry[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
-    const [sandboxSettings, setSandboxSettings] = useState<PluginSandboxSettings>(PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS);
+    const [sandboxSettings, setSandboxSettings] = useState<IPluginSandboxSettings>(PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS);
     const { theme } = ThemeHooks.useTheme();
 
     useEffect(() => {
@@ -78,7 +79,7 @@ export class PluginDetailPageController {
     }, [searchParams]);
 
     const fetchLogs = async () => {
-      if (activeTab !== 'overview' || !slug) return;
+      if (activeTab !== PluginDetailTab.OVERVIEW || !slug) return;
       setLoadingLogs(true);
       try {
         setLogs(await PluginDetailPageService.fetchLogs(slug));
@@ -99,7 +100,7 @@ export class PluginDetailPageController {
       try {
         const result = await PluginDetailPageService.updatePlugin(plugin.manifest.slug);
         if (result.dependencies.length > 0) {
-          notify('info', 'Update Dependencies', `This update also requires: ${result.dependencies.join(', ')}`);
+          notify(NotificationType.INFO, 'Update Dependencies', `This update also requires: ${result.dependencies.join(', ')}`);
         }
         await PluginInstallOperationService.waitForCompletion(result.operationId, setInstallOperation);
         const refreshedPlugin = marketplaceItem?.version
@@ -108,11 +109,11 @@ export class PluginDetailPageController {
         if (refreshedPlugin) {
           setPlugin(refreshedPlugin);
         }
-        notify('success', 'Update Complete', `${plugin.manifest.name} has been updated to the latest version.`);
+        notify(NotificationType.SUCCESS, 'Update Complete', `${plugin.manifest.name} has been updated to the latest version.`);
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Update error:', error);
-        notify('error', 'Update Failed', error.message || 'Update failed');
+        notify(NotificationType.ERROR, 'Update Failed', error.message || 'Update failed');
       } finally {
         setInstallOperation(null);
         setIsUpdating(false);
@@ -130,11 +131,11 @@ export class PluginDetailPageController {
           state: status,
           approvedCapabilities: status === PluginState.ACTIVE ? [...(plugin.manifest.capabilities || [])] : plugin.approvedCapabilities,
         });
-        notify('success', 'Status Updated', `${plugin.manifest.name} is now ${status}.`);
+        notify(NotificationType.SUCCESS, 'Status Updated', `${plugin.manifest.name} is now ${status}.`);
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Toggle error:', error);
-        notify('error', 'Toggle Failed', error.message || 'Failed to update plugin state.');
+        notify(NotificationType.ERROR, 'Toggle Failed', error.message || 'Failed to update plugin state.');
       }
     };
 
@@ -145,7 +146,7 @@ export class PluginDetailPageController {
         const nextSandbox = await PluginDetailPageService.saveSandbox(plugin.manifest.slug, sandboxSettings);
         setPlugin({ ...plugin, sandbox: nextSandbox });
         notify(
-          'success',
+        NotificationType.SUCCESS,
           'Resources Updated',
           sandboxSettings.enabled
             ? `Sandbox limits for ${plugin.manifest.name} updated.`
@@ -154,7 +155,7 @@ export class PluginDetailPageController {
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Save sandbox error:', error);
-        notify('error', 'Save Failed', error.message || 'Failed to update sandbox limits.');
+        notify(NotificationType.ERROR, 'Save Failed', error.message || 'Failed to update sandbox limits.');
       } finally {
         setIsSaving(false);
       }
@@ -165,12 +166,12 @@ export class PluginDetailPageController {
       setIsDeleting(true);
       try {
         await PluginDetailPageService.deletePlugin(plugin.manifest.slug);
-        notify('success', 'Uninstalled', `${plugin.manifest.name} removed from system.`);
+        notify(NotificationType.SUCCESS, 'Uninstalled', `${plugin.manifest.name} removed from system.`);
         triggerRefresh();
         router.push('/plugins');
       } catch (error: any) {
         console.error('[PluginDetailPage] Delete error:', error);
-        notify('error', 'Uninstall Failed', error.message || 'An error occurred while deleting the plugin.');
+        notify(NotificationType.ERROR, 'Uninstall Failed', error.message || 'An error occurred while deleting the plugin.');
         setIsDeleting(false);
         setShowDeleteConfirm(false);
       }
@@ -179,7 +180,7 @@ export class PluginDetailPageController {
     const handleTabChange = (tabId: PluginDetailTab) => {
       setActiveTab(tabId);
       const params = new URLSearchParams(searchParams.toString());
-      params.set('tab', tabId);
+      params.set('tab', tabId.value);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 

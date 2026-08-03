@@ -1,7 +1,8 @@
+import { ThemeAssetScope } from '@api/controllers/themes/enums/theme-asset-scope.enum';
 import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
-import { ThemeArchiveSupport } from './theme-archive-support';
+import { ThemeArchiveSupport } from '@api/controllers/themes/theme-archive-support';
 
 export class ThemeController extends BaseController {
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
@@ -214,10 +215,10 @@ export class ThemeController extends BaseController {
   }
 
   async servePublicAssets(req: Request, res: Response) {
-    this.archiveSupport.serveAssetDirectory(req, res, 'public');
+    this.archiveSupport.serveAssetDirectory(req, res, ThemeAssetScope.PUBLIC);
   }
 
   async serveAssets(req: Request, res: Response) {
-    this.archiveSupport.serveAssetDirectory(req, res, 'ui');
+    this.archiveSupport.serveAssetDirectory(req, res, ThemeAssetScope.UI);
   }
 }

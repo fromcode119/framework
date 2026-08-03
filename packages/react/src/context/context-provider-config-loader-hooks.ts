@@ -1,11 +1,9 @@
 import React from 'react';
-import {
-  ApplicationHostUtils,
-  ApiPathUtils,
-  PublicAssetUrlUtils,
-} from '@fromcode119/core/client';
-import type { CollectionMetadata, SecondaryPanelState } from '../context.interfaces';
-import { ContextProviderStateService } from './context-provider-state-service';
+import { Platform } from '@fromcode119/reactor';
+import { ApplicationHostUtils, ApiPathUtils, PublicAssetUrlUtils } from '@fromcode119/core/client';
+import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
+import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
+import { ContextProviderStateService } from '@react/context/context-provider-state-service';
 
 export class ContextProviderConfigLoaderHooks {
   static useConfigLoader(args: {
@@ -13,9 +11,9 @@ export class ContextProviderConfigLoaderHooks {
     getBaseURL: () => string;
     setServerRuntimeModules: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setPlugins: React.Dispatch<React.SetStateAction<any[]>>;
-    setCollections: React.Dispatch<React.SetStateAction<CollectionMetadata[]>>;
+    setCollections: React.Dispatch<React.SetStateAction<ICollectionMetadata[]>>;
     setMenuItems: React.Dispatch<React.SetStateAction<any[]>>;
-    setSecondaryPanel: React.Dispatch<React.SetStateAction<SecondaryPanelState>>;
+    setSecondaryPanel: React.Dispatch<React.SetStateAction<ISecondaryPanelState>>;
     setSettings: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setActiveTheme: React.Dispatch<React.SetStateAction<any>>;
     setThemeVariables: React.Dispatch<React.SetStateAction<Record<string, string>>>;
@@ -42,7 +40,7 @@ export class ContextProviderConfigLoaderHooks {
     const loadThemeEntry = React.useCallback(async (baseUrl: string, theme: any) => {
       const themeSlug = String(theme?.slug || '').trim();
       const themeEntry = String(theme?.ui?.entry || '').trim();
-      if (!themeSlug || !themeEntry || typeof document === 'undefined') {
+      if (!themeSlug || !themeEntry || !Platform.isBrowser) {
         return;
       }
 
@@ -105,7 +103,7 @@ export class ContextProviderConfigLoaderHooks {
 
           if (data.plugins) {
             setPlugins(data.plugins);
-            const allCollections: CollectionMetadata[] = [];
+            const allCollections: ICollectionMetadata[] = [];
             data.plugins.forEach((plugin: any) => {
               if (plugin.admin?.collections) {
                 allCollections.push(...plugin.admin.collections.map((collection: any) => ({
@@ -154,7 +152,7 @@ export class ContextProviderConfigLoaderHooks {
             // two urls for one file, so the cache can never dedupe and every face
             // downloads twice. The registry below cannot catch this: it only knows urls
             // IT mounted, and an inlined <style> has no url at all.
-            const inlinedThemeCss = typeof document !== 'undefined'
+            const inlinedThemeCss = Platform.isBrowser
               && !!document.head.querySelector(`style[data-theme="${CSS.escape(String(theme.slug || ''))}"]`);
             if (theme.ui?.css && !inlinedThemeCss) {
               const cssRegistry = ((window as any).__fromcodeLoadedThemeCss ||= new Set<string>()) as Set<string>;
@@ -232,7 +230,7 @@ export class ContextProviderConfigLoaderHooks {
     try {
       const parsedUrl = new URL(
         url,
-        typeof window !== 'undefined' ? window.location.origin : ApplicationHostUtils.LOCALHOST_ORIGIN,
+        Platform.isBrowser ? window.location.origin : ApplicationHostUtils.LOCALHOST_ORIGIN,
       );
       return String(parsedUrl.searchParams.get('v') || '')
         .split('.')

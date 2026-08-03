@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
-import { CliUtils } from '../utils';
+import { CliUtils } from '@cli/utils';
 
 export class PluginMarketplaceCommandService {
   static register(plugin: Command): void {

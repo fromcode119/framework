@@ -1,13 +1,12 @@
 import express, { Router, RequestHandler, Request, Response, NextFunction } from 'express';
-import { PluginHealthRouteHandler } from '../plugin-health-route-handler';
-import type { PluginHealthRouteHandlerOptions } from '../plugin-health-route-handler.interfaces';
-import { RouteConstants } from '../route-constants';
-import { ApiAccessGate } from '../plugin/context/api-access-gate';
-import { AccessLevel } from '../plugin/context/api-access-gate.enums';
-import type { ApiAccessDescriptor, ApiAccessLevel } from '../plugin/context/api-access-gate.types';
-
-/** A route handler list that may begin with an `{ access }` declaration. */
-type RouteHandlers = Array<RequestHandler | ApiAccessDescriptor>;
+import { PluginHealthRouteHandler } from '@core/plugin-health-route-handler';
+import type { IPluginHealthRouteHandlerOptions } from '@core/interfaces/plugin-health-route-handler-options.interface';
+import { RouteConstants } from '@core/constants/route.constants';
+import { ApiAccessGate } from '@core/plugin/context/api-access-gate';
+import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
+import type { IApiAccessDescriptor } from '@core/plugin/context/interfaces/api-access-descriptor.interface';
+import type { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
+import type { IRouteHandlerList } from '@core/interfaces/route-handler-list.interface';
 
 /**
  * Base class for all API routers.
@@ -80,11 +79,11 @@ export abstract class BaseRouter {
    * Strip a leading `{ access }` declaration and prepend the central fail-closed gate (inert unless
    * ENFORCE_AUTHZ_GATEWAY=true). Undeclared routes default to admin-only inside the gate.
    */
-  private gated(handlers: RouteHandlers): RequestHandler[] {
+  private gated(handlers: IRouteHandlerList): RequestHandler[] {
     let list = handlers;
-    let access: ApiAccessLevel | undefined;
+    let access: AccessLevel | ApiPermissionRequirement | undefined;
     if (ApiAccessGate.isDescriptor(list[0])) {
-      access = (list[0] as ApiAccessDescriptor).access;
+      access = (list[0] as IApiAccessDescriptor).access;
       list = list.slice(1);
     }
     const gate = ApiAccessGate.build(access);
@@ -95,7 +94,7 @@ export abstract class BaseRouter {
   /**
    * Register a GET route.
    */
-  protected get(path: string, ...handlers: RouteHandlers): void {
+  protected get(path: string, ...handlers: IRouteHandlerList): void {
     this.router.get(path, ...this.gated(handlers));
   }
 
@@ -103,55 +102,55 @@ export abstract class BaseRouter {
    * Register the standard plugin health route. Always public — probes must not require auth.
    */
   protected health(...handlers: RequestHandler[]): void {
-    this.get(RouteConstants.SEGMENTS.HEALTH, { access: AccessLevel.Public }, ...handlers);
+    this.get(RouteConstants.SEGMENTS.HEALTH, { access: AccessLevel.PUBLIC }, ...handlers);
   }
 
   /**
    * Register the standard plugin status route. Always public — probes must not require auth.
    */
   protected status(...handlers: RequestHandler[]): void {
-    this.get(RouteConstants.SEGMENTS.STATUS, { access: AccessLevel.Public }, ...handlers);
+    this.get(RouteConstants.SEGMENTS.STATUS, { access: AccessLevel.PUBLIC }, ...handlers);
   }
 
   /**
    * Register the standard plugin health route using a framework-owned handler.
    */
-  protected healthCheck(options: PluginHealthRouteHandlerOptions): void {
+  protected healthCheck(options: IPluginHealthRouteHandlerOptions): void {
     this.health(PluginHealthRouteHandler.create(options));
   }
 
   /**
    * Register the standard plugin status route using a framework-owned handler.
    */
-  protected statusCheck(options: PluginHealthRouteHandlerOptions): void {
+  protected statusCheck(options: IPluginHealthRouteHandlerOptions): void {
     this.status(PluginHealthRouteHandler.create(options));
   }
 
   /**
    * Register a POST route.
    */
-  protected post(path: string, ...handlers: RouteHandlers): void {
+  protected post(path: string, ...handlers: IRouteHandlerList): void {
     this.router.post(path, ...this.gated(handlers));
   }
 
   /**
    * Register a PUT route.
    */
-  protected put(path: string, ...handlers: RouteHandlers): void {
+  protected put(path: string, ...handlers: IRouteHandlerList): void {
     this.router.put(path, ...this.gated(handlers));
   }
 
   /**
    * Register a PATCH route.
    */
-  protected patch(path: string, ...handlers: RouteHandlers): void {
+  protected patch(path: string, ...handlers: IRouteHandlerList): void {
     this.router.patch(path, ...this.gated(handlers));
   }
 
   /**
    * Register a DELETE route.
    */
-  protected delete(path: string, ...handlers: RouteHandlers): void {
+  protected delete(path: string, ...handlers: IRouteHandlerList): void {
     this.router.delete(path, ...this.gated(handlers));
   }
 

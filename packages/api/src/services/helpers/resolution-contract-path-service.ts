@@ -1,7 +1,7 @@
-import type { ResolvedPluginDefaultPageContract } from '@fromcode119/core';
+import type { IResolvedPluginDefaultPageContract } from '@fromcode119/core';
 
 export class ResolutionContractPathService {
-  static findMatchingPattern(contract: ResolvedPluginDefaultPageContract, inputPath: string): string | null {
+  static findMatchingPattern(contract: IResolvedPluginDefaultPageContract, inputPath: string): string | null {
     const patterns = [contract.effectiveSlug, ...(contract.effectiveAliases || [])]
       .map((value) => String(value || '').trim())
       .filter(Boolean);

@@ -1,16 +1,16 @@
 import { NamingStrategy } from '@fromcode119/database';
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { SystemConstants } from '../../constants';
-import { PersonCatalogService } from '../services/person-catalog-service';
-import { PeopleAddressService } from '../services/people-address-service';
-import type { PeopleAddressRef } from '../services/people-address-service.interfaces';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { SystemConstants } from '@core/constants/system.constants';
+import { PersonCatalogService } from '@core/plugin/services/person-catalog-service';
+import { PeopleAddressService } from '@core/plugin/services/people-address-service';
+import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 
 export class PeopleContextProxy {
 
   static createPeopleProxy(
-    _plugin: LoadedPlugin,
-    manager: PluginManagerInterface
+    _plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface
   ) {
     const db = manager.db as any;
     const catalogs = new PersonCatalogService(db);
@@ -102,10 +102,10 @@ export class PeopleContextProxy {
       // address book here instead of owning a parallel store. `ref` resolves the owning person from
       // { personId } | { userId } | { email }; upsert creates a minimal person when none exists yet.
       addresses: {
-        list: (ref: PeopleAddressRef) => addresses.list(ref),
-        upsert: (ref: PeopleAddressRef, addr: Record<string, any>) => addresses.upsert(ref, addr),
+        list: (ref: IPeopleAddressRef) => addresses.list(ref),
+        upsert: (ref: IPeopleAddressRef, addr: Record<string, any>) => addresses.upsert(ref, addr),
         delete: (addressId: any) => addresses.delete(addressId),
-        setDefault: (ref: PeopleAddressRef, addressId: any) => addresses.setDefault(ref, addressId)
+        setDefault: (ref: IPeopleAddressRef, addressId: any) => addresses.setDefault(ref, addressId)
       }
     };
   }

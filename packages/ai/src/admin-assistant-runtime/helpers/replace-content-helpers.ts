@@ -1,9 +1,12 @@
-import type { McpBridge } from '@fromcode119/mcp';
-import type { AssistantAction, AdminAssistantRuntimeOptions } from '../types';
-import { SearchTextHelpers } from './search-text-helpers';
-import { PathObjectHelpers } from './path-object-helpers';
-import { IntentClassifier } from '../intents';
-import { AssistantConstants } from '../constants';
+import { ScopedSearchTool } from '@ai/admin-assistant-runtime/enums/scoped-search-tool.enum';
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import type { IMcpBridge } from '@fromcode119/mcp';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import { SearchTextHelpers } from '@ai/admin-assistant-runtime/helpers/search-text-helpers';
+import { PathObjectHelpers } from '@ai/admin-assistant-runtime/helpers/path-object-helpers';
+import { IntentClassifier } from '@ai/admin-assistant-runtime/intents';
+import { AssistantConstants } from '@ai/admin-assistant-runtime/constants/assistant.constants';
 
 /** Replace/content operation helpers extracted from AdminAssistantRuntime. */
 export class ReplaceContentHelpers {
@@ -83,11 +86,11 @@ export class ReplaceContentHelpers {
 
   static collectConfigSearchMatches(
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>,
-    toolName: 'plugins.settings.search_text' | 'themes.config.search_text',
+    toolName: ScopedSearchTool,
   ): Array<{ slug: string; path: string; value: string }> {
     const matches: Array<{ slug: string; path: string; value: string }> = [];
     for (const item of Array.isArray(toolResults) ? toolResults : []) {
-      if (String(item?.tool || '') !== toolName) continue;
+      if (String(item?.tool || '') !== toolName.value) continue;
       const output = item?.result?.output && typeof item.result.output === 'object' ? item.result.output : {};
       for (const entry of Array.isArray((output as any).matches) ? (output as any).matches : []) {
         const slug = String((entry as any)?.slug || '').trim();
@@ -101,11 +104,11 @@ export class ReplaceContentHelpers {
 
   static collectScopedFileSearchMatches(
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>,
-    toolName: 'plugins.files.search_text' | 'themes.files.search_text',
+    toolName: ScopedSearchTool,
   ): Array<{ slug: string; path: string; value: string }> {
     const matches: Array<{ slug: string; path: string; value: string }> = [];
     for (const item of Array.isArray(toolResults) ? toolResults : []) {
-      if (String(item?.tool || '') !== toolName) continue;
+      if (String(item?.tool || '') !== toolName.value) continue;
       const output = item?.result?.output && typeof item.result.output === 'object' ? item.result.output : {};
       for (const entry of Array.isArray((output as any).matches) ? (output as any).matches : []) {
         const slug = String((entry as any)?.slug || '').trim();
@@ -118,17 +121,17 @@ export class ReplaceContentHelpers {
   }
 
   static filterReplaceActionsByEvidence(
-    actions: AssistantAction[],
+    actions: IAssistantAction[],
     replaceInstruction: { from: string; to: string },
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>,
-  ): AssistantAction[] {
-    const pluginMatches = ReplaceContentHelpers.collectConfigSearchMatches(toolResults, 'plugins.settings.search_text');
-    const themeMatches = ReplaceContentHelpers.collectConfigSearchMatches(toolResults, 'themes.config.search_text');
-    const pluginFileMatches = ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, 'plugins.files.search_text');
-    const themeFileMatches = ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, 'themes.files.search_text');
+  ): IAssistantAction[] {
+    const pluginMatches = ReplaceContentHelpers.collectConfigSearchMatches(toolResults, ScopedSearchTool.PLUGIN_CONFIG);
+    const themeMatches = ReplaceContentHelpers.collectConfigSearchMatches(toolResults, ScopedSearchTool.THEME_CONFIG);
+    const pluginFileMatches = ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, ScopedSearchTool.PLUGIN_FILES);
+    const themeFileMatches = ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, ScopedSearchTool.THEME_FILES);
     const contentMatches = ReplaceContentHelpers.collectContentSearchMatches(toolResults);
     return (Array.isArray(actions) ? actions : []).filter((action) => {
-      if (!action || action.type !== 'mcp_call') return true;
+      if (!action || action.type !== AssistantActionType.MCP_CALL) return true;
       const tool = String(action.tool || '').trim();
       if (tool === 'plugins.settings.update') {
         if (!pluginMatches.length) return false;
@@ -179,9 +182,9 @@ export class ReplaceContentHelpers {
   static async stageFallbackReplaceActions(
     message: string,
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>,
-    mcpBridge: McpBridge,
-    options: Pick<AdminAssistantRuntimeOptions, 'resolveContent' | 'findCollectionBySlug'>,
-  ): Promise<AssistantAction[]> {
+    mcpBridge: IMcpBridge,
+    options: Pick<IAdminAssistantRuntimeOptions, 'resolveContent' | 'findCollectionBySlug'>,
+  ): Promise<IAssistantAction[]> {
     const replaceInstruction = ReplaceContentHelpers.parseReplaceInstruction(message);
     if (!replaceInstruction) return [];
     const grouped = new Map<string, Array<{ collectionSlug: string; recordId: string | number; field: string; value: string }>>();
@@ -191,7 +194,7 @@ export class ReplaceContentHelpers {
       list.push(match);
       grouped.set(key, list);
     }
-    const staged: AssistantAction[] = [];
+    const staged: IAssistantAction[] = [];
     if (typeof options.resolveContent === 'function') {
       for (const [groupKey, groupMatches] of grouped.entries()) {
         const [collectionSlug, recordIdRaw] = groupKey.split('::');
@@ -217,11 +220,11 @@ export class ReplaceContentHelpers {
         }
         for (const root of changedRoots) {
           if (JSON.stringify((existing as any)?.[root]) === JSON.stringify((updatedRecord as any)?.[root])) continue;
-          staged.push({ type: 'mcp_call', tool: 'content.update', input: { collectionSlug: collection.slug, id: recordId, data: { [root]: (updatedRecord as any)[root] } } });
+          staged.push({ type: AssistantActionType.MCP_CALL, tool: 'content.update', input: { collectionSlug: collection.slug, id: recordId, data: { [root]: (updatedRecord as any)[root] } } });
         }
       }
     }
-    for (const [slug, paths] of ReplaceContentHelpers._buildPathsBySlug(ReplaceContentHelpers.collectConfigSearchMatches(toolResults, 'plugins.settings.search_text')).entries()) {
+    for (const [slug, paths] of ReplaceContentHelpers._buildPathsBySlug(ReplaceContentHelpers.collectConfigSearchMatches(toolResults, ScopedSearchTool.PLUGIN_CONFIG)).entries()) {
       const configResult = await mcpBridge.call({ tool: 'plugins.settings.get', input: { slug }, context: { dryRun: true } });
       if (!configResult?.ok) continue;
       const currentConfig = (configResult.output as any)?.config ?? {};
@@ -237,9 +240,9 @@ export class ReplaceContentHelpers {
         PathObjectHelpers.setBySegments(patch, segments, replacedValue);
         hasChange = true;
       }
-      if (hasChange && Object.keys(patch).length) staged.push({ type: 'mcp_call', tool: 'plugins.settings.update', input: { slug, merge: true, data: patch } });
+      if (hasChange && Object.keys(patch).length) staged.push({ type: AssistantActionType.MCP_CALL, tool: ScopedSearchTool.PLUGIN_CONFIG.updateTool, input: { slug, merge: true, data: patch } });
     }
-    for (const [slug, paths] of ReplaceContentHelpers._buildPathsBySlug(ReplaceContentHelpers.collectConfigSearchMatches(toolResults, 'themes.config.search_text')).entries()) {
+    for (const [slug, paths] of ReplaceContentHelpers._buildPathsBySlug(ReplaceContentHelpers.collectConfigSearchMatches(toolResults, ScopedSearchTool.THEME_CONFIG)).entries()) {
       const configResult = await mcpBridge.call({ tool: 'themes.config.get', input: { slug }, context: { dryRun: true } });
       if (!configResult?.ok) continue;
       const currentConfig = (configResult.output as any)?.config ?? {};
@@ -255,16 +258,16 @@ export class ReplaceContentHelpers {
         PathObjectHelpers.setBySegments(patch, segments, replacedValue);
         hasChange = true;
       }
-      if (hasChange && Object.keys(patch).length) staged.push({ type: 'mcp_call', tool: 'themes.config.update', input: { slug, merge: true, data: patch } });
+      if (hasChange && Object.keys(patch).length) staged.push({ type: AssistantActionType.MCP_CALL, tool: ScopedSearchTool.THEME_CONFIG.updateTool, input: { slug, merge: true, data: patch } });
     }
     const shouldForceFile = IntentClassifier.isExplicitFileModificationIntent(message);
-    const hasManagedChanges = staged.some((a) => a.type === 'mcp_call' && ['content.update', 'plugins.settings.update', 'themes.config.update'].includes(String(a.tool || '')));
+    const hasManagedChanges = staged.some((a) => a.type === AssistantActionType.MCP_CALL && ['content.update', 'plugins.settings.update', 'themes.config.update'].includes(String(a.tool || '')));
     if (!shouldForceFile && hasManagedChanges) return staged;
-    for (const target of ReplaceContentHelpers._collectUniqueTargets(ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, 'plugins.files.search_text'))) {
-      staged.push({ type: 'mcp_call', tool: 'plugins.files.replace_text', input: { slug: target.slug, path: target.path, from: replaceInstruction.from, to: replaceInstruction.to } });
+    for (const target of ReplaceContentHelpers._collectUniqueTargets(ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, ScopedSearchTool.PLUGIN_FILES))) {
+      staged.push({ type: AssistantActionType.MCP_CALL, tool: ScopedSearchTool.PLUGIN_FILES.updateTool, input: { slug: target.slug, path: target.path, from: replaceInstruction.from, to: replaceInstruction.to } });
     }
-    for (const target of ReplaceContentHelpers._collectUniqueTargets(ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, 'themes.files.search_text'))) {
-      staged.push({ type: 'mcp_call', tool: 'themes.files.replace_text', input: { slug: target.slug, path: target.path, from: replaceInstruction.from, to: replaceInstruction.to } });
+    for (const target of ReplaceContentHelpers._collectUniqueTargets(ReplaceContentHelpers.collectScopedFileSearchMatches(toolResults, ScopedSearchTool.THEME_FILES))) {
+      staged.push({ type: AssistantActionType.MCP_CALL, tool: ScopedSearchTool.THEME_FILES.updateTool, input: { slug: target.slug, path: target.path, from: replaceInstruction.from, to: replaceInstruction.to } });
     }
     return staged;
   }

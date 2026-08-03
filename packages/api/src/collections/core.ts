@@ -1,20 +1,21 @@
-import { type Collection, SystemConstants } from '@fromcode119/core';
+import { type ICollection, SystemConstants } from '@fromcode119/core';
 import { MediaCollection } from '@fromcode119/media';
+import { FieldType } from '@fromcode119/core';
 
 export class CoreCollections {
-  static readonly user: Collection = {
+  static readonly user: ICollection = {
     slug: 'users',
     displayName: 'Users',
     tableName: SystemConstants.TABLE.USERS,
     system: true,
     fields: [
-      { name: 'email', label: 'E-Mail', type: 'text', required: true, unique: true },
-      { name: 'username', label: 'Username', type: 'text', unique: true },
-      { name: 'password', label: 'Password', type: 'password', required: true, admin: { hidden: true } },
-      { name: 'roles', label: 'Roles', type: 'json', admin: { component: 'Tags' } },
-      { name: 'permissions', label: 'Permissions', type: 'json', admin: { component: 'Tags' } },
-      { name: 'firstName', label: 'First Name', type: 'text' },
-      { name: 'lastName', label: 'Last Name', type: 'text' }
+      { name: FieldType.EMAIL.value, label: 'E-Mail', type: FieldType.TEXT, required: true, unique: true },
+      { name: 'username', label: 'Username', type: FieldType.TEXT, unique: true },
+      { name: FieldType.PASSWORD.value, label: 'Password', type: FieldType.PASSWORD, required: true, admin: { hidden: true } },
+      { name: 'roles', label: 'Roles', type: FieldType.JSON, admin: { component: 'Tags' } },
+      { name: 'permissions', label: 'Permissions', type: FieldType.JSON, admin: { component: 'Tags' } },
+      { name: 'firstName', label: 'First Name', type: FieldType.TEXT },
+      { name: 'lastName', label: 'Last Name', type: FieldType.TEXT }
     ],
     admin: {
       priority: 1,
@@ -28,9 +29,9 @@ export class CoreCollections {
   // Cast needed: MediaCollection.schema is typed without importing core's Collection
   // (media cannot import core's Collection type due to tsconfig reference direction).
   // The shape is structurally valid — this cast is safe.
-  static readonly media: Collection = MediaCollection.schema as unknown as Collection;
+  static readonly media: ICollection = MediaCollection.schema as unknown as ICollection;
 
-  static readonly settings: Collection = {
+  static readonly settings: ICollection = {
     slug: 'settings',
     displayName: 'Global Settings',
     tableName: SystemConstants.TABLE.META,
@@ -38,11 +39,11 @@ export class CoreCollections {
     timestamps: false,
     system: true,
     fields: [
-      { name: 'key', label: 'Setting Key', type: 'text', required: true, unique: true, admin: { readOnly: true } },
-      { name: 'value', label: 'Value', type: 'text', required: true },
-      { name: 'description', label: 'Description', type: 'textarea', admin: { readOnly: true } },
-      { name: 'group', label: 'Group', type: 'text', admin: { readOnly: true } },
-      { name: 'updatedAt', label: 'Updated At', type: 'date', admin: { readOnly: true } }
+      { name: 'key', label: 'Setting Key', type: FieldType.TEXT, required: true, unique: true, admin: { readOnly: true } },
+      { name: 'value', label: 'Value', type: FieldType.TEXT, required: true },
+      { name: 'description', label: 'Description', type: FieldType.TEXTAREA, admin: { readOnly: true } },
+      { name: FieldType.GROUP.value, label: 'Group', type: FieldType.TEXT, admin: { readOnly: true } },
+      { name: 'updatedAt', label: 'Updated At', type: FieldType.DATE, admin: { readOnly: true } }
     ],
     admin: {
       priority: 3,

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
 import { PluginsFacade, SdkClient } from '@fromcode119/core/client';
-import type { PluginApiSubscription } from '../context.interfaces';
+import type { IPluginApiSubscription } from '@react/interfaces/plugin-api-subscription.interface';
 
 export class ContextHooksSdkService {
   static useApi(api: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -24,7 +24,7 @@ export class ContextHooksSdkService {
     namespace: string,
     getPluginApi: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     hasPluginApi: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    subscription?: PluginApiSubscription,
+    subscription?: IPluginApiSubscription,
   ) {
     // Subscribe to the plugin API registry so late registrations (plugin frontend bundles
     // registering their API clients after this component rendered) propagate here in ONE

@@ -1,5 +1,5 @@
-import React from 'react';
+import { Context as ReactorContext } from '@fromcode119/reactor';
 
 export class SettingsContext {
-  static readonly Context = React.createContext<Record<string, any>>({});
+  static readonly Context = new ReactorContext<Record<string, any>>({}).raw;
 }

@@ -1,13 +1,13 @@
-import { ContextBridge } from '@fromcode119/react';
-import { AccountDashboard } from './dashboard';
-import { AccountDashboardHero } from './dashboard-hero';
-import { AccountTabNavigation } from './tab-navigation';
-import { AccountOverviewPanel } from './overview-panel';
-import { AccountOrdersPanel } from './orders-panel';
-import { AccountProfileCard } from './profile-card';
-import { AccountSecurityCard } from './security-card';
-import { AccountSessionCard } from './session-card';
-import { AccountTwoFactorCard } from './two-factor-card';
+import { ContextBridge } from '@fromcode119/react/context-bridge';
+import { AccountDashboard } from '@/components/account/dashboard';
+import { AccountDashboardHero } from '@/components/account/dashboard-hero';
+import { AccountTabNavigation } from '@/components/account/tab-navigation';
+import { AccountOverviewPanel } from '@/components/account/overview-panel';
+import { AccountOrdersPanel } from '@/components/account/orders-panel';
+import { AccountProfileCard } from '@/components/account/profile-card';
+import { AccountSecurityCard } from '@/components/account/security-card';
+import { AccountSessionCard } from '@/components/account/session-card';
+import { AccountTwoFactorCard } from '@/components/account/two-factor-card';
 
 export class AccountSlotRegistrar {
   static register(): void {

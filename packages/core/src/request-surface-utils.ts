@@ -1,11 +1,11 @@
-import { ApiPathUtils } from './api/api-path-utils';
-import { ApplicationUrlUtils } from './application-url-utils';
-import { ApiVersionUtils } from './api-version';
-import { AppPathConstants } from './app-path-constants';
-import { RequestSurfaceHelper } from './request-surface-helper';
-import { RequestSurfaceOriginUtils } from './request-surface-origin-utils';
-import { RouteConstants } from './route-constants';
-import { SystemConstants } from './constants';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApiVersionUtils } from '@core/api-version';
+import { AppPathConstants } from '@core/constants/app-path.constants';
+import { RequestSurfaceHelper } from '@core/request-surface-helper';
+import { RequestSurfaceOriginUtils } from '@core/request-surface-origin-utils';
+import { RouteConstants } from '@core/constants/route.constants';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class RequestSurfaceUtils {
   static readonly CLIENT_HEADER = 'x-framework-client';

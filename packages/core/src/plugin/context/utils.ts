@@ -1,10 +1,10 @@
-import { LoadedPlugin, PluginContext } from '../../types';
-import { Logger } from '../../logging';
-import { PluginPermissionsService } from '../../security/plugin-permissions-service';
-import type { PluginManagerInterface } from './utils.interfaces';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { Logger } from '@core/logging';
+import { PluginPermissionsService } from '@core/security/plugin-permissions-service';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 
 export class ContextSecurityProxy {
-  static createSecurityHelpers(plugin: LoadedPlugin, manager: PluginManagerInterface, rootLogger: Logger) {
+  static createSecurityHelpers(plugin: ILoadedPlugin, manager: IPluginManagerInterface, rootLogger: Logger) {
       const hasCapability = (cap: string) =>
         PluginPermissionsService.hasPermission(plugin.manifest, cap) ||
         plugin.manifest.capabilities?.includes('*');

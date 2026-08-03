@@ -1,4 +1,5 @@
-import type { PaginationInput, PaginationMeta } from './pagination.interfaces';
+import type { IPaginationInput } from '@core/interfaces/pagination-input.interface';
+import type { IPaginationMeta } from '@core/interfaces/pagination-meta.interface';
 
 /**
  * Pagination parsing and meta generation utilities.
@@ -9,7 +10,7 @@ import type { PaginationInput, PaginationMeta } from './pagination.interfaces';
  * const meta = PaginationUtils.meta(totalCount, input);
  */
 export class PaginationUtils {
-  static parse(input: unknown, defaults: Partial<PaginationInput> = {}): PaginationInput {
+  static parse(input: unknown, defaults: Partial<IPaginationInput> = {}): IPaginationInput {
     const q = (input ?? {}) as Record<string, unknown>;
     const page = Math.max(1, Math.floor(Number(q.page) || 1));
     const rawPerPage = Number(q.per_page ?? q.perPage ?? q.limit ?? defaults.perPage ?? 20);
@@ -17,11 +18,11 @@ export class PaginationUtils {
     return { page, perPage };
   }
 
-  static offset(input: PaginationInput): number {
+  static offset(input: IPaginationInput): number {
     return (input.page - 1) * input.perPage;
   }
 
-  static meta(total: number, input: PaginationInput): PaginationMeta {
+  static meta(total: number, input: IPaginationInput): IPaginationMeta {
     const totalPages = total > 0 ? Math.ceil(total / input.perPage) : 0;
     return {
       page: input.page,

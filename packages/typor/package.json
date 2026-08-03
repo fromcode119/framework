@@ -1,0 +1,40 @@
+{
+  "name": "@fromcode119/typor",
+  "version": "0.1.80",
+  "description": "Extends TypeScript's type system for real OOP — multiple inheritance for classes, so a data shape never has to stay an interface. Zero runtime dependencies; standalone like reactor/nextor.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.cjs"
+    },
+    "./typor-loader.cjs": "./typor-loader.cjs",
+    "./build": {
+      "types": "./dist/build.d.ts",
+      "import": "./dist/build.js",
+      "require": "./dist/build.cjs",
+      "default": "./dist/build.cjs"
+    },
+    "./cli": "./dist/typor-cli.cjs"
+  },
+  "files": [
+    "dist",
+    "typor-loader.cjs"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --outfile=dist/index.cjs && esbuild src/build.ts --bundle --format=cjs --platform=node --external:typescript --outfile=dist/build.cjs && esbuild src/cli/typor-cli.ts --bundle --format=cjs --platform=node --external:typescript --external:esbuild --outfile=dist/typor-cli.cjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "bin": {
+    "typor": "dist/typor-cli.cjs"
+  }
+}

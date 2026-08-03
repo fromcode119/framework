@@ -1,12 +1,10 @@
-import { CoercionUtils, type Collection } from '@fromcode119/core';
-import { RESTController } from '../../controllers/rest/rest-controller';
-import { ResolutionCacheService } from './resolution-cache-service';
-import type {
-  ResolutionPriorityScanContext,
-  ResolutionScanResult,
-  ResolutionStructureScanContext,
-} from './resolution-collection-scan-service.interfaces';
-
+import { ResolutionMatchKind } from '@api/services/helpers/enums/resolution-match-kind.enum';
+import { CoercionUtils, type ICollection } from '@fromcode119/core';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
+import type { IResolutionPriorityScanContext } from '@api/services/helpers/interfaces/resolution-priority-scan-context.interface';
+import type { IResolutionScanResult } from '@api/services/helpers/interfaces/resolution-scan-result.interface';
+import type { IResolutionStructureScanContext } from '@api/services/helpers/interfaces/resolution-structure-scan-context.interface';
 /**
  * The two collection scan passes of route resolution, restructured for latency WITHOUT changing
  * resolution semantics: collections are still visited strictly in registration order and the first
@@ -27,19 +25,19 @@ export class ResolutionCollectionScanService {
   ) {}
 
   /** Pass 1 — custom permalinks first, then exact slugs, per collection in order. */
-  async scanPriority(ctx: ResolutionPriorityScanContext): Promise<ResolutionScanResult | null> {
+  async scanPriority(ctx: IResolutionPriorityScanContext): Promise<IResolutionScanResult | null> {
     const previewFlag = ctx.options.preview ? '1' : '0';
     for (const { collection, pluginSlug } of ctx.entries) {
       const flags = this.cache.getCollectionFlags(collection);
-      const finds: Array<{ kind: 'custom' | 'slug'; candidate: string; query: any }> = [];
+      const finds: Array<{ kind: ResolutionMatchKind; candidate: string; query: any }> = [];
       if (flags.hasCustomPermalink) {
         for (const candidate of ctx.pathCandidates) {
-          finds.push({ kind: 'custom', candidate, query: ctx.withLocale({ customPermalink: candidate, limit: 1, preview: previewFlag }) });
+          finds.push({ kind: ResolutionMatchKind.CUSTOM, candidate, query: ctx.withLocale({ customPermalink: candidate, limit: 1, preview: previewFlag }) });
         }
       }
       if (flags.hasSlug) {
         for (const candidate of ctx.slugCandidates) {
-          finds.push({ kind: 'slug', candidate, query: ctx.withLocale({ slug: candidate, limit: 1, preview: previewFlag }) });
+          finds.push({ kind: ResolutionMatchKind.SLUG, candidate, query: ctx.withLocale({ slug: candidate, limit: 1, preview: previewFlag }) });
         }
       }
       if (finds.length === 0) continue;
@@ -56,7 +54,7 @@ export class ResolutionCollectionScanService {
         return {
           type: collection.shortSlug || collection.slug,
           plugin: pluginSlug,
-          doc: f.kind === 'custom' ? ctx.presentCustom(doc, collection) : ctx.presentSlug(doc, collection, f.candidate),
+          doc: f.kind === ResolutionMatchKind.CUSTOM ? ctx.presentCustom(doc, collection) : ctx.presentSlug(doc, collection, f.candidate),
         };
       }
     }
@@ -64,8 +62,8 @@ export class ResolutionCollectionScanService {
   }
 
   /** Pass 2 — permalink-structure search, one query per collection, batched in ordered chunks. */
-  async scanStructure(ctx: ResolutionStructureScanContext): Promise<ResolutionScanResult | null> {
-    const jobs: Array<{ collection: Collection; pluginSlug: string; query: any }> = [];
+  async scanStructure(ctx: IResolutionStructureScanContext): Promise<IResolutionScanResult | null> {
+    const jobs: Array<{ collection: ICollection; pluginSlug: string; query: any }> = [];
     for (const { collection, pluginSlug } of ctx.entries) {
       const query = this.buildStructureQuery(collection, ctx);
       if (query) jobs.push({ collection, pluginSlug, query });
@@ -87,7 +85,7 @@ export class ResolutionCollectionScanService {
     return null;
   }
 
-  async isPermalinkDisabled(collection: Collection, docId: any, preview: boolean): Promise<boolean> {
+  async isPermalinkDisabled(collection: ICollection, docId: any, preview: boolean): Promise<boolean> {
     if (preview) return false;
     if (docId === null || docId === undefined || docId === '') return false;
     try {
@@ -99,7 +97,7 @@ export class ResolutionCollectionScanService {
     }
   }
 
-  private buildStructureQuery(collection: Collection, ctx: ResolutionStructureScanContext): any | null {
+  private buildStructureQuery(collection: ICollection, ctx: IResolutionStructureScanContext): any | null {
     let searchId: number | null = null;
     let searchSlug: string | null = null;
     const prefix = collection.shortSlug || collection.slug;

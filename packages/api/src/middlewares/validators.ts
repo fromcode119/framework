@@ -1,4 +1,4 @@
-import type { ValidatorFunction } from './validation/validation-middleware.types';
+import type { IValidatorFunction } from '@api/middlewares/validation/interfaces/validator-function.interface';
 
 /**
  * Quick validator helpers for common validation patterns.
@@ -7,7 +7,7 @@ export class Validators {
   /**
    * Validate that required fields are present.
    */
-  static required(...fields: string[]): ValidatorFunction {
+  static required(...fields: string[]): IValidatorFunction {
     return (data: any) => {
       for (const field of fields) {
         if (!data[field]) {
@@ -21,7 +21,7 @@ export class Validators {
   /**
    * Validate email format.
    */
-  static email(field: string): ValidatorFunction {
+  static email(field: string): IValidatorFunction {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return (data: any) => {
       if (data[field] && !emailRegex.test(data[field])) {
@@ -34,7 +34,7 @@ export class Validators {
   /**
    * Validate string length.
    */
-  static minLength(field: string, min: number): ValidatorFunction {
+  static minLength(field: string, min: number): IValidatorFunction {
     return (data: any) => {
       if (data[field] && String(data[field]).length < min) {
         throw new Error(`Field "${field}" must be at least ${min} characters`);
@@ -46,7 +46,7 @@ export class Validators {
   /**
    * Validate numeric range.
    */
-  static range(field: string, min: number, max: number): ValidatorFunction {
+  static range(field: string, min: number, max: number): IValidatorFunction {
     return (data: any) => {
       const value = Number(data[field]);
       if (isNaN(value) || value < min || value > max) {
@@ -59,7 +59,7 @@ export class Validators {
   /**
    * Combine multiple validators with AND logic.
    */
-  static all(...validators: ValidatorFunction[]): ValidatorFunction {
+  static all(...validators: IValidatorFunction[]): IValidatorFunction {
     return async (data: any) => {
       for (const validator of validators) {
         await validator(data);

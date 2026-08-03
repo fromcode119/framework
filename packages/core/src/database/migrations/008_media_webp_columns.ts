@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class MediaWebPColumnsBackfill extends BaseMigration {
+export class MediaWebPColumnsBackfill extends BaseMigration {
   readonly version = 8;
   readonly name = 'Add WebP optimization columns to media table';
 
@@ -50,5 +50,3 @@ class MediaWebPColumnsBackfill extends BaseMigration {
     });
   }
 }
-
-export default new MediaWebPColumnsBackfill();

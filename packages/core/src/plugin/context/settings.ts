@@ -1,14 +1,13 @@
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { SystemConstants } from '../../constants';
-import { PluginConfigValueService } from '../services/plugin-config-value-service';
-import { SecretService } from '../../security/secret-service';
-
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { SystemConstants } from '@core/constants/system.constants';
+import { PluginConfigValueService } from '@core/plugin/services/plugin-config-value-service';
+import { SecretService } from '@core/security/secret-service';
 
 export class SettingsContextProxy {
   static createSettingsProxy(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface
 ) {
       return {
         register: (schema: any) => {

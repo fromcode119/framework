@@ -3,11 +3,11 @@
 import express from 'express';
 import { CookieConstants, Logger, PluginManager, RequestContextUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
-import { ApiConfig } from '../config/api-config';
-import { RequestCookieService } from '../services/request/request-cookie-service';
-import { RequestLocaleService } from '../services/request/request-locale-service';
-import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
-import { JsonCompressionMiddleware } from '../middlewares/json-compression-middleware';
+import { ApiConfig } from '@api/config/api-config';
+import { RequestCookieService } from '@api/services/request/request-cookie-service';
+import { RequestLocaleService } from '@api/services/request/request-locale-service';
+import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
+import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 
 export class ServerMiddlewareSetup {
   private readonly requestCookies = new RequestCookieService();

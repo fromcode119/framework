@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Handlebars from 'handlebars';
-import type { PluginHealthNotificationData } from './plugin-health-notification-template.interfaces';
+import type { IPluginHealthNotificationData } from '@core/plugin/services/interfaces/plugin-health-notification-data.interface';
 
 /**
  * Renders the "plugins need attention" admin alert from Handlebars template FILES.
@@ -16,7 +16,7 @@ export class PluginHealthNotificationTemplateService {
   private static readonly TEMPLATE_BASE = 'plugin-health-notification';
   private static cache = new Map<string, HandlebarsTemplateDelegate>();
 
-  static render(data: PluginHealthNotificationData): { subject: string; text: string; html: string } {
+  static render(data: IPluginHealthNotificationData): { subject: string; text: string; html: string } {
     return {
       subject: PluginHealthNotificationTemplateService.renderPart('subject.txt', data).trim(),
       text: PluginHealthNotificationTemplateService.renderPart('txt', data),
@@ -24,7 +24,7 @@ export class PluginHealthNotificationTemplateService {
     };
   }
 
-  private static renderPart(extension: string, data: PluginHealthNotificationData): string {
+  private static renderPart(extension: string, data: IPluginHealthNotificationData): string {
     const fileName = `${PluginHealthNotificationTemplateService.TEMPLATE_BASE}.${extension}`;
     const cached = PluginHealthNotificationTemplateService.cache.get(fileName);
     if (cached) return cached(data);

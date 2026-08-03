@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { ApplicationUrlUtils, CookieConstants } from '@fromcode119/core/client';
-import { AdminConstants } from './constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 /**
  * AdminProxy - Business logic for admin authentication middleware

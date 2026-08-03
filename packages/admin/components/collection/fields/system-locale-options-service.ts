@@ -1,5 +1,5 @@
 import { LocalizationPageUtils } from '@/app/settings/localization/localization-page-utils';
-import type { SystemLocaleOption } from './system-locale-field.types';
+import { ISystemLocaleOption } from '@/components/collection/fields/interfaces/system-locale-option.interface';
 
 /**
  * Builds the {@link SystemLocaleField} dropdown options from the platform localization settings.
@@ -8,7 +8,7 @@ import type { SystemLocaleOption } from './system-locale-field.types';
  * so the picker always reflects the same configured locales an admin manages there.
  */
 export class SystemLocaleOptionsService {
-  static fromSettings(settings: Record<string, any> | null | undefined): SystemLocaleOption[] {
+  static fromSettings(settings: Record<string, any> | null | undefined): ISystemLocaleOption[] {
     const map = settings || {};
     const registry = LocalizationPageUtils.parseLocales(this.asString(map.localization_locales));
     const enabledRegistry = registry.filter((locale) => locale.enabled);
@@ -29,11 +29,11 @@ export class SystemLocaleOptionsService {
     return this.fallback();
   }
 
-  static fallback(): SystemLocaleOption[] {
+  static fallback(): ISystemLocaleOption[] {
     return [this.toOption('en', 'English')];
   }
 
-  private static toOption(code: string, name: string): SystemLocaleOption {
+  private static toOption(code: string, name: string): ISystemLocaleOption {
     const normalized = LocalizationPageUtils.normalizeLocaleCode(code);
     const label = String(name || '').trim() || LocalizationPageUtils.languageNameFromCode(normalized);
     return { label: `${label} (${normalized})`, value: normalized };

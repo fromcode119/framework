@@ -3,8 +3,9 @@ import fs from 'fs-extra';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { SystemConstants, PluginHealthReportService } from '@fromcode119/core';
-import type { PluginHealthEntry, PluginHealthEntryInput, PluginHealthReport } from '@fromcode119/core';
-import { CliUtils } from '../utils';
+import type { IPluginHealthEntry, IPluginHealthEntryInput, IPluginHealthReport } from '@fromcode119/core';
+import { CliUtils } from '@cli/utils';
+import { PluginState, PluginRegistryHealth, PluginHeldReason } from '@fromcode119/core';
 
 /**
  * Deploy gate. Reads plugin state DIRECTLY from the `_system_plugins` registry (never through the
@@ -31,7 +32,7 @@ export class PluginPreflightCommandService {
   private static async run(): Promise<void> {
     const db = await CliUtils.getDatabase();
     const pluginsDir = CliUtils.getPluginsDir();
-    const inputs: PluginHealthEntryInput[] = [];
+    const inputs: IPluginHealthEntryInput[] = [];
     const rows = await db.find(PluginPreflightCommandService.TABLE, { orderBy: { slug: 'asc' }, limit: 1000 });
     for (const row of rows) {
       const slug = String(row.slug || '').trim();
@@ -40,12 +41,14 @@ export class PluginPreflightCommandService {
       const manifestCapabilities = PluginPreflightCommandService.readManifestCaps(pluginsDir, slug, approvedCapabilities);
       inputs.push({
         slug,
-        state: String(row.state || 'unknown'),
+        // These three columns hold the enum's STRING value, so they are resolved to members here — the
+        // report compares them against members and a raw string would never match.
+        state: PluginState.resolve(row.state),
         // CLI reads the RAW db manager (framework-side), which returns snake_case columns — the same
         // way plugin-state-service reads this table. Prefer snake_case; keep a camelCase fallback in
         // case a proxied manager is ever passed in.
-        healthStatus: (row.health_status ?? row.healthStatus) ? String(row.health_status ?? row.healthStatus) : undefined,
-        heldReason: (row.held_reason ?? row.heldReason) ? String(row.held_reason ?? row.heldReason) : undefined,
+        healthStatus: PluginRegistryHealth.resolve(row.health_status ?? row.healthStatus),
+        heldReason: PluginHeldReason.resolve(row.held_reason ?? row.heldReason),
         error: row.error ? String(row.error) : undefined,
         manifestCapabilities,
         approvedCapabilities,
@@ -85,7 +88,7 @@ export class PluginPreflightCommandService {
     }
   }
 
-  private static print(report: PluginHealthReport): void {
+  private static print(report: IPluginHealthReport): void {
     const { counts } = report;
     console.log(chalk.white(`\nPlugin preflight — ${counts.total} plugin(s):`));
     console.log(
@@ -113,7 +116,7 @@ export class PluginPreflightCommandService {
     }
   }
 
-  private static driftSuffix(entry: PluginHealthEntry): string {
+  private static driftSuffix(entry: IPluginHealthEntry): string {
     const added = entry.addedCapabilities.map((c) => chalk.green(`+${c}`));
     const removed = entry.removedCapabilities.map((c) => chalk.red(`-${c}`));
     const drift = [...added, ...removed];

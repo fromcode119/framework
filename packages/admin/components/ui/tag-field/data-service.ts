@@ -1,8 +1,9 @@
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminServices } from '@/lib/admin-services';
-import { TagFieldUtils } from './utils';
-import type { TagFieldProps, TagOption } from './interfaces';
+import { TagFieldUtils } from '@/components/ui/tag-field/utils';
+import type { ITagFieldProps } from '@/components/ui/tag-field/interfaces/tag-field-props.interface';
+import type { ITagOption } from '@/components/ui/tag-field/interfaces/tag-option.interface';
 
 /**
  * Encapsulates the network/data logic for {@link TagField}: parsing the stored value
@@ -33,7 +34,7 @@ export class TagFieldDataService {
   }
 
   static async fetchLabels(params: {
-    props: TagFieldProps;
+    props: ITagFieldProps;
     tags: any[];
     labels: Record<string, string>;
     sourceUnavailableMessage: string;
@@ -110,11 +111,11 @@ export class TagFieldDataService {
   }
 
   static async fetchSuggestions(params: {
-    props: TagFieldProps;
+    props: ITagFieldProps;
     inputValue: string;
     sourceUnavailableMessage: string;
     tags: any[];
-    setSuggestions: (suggestions: TagOption[]) => void;
+    setSuggestions: (suggestions: ITagOption[]) => void;
     setSourceUnavailable: (message: string) => void;
     setSourceUnavailableWithSuggestions: (message: string) => void;
     mergeLabels: (labels: Record<string, string>) => void;
@@ -175,7 +176,7 @@ export class TagFieldDataService {
       const docs = Array.isArray(result) ? result : (result.docs || []);
 
       if (docs.length > 0) {
-        const mapped: TagOption[] = docs.map((item: any) => {
+        const mapped: ITagOption[] = docs.map((item: any) => {
           if (typeof item === 'string') return { label: item, value: item };
           if (typeof item === 'object' && item !== null) {
             let rawValue =
@@ -221,7 +222,7 @@ export class TagFieldDataService {
     }
   }
 
-  static async autoCreate(props: TagFieldProps, strValue: string): Promise<void> {
+  static async autoCreate(props: ITagFieldProps, strValue: string): Promise<void> {
     const { allowCreate = true, sourceCollection, sourceField, apiOverrides } = props;
     if (!(allowCreate && (sourceCollection || apiOverrides?.create))) return;
     try {

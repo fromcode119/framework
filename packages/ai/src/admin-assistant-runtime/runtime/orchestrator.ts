@@ -1,19 +1,21 @@
-import type { AssistantChatInput, AssistantChatResult, AssistantCollectionContext } from '../types';
-import { IntentClassifier } from './intent-classifier';
-import { RuntimeUtils } from './types';
-import type { RuntimeContext, RuntimeDependencies } from './types.types';
-import { WorkspaceMapService } from './workspace-map';
-import { OrchestratorActionUtils } from './orchestrator-action-utils';
-import { OrchestratorFinalizeUtils } from './orchestrator-finalize';
-import { OrchestratorHandlers } from './orchestrator-handlers';
+import { AgentRole } from '@ai/api/forge/enums/agent-role.enum';
+import type { IAssistantChatInput } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-input.interface';
+import type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
 
-const { normalizeHistory } = OrchestratorActionUtils;
-
+import { IntentClassifier } from '@ai/admin-assistant-runtime/runtime/intent-classifier';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IRuntimeDependencies } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-dependencies.interface';
+import { WorkspaceMapService } from '@ai/admin-assistant-runtime/runtime/workspace-map';
+import { OrchestratorActionUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-action-utils';
+import { OrchestratorFinalizeUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-finalize';
+import { OrchestratorHandlers } from '@ai/admin-assistant-runtime/runtime/orchestrator-handlers';
+import { RuntimeIntentKind } from '@ai/admin-assistant-runtime/runtime/enums/runtime-intent-kind.enum';
 export class OrchestratorRunner {
   static async runOrchestrator(
-  input: AssistantChatInput,
-  deps: RuntimeDependencies,
-): Promise<AssistantChatResult | null> {
+  input: IAssistantChatInput,
+  deps: IRuntimeDependencies,
+): Promise<IAssistantChatResult | null> {
       const now = Date.now();
       const message = String(input?.message || '').trim();
       if (!message) return null;
@@ -36,7 +38,7 @@ export class OrchestratorRunner {
         : [];
       const allowedToolSet = new Set<string>(allowedTools);
 
-      const context: RuntimeContext = {
+      const context: IRuntimeContext = {
         input,
         options: deps.options,
         now,
@@ -46,25 +48,25 @@ export class OrchestratorRunner {
         bridge,
         allowedToolSet,
         checkpoint: input?.checkpoint,
-        history: normalizeHistory(input?.history),
+        history: OrchestratorActionUtils.normalizeHistory(input?.history),
         workspaceMap,
       };
 
       const planId = RuntimeUtils.createPlanId();
-      const traces: Array<{ iteration: number; message: string; phase?: 'planner' | 'executor' | 'verifier'; toolCalls: Array<{ tool: string; input: Record<string, any> }> }> = [];
+      const traces: Array<{ iteration: number; message: string; phase?: AgentRole; toolCalls: Array<{ tool: string; input: Record<string, any> }> }> = [];
 
       const intent = IntentClassifier.classifyIntent({ message, history: context.history, checkpoint: context.checkpoint });
-      traces.push({ iteration: 1, phase: 'planner', message: `Classified intent: ${intent.kind} (${intent.confidence.toFixed(2)})`, toolCalls: [] });
+      traces.push({ iteration: 1, phase: AgentRole.PLANNER, message: `Classified intent: ${intent.kind} (${intent.confidence.toFixed(2)})`, toolCalls: [] });
 
-      if (intent.kind === 'homepage_draft') {
+      if (intent.kind === RuntimeIntentKind.HOMEPAGE_DRAFT) {
         return OrchestratorHandlers.handleHomepageDraft(deps, context, intent, message, selectedSkill, agentMode, traces, planId);
       }
 
-      if (intent.kind === 'replace_text') {
+      if (intent.kind === RuntimeIntentKind.REPLACE_TEXT) {
         return OrchestratorHandlers.handleReplaceText(deps, context, intent, message, selectedSkill, agentMode, traces, planId);
       }
 
-      if (intent.kind === 'action_request') {
+      if (intent.kind === RuntimeIntentKind.ACTION_REQUEST) {
         return OrchestratorHandlers.handleActionRequest(deps, context, intent, message, selectedSkill, agentMode, traces, planId);
       }
 
@@ -72,6 +74,4 @@ export class OrchestratorRunner {
 
   }
 }
-
-
 

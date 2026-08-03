@@ -1,4 +1,4 @@
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { NavUtils } from '@/lib/nav-utils';
 
 /**

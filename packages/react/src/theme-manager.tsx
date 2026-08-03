@@ -1,14 +1,14 @@
-"use client";
+import type { ReactNode } from 'react';
+import { Reactor, prop } from '@fromcode119/reactor';
+import { PluginsProvider } from '@react/context/view/plugins-provider.client';
+import type { IPluginContextValue } from '@react/interfaces/plugin-context-value.interface';
 
-import React from 'react';
-import { PluginsProvider } from './context';
-import type { PluginContextValue } from './context.interfaces';
-import type { ThemeManagerProps } from './theme-manager.interfaces';
+export class ThemeManager extends Reactor {
+  @prop declare apiUrl: string;
 
-export class ThemeManager extends React.Component<ThemeManagerProps> {
   static contextType = PluginsProvider.PluginContext;
 
-  declare context: PluginContextValue | null;
+  declare context: IPluginContextValue | null;
 
   componentDidMount(): void {
     this.applyThemeVariables();
@@ -18,7 +18,7 @@ export class ThemeManager extends React.Component<ThemeManagerProps> {
     this.applyThemeVariables();
   }
 
-  render(): React.ReactNode {
+  render(): ReactNode {
     return null;
   }
 

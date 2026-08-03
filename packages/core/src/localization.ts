@@ -1,7 +1,9 @@
-import { BrowserStateClient } from './clients/browser-state-client';
-import { CookieConstants } from './cookie-constants';
-import { CoercionUtils } from './coercion-utils';
-import type { NormalizeLocaleOptions, ResolveAnyStringOptions } from './localization.interfaces';
+import { BrowserStateClient } from '@core/clients/browser-state-client';
+import { CookieConstants } from '@core/constants/cookie.constants';
+
+import type { INormalizeLocaleOptions } from '@core/interfaces/normalize-locale-options.interface';
+import type { IResolveAnyStringOptions } from '@core/interfaces/resolve-any-string-options.interface';
+import { EnvUtils } from '@core/utils/env-utils';
 
 /**
  * Utilities for locale code normalisation, localised value detection, and
@@ -33,7 +35,7 @@ export class LocalizationUtils {
       String(settings?.frontend_default_locale || '').trim(),
       browserState.readLocalString(storageKey),
       browserState.readCookie(storageKey),
-      typeof document !== 'undefined' ? String(document.documentElement.lang || '').trim() : '',
+      EnvUtils.isBrowser() ? String(document.documentElement.lang || '').trim() : '',
       typeof navigator !== 'undefined' ? String(navigator.language || '').trim() : '',
       String(options.defaultLocale || '').trim(),
     ];
@@ -48,7 +50,7 @@ export class LocalizationUtils {
     return '';
   }
 
-  static normalizeLocaleCode(value: unknown, options: NormalizeLocaleOptions = {}): string {
+  static normalizeLocaleCode(value: unknown, options: INormalizeLocaleOptions = {}): string {
     const raw = String(value || '').trim().toLowerCase().replace(/_/g, '-');
     if (!raw) return '';
     if (options.short) {
@@ -111,7 +113,7 @@ export class LocalizationUtils {
     return first !== undefined ? String(first).trim() : '';
   }
 
-  static resolveAnyString(value: unknown, options: ResolveAnyStringOptions = {}): string {
+  static resolveAnyString(value: unknown, options: IResolveAnyStringOptions = {}): string {
     if (value === null || value === undefined) return '';
     if (typeof value === 'string') return (value as string).trim();
     if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();

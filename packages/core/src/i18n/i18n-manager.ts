@@ -1,15 +1,15 @@
-import { TranslationMap } from '../types';
-import { RequestContextUtils } from '../context/request-context';
+import type { ITranslationMap } from '@core/interfaces/translation-map.interface';
+import { RequestContextUtils } from '@core/context/request-context';
 
 export class I18nManager {
-  public translations: Map<string, TranslationMap> = new Map();
+  public translations: Map<string, ITranslationMap> = new Map();
   private currentLocale: string;
 
   constructor(defaultLocale: string = 'en') {
     this.currentLocale = defaultLocale;
   }
 
-  registerTranslations(locale: string, namespace: string, translations: TranslationMap) {
+  registerTranslations(locale: string, namespace: string, translations: ITranslationMap) {
     if (!this.translations.has(locale)) {
       this.translations.set(locale, {});
     }

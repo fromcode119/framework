@@ -1,12 +1,11 @@
-import React from 'react';
-import type { TranslationContextValue } from './translation-context.interfaces';
-
-const defaultValue: TranslationContextValue = {
-  t: (key) => key,
-  locale: 'en',
-  setLocale: () => {},
-};
+import { Context as ReactorContext } from '@fromcode119/reactor';
+import type { ITranslationContextValue } from '@react/context/interfaces/translation-context-value.interface';
 
 export class TranslationContext {
-  static readonly Context = React.createContext<TranslationContextValue>(defaultValue);
+  private static readonly defaultValue: ITranslationContextValue = {
+    t: (key: string) => key,
+    locale: 'en',
+    setLocale: () => {},
+  };
+  static readonly Context = new ReactorContext<ITranslationContextValue>(TranslationContext.defaultValue).raw;
 }

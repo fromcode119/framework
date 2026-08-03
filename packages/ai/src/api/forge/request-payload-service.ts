@@ -1,7 +1,8 @@
-import type { AssistantHistoryEntry } from './request-payload-service.types';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import type { IAssistantHistoryEntry } from '@ai/api/forge/interfaces/assistant-history-entry.interface';
 
 export class AssistantRequestPayloadService {
-  constructor(private normalizeHistory: (input: any) => AssistantHistoryEntry[]) {}
+  constructor(private normalizeHistory: (input: any) => IAssistantHistoryEntry[]) {}
 
   normalizeLegacyAssistantChatPayload(body: any): any {
     const source = body && typeof body === 'object' ? body : {};
@@ -17,7 +18,7 @@ export class AssistantRequestPayloadService {
         const lastUserIndex = [...normalizedMessages]
           .map((item, index) => ({ item, index }))
           .reverse()
-          .find((entry) => entry.item.role === 'user');
+          .find((entry) => entry.item.role === AssistantRole.USER);
         if (lastUserIndex) {
           normalized.message = lastUserIndex.item.content;
           normalized.history = normalizedMessages.slice(0, lastUserIndex.index);

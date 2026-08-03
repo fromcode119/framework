@@ -1,16 +1,16 @@
-import { LogLevel } from './logging.enums';
-import type { LoggerOptions } from './logging.interfaces';
-
-const envLogLevel = process.env.LOG_LEVEL?.toUpperCase();
-const defaultLogLevel = envLogLevel && envLogLevel in LogLevel ? (LogLevel as any)[envLogLevel] : LogLevel.DEBUG;
+import { LogLevel } from '@core/enums/log-level.enum';
+import type { ILoggerOptions } from '@core/interfaces/logger-options.interface';
 
 export class Logger {
+  /** `LOG_LEVEL` from the environment, or DEBUG. `resolve()` replaces an `in LogLevel` + cast probe. */
+  private static readonly defaultLogLevel = LogLevel.resolve(process.env.LOG_LEVEL);
+
   private namespace: string;
   private minLevel: LogLevel;
 
-  constructor(options: LoggerOptions = {}) {
+  constructor(options: ILoggerOptions = {}) {
     this.namespace = options.namespace || 'system';
-    this.minLevel = options.minLevel !== undefined ? options.minLevel : defaultLogLevel;
+    this.minLevel = options.minLevel !== undefined ? options.minLevel : Logger.defaultLogLevel;
   }
 
   private format(level: string, message: string): string {
@@ -19,25 +19,25 @@ export class Logger {
   }
 
   debug(message: string, ...args: any[]) {
-    if (this.minLevel <= LogLevel.DEBUG) {
+    if (this.minLevel.permits(LogLevel.DEBUG)) {
       console.debug(this.format('DEBUG', message), ...args);
     }
   }
 
   info(message: string, ...args: any[]) {
-    if (this.minLevel <= LogLevel.INFO) {
+    if (this.minLevel.permits(LogLevel.INFO)) {
       console.log(this.format('INFO', message), ...args);
     }
   }
 
   warn(message: string, ...args: any[]) {
-    if (this.minLevel <= LogLevel.WARN) {
+    if (this.minLevel.permits(LogLevel.WARN)) {
       console.warn(this.format('WARN', message), ...args);
     }
   }
 
   error(message: string, ...args: any[]) {
-    if (this.minLevel <= LogLevel.ERROR) {
+    if (this.minLevel.permits(LogLevel.ERROR)) {
       console.error(this.format('ERROR', message), ...args);
     }
   }

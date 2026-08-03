@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { BaseController, PluginManager, Logger } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
-import { media, IDatabaseManager } from '@fromcode119/database';
-import { ApiUrlUtils } from '../utils/url';
-import { MediaFolderController } from './media-folder-controller';
+import { IDatabaseManager, Schema } from '@fromcode119/database';
+import { ApiUrlUtils } from '@api/utils/url';
+import { MediaFolderController } from '@api/controllers/media-folder-controller';
 
 export class MediaController extends BaseController {
   private db: IDatabaseManager;
@@ -89,21 +89,21 @@ export class MediaController extends BaseController {
       
       if (q) {
         conditions.push(or(
-           this.db.like(media.originalName, `%${q}%`),
-           this.db.like(media.filename, `%${q}%`)
+           this.db.like(Schema.media.originalName, `%${q}%`),
+           this.db.like(Schema.media.filename, `%${q}%`)
         ));
       }
 
       if (folderId !== undefined) {
         const targetFolder = folderId === 'null' ? null : Number(folderId);
-        conditions.push(targetFolder === null ? isNull(media.folderId) : eq(media.folderId, targetFolder));
+        conditions.push(targetFolder === null ? isNull(Schema.media.folderId) : eq(Schema.media.folderId, targetFolder));
       }
 
       const whereClause = conditions.length > 0 ? (conditions.length === 1 ? conditions[0] : and(...conditions)) : undefined;
 
       let files: any[] = [];
       try {
-        files = await this.db.find(media, {
+        files = await this.db.find(Schema.media, {
             columns: {
                 id: true,
                 filename: true,
@@ -124,12 +124,12 @@ export class MediaController extends BaseController {
                 updatedAt: true,
             },
             where: whereClause,
-            orderBy: this.db.desc(media.createdAt)
+            orderBy: this.db.desc(Schema.media.createdAt)
         });
       } catch (err) {
         // Fallback for older schemas missing optional columns
         this.logger.warn('Media list fallback to basic columns', err);
-        files = await this.db.find(media, {
+        files = await this.db.find(Schema.media, {
             columns: {
                 id: true,
                 filename: true,
@@ -139,7 +139,7 @@ export class MediaController extends BaseController {
                 createdAt: true,
             },
             where: whereClause,
-            orderBy: this.db.desc(media.createdAt)
+            orderBy: this.db.desc(Schema.media.createdAt)
         });
       }
 
@@ -181,7 +181,7 @@ export class MediaController extends BaseController {
       return res.status(400).json({ error: 'No supported fields to update' });
     }
     try {
-      const updated = await this.db.update(media, { id: Number(id) }, patch);
+      const updated = await this.db.update(Schema.media, { id: Number(id) }, patch);
       res.json(updated);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -199,14 +199,14 @@ export class MediaController extends BaseController {
   async deleteFile(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const file: any = await this.db.findOne(media, { id: Number(id) });
+      const file: any = await this.db.findOne(Schema.media, { id: Number(id) });
       if (!file) return res.status(404).json({ error: 'File not found' });
 
       await this.mediaManager.remove(file.path);
       if (file.optimizedPath) {
         try { await this.mediaManager.remove(file.optimizedPath); } catch { /* ignore if missing */ }
       }
-      await this.db.delete(media, { id: Number(id) });
+      await this.db.delete(Schema.media, { id: Number(id) });
       
       res.json({ success: true });
     } catch (err: any) {
@@ -217,7 +217,7 @@ export class MediaController extends BaseController {
   async optimizeImage(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const file: any = await this.db.findOne(media, { id: Number(id) });
+      const file: any = await this.db.findOne(Schema.media, { id: Number(id) });
       if (!file) return res.status(404).json({ error: 'File not found' });
 
       const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -235,7 +235,7 @@ export class MediaController extends BaseController {
         try { await this.mediaManager.remove(file.optimizedPath); } catch { /* ignore if missing */ }
       }
 
-      await this.db.update(media, { id: Number(id) }, {
+      await this.db.update(Schema.media, { id: Number(id) }, {
         optimizedPath: variant.path,
         optimizedSize: variant.size,
         optimizedWidth: variant.width,

@@ -1,12 +1,12 @@
-import type { McpToolDefinition } from '@fromcode119/mcp';
-import type { AdminAssistantRuntimeOptions } from '../types';
-import { SearchTextHelpers } from './search-text-helpers';
-import { PathObjectHelpers } from './path-object-helpers';
-import { RuntimeMiscHelpers } from './runtime-misc-helpers';
+import type { IMcpToolDefinition } from '@fromcode119/mcp';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import { SearchTextHelpers } from '@ai/admin-assistant-runtime/helpers/search-text-helpers';
+import { PathObjectHelpers } from '@ai/admin-assistant-runtime/helpers/path-object-helpers';
+import { RuntimeMiscHelpers } from '@ai/admin-assistant-runtime/helpers/runtime-misc-helpers';
 
 /** MCP tool definitions for content and collection operations. */
 export class McpContentTools {
-  static build(options: AdminAssistantRuntimeOptions, _dryRun: boolean): McpToolDefinition[] {
+  static build(options: IAdminAssistantRuntimeOptions, _dryRun: boolean): IMcpToolDefinition[] {
     return [
       {
         tool: 'collections.list', readOnly: true,

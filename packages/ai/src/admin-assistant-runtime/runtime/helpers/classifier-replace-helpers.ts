@@ -1,3 +1,4 @@
+import type { AssistantRole } from '@ai/enums/assistant-role.enum';
 /**
  * Replace-instruction parsing helpers for the AI runtime classifier.
  * Extracted from ClassifierHelpers to keep files under the line limit.
@@ -72,7 +73,7 @@ export class ClassifierReplaceHelpers {
    * // => { from: 'old', to: 'new' }
    */
   static findLatestReplaceFromHistory(
-    history: Array<{ role?: string; content?: string }>,
+    history: Array<{ role?: AssistantRole; content?: string }>,
   ): { from: string; to: string } | null {
     const source = Array.isArray(history) ? history : [];
     for (let i = source.length - 1; i >= 0; i -= 1) {

@@ -1,6 +1,9 @@
-import { TextHelpers } from './text-helpers';
-import { ClassifierUrlHelpers } from './classifier-url-helpers';
-import { ClassifierFollowupHelpers } from './classifier-followup-helpers';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import type { AssistantRole } from '@ai/enums/assistant-role.enum';
+import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
+import { ClassifierUrlHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/classifier-url-helpers';
+import { ClassifierFollowupHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/classifier-followup-helpers';
 
 /**
  * Clarification-flow helpers for the AI runtime classifier.
@@ -15,8 +18,8 @@ export class ClassifierClarificationHelpers {
    */
   static shouldResumeFromClarification(input: {
     message: string;
-    checkpointReason?: string;
-    checkpointStage?: string;
+    checkpointReason?: CheckpointReason;
+    checkpointStage?: RuntimeStage;
   }): boolean {
     const text = TextHelpers.normalize(input.message).replace(/\s+/g, ' ').trim();
     if (!text) return false;
@@ -41,7 +44,7 @@ export class ClassifierClarificationHelpers {
    * @param checkpoint - The checkpoint object
    * @returns True if in clarification flow
    */
-  static isClarificationFlow(checkpoint?: { reason?: string; stage?: string }): boolean {
+  static isClarificationFlow(checkpoint?: { reason?: CheckpointReason; stage?: RuntimeStage }): boolean {
     const reason = String(checkpoint?.reason || '').trim().toLowerCase();
     const stage = String(checkpoint?.stage || '').trim().toLowerCase();
     return reason === 'clarification_needed' || reason === 'loop_recovery' || stage === 'clarify';
@@ -53,7 +56,7 @@ export class ClassifierClarificationHelpers {
    * @param history - Array of conversation messages
    * @returns The latest assistant message content
    */
-  static getLatestAssistantMessage(history: Array<{ role?: string; content?: string }>): string {
+  static getLatestAssistantMessage(history: Array<{ role?: AssistantRole; content?: string }>): string {
     const source = Array.isArray(history) ? history : [];
     for (let i = source.length - 1; i >= 0; i -= 1) {
       if (String(source[i]?.role || '').toLowerCase() !== 'assistant') continue;
@@ -70,8 +73,8 @@ export class ClassifierClarificationHelpers {
    */
   static buildClarificationQuickAnswer(input: {
     message: string;
-    history?: Array<{ role?: string; content?: string }>;
-    checkpoint?: { reason?: string; stage?: string };
+    history?: Array<{ role?: AssistantRole; content?: string }>;
+    checkpoint?: { reason?: CheckpointReason; stage?: RuntimeStage };
   }): string | null {
     if (!ClassifierClarificationHelpers.isClarificationFlow(input.checkpoint)) return null;
     const text = TextHelpers.normalize(input.message).replace(/\s+/g, ' ').trim();

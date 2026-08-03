@@ -1,7 +1,8 @@
-import { ApiVersionUtils, RuntimeConstants} from '@fromcode119/core/client';
-import { ServerApiUtils } from '../server-api';
-import { ThemeDataPrefetcher } from './theme-data-prefetcher';
-import type { ThemePrefetchApiEntry, ThemePrefetchFromPageConfig } from './theme-data-prefetcher.interfaces';
+import { ApiVersionUtils, RuntimeConstants } from '@fromcode119/core/client';
+import { ServerApiUtils } from '@/lib/server-api';
+import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
+import type { ThemePrefetchApiEntry } from '@/lib/theme/theme-prefetch-api-entry';
+import type { ThemePrefetchFromPageConfig } from '@/lib/theme/theme-prefetch-from-page-config';
 
 /**
  * Per-PAGE companion to ThemeDataPrefetcher. Static `ui.prefetchApis` entries are

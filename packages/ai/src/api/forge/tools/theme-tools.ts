@@ -1,11 +1,13 @@
+import { ExtensionArea } from '@ai/api/forge/enums/extension-area.enum';
 import { TypeUtils, ThemeManager } from '@fromcode119/core';
-import type { McpToolDefinition } from '@fromcode119/mcp';
-import { AssistantToolingHelpers } from './helpers';
+import type { IMcpToolDefinition } from '@fromcode119/mcp';
+import { AssistantToolingHelpers } from '@ai/api/forge/tools/helpers';
 
-const DEFAULT_MAX_SCANNED_FILES = 2000, DEFAULT_SEARCH_MATCH_LIMIT = 80;
 
 export class ThemeTools {
-  static buildThemeManagementTools(input: { themeManager: ThemeManager; helpers: AssistantToolingHelpers }): McpToolDefinition[] {
+  private static readonly DEFAULT_MAX_SCANNED_FILES = 2000;
+  private static readonly DEFAULT_SEARCH_MATCH_LIMIT = 80;
+  static buildThemeManagementTools(input: { themeManager: ThemeManager; helpers: AssistantToolingHelpers }): IMcpToolDefinition[] {
     const { themeManager, helpers } = input;
     const themeSummary = () => themeManager.getThemes().map((theme: any) => ({
       slug: String(theme?.slug || '').trim(),
@@ -182,10 +184,10 @@ export class ThemeTools {
         const query = String(input?.query || input?.text || '').trim();
         if (!query) throw new Error('Missing search query');
         const slug = helpers.toAssistantSlug(String(input?.slug || ''), '');
-        const maxMatches = Math.min(400, Math.max(1, Number(input?.maxMatches || DEFAULT_SEARCH_MATCH_LIMIT)));
-        const maxFiles = Math.min(5000, Math.max(1, Number(input?.maxFiles || DEFAULT_MAX_SCANNED_FILES)));
+        const maxMatches = Math.min(400, Math.max(1, Number(input?.maxMatches || ThemeTools.DEFAULT_SEARCH_MATCH_LIMIT)));
+        const maxFiles = Math.min(5000, Math.max(1, Number(input?.maxFiles || ThemeTools.DEFAULT_MAX_SCANNED_FILES)));
         const results = helpers.searchScopeFiles({
-          scope: 'themes',
+          scope: ExtensionArea.THEMES,
           query,
           slug,
           maxMatches,
@@ -215,7 +217,7 @@ export class ThemeTools {
         if (!slug && !filePathInput) throw new Error('Missing theme slug or file path');
 
         const caseSensitive = TypeUtils.parseBoolean(input?.caseSensitive) === true;
-        const resolvedPath = helpers.resolveScopedFilePath('themes', slug, filePathInput);
+        const resolvedPath = helpers.resolveScopedFilePath(ExtensionArea.THEMES, slug, filePathInput);
         const replacement = helpers.replaceTextInFile({
           filePath: resolvedPath,
           from,
@@ -226,7 +228,7 @@ export class ThemeTools {
         return {
           operation: 'themes.files.replace_text',
           dryRun: context?.dryRun === true,
-          slug: slug || helpers.scopeSlugFromPath('themes', resolvedPath),
+          slug: slug || helpers.scopeSlugFromPath(ExtensionArea.THEMES, resolvedPath),
           ...replacement,
         };
       },

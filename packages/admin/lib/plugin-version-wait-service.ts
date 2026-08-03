@@ -1,18 +1,18 @@
-import type { LoadedPlugin } from '@fromcode119/core/client';
+import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { VersionComparisonService } from '@/lib/version-comparison-service';
 
 export class PluginVersionWaitService {
   private static readonly POLL_INTERVAL_MS = 1000;
   private static readonly DEFAULT_TIMEOUT_MS = 90 * 1000;
 
-  static async fetchInstalledPlugin(slug: string): Promise<LoadedPlugin | null> {
+  static async fetchInstalledPlugin(slug: string): Promise<ILoadedPlugin | null> {
     const data = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LIST);
-    return data.find((plugin: LoadedPlugin) => plugin.manifest?.slug === slug) ?? null;
+    return data.find((plugin: ILoadedPlugin) => plugin.manifest?.slug === slug) ?? null;
   }
 
-  static async waitForInstalledVersion(slug: string, targetVersion: string, timeoutMs = this.DEFAULT_TIMEOUT_MS): Promise<LoadedPlugin> {
+  static async waitForInstalledVersion(slug: string, targetVersion: string, timeoutMs = this.DEFAULT_TIMEOUT_MS): Promise<ILoadedPlugin> {
     const startedAt = Date.now();
 
     while (Date.now() - startedAt < timeoutMs) {

@@ -1,11 +1,12 @@
+import { ThemeAssetScope } from '@api/controllers/themes/enums/theme-asset-scope.enum';
 import { Request, Response } from 'express';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { BackupService, ThemeManager, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
-import { ArchiveUploadRequestParser } from '../archive-upload-request-parser';
-import { AssetCacheHeaderService } from '../../services/asset-cache-header-service';
+import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-request-parser';
+import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
 
 /**
  * Archive inspection/extraction, upload-request parsing, asset serving and
@@ -26,7 +27,7 @@ export class ThemeArchiveSupport {
 
   constructor(private manager: ThemeManager) {}
 
-  serveAssetDirectory(req: Request, res: Response, directory: 'public' | 'ui') {
+  serveAssetDirectory(req: Request, res: Response, directory: ThemeAssetScope) {
     const { slug } = req.params;
     const theme = this.manager.getThemes().find(t => t.slug === slug);
     if (!theme) return res.status(404).end();
@@ -37,7 +38,7 @@ export class ThemeArchiveSupport {
     }
 
     const themeDir = this.manager.getThemeDirectory(slug);
-    const assetRoot = path.resolve(themeDir, directory);
+    const assetRoot = path.resolve(themeDir, directory.value);
     const absolutePath = path.resolve(assetRoot, requestedPath);
 
     if (!absolutePath.startsWith(`${assetRoot}${path.sep}`) && absolutePath !== assetRoot) {

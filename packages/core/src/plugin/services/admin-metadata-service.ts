@@ -1,19 +1,23 @@
 import fs from 'fs';
 import path from 'path';
-import { LoadedPlugin, Collection } from '../../types';
-import { Logger } from '../../logging';
-import { AppPathConstants } from '../../app-path-constants';
-import { SystemConstants } from '../../constants';
-import { ApiPathUtils } from '../../api/api-path-utils';
-import { AdminSecondaryPanelAllowlistEntry, AdminSecondaryPanelInputItem, AdminSecondaryPanelNormalizedItem, AdminSecondaryPanelRejection } from './admin-secondary-panel.interfaces';
-import { AdminSecondaryPanelNormalizer } from './admin-secondary-panel-normalizer';
-import { AdminSecondaryPanelGuard } from './admin-secondary-panel-guard';
-import { AdminSecondaryPanelGovernanceService } from './admin-secondary-panel-governance-service';
-import { AdminSecondaryPanelPrecedenceService } from './admin-secondary-panel-precedence-service';
-import { AdminSecondaryPanelResolver } from './admin-secondary-panel-resolver';
-import { AdminSystemNavigationMetadataService } from './admin-system-navigation-metadata-service';
-import { AdminMenuBuilderService } from './admin-menu-builder-service';
-import { PluginState } from './plugin-state.enums';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import { Logger } from '@core/logging';
+
+import { SystemConstants } from '@core/constants/system.constants';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import type { IAdminSecondaryPanelAllowlistEntry } from '@core/plugin/services/interfaces/admin-secondary-panel-allowlist-entry.interface';
+import type { IAdminSecondaryPanelInputItem } from '@core/plugin/services/interfaces/admin-secondary-panel-input-item.interface';
+import type { IAdminSecondaryPanelNormalizedItem } from '@core/plugin/services/interfaces/admin-secondary-panel-normalized-item.interface';
+import type { IAdminSecondaryPanelRejection } from '@core/plugin/services/interfaces/admin-secondary-panel-rejection.interface';
+import { AdminSecondaryPanelNormalizer } from '@core/plugin/services/admin-secondary-panel-normalizer';
+import { AdminSecondaryPanelGuard } from '@core/plugin/services/admin-secondary-panel-guard';
+import { AdminSecondaryPanelGovernanceService } from '@core/plugin/services/admin-secondary-panel-governance-service';
+import { AdminSecondaryPanelPrecedenceService } from '@core/plugin/services/admin-secondary-panel-precedence-service';
+import { AdminSecondaryPanelResolver } from '@core/plugin/services/admin-secondary-panel-resolver';
+import { AdminSystemNavigationMetadataService } from '@core/plugin/services/admin-system-navigation-metadata-service';
+import { AdminMenuBuilderService } from '@core/plugin/services/admin-menu-builder-service';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class AdminMetadataService {
   private logger = new Logger({ namespace: 'admin-metadata-service' });
@@ -26,10 +30,10 @@ export class AdminMetadataService {
   private menuBuilder = new AdminMenuBuilderService(this.logger, this.systemNavigationMetadata);
 
   public getAdminMetadata(
-    allPlugins: LoadedPlugin[],
-    registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>,
+    allPlugins: ILoadedPlugin[],
+    registeredCollections: Map<string, { collection: ICollection; pluginSlug: string }>,
     runtimeModules: any,
-    allowlistEntries: AdminSecondaryPanelAllowlistEntry[] = []
+    allowlistEntries: IAdminSecondaryPanelAllowlistEntry[] = []
   ) {
     const pluginMetadata = allPlugins
       .filter(p => p.state === PluginState.ACTIVE && p.manifest.admin)
@@ -71,7 +75,7 @@ export class AdminMetadataService {
     };
   }
 
-  private buildSecondaryPanel(allPlugins: LoadedPlugin[], allowlistEntries: AdminSecondaryPanelAllowlistEntry[]) {
+  private buildSecondaryPanel(allPlugins: ILoadedPlugin[], allowlistEntries: IAdminSecondaryPanelAllowlistEntry[]) {
     const normalizedItems = [
       ...this.systemNavigationMetadata.getSecondaryPanelInputs(),
       ...allPlugins
@@ -80,7 +84,7 @@ export class AdminMetadataService {
     ]
       .map((input) => this.secondaryPanelNormalizer.normalize(input));
 
-    const accepted: AdminSecondaryPanelNormalizedItem[] = [];
+    const accepted: IAdminSecondaryPanelNormalizedItem[] = [];
     for (const item of normalizedItems) {
       const guardRejection = this.secondaryPanelGuard.validate(item);
       if (guardRejection) {
@@ -97,7 +101,7 @@ export class AdminMetadataService {
     return this.secondaryPanelResolver.resolve(this.secondaryPanelPrecedence.apply(accepted), allowlistEntries.length);
   }
 
-  private getSecondaryPanelInputs(plugin: LoadedPlugin): AdminSecondaryPanelInputItem[] {
+  private getSecondaryPanelInputs(plugin: ILoadedPlugin): IAdminSecondaryPanelInputItem[] {
     const sourceNamespace = String(plugin.manifest.namespace || '').trim().toLowerCase();
     const sourcePlugin = String(plugin.manifest.slug || '').trim().toLowerCase();
     const sourceCanonicalKey = `${sourceNamespace}:${sourcePlugin}`;
@@ -105,11 +109,11 @@ export class AdminMetadataService {
     return items.map((item) => ({ sourceNamespace, sourcePlugin, sourceCanonicalKey, item }));
   }
 
-  private logSecondaryPanelRejection(rejection: AdminSecondaryPanelRejection): void {
+  private logSecondaryPanelRejection(rejection: IAdminSecondaryPanelRejection): void {
     this.logger.warn(`[admin-secondary-panel] REJECTED ${JSON.stringify(rejection)}`);
   }
 
-  private pluginUiAssetPath(plugin: LoadedPlugin, asset: string): string {
+  private pluginUiAssetPath(plugin: ILoadedPlugin, asset: string): string {
     const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug: plugin.manifest.slug }).replace('*', asset.replace(/^\/+/, ''));
     const assetVersion = this.resolvePluginUiAssetVersion(plugin, asset);
     if (!assetVersion) {
@@ -120,7 +124,7 @@ export class AdminMetadataService {
     return `${basePath}${separator}v=${assetVersion}`;
   }
 
-  private resolvePluginUiAssetVersion(plugin: LoadedPlugin, asset: string): string | null {
+  private resolvePluginUiAssetVersion(plugin: ILoadedPlugin, asset: string): string | null {
     const pluginPath = String(plugin.path || '').trim();
     if (!pluginPath) {
       return null;

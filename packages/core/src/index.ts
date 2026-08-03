@@ -1,219 +1,247 @@
 // Types (includes all plugin/schema types moved from @fromcode119/sdk)
-export * from './types';
-export type { PluginInstallProgress, PluginInstallProgressReporter } from './plugin/plugin-installation.interfaces';
-export { RecordVersions } from './collections/record-versions';
+export * from '@core/enums';
+export * from '@core/interfaces';
+export * from '@core/default-page-contract';
+export * from '@core/layout';
+export * from '@core/plugin-context';
+export * from '@core/screenshot';
+export * from '@core/interfaces/collection-input.interface';
+export * from '@core/interfaces/field-input.interface';
+export type { IPluginInstallProgress } from '@core/plugin/interfaces/plugin-install-progress.interface';
+export type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
+export { RecordVersions } from '@core/collections/record-versions';
 
 // Core Classes (Server-only)
-export { ApiAccessGate } from './plugin/context/api-access-gate';
-export { AccessLevel } from './plugin/context/api-access-gate.enums';
-export { PluginRegistryHealth, PluginHeldReason, PluginHealthBucket } from './plugin/services/plugin-health.enums';
-export { PluginState } from './plugin/services/plugin-state.enums';
-export { ThemeState } from './theme/theme-state.enums';
-export { EnvUtils } from './utils/env-utils';
-export type { ApiAccessLevel, ApiAccessDescriptor, ApiPermissionCheck } from './plugin/context/api-access-gate.types';
-export { PluginManager } from './plugin/plugin-manager';
-export type { PluginManagerInterface } from './plugin/context/utils.interfaces';
-export { ThemeManager } from './theme/theme-manager';
-export { ThemeDefaultPageContractOverrideLoader } from './theme/theme-default-page-contract-override-loader';
-export { AppearanceManager } from './appearance/appearance-manager';
-export { AppearanceInstallerService } from './appearance/appearance-installer-service';
-export type { AppearanceSummary } from './appearance/appearance-summary.interfaces';
-export type { AppearanceManifest } from './appearance/appearance-manifest.interfaces';
-export type { AppearanceCatalogEntry } from './appearance/appearance-catalog-entry.interfaces';
-export { CoreExtensionManager } from './extensions/extension-manager';
-export { ExtensionState } from './extensions/extension-state.enums';
-export type {
-  CoreExtensionManifest,
-  LoadedCoreExtension,
-  CoreExtensionModule,
-  CoreExtensionContext,
-  CoreExtensionState,
-} from './extensions/types';
-export { SchemaManager } from './database/schema-manager';
-export { EntitySchemaPlanService } from './database/entity-schema-plan-service';
-export type { EntitySchemaColumnPlan, EntitySchemaPlan } from './database/entity-schema-plan.interfaces';
-export { MigrationManager } from './database/migration-manager';
-export { Seeder } from './database/seeder';
-export { HookManager } from './hooks/hook-manager';
-export { HookAdapterFactory } from './hooks/hook-adapter-factory';
-export { QueueManager } from './queue/queue-manager';
-export { QueueAdapterFactory } from './queue/queue-adapter-factory';
-export { I18nManager } from './i18n/i18n-manager';
-export { WebSocketManager } from './realtime/web-socket-manager';
+export { ApiAccessGate } from '@core/plugin/context/api-access-gate';
+export { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
+export { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
+export { LoadedPluginHydration } from '@core/plugin/services/loaded-plugin-hydration';
+export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
+export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
+export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
+export { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+export { ThemeState } from '@core/theme/enums/theme-state.enum';
+export { EnvUtils } from '@core/utils/env-utils';
+export type { IApiAccessDescriptor } from '@core/plugin/context/interfaces/api-access-descriptor.interface';
+export type { IApiPermissionCheck } from '@core/plugin/context/interfaces/api-permission-check.interface';
+export { PluginManager } from '@core/plugin/plugin-manager';
+export type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+export { ThemeManager } from '@core/theme/theme-manager';
+export { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
+export { AppearanceManager } from '@core/appearance/appearance-manager';
+export { AppearanceInstallerService } from '@core/appearance/appearance-installer-service';
+export type { IAppearanceSummary } from '@core/appearance/interfaces/appearance-summary.interface';
+export type { IAppearanceManifest } from '@core/appearance/interfaces/appearance-manifest.interface';
+export type { IAppearanceCatalogEntry } from '@core/appearance/interfaces/appearance-catalog-entry.interface';
+export { CoreExtensionManager } from '@core/extensions/extension-manager';
+export { ExtensionState } from '@core/extensions/enums/extension-state.enum';
+export type { ICoreExtensionManifest } from '@core/extensions/interfaces/core-extension-manifest.interface';
+export type { ILoadedCoreExtension } from '@core/extensions/interfaces/loaded-core-extension.interface';
+export type { ICoreExtensionModule } from '@core/extensions/interfaces/core-extension-module.interface';
+export type { ICoreExtensionContext } from '@core/extensions/interfaces/core-extension-context.interface';
+export type { ICoreExtensionState } from '@core/extensions/interfaces/core-extension-state.interface';
+export { SchemaManager } from '@core/database/schema-manager';
+export { EntitySchemaPlanService } from '@core/database/entity-schema-plan-service';
+export type { IEntitySchemaColumnPlan } from '@core/database/interfaces/entity-schema-column-plan.interface';
+export type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
+export { MigrationManager } from '@core/database/migration-manager';
+export { Seeder } from '@core/database/seeder';
+export { HookManager } from '@core/hooks/hook-manager';
+export { HookAdapterFactory } from '@core/hooks/hook-adapter-factory';
+export { QueueManager } from '@core/queue/queue-manager';
+export { QueueAdapterFactory } from '@core/queue/queue-adapter-factory';
+export { I18nManager } from '@core/i18n/i18n-manager';
+export { WebSocketManager } from '@core/realtime/web-socket-manager';
 
 // Capability Registry
-export { CapabilityRegistry } from './capabilities';
-export type { CapabilityMetadata } from './capabilities.interfaces';
+export { CapabilityRegistry } from '@core/capabilities';
+export type { ICapabilityMetadata } from '@core/interfaces/capability-metadata.interface';
 
 // ── Logging ─────────────────────────────────────────────────────────────────
-export { Logger } from './logging';
-export { LogLevel } from './logging.enums';
-export type { LoggerOptions } from './logging.interfaces';
+export { Logger } from '@core/logging';
+export { LogLevel } from '@core/enums/log-level.enum';
+export type { ILoggerOptions } from '@core/interfaces/logger-options.interface';
 
 // ── Constants ────────────────────────────────────────────────────────────────
-export { SystemConstants } from './constants';
-export { ClientRuntimeConstants } from './client-runtime-constants';
-export { CookieConstants } from './cookie-constants';
-export { AppPathConstants } from './app-path-constants';
-export { RequestSurfaceUtils } from './request-surface-utils';
-export { RuntimeLocationUtils } from './runtime-location-utils';
-export { RuntimeConstants } from './runtime-constants';
-export { RouteConstants } from './route-constants';
-export { AccountRouteUtils } from './account-route-utils';
-export { PublicRouteConstants } from './public-route-constants';
+export { SystemConstants } from '@core/constants/system.constants';
+export { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
+export { CookieConstants } from '@core/constants/cookie.constants';
+export { AppPathConstants } from '@core/constants/app-path.constants';
+export { RequestSurfaceUtils } from '@core/request-surface-utils';
+export { RuntimeLocationUtils } from '@core/runtime-location-utils';
+export { RuntimeConstants } from '@core/constants/runtime.constants';
+export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
+export { RouteConstants } from '@core/constants/route.constants';
+export { AccountRouteUtils } from '@core/account-route-utils';
+export { PublicRouteConstants } from '@core/constants/public-route.constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────
-export { CoercionUtils } from './coercion-utils';
-export { StringUtils } from './string-utils';
-export { NumberUtils } from './number-utils';
-export { MeasurementSystemUtils } from './measurement-system-utils';
-export { FormatUtils } from './format-utils';
-export { ApiRequestError, ApiRequestService, ApiQueryUtils, ApiPathUtils } from './api';
-export {
-  AdminUserClient,
-  ApiScopeClient,
-  CollectionScopeClient,
-  SettingsScopeClient,
-  SdkClient,
-  AdminGlobalClient,
-  AdminResourceClient,
-  AdminSdkClient,
-  BrowserStateClient,
-  BrowserStateRuntimeBuilder,
-  SystemAuthClient,
-  SystemAuthSession,
-} from './clients';
-export type { BrowserCookieOptions } from './clients';
-export { RouteUtils } from './route-utils';
-export { UrlUtils } from './url-utils';
-export { ApplicationUrlUtils } from './application-url-utils';
-export { ApplicationHostUtils } from './application-host-utils';
-export { ApplicationDomainSettingsUtils } from './application-domain-settings-utils';
-export { PublicAssetUrlUtils } from './public-asset-url-utils';
-export { ApiVersionUtils } from './api-version';
-export { LocalizationUtils } from './localization';
-export type { NormalizeLocaleOptions, ResolveAnyStringOptions } from './localization.interfaces';
-export { CollectionUtils } from './collection-utils';
-export type { CollectionListPathOptions } from './collection-utils.interfaces';
-export { HookEventUtils } from './hook-events';
-export type { CollectionHookPhase, CollectionHookEvents } from './hook-events.types';
-export { PaginationUtils } from './pagination';
-export type { PaginationInput, PaginationMeta } from './pagination.interfaces';
-export { RelationUtils } from './relations';
-export { ShortcodeUtils } from './shortcodes';
-export type { RenderShortcodesPayload, RenderShortcodesResponse, ShortcodeCatalogItem, ShortcodeCatalogResponse } from './shortcodes.types';
-export { RuntimeBridge } from './runtime-bridge';
-export type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
-export { BasePluginRouter } from './base/base-plugin-router';
-export type { BasePluginRouterOptions } from './base/base-plugin-router.interfaces';
-export { PluginDefinitionUtils } from './plugin-definition-utils';
-export { ManifestNormalizer } from './manifest-normalizer';
-export type { PluginManifestInput, ThemeManifestInput } from './types/manifests.types';
-export { PluginHealthResponseBuilder } from './plugin-health-response';
-export { PluginHealthRouteHandler } from './plugin-health-route-handler';
-export type { PluginHealthProbeResult, PluginHealthRouteHandlerOptions } from './plugin-health-route-handler.interfaces';
-export type { PluginHealthBuildOptions, PluginHealthIdentity, PluginHealthResponse } from './plugin-health-response.interfaces';
-export type { PluginHealthStatus } from './plugin-health-response.types';
-export { Plugins } from './plugins';
-export { PluginsFacade } from './plugins-facade';
-export { NamespacedPluginsFacade } from './namespaced-plugins-facade';
-export { PluginsRegistry } from './plugins-registry';
-export * from './data-sources';
+export { CoercionUtils } from '@core/coercion-utils';
+export { StringUtils } from '@core/string-utils';
+export { NumberUtils } from '@core/number-utils';
+export { MeasurementSystemUtils } from '@core/measurement-system-utils';
+export { FormatUtils } from '@core/format-utils';
+export { ApiRequestError, ApiRequestService, ApiQueryUtils, ApiPathUtils } from '@core/api';
+export { AdminUserClient, ApiScopeClient, CollectionScopeClient, SettingsScopeClient, SdkClient, AdminGlobalClient, AdminResourceClient, AdminSdkClient, BrowserStateClient, BrowserStateRuntimeBuilder, SystemAuthClient, SystemAuthSession } from '@core/clients';
+export type { IBrowserCookieOptions } from '@core/clients';
+export { RouteUtils } from '@core/route-utils';
+export { UrlUtils } from '@core/url-utils';
+export { ApplicationUrlUtils } from '@core/application-url-utils';
+export { ApplicationHostUtils } from '@core/application-host-utils';
+export { ApplicationDomainSettingsUtils } from '@core/application-domain-settings-utils';
+export { PublicAssetUrlUtils } from '@core/public-asset-url-utils';
+export { ApiVersionUtils } from '@core/api-version';
+export { LocalizationUtils } from '@core/localization';
+export type { INormalizeLocaleOptions } from '@core/interfaces/normalize-locale-options.interface';
+export type { IResolveAnyStringOptions } from '@core/interfaces/resolve-any-string-options.interface';
+export { CollectionUtils } from '@core/collection-utils';
+export type { ICollectionListPathOptions } from '@core/interfaces/collection-list-path-options.interface';
+export { HookEventUtils } from '@core/hook-events';
+// CollectionHookPhase is an Enum CLASS — a VALUE export, or plugins cannot reach `.BEFORE_CREATE` and
+// are forced back to raw strings. Only the events interface is type-only.
+export { CollectionHookPhase } from '@core/interfaces/collection-hook-events.interface';
+export type { ICollectionHookEvents } from '@core/interfaces/collection-hook-events.interface';
+export { PaginationUtils } from '@core/pagination';
+export type { IPaginationInput } from '@core/interfaces/pagination-input.interface';
+export type { IPaginationMeta } from '@core/interfaces/pagination-meta.interface';
+export { RelationUtils } from '@core/relations';
+export { ShortcodeUtils } from '@core/shortcodes';
+export type { IRenderShortcodesPayload } from '@core/interfaces/render-shortcodes-payload.interface';
+export type { IRenderShortcodesResponse } from '@core/interfaces/render-shortcodes-response.interface';
+export type { IShortcodeCatalogItem } from '@core/interfaces/shortcode-catalog-item.interface';
+export type { IShortcodeCatalogResponse } from '@core/interfaces/shortcode-catalog-response.interface';
+export { RuntimeBridge } from '@core/runtime-bridge';
+export type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
+export { BasePluginRouter } from '@core/base/base-plugin-router';
+export type { IBasePluginRouterOptions } from '@core/base/interfaces/base-plugin-router-options.interface';
+export { PluginDefinitionUtils } from '@core/plugin-definition-utils';
+export { ManifestNormalizer } from '@core/manifest-normalizer';
+export type { IPluginManifestInput } from '@core/interfaces/plugin-manifest-input.interface';
+export type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';
+export { PluginHealthResponseBuilder } from '@core/plugin-health-response-builder';
+export { PluginHealthRouteHandler } from '@core/plugin-health-route-handler';
+export type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';
+export type { IPluginHealthRouteHandlerOptions } from '@core/interfaces/plugin-health-route-handler-options.interface';
+export type { IPluginHealthBuildOptions } from '@core/interfaces/plugin-health-build-options.interface';
+export type { IPluginHealthIdentity } from '@core/interfaces/plugin-health-identity.interface';
+export type { IPluginHealthResponse } from '@core/interfaces/plugin-health-response.interface';
+export type { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
+export { Plugins } from '@core/plugins';
+export { PluginsFacade } from '@core/plugins-facade';
+export { NamespacedPluginsFacade } from '@core/namespaced-plugins-facade';
+export { PluginsRegistry } from '@core/plugins-registry';
+export * from '@core/data-sources';
 
 // ── Shared Utilities ──────────────────────────────────────────────────────────
-export * from './utils';
-export { EnvConfig } from './config/env';
-export { SafeArchive } from './security/safe-archive';
-export { MediaPathUtils } from './security/media-path-utils';
-export { ProjectPaths } from './config/paths';
+export * from '@core/utils';
+export { EnvConfig } from '@core/config/env';
+export { SafeArchive } from '@core/security/safe-archive';
+export { MediaPathUtils } from '@core/security/media-path-utils';
+export { ProjectPaths } from '@core/config/paths';
 
 // Integrations
-export { IntegrationManager } from './integrations/integration-manager';
-export { IntegrationRegistry } from './integrations/integration-registry';
-export { SecretService } from './security/secret-service';
-export { IntegrationSecretService } from './integrations/integration-secret-service';
-export type { IntegrationTypeDefinition } from './integrations/integration-registry.interfaces';
-export type { PluginApiResolver } from './plugin-api-resolver.interfaces';
+export { IntegrationManager } from '@core/integrations/integration-manager';
+export { IntegrationRegistry } from '@core/integrations/integration-registry';
+export { SecretService } from '@core/security/secret-service';
+export { SecretService as IntegrationSecretService } from '@core/security/secret-service';
+export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
+export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
 
 // Context
-export { RequestContextUtils } from './context/request-context';
-export type { RequestStore } from './context/request-context.interfaces';
+export { RequestContextUtils } from '@core/context/request-context';
+export type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 
 // Plugin Services (Server-only)
-export { DiscoveryService } from './plugin/services/discovery-service';
-export { PluginDependencyInstallerService } from './plugin/services/plugin-dependency-installer-service';
-export { PluginStateService } from './plugin/services/plugin-state-service';
-export { MarketplaceCatalogService } from './marketplace/marketplace-catalog-service';
-export { RuntimeService } from './plugin/services/runtime-service';
-export { LifecycleService } from './plugin/services/lifecycle-service';
-export { MiddlewareManager } from './plugin/services/middleware-manager';
-export { AdminMetadataService } from './plugin/services/admin-metadata-service';
-export { PluginHealthReportService } from './plugin/services/plugin-health-report-service';
-export type { PluginHealthEntryInput, PluginHealthEntry, PluginHealthReport } from './plugin/services/plugin-health-report.interfaces';
+export { DiscoveryService } from '@core/plugin/services/discovery-service';
+export { PluginDependencyInstallerService } from '@core/plugin/services/plugin-dependency-installer-service';
+export { PluginStateService } from '@core/plugin/services/plugin-state-service';
+export { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';
+export { RuntimeService } from '@core/plugin/services/runtime-service';
+export { LifecycleService } from '@core/plugin/services/lifecycle-service';
+export { MiddlewareManager } from '@core/plugin/services/middleware-manager';
+export { AdminMetadataService } from '@core/plugin/services/admin-metadata-service';
+export { PluginHealthReportService } from '@core/plugin/services/plugin-health-report-service';
+export type { IPluginHealthEntryInput } from '@core/plugin/services/interfaces/plugin-health-entry-input.interface';
+export type { IPluginHealthEntry } from '@core/plugin/services/interfaces/plugin-health-entry.interface';
+export type { IPluginHealthReport } from '@core/plugin/services/interfaces/plugin-health-report.interface';
 
 // Security (Server-only)
-export { AuditManager } from './security/audit-manager';
-export { SecurityMonitor } from './security/security-monitor';
-export { PluginPermissionsService } from './security/plugin-permissions-service';
-export type { PluginPermission } from './security/plugin-permissions-service.types';
-export { PluginSignatureService } from './security/plugin-signature-service';
+export { AuditManager } from '@core/security/audit-manager';
+export { SecurityMonitor } from '@core/security/security-monitor';
+export { PluginPermissionsService } from '@core/security/plugin-permissions-service';
+export { PluginPermission } from '@core/security/enums/plugin-permission.enum';
+export { PluginSignatureService } from '@core/security/plugin-signature-service';
 
 // Management (Server-only)
-export { PlatformSettingsService } from './management/platform-settings-service';
-export { BackupService } from './management/backup-service';
-export { BackupImportService } from './management/backup-import-service';
-export { ArchiveUploadSessionService } from './management/archive-upload-session-service';
-export type { CreateSystemBackupOptions } from './management/backup-service.interfaces';
-export type { BackupSectionKey } from './management/backup-service.types';
-export { BackupCatalogService } from './management/backup-catalog-service';
-export type {
-  BackupCatalogGroup,
-  BackupCatalogItem,
-  BackupCatalogResolvedItem,
-} from './management/backup-catalog-service.types';
-export { BackupRestoreGuardService } from './management/backup-restore-guard-service';
-export type {
-  RestoreExecutionInput,
-  RestoreExecutionResult,
-  RestorePreviewInput,
-  RestoreTargetResolution,
-} from './management/backup-restore-guard-service.interfaces';
-export type { RestoreTargetKind } from './management/backup-restore-guard-service.types';
-export { SiteTransferBundleService } from './management/site-transfer-bundle-service';
-export type {
-  SiteTransferBundleManifest,
-  SiteTransferBundleOptions,
-  SiteTransferBundleResult,
-} from './management/site-transfer-bundle-service.types';
-export {
-  ManifestValidator,
-  PluginManifestSchema,
-  RegistryPluginSchema,
-  RegistryManifestSchema
-} from './management/manifest';
-export type { RegistryPlugin, RegistryManifest } from './management/manifest.types';
-export { MigrationCoordinator } from './management/migration-coordinator';
-export { HotReloadService } from './management/hot-reload-service';
-export { SystemUpdateService } from './management/system-update-service';
+export { PlatformSettingsService } from '@core/management/platform-settings-service';
+export { BackupService } from '@core/management/backup-service';
+export { BackupImportService } from '@core/management/backup-import-service';
+export { ArchiveUploadSessionService } from '@core/management/archive-upload-session-service';
+export type { ICreateSystemBackupOptions } from '@core/management/interfaces/create-system-backup-options.interface';
+export { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+export { BackupCatalogService } from '@core/management/backup-catalog-service';
+export type { IBackupCatalogGroup } from '@core/management/interfaces/backup-catalog-group.interface';
+export type { IBackupCatalogItem } from '@core/management/interfaces/backup-catalog-item.interface';
+export type { IBackupCatalogResolvedItem } from '@core/management/interfaces/backup-catalog-resolved-item.interface';
+export { BackupCatalogRootKind } from '@core/management/enums/backup-catalog-root-kind.enum';
+export { BackupCatalogGroupKey } from '@core/management/enums/backup-catalog-group-key.enum';
+export { BackupRestoreGuardService } from '@core/management/backup-restore-guard-service';
+export type { IRestoreExecutionInput } from '@core/management/interfaces/restore-execution-input.interface';
+export type { IRestoreExecutionResult } from '@core/management/interfaces/restore-execution-result.interface';
+export type { IRestorePreviewInput } from '@core/management/interfaces/restore-preview-input.interface';
+export type { IRestoreTargetResolution } from '@core/management/interfaces/restore-target-resolution.interface';
+export { SiteTransferBundleService } from '@core/management/site-transfer-bundle-service';
+export type { ISiteTransferBundleManifest } from '@core/management/interfaces/site-transfer-bundle-manifest.interface';
+export type { ISiteTransferBundleOptions } from '@core/management/interfaces/site-transfer-bundle-options.interface';
+export type { ISiteTransferBundleResult } from '@core/management/interfaces/site-transfer-bundle-result.interface';
+export { ManifestValidator, PluginManifestSchema, RegistryPluginSchema, RegistryManifestSchema } from '@core/management/manifest';
+export { MigrationCoordinator } from '@core/management/migration-coordinator';
+export { HotReloadService } from '@core/management/hot-reload-service';
+export { SystemUpdateService } from '@core/management/system-update-service';
 
 // Base Classes for Plugin Development
-export { BaseRepository, BaseService, BaseController } from './base';
-export { AutocompleteOptionService } from './services/autocomplete-option-service';
-export { BaseRouter } from './base/base-router';
-export { BaseEntity } from './base/base-entity';
-export { BaseEntityCollection } from './base/base-entity-collection';
-export { EntityColumn } from './entity-column';
-export { CollectionIdentityService } from './services/collection-identity-service';
-export { EntityValueParserService } from './services/entity-value-parser-service';
-export { EntityObjectMapperService } from './services/entity-object-mapper-service';
-export { EntityEnumResolverService } from './services/entity-enum-resolver-service';
-export { EntityMetadataService } from './services/entity-metadata-service';
-export { MediaRelationService } from './services/media-relation-service';
-export { EntityDefinitionUtils } from './entity-definition-utils';
-export { PluginLayoutRegistryService } from './plugin/layout/plugin-layout-registry-service';
-export { LayoutResolutionService } from './plugin/layout/layout-resolution-service';
-export { LayoutDiagnosticService } from './plugin/layout/layout-diagnostic-service';
-export { LayoutLifecycleService } from './plugin/layout/layout-lifecycle-service';
-export { LayoutRuntimeBridgeService } from './plugin/layout/layout-runtime-bridge-service';
-export { ThemeLayoutOverrideRegistryService } from './theme/theme-layout-override-registry-service';
-export type { RegisteredWidgetDefinition, WidgetDefinitionInput, WidgetSettingsRenderInput, WidgetStyle } from './widget';
+export { BaseRepository, BaseService, BaseController } from '@core/base';
+export { AutocompleteOptionService } from '@core/services/autocomplete-option-service';
+export { BaseRouter } from '@core/base/base-router';
+export { BaseEntity } from '@core/base/base-entity';
+export { BaseEntityCollection } from '@core/base/base-entity-collection';
+export { EntityColumn } from '@core/entity-column';
+export { CollectionIdentityService } from '@core/services/collection-identity-service';
+export { EntityValueParserService } from '@core/services/entity-value-parser-service';
+export { EntityObjectMapperService } from '@core/services/entity-object-mapper-service';
+export { EntityEnumResolverService } from '@core/services/entity-enum-resolver-service';
+export { EntityMetadataService } from '@core/services/entity-metadata-service';
+export { MediaRelationService } from '@core/services/media-relation-service';
+export { EntityDefinitionUtils } from '@core/entity-definition-utils';
+export { PluginLayoutRegistryService } from '@core/plugin/layout/plugin-layout-registry-service';
+export { LayoutResolutionService } from '@core/plugin/layout/layout-resolution-service';
+export { LayoutDiagnosticService } from '@core/plugin/layout/layout-diagnostic-service';
+export { LayoutLifecycleService } from '@core/plugin/layout/layout-lifecycle-service';
+export { LayoutRuntimeBridgeService } from '@core/plugin/layout/layout-runtime-bridge-service';
+export { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
+export type { IRegisteredWidgetDefinition, IWidgetDefinitionInput, IWidgetSettingsRenderInput, IWidgetStyle } from '@core/widget';
+export { ClientType } from '@core/enums/client-type.enum';
+export { UiScope } from '@core/enums/ui-scope.enum';
+export { ThemeMode } from '@core/enums/theme-mode.enum';
+export { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
+export { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
+export { SnapshotType } from '@core/management/enums/snapshot-type.enum';
+export { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
+export { SortOrder } from '@core/enums/sort-order.enum';
+
+// Enum classes plugins need to name (they were unreachable, forcing raw-string arguments).
+// Owned by @fromcode119/scheduler (core depends on it, never the reverse). Re-exported so plugins
+// keep importing it from the SDK — two copies meant `task.type === ScheduleType.CRON` was always false.
+export { ScheduleType } from '@fromcode119/scheduler';
+export { FilterKind } from '@core/data-sources/enums/filter-kind.enum';
+export { DatasourceLayout } from '@core/data-sources/enums/datasource-layout.enum';
+export { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
+export { TwoFactorMethod } from '@core/enums/two-factor-method.enum';
+
+// SERVER-only core services. `CoreServices` hands these out through `ServerServiceRegistry` instead of
+// importing them, so the page-contract / seeding / collection-write modules never enter a browser
+// bundle — see ServerServiceRegistry. `ServerCoreServices.register()` is called explicitly at API boot;
+// it is deliberately NOT a barrel side effect, which tree-shaking makes unreliable.
+export { ServerCoreServices } from '@core/services/server-core-services';
+export { ServerServiceRegistry } from '@core/services/server-service-registry';
+export { ServerServiceKey } from '@core/services/server-service-key';

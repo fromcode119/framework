@@ -1,14 +1,12 @@
-import type {
-  AdminAssistantRuntimeOptions,
-  AssistantCollectionContext,
-  AssistantToolSummary,
-  AssistantWorkspaceMap,
-  AssistantWorkspaceMapCollection,
-  AssistantWorkspaceMapPlugin,
-  AssistantWorkspaceMapTheme,
-  AssistantWorkspaceMapTool,
-} from '../types';
-import { TextHelpers } from './helpers/text-helpers';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
+import type { IAssistantWorkspaceMap } from '@ai/admin-assistant-runtime/interfaces/assistant-workspace-map.interface';
+import type { IAssistantWorkspaceMapCollection } from '@ai/admin-assistant-runtime/interfaces/assistant-workspace-map-collection.interface';
+import type { IAssistantWorkspaceMapPlugin } from '@ai/admin-assistant-runtime/interfaces/assistant-workspace-map-plugin.interface';
+import type { IAssistantWorkspaceMapTheme } from '@ai/admin-assistant-runtime/interfaces/assistant-workspace-map-theme.interface';
+import type { IAssistantWorkspaceMapTool } from '@ai/admin-assistant-runtime/interfaces/assistant-workspace-map-tool.interface';
+import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
 
 export class WorkspaceMapService {
   static isWorkspaceInventoryRequest(message: string): boolean {
@@ -23,7 +21,7 @@ export class WorkspaceMapService {
 
   }
 
-  static buildWorkspaceInventoryMessage(map: AssistantWorkspaceMap): string {
+  static buildWorkspaceInventoryMessage(map: IAssistantWorkspaceMap): string {
       const plugins = Array.isArray(map.plugins) ? map.plugins : [];
       const themes = Array.isArray(map.themes) ? map.themes : [];
       const collections = Array.isArray(map.collections) ? map.collections : [];
@@ -59,7 +57,7 @@ export class WorkspaceMapService {
 
   }
 
-  static findWorkspaceEntityReply(message: string, map: AssistantWorkspaceMap): string | null {
+  static findWorkspaceEntityReply(message: string, map: IAssistantWorkspaceMap): string | null {
       const token = TextHelpers.normalizeToken(message);
       if (!token) return null;
       const collection = WorkspaceMapService.matchWorkspaceCollection(message, map);
@@ -111,12 +109,12 @@ export class WorkspaceMapService {
 
   }
 
-  static matchWorkspaceCollection(message: string, map: AssistantWorkspaceMap): AssistantWorkspaceMapCollection | null {
+  static matchWorkspaceCollection(message: string, map: IAssistantWorkspaceMap): IAssistantWorkspaceMapCollection | null {
       const token = TextHelpers.normalizeToken(message);
       if (!token) return null;
       const collections = Array.isArray(map.collections) ? map.collections : [];
       const words = token.split(' ').filter(Boolean);
-      let best: { score: number; item: AssistantWorkspaceMapCollection } | null = null;
+      let best: { score: number; item: IAssistantWorkspaceMapCollection } | null = null;
 
       for (const entry of collections) {
         const aliases = WorkspaceMapService.uniqueByKey(
@@ -158,14 +156,14 @@ export class WorkspaceMapService {
   }
 
   static buildWorkspaceMap(input: {
-    options: AdminAssistantRuntimeOptions;
-    collections: AssistantCollectionContext[];
-    tools: AssistantToolSummary[];
-  }): AssistantWorkspaceMap {
+    options: IAdminAssistantRuntimeOptions;
+    collections: IAssistantCollectionContext[];
+    tools: IAssistantToolSummary[];
+  }): IAssistantWorkspaceMap {
     return WorkspaceMapService.defaultMapFromOptions(input);
   }
 
-  static buildWorkspacePromptSummary(map: AssistantWorkspaceMap): string {
+  static buildWorkspacePromptSummary(map: IAssistantWorkspaceMap): string {
       const plugins = (Array.isArray(map.plugins) ? map.plugins : []).slice(0, 12);
       const themes = (Array.isArray(map.themes) ? map.themes : []).slice(0, 8);
       const collections = (Array.isArray(map.collections) ? map.collections : []).slice(0, 20);
@@ -208,14 +206,14 @@ export class WorkspaceMapService {
   }
 
   private static defaultMapFromOptions(input: {
-    options: AdminAssistantRuntimeOptions;
-    collections: AssistantCollectionContext[];
-    tools: AssistantToolSummary[];
-  }): AssistantWorkspaceMap {
+    options: IAdminAssistantRuntimeOptions;
+    collections: IAssistantCollectionContext[];
+    tools: IAssistantToolSummary[];
+  }): IAssistantWorkspaceMap {
   const pluginsRaw = typeof input.options.getPlugins === 'function' ? input.options.getPlugins() || [] : [];
   const themesRaw = typeof input.options.getThemes === 'function' ? input.options.getThemes() || [] : [];
 
-  const plugins: AssistantWorkspaceMapPlugin[] = WorkspaceMapService.uniqueByKey(
+  const plugins: IAssistantWorkspaceMapPlugin[] = WorkspaceMapService.uniqueByKey(
     pluginsRaw.map((plugin: any) => ({
       slug: String(plugin?.slug || '').trim(),
       name: String(plugin?.name || plugin?.slug || '').trim(),
@@ -229,7 +227,7 @@ export class WorkspaceMapService {
     (item) => item.slug,
   );
 
-  const themes: AssistantWorkspaceMapTheme[] = WorkspaceMapService.uniqueByKey(
+  const themes: IAssistantWorkspaceMapTheme[] = WorkspaceMapService.uniqueByKey(
     themesRaw.map((theme: any) => ({
       slug: String(theme?.slug || '').trim(),
       name: String(theme?.name || theme?.slug || '').trim(),
@@ -240,7 +238,7 @@ export class WorkspaceMapService {
     (item) => item.slug,
   );
 
-  const collections: AssistantWorkspaceMapCollection[] = WorkspaceMapService.uniqueByKey(
+  const collections: IAssistantWorkspaceMapCollection[] = WorkspaceMapService.uniqueByKey(
     input.collections.map((collection: any) => ({
       slug: String(collection?.slug || '').trim(),
       shortSlug: String(collection?.shortSlug || collection?.slug || '').trim(),
@@ -253,7 +251,7 @@ export class WorkspaceMapService {
     (item) => item.slug,
   );
 
-  const tools: AssistantWorkspaceMapTool[] = WorkspaceMapService.uniqueByKey(
+  const tools: IAssistantWorkspaceMapTool[] = WorkspaceMapService.uniqueByKey(
     (Array.isArray(input.tools) ? input.tools : []).map((tool: any) => ({
       tool: String(tool?.tool || '').trim(),
       readOnly: tool?.readOnly === true,

@@ -1,26 +1,29 @@
 import React from 'react';
 
-export class CustomFieldErrorBoundary extends React.Component<any, any> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false };
-  }
+import type { ReactNode } from 'react';
+import { Reactor, prop, state } from '@fromcode119/reactor';
 
-  static getDerivedStateFromError(): any {
+export class CustomFieldErrorBoundary extends Reactor {
+  @prop declare componentName?: string;
+  @prop declare children?: ReactNode;
+
+  @state hasError = false;
+
+  static getDerivedStateFromError(): { hasError: boolean } {
     return { hasError: true };
   }
 
-  componentDidCatch(error: any): void {
-    const componentName = String(this.props?.componentName || 'unknown');
-    console.error(`[FieldRenderer] Custom field component "${componentName}" crashed`, error);
+  componentDidCatch(error: unknown): void {
+    const name = String(this.componentName || 'unknown');
+    console.error(`[FieldRenderer] Custom field component "${name}" crashed`, error);
   }
 
-  render(): React.ReactNode {
-    if (!this.state?.hasError) {
-      return this.props?.children ?? null;
+  render(): ReactNode {
+    if (!this.hasError) {
+      return this.children ?? null;
     }
 
-    const componentName = String(this.props?.componentName || 'unknown');
+    const name = String(this.componentName || 'unknown');
 
     return React.createElement(
       'div',
@@ -28,7 +31,7 @@ export class CustomFieldErrorBoundary extends React.Component<any, any> {
         className:
           'p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium tracking-wide flex items-center gap-2',
       },
-      React.createElement('span', null, `Component "${componentName}" failed to render.`)
+      React.createElement('span', null, `Component "${name}" failed to render.`)
     );
   }
 }

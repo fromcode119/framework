@@ -1,7 +1,9 @@
+import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
+import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
-import { AuthControllerRegistration } from './auth-controller-registration';
+import { AuthControllerRegistration } from '@api/controllers/auth/auth-controller-registration';
 
 /**
  * Password-reset (forgot/reset) and SSO login handlers. Extracted from
@@ -54,7 +56,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
       }
 
       const accountStatus = await this.getUserAccountStatus(user.id);
-      if (accountStatus !== 'active') {
+      if (accountStatus !== AccountStatus.ACTIVE) {
         return res.json({ success: true, message: genericMessage });
       }
 
@@ -135,7 +137,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
     const tokenResult = await this.consumePasswordResetToken(token);
     if (!tokenResult.ok || !tokenResult.userId || !tokenResult.email) {
       return res.status(400).json({
-        error: tokenResult.reason === 'expired'
+        error: tokenResult.reason === TokenErrorReason.EXPIRED
           ? 'Password reset link has expired. Please request a new one.'
           : 'Invalid password reset token'
       });
@@ -228,7 +230,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
         firstName: String(payload?.firstName || '').trim() || null,
         lastName: String(payload?.lastName || '').trim() || null
       });
-      await this.setUserAccountStatus(user.id, 'active');
+      await this.setUserAccountStatus(user.id, AccountStatus.ACTIVE);
       await this.setForcePasswordReset(user.id, false);
       await this.pushPasswordHistory(user.id, hashedPassword);
       await this.upsertMeta(this.getPasswordChangedAtKey(user.id), new Date().toISOString());
@@ -238,7 +240,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
     }
 
     const status = await this.getUserAccountStatus(user.id);
-    if (status !== 'active') {
+    if (status !== AccountStatus.ACTIVE) {
       return res.status(403).json({ error: 'Account is not active' });
     }
     if (payload?.emailVerified !== false) {

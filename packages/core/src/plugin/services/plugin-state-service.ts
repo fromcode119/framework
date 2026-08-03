@@ -1,9 +1,10 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '../../logging';
-import { SystemConstants } from '../../constants';
-import { PluginConfigValueService } from './plugin-config-value-service';
-import { PluginRegistryHealth, PluginHeldReason } from './plugin-health.enums';
-import { PluginState } from './plugin-state.enums';
+import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import { PluginConfigValueService } from '@core/plugin/services/plugin-config-value-service';
+import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
+import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class PluginStateService {
   private logger = new Logger({ namespace: 'PluginState' });
@@ -31,10 +32,10 @@ export class PluginStateService {
         const slug = row.slug?.toLowerCase();
         if (slug) {
           registry[slug] = {
-            state: (row.state as PluginState),
+            state: PluginState.resolve(row.state),
             approvedCapabilities: row.capabilities ? (typeof row.capabilities === 'string' ? JSON.parse(row.capabilities) : row.capabilities) : [],
-            healthStatus: (row.health_status as PluginRegistryHealth) || PluginRegistryHealth.HEALTHY,
-            heldReason: (row.held_reason as PluginHeldReason) || undefined,
+            healthStatus: PluginRegistryHealth.resolve(row.health_status) ?? PluginRegistryHealth.HEALTHY,
+            heldReason: PluginHeldReason.resolve(row.held_reason),
             sandboxConfig: row.sandbox_config,
             version: row.version,
             signatureVerified: Boolean(row.signature_verified)
@@ -54,8 +55,8 @@ export class PluginStateService {
       const healthStatus = state === PluginState.ERROR ? PluginRegistryHealth.ERROR : PluginRegistryHealth.HEALTHY;
       const values: any = { 
         slug: normSlug, 
-        state, 
-        health_status: healthStatus,
+        state: state.value,
+        health_status: healthStatus.value,
         updated_at: new Date() 
       };
       
@@ -95,7 +96,7 @@ export class PluginStateService {
       const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
       if (existing) {
         await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, {
-          health_status: PluginRegistryHealth.ERROR,
+          health_status: PluginRegistryHealth.ERROR.value,
           updated_at: new Date(),
         });
       }
@@ -118,9 +119,9 @@ export class PluginStateService {
       const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
       if (existing) {
         await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, {
-          state: PluginState.INACTIVE,
-          health_status: PluginRegistryHealth.WARNING,
-          held_reason: heldReason,
+          state: PluginState.INACTIVE.value,
+          health_status: PluginRegistryHealth.WARNING.value,
+          held_reason: heldReason.value,
           updated_at: new Date(),
         });
       }
@@ -137,7 +138,7 @@ export class PluginStateService {
       const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
       if (existing) {
         await this.db.update(SystemConstants.TABLE.PLUGINS, { slug: normSlug }, {
-          health_status: PluginRegistryHealth.HEALTHY,
+          health_status: PluginRegistryHealth.HEALTHY.value,
           held_reason: null,
           updated_at: new Date(),
         });

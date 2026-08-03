@@ -1,28 +1,15 @@
+import type { ILoadedLocalization } from '@/app/settings/localization/interfaces/loaded-localization.interface';
+import type { ISavedLocalization } from '@/app/settings/localization/interfaces/saved-localization.interface';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
-import { LocalizationPageUtils } from './localization-page-utils';
-import type { LocaleItem, LocaleUrlStrategy } from './localization.types';
-
-interface LoadedLocalization {
-  locales: LocaleItem[];
-  defaultLocale: string;
-  adminDefaultLocale: string;
-  frontendDefaultLocale: string;
-  localeUrlStrategy: LocaleUrlStrategy;
-}
-
-interface SavedLocalization {
-  cleaned: LocaleItem[];
-  enabledCodes: string[];
-  defaultLocale: string;
-  adminDefaultLocale: string;
-  frontendDefaultLocale: string;
-}
+import { LocalizationPageUtils } from '@/app/settings/localization/localization-page-utils';
+import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
+import { LocaleUrlStrategy } from '@fromcode119/core/client';
 
 /**
  * Loads and persists localization settings for the localization settings page.
  */
 export class LocalizationSettingsIo {
-  static async load(): Promise<LoadedLocalization> {
+  static async load(): Promise<ILoadedLocalization> {
     const response = await AdminSystemSettingsClient.getAll();
     const map = new Map<string, string>();
     Object.entries(response || {}).forEach(([key, value]) => {
@@ -52,11 +39,11 @@ export class LocalizationSettingsIo {
       defaultLocale: LocalizationPageUtils.normalizeLocaleCode(map.get('default_locale') || firstEnabled),
       adminDefaultLocale: LocalizationPageUtils.normalizeLocaleCode(map.get('admin_default_locale') || firstEnabled),
       frontendDefaultLocale: LocalizationPageUtils.normalizeLocaleCode(map.get('frontend_default_locale') || firstEnabled),
-      localeUrlStrategy: savedStrategy === 'path' || savedStrategy === 'none' ? savedStrategy : 'query',
+      localeUrlStrategy: LocaleUrlStrategy.resolve(savedStrategy),
     };
   }
 
-  static buildSelectOptions(locales: LocaleItem[]): { value: string; label: string }[] {
+  static buildSelectOptions(locales: ILocaleItem[]): { value: string; label: string }[] {
     const list = locales
       .map((locale) => ({
         ...locale,
@@ -72,7 +59,7 @@ export class LocalizationSettingsIo {
     }));
   }
 
-  static cleanLocales(locales: LocaleItem[]): LocaleItem[] {
+  static cleanLocales(locales: ILocaleItem[]): ILocaleItem[] {
     const dedupe = new Set<string>();
     const cleaned = locales
       .map((locale) => {
@@ -93,10 +80,10 @@ export class LocalizationSettingsIo {
   }
 
   static async save(
-    cleaned: LocaleItem[],
+    cleaned: ILocaleItem[],
     defaults: { defaultLocale: string; adminDefaultLocale: string; frontendDefaultLocale: string },
     localeUrlStrategy: LocaleUrlStrategy,
-  ): Promise<SavedLocalization> {
+  ): Promise<ISavedLocalization> {
     const enabledCodes = cleaned.filter((locale) => locale.enabled).map((locale) => locale.code);
     const firstEnabled = enabledCodes[0];
     const pickDefault = (value: string) => {
@@ -114,7 +101,7 @@ export class LocalizationSettingsIo {
       default_locale: nextDefaultLocale,
       admin_default_locale: nextAdminDefault,
       frontend_default_locale: nextFrontendDefault,
-      locale_url_strategy: localeUrlStrategy,
+      locale_url_strategy: localeUrlStrategy.value,
     });
 
     return {

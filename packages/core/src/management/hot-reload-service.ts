@@ -1,7 +1,7 @@
 import chokidar from 'chokidar';
 import path from 'path';
-import { PluginManager } from '../plugin/plugin-manager';
-import { Logger } from '../logging';
+import { PluginManager } from '@core/plugin/plugin-manager';
+import { Logger } from '@core/logging';
 
 /**
  * Hot Reload Service

@@ -1,7 +1,6 @@
+import { Platform } from '@fromcode119/reactor';
 import { RouteConstants } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
-
-const RAW_ADMIN_BASE_PATH = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '';
 
 /**
  * Admin path resolution utilities.
@@ -12,9 +11,11 @@ const RAW_ADMIN_BASE_PATH = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '';
  * AdminPathUtils.toAdminPath('/settings')          // "/admin/settings"
  */
 export class AdminPathUtils {
+  private static readonly RAW_ADMIN_BASE_PATH = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '';
+
   static basePath(): string {
     const configured = ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
-      || AdminPathUtils.normalizeBasePath(RAW_ADMIN_BASE_PATH);
+      || AdminPathUtils.normalizeBasePath(AdminPathUtils.RAW_ADMIN_BASE_PATH);
     if (configured) return configured;
     return AdminPathUtils.inferAdminBasePathFromWindow();
   }
@@ -67,7 +68,7 @@ export class AdminPathUtils {
   }
 
   private static inferAdminBasePathFromWindow(): string {
-    if (typeof window === 'undefined') return '';
+    if (!Platform.isBrowser) return '';
     const pathname = window.location.pathname || '';
     // Use centralized constant instead of hardcoded string
     const defaultBase = RouteConstants.SEGMENTS.ADMIN_BASE;

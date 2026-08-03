@@ -1,0 +1,40 @@
+import { ThemeMode } from '@fromcode119/core/client';
+import type { RefObject } from 'react';
+import type { ILoadedPlugin } from '@fromcode119/core/client';
+import type { IPluginSettingsFormHandle } from '@/components/plugins/interfaces/plugin-settings-form-handle.interface';
+import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
+import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
+import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log-entry.interface';
+import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
+import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
+
+export interface IPluginDetailPageModel {
+  activeTab: PluginDetailTab;
+  fetchLogs: () => Promise<void>;
+  handleDelete: () => Promise<void>;
+  handleSaveSandbox: () => Promise<void>;
+  handleTabChange: (tabId: PluginDetailTab) => void;
+  handleToggle: () => Promise<void>;
+  handleUpdate: () => Promise<void>;
+  isDeleting: boolean;
+  isSaving: boolean;
+  isUpdating: boolean;
+  installOperation: IPluginInstallOperation | null;
+  loading: boolean;
+  loadingLogs: boolean;
+  logs: IPluginLogEntry[];
+  marketplaceItem: IPluginMarketplaceItem | null;
+  plugin: ILoadedPlugin | null;
+  sandboxSettings: IPluginSandboxSettings;
+  setSandboxSettings: (value: IPluginSandboxSettings) => void;
+  setSettingsDirty: (value: boolean) => void;
+  setSettingsSaving: (value: boolean) => void;
+  settingsDirty: boolean;
+  settingsFormRef: RefObject<IPluginSettingsFormHandle | null>;
+  settingsSaving: boolean;
+  setShowDefinition: (value: boolean) => void;
+  setShowDeleteConfirm: (value: boolean) => void;
+  showDefinition: boolean;
+  showDeleteConfirm: boolean;
+  theme: ThemeMode;
+}

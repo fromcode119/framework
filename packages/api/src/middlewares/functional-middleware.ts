@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { BaseMiddleware } from './base-middleware';
+import { BaseMiddleware } from '@api/middlewares/base-middleware';
 
 /**
  * Utility to convert a function into a middleware instance.

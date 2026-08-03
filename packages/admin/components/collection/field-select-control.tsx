@@ -1,11 +1,21 @@
-import React from 'react';
-import { Select } from '@/components/ui/select';
-import { FrameworkIcons } from '@fromcode119/react';
-import type { FieldSelectControlProps } from './field-renderer.interfaces';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
 
-export class FieldSelectControl extends React.Component<FieldSelectControlProps> {
-  render(): React.ReactNode {
-    const { field, currentValue, updateValue, theme, isFieldReadOnly, wrapWithReadOnlyOverride } = this.props;
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { Select } from '@/components/ui/view/select.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+
+export class FieldSelectControl extends PureReactor {
+  @prop declare field: ICollectionField;
+  @prop declare currentValue: any;
+  @prop declare updateValue: (value: any) => void;
+  @prop declare theme: ThemeMode;
+  @prop declare isFieldReadOnly: boolean;
+  @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
+
+  render(): ReactNode {
+    const { field, currentValue, updateValue, theme, isFieldReadOnly, wrapWithReadOnlyOverride } = this;
     const options = (field.options || []).map((option: any) => ({
       label: String(option?.label ?? option?.value ?? ''),
       value: option?.value
@@ -51,7 +61,7 @@ export class FieldSelectControl extends React.Component<FieldSelectControlProps>
               <span
                 key={selected}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${
-                  theme === 'dark'
+                  theme === ThemeMode.DARK
                     ? 'bg-slate-900 border-slate-700 text-slate-200'
                     : 'bg-slate-50 border-slate-200 text-slate-700'
                 }`}

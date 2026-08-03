@@ -1,8 +1,6 @@
-import type {
-  ContentResolutionGate,
-  ContentResolutionGateOptions,
-  ContentResolutionResult,
-} from './content-resolution-gate.types';
+import type { IContentResolutionGate } from '@core/services/interfaces/content-resolution-gate.interface';
+import type { IContentResolutionGateOptions } from '@core/services/interfaces/content-resolution-gate-options.interface';
+import type { ContentResolutionResult } from '@core/services/content-resolution-result';
 
 /**
  * Generic registry of content-resolution gates.
@@ -20,10 +18,10 @@ import type {
  * misbehaving plugin can never break page resolution for everyone.
  */
 export class ContentResolutionGateRegistryService {
-  private readonly gates = new Map<string, ContentResolutionGate>();
+  private readonly gates = new Map<string, IContentResolutionGate>();
 
-  register(key: string, gate: ContentResolutionGate): void {
-    if (!key || typeof gate !== 'function') return;
+  register(key: string, gate: IContentResolutionGate): void {
+    if (!key || !gate) return;
     this.gates.set(key, gate);
   }
 
@@ -40,9 +38,9 @@ export class ContentResolutionGateRegistryService {
   }
 
   async apply(
-    result: ContentResolutionResult,
-    options: ContentResolutionGateOptions,
-  ): Promise<ContentResolutionResult> {
+    result: ContentResolutionResult | null,
+    options: IContentResolutionGateOptions,
+  ): Promise<ContentResolutionResult | null> {
     let current = result;
     for (const gate of this.gates.values()) {
       try {

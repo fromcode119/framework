@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { SystemConstants } from '@core/constants/system.constants';
 import path from 'path';
 
 /**
@@ -27,7 +28,7 @@ export class ThemeEntryPreloadService {
 
   static resolveModulePreloadList(themeDirectory: string, entryFile: string): string[] {
     try {
-      const uiDirectory = path.resolve(String(themeDirectory || ''), 'ui');
+      const uiDirectory = path.resolve(String(themeDirectory || ''), SystemConstants.THEME_DIR.UI);
       const entryName = ThemeEntryPreloadService.sanitizeFileName(entryFile);
       if (!entryName) return [];
 

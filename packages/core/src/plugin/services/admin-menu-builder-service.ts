@@ -1,8 +1,10 @@
-import { LoadedPlugin, Collection } from '../../types';
-import { Logger } from '../../logging';
-import { CoreServices } from '../../services';
-import { AdminRouteUtils } from './admin-route-utils';
-import { AdminSystemNavigationMetadataService } from './admin-system-navigation-metadata-service';
+import { NavGroupStrategy } from '@core/enums/nav-group-strategy.enum';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import { Logger } from '@core/logging';
+import { CoreServices } from '@core/services';
+import { AdminRouteUtils } from '@core/plugin/services/admin-route-utils';
+import { AdminSystemNavigationMetadataService } from '@core/plugin/services/admin-system-navigation-metadata-service';
 
 /**
  * AdminMenuBuilderService
@@ -20,9 +22,9 @@ export class AdminMenuBuilderService {
   ) {}
 
   public build(
-    allPlugins: LoadedPlugin[],
+    allPlugins: ILoadedPlugin[],
     pluginMetadata: any[],
-    registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>,
+    registeredCollections: Map<string, { collection: ICollection; pluginSlug: string }>,
   ): any[] {
     const rawMenuItems: any[] = this.systemNavigationMetadata
       .getMenuItems()
@@ -175,28 +177,28 @@ export class AdminMenuBuilderService {
       const { pluginSlug, groupName, items } = bucket;
       const plugin = allPlugins.find(p => p.manifest.slug === pluginSlug);
 
-      let strategy: 'dropdown' | 'section' = 'section';
+      let strategy: NavGroupStrategy = NavGroupStrategy.SECTION;
 
       if (plugin?.manifest.admin?.groupStrategy) {
         const gs = plugin.manifest.admin.groupStrategy as any;
         if (typeof gs === 'string') {
-          strategy = gs as 'dropdown' | 'section';
+          strategy = NavGroupStrategy.resolve ? NavGroupStrategy.resolve(gs) : (gs as any);
         } else if (gs[groupName]) {
-          strategy = gs[groupName] as 'dropdown' | 'section';
+          strategy = NavGroupStrategy.resolve ? NavGroupStrategy.resolve(gs[groupName]) : (gs[groupName] as any);
         }
       }
 
       // A dropdown wrapper only makes sense with 2+ children. A single-page plugin
       // (e.g. SEO → Overview, Analytics → Overview) should be a plain link with no
       // chevron — otherwise every plugin shows a redundant expand arrow.
-      if (strategy === 'section' || items.length <= 1) {
+      if (strategy === NavGroupStrategy.SECTION || items.length <= 1) {
         items.forEach(item => {
           finalMenu.push({
             ...item,
             group: groupName,
             // Single-page dropdown plugins still want the plugin's short label/icon
             // on their one nav item rather than the raw page label.
-            ...(strategy !== 'section' && items.length === 1
+            ...(strategy !== NavGroupStrategy.SECTION && items.length === 1
               ? {
                   label: String(plugin?.manifest.admin?.label || item.label).trim(),
                   icon: plugin?.manifest.admin?.icon || item.icon,

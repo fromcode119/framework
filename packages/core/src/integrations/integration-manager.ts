@@ -1,18 +1,17 @@
-import { IntegrationRegistry } from './integration-registry';
-import type { IntegrationTypeDefinition, IntegrationProviderDefinition } from './integration-registry.interfaces';
-import { EmailManager } from '@fromcode119/email';
-
-type EmailSender = Pick<EmailManager, 'send'>;
+import { IntegrationRegistry } from '@core/integrations/integration-registry';
+import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
+import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
+import type { IEmailDriver } from '@fromcode119/email';
 import { MediaManager } from '@fromcode119/media';
 import { CacheManager } from '@fromcode119/cache';
-import { Logger } from '../logging';
-import { EmailIntegrationDefinition } from './providers/email-integration-definition';
-import { StorageIntegrationDefinition } from './providers/storage-provider';
-import { CacheIntegrationDefinition } from './providers/cache-provider';
-import { SsoIntegrationDefinition } from './providers/sso-provider';
-import { CoreServices } from '../services';
-import { IntegrationConfigReadService } from './integration-config-read-service';
-import { IntegrationCoreRefreshService } from './integration-core-refresh-service';
+import { Logger } from '@core/logging';
+import { EmailIntegrationDefinition } from '@core/integrations/providers/email-integration-definition';
+import { StorageIntegrationDefinition } from '@core/integrations/providers/storage-provider';
+import { CacheIntegrationDefinition } from '@core/integrations/providers/cache-provider';
+import { SsoIntegrationDefinition } from '@core/integrations/providers/sso-provider';
+import { CoreServices } from '@core/services';
+import { IntegrationConfigReadService } from '@core/integrations/integration-config-read-service';
+import { IntegrationCoreRefreshService } from '@core/integrations/integration-core-refresh-service';
 
 export class IntegrationManager {
   private registry: IntegrationRegistry;
@@ -23,7 +22,7 @@ export class IntegrationManager {
   private instances: Map<string, any> = new Map();
 
   // Integration instances
-  public email!: EmailSender;
+  public email!: IEmailDriver;
   public storage!: MediaManager;
   public cache!: CacheManager;
 
@@ -52,7 +51,7 @@ export class IntegrationManager {
   /**
    * Register a new integration type
    */
-  public registerType(definition: IntegrationTypeDefinition) {
+  public registerType(definition: IIntegrationTypeDefinition) {
     this.registry.registerType(definition);
     this.logger.info(`Registered integration type: ${definition.key}`);
   }
@@ -71,7 +70,7 @@ export class IntegrationManager {
   /**
    * Register a new provider for an existing integration type
    */
-  public registerProvider(typeKey: string, provider: IntegrationProviderDefinition) {
+  public registerProvider(typeKey: string, provider: IIntegrationProviderDefinition) {
     this.registry.registerProvider(typeKey, provider);
     this.logger.info(`Registered provider "${provider.key}" for type "${typeKey}"`);
   }

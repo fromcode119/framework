@@ -1,17 +1,20 @@
+import { AssistantRunMode } from '@ai/admin-assistant-runtime/enums/assistant-run-mode.enum';
+import { AssistantSkillRiskPolicy } from '@ai/admin-assistant-runtime/enums/assistant-skill-risk-policy.enum';
+
 export class AssistantCopyUtils {
   static readonly DEFAULT_SKILLS = [
   {
     id: 'general',
     label: 'General',
     description: 'Balanced assistant for chat, planning, and approvals.',
-    defaultMode: 'chat',
-    riskPolicy: 'approval_required',
+    defaultMode: AssistantRunMode.CHAT,
+    riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
   },
   {
     id: 'editor',
     label: 'Content Editor',
     description: 'Focus on safe content and copy updates across collections.',
-    defaultMode: 'plan',
+    defaultMode: AssistantRunMode.PLAN,
     allowedTools: [
       'collections.list',
       'collections.resolve',
@@ -30,7 +33,7 @@ export class AssistantCopyUtils {
     ],
     systemPromptPatch:
       'Prioritize deterministic content edits with explicit selectors and field paths. Stage only concrete updates.',
-    riskPolicy: 'approval_required',
+    riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
     entryExamples: [
       'Replace "Slow Websites" with "Better Sites" in homepage copy.',
       'Update hero title in @cms/pages id=1.',
@@ -40,7 +43,7 @@ export class AssistantCopyUtils {
     id: 'ops',
     label: 'Ops Assistant',
     description: 'Inspect plugins, themes, and settings with a planning-first workflow.',
-    defaultMode: 'plan',
+    defaultMode: AssistantRunMode.PLAN,
     allowedTools: [
       'plugins.list',
       'plugins.settings.get',
@@ -61,17 +64,17 @@ export class AssistantCopyUtils {
       'web.search',
       'web.fetch',
     ],
-    riskPolicy: 'approval_required',
+    riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
   },
   {
     id: 'research',
     label: 'Web Research',
     description: 'Browse the web and summarize current external references.',
-    defaultMode: 'chat',
+    defaultMode: AssistantRunMode.CHAT,
     allowedTools: ['web.search', 'web.fetch', 'system.now'],
     systemPromptPatch:
       'Use web.search to discover sources, then web.fetch to cite concrete findings. Keep summaries short and source-linked.',
-    riskPolicy: 'read_only',
+    riskPolicy: AssistantSkillRiskPolicy.READ_ONLY,
     entryExamples: [
       'Research top contractor website messaging trends this month.',
       'Find 3 competitor hero claims and summarize differences.',
@@ -81,7 +84,7 @@ export class AssistantCopyUtils {
     id: 'page-audit',
     label: 'Page Auditor',
     description: 'Inspect live pages, compare with CMS/theme settings, and stage targeted fixes.',
-    defaultMode: 'plan',
+    defaultMode: AssistantRunMode.PLAN,
     allowedTools: [
       'web.fetch',
       'web.search',
@@ -99,7 +102,7 @@ export class AssistantCopyUtils {
     ],
     systemPromptPatch:
       'For website audits, fetch page URLs first, quote exact snippets, then map each issue to concrete content/theme/plugin paths.',
-    riskPolicy: 'approval_required',
+    riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
   },
   ];
 

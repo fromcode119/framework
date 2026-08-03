@@ -1,18 +1,18 @@
-import { Logger } from '../logging';
-import { PluginManifest } from '../types';
-import { DiscoveryService } from '../plugin/services/discovery-service';
+import { Logger } from '@core/logging';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import { DiscoveryService } from '@core/plugin/services/discovery-service';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
 import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
-import { PlatformSettingsService } from '../management/platform-settings-service';
+import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import path from 'path';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
-import type { PluginInstallProgressReporter } from '../plugin/plugin-installation.interfaces';
+import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 
 export class MarketplaceCatalogService {
   private logger = new Logger({ namespace: 'marketplace' });
   private client: MarketplaceClient | null = null;
-  private manifestCache = new Map<string, PluginManifest>();
+  private manifestCache = new Map<string, IPluginManifest>();
   private marketplaceUrl: string | null = null;
   private resolved = false;
 
@@ -89,9 +89,9 @@ export class MarketplaceCatalogService {
   public async downloadAndInstall(
     slug: string,
     visited: Set<string> = new Set(),
-    progressReporter?: PluginInstallProgressReporter,
+    progressReporter?: IPluginInstallProgressReporter,
     version?: string,
-  ): Promise<PluginManifest> {
+  ): Promise<IPluginManifest> {
     await this.ensureClient();
     if (!this.client) {
       throw new Error('Marketplace is disabled.');

@@ -1,9 +1,11 @@
+import { AuditOutcome } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { ApiVersionUtils, ApplicationDomainSettingsUtils, PluginState, RouteConstants, SystemConstants } from '@fromcode119/core';
-import { SystemControllerRuntime } from './system-controller-runtime';
-import { ScimTokenService } from '../../services/scim-token-service';
+import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { ScimTokenService } from '@api/services/scim-token-service';
 
-const WRITABLE_SETTINGS_KEYS = new Set<string>([
+export class SystemAdminController {
+  private static readonly WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.MAINTENANCE_MODE,
   SystemConstants.META_KEY.SITE_NAME,
   SystemConstants.META_KEY.SITE_URL,
@@ -13,6 +15,7 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.DOMAIN_ALIASES,
   SystemConstants.META_KEY.TIMEZONE,
   SystemConstants.META_KEY.ADMIN_APPEARANCE,
+  SystemConstants.META_KEY.ADMIN_SHADOWS,
   SystemConstants.META_KEY.PLATFORM_NAME,
   SystemConstants.META_KEY.PLATFORM_DOMAIN,
   SystemConstants.META_KEY.TELEMETRY_ENABLED,
@@ -38,7 +41,6 @@ const WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.TWO_FACTOR_ENABLED,
 ]);
 
-export class SystemAdminController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
   /** Global admin search — the command-palette data source. */
@@ -215,7 +217,7 @@ export class SystemAdminController {
         return res.status(400).json({ error: 'Settings payload must be an object.' });
       }
 
-      const unknownKeys = Object.keys(payload).filter((k) => !WRITABLE_SETTINGS_KEYS.has(k));
+      const unknownKeys = Object.keys(payload).filter((k) => !SystemAdminController.WRITABLE_SETTINGS_KEYS.has(k));
       if (unknownKeys.length > 0) {
         return res.status(400).json({ error: `Unknown or read-only settings key(s): ${unknownKeys.join(', ')}` });
       }
@@ -245,7 +247,7 @@ export class SystemAdminController {
         // Audit every setting change WITH the actor + old→new. This is what finally attributes
         // "who flipped admin_appearance" — and every other settings mystery — to a person.
         if (previousValue !== serializedValue) {
-          void this.runtime.manager.audit.logAction('system', 'settings.update', key, 'allowed', {
+          void this.runtime.manager.audit.logAction('system', 'settings.update', key, AuditOutcome.ALLOWED, {
             userId: actor.id, email: actor.email, from: previousValue ?? null, to: serializedValue,
           });
         }

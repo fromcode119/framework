@@ -1,5 +1,5 @@
 import { CoreServices } from '@fromcode119/core/client';
-import { BaseService } from './base-service';
+import { BaseService } from '@/lib/services/base-service';
 
 /**
  * Service for collection slug and key normalisation utilities.

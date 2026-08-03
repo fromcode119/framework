@@ -1,21 +1,22 @@
-import React from 'react';
-import { useLayoutEffect } from 'react';
+import React, { useLayoutEffect } from 'react';
+
+import { Platform } from '@fromcode119/reactor';
 import { ContextHooks } from '@fromcode119/react';
 import { TimezoneUtils } from '@/lib/timezone';
 import { AdminServices } from '@/lib/admin-services';
-import { ClientLayoutPanelStateService } from './client-layout-panel-state-service';
-
-const adminServices = AdminServices.getInstance();
+import { ClientLayoutPanelStateService } from '@/app/services/client-layout-panel-state-service';
 
 export class ClientLayoutSidebarStateHooks {
+  private static readonly adminServices = AdminServices.getInstance();
+
   static useState(args: { isAuthPage: boolean; user: any }) {
     const { loadConfig, settings, menuItems, plugins, secondaryPanel } = ContextHooks.usePlugins();
     const [, setTimezoneRenderVersion] = React.useState(0);
     const [isSidebarOpen, setSidebarOpen] = React.useState(false);
     const [isSecondaryOpen, setSecondaryOpen] = React.useState(false);
     const [isDesktopSecondaryOpen, setDesktopSecondaryOpen] = React.useState(() => {
-      if (typeof window !== 'undefined') {
-        return adminServices.uiPreference.readSecondarySidebarDesktopOpen() !== false;
+      if (Platform.isBrowser) {
+        return ClientLayoutSidebarStateHooks.adminServices.uiPreference.readSecondarySidebarDesktopOpen() !== false;
       }
 
       return true;
@@ -24,15 +25,15 @@ export class ClientLayoutSidebarStateHooks {
     const [isSidebarInitialized, setIsSidebarInitialized] = React.useState(false);
     const [metadataSecondaryPanel, setMetadataSecondaryPanel] = React.useState(ClientLayoutPanelStateService.createEmptyState());
     const [isMini, setIsMini] = React.useState(() => {
-      if (typeof window !== 'undefined') {
-        return adminServices.uiPreference.readSidebarMini();
+      if (Platform.isBrowser) {
+        return ClientLayoutSidebarStateHooks.adminServices.uiPreference.readSidebarMini();
       }
 
       return false;
     });
 
     React.useEffect(() => {
-      const saved = adminServices.uiPreference.readSidebarOpen();
+      const saved = ClientLayoutSidebarStateHooks.adminServices.uiPreference.readSidebarOpen();
       if (saved !== null) {
         setSidebarOpen(saved);
       }
@@ -41,12 +42,12 @@ export class ClientLayoutSidebarStateHooks {
 
     React.useEffect(() => {
       if (isSidebarInitialized) {
-        adminServices.uiPreference.writeSidebarOpen(isSidebarOpen);
+        ClientLayoutSidebarStateHooks.adminServices.uiPreference.writeSidebarOpen(isSidebarOpen);
       }
     }, [isSidebarOpen, isSidebarInitialized]);
 
     React.useEffect(() => {
-      if (typeof window === 'undefined') {
+      if (!Platform.isBrowser) {
         return;
       }
 
@@ -70,11 +71,11 @@ export class ClientLayoutSidebarStateHooks {
     }, [settings?.timezone]);
 
     React.useEffect(() => {
-      adminServices.uiPreference.writeSidebarMini(isMini);
+      ClientLayoutSidebarStateHooks.adminServices.uiPreference.writeSidebarMini(isMini);
     }, [isMini]);
 
     React.useEffect(() => {
-      adminServices.uiPreference.writeSecondarySidebarDesktopOpen(isDesktopSecondaryOpen);
+      ClientLayoutSidebarStateHooks.adminServices.uiPreference.writeSecondarySidebarDesktopOpen(isDesktopSecondaryOpen);
     }, [isDesktopSecondaryOpen]);
 
     const effectiveSecondaryPanel = React.useMemo(() => {

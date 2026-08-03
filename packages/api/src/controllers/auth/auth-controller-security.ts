@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import { randomBytes } from 'crypto';
 import { SystemConstants } from '@fromcode119/core';
-import { AuthControllerAccount } from './auth-controller-account';
-import type { ApiTokenRecord } from './auth-controller.interfaces';
+import { AuthControllerAccount } from '@api/controllers/auth/auth-controller-account';
+import type { IApiTokenRecord } from '@api/controllers/auth/interfaces/api-token-record.interface';
 
 export class AuthControllerSecurity extends AuthControllerAccount {
   async getMySecurityState(req: any, res: Response) {
@@ -80,7 +80,7 @@ export class AuthControllerSecurity extends AuthControllerAccount {
     const expiresAt = Number.isNaN(expiresInDays) ? null : new Date(Date.now() + expiresInDays * 86400000).toISOString();
 
     const records = await this.readApiTokenRecords(userId);
-    const updated: ApiTokenRecord[] = [
+    const updated: IApiTokenRecord[] = [
       {
         id,
         name,

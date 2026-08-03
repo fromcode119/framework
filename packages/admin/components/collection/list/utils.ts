@@ -1,3 +1,4 @@
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { AdminServices } from '@/lib/admin-services';
 
 /**
@@ -73,25 +74,25 @@ export class CollectionListUtils {
     return `Manage and organize ${CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug).toLowerCase()} records.`;
   }
 
-  static resolveBooleanBadge(fieldName: string, fieldLabel: string, raw: unknown): null | { variant: 'success' | 'gray'; label: string } {
+  static resolveBooleanBadge(fieldName: string, fieldLabel: string, raw: unknown): null | { variant: BadgeVariant; label: string } {
     const value = CollectionListUtils.toBooleanValue(raw);
     if (value === null) return null;
 
     const normalizedField = String(fieldLabel || fieldName || '').trim().toLowerCase();
     if (normalizedField === 'active') {
-      return { variant: value ? 'success' : 'gray', label: value ? 'Active' : 'Inactive' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Active' : 'Inactive' };
     }
     if (normalizedField === 'enabled') {
-      return { variant: value ? 'success' : 'gray', label: value ? 'Enabled' : 'Disabled' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Enabled' : 'Disabled' };
     }
     if (normalizedField === 'verified') {
-      return { variant: value ? 'success' : 'gray', label: value ? 'Verified' : 'Unverified' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Verified' : 'Unverified' };
     }
     if (normalizedField === 'published') {
-      return { variant: value ? 'success' : 'gray', label: value ? 'Published' : 'Draft' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Published' : 'Draft' };
     }
 
-    return { variant: value ? 'success' : 'gray', label: value ? 'Yes' : 'No' };
+    return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Yes' : 'No' };
   }
 
   static shouldRenderBooleanBadge(field: any, fieldName: string, fieldLabel: string, raw: unknown): boolean {

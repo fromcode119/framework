@@ -1,7 +1,7 @@
-import type { AssistantCollectionContext } from '../types';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
 
 export class HomepagePlanner {
-  static homepageCandidateCollections(collections: AssistantCollectionContext[]): AssistantCollectionContext[] {
+  static homepageCandidateCollections(collections: IAssistantCollectionContext[]): IAssistantCollectionContext[] {
     const scored = (Array.isArray(collections) ? collections : [])
       .map((collection) => {
         const scope = `${collection.slug} ${collection.shortSlug} ${collection.label}`.toLowerCase();
@@ -19,10 +19,10 @@ export class HomepagePlanner {
 
   static resolveExplicitCollection(
     message: string,
-    collections: AssistantCollectionContext[],
-  ): AssistantCollectionContext[] {
+    collections: IAssistantCollectionContext[],
+  ): IAssistantCollectionContext[] {
     const normalizedMessage = String(message || '').toLowerCase();
-    const deduped = new Map<string, AssistantCollectionContext>();
+    const deduped = new Map<string, IAssistantCollectionContext>();
     for (const collection of Array.isArray(collections) ? collections : []) {
       const slug = String(collection.slug || '').toLowerCase();
       const shortSlug = String(collection.shortSlug || '').toLowerCase();
@@ -76,7 +76,7 @@ export class HomepagePlanner {
   }
 
   static buildHomepagePayloadForCollection(
-    collection: AssistantCollectionContext,
+    collection: IAssistantCollectionContext,
     scaffold: { markdown: string; payload: Record<string, any> },
   ): Record<string, any> {
     const fields = Array.isArray((collection as any)?.raw?.fields) ? (collection as any).raw.fields : [];

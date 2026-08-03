@@ -1,6 +1,4 @@
-import { AdminConstants } from '@/lib/constants';
-
-const METADATA_RETRY_COOLDOWN_MS = 15000;
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 /**
  * Coordinates the one-shot admin metadata bootstrap fetch, sharing a single in-flight
@@ -8,6 +6,8 @@ const METADATA_RETRY_COOLDOWN_MS = 15000;
  * hammer the endpoint on every retry.
  */
 export class PluginMetadataBootstrapService {
+  private static readonly METADATA_RETRY_COOLDOWN_MS = 15000;
+
   private static bootstrapPromise: Promise<void> | null = null;
   private static bootstrapError: unknown = null;
   private static bootstrapRetryAfter = 0;
@@ -30,7 +30,7 @@ export class PluginMetadataBootstrapService {
       })
       .catch((error) => {
         PluginMetadataBootstrapService.bootstrapError = error;
-        PluginMetadataBootstrapService.bootstrapRetryAfter = Date.now() + METADATA_RETRY_COOLDOWN_MS;
+        PluginMetadataBootstrapService.bootstrapRetryAfter = Date.now() + PluginMetadataBootstrapService.METADATA_RETRY_COOLDOWN_MS;
         throw error;
       })
       .finally(() => {

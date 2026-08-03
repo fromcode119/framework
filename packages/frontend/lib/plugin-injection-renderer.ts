@@ -1,21 +1,24 @@
+import { InjectionTarget } from '@fromcode119/core/client';
 import React from 'react';
-import { FrontendConfigCache } from './frontend-config-cache';
+import type { ReactElement } from 'react';
+
+import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 
 export class PluginInjectionRenderer {
-  static async loadHeadElements(): Promise<React.ReactElement[]> {
+  static async loadHeadElements(): Promise<ReactElement[]> {
     const injections = await PluginInjectionRenderer.readRenderableInjections();
     return injections
-      .filter((injection) => PluginInjectionRenderer.resolveTarget(injection) === 'head')
+      .filter((injection) => PluginInjectionRenderer.resolveTarget(injection) === InjectionTarget.HEAD)
       .map((injection, index) => PluginInjectionRenderer.renderInjection(injection, index))
-      .filter((element): element is React.ReactElement => element !== null);
+      .filter((element): element is ReactElement => element !== null);
   }
 
-  static async loadBodyStartElements(): Promise<React.ReactElement[]> {
+  static async loadBodyStartElements(): Promise<ReactElement[]> {
     const injections = await PluginInjectionRenderer.readRenderableInjections();
     return injections
-      .filter((injection) => PluginInjectionRenderer.resolveTarget(injection) === 'bodyStart')
+      .filter((injection) => PluginInjectionRenderer.resolveTarget(injection) === InjectionTarget.BODY_START)
       .map((injection, index) => PluginInjectionRenderer.renderInjection(injection, index))
-      .filter((element): element is React.ReactElement => element !== null);
+      .filter((element): element is ReactElement => element !== null);
   }
 
   private static async readRenderableInjections(): Promise<Array<Record<string, unknown>>> {
@@ -36,14 +39,14 @@ export class PluginInjectionRenderer {
     });
   }
 
-  private static resolveTarget(injection: Record<string, unknown>): 'head' | 'bodyStart' {
-    return String(injection?.target || '').trim() === 'bodyStart' ? 'bodyStart' : 'head';
+  private static resolveTarget(injection: Record<string, unknown>): InjectionTarget {
+    return String(injection?.target || '').trim() === InjectionTarget.BODY_START.value ? InjectionTarget.BODY_START : InjectionTarget.HEAD;
   }
 
   private static renderInjection(
     injection: Record<string, unknown>,
     index: number,
-  ): React.ReactElement | null {
+  ): ReactElement | null {
     const tag = String(injection?.tag || '').trim().toLowerCase();
     if (!tag) {
       return null;

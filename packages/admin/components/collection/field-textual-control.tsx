@@ -1,17 +1,32 @@
-import React from 'react';
-import { TextArea } from '@/components/ui/text-area';
-import { Input } from '@/components/ui/input';
-import type { FieldTextualControlProps } from './field-renderer.interfaces';
+import { TextualFieldKind } from '@/components/collection/enums/textual-field-kind.enum';
+import type React from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { TextArea } from '@/components/ui/view/text-area.client';
+import { Input } from '@/components/ui/view/input.client';
+import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 
-export class FieldTextualControl extends React.Component<FieldTextualControlProps> {
+export class FieldTextualControl extends PureReactor {
+  @prop declare kind: TextualFieldKind;
+  @prop declare field: ICollectionField;
+  @prop declare currentValue: any;
+  @prop declare resolvedCurrentText: string;
+  @prop declare updateValue: (value: any) => void;
+  @prop declare isFieldReadOnly: boolean;
+  @prop declare errors?: string[];
+  @prop declare label: string;
+  @prop declare isLocalizedField: boolean;
+  @prop declare shouldInlineLocaleSwitcher: boolean;
+  @prop declare localeSwitcher: (compact?: boolean) => React.ReactNode;
+  @prop declare wrapWithReadOnlyOverride: (node: React.ReactNode, roundedClass?: string) => React.ReactNode;
+
   render(): React.ReactNode {
     const {
       kind, currentValue, resolvedCurrentText, updateValue, isFieldReadOnly, errors,
       label, isLocalizedField, shouldInlineLocaleSwitcher, localeSwitcher, wrapWithReadOnlyOverride
-    } = this.props;
+    } = this;
     const switcher = isLocalizedField && shouldInlineLocaleSwitcher;
 
-    if (kind === 'textarea') {
+    if (kind === TextualFieldKind.TEXTAREA) {
       return wrapWithReadOnlyOverride(
         <div className="relative">
           <TextArea
@@ -29,7 +44,7 @@ export class FieldTextualControl extends React.Component<FieldTextualControlProp
       );
     }
 
-    if (kind === 'json') {
+    if (kind === TextualFieldKind.JSON) {
       return wrapWithReadOnlyOverride(
         <div className="relative">
           <TextArea

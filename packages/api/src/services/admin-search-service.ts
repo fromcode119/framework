@@ -1,6 +1,7 @@
 import { PluginManager } from '@fromcode119/core';
 import { IDatabaseManager, PhysicalTableNameUtils } from '@fromcode119/database';
-import { AdminSearchResponse, AdminSearchResult } from './admin-search-service.interfaces';
+import type { IAdminSearchResponse } from '@api/services/interfaces/admin-search-response.interface';
+import type { IAdminSearchResult } from '@api/services/interfaces/admin-search-result.interface';
 
 /**
  * Global admin search — the data source behind the command palette. Fans out one LIKE query per
@@ -24,18 +25,18 @@ export class AdminSearchService {
     private readonly db: IDatabaseManager,
   ) {}
 
-  async search(rawQuery: unknown): Promise<AdminSearchResponse> {
+  async search(rawQuery: unknown): Promise<IAdminSearchResponse> {
     const query = String(rawQuery ?? '').trim();
     if (query.length < AdminSearchService.MIN_QUERY_LENGTH) return { query, results: [] };
 
-    const results: AdminSearchResult[] = [];
+    const results: IAdminSearchResult[] = [];
     await this.searchSystemPeople(query, results);
     await this.searchCollections(query, results);
     return { query, results: results.slice(0, AdminSearchService.TOTAL_LIMIT) };
   }
 
   /** Framework identity tables — searched directly (this is a framework-owned service). */
-  private async searchSystemPeople(query: string, out: AdminSearchResult[]): Promise<void> {
+  private async searchSystemPeople(query: string, out: IAdminSearchResult[]): Promise<void> {
     try {
       const users = await this.db.find('users', {
         search: { columns: ['email', 'first_name', 'last_name'], value: query },
@@ -67,7 +68,7 @@ export class AdminSearchService {
   }
 
   /** Every registered, non-hidden plugin collection, matched on its title-ish text fields. */
-  private async searchCollections(query: string, out: AdminSearchResult[]): Promise<void> {
+  private async searchCollections(query: string, out: IAdminSearchResult[]): Promise<void> {
     for (const [, entry] of this.manager.registeredCollections) {
       if (out.length >= AdminSearchService.TOTAL_LIMIT) return;
       const collection: any = entry.collection;
@@ -99,7 +100,7 @@ export class AdminSearchService {
     return picked.slice(0, 4);
   }
 
-  private mapRow(collection: any, pluginSlug: string, row: any, fieldNames: string[]): AdminSearchResult {
+  private mapRow(collection: any, pluginSlug: string, row: any, fieldNames: string[]): IAdminSearchResult {
     const read = (name: string) => row?.[this.toSnake(name)] ?? row?.[name];
     const titleField = String(collection?.admin?.useAsTitle || '') || fieldNames[0];
     const label = String(read(titleField) || read(fieldNames[0]) || `#${row?.id}`);

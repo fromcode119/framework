@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/sdk",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -57,16 +57,23 @@
       "import": "./dist/vite/index.js",
       "require": "./dist/vite/index.js",
       "types": "./dist/vite/index.d.ts"
+    },
+    "./admin/theme-style-variant-select": {
+      "development": "./src/admin/view/theme-style-variant-select.client.tsx",
+      "import": "./dist/admin/view/theme-style-variant-select.client.js",
+      "require": "./dist/admin/view/theme-style-variant-select.client.js",
+      "types": "./dist/admin/view/theme-style-variant-select.client.d.ts"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -b",
+    "build": "node ../typor/dist/typor-cli.cjs build -b",
     "dev": "tsc -w"
   },
   "dependencies": {
+    "@fromcode119/reactor": "*",
     "@fromcode119/api": "*",
     "@fromcode119/auth": "*",
     "@fromcode119/core": "*",

@@ -1,11 +1,11 @@
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { ContextSecurityProxy } from './utils';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class IntegrationsContextProxy {
   static createIntegrationsProxy(
-    plugin: LoadedPlugin,
-    manager: PluginManagerInterface,
+    plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface,
     security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
     const { hasCapability, handleViolation } = security;
@@ -32,8 +32,8 @@ export class IntegrationsContextProxy {
   }
 
   static createStorageProxy(
-    plugin: LoadedPlugin,
-    manager: PluginManagerInterface,
+    plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface,
     security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
     const target = (manager.integrations as any).storage;
@@ -58,8 +58,8 @@ export class IntegrationsContextProxy {
   }
 
   static createCacheProxy(
-    plugin: LoadedPlugin,
-    manager: PluginManagerInterface,
+    plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface,
     security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
     const cachePrefix = `cache:${plugin.manifest.slug}:`;

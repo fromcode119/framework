@@ -1,4 +1,4 @@
-import { EnvUtils, type Collection } from '@fromcode119/core';
+import { EnvUtils, type ICollection } from '@fromcode119/core';
 
 /**
  * In-process caches for route resolution (`/system/resolve`) — the hottest storefront SSR path.
@@ -104,12 +104,15 @@ export class ResolutionCacheService {
   }
 
   /** Per-collection field-capability flags, computed once per collection object. */
-  getCollectionFlags(collection: Collection): { hasCustomPermalink: boolean; hasSlug: boolean } {
+  getCollectionFlags(collection: ICollection): { hasCustomPermalink: boolean; hasSlug: boolean } {
     const cached = this.collectionFlags.get(collection as unknown as object);
     if (cached) return cached;
     const fields = Array.isArray((collection as any)?.fields) ? (collection as any).fields : [];
     const flags = {
       hasCustomPermalink: fields.some((f: any) => f?.name === 'customPermalink'),
+      // `f.name` is a FIELD NAME string — comparing it to the Enum INSTANCE was always false, so
+      // `hasSlug` never became true and slug-based resolution was skipped entirely (see
+      // resolution-collection-scan-service: `if (flags.hasSlug)` and the `searchSlug = null` guard).
       hasSlug: fields.some((f: any) => f?.name === 'slug'),
     };
     this.collectionFlags.set(collection as unknown as object, flags);

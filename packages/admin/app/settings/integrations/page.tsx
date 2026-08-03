@@ -1,11 +1,12 @@
-import React from 'react';
-import { IntegrationsSettingsPageClient } from './integrations-settings-page-client';
+import type React from 'react';
+import { Reactor, prop } from '@fromcode119/reactor';
+import { IntegrationsSettingsPageClient } from '@/app/settings/integrations/components/view/integrations-settings-page-client.client';
 
-// Next.js App Router route page — must be a function component (RSC pages have no class API).
-export default function IntegrationsSettingsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[]>>;
-}): React.ReactNode {
-  return <IntegrationsSettingsPageClient searchParams={searchParams} />;
+/** Integrations settings route. */
+export class IntegrationsSettingsPage extends Reactor {
+  @prop declare searchParams?: Promise<Record<string, string | string[]>>;
+
+  render(): React.ReactNode {
+    return <IntegrationsSettingsPageClient searchParams={this.searchParams} />;
+  }
 }

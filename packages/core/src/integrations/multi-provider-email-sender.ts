@@ -1,15 +1,13 @@
-import { EmailManager, EmailOptions } from '@fromcode119/email';
-import { Logger } from '../logging';
-
-type EmailSender = Pick<EmailManager, 'send'>;
+import type { IEmailDriver, IEmailOptions } from '@fromcode119/email';
+import { Logger } from '@core/logging';
 
 export class MultiProviderEmailSender {
   constructor(
-    private providers: Array<{ key: string; sender: EmailSender }>,
+    private providers: Array<{ key: string; sender: IEmailDriver }>,
     private logger: Logger
   ) {}
 
-  async send(options: EmailOptions): Promise<any> {
+  async send(options: IEmailOptions): Promise<any> {
     const settled = await Promise.allSettled(
       this.providers.map(async (entry) => {
         const result = await entry.sender.send(options);

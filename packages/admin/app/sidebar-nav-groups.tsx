@@ -1,18 +1,40 @@
-import React from 'react';
+import { Fragment } from 'react';
+import type { ReactNode } from 'react';
+
+import { PureReactor, prop, bound } from '@fromcode119/reactor';
 import { FrameworkIcons } from '@fromcode119/react';
-import { Icon } from '@/components/icon';
-import { AdminConstants } from '@/lib/constants';
+import { Icon } from '@/components/view/icon.client';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { NavUtils } from '@/lib/nav-utils';
-import { NavItem } from './sidebar-nav-item';
-import type { SidebarNavGroupsProps } from './sidebar-nav-groups.interfaces';
+import { NavItem } from '@/app/components/view/sidebar-nav-item.client';
+export class SidebarNavGroups extends PureReactor {
+  @prop declare isAdmin?: boolean;
+  @prop declare isMini?: boolean;
+  @prop declare pathname: string;
+  @prop declare sortedGroups: string[];
+  @prop declare groupedMenu: Record<string, any[]>;
+  @prop declare groupLabels: Record<string, string>;
+  @prop declare collapsedGroups: string[];
+  @prop declare plugins: any[];
+  @prop declare previewablePaths?: string[];
+  @prop declare hoverPreviewPath?: string;
+  @prop declare activeSecondaryAnchorPath?: string;
+  @prop declare normalizedActivePrimaryPathOverride: string;
+  @prop declare normalizedActiveChildPathOverride: string;
+  @prop declare footerSettingsItem: any;
+  @prop declare footerSettingsIsGroup: boolean;
+  @prop declare onClose?: () => void;
+  @prop declare onHoverPreviewPathChange?: (path: string) => void;
 
-const {
-  Activity = () => null,
-} = (FrameworkIcons || {}) as any;
+  @bound handleHoverPreviewStart(path: string): void {
+    this.onHoverPreviewPathChange?.(path);
+  }
 
-export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
-  render(): React.ReactNode {
-    const props = this.props;
+  @bound handleHoverPreviewEnd(): void {
+    this.onHoverPreviewPathChange?.('');
+  }
+
+  render(): ReactNode {
     const {
       isAdmin,
       isMini,
@@ -30,8 +52,7 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
       footerSettingsItem,
       footerSettingsIsGroup,
       onClose,
-      onHoverPreviewPathChange,
-    } = props;
+    } = this;
 
     return (
       <>
@@ -45,7 +66,7 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
           const isRedundantHeader = !isMini && items.length === 1 && items[0].isGroup && items[0].label.toLowerCase() === group;
 
           return (
-            <React.Fragment key={group}>
+            <Fragment key={group}>
               {!isMini && !isRedundantHeader && (
                 <div className={`px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1 ${groupIdx === 0 ? 'mt-2' : 'mt-4'}`}>
                   {displayGroup}
@@ -74,13 +95,13 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
                     canHoverPreview={(previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
                     showHoverPreview={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(hoverPreviewPath) && (previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
                     preserveActiveAnchor={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
-                    onHoverPreviewStart={(path) => onHoverPreviewPathChange?.(path)}
-                    onHoverPreviewEnd={() => onHoverPreviewPathChange?.('')}
+                    onHoverPreviewStart={this.handleHoverPreviewStart}
+                    onHoverPreviewEnd={this.handleHoverPreviewEnd}
                     activePathOverride={normalizedActiveChildPathOverride || normalizedActivePrimaryPathOverride}
                   />
                 ))
               )}
-            </React.Fragment>
+            </Fragment>
           );
         })}
 
@@ -115,7 +136,7 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
           {(!collapsedGroups.includes('system') || isMini) && (
             <>
               {isAdmin && (
-                <NavItem icon={<Activity size={18}/>} label="Activity" href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<FrameworkIcons.Activity size={18}/>} label="Activity" href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
               )}
               {footerSettingsItem && (
                 <NavItem
@@ -133,8 +154,8 @@ export class SidebarNavGroups extends React.Component<SidebarNavGroupsProps> {
                   canHoverPreview={(previewablePaths || []).includes(NavUtils.normalizePath(footerSettingsItem.path))}
                   showHoverPreview={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(hoverPreviewPath) && (previewablePaths || []).includes(NavUtils.normalizePath(footerSettingsItem.path))}
                   preserveActiveAnchor={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
-                  onHoverPreviewStart={(path) => onHoverPreviewPathChange?.(path)}
-                  onHoverPreviewEnd={() => onHoverPreviewPathChange?.('')}
+                  onHoverPreviewStart={this.handleHoverPreviewStart}
+                  onHoverPreviewEnd={this.handleHoverPreviewEnd}
                 />
               )}
             </>

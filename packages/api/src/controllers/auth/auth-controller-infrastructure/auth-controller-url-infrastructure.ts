@@ -1,12 +1,7 @@
 import { Request } from 'express';
-import {
-  ApplicationUrlUtils,
-  AppPathConstants,
-  RequestSurfaceUtils,
-  SystemConstants,
-} from '@fromcode119/core';
-import { ApiConfig } from '../../../config/api-config';
-import { AuthControllerSharedInfrastructure } from './auth-controller-shared-infrastructure';
+import { ApplicationUrlUtils, AppPathConstants, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
+import { ApiConfig } from '@api/config/api-config';
+import { AuthControllerSharedInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-shared-infrastructure';
 
 export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrastructure {
   protected async getFrontendBaseUrl(req: Request): Promise<string> {

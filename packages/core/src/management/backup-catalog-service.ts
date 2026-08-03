@@ -1,18 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { ProjectPaths } from '../config/paths';
-import { BackupService } from './backup-service';
-import { BackupOperationError } from './backup-operation-error';
-import type {
-  BackupCatalogGroup,
-  BackupCatalogGroupKey,
-  BackupCatalogItem,
-  BackupCatalogResolvedItem,
-  BackupCatalogRootKind,
-} from './backup-catalog-service.types';
+import { ProjectPaths } from '@core/config/paths';
+import { BackupService } from '@core/management/backup-service';
+import { BackupOperationError } from '@core/management/backup-operation-error';
+import { BackupCatalogRootKind } from '@core/management/enums/backup-catalog-root-kind.enum';
+import { BackupCatalogGroupKey } from '@core/management/enums/backup-catalog-group-key.enum';
+import type { IBackupCatalogItem } from '@core/management/interfaces/backup-catalog-item.interface';
+import type { IBackupCatalogResolvedItem } from '@core/management/interfaces/backup-catalog-resolved-item.interface';
+import type { IBackupCatalogGroup } from '@core/management/interfaces/backup-catalog-group.interface';
 
 export class BackupCatalogService {
-  private static readonly GROUP_LABELS: Record<BackupCatalogGroupKey, string> = {
+  private static readonly GROUP_LABELS: Record<string, string> = {
     system: 'System',
     plugins: 'Plugins',
     themes: 'Themes',
@@ -20,9 +18,9 @@ export class BackupCatalogService {
     transfer: 'Site Transfer',
   };
 
-  async listBackupGroups(includeTransferArtifacts: boolean = false): Promise<BackupCatalogGroup[]> {
+  async listBackupGroups(includeTransferArtifacts: boolean = false): Promise<IBackupCatalogGroup[]> {
     const items = await this.listItems(includeTransferArtifacts);
-    const groups = new Map<BackupCatalogGroupKey, BackupCatalogItem[]>();
+    const groups = new Map<BackupCatalogGroupKey, IBackupCatalogItem[]>();
 
     for (const item of items) {
       const existingItems = groups.get(item.group) || [];
@@ -33,20 +31,20 @@ export class BackupCatalogService {
     return Array.from(groups.entries())
       .map(([key, groupItems]) => ({
         key,
-        label: BackupCatalogService.GROUP_LABELS[key],
+        label: BackupCatalogService.GROUP_LABELS[key.value],
         items: groupItems.sort((left, right) => right.modifiedAt.localeCompare(left.modifiedAt)),
       }))
       .sort((left, right) => this.groupPriority(left.key) - this.groupPriority(right.key));
   }
 
-  async resolveById(id: string): Promise<BackupCatalogResolvedItem> {
+  async resolveById(id: string): Promise<IBackupCatalogResolvedItem> {
     const decodedValue = this.decodeId(id);
     const separatorIndex = decodedValue.indexOf(':');
     if (separatorIndex <= 0) {
       throw new BackupOperationError(400, 'Invalid backup identifier.');
     }
 
-    const rootKind = decodedValue.slice(0, separatorIndex) as BackupCatalogRootKind;
+    const rootKind = BackupCatalogRootKind.resolve(decodedValue.slice(0, separatorIndex));
     const relativePath = decodedValue.slice(separatorIndex + 1);
     const baseDirectory = this.getRootDirectory(rootKind);
     const absolutePath = this.resolveSafePath(baseDirectory, relativePath);
@@ -57,22 +55,22 @@ export class BackupCatalogService {
     return this.createResolvedItem(rootKind, baseDirectory, absolutePath);
   }
 
-  resolveByPath(absolutePath: string, rootKind: BackupCatalogRootKind = 'backups'): BackupCatalogResolvedItem {
+  resolveByPath(absolutePath: string, rootKind: BackupCatalogRootKind = BackupCatalogRootKind.BACKUPS): IBackupCatalogResolvedItem {
     const baseDirectory = this.getRootDirectory(rootKind);
     const resolvedPath = this.resolveSafePath(baseDirectory, path.relative(baseDirectory, absolutePath));
     return this.createResolvedItem(rootKind, baseDirectory, resolvedPath);
   }
 
-  private async listItems(includeTransferArtifacts: boolean): Promise<BackupCatalogResolvedItem[]> {
-    const backupItems = this.collectItems(this.getRootDirectory('backups'), 'backups');
+  private async listItems(includeTransferArtifacts: boolean): Promise<IBackupCatalogResolvedItem[]> {
+    const backupItems = this.collectItems(this.getRootDirectory(BackupCatalogRootKind.BACKUPS), BackupCatalogRootKind.BACKUPS);
     const transferItems = includeTransferArtifacts
-      ? this.collectItems(this.getRootDirectory('site-transfer'), 'site-transfer')
+      ? this.collectItems(this.getRootDirectory(BackupCatalogRootKind.SITE_TRANSFER), BackupCatalogRootKind.SITE_TRANSFER)
       : [];
 
     return [...backupItems, ...transferItems].sort((left, right) => right.modifiedAt.localeCompare(left.modifiedAt));
   }
 
-  private collectItems(baseDirectory: string, rootKind: BackupCatalogRootKind): BackupCatalogResolvedItem[] {
+  private collectItems(baseDirectory: string, rootKind: BackupCatalogRootKind): IBackupCatalogResolvedItem[] {
     if (!fs.existsSync(baseDirectory) || !fs.statSync(baseDirectory).isDirectory()) {
       return [];
     }
@@ -89,7 +87,7 @@ export class BackupCatalogService {
     rootKind: BackupCatalogRootKind,
     baseDirectory: string,
     absolutePath: string,
-  ): BackupCatalogResolvedItem {
+  ): IBackupCatalogResolvedItem {
     const stats = fs.statSync(absolutePath);
     const relativePath = path.relative(baseDirectory, absolutePath).replace(/\\/g, '/');
     const filename = path.basename(absolutePath);
@@ -111,20 +109,20 @@ export class BackupCatalogService {
   }
 
   private resolveGroup(rootKind: BackupCatalogRootKind, relativePath: string): BackupCatalogGroupKey {
-    if (rootKind === 'site-transfer') {
-      return 'transfer';
+    if (rootKind === BackupCatalogRootKind.SITE_TRANSFER) {
+      return BackupCatalogGroupKey.TRANSFER;
     }
 
     const normalizedPath = relativePath.replace(/\\/g, '/');
-    if (normalizedPath.startsWith('system/')) return 'system';
-    if (normalizedPath.startsWith('plugins/')) return 'plugins';
-    if (normalizedPath.startsWith('themes/')) return 'themes';
-    if (normalizedPath.startsWith('database/')) return 'database';
-    return 'system';
+    if (normalizedPath.startsWith('system/')) return BackupCatalogGroupKey.SYSTEM;
+    if (normalizedPath.startsWith('plugins/')) return BackupCatalogGroupKey.PLUGINS;
+    if (normalizedPath.startsWith('themes/')) return BackupCatalogGroupKey.THEMES;
+    if (normalizedPath.startsWith('database/')) return BackupCatalogGroupKey.DATABASE;
+    return BackupCatalogGroupKey.SYSTEM;
   }
 
   private resolveScopeSlug(group: BackupCatalogGroupKey, filename: string): string | null {
-    if (group !== 'plugins' && group !== 'themes') {
+    if (group !== BackupCatalogGroupKey.PLUGINS && group !== BackupCatalogGroupKey.THEMES) {
       return null;
     }
 
@@ -133,16 +131,16 @@ export class BackupCatalogService {
   }
 
   private resolveDisplayName(group: BackupCatalogGroupKey, filename: string, scopeSlug: string | null): string {
-    if (group === 'plugins' && scopeSlug) {
+    if (group === BackupCatalogGroupKey.PLUGINS && scopeSlug) {
       return `Plugin ${scopeSlug}`;
     }
-    if (group === 'themes' && scopeSlug) {
+    if (group === BackupCatalogGroupKey.THEMES && scopeSlug) {
       return `Theme ${scopeSlug}`;
     }
-    if (group === 'database') {
+    if (group === BackupCatalogGroupKey.DATABASE) {
       return 'Database backup';
     }
-    if (group === 'transfer') {
+    if (group === BackupCatalogGroupKey.TRANSFER) {
       return filename;
     }
     return 'System backup';
@@ -150,7 +148,7 @@ export class BackupCatalogService {
 
   private isSupportedBackupFile(filePath: string, rootKind: BackupCatalogRootKind): boolean {
     const normalizedPath = filePath.replace(/\\/g, '/');
-    if (rootKind === 'site-transfer') {
+    if (rootKind === BackupCatalogRootKind.SITE_TRANSFER) {
       return normalizedPath.endsWith('/site-snapshot.tar.gz');
     }
 
@@ -172,7 +170,7 @@ export class BackupCatalogService {
   }
 
   private getRootDirectory(rootKind: BackupCatalogRootKind): string {
-    if (rootKind === 'site-transfer') {
+    if (rootKind === BackupCatalogRootKind.SITE_TRANSFER) {
       return ProjectPaths.getRepositoryArtifactsDir('site-transfer');
     }
     return BackupService.getBackupsDirectory();
@@ -209,6 +207,6 @@ export class BackupCatalogService {
   }
 
   private groupPriority(key: BackupCatalogGroupKey): number {
-    return ['system', 'plugins', 'themes', 'database', 'transfer'].indexOf(key);
+    return ['system', 'plugins', 'themes', 'database', 'transfer'].indexOf(key.value);
   }
 }

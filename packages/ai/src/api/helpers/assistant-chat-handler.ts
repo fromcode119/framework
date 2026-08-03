@@ -1,10 +1,12 @@
+import { TaskComplexity } from '@ai/api/forge/enums/task-complexity.enum';
+import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
 import { Request, Response } from 'express';
 import { TypeUtils } from '@fromcode119/core';
-import type { ControllerDeps } from './controller-deps';
+import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 
 /** Handles the assistantChat endpoint logic. */
 export class AssistantChatHandler {
-  static async handle(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async handle(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     const startedAt = Date.now();
     try {
       const normalizedBody = deps.payloadService.normalizeLegacyAssistantChatPayload(req.body || {});
@@ -60,7 +62,7 @@ export class AssistantChatHandler {
       const result = await runtime.chat({ message, provider: resolvedAssistant.provider, history: contextForLLM, agentMode: String(normalizedBody?.agentMode || 'advanced'), maxIterations: complexityAdjustedIterations, maxDurationMs: Number(normalizedBody?.maxDurationMs || 35000), allowedTools: Array.isArray(normalizedBody?.tools) ? normalizedBody.tools : [], skillId: String(normalizedBody?.skillId || '').trim() || undefined, sessionId: sessionId || undefined, continueFrom: requestContinueFrom, checkpoint: requestCheckpoint } as any);
 
       let finalResult = result;
-      const pausedWithoutActions = taskComplexity.level === 'simple' && result?.ui?.canContinue === true && result?.ui?.needsClarification !== true && (!Array.isArray(result?.actions) || result.actions.length === 0);
+      const pausedWithoutActions = taskComplexity.level === TaskComplexity.SIMPLE && result?.ui?.canContinue === true && result?.ui?.needsClarification !== true && (!Array.isArray(result?.actions) || result.actions.length === 0);
       if (pausedWithoutActions) {
         const continuationPrompt = String(result?.checkpoint?.resumePrompt || '').trim() || 'Continue planning from previous context and stage executable actions if safe.';
         deps.recordReasoningStep(sessionId, 'Simple task paused without actions; running one automatic continuation pass', { complexity: taskComplexity.level, originalMessage: message }, { continuationPrompt }, 0.9);
@@ -79,7 +81,7 @@ export class AssistantChatHandler {
       const reasoningReport = deps.getReasoningReport(sessionId) || null;
       const finalMessage = String(finalResult?.message || '');
       const durationMs = Date.now() - startedAt;
-      await deps.emitAssistantTelemetry('chat.success', { provider: resolvedAssistant.provider, sessionId: sessionId || finalResult?.sessionId || null, usedLegacyContract, agentMode: String(finalResult?.agentMode || '').trim() || 'advanced', skillId: String(finalResult?.skill?.id || normalizedBody?.skillId || '').trim() || 'general', iterations: Number(finalResult?.iterations || 0) || 0, actions: Array.isArray(finalResult?.actions) ? finalResult.actions.length : 0, loopCapReached: finalResult?.loopCapReached === true, durationMs, reasoningSteps: reasoningStats?.totalSteps || 0, averageConfidence: reasoningStats?.averageConfidence || 0, errorRecoveries: reasoningStats?.recoveries?.length || 0, pause_count_per_request: (finalMessage.match(/one more pass|continue planning|planning paused/gi) || []).length + (finalResult?.ui?.canContinue === true ? 1 : 0), repeated_pause_copy_detected: finalResult?.ui?.loopRecoveryMode === 'best_effort', draft_fast_path_used: Array.isArray(finalResult?.traces) ? finalResult.traces.some((t: any) => /draft fast-path/i.test(String(t?.message || ''))) : false, clarification_vs_continue_rate: finalResult?.ui?.needsClarification === true ? 1 : finalResult?.ui?.canContinue === true ? 0 : null, clarifier_count_per_turn: finalResult?.ui?.needsClarification === true ? 1 : 0, loop_retry_count: Math.max(0, Number(finalResult?.iterations || 0) - 1), false_success_detected: (!Array.isArray(finalResult?.actions) || finalResult.actions.length === 0) && /\b(applied|updated|changed)\b/i.test(finalMessage) && !/\b(no changes|not found|not applied|staged)\b/i.test(finalMessage), batch_state_transition: null, provider_model_latency_ms: durationMs, provider_model_error_rate: 0 });
+      await deps.emitAssistantTelemetry('chat.success', { provider: resolvedAssistant.provider, sessionId: sessionId || finalResult?.sessionId || null, usedLegacyContract, agentMode: String(finalResult?.agentMode || '').trim() || 'advanced', skillId: String(finalResult?.skill?.id || normalizedBody?.skillId || '').trim() || 'general', iterations: Number(finalResult?.iterations || 0) || 0, actions: Array.isArray(finalResult?.actions) ? finalResult.actions.length : 0, loopCapReached: finalResult?.loopCapReached === true, durationMs, reasoningSteps: reasoningStats?.totalSteps || 0, averageConfidence: reasoningStats?.averageConfidence || 0, errorRecoveries: reasoningStats?.recoveries?.length || 0, pause_count_per_request: (finalMessage.match(/one more pass|continue planning|planning paused/gi) || []).length + (finalResult?.ui?.canContinue === true ? 1 : 0), repeated_pause_copy_detected: finalResult?.ui?.loopRecoveryMode === ClarifyMode.BEST_EFFORT, draft_fast_path_used: Array.isArray(finalResult?.traces) ? finalResult.traces.some((t: any) => /draft fast-path/i.test(String(t?.message || ''))) : false, clarification_vs_continue_rate: finalResult?.ui?.needsClarification === true ? 1 : finalResult?.ui?.canContinue === true ? 0 : null, clarifier_count_per_turn: finalResult?.ui?.needsClarification === true ? 1 : 0, loop_retry_count: Math.max(0, Number(finalResult?.iterations || 0) - 1), false_success_detected: (!Array.isArray(finalResult?.actions) || finalResult.actions.length === 0) && /\b(applied|updated|changed)\b/i.test(finalMessage) && !/\b(no changes|not found|not applied|staged)\b/i.test(finalMessage), batch_state_transition: null, provider_model_latency_ms: durationMs, provider_model_error_rate: 0 });
       return res.json({ ...responsePayload, reasoningReport });
     } catch (e: any) {
       const message = String(e?.message || 'Assistant request failed');

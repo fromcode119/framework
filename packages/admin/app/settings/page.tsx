@@ -1,9 +1,12 @@
-import React from 'react';
+import type { ReactNode } from 'react';
+import { Reactor } from '@fromcode119/reactor';
 import { redirect } from 'next/navigation';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
-// Next.js App Router route page — must be a function component (RSC pages have no class API).
-export default function SettingsPage(): React.ReactNode {
-  redirect(AdminConstants.ROUTES.SETTINGS.GENERAL);
-  return null;
+/** Admin route. */
+export class SettingsPage extends Reactor {
+  render(): ReactNode {
+    redirect(AdminConstants.ROUTES.SETTINGS.GENERAL);
+    return null;
+  }
 }

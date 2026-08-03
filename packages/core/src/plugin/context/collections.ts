@@ -1,25 +1,27 @@
-import { Collection, CollectionInput, LoadedPlugin , Field } from '../../types';
-import { Logger } from '../../logging';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { ContextSecurityProxy } from './utils';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IField } from '@core/interfaces/field.interface';
+import type { ICollectionInput } from '@core/interfaces/collection-input.interface';
+import { Logger } from '@core/logging';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { PluginRegistry } from '@fromcode119/plugins';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
-import { PluginEntityRegistrationService } from '../services/plugin-entity-registration-service';
-
+import { PluginEntityRegistrationService } from '@core/plugin/services/plugin-entity-registration-service';
 
 export class CollectionsContextProxy {
   private static readonly entityRegistration = new PluginEntityRegistrationService();
 
   static createCollectionsProxy(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface,
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface,
   rootLogger: Logger,
   security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
 ) {
       const { hasCapability, handleViolation } = security;
 
       return {
-        register: (collection: CollectionInput) => {
+        register: (collection: ICollectionInput) => {
           if (!hasCapability('database') && !hasCapability('content')) {
             handleViolation('content');
           }
@@ -52,14 +54,14 @@ export class CollectionsContextProxy {
             pluginSlug: plugin.manifest.slug 
           });
         },
-        extend: (targetPlugin: string, targetCollection: string, extensions: Partial<Collection>) => {
+        extend: (targetPlugin: string, targetCollection: string, extensions: Partial<ICollection>) => {
           const fullSlug = PhysicalTableNameUtils.create(targetPlugin, targetCollection);
 
           const entry = manager.getCollection(fullSlug);
           if (entry) {
             if (extensions.fields) {
-              const existingNames = new Set(entry.collection.fields.map((f: Field) => f.name));
-              extensions.fields.forEach((f: Field) => {
+              const existingNames = new Set(entry.collection.fields.map((f: IField) => f.name));
+              extensions.fields.forEach((f: IField) => {
                 if (!existingNames.has(f.name)) {
                   entry.collection.fields.push(f);
                 }
@@ -69,7 +71,7 @@ export class CollectionsContextProxy {
             manager.hooks.on('collection:registered', (data: any) => {
                if (data.pluginSlug === targetPlugin && data.collection.shortSlug === targetCollection) {
                   if (extensions.fields) {
-                    const existingNames = new Set(data.collection.fields.map((f: Field) => f.name));
+                    const existingNames = new Set(data.collection.fields.map((f: IField) => f.name));
                     extensions.fields.forEach((f: any) => {
                       if (!existingNames.has(f.name)) {
                         data.collection.fields.push(f);

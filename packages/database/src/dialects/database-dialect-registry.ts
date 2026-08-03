@@ -1,18 +1,18 @@
-import type { DatabaseBackupHandler } from './database-backup.interfaces';
-import type { DatabaseDialectDefinition } from './database-dialect-definition.interfaces';
-import type { DatabaseDialectResolver } from './database-dialect-resolver.interfaces';
-import { DatabaseDialectDefinitionLoader } from './database-dialect-definition-loader';
+import type { IDatabaseBackupHandler } from '@database/dialects/interfaces/database-backup-handler.interface';
+import type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
+import type { IDatabaseDialectResolver } from '@database/dialects/interfaces/database-dialect-resolver.interface';
+import { DatabaseDialectDefinitionLoader } from '@database/dialects/database-dialect-definition-loader';
 
 export class DatabaseDialectRegistry {
   private static readonly fallbackDialect = 'postgres';
 
-  private static readonly definitions = new Map<string, DatabaseDialectDefinition>();
+  private static readonly definitions = new Map<string, IDatabaseDialectDefinition>();
 
-  private static readonly resolvers = new Map<string, DatabaseDialectResolver>();
+  private static readonly resolvers = new Map<string, IDatabaseDialectResolver>();
 
   private static isInitialized = false;
 
-  static registerDefinition(definition: DatabaseDialectDefinition): void {
+  static registerDefinition(definition: IDatabaseDialectDefinition): void {
     const normalizedDialect = String(definition?.dialect || '').trim().toLowerCase();
     if (!normalizedDialect) {
       throw new Error('Database dialect definition requires a dialect name.');
@@ -22,7 +22,7 @@ export class DatabaseDialectRegistry {
     this.resolvers.set(normalizedDialect, definition.createResolver());
   }
 
-  static registerResolver(resolver: DatabaseDialectResolver): void {
+  static registerResolver(resolver: IDatabaseDialectResolver): void {
     const normalizedDialect = String(resolver?.dialect || '').trim().toLowerCase();
     if (!normalizedDialect) {
       throw new Error('Database dialect resolver requires a dialect name.');
@@ -43,14 +43,14 @@ export class DatabaseDialectRegistry {
     return resolver?.dialect || this.fallbackDialect;
   }
 
-  static resolveDefinition(dialect: string): DatabaseDialectDefinition | null {
+  static resolveDefinition(dialect: string): IDatabaseDialectDefinition | null {
     this.ensureBuiltInsRegistered();
 
     const normalizedDialect = String(dialect || '').trim().toLowerCase();
     return this.definitions.get(normalizedDialect) || null;
   }
 
-  static resolveBackupHandler(connection: string): DatabaseBackupHandler | null {
+  static resolveBackupHandler(connection: string): IDatabaseBackupHandler | null {
     const definition = this.resolveDefinition(this.resolve(connection));
     return definition?.createBackupHandler() || null;
   }

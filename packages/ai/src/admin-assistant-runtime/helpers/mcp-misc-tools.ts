@@ -1,12 +1,12 @@
-import type { McpToolDefinition } from '@fromcode119/mcp';
-import type { AdminAssistantRuntimeOptions } from '../types';
-import { SearchTextHelpers } from './search-text-helpers';
-import { RuntimeMiscHelpers } from './runtime-misc-helpers';
-import { ActionSafetyHelpers } from './action-safety-helpers';
+import type { IMcpToolDefinition } from '@fromcode119/mcp';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import { SearchTextHelpers } from '@ai/admin-assistant-runtime/helpers/search-text-helpers';
+
+import { ActionSafetyHelpers } from '@ai/admin-assistant-runtime/helpers/action-safety-helpers';
 
 /** MCP tool definitions for settings, plugins, themes, web and system operations. */
 export class McpMiscTools {
-  static build(options: AdminAssistantRuntimeOptions, dryRun: boolean): McpToolDefinition[] {
+  static build(options: IAdminAssistantRuntimeOptions, dryRun: boolean): IMcpToolDefinition[] {
     const nowFn = options.now || (() => new Date().toISOString());
     return [
       {

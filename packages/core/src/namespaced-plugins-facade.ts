@@ -1,4 +1,4 @@
-import type { PluginApiResolver } from './plugin-api-resolver.interfaces';
+import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
 
 export class NamespacedPluginsFacade {
   // The facade is Proxy-backed: `namespace('org.fromcode').finance` resolves the `finance` plugin's public
@@ -8,7 +8,7 @@ export class NamespacedPluginsFacade {
   [pluginSlug: string]: any;
 
   constructor(
-    private readonly resolver: PluginApiResolver,
+    private readonly resolver: IPluginApiResolver,
     private readonly namespaceValue: string,
   ) {}
 
@@ -81,7 +81,7 @@ export class NamespacedPluginsFacade {
     return this.namespaceValue;
   }
 
-  static create(resolver: PluginApiResolver, namespace: string): NamespacedPluginsFacade {
+  static create(resolver: IPluginApiResolver, namespace: string): NamespacedPluginsFacade {
     const facade = new NamespacedPluginsFacade(resolver, namespace);
 
     return new Proxy(facade, {

@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiPathUtils } from '@fromcode119/core/client';
 
-import { GET } from '../app/favicon.ico/route';
-import { ServerApiUtils } from '../lib/server-api';
+// Route files export only the class — see RouteExportPlugin.
+import { FaviconRoute } from '@/app/favicon.ico/route';
+import { ServerApiUtils } from '@/lib/server-api';
 
 describe('favicon route', () => {
   afterEach(() => {
@@ -28,7 +29,7 @@ describe('favicon route', () => {
       createResponse('ico', 'image/x-icon'),
     );
 
-    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/x-icon');
@@ -50,7 +51,7 @@ describe('favicon route', () => {
       return createResponse('', 'text/plain', 404);
     }));
 
-    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/png');
@@ -64,7 +65,7 @@ describe('favicon route', () => {
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
     vi.stubGlobal('fetch', vi.fn(async () => createResponse('', 'text/plain', 404)));
 
-    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(204);
   });
@@ -75,7 +76,7 @@ describe('favicon route', () => {
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
     vi.stubGlobal('fetch', vi.fn(async () => createResponse('fallback', 'image/png')));
 
-    const response = await GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/png');

@@ -1,7 +1,8 @@
-import { ApplicationUrlUtils } from './application-url-utils';
-import { SystemConstants } from './constants';
-import { RuntimeConstants } from './runtime-constants';
-import type { FrontendRuntimeMetadata } from './runtime-bridge.interfaces';
+import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { SystemConstants } from '@core/constants/system.constants';
+import { RuntimeConstants } from '@core/constants/runtime.constants';
+import type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
+import { EnvUtils } from '@core/utils/env-utils';
 
 /**
  * Utilities for accessing the Fromcode framework's shared browser runtime.
@@ -10,7 +11,7 @@ export class RuntimeBridge {
   static resolveApiBaseUrl(options: { fallbackHost?: string } = {}): string {
     const fallbackBaseUrl = RuntimeBridge.normalizeApiBaseUrlCandidate(options.fallbackHost);
 
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return RuntimeBridge.normalizeApiBaseUrlCandidate(
         ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true }),
       )
@@ -19,9 +20,6 @@ export class RuntimeBridge {
 
     const fromBridge = RuntimeBridge.normalizeApiBaseUrlCandidate((window as any)?.FROMCODE_API_URL);
     if (fromBridge) return fromBridge;
-
-    const fromGlobal = RuntimeBridge.normalizeApiBaseUrlCandidate((window as any)?.Fromcode?.apiUrl);
-    if (fromGlobal) return fromGlobal;
 
     const runtimeBridge = RuntimeBridge.getBridge<any>();
     const fromRuntimeBridge = RuntimeBridge.normalizeApiBaseUrlCandidate(runtimeBridge?.apiUrl);
@@ -40,16 +38,16 @@ export class RuntimeBridge {
    * Used by plugins to communicate with the shared singleton state.
    */
   static getBridge<T = any>(moduleName: string = '@fromcode119/react'): T {
-    if (typeof window === 'undefined') return {} as T;
+    if (EnvUtils.isServer()) return {} as T;
     const win = window as any;
     const modules = win[RuntimeConstants.GLOBALS.MODULES];
     return (modules?.[moduleName]) || win[RuntimeConstants.GLOBALS.FROMCODE] || {};
   }
 
-  static async getMetadata(options: { ensureLoaded?: boolean } = {}): Promise<FrontendRuntimeMetadata> {
+  static async getMetadata(options: { ensureLoaded?: boolean } = {}): Promise<IFrontendRuntimeMetadata> {
     const ensureLoaded = options.ensureLoaded !== false;
 
-    const read = (): FrontendRuntimeMetadata => {
+    const read = (): IFrontendRuntimeMetadata => {
       const bridge = RuntimeBridge.getBridge<any>();
       const state = typeof bridge.getState === 'function' ? bridge.getState() : bridge;
       return {

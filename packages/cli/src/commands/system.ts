@@ -2,10 +2,11 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs-extra';
-import { CliUtils } from '../utils';
-import { SiteTransferBundleCommandService } from '../services/site-transfer-bundle-command-service';
-import { SystemUpdateCommandService } from '../services/system-update-command-service';
-
+import { CliUtils } from '@cli/utils';
+import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bundle-command-service';
+import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
+import { PackageVersionSyncCommandService } from '@cli/services/package-version-sync-command-service';
+import { SingleDomainGateway } from '@cli/services/single-domain-gateway';
 
 export class SystemCommands {
   static registerSystemCommands(program: Command) {
@@ -72,6 +73,20 @@ export class SystemCommands {
           includeSecrets: Boolean(options.includeSecrets),
           skipChecksum: Boolean(options.skipChecksum),
         });
+      });
+
+    system
+      .command('sync-versions')
+      .description('Stamp the root framework version into every workspace package')
+      .action(() => {
+        PackageVersionSyncCommandService.run();
+      });
+
+    system
+      .command('gateway')
+      .description('Serve API, admin and frontend behind one public domain (container entrypoint)')
+      .action(() => {
+        new SingleDomainGateway().start();
       });
   }
 }

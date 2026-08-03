@@ -1,11 +1,9 @@
-import type {
-  PluginDefaultPageContractResolutionInput,
-  PluginDefaultPageContractResolutionSource,
-  PluginDefaultPageContractResolutionStatus,
-  PluginDefaultPageContractSiteStateEntry,
-  PluginDefaultPageContractSiteStateMatch,
-  RegisteredPluginDefaultPageContract,
-} from '../../types';
+import { PluginDefaultPageContractResolutionStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-status.enum';
+import { PluginDefaultPageContractSiteStateMatch } from '@core/default-page-contract/enums/plugin-default-page-contract-site-state-match.enum';
+import { PluginDefaultPageContractResolutionSource } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-source.enum';
+import type { IPluginDefaultPageContractResolutionInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-resolution-input.interface';
+import type { IPluginDefaultPageContractSiteStateEntry } from '@core/default-page-contract/interfaces/plugin-default-page-contract-site-state-entry.interface';
+import type { IRegisteredPluginDefaultPageContract } from '@core/default-page-contract/interfaces/registered-plugin-default-page-contract.interface';
 
 /**
  * Derives the site-state-driven status/prerequisite/reason fields for a single resolved
@@ -14,10 +12,10 @@ import type {
  */
 export class PluginDefaultPageContractSiteStateResolver {
   getSiteStateEntries(
-    entry: RegisteredPluginDefaultPageContract,
-    siteState?: PluginDefaultPageContractResolutionInput['siteState'],
-  ): PluginDefaultPageContractSiteStateEntry[] {
-    const entries: PluginDefaultPageContractSiteStateEntry[] = [];
+    entry: IRegisteredPluginDefaultPageContract,
+    siteState?: IPluginDefaultPageContractResolutionInput['siteState'],
+  ): IPluginDefaultPageContractSiteStateEntry[] {
+    const entries: IPluginDefaultPageContractSiteStateEntry[] = [];
     const canonicalEntry = siteState?.byCanonicalKey?.[entry.canonicalKey];
     const capabilityEntry = siteState?.byCapability?.[entry.capability];
 
@@ -33,40 +31,40 @@ export class PluginDefaultPageContractSiteStateResolver {
   }
 
   getSiteStateMatch(
-    entry: RegisteredPluginDefaultPageContract,
-    siteState?: PluginDefaultPageContractResolutionInput['siteState'],
+    entry: IRegisteredPluginDefaultPageContract,
+    siteState?: IPluginDefaultPageContractResolutionInput['siteState'],
   ): PluginDefaultPageContractSiteStateMatch {
     const hasCanonicalKeyMatch = Boolean(siteState?.byCanonicalKey?.[entry.canonicalKey]);
     const hasCapabilityMatch = Boolean(siteState?.byCapability?.[entry.capability]);
 
     if (hasCanonicalKeyMatch && hasCapabilityMatch) {
-      return 'both';
+      return PluginDefaultPageContractSiteStateMatch.BOTH;
     }
 
     if (hasCanonicalKeyMatch) {
-      return 'canonicalKey';
+      return PluginDefaultPageContractSiteStateMatch.CANONICAL_KEY;
     }
 
     if (hasCapabilityMatch) {
-      return 'capability';
+      return PluginDefaultPageContractSiteStateMatch.CAPABILITY;
     }
 
-    return 'none';
+    return PluginDefaultPageContractSiteStateMatch.NONE;
   }
 
   getSiteStateStatus(
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
+    siteStateEntries: IPluginDefaultPageContractSiteStateEntry[],
   ): PluginDefaultPageContractResolutionStatus | undefined {
-    if (siteStateEntries.some((entry) => entry.status === 'blocked')) {
-      return 'blocked';
+    if (siteStateEntries.some((entry) => entry.status === PluginDefaultPageContractResolutionStatus.BLOCKED)) {
+      return PluginDefaultPageContractResolutionStatus.BLOCKED;
     }
 
-    if (siteStateEntries.some((entry) => entry.status === 'skipped')) {
-      return 'skipped';
+    if (siteStateEntries.some((entry) => entry.status === PluginDefaultPageContractResolutionStatus.SKIPPED)) {
+      return PluginDefaultPageContractResolutionStatus.SKIPPED;
     }
 
-    if (siteStateEntries.some((entry) => entry.status === 'ready')) {
-      return 'ready';
+    if (siteStateEntries.some((entry) => entry.status === PluginDefaultPageContractResolutionStatus.READY)) {
+      return PluginDefaultPageContractResolutionStatus.READY;
     }
 
     return undefined;
@@ -74,14 +72,15 @@ export class PluginDefaultPageContractSiteStateResolver {
 
   getPrerequisiteReady(
     install: boolean,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
+    siteStateEntries: IPluginDefaultPageContractSiteStateEntry[],
     siteStateStatus?: PluginDefaultPageContractResolutionStatus,
   ): boolean {
     if (!install) {
       return false;
     }
 
-    if (siteStateStatus === 'blocked' || siteStateStatus === 'skipped') {
+    if (siteStateStatus === PluginDefaultPageContractResolutionStatus.BLOCKED
+      || siteStateStatus === PluginDefaultPageContractResolutionStatus.SKIPPED) {
       return false;
     }
 
@@ -94,23 +93,24 @@ export class PluginDefaultPageContractSiteStateResolver {
     prerequisiteReady: boolean,
   ): PluginDefaultPageContractResolutionStatus {
     if (!install) {
-      return 'skipped';
+      return PluginDefaultPageContractResolutionStatus.SKIPPED;
     }
 
-    if (siteStateStatus === 'blocked' || siteStateStatus === 'skipped') {
+    if (siteStateStatus === PluginDefaultPageContractResolutionStatus.BLOCKED
+      || siteStateStatus === PluginDefaultPageContractResolutionStatus.SKIPPED) {
       return siteStateStatus;
     }
 
     if (!prerequisiteReady) {
-      return 'blocked';
+      return PluginDefaultPageContractResolutionStatus.BLOCKED;
     }
 
-    return 'ready';
+    return PluginDefaultPageContractResolutionStatus.READY;
   }
 
   getReasons(
     install: boolean,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
+    siteStateEntries: IPluginDefaultPageContractSiteStateEntry[],
     status: PluginDefaultPageContractResolutionStatus,
   ): string[] {
     if (!install) {
@@ -129,11 +129,11 @@ export class PluginDefaultPageContractSiteStateResolver {
       return reasons;
     }
 
-    if (status === 'blocked') {
+    if (status === PluginDefaultPageContractResolutionStatus.BLOCKED) {
       return ['prerequisites-not-ready'];
     }
 
-    if (status === 'skipped') {
+    if (status === PluginDefaultPageContractResolutionStatus.SKIPPED) {
       return ['site-state-skipped'];
     }
 
@@ -143,7 +143,7 @@ export class PluginDefaultPageContractSiteStateResolver {
   getStatusSource(
     install: boolean,
     installSource: PluginDefaultPageContractResolutionSource,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
+    siteStateEntries: IPluginDefaultPageContractSiteStateEntry[],
     siteStateStatus: PluginDefaultPageContractResolutionStatus | undefined,
     prerequisiteReady: boolean,
   ): PluginDefaultPageContractResolutionSource {
@@ -151,8 +151,11 @@ export class PluginDefaultPageContractSiteStateResolver {
       return installSource;
     }
 
-    if (siteStateEntries.length && (siteStateStatus === 'blocked' || siteStateStatus === 'skipped' || !prerequisiteReady)) {
-      return 'site-state';
+    if (siteStateEntries.length
+      && (siteStateStatus === PluginDefaultPageContractResolutionStatus.BLOCKED
+        || siteStateStatus === PluginDefaultPageContractResolutionStatus.SKIPPED
+        || !prerequisiteReady)) {
+      return PluginDefaultPageContractResolutionSource.SITE_STATE;
     }
 
     return installSource;
@@ -160,16 +163,16 @@ export class PluginDefaultPageContractSiteStateResolver {
 
   getPrerequisiteSource(
     install: boolean,
-    siteStateEntries: PluginDefaultPageContractSiteStateEntry[],
+    siteStateEntries: IPluginDefaultPageContractSiteStateEntry[],
   ): PluginDefaultPageContractResolutionSource {
     if (!install) {
-      return 'declaration';
+      return PluginDefaultPageContractResolutionSource.DECLARATION;
     }
 
-    return siteStateEntries.length ? 'site-state' : 'declaration';
+    return siteStateEntries.length ? PluginDefaultPageContractResolutionSource.SITE_STATE : PluginDefaultPageContractResolutionSource.DECLARATION;
   }
 
-  private cloneSiteStateEntry(entry: PluginDefaultPageContractSiteStateEntry): PluginDefaultPageContractSiteStateEntry {
+  private cloneSiteStateEntry(entry: IPluginDefaultPageContractSiteStateEntry): IPluginDefaultPageContractSiteStateEntry {
     return {
       prerequisitesReady: entry.prerequisitesReady,
       reasons: this.normalizeOptionalStringArray(entry.reasons),

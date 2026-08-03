@@ -1,7 +1,7 @@
-import { ApiVersionUtils } from '../api-version';
-import { ApplicationUrlUtils } from '../application-url-utils';
-import { SystemConstants } from '../constants';
-import { RouteConstants } from '../route-constants';
+import { ApiVersionUtils } from '@core/api-version';
+import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { SystemConstants } from '@core/constants/system.constants';
+import { RouteConstants } from '@core/constants/route.constants';
 
 export class ApiPathUtils {
   static fillPath(pathTemplate: string, params?: Record<string, string | number>): string {
@@ -92,6 +92,28 @@ export class ApiPathUtils {
     const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug }).replace(/\/\*$/, '');
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
+
+  /**
+   * Matcher for a SERVED theme-UI asset path (`…/themes/<slug>/ui/<rest>`), with the slug and the asset
+   * path as capture groups.
+   *
+   * Derived from the ROUTE template (`SystemConstants.API_PATH.THEMES.UI`) rather than written out, so it
+   * cannot drift from the route that produces these URLs — `:slug` becomes a segment capture and the
+   * trailing wildcard becomes a path capture. Two call sites hand-wrote this regex before: the image
+   * optimizer's second confined root and the optimizable-path check. Built once.
+   */
+  static themeUiAssetMatcher(): RegExp {
+    if (!ApiPathUtils.themeUiAssetRegex) {
+      const pattern = String(SystemConstants.API_PATH.THEMES.UI || '')
+        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+        .replace(':slug', '([^/]+)')
+        .replace(/\*$/, '(.+)');
+      ApiPathUtils.themeUiAssetRegex = new RegExp(`${pattern}$`);
+    }
+    return ApiPathUtils.themeUiAssetRegex;
+  }
+
+  private static themeUiAssetRegex: RegExp | null = null;
 
   static themeUiAssetPath(slug: string, asset = ''): string {
     const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.UI, { slug }).replace(/\/\*$/, '');

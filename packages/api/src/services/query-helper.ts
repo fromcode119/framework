@@ -1,4 +1,4 @@
-import { Collection } from '@fromcode119/core';
+import { FieldType, ICollection } from '@fromcode119/core';
 import { DynamicSchema, IDatabaseManager, NamingStrategy, timestamp, sql } from '@fromcode119/database';
 
 export class QueryHelper {
@@ -8,7 +8,7 @@ export class QueryHelper {
   /**
    * Generates or retrieves a Drizzle table object for a given collection definition.
    */
-  public static getVirtualTable(collection: Collection) {
+  public static getVirtualTable(collection: ICollection) {
     if (this.virtualTables.has(collection.slug)) {
       return this.virtualTables.get(collection.slug);
     }
@@ -18,9 +18,10 @@ export class QueryHelper {
 
     const table = DynamicSchema.createDynamicTable({
       slug: collection.tableName || collection.slug,
-      fields: collection.fields.map(f => ({ 
-        name: f.name, 
-        type: f.type 
+      // The dynamic-schema layer types `type` as a plain string — flatten the FieldType member here.
+      fields: collection.fields.map(f => ({
+        name: f.name,
+        type: String(f.type)
       })),
       primaryKey: collection.primaryKey || 'id',
       timestamps: useTimestamps,
@@ -42,7 +43,7 @@ export class QueryHelper {
 
   public static buildWhereClause(
     db: IDatabaseManager,
-    collection: Collection,
+    collection: ICollection,
     table: any,
     filters: any,
     search?: string,
@@ -54,7 +55,7 @@ export class QueryHelper {
     const normalizedSearch = QueryHelper.normalizeSearch(search);
     if (normalizedSearch) {
       const searchClauses = collection.fields
-        .filter((field) => QueryHelper.searchableFieldTypes.has(field.type) && table[field.name])
+        .filter((field) => QueryHelper.searchableFieldTypes.has(FieldType.resolve(field.type).value) && table[field.name])
         .map((field) => QueryHelper.buildSearchClause(db, table[field.name], normalizedSearch));
       // Match relationship fields by their related record's name: `field IN (matchedRelatedIds)`,
       // resolved upstream so the list search also covers related records (e.g. inventory by product).
@@ -110,7 +111,7 @@ export class QueryHelper {
     return String(search || '').trim();
   }
 
-  public static buildOrderBy(db: IDatabaseManager, collection: Collection, table: any, sort?: string) {
+  public static buildOrderBy(db: IDatabaseManager, collection: ICollection, table: any, sort?: string) {
     const pk = collection.primaryKey || 'id';
     let orderBy: any[] = [table[pk] ? db.desc(table[pk]) : db.desc(sql`1`)]; 
     

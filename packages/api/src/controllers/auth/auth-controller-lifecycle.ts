@@ -1,7 +1,9 @@
+import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
+import { TwoFactorMethod } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { SecretService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
-import { AuthControllerSso } from './auth-controller-sso';
+import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
 
 export class AuthControllerLifecycle extends AuthControllerSso {
   async getStatus(req: Request, res: Response) {
@@ -48,7 +50,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
     });
 
     await this.setEmailVerified(newUser.id, true);
-    await this.setUserAccountStatus(newUser.id, 'active');
+    await this.setUserAccountStatus(newUser.id, AccountStatus.ACTIVE);
     await this.setForcePasswordReset(newUser.id, false);
     await this.pushPasswordHistory(newUser.id, hashedPassword);
     await this.upsertMeta(this.getPasswordChangedAtKey(newUser.id), new Date().toISOString());
@@ -119,7 +121,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
 
       if (user) {
         const status = await this.getUserAccountStatus(user.id);
-        if (status === 'suspended') {
+        if (status === AccountStatus.SUSPENDED) {
           await this.recordLoginFailure(throttleKey, throttleSettings);
           await this.manager.writeLog('WARN', `Blocked login for suspended account: ${email}`, 'system', {
             userId: user.id,
@@ -178,7 +180,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
           }
 
           let twoFactorVerified = false;
-          let twoFactorMethod: 'totp' | 'recovery' | null = null;
+          let twoFactorMethod: TwoFactorMethod | null = null;
 
           if (hasTotpToken) {
             const secretRow = await this.db.findOne(SystemConstants.TABLE.META, {
@@ -187,7 +189,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
 
             if (secretRow?.value && this.verifyTOTP(SecretService.decrypt(secretRow.value), String(totpToken).trim())) {
               twoFactorVerified = true;
-              twoFactorMethod = 'totp';
+              twoFactorMethod = TwoFactorMethod.TOTP;
             }
           }
 
@@ -195,7 +197,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
             const consumed = await this.consumeRecoveryCode(user.id, String(recoveryCode || '').trim());
             if (consumed) {
               twoFactorVerified = true;
-              twoFactorMethod = 'recovery';
+              twoFactorMethod = TwoFactorMethod.RECOVERY;
             }
           }
 

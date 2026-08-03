@@ -5,8 +5,9 @@
 // undefined at runtime ("is not a constructor"). Use import-equals/require so `ivm` is the
 // exact module object and the prototype chain is preserved.
 import ivm = require('isolated-vm');
-import { PluginManifest, PluginContext } from '../types';
-import { Logger } from '../logging';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import { PluginContext } from '@core/plugin-context';
+import { Logger } from '@core/logging';
 
 export class SandboxManager {
   private logger = new Logger({ namespace: 'sandbox-manager' });
@@ -21,7 +22,7 @@ export class SandboxManager {
   /**
    * Initializes a persistent context for a plugin.
    */
-  public async initPluginContext(slug: string, ctx: PluginContext, manifest?: PluginManifest): Promise<any> { // ivm.Context
+  public async initPluginContext(slug: string, ctx: PluginContext, manifest?: IPluginManifest): Promise<any> { // ivm.Context
     if (this.contexts.has(slug)) {
       this.contexts.get(slug)?.release();
     }

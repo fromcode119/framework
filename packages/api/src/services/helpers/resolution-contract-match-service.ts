@@ -1,15 +1,18 @@
-import type { Collection, ResolvedPluginDefaultPageContract } from '@fromcode119/core';
-import { RESTController } from '../../controllers/rest/rest-controller';
-import { ResolutionContractPresentationService } from './resolution-contract-presentation-service';
-import { ResolutionContractPathService } from './resolution-contract-path-service';
+
+import type { ICollection, IResolvedPluginDefaultPageContract } from '@fromcode119/core';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { ResolutionContractPresentationService } from '@api/services/helpers/resolution-contract-presentation-service';
+import { ResolutionContractPathService } from '@api/services/helpers/resolution-contract-path-service';
+import { PluginDefaultPageContractMaterializationMode } from '@fromcode119/core';
+import { PluginDefaultPageContractResolutionStatus } from '@fromcode119/core';
 
 export class ResolutionContractMatchService {
   constructor(private readonly restController: RESTController) {}
 
   async resolve(
     normalizedInput: string,
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
-    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
     activePlugins: Set<string>,
     withLocale: (query: any) => any,
     options: {
@@ -21,11 +24,11 @@ export class ResolutionContractMatchService {
     },
   ): Promise<{ type: string; plugin: string; doc: any } | null> {
     for (const contract of resolvedContracts) {
-      if (!contract.install || contract.status !== 'ready') {
+      if (!contract.install || contract.status !== PluginDefaultPageContractResolutionStatus.READY) {
         continue;
       }
 
-      if (contract.materializationMode !== 'singleton-document') {
+      if (contract.materializationMode !== PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT) {
         continue;
       }
 
@@ -78,8 +81,8 @@ export class ResolutionContractMatchService {
   }
 
   private async resolveSingletonMatch(
-    contract: ResolvedPluginDefaultPageContract,
-    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    contract: IResolvedPluginDefaultPageContract,
+    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
     activePlugins: Set<string>,
     withLocale: (query: any) => any,
     options: {
@@ -114,10 +117,10 @@ export class ResolutionContractMatchService {
   }
 
   private async resolveDetailMatch(
-    contract: ResolvedPluginDefaultPageContract,
+    contract: IResolvedPluginDefaultPageContract,
     matchingPattern: string,
     normalizedInput: string,
-    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
     activePlugins: Set<string>,
     withLocale: (query: any) => any,
     options: {
@@ -158,9 +161,9 @@ export class ResolutionContractMatchService {
   }
 
   private async resolveShellMatch(
-    contract: ResolvedPluginDefaultPageContract,
+    contract: IResolvedPluginDefaultPageContract,
     matchingPattern: string,
-    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
     activePlugins: Set<string>,
     withLocale: (query: any) => any,
     options: {
@@ -194,14 +197,14 @@ export class ResolutionContractMatchService {
     return null;
   }
 
-  private resolveShellBaseSlug(contract: ResolvedPluginDefaultPageContract, matchingPattern: string): string | null {
+  private resolveShellBaseSlug(contract: IResolvedPluginDefaultPageContract, matchingPattern: string): string | null {
     const source = String(matchingPattern || contract.effectiveSlug || '').trim();
     const segments = source.split('?')[0].split('#')[0].split('/').filter(Boolean);
     const staticSegments = segments.filter((segment) => !segment.startsWith(':'));
     return staticSegments.length ? staticSegments[staticSegments.length - 1] : null;
   }
 
-  private resolveSingletonSlugValue(contract: ResolvedPluginDefaultPageContract): string | null {
+  private resolveSingletonSlugValue(contract: IResolvedPluginDefaultPageContract): string | null {
     const segments = String(contract.effectiveSlug || '').trim().split('?')[0].split('#')[0].split('/').filter(Boolean);
     if (segments.length === 0 || segments.some((segment) => segment.startsWith(':'))) {
       return null;
@@ -211,10 +214,10 @@ export class ResolutionContractMatchService {
   }
 
   private findContractCollectionEntry(
-    contract: ResolvedPluginDefaultPageContract,
-    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    contract: IResolvedPluginDefaultPageContract,
+    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
     activePlugins: Set<string>,
-  ): { collection: Collection; pluginSlug: string } | null {
+  ): { collection: ICollection; pluginSlug: string } | null {
     const expectedCollection = String(contract.recordCollection || '').trim();
     if (!expectedCollection) {
       return null;
@@ -243,9 +246,9 @@ export class ResolutionContractMatchService {
   }
 
   private findPagesCollectionEntry(
-    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
     activePlugins: Set<string>,
-  ): { collection: Collection; pluginSlug: string } | null {
+  ): { collection: ICollection; pluginSlug: string } | null {
     for (const { collection, pluginSlug } of collections.values()) {
       if (!collection) {
         continue;
@@ -261,7 +264,7 @@ export class ResolutionContractMatchService {
     return null;
   }
 
-  private isRoutableDetailRecord(doc: any, collection: Collection, preview?: boolean): boolean {
+  private isRoutableDetailRecord(doc: any, collection: ICollection, preview?: boolean): boolean {
     if (!doc || typeof doc !== 'object') {
       return false;
     }

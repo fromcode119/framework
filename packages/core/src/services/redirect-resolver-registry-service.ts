@@ -1,4 +1,5 @@
-import type { RedirectResolution, RedirectResolver } from './redirect-resolver.types';
+import type { IRedirectResolver } from '@core/services/interfaces/redirect-resolver.interface';
+import type { RedirectResolution } from '@core/services/redirect-resolution';
 
 /**
  * Generic registry of redirect resolvers.
@@ -13,9 +14,9 @@ import type { RedirectResolution, RedirectResolver } from './redirect-resolver.t
  * never break page resolution for everyone.
  */
 export class RedirectResolverRegistryService {
-  private readonly resolvers = new Map<string, RedirectResolver>();
+  private readonly resolvers = new Map<string, IRedirectResolver>();
 
-  register(key: string, resolver: RedirectResolver): void {
+  register(key: string, resolver: IRedirectResolver): void {
     if (!key) throw new Error('RedirectResolverRegistryService.register: a non-empty key is required.');
     this.resolvers.set(key, resolver);
   }
@@ -32,7 +33,7 @@ export class RedirectResolverRegistryService {
     return this.resolvers.has(key);
   }
 
-  async resolve(path: string): Promise<RedirectResolution> {
+  async resolve(path: string): Promise<RedirectResolution | null> {
     for (const resolver of this.resolvers.values()) {
       try {
         const result = await resolver(path);

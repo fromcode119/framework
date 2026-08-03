@@ -1,18 +1,18 @@
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { ContextSecurityProxy } from './utils';
-
+import { ScheduleType } from '@fromcode119/scheduler';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class SchedulerContextProxy {
   static createSchedulerProxy(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface,
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface,
   security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
 ) {
       const { hasCapability, handleViolation } = security;
 
       return {
-        register: async (name: string, schedule: string, handler: any, options: { type?: 'cron' | 'interval' } = {}) => {
+        register: async (name: string, schedule: string, handler: any, options: { type?: ScheduleType } = {}) => {
           if (!hasCapability('scheduler')) handleViolation('scheduler');
           const fullName = `${plugin.manifest.slug}:${name}`;
           await manager.scheduler.register(fullName, schedule, handler, {

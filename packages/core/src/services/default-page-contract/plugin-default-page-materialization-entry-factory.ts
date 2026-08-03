@@ -1,13 +1,16 @@
-import type {
-  PluginDefaultPageContractCreatePayload,
-  PluginDefaultPageContractMaterializationCandidatePage,
-  PluginDefaultPageContractMaterializationPageMatch,
-  PluginDefaultPageContractMaterializationPlanEntry,
-  PluginDefaultPageContractMaterializationPlanInput,
-  ResolvedPluginDefaultPageContract,
-} from '../../types';
-import { BaseService } from '../base-service';
-import { SeedPageService } from '../seed-page-service';
+import type { IPluginDefaultPageContractCreatePayload } from '@core/default-page-contract/interfaces/plugin-default-page-contract-create-payload.interface';
+import type { IPluginDefaultPageContractMaterializationCandidatePage } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-candidate-page.interface';
+import type { IPluginDefaultPageContractMaterializationPageMatch } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-page-match.interface';
+import type { IPluginDefaultPageContractMaterializationPlanEntry } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-plan-entry.interface';
+import type { IPluginDefaultPageContractMaterializationPlanInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-plan-input.interface';
+import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
+import { BaseService } from '@core/services/base-service';
+import { SeedPageService } from '@core/services/seed-page-service';
+import { PluginDefaultPageContractMaterializationAction } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-action.enum';
+import { PluginDefaultPageContractMaterializationStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-status.enum';
+import { PluginDefaultPageContractResolutionStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-status.enum';
+import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
+import { PluginDefaultPageContractMaterializationPageMatchSource } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-page-match-source.enum';
 
 /**
  * Builds candidate pages and individual materialization plan entries. Extracted from
@@ -23,7 +26,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
     return 'PluginDefaultPageMaterializationEntryFactory';
   }
 
-  createCandidatePages(existingPages: PluginDefaultPageContractMaterializationPlanInput['existingPages']): PluginDefaultPageContractMaterializationCandidatePage[] {
+  createCandidatePages(existingPages: IPluginDefaultPageContractMaterializationPlanInput['existingPages']): IPluginDefaultPageContractMaterializationCandidatePage[] {
     return existingPages.map((page) => {
       return {
         id: page.id,
@@ -42,37 +45,37 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
   }
 
   createEntry(
-    contract: ResolvedPluginDefaultPageContract,
-    pages: PluginDefaultPageContractMaterializationCandidatePage[],
-  ): PluginDefaultPageContractMaterializationPlanEntry {
+    contract: IResolvedPluginDefaultPageContract,
+    pages: IPluginDefaultPageContractMaterializationCandidatePage[],
+  ): IPluginDefaultPageContractMaterializationPlanEntry {
     const lookupCandidates = this.buildLookupCandidates(contract);
 
-    if (contract.status === 'skipped') {
-      return this.createBaseEntry(contract, lookupCandidates, 'skip', 'skipped', undefined, undefined, contract.reasons);
+    if (contract.status === PluginDefaultPageContractResolutionStatus.SKIPPED) {
+      return this.createBaseEntry(contract, lookupCandidates, PluginDefaultPageContractMaterializationAction.SKIP, PluginDefaultPageContractMaterializationStatus.SKIPPED, undefined, undefined, contract.reasons);
     }
 
-    if (contract.status === 'blocked') {
-      return this.createBaseEntry(contract, lookupCandidates, 'blocked', 'blocked', undefined, undefined, contract.reasons);
+    if (contract.status === PluginDefaultPageContractResolutionStatus.BLOCKED) {
+      return this.createBaseEntry(contract, lookupCandidates, PluginDefaultPageContractMaterializationAction.BLOCKED, PluginDefaultPageContractMaterializationStatus.BLOCKED, undefined, undefined, contract.reasons);
     }
 
     if (this.isRuntimeParameterizedContract(contract)) {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'deferred',
-        'deferred',
+        PluginDefaultPageContractMaterializationAction.DEFERRED,
+        PluginDefaultPageContractMaterializationStatus.DEFERRED,
         undefined,
         undefined,
         this.createReasons(contract.reasons, 'parameterized-route-deferred'),
       );
     }
 
-    if (contract.materializationMode === 'per-record-document') {
+    if (contract.materializationMode === PluginDefaultPageContractMaterializationMode.PER_RECORD_DOCUMENT) {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'deferred',
-        'deferred',
+        PluginDefaultPageContractMaterializationAction.DEFERRED,
+        PluginDefaultPageContractMaterializationStatus.DEFERRED,
         undefined,
         undefined,
         this.createReasons(contract.reasons, 'per-record-document-deferred'),
@@ -85,8 +88,8 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'ambiguous',
-        'ambiguous',
+        PluginDefaultPageContractMaterializationAction.AMBIGUOUS,
+        PluginDefaultPageContractMaterializationStatus.AMBIGUOUS,
         undefined,
         undefined,
         this.createReasons(contract.reasons, 'multiple-existing-pages-matched'),
@@ -97,20 +100,20 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'adopt-existing',
-        'ready',
+        PluginDefaultPageContractMaterializationAction.ADOPT_EXISTING,
+        PluginDefaultPageContractMaterializationStatus.READY,
         matches[0].matchedPageId,
         undefined,
         this.createReasons(contract.reasons, `matched-by-${matches[0].source}`),
       );
     }
 
-    if (contract.materializationMode === 'adopt-only') {
+    if (contract.materializationMode === PluginDefaultPageContractMaterializationMode.ADOPT_ONLY) {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'blocked',
-        'blocked',
+        PluginDefaultPageContractMaterializationAction.BLOCKED,
+        PluginDefaultPageContractMaterializationStatus.BLOCKED,
         undefined,
         undefined,
         this.createReasons(contract.reasons, 'adopt-only-no-match'),
@@ -120,15 +123,15 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
     return this.createBaseEntry(
       contract,
       lookupCandidates,
-      'create-missing',
-      'ready',
+      PluginDefaultPageContractMaterializationAction.CREATE_MISSING,
+      PluginDefaultPageContractMaterializationStatus.READY,
       undefined,
       this.createCreatePayload(contract),
       this.createReasons(contract.reasons, 'no-existing-page-match'),
     );
   }
 
-  private buildLookupCandidates(contract: ResolvedPluginDefaultPageContract): string[] {
+  private buildLookupCandidates(contract: IResolvedPluginDefaultPageContract): string[] {
     const baseCandidates = [...contract.effectiveAliases, ...contract.adoptionHints];
 
     return this.seedPageService.buildPageLookupCandidates(baseCandidates, {
@@ -139,11 +142,11 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
 
   private findMatches(
     lookupCandidates: string[],
-    pages: PluginDefaultPageContractMaterializationCandidatePage[],
-  ): PluginDefaultPageContractMaterializationPageMatch[] {
+    pages: IPluginDefaultPageContractMaterializationCandidatePage[],
+  ): IPluginDefaultPageContractMaterializationPageMatch[] {
     const allMatches = pages
       .map((page) => this.getPageMatch(page, lookupCandidates))
-      .filter((match): match is PluginDefaultPageContractMaterializationPageMatch => Boolean(match));
+      .filter((match): match is IPluginDefaultPageContractMaterializationPageMatch => Boolean(match));
 
     if (!allMatches.length) {
       return [];
@@ -157,14 +160,14 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
   }
 
   private getPageMatch(
-    page: PluginDefaultPageContractMaterializationCandidatePage,
+    page: IPluginDefaultPageContractMaterializationCandidatePage,
     lookupCandidates: string[],
-  ): PluginDefaultPageContractMaterializationPageMatch | undefined {
+  ): IPluginDefaultPageContractMaterializationPageMatch | undefined {
     if (this.hasCandidateMatch(lookupCandidates, page.customPermalinkCandidates)) {
       return {
         matchedPageId: page.id,
         priority: 0,
-        source: 'customPermalink',
+        source: PluginDefaultPageContractMaterializationPageMatchSource.CUSTOM_PERMALINK,
       };
     }
 
@@ -172,7 +175,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
       return {
         matchedPageId: page.id,
         priority: 1,
-        source: 'slug',
+        source: PluginDefaultPageContractMaterializationPageMatchSource.SLUG,
       };
     }
 
@@ -183,7 +186,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
     return pageCandidates.some((candidate) => lookupCandidates.includes(candidate));
   }
 
-  private createCreatePayload(contract: ResolvedPluginDefaultPageContract): PluginDefaultPageContractCreatePayload {
+  private createCreatePayload(contract: IResolvedPluginDefaultPageContract): IPluginDefaultPageContractCreatePayload {
     const resolvedSlug = this.resolveSingletonDocumentSlug(contract.effectiveSlug);
 
     return {
@@ -202,14 +205,14 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
   }
 
   private createBaseEntry(
-    contract: ResolvedPluginDefaultPageContract,
+    contract: IResolvedPluginDefaultPageContract,
     lookupCandidates: string[],
-    action: PluginDefaultPageContractMaterializationPlanEntry['action'],
-    status: PluginDefaultPageContractMaterializationPlanEntry['status'],
-    matchedPageId?: PluginDefaultPageContractMaterializationPlanEntry['matchedPageId'],
-    createPayload?: PluginDefaultPageContractMaterializationPlanEntry['createPayload'],
+    action: IPluginDefaultPageContractMaterializationPlanEntry['action'],
+    status: IPluginDefaultPageContractMaterializationPlanEntry['status'],
+    matchedPageId?: IPluginDefaultPageContractMaterializationPlanEntry['matchedPageId'],
+    createPayload?: IPluginDefaultPageContractMaterializationPlanEntry['createPayload'],
     reasons?: string[],
-  ): PluginDefaultPageContractMaterializationPlanEntry {
+  ): IPluginDefaultPageContractMaterializationPlanEntry {
     return {
       canonicalKey: contract.canonicalKey,
       namespace: contract.namespace,
@@ -251,8 +254,8 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
     return normalized || undefined;
   }
 
-  private isRuntimeParameterizedContract(contract: ResolvedPluginDefaultPageContract): boolean {
-    return contract.materializationMode === 'singleton-document' && this.hasPathParameters(contract.effectiveSlug);
+  private isRuntimeParameterizedContract(contract: IResolvedPluginDefaultPageContract): boolean {
+    return contract.materializationMode === PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT && this.hasPathParameters(contract.effectiveSlug);
   }
 
   private hasPathParameters(value: string): boolean {

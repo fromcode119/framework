@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "esnext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -9,6 +9,8 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -23,6 +25,23 @@
       }
     ],
     "paths": {
+      // A package tsconfig REPLACES the inherited `paths` map rather than merging into it, so every
+      // private package alias this app compiles through must be repeated here.
+      "@core/*": ["../core/src/*"],
+      "@database/*": ["../database/src/*"],
+      "@react/*": ["../react/src/*"],
+      "@api/*": ["../api/src/*"],
+      "@auth/*": ["../auth/src/*"],
+      "@cache/*": ["../cache/src/*"],
+      "@marketplace-client/*": ["../marketplace-client/src/*"],
+      "@media/*": ["../media/src/*"],
+      "@email/*": ["../email/src/*"],
+      "@scheduler/*": ["../scheduler/src/*"],
+      "@plugins/*": ["../plugins/src/*"],
+      "@mcp/*": ["../mcp/src/*"],
+      "@sdk/*": ["../sdk/src/*"],
+      "@nextjs/*": ["../next/src/*"],
+      "@cli/*": ["../cli/src/*"],
       "@/*": [
         "./*"
       ],

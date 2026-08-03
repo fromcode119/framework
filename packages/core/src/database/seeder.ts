@@ -1,9 +1,9 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
-import { Logger } from '../logging';
+import { Logger } from '@core/logging';
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import { SeederCallableResolver } from './seeder-callable-resolver';
+import { SeederCallableResolver } from '@core/database/seeder-callable-resolver';
 
 export class Seeder {
   private logger = new Logger({ namespace: 'seeder' });

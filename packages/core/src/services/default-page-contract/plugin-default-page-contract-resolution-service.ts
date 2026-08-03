@@ -1,12 +1,11 @@
-import type {
-  PluginDefaultPageContractResolutionInput,
-  RegisteredPluginDefaultPageContract,
-  ResolvedPluginDefaultPageContract,
-  ThemeDefaultPageContractOverride,
-} from '../../types';
-import { BaseService } from '../base-service';
-import { PluginDefaultPageContractRegistryService } from './plugin-default-page-contract-registry-service';
-import { PluginDefaultPageContractSiteStateResolver } from './plugin-default-page-contract-site-state-resolver';
+import type { IPluginDefaultPageContractResolutionInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-resolution-input.interface';
+import type { IRegisteredPluginDefaultPageContract } from '@core/default-page-contract/interfaces/registered-plugin-default-page-contract.interface';
+import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
+import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
+import { BaseService } from '@core/services/base-service';
+import { PluginDefaultPageContractRegistryService } from '@core/services/default-page-contract/plugin-default-page-contract-registry-service';
+import { PluginDefaultPageContractSiteStateResolver } from '@core/services/default-page-contract/plugin-default-page-contract-site-state-resolver';
+import { PluginDefaultPageContractResolutionSource } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-source.enum';
 
 export class PluginDefaultPageContractResolutionService extends BaseService {
   private readonly siteStateResolver = new PluginDefaultPageContractSiteStateResolver();
@@ -19,7 +18,7 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
     return 'PluginDefaultPageContractResolutionService';
   }
 
-  resolveAll(input?: PluginDefaultPageContractResolutionInput): ResolvedPluginDefaultPageContract[] {
+  resolveAll(input?: IPluginDefaultPageContractResolutionInput): IResolvedPluginDefaultPageContract[] {
     const overridesByKey = this.createOverrideMap(input?.overrides || []);
     const siteState = input?.siteState;
 
@@ -29,8 +28,8 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
       .map((entry) => this.resolveEntry(entry, overridesByKey, siteState));
   }
 
-  private createOverrideMap(overrides: ThemeDefaultPageContractOverride[]): Map<string, ThemeDefaultPageContractOverride> {
-    const overrideMap = new Map<string, ThemeDefaultPageContractOverride>();
+  private createOverrideMap(overrides: IThemeDefaultPageContractOverride[]): Map<string, IThemeDefaultPageContractOverride> {
+    const overrideMap = new Map<string, IThemeDefaultPageContractOverride>();
 
     for (const override of overrides) {
       const normalized = this.normalizeOverride(override);
@@ -48,7 +47,7 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
     return overrideMap;
   }
 
-  private normalizeOverride(override: ThemeDefaultPageContractOverride): ThemeDefaultPageContractOverride {
+  private normalizeOverride(override: IThemeDefaultPageContractOverride): IThemeDefaultPageContractOverride {
     return {
       contract: {
         namespace: this.normalizeRequiredString(override.contract?.namespace, 'override.contract.namespace'),
@@ -66,14 +65,16 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
   }
 
   private resolveEntry(
-    entry: RegisteredPluginDefaultPageContract,
-    overridesByKey: Map<string, ThemeDefaultPageContractOverride>,
-    inputSiteState?: PluginDefaultPageContractResolutionInput['siteState'],
-  ): ResolvedPluginDefaultPageContract {
+    entry: IRegisteredPluginDefaultPageContract,
+    overridesByKey: Map<string, IThemeDefaultPageContractOverride>,
+    inputSiteState?: IPluginDefaultPageContractResolutionInput['siteState'],
+  ): IResolvedPluginDefaultPageContract {
     const override = overridesByKey.get(entry.canonicalKey);
     const siteStateEntries = this.siteStateResolver.getSiteStateEntries(entry, inputSiteState);
     const siteStateMatch = this.siteStateResolver.getSiteStateMatch(entry, inputSiteState);
-    const installSource = override && typeof override.install === 'boolean' ? 'theme-override' : 'declaration';
+    const installSource = override && typeof override.install === 'boolean'
+      ? PluginDefaultPageContractResolutionSource.THEME_OVERRIDE
+      : PluginDefaultPageContractResolutionSource.DECLARATION;
     const install = typeof override?.install === 'boolean' ? override.install : entry.required;
     const siteStateStatus = this.siteStateResolver.getSiteStateStatus(siteStateEntries);
     const prerequisiteReady = this.siteStateResolver.getPrerequisiteReady(install, siteStateEntries, siteStateStatus);
@@ -96,12 +97,12 @@ export class PluginDefaultPageContractResolutionService extends BaseService {
       status,
       reasons: this.siteStateResolver.getReasons(install, siteStateEntries, status),
       sources: {
-        effectiveSlug: override?.slug ? 'theme-override' : 'declaration',
-        effectiveAliases: override?.aliases ? 'theme-override' : 'declaration',
-        effectiveRecipe: override?.recipe ? 'theme-override' : 'declaration',
-        effectiveTitle: override?.title ? 'theme-override' : 'declaration',
-        effectiveStyleVariant: override?.styleVariant ? 'theme-override' : 'declaration',
-        effectiveThemeLayout: override?.themeLayout ? 'theme-override' : 'declaration',
+        effectiveSlug: override?.slug ? PluginDefaultPageContractResolutionSource.THEME_OVERRIDE : PluginDefaultPageContractResolutionSource.DECLARATION,
+        effectiveAliases: override?.aliases ? PluginDefaultPageContractResolutionSource.THEME_OVERRIDE : PluginDefaultPageContractResolutionSource.DECLARATION,
+        effectiveRecipe: override?.recipe ? PluginDefaultPageContractResolutionSource.THEME_OVERRIDE : PluginDefaultPageContractResolutionSource.DECLARATION,
+        effectiveTitle: override?.title ? PluginDefaultPageContractResolutionSource.THEME_OVERRIDE : PluginDefaultPageContractResolutionSource.DECLARATION,
+        effectiveStyleVariant: override?.styleVariant ? PluginDefaultPageContractResolutionSource.THEME_OVERRIDE : PluginDefaultPageContractResolutionSource.DECLARATION,
+        effectiveThemeLayout: override?.themeLayout ? PluginDefaultPageContractResolutionSource.THEME_OVERRIDE : PluginDefaultPageContractResolutionSource.DECLARATION,
         install: installSource,
         prerequisiteReady: this.siteStateResolver.getPrerequisiteSource(install, siteStateEntries),
         status: statusSource,

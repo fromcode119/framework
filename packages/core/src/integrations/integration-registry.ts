@@ -1,3 +1,4 @@
+import { SettingSource } from '@core/settings/enums/setting-source.enum';
 /**
  * IntegrationRegistry
  *
@@ -5,23 +6,21 @@
  * Profile/provider storage management is delegated to IntegrationProfileService.
  */
 
-import { Logger } from '../logging';
-import { CoreServices } from '../services';
-import { IntegrationProfileService } from './integration-profile-service';
-import { IntegrationStoredProviderService } from './integration-stored-provider-service';
-import { IntegrationResolverService } from './integration-resolver-service';
-import {
-  IntegrationTypeDefinition,
-  IntegrationProviderDefinition,
-  IntegrationResolved,
-  IntegrationTypeSummary,
-  IntegrationStoredProfiles,
-  IntegrationStoredProvider,
-  IntegrationTypeRuntime,
-} from './integration-registry.interfaces';
+import { Logger } from '@core/logging';
+import { CoreServices } from '@core/services';
+import { IntegrationProfileService } from '@core/integrations/integration-profile-service';
+import { IntegrationStoredProviderService } from '@core/integrations/integration-stored-provider-service';
+import { IntegrationResolverService } from '@core/integrations/integration-resolver-service';
+import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
+import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
+import type { IIntegrationResolved } from '@core/integrations/interfaces/integration-resolved.interface';
+import type { IIntegrationTypeSummary } from '@core/integrations/interfaces/integration-type-summary.interface';
+import type { IIntegrationStoredProfiles } from '@core/integrations/interfaces/integration-stored-profiles.interface';
+import type { IIntegrationStoredProvider } from '@core/integrations/interfaces/integration-stored-provider.interface';
+import type { IIntegrationTypeRuntime } from '@core/integrations/interfaces/integration-type-runtime.interface';
 
 export class IntegrationRegistry {
-  private readonly types = new Map<string, IntegrationTypeRuntime<any>>();
+  private readonly types = new Map<string, IIntegrationTypeRuntime<any>>();
   private readonly logger: Logger;
   private readonly profileService: IntegrationProfileService;
   private readonly storedProviderService: IntegrationStoredProviderService;
@@ -44,19 +43,19 @@ export class IntegrationRegistry {
   // Type & provider registration
   // ---------------------------------------------------------------------------
 
-  registerType<TInstance = any>(definition: IntegrationTypeDefinition<TInstance>) {
+  registerType<TInstance = any>(definition: IIntegrationTypeDefinition<TInstance>) {
     const key = this.normalize(definition.key);
     if (!key) throw new Error('Integration type key is required');
     if (!definition.defaultProvider) {
       throw new Error(`Integration type "${key}" must declare a defaultProvider`);
     }
 
-    const runtime: IntegrationTypeRuntime<TInstance> = {
+    const runtime: IIntegrationTypeRuntime<TInstance> = {
       definition: { ...definition, key },
       providers: new Map(),
     };
 
-    this.types.set(key, runtime as IntegrationTypeRuntime<any>);
+    this.types.set(key, runtime as IIntegrationTypeRuntime<any>);
     for (const provider of definition.providers || []) {
       this.registerProvider(key, provider);
     }
@@ -85,7 +84,7 @@ export class IntegrationRegistry {
     return existed;
   }
 
-  registerProvider<TInstance = any>(typeKey: string, provider: IntegrationProviderDefinition<TInstance>) {
+  registerProvider<TInstance = any>(typeKey: string, provider: IIntegrationProviderDefinition<TInstance>) {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) {
@@ -100,7 +99,7 @@ export class IntegrationRegistry {
   // Type listing
   // ---------------------------------------------------------------------------
 
-  listTypes(): IntegrationTypeSummary[] {
+  listTypes(): IIntegrationTypeSummary[] {
     return Array.from(this.types.values()).map((runtime) => ({
       key: runtime.definition.key,
       label: runtime.definition.label,
@@ -115,7 +114,7 @@ export class IntegrationRegistry {
     }));
   }
 
-  getTypeSummary(typeKey: string): IntegrationTypeSummary | null {
+  getTypeSummary(typeKey: string): IIntegrationTypeSummary | null {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) return null;
@@ -140,7 +139,7 @@ export class IntegrationRegistry {
   async resolve<TInstance = any>(
     typeKey: string,
     options: { preferStored?: boolean } = {},
-  ): Promise<IntegrationResolved<TInstance>> {
+  ): Promise<IIntegrationResolved<TInstance>> {
     const resolvedMany = await this.resolveMany<TInstance>(typeKey, options);
     if (!resolvedMany.length) {
       throw new Error(`Integration "${this.normalize(typeKey)}" could not resolve any provider.`);
@@ -151,7 +150,7 @@ export class IntegrationRegistry {
   async resolveMany<TInstance = any>(
     typeKey: string,
     options: { preferStored?: boolean } = {},
-  ): Promise<IntegrationResolved<TInstance>[]> {
+  ): Promise<IIntegrationResolved<TInstance>[]> {
     return this.resolverService.resolveMany<TInstance>(typeKey, options);
   }
 
@@ -162,7 +161,7 @@ export class IntegrationRegistry {
   async instantiate<TInstance = any>(
     typeKey: string,
     options: { preferStored?: boolean; context?: { projectRoot?: string; logger?: Logger } } = {},
-  ): Promise<{ instance: TInstance; resolved: IntegrationResolved<TInstance> }> {
+  ): Promise<{ instance: TInstance; resolved: IIntegrationResolved<TInstance> }> {
     const resolved = await this.resolve<TInstance>(typeKey, { preferStored: options.preferStored });
     const instance = await resolved.provider.create(resolved.config, options.context);
     return { instance, resolved };
@@ -173,7 +172,7 @@ export class IntegrationRegistry {
     providerKey: string,
     config: Record<string, any> = {},
     options: { context?: { projectRoot?: string; logger?: Logger } } = {},
-  ): Promise<{ instance: TInstance; resolved: IntegrationResolved<TInstance> }> {
+  ): Promise<{ instance: TInstance; resolved: IIntegrationResolved<TInstance> }> {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) throw new Error(`Integration type "${normalizedType}" is not registered`);
@@ -186,13 +185,13 @@ export class IntegrationRegistry {
     const normalizedConfig = provider.normalizeConfig ? provider.normalizeConfig(resolvedConfig) : resolvedConfig;
     this.profileService.validateProviderConfig(normalizedType, provider, normalizedConfig);
     const instance = await provider.create(normalizedConfig, options.context);
-    return { instance, resolved: { type: normalizedType, providerKey: normalizedProvider, provider, config: normalizedConfig, source: 'stored' } };
+    return { instance, resolved: { type: normalizedType, providerKey: normalizedProvider, provider, config: normalizedConfig, source: SettingSource.STORED } };
   }
 
   async instantiateMany<TInstance = any>(
     typeKey: string,
     options: { preferStored?: boolean; context?: { projectRoot?: string; logger?: Logger } } = {},
-  ): Promise<Array<{ instance: TInstance; resolved: IntegrationResolved<TInstance> }>> {
+  ): Promise<Array<{ instance: TInstance; resolved: IIntegrationResolved<TInstance> }>> {
     const resolvedMany = await this.resolveMany<TInstance>(typeKey, { preferStored: options.preferStored });
     return Promise.all(
       resolvedMany.map(async (resolved) => {
@@ -255,11 +254,11 @@ export class IntegrationRegistry {
     return null;
   }
 
-  async readStoredProfilesConfig(typeKey: string): Promise<IntegrationStoredProfiles | null> {
+  async readStoredProfilesConfig(typeKey: string): Promise<IIntegrationStoredProfiles | null> {
     return this.profileService.readStoredProfiles(this.normalize(typeKey));
   }
 
-  async readStoredProvidersConfig(typeKey: string): Promise<IntegrationStoredProvider[] | null> {
+  async readStoredProvidersConfig(typeKey: string): Promise<IIntegrationStoredProvider[] | null> {
     return this.storedProviderService.readStoredProvidersConfig(typeKey);
   }
 

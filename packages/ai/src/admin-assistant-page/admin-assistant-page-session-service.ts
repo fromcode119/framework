@@ -1,20 +1,22 @@
-import { AssistantConstants } from '../admin-assistant-core';
-import { AssistantTextUtils } from '../assistant-text-utils';
-import { AdminAssistantMessageService } from './admin-assistant-message-service';
-import { AdminAssistantPageUtils } from './admin-assistant-page-utils';
-import type { AssistantMessage, ForgeHistorySession } from '../admin-assistant-core';
+import { ChatMode } from '@ai/enums/chat-mode.enum';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
+import { AssistantTextUtils } from '@ai/assistant-text-utils';
+import { AdminAssistantMessageService } from '@ai/admin-assistant-page/admin-assistant-message-service';
+import { AdminAssistantPageUtils } from '@ai/admin-assistant-page/admin-assistant-page-utils';
+import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
+import type { IForgeHistorySession } from '@ai/interfaces/forge-history-session.interface';
 
 export class AdminAssistantPageSessionService {
   static loadHistoryFromLocal(
     browserState: { readHistoryEntries<T>(): T[] },
     provider: string,
-  ): ForgeHistorySession[] {
+  ): IForgeHistorySession[] {
     try {
       const parsed = browserState.readHistoryEntries<any>();
       return Array.isArray(parsed)
         ? parsed
             .map((item: any) => AdminAssistantMessageService.mapHistorySession(item, provider))
-            .filter((item: ForgeHistorySession | null): item is ForgeHistorySession => !!item && item.messages.length > 0)
+            .filter((item: IForgeHistorySession | null): item is IForgeHistorySession => !!item && item.messages.length > 0)
         : [];
     } catch {
       return [];
@@ -25,18 +27,18 @@ export class AdminAssistantPageSessionService {
     api: any,
     provider: string,
     options?: { includeMessages?: boolean },
-  ): Promise<ForgeHistorySession[]> {
+  ): Promise<IForgeHistorySession[]> {
     const response = await api.get(
       `${AssistantConstants.ENDPOINTS.SESSIONS}?limit=60${options?.includeMessages ? '&includeMessages=true' : ''}`,
     );
     return Array.isArray(response?.sessions)
       ? response.sessions
           .map((item: any) => AdminAssistantMessageService.mapHistorySession(item, provider))
-          .filter((item: ForgeHistorySession | null): item is ForgeHistorySession => !!item)
+          .filter((item: IForgeHistorySession | null): item is IForgeHistorySession => !!item)
       : [];
   }
 
-  static async fetchSession(api: any, sessionId: string, provider: string): Promise<ForgeHistorySession | null> {
+  static async fetchSession(api: any, sessionId: string, provider: string): Promise<IForgeHistorySession | null> {
     const normalized = String(sessionId || '').trim();
     if (!normalized) return null;
     const response = await api.get(`${AssistantConstants.ENDPOINTS.SESSIONS}/${encodeURIComponent(normalized)}`);
@@ -45,13 +47,13 @@ export class AdminAssistantPageSessionService {
 
   static createLocalSession(
     sessionId: string,
-    messages: AssistantMessage[],
+    messages: IAssistantMessage[],
     provider: string,
     model: string,
     skillId: string,
-    chatMode: 'auto' | 'plan' | 'agent',
+    chatMode: ChatMode,
     sandboxMode: boolean,
-  ): ForgeHistorySession {
+  ): IForgeHistorySession {
     const normalizedMessages = AssistantTextUtils.stripReadyMessage(messages);
     return {
       id: sessionId,
@@ -67,7 +69,7 @@ export class AdminAssistantPageSessionService {
     };
   }
 
-  static createForkedConversation(branch: AssistantMessage[]): { sessionId: string; messages: AssistantMessage[] } {
+  static createForkedConversation(branch: IAssistantMessage[]): { sessionId: string; messages: IAssistantMessage[] } {
     return {
       sessionId: AdminAssistantPageUtils.createSessionId(),
       messages: [AdminAssistantPageUtils.createReadyMessage(), ...branch.map((entry) => ({ ...entry }))],
@@ -85,7 +87,7 @@ export class AdminAssistantPageSessionService {
     sourceSessionId: string,
     visibleIndex: number,
     provider: string,
-  ): Promise<ForgeHistorySession | null> {
+  ): Promise<IForgeHistorySession | null> {
     const normalized = String(sourceSessionId || '').trim();
     if (!normalized) return null;
     const response = await api.post(`${AssistantConstants.ENDPOINTS.SESSIONS}/${encodeURIComponent(normalized)}/fork`, {

@@ -89,6 +89,13 @@
       "title": "Please sign in",
       "body": "You need to be signed in to view your account.",
       "login": "Sign in"
+    },
+    "description": {
+      "overview": "A snapshot of your account",
+      "profile": "Name, email and contact details",
+      "security": "Password and sign-in",
+      "sessions": "Devices you are signed in on",
+      "two-factor": "Extra protection when signing in"
     }
   }
 }

@@ -1,7 +1,8 @@
-import type { CacheDriver } from './cache-factory.interfaces';
+
+import type { ICacheDriver } from '@cache/interfaces/cache-driver.interface';
 
 export class CacheManager {
-  constructor(private driver: CacheDriver) {}
+  constructor(private driver: ICacheDriver) {}
 
   async get<T = any>(key: string): Promise<T | null> {
     const val = await this.driver.get(key);

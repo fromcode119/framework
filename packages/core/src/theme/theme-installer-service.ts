@@ -1,15 +1,16 @@
+import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 /** ThemeInstallerService — handles theme package installation. Extracted from ThemeManager (ARC-007). */
 
 import path from 'path';
 import fs from 'fs';
 import AdmZip from 'adm-zip';
-import { Logger } from '../logging';
-import { ThemeManifest } from '../types';
-import { BackupService } from '../management/backup-service';
-import { SafeArchive } from '../security/safe-archive';
+import { Logger } from '@core/logging';
+import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import { BackupService } from '@core/management/backup-service';
+import { SafeArchive } from '@core/security/safe-archive';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
-import { Seeder } from '../database/seeder';
-import { PluginState } from '../plugin/services/plugin-state.enums';
+import { Seeder } from '@core/database/seeder';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class ThemeInstallerService {
   constructor(
@@ -45,7 +46,7 @@ export class ThemeInstallerService {
     }
   }
 
-  async installFromZip(filePath: string, themesMap: Map<string, ThemeManifest>): Promise<ThemeManifest> {
+  async installFromZip(filePath: string, themesMap: Map<string, IThemeManifest>): Promise<IThemeManifest> {
     const tempDir = path.join(path.dirname(filePath), `theme-ext-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
@@ -61,11 +62,11 @@ export class ThemeInstallerService {
       }
       const contentDir = this.findThemeManifestDir(tempDir);
       if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the archive.');
-      const manifest: ThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
+      const manifest: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
       if (!manifest.slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
       const targetDir = path.join(this.themesRoot, manifest.slug);
       if (fs.existsSync(targetDir)) {
-        await BackupService.create(manifest.slug, targetDir, 'themes');
+        await BackupService.create(manifest.slug, targetDir, BackupSectionKey.THEMES);
         fs.rmSync(targetDir, { recursive: true, force: true });
       }
       fs.mkdirSync(targetDir, { recursive: true });
@@ -81,7 +82,7 @@ export class ThemeInstallerService {
     }
   }
 
-  async installDependencies(manifest: ThemeManifest, options?: { strict?: boolean }) {
+  async installDependencies(manifest: IThemeManifest, options?: { strict?: boolean }) {
     if (!this.pluginManager) return;
     const failures: string[] = [];
     await this.installBundledPlugins(manifest, failures);
@@ -106,7 +107,7 @@ export class ThemeInstallerService {
     if (options?.strict && failures.length > 0) throw new Error(failures.join(' | '));
   }
 
-  async runSeeds(manifest: ThemeManifest) {
+  async runSeeds(manifest: IThemeManifest) {
     const seeds = (manifest as any).seeds;
     if (!seeds) return;
     const themePath = this.resolveThemeDirectory(manifest.slug);
@@ -122,7 +123,7 @@ export class ThemeInstallerService {
 
   // --- Private file helpers ---
 
-  private async installBundledPlugins(manifest: ThemeManifest, failures: string[]) {
+  private async installBundledPlugins(manifest: IThemeManifest, failures: string[]) {
     const themePath = this.resolveThemeDirectory(manifest.slug);
     const archivePaths = this.getBundledPluginArchivePaths(manifest, themePath);
     if (archivePaths.length === 0) return;
@@ -148,14 +149,14 @@ export class ThemeInstallerService {
       }
     }
     if (installedSlugs.size === 0) return;
-    if (installedOrUpdated && typeof this.pluginManager.discoverPlugins === 'function') await this.pluginManager.discoverPlugins();
+    if (installedOrUpdated) await this.pluginManager.discoverPlugins();
     for (const slug of installedSlugs) {
       try { await this.pluginManager.enable(slug); }
       catch (err: any) { const msg = `Bundled plugin "${slug}" installed but failed to enable: ${err.message}`; failures.push(msg); this.logger.error(msg); }
     }
   }
 
-  getBundledPluginArchivePaths(manifest: ThemeManifest, themePath: string): string[] {
+  getBundledPluginArchivePaths(manifest: IThemeManifest, themePath: string): string[] {
     const archives = new Set<string>();
     const addArchive = (p: string) => {
       if (fs.existsSync(p) && fs.statSync(p).isFile() && this.isSupportedPluginArchive(p)) archives.add(p);

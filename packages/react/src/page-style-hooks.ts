@@ -1,9 +1,9 @@
 import React from 'react';
-import type { PageStyleContextValue } from './page-style-context.interfaces';
-import { PageStyleContext } from './page-style-context';
+import type { IPageStyleContextValue } from '@react/interfaces/page-style-context-value.interface';
+import { PageStyleContext } from '@react/page-style-context';
 
 export class PageStyleHooks {
-  static usePageStyle(): PageStyleContextValue {
+  static usePageStyle(): IPageStyleContextValue {
     return React.useContext(PageStyleContext.context);
   }
 }

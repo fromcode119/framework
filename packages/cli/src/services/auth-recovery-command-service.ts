@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as bcrypt from 'bcryptjs';
 import { SystemConstants } from '@fromcode119/core';
-import { CliUtils } from '../utils';
+import { CliUtils } from '@cli/utils';
 
 /**
  * Offline account-recovery commands. These talk DIRECTLY to the database (via DATABASE_URL),

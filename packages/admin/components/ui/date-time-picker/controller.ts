@@ -1,5 +1,7 @@
+import { TimePart } from '@/components/ui/date-time-picker/enums/time-part.enum';
 import { TimezoneUtils } from '@/lib/timezone';
-import type { DateTimePickerCoords, DateTimePickerProps } from './interfaces';
+import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
+import type { IDateTimePickerProps } from '@/components/ui/date-time-picker/interfaces/date-time-picker-props.interface';
 
 /**
  * Holds the non-render logic for {@link DateTimePicker}: viewport positioning, date
@@ -27,7 +29,7 @@ export class DateTimePickerController {
       : undefined;
   }
 
-  static computeCoords(rect: DOMRect, showTime: boolean | undefined): DateTimePickerCoords {
+  static computeCoords(rect: DOMRect, showTime: boolean | undefined): IDateTimePickerCoords {
     const popoverWidth = 360;
     const popoverHeight = showTime !== false ? 460 : 380;
     const viewportPadding = 12;
@@ -46,7 +48,7 @@ export class DateTimePickerController {
     };
   }
 
-  static computeCommitIso(props: DateTimePickerProps, selectedDate: Date): string {
+  static computeCommitIso(props: IDateTimePickerProps, selectedDate: Date): string {
     const { showTime = true, value } = props;
     const tz = DateTimePickerController.timezone;
     const baseTime = DateTimePickerController.getZonedParts(value) || TimezoneUtils.getZonedDateParts(new Date(), tz);
@@ -61,21 +63,21 @@ export class DateTimePickerController {
     return finalUtcDate.toISOString();
   }
 
-  static computeTimeChangeIso(value: string | undefined, type: 'hours' | 'minutes', val: string): string | null {
+  static computeTimeChangeIso(value: string | undefined, type: TimePart, val: string): string | null {
     const tz = DateTimePickerController.timezone;
     const base = DateTimePickerController.getZonedParts(value) || TimezoneUtils.getZonedDateParts(new Date(), tz);
     if (!base) return null;
 
     const parsed = Number.parseInt(val, 10);
     const num = Number.isNaN(parsed) ? 0 : parsed;
-    const clamped = type === 'hours'
+    const clamped = type === TimePart.HOURS
       ? Math.min(23, Math.max(0, num))
       : Math.min(59, Math.max(0, num));
 
     const next = {
       ...base,
-      hour: type === 'hours' ? clamped : base.hour,
-      minute: type === 'minutes' ? clamped : base.minute,
+      hour: type === TimePart.HOURS ? clamped : base.hour,
+      minute: type === TimePart.MINUTES ? clamped : base.minute,
       second: 0,
     };
     return TimezoneUtils.zonedPartsToUtcDate(next, tz).toISOString();

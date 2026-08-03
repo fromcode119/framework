@@ -1,9 +1,10 @@
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import { EmailManager, EmailFactory } from '@fromcode119/email';
-import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
-import { EmailGateway } from './email-gateway';
+import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
+import { EmailGateway } from '@core/integrations/providers/email-gateway';
 
 export class EmailIntegrationDefinition {
-  static readonly definition: IntegrationTypeDefinition<EmailManager> = {
+  static readonly definition: IIntegrationTypeDefinition<EmailManager> = {
   key: 'email',
   label: 'Email Delivery',
   description: 'Provider used for outbound system and plugin emails.',
@@ -21,11 +22,11 @@ export class EmailIntegrationDefinition {
       label: 'SMTP',
       description: 'Uses SMTP host credentials for delivery.',
       fields: [
-        { name: 'host', label: 'SMTP Host', type: 'text', required: true, placeholder: 'smtp.example.com' },
-        { name: 'port', label: 'SMTP Port', type: 'number', required: true, placeholder: '587' },
-        { name: 'secure', label: 'Use TLS (secure)', type: 'boolean' },
-        { name: 'user', label: 'SMTP Username', type: 'text' },
-        { name: 'pass', label: 'SMTP Password', type: 'password' }
+        { name: 'host', label: 'SMTP Host', type: IntegrationConfigFieldType.TEXT, required: true, placeholder: 'smtp.example.com' },
+        { name: 'port', label: 'SMTP Port', type: IntegrationConfigFieldType.NUMBER, required: true, placeholder: '587' },
+        { name: 'secure', label: 'Use TLS (secure)', type: IntegrationConfigFieldType.BOOLEAN },
+        { name: 'user', label: 'SMTP Username', type: IntegrationConfigFieldType.TEXT },
+        { name: 'pass', label: 'SMTP Password', type: IntegrationConfigFieldType.PASSWORD }
       ],
       normalizeConfig: EmailGateway.normalizeSmtpConfig,
       create: (config) =>

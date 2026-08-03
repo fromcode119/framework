@@ -1,9 +1,8 @@
-import { Collection, EnvUtils } from '@fromcode119/core';
-
-type AccessConstraint = Record<string, unknown>;
+import { WriteOperation } from '@api/services/enums/write-operation.enum';
+import { ICollection, EnvUtils } from '@fromcode119/core';
 
 export class CollectionAccessPolicyService {
-  async resolveReadConstraints(collection: Collection, req: any): Promise<AccessConstraint> {
+  async resolveReadConstraints(collection: ICollection, req: any): Promise<Record<string, unknown>> {
     const accessResult = await this.evaluateAccess(collection.access?.read, req);
     if (accessResult === true) {
       return {};
@@ -49,19 +48,19 @@ export class CollectionAccessPolicyService {
     return {};
   }
 
-  async ensureCreateAllowed(collection: Collection, req: any): Promise<void> {
-    await this.ensureMutationAllowed(collection, req, 'create');
+  async ensureCreateAllowed(collection: ICollection, req: any): Promise<void> {
+    await this.ensureMutationAllowed(collection, req, WriteOperation.CREATE);
   }
 
-  async ensureUpdateAllowed(collection: Collection, req: any): Promise<void> {
-    await this.ensureMutationAllowed(collection, req, 'update');
+  async ensureUpdateAllowed(collection: ICollection, req: any): Promise<void> {
+    await this.ensureMutationAllowed(collection, req, WriteOperation.UPDATE);
   }
 
-  async ensureDeleteAllowed(collection: Collection, req: any): Promise<void> {
-    await this.ensureMutationAllowed(collection, req, 'delete');
+  async ensureDeleteAllowed(collection: ICollection, req: any): Promise<void> {
+    await this.ensureMutationAllowed(collection, req, WriteOperation.DELETE);
   }
 
-  matchesReadConstraints(record: Record<string, unknown> | null, constraints: AccessConstraint): boolean {
+  matchesReadConstraints(record: Record<string, unknown> | null, constraints: Record<string, unknown>): boolean {
     if (!record) {
       return false;
     }
@@ -76,11 +75,11 @@ export class CollectionAccessPolicyService {
   }
 
   private async ensureMutationAllowed(
-    collection: Collection,
+    collection: ICollection,
     req: any,
-    action: 'create' | 'update' | 'delete',
+    action: WriteOperation,
   ): Promise<void> {
-    const accessResult = await this.evaluateAccess(collection.access?.[action], req);
+    const accessResult = await this.evaluateAccess(collection.access?.[action.value], req);
     if (accessResult === true || this.isConstraint(accessResult)) {
       return;
     }
@@ -92,7 +91,7 @@ export class CollectionAccessPolicyService {
     this.throwAuthError(req, `Authentication is required to ${action} collection "${collection.slug}".`);
   }
 
-  private async evaluateAccess(access: unknown, req: any): Promise<boolean | AccessConstraint | null> {
+  private async evaluateAccess(access: unknown, req: any): Promise<boolean | Record<string, unknown> | null> {
     if (typeof access !== 'function') {
       return null;
     }
@@ -113,7 +112,7 @@ export class CollectionAccessPolicyService {
     return Array.isArray(user?.roles) && user.roles.includes('admin');
   }
 
-  private isConstraint(value: unknown): value is AccessConstraint {
+  private isConstraint(value: unknown): value is Record<string, unknown> {
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   }
 

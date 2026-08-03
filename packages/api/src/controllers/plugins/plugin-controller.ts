@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { ArchiveUploadSessionService, BaseController, PluginManager, Logger, CoercionUtils, PluginHealthReportService, PluginRegistryHealth, PluginState } from '@fromcode119/core';
-import { PluginInstallOperationService } from '../../services/plugin-install-operation-service';
-import { PluginArchiveSupport } from './plugin-archive-support';
+import { ArchiveUploadSessionService, BaseController, PluginManager, Logger, CoercionUtils, PluginHealthReportService, PluginRegistryHealth, PluginState, SystemConstants } from '@fromcode119/core';
+import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
+import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
 export class PluginController extends BaseController {
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
+
+  /** Newest lines only — the detail page shows a tail, not the whole ledger. */
+  private static readonly LOG_PAGE_SIZE = 100;
 
   private logger = new Logger({ namespace: 'plugin-controller' });
   private operations = PluginInstallOperationService.getInstance();
@@ -218,19 +221,32 @@ export class PluginController extends BaseController {
     res.json({ success: true, operation });
   }
 
+  /**
+   * Recent log lines for one plugin.
+   *
+   * This was written against a Drizzle-style API the manager does not have: `systemLogs` is a static
+   * MEMBER of the schema class, so `require('@fromcode119/database').systemLogs` was `undefined` and
+   * every request 500'd with "Cannot read properties of undefined (reading 'pluginSlug')" — which is
+   * why the plugin detail page could never show logs. It now reads the table the same way every other
+   * system controller does. Framework internals use the raw manager, so the column is snake_case here.
+   */
   async logs(req: Request, res: Response) {
-    const { slug } = req.params;
-    const db = (this.manager as any).db;
-    const { systemLogs } = require('@fromcode119/database');
+    const slug = CoercionUtils.toString(req.params?.slug).trim();
+    if (!slug) {
+      return res.status(400).json({ error: 'Plugin slug is required.' });
+    }
+
     try {
-      const logs = await db.find(systemLogs, {
-        where: db.eq(systemLogs.pluginSlug, slug),
-        orderBy: db.desc(systemLogs.timestamp),
-        limit: 100
+      const db = (this.manager as any).db;
+      const logs = await db.find(SystemConstants.TABLE.LOGS, {
+        where: { plugin_slug: slug },
+        orderBy: { timestamp: 'desc' },
+        limit: PluginController.LOG_PAGE_SIZE,
       });
-      res.json(logs);
+      res.json(Array.isArray(logs) ? logs : []);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      this.logger?.error?.(`Failed to read logs for plugin "${slug}": ${err?.message}`);
+      res.status(500).json({ error: err?.message ?? 'Failed to read plugin logs.' });
     }
   }
 

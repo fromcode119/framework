@@ -1,4 +1,4 @@
-import { ContextProviderStateService } from './context-provider-state-service';
+import { ContextProviderStateService } from '@react/context/context-provider-state-service';
 
 /**
  * Subscribable registry for plugin API clients.

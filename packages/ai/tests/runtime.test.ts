@@ -1,8 +1,8 @@
 import { AdminAssistantRuntime } from '../src/admin-assistant-runtime';
-import type { AssistantCollectionContext } from '../src/admin-assistant-runtime/types';
+import type { IAssistantCollectionContext } from '../src/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
 
 function createRuntimeHarness(input?: {
-  collections?: AssistantCollectionContext[];
+  collections?: IAssistantCollectionContext[];
   resolvePromptProfile?: () => Promise<{ basicSystem?: string; advancedSystem?: string }> | { basicSystem?: string; advancedSystem?: string };
   aiResponse?: any;
   aiResponses?: any[];
@@ -143,7 +143,7 @@ describe('assistant-runtime behavior baseline', () => {
   });
 
   it('keeps safety approvals for staged writes', async () => {
-    const collection: AssistantCollectionContext = {
+    const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
@@ -186,7 +186,7 @@ describe('assistant-runtime behavior baseline', () => {
   });
 
   it('drops staged content.update payload keys not defined in collection fields', async () => {
-    const collection: AssistantCollectionContext = {
+    const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
@@ -262,7 +262,7 @@ describe('assistant-runtime behavior baseline', () => {
   });
 
   it('returns homepage draft fast-path without model call in basic mode', async () => {
-    const collection: AssistantCollectionContext = {
+    const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
@@ -288,7 +288,7 @@ describe('assistant-runtime behavior baseline', () => {
   });
 
   it('uses content.update for homepage draft only when target record is explicit', async () => {
-    const collection: AssistantCollectionContext = {
+    const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',
@@ -297,7 +297,7 @@ describe('assistant-runtime behavior baseline', () => {
     };
     const { runtime, aiClient } = createRuntimeHarness({
       collections: [collection],
-      resolveContent: async (_collection: AssistantCollectionContext, selector: { id?: string | number }) =>
+      resolveContent: async (_collection: IAssistantCollectionContext, selector: { id?: string | number }) =>
         selector?.id === 8 ? { id: 8, slug: 'home', title: 'Home' } : null,
       aiResponse: { content: 'should not run', model: 'mock-model' },
     });
@@ -314,7 +314,7 @@ describe('assistant-runtime behavior baseline', () => {
   });
 
   it('parses conversational replace phrasing and avoids freeform model staging', async () => {
-    const collection: AssistantCollectionContext = {
+    const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
       shortSlug: 'pages',
       label: 'Pages',

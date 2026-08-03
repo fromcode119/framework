@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
-import { AuthControllerSecurity } from './auth-controller-security';
-import { SystemTwoFactorService } from '../system/system-2fa-service';
-import { AuthProfileService } from '../../services/auth-profile-service';
-import { UserManagementService } from '../../services/user-management-service';
-import { PeopleSelfService } from '../../services/people-self-service';
+import { AuthControllerSecurity } from '@api/controllers/auth/auth-controller-security';
+import { SystemTwoFactorService } from '@api/controllers/system/system-2fa-service';
+import { AuthProfileService } from '@api/services/auth-profile-service';
+import { UserManagementService } from '@api/services/user-management-service';
+import { PeopleSelfService } from '@api/services/people-self-service';
 
 export class AuthControllerSelfService extends AuthControllerSecurity {
   async getMyPerson(req: any, res: Response) {
@@ -45,6 +45,10 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
         firstName: this.readUserFirstName(user),
         lastName: this.readUserLastName(user),
         roles: await this.resolveEffectiveRoles({ ...user, id: userId }),
+        // Must mirror the LOGIN payload: the admin client stores this response in the AUTH_USER cookie,
+        // so omitting permissions here silently stripped them on every security refresh and broke
+        // permission-scoped nav (`requiredCapabilities`) until the next full login.
+        permissions: await this.auth.getUserPermissions(userId).catch(() => [] as string[]),
       },
       profile,
       account: {

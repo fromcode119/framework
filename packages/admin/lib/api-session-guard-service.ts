@@ -1,7 +1,8 @@
-import { AdminConstants } from './constants';
-import { AuthUtils } from './auth-utils';
-import { AdminPathUtils } from './admin-path';
-import { AdminApiHttpService } from './api-http-service';
+import { Platform } from '@fromcode119/reactor';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AuthUtils } from '@/lib/auth-utils';
+import { AdminPathUtils } from '@/lib/admin-path';
+import { AdminApiHttpService } from '@/lib/api-http-service';
 
 export class AdminApiSessionGuardService {
   private static sessionExpiryVerificationPromise: Promise<void> | null = null;
@@ -19,7 +20,7 @@ export class AdminApiSessionGuardService {
     if (url.includes(AdminConstants.ENDPOINTS.AUTH.STATUS) || url.includes(AdminConstants.ENDPOINTS.AUTH.LOGIN)) {
       return;
     }
-    if (typeof window === 'undefined') {
+    if (!Platform.isBrowser) {
       return;
     }
     if (AdminPathUtils.stripBase(window.location.pathname) === AdminConstants.ROUTES.AUTH.LOGIN) {

@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class AddPluginHeldReasonMigration extends BaseMigration {
+export class AddPluginHeldReasonMigration extends BaseMigration {
   readonly version = 13;
   readonly name = 'Add held_reason to plugins table';
 
@@ -42,5 +42,3 @@ class AddPluginHeldReasonMigration extends BaseMigration {
     });
   }
 }
-
-export default new AddPluginHeldReasonMigration();

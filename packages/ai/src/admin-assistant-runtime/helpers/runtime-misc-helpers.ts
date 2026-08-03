@@ -1,33 +1,37 @@
-import type {
-  AdminAssistantRuntimeOptions, AssistantAction, AssistantCollectionContext,
-  AssistantPlanStatus, AssistantPlanStep, AssistantRunMode,
-  AssistantSkillDefinition, AssistantSkillRiskPolicy, AssistantThemeContext, AssistantToolSummary,
-  AssistantChatTrace, AssistantPluginContext,
-} from '../types';
-import { AssistantCopyUtils } from '../../assistant-copy';
-import { AssistantConstants } from '../constants';
-import { RuntimePlanHelpers } from './runtime-plan-helpers';
+import { AssistantSkillRiskPolicy } from '@ai/admin-assistant-runtime/enums/assistant-skill-risk-policy.enum';
+import { AssistantRunMode } from '@ai/admin-assistant-runtime/enums/assistant-run-mode.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
+
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+
+import type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
+import type { IAssistantThemeContext } from '@ai/admin-assistant-runtime/interfaces/assistant-theme-context.interface';
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
+
+import type { IAssistantPluginContext } from '@ai/admin-assistant-runtime/interfaces/assistant-plugin-context.interface';
+import { AssistantCopyUtils } from '@ai/assistant-copy';
+import { AssistantConstants } from '@ai/admin-assistant-runtime/constants/assistant.constants';
 
 /** Miscellaneous runtime helpers extracted from AdminAssistantRuntime. */
 export class RuntimeMiscHelpers {
   static toRunMode(input: string): AssistantRunMode {
     const v = String(input || '').trim().toLowerCase();
-    if (v === 'plan') return 'plan';
-    if (v === 'agent') return 'agent';
-    return 'chat';
+    if (v === AssistantRunMode.PLAN.value) return AssistantRunMode.PLAN;
+    if (v === AssistantRunMode.AGENT.value) return AssistantRunMode.AGENT;
+    return AssistantRunMode.CHAT;
   }
 
-  static defaultSkillCatalog(): AssistantSkillDefinition[] {
+  static defaultSkillCatalog(): IAssistantSkillDefinition[] {
     return AssistantCopyUtils.DEFAULT_SKILLS.map((skill) => ({
       ...skill,
       allowedTools: Array.isArray(skill.allowedTools) ? [...skill.allowedTools] : undefined,
       entryExamples: Array.isArray(skill.entryExamples) ? [...skill.entryExamples] : undefined,
-    })) as AssistantSkillDefinition[];
+    }));
   }
 
-  static normalizeSkills(skills: AssistantSkillDefinition[]): AssistantSkillDefinition[] {
+  static normalizeSkills(skills: IAssistantSkillDefinition[]): IAssistantSkillDefinition[] {
     const seen = new Set<string>();
-    const output: AssistantSkillDefinition[] = [];
+    const output: IAssistantSkillDefinition[] = [];
     for (const item of Array.isArray(skills) ? skills : []) {
       if (!item || typeof item !== 'object') continue;
       const id = String(item.id || '').trim().toLowerCase();
@@ -39,7 +43,7 @@ export class RuntimeMiscHelpers {
         defaultMode: RuntimeMiscHelpers.toRunMode(String(item.defaultMode || 'chat')),
         allowedTools: Array.isArray(item.allowedTools) ? item.allowedTools.map((t) => String(t || '').trim()).filter(Boolean) : undefined,
         systemPromptPatch: item.systemPromptPatch ? String(item.systemPromptPatch) : undefined,
-        riskPolicy: (String(item.riskPolicy || 'approval_required').trim().toLowerCase() as AssistantSkillRiskPolicy) || 'approval_required',
+        riskPolicy: AssistantSkillRiskPolicy.resolve(String(item.riskPolicy ?? '').trim().toLowerCase() || AssistantSkillRiskPolicy.APPROVAL_REQUIRED.value),
         entryExamples: Array.isArray(item.entryExamples) ? item.entryExamples.map((e) => String(e || '').trim()).filter(Boolean) : undefined,
       });
     }
@@ -115,8 +119,8 @@ export class RuntimeMiscHelpers {
   }
 
   static buildRuntimeContextLines(
-    collections: AssistantCollectionContext[], plugins: AssistantPluginContext[],
-    themes: AssistantThemeContext[], tools: AssistantToolSummary[],
+    collections: IAssistantCollectionContext[], plugins: IAssistantPluginContext[],
+    themes: IAssistantThemeContext[], tools: IAssistantToolSummary[],
   ): string[] {
     return [
       `Available collections: ${JSON.stringify(collections.map((c) => ({ slug: c.slug, shortSlug: c.shortSlug, label: c.label, pluginSlug: c.pluginSlug })))}`,
@@ -126,7 +130,7 @@ export class RuntimeMiscHelpers {
     ];
   }
 
-  static sanitizeUserFacingMessage(message: string, mode: 'basic' | 'advanced'): string {
+  static sanitizeUserFacingMessage(message: string, mode: ContextLevel): string {
     let text = String(message || '').trim();
     if (!text) return text;
     const replacements = new Map<string, string>([
@@ -152,7 +156,7 @@ export class RuntimeMiscHelpers {
     text = text.replace(/\busing the ([A-Za-z][A-Za-z ]+?) tool\b/gi, 'using $1');
     const lower = text.toLowerCase();
     if (/read-?only/.test(lower) && (/plan mode/.test(lower) || /can'?t make changes|cannot make changes|unable to make changes/.test(lower))) {
-      text = mode === 'basic'
+      text = mode === ContextLevel.BASIC
         ? 'To make changes, switch to **Plan** mode. I will stage the updates and you can approve them before anything is applied.'
         : 'I can stage this in **Plan** mode right now. Review the staged actions, run preview, then approve apply.';
     }
@@ -161,9 +165,9 @@ export class RuntimeMiscHelpers {
     return (text.replace(/^\s+/, '') || 'I am ready.');
   }
 
-  static normalizePlanModeMessage(message: string, mode: 'basic' | 'advanced', hasActions: boolean, done: boolean): string {
+  static normalizePlanModeMessage(message: string, mode: ContextLevel, hasActions: boolean, done: boolean): string {
     const text = String(message || '').trim();
-    if (mode !== 'advanced') return text;
+    if (mode !== ContextLevel.ADVANCED) return text;
     if (hasActions && /\b(no further action required|no action required|nothing to do|already done|already updated)\b/i.test(text))
       return 'Plan is ready. Review staged actions below, then run Preview or Apply.';
     const looksWrong = /read-?only|can't make changes|cannot make changes|unable to make changes|switch to plan mode|click(?:ing)?\s+on\s+the\s+["']?plan/i.test(text);

@@ -1,10 +1,12 @@
-import type { McpCall, McpBridgeOptions, McpToolDefinition } from './index.types';
-import type { McpBridge } from './index.interfaces';
+import { IMcpCall } from '@mcp/interfaces/mcp-call.interface';
+import type { IMcpBridgeOptions } from '@mcp/interfaces/mcp-bridge-options.interface';
+import type { IMcpToolDefinition } from '@mcp/interfaces/mcp-tool-definition.interface';
+import type { IMcpBridge } from '@mcp/interfaces/mcp-bridge.interface';
 
 /** Factory class for creating MCP bridge instances. */
 export class McpBridgeFactory {
-  static create(options: McpBridgeOptions = {}): McpBridge {
-    const registry = new Map<string, McpToolDefinition>();
+  static create(options: IMcpBridgeOptions = {}): IMcpBridge {
+    const registry = new Map<string, IMcpToolDefinition>();
     for (const tool of options.tools || []) {
       if (!tool?.tool) continue;
       registry.set(String(tool.tool).trim(), tool);
@@ -21,7 +23,7 @@ export class McpBridgeFactory {
             : undefined,
         }));
       },
-      async call(request: McpCall) {
+      async call(request: IMcpCall) {
         const toolName = String(request?.tool || '').trim();
         if (!toolName) {
           return { ok: false, error: 'MCP tool is required.' };

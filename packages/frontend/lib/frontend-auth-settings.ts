@@ -1,4 +1,4 @@
-import { FrontendPublicSettings } from './frontend-public-settings';
+import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
 
 export class FrontendAuthUtils {
   static async isFrontendAuthEnabled(): Promise<boolean> {

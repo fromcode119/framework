@@ -1,10 +1,17 @@
-import type {
-  AssistantAction,
-  AssistantPlanArtifact,
-  AssistantPlanStatus,
-  AssistantSkillDefinition,
-  AssistantUiHints,
-} from '../admin-assistant-runtime/types';
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import { PlanStepStatus } from '@ai/admin-assistant-runtime/enums/plan-step-status.enum';
+import { AssistantRunMode } from '@ai/admin-assistant-runtime/enums/assistant-run-mode.enum';
+import { NextStep } from '@ai/enums/next-step.enum';
+import { AssistantSkillRiskPolicy } from '@ai/admin-assistant-runtime/enums/assistant-skill-risk-policy.enum';
+import { ResponseVerbosity } from '@ai/enums/response-verbosity.enum';
+import { AgentRole } from '@ai/api/forge/enums/agent-role.enum';
+import { ComplexityTier } from '@ai/api/forge/enums/complexity-tier.enum';
+import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import type { IAssistantPlanArtifact } from '@ai/admin-assistant-runtime/interfaces/assistant-plan-artifact.interface';
+import type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
+import type { IAssistantUiHints } from '@ai/admin-assistant-runtime/interfaces/assistant-ui-hints.interface';
+import { AssistantPlanStatus } from '@ai/admin-assistant-runtime/enums/assistant-plan-status.enum';
 
 export class AdminAssistantRuntimeArtifactService {
   constructor(private readonly now: () => string) {}
@@ -13,13 +20,13 @@ export class AdminAssistantRuntimeArtifactService {
     planId: string;
     goal: string;
     message: string;
-    actions: AssistantAction[];
-    traces: Array<{ iteration: number; message: string; phase?: 'planner' | 'executor' | 'verifier'; toolCalls: Array<{ tool: string; input: Record<string, any> }> }>;
+    actions: IAssistantAction[];
+    traces: Array<{ iteration: number; message: string; phase?: AgentRole; toolCalls: Array<{ tool: string; input: Record<string, any> }> }>;
     loopCapReached: boolean;
     loopTimeLimitReached: boolean;
     done: boolean;
-    selectedSkill?: AssistantSkillDefinition;
-  }): AssistantPlanArtifact {
+    selectedSkill?: IAssistantSkillDefinition;
+  }): IAssistantPlanArtifact {
     const nowIso = this.now();
     const hasActions = Array.isArray(input.actions) && input.actions.length > 0;
     const status = this.resolvePlanStatus(
@@ -30,8 +37,8 @@ export class AdminAssistantRuntimeArtifactService {
       input.traces,
     );
     const hasWriteActions = input.actions.some((action) => {
-      if (action.type === 'create_content' || action.type === 'update_setting') return true;
-      return action.type === 'mcp_call' && !String(action.tool || '').includes('.search_') && !String(action.tool || '').endsWith('.get');
+      if (action.type === AssistantActionType.CREATE_CONTENT || action.type === AssistantActionType.UPDATE_SETTING) return true;
+      return action.type === AssistantActionType.MCP_CALL && !String(action.tool || '').includes('.search_') && !String(action.tool || '').endsWith('.get');
     });
 
     return {
@@ -44,7 +51,7 @@ export class AdminAssistantRuntimeArtifactService {
         title: trace?.message
           ? `${trace?.phase ? `${String(trace.phase).charAt(0).toUpperCase()}${String(trace.phase).slice(1)}: ` : ''}${String(trace.message).trim() || `Step ${index + 1}`}`
           : `Step ${index + 1}`,
-        status: index === all.length - 1 && status === 'searching' ? 'running' : 'completed',
+        status: index === all.length - 1 && status === AssistantPlanStatus.SEARCHING ? PlanStepStatus.RUNNING : PlanStepStatus.COMPLETED,
         description: trace?.message ? String(trace.message).trim() : undefined,
         toolCalls: Array.isArray(trace?.toolCalls) ? trace.toolCalls : [],
       })),
@@ -61,18 +68,18 @@ export class AdminAssistantRuntimeArtifactService {
     loopCapReached: boolean;
     loopTimeLimitReached: boolean;
     done: boolean;
-    selectedSkill?: AssistantSkillDefinition;
+    selectedSkill?: IAssistantSkillDefinition;
     planningPassesUsed?: number;
     needsClarification?: boolean;
     clarifyingQuestion?: string;
     missingInputs?: string[];
-    loopRecoveryMode?: 'none' | 'clarify' | 'best_effort';
-  }): AssistantUiHints {
-    const suggestedMode = input.hasActions
-      ? 'plan'
+    loopRecoveryMode?: ClarifyMode;
+  }): IAssistantUiHints {
+    const suggestedMode: AssistantRunMode = input.hasActions
+      ? AssistantRunMode.PLAN
       : (input.loopCapReached || input.loopTimeLimitReached) && !input.done
-        ? 'agent'
-        : input.selectedSkill?.defaultMode || 'chat';
+        ? AssistantRunMode.AGENT
+        : AssistantRunMode.resolve(input.selectedSkill?.defaultMode ?? AssistantRunMode.CHAT.value);
     const passesUsed = Number(input.planningPassesUsed || 0);
 
     return {
@@ -81,16 +88,16 @@ export class AdminAssistantRuntimeArtifactService {
         !input.hasActions &&
         passesUsed < 3 &&
         !input.needsClarification &&
-        input.loopRecoveryMode !== 'best_effort',
-      requiresApproval: input.hasActions && input.selectedSkill?.riskPolicy !== 'allowlisted_auto_apply',
+        input.loopRecoveryMode !== ClarifyMode.BEST_EFFORT,
+      requiresApproval: input.hasActions && input.selectedSkill?.riskPolicy !== AssistantSkillRiskPolicy.ALLOWLISTED_AUTO_APPLY,
       suggestedMode,
       showTechnicalDetailsDefault: false,
-      nextStep: input.hasActions ? 'preview' : 'reply',
-      summaryMode: 'concise',
+      nextStep: input.hasActions ? NextStep.PREVIEW : NextStep.REPLY,
+      summaryMode: ResponseVerbosity.CONCISE,
       needsClarification: !!input.needsClarification,
       clarifyingQuestion: String(input.clarifyingQuestion || '').trim() || undefined,
       missingInputs: Array.isArray(input.missingInputs) ? input.missingInputs.filter(Boolean) : undefined,
-      loopRecoveryMode: input.loopRecoveryMode || 'none',
+      loopRecoveryMode: input.loopRecoveryMode || ClarifyMode.NONE,
     };
   }
 
@@ -101,19 +108,19 @@ export class AdminAssistantRuntimeArtifactService {
     loopTimeLimitReached: boolean,
     traces: Array<{ iteration: number }> | undefined,
   ): AssistantPlanStatus {
-    if (hasActions) return done ? 'ready_for_apply' : 'ready_for_preview';
-    if (loopCapReached || loopTimeLimitReached) return 'paused';
-    if (done) return 'completed';
-    if (Array.isArray(traces) && traces.length > 0) return 'searching';
-    return 'draft';
+    if (hasActions) return done ? AssistantPlanStatus.READY_FOR_APPLY : AssistantPlanStatus.READY_FOR_PREVIEW;
+    if (loopCapReached || loopTimeLimitReached) return AssistantPlanStatus.PAUSED;
+    if (done) return AssistantPlanStatus.COMPLETED;
+    if (Array.isArray(traces) && traces.length > 0) return AssistantPlanStatus.SEARCHING;
+    return AssistantPlanStatus.DRAFT;
   }
 
   private resolveRisk(
-    selectedSkill: AssistantSkillDefinition | undefined,
+    selectedSkill: IAssistantSkillDefinition | undefined,
     hasWriteActions: boolean,
-  ): 'low' | 'medium' | 'high' {
-    if (selectedSkill?.riskPolicy === 'allowlisted_auto_apply' && hasWriteActions) return 'high';
-    if (selectedSkill?.riskPolicy === 'read_only') return 'low';
-    return hasWriteActions ? 'medium' : 'low';
+  ): ComplexityTier {
+    if (selectedSkill?.riskPolicy === AssistantSkillRiskPolicy.ALLOWLISTED_AUTO_APPLY && hasWriteActions) return ComplexityTier.HIGH;
+    if (selectedSkill?.riskPolicy === AssistantSkillRiskPolicy.READ_ONLY) return ComplexityTier.LOW;
+    return hasWriteActions ? ComplexityTier.MEDIUM : ComplexityTier.LOW;
   }
 }

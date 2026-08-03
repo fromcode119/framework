@@ -1,16 +1,23 @@
-import React from 'react';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
 import { CoreServices } from '@fromcode119/core/client';
-import { Icon as DynamicIcon } from '@/components/icon';
+import { Icon as DynamicIcon } from '@/components/view/icon.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { AdminConstants } from '@/lib/constants';
-import type { DashboardCollectionsGridProps } from './dashboard-sections.interfaces';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminClass } from '@/lib/admin-class';
 
-export class DashboardCollectionsGrid extends React.Component<DashboardCollectionsGridProps> {
-  render(): React.ReactNode {
-    const { stats, showAllCollections, onNavigate } = this.props;
+export class DashboardCollectionsGrid extends PureReactor {
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<DashboardCollectionsGrid, 'stats' | 'showAllCollections' | 'onNavigate'>;
+
+  @prop declare stats: any[];
+  @prop declare showAllCollections: boolean;
+  @prop declare onNavigate: (path: string) => void;
+
+  render(): ReactNode {
     const collectionIdentity = CoreServices.getInstance().collectionIdentity;
 
-    const filtered = stats.filter(s => {
+    const filtered = this.stats.filter(s => {
       if (s.hidden) return false;
 
       // For core (system===true): users and media are always core
@@ -18,7 +25,7 @@ export class DashboardCollectionsGrid extends React.Component<DashboardCollectio
       if (isCore) return true;
 
       // If show all is toggled, show everything not hidden
-      if (showAllCollections) return true;
+      if (this.showAllCollections) return true;
 
       // Default view filter logic:
       // 1. Hide internal-looking slugs
@@ -33,7 +40,7 @@ export class DashboardCollectionsGrid extends React.Component<DashboardCollectio
 
     // Default (collapsed) view: surface the most populated collections first and cap the
     // list so the dashboard isn't a wall of every collection's row count. "View All" expands.
-    const visible = showAllCollections
+    const visible = this.showAllCollections
       ? filtered
       : [...filtered].sort((a, b) => (Number(b.count) || 0) - (Number(a.count) || 0)).slice(0, 12);
 
@@ -55,7 +62,7 @@ export class DashboardCollectionsGrid extends React.Component<DashboardCollectio
           }
 
           return (
-            <div key={s.slug} className="p-3 rounded-xl border flex items-center gap-3 transition-colors hover:border-indigo-200 group cursor-pointer bg-white border-slate-200/70 shadow-sm dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none" onClick={() => onNavigate(adminPath)}>
+            <div key={s.slug} className={`p-3 ${AdminClass.SURFACE} flex items-center gap-3 transition-colors hover:border-indigo-200 group cursor-pointer dark:hover:border-indigo-500/40`} onClick={() => this.onNavigate(adminPath)}>
               <div className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg transition-colors bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400 [&_svg]:h-4 [&_svg]:w-4">
                 <DynamicIcon name={s.icon || 'Database'} size={16} />
               </div>

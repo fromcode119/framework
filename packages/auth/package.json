@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/auth",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "main": "dist/index.js",
   "exports": {
     ".": {
@@ -19,7 +19,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "node ../typor/dist/typor-cli.cjs build",
     "dev": "tsc -w"
   },
   "dependencies": {

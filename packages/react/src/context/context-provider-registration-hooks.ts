@@ -1,24 +1,26 @@
 import React from 'react';
-import { RenderableContentTransformerRegistry } from '../renderable-content-transformer-registry';
-import type { CollectionMetadata, MenuItem, SlotComponent } from '../context.interfaces';
-import { FrontendI18nService } from './frontend-i18n-service';
-import type { PluginApiRegistryStore } from './plugin-api-registry-store';
-import { ContextProviderSlotRegistrationHooks } from './context-provider-slot-registration-hooks';
+import { RenderableContentTransformerRegistry } from '@react/renderable-content-transformer-registry';
+import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
+import type { IMenuItem } from '@react/interfaces/menu-item.interface';
+import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
+import { FrontendI18nService } from '@react/context/frontend-i18n-service';
+import type { PluginApiRegistryStore } from '@react/context/plugin-api-registry-store';
+import { ContextProviderSlotRegistrationHooks } from '@react/context/context-provider-slot-registration-hooks';
 
 export class ContextProviderRegistrationHooks {
   static useRegistrationRuntime(args: {
     events: Map<string, Set<(data: any) => void>>;
     pluginApiStore: PluginApiRegistryStore;
-    setCollections: React.Dispatch<React.SetStateAction<CollectionMetadata[]>>;
+    setCollections: React.Dispatch<React.SetStateAction<ICollectionMetadata[]>>;
     setFieldComponents: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-    setMenuItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
-    setOverrides: React.Dispatch<React.SetStateAction<Record<string, SlotComponent>>>;
+    setMenuItems: React.Dispatch<React.SetStateAction<IMenuItem[]>>;
+    setOverrides: React.Dispatch<React.SetStateAction<Record<string, ISlotComponent>>>;
     setPluginStateInternal: React.Dispatch<React.SetStateAction<Record<string, Record<string, any>>>>;
     setPlugins: React.Dispatch<React.SetStateAction<any[]>>;
     setRefreshVersion: React.Dispatch<React.SetStateAction<number>>;
     setSettings: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setRegisteredTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, any>>>>;
-    setSlots: React.Dispatch<React.SetStateAction<Record<string, SlotComponent[]>>>;
+    setSlots: React.Dispatch<React.SetStateAction<Record<string, ISlotComponent[]>>>;
     setThemeLayouts: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setThemeStyleVariants: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setThemeVariables: React.Dispatch<React.SetStateAction<Record<string, string>>>;

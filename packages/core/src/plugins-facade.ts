@@ -1,8 +1,8 @@
-import type { PluginApiResolver } from './plugin-api-resolver.interfaces';
-import { NamespacedPluginsFacade } from './namespaced-plugins-facade';
+import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import { NamespacedPluginsFacade } from '@core/namespaced-plugins-facade';
 
 export class PluginsFacade {
-  constructor(private readonly resolver: PluginApiResolver) {}
+  constructor(private readonly resolver: IPluginApiResolver) {}
 
   namespace(namespace: string): NamespacedPluginsFacade {
     return NamespacedPluginsFacade.create(this.resolver, namespace);

@@ -1,14 +1,23 @@
-import type {
-  AssistantAction,
-  AssistantActionBatch,
-  AssistantChatResult,
-  AssistantChatTrace,
-  AssistantPlanArtifact,
-  AssistantSessionCheckpoint,
-  AssistantSkillDefinition,
-  AssistantUiHints,
-} from '../types';
-import { RuntimeUtils } from './types';
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { BatchState } from '@ai/components/enums/batch-state.enum';
+import { PrimaryAction } from '@ai/enums/primary-action.enum';
+import { WorkflowState } from '@ai/enums/workflow-state.enum';
+import { NextStep } from '@ai/enums/next-step.enum';
+import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
+import { AssistantSkillRiskPolicy } from '@ai/admin-assistant-runtime/enums/assistant-skill-risk-policy.enum';
+import { AssistantRunMode } from '@ai/admin-assistant-runtime/enums/assistant-run-mode.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
+import { ResponseVerbosity } from '@ai/enums/response-verbosity.enum';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import type { IAssistantActionBatch } from '@ai/admin-assistant-runtime/interfaces/assistant-action-batch.interface';
+import type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
+import type { IAssistantChatTrace } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-trace.interface';
+import type { IAssistantPlanArtifact } from '@ai/admin-assistant-runtime/interfaces/assistant-plan-artifact.interface';
+import type { IAssistantSessionCheckpoint } from '@ai/admin-assistant-runtime/interfaces/assistant-session-checkpoint.interface';
+import type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
+import type { IAssistantUiHints } from '@ai/admin-assistant-runtime/interfaces/assistant-ui-hints.interface';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
 
 export class ResponseBuilder {
   static stripBannedOpener(value: string): string {
@@ -19,35 +28,35 @@ export class ResponseBuilder {
       .trim();
   }
 
-  static inferNextStep(input: { hasActions: boolean; needsClarification?: boolean }): 'reply' | 'preview' | 'apply' | 'none' {
-    if (input.needsClarification) return 'reply';
-    if (input.hasActions) return 'preview';
-    return 'reply';
+  static inferNextStep(input: { hasActions: boolean; needsClarification?: boolean }): NextStep {
+    if (input.needsClarification) return NextStep.REPLY;
+    if (input.hasActions) return NextStep.PREVIEW;
+    return NextStep.REPLY;
   }
 
-  static inferWorkflowState(input: { hasActions: boolean; needsClarification?: boolean }): 'reply' | 'clarify' | 'staged' | 'previewed' | 'applied' | 'stale' {
-    if (input.needsClarification) return 'clarify';
-    if (input.hasActions) return 'staged';
-    return 'reply';
+  static inferWorkflowState(input: { hasActions: boolean; needsClarification?: boolean }): WorkflowState {
+    if (input.needsClarification) return WorkflowState.CLARIFY;
+    if (input.hasActions) return WorkflowState.STAGED;
+    return WorkflowState.REPLY;
   }
 
-  static inferPrimaryAction(input: { hasActions: boolean; needsClarification?: boolean }): 'none' | 'send' | 'preview' | 'apply' {
-    if (input.needsClarification) return 'send';
-    if (input.hasActions) return 'preview';
-    return 'send';
+  static inferPrimaryAction(input: { hasActions: boolean; needsClarification?: boolean }): PrimaryAction {
+    if (input.needsClarification) return PrimaryAction.SEND;
+    if (input.hasActions) return PrimaryAction.PREVIEW;
+    return PrimaryAction.SEND;
   }
 
   static inferUserSummary(input: {
     hasActions: boolean;
     needsClarification?: boolean;
-    loopRecoveryMode?: string;
+    loopRecoveryMode?: ClarifyMode;
     clarifyingQuestion?: string;
   }): string {
     if (input.needsClarification) {
       const question = String(input.clarifyingQuestion || '').trim();
       return question || 'Need one detail to finish.';
     }
-    if (input.loopRecoveryMode === 'best_effort') return 'Draft ready; confirm target to apply.';
+    if (input.loopRecoveryMode === ClarifyMode.BEST_EFFORT) return 'Draft ready; confirm target to apply.';
     if (input.hasActions) return 'Changes ready for review.';
     return 'Reply with a follow-up or request a change.';
   }
@@ -55,18 +64,18 @@ export class ResponseBuilder {
   static buildUiHintsBase(input: {
     hasActions: boolean;
     needsClarification?: boolean;
-    loopRecoveryMode?: string;
+    loopRecoveryMode?: ClarifyMode;
     clarifyingQuestion?: string;
     missingInputs?: string[];
-    selectedSkill?: AssistantSkillDefinition;
-  }): AssistantUiHints {
+    selectedSkill?: IAssistantSkillDefinition;
+  }): IAssistantUiHints {
     return {
       canContinue: false,
-      requiresApproval: !!input.hasActions && input.selectedSkill?.riskPolicy !== 'allowlisted_auto_apply',
-      suggestedMode: input.hasActions ? 'plan' : input.selectedSkill?.defaultMode || 'chat',
+      requiresApproval: !!input.hasActions && input.selectedSkill?.riskPolicy !== AssistantSkillRiskPolicy.ALLOWLISTED_AUTO_APPLY,
+      suggestedMode: input.hasActions ? AssistantRunMode.PLAN : input.selectedSkill?.defaultMode || AssistantRunMode.CHAT,
       showTechnicalDetailsDefault: false,
       nextStep: ResponseBuilder.inferNextStep({ hasActions: input.hasActions, needsClarification: input.needsClarification }),
-      summaryMode: 'concise',
+      summaryMode: ResponseVerbosity.CONCISE,
       workflowState: ResponseBuilder.inferWorkflowState({ hasActions: input.hasActions, needsClarification: input.needsClarification }),
       primaryAction: ResponseBuilder.inferPrimaryAction({ hasActions: input.hasActions, needsClarification: input.needsClarification }),
       userSummary: ResponseBuilder.inferUserSummary({
@@ -78,19 +87,19 @@ export class ResponseBuilder {
       needsClarification: !!input.needsClarification,
       clarifyingQuestion: String(input.clarifyingQuestion || '').trim() || undefined,
       missingInputs: Array.isArray(input.missingInputs) ? input.missingInputs.filter(Boolean) : undefined,
-      loopRecoveryMode: (input.loopRecoveryMode || 'none') as 'none' | 'clarify' | 'best_effort',
+      loopRecoveryMode: input.loopRecoveryMode ?? ClarifyMode.NONE,
     };
   }
 
-  static createActionBatch(actions: AssistantAction[]): AssistantActionBatch | undefined {
+  static createActionBatch(actions: IAssistantAction[]): IAssistantActionBatch | undefined {
     if (!Array.isArray(actions) || actions.length === 0) return undefined;
-    return { id: RuntimeUtils.createBatchId(), state: 'staged', createdAt: Date.now() };
+    return { id: RuntimeUtils.createBatchId(), state: BatchState.STAGED, createdAt: Date.now() };
   }
 
   static makeCheckpoint(input: {
-    reason: string;
+    reason: CheckpointReason;
     resumePrompt?: string;
-    stage?: string;
+    stage?: RuntimeStage;
     planningPassesUsed?: number;
     memory?: {
       listing?: {
@@ -110,7 +119,7 @@ export class ResponseBuilder {
         metrics?: Array<{ path: string; value: string | number | boolean }>;
       };
     };
-  }): AssistantSessionCheckpoint {
+  }): IAssistantSessionCheckpoint {
     const listingMemory = input.memory?.listing;
     const factualMemory = input.memory?.factual;
     const normalizedMemory =
@@ -159,9 +168,9 @@ export class ResponseBuilder {
         };
       })();
     return {
-      reason: input.reason as AssistantSessionCheckpoint['reason'],
+      reason: input.reason as IAssistantSessionCheckpoint['reason'],
       resumePrompt: String(input.resumePrompt || '').trim(),
-      stage: input.stage as AssistantSessionCheckpoint['stage'],
+      stage: input.stage ? RuntimeStage.resolve(input.stage) : undefined,
       planningPassesUsed: Number.isFinite(Number(input.planningPassesUsed))
         ? Math.max(0, Number(input.planningPassesUsed))
         : undefined,
@@ -171,27 +180,27 @@ export class ResponseBuilder {
 
   static finalizeResult(input: {
     message: string;
-    actions: AssistantAction[];
+    actions: IAssistantAction[];
     model: string;
     agentMode?: string;
     done?: boolean;
     traces?: unknown[];
     plan?: unknown;
-    ui?: AssistantUiHints;
-    selectedSkill?: AssistantSkillDefinition;
+    ui?: IAssistantUiHints;
+    selectedSkill?: IAssistantSkillDefinition;
     sessionId?: string;
-    checkpoint?: AssistantSessionCheckpoint;
-  }): AssistantChatResult {
+    checkpoint?: IAssistantSessionCheckpoint;
+  }): IAssistantChatResult {
     const sanitizedMessage = ResponseBuilder.stripBannedOpener(input.message) || 'Ready.';
     const actions = Array.isArray(input.actions) ? input.actions : [];
     return {
       message: sanitizedMessage,
       actions,
       model: String(input.model || ''),
-      agentMode: (input.agentMode || 'basic') as 'basic' | 'advanced',
+      agentMode: ContextLevel.resolve(input.agentMode ?? ContextLevel.BASIC.value),
       done: input.done !== false,
-      traces: (Array.isArray(input.traces) ? input.traces : []) as AssistantChatTrace[],
-      plan: input.plan as AssistantPlanArtifact | undefined,
+      traces: (Array.isArray(input.traces) ? input.traces : []) as IAssistantChatTrace[],
+      plan: input.plan as IAssistantPlanArtifact | undefined,
       ui: input.ui,
       actionBatch: ResponseBuilder.createActionBatch(actions),
       skill: input.selectedSkill,
@@ -202,14 +211,14 @@ export class ResponseBuilder {
     };
   }
 
-  static postProcessLegacyResult(result: Partial<AssistantChatResult>): Partial<AssistantChatResult> {
+  static postProcessLegacyResult(result: Partial<IAssistantChatResult>): Partial<IAssistantChatResult> {
     const actions = Array.isArray(result?.actions) ? result.actions : [];
     const ui = result?.ui && typeof result.ui === 'object' ? { ...result.ui } : undefined;
     const normalizedUi = ui
       ? {
           ...ui,
           nextStep: ui.nextStep || ResponseBuilder.inferNextStep({ hasActions: actions.length > 0, needsClarification: ui.needsClarification }),
-          summaryMode: ui.summaryMode || 'concise',
+          summaryMode: ui.summaryMode ?? ResponseVerbosity.CONCISE,
           workflowState: ui.workflowState || ResponseBuilder.inferWorkflowState({ hasActions: actions.length > 0, needsClarification: ui.needsClarification }),
           primaryAction: ui.primaryAction || ResponseBuilder.inferPrimaryAction({ hasActions: actions.length > 0, needsClarification: ui.needsClarification }),
           userSummary:
@@ -234,7 +243,7 @@ export class ResponseBuilder {
     const checkpoint = result?.checkpoint
       ? {
           ...result.checkpoint,
-          stage: result.checkpoint.stage || (normalizedUi?.needsClarification ? 'clarify' : 'finalize'),
+          stage: result.checkpoint.stage ?? (normalizedUi?.needsClarification ? RuntimeStage.CLARIFY : RuntimeStage.FINALIZE),
         }
       : undefined;
 
@@ -242,7 +251,7 @@ export class ResponseBuilder {
       ...result,
       message: safeMessage || 'Ready.',
       ui: normalizedUi,
-      actionBatch: result?.actionBatch || ResponseBuilder.createActionBatch(actions as AssistantAction[]),
+      actionBatch: result?.actionBatch || ResponseBuilder.createActionBatch(actions as IAssistantAction[]),
       checkpoint,
     };
   }

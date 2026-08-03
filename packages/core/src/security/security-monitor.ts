@@ -1,8 +1,10 @@
+import { SecuritySeverity } from '@core/security/enums/security-severity.enum';
+import { SecurityEventKind } from '@core/security/enums/security-event-kind.enum';
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '../logging';
-import { PluginManager } from '../plugin/plugin-manager';
-import { SystemConstants } from '../constants';
-import type { SecurityEvent } from './security-monitor.interfaces';
+import { Logger } from '@core/logging';
+import { PluginManager } from '@core/plugin/plugin-manager';
+import { SystemConstants } from '@core/constants/system.constants';
+import type { ISecurityEvent } from '@core/security/interfaces/security-event.interface';
 
 /**
  * SecurityMonitor analyzes audit logs for suspicious patterns
@@ -100,9 +102,9 @@ export class SecurityMonitor {
       });
 
       await this.logSecurityEvent({
-        type: 'denial_spike',
+        type: SecurityEventKind.DENIAL_SPIKE,
         pluginSlug,
-        severity: 'medium',
+        severity: SecuritySeverity.MEDIUM,
         details: `Detected ${denialCount} permission denials in the last 5 minutes. This may indicate an attempt to probe system boundaries.`,
         metadata: { count: denialCount }
       });
@@ -132,9 +134,9 @@ export class SecurityMonitor {
       });
 
       await this.logSecurityEvent({
-        type: 'violation',
+        type: SecurityEventKind.VIOLATION,
         pluginSlug: violation.plugin_slug,
-        severity: 'high',
+        severity: SecuritySeverity.HIGH,
         details: `Resource access violation: Attempted ${violation.action} on unauthorized resource ${violation.resource}.`,
         metadata: violation.metadata
       });
@@ -146,12 +148,12 @@ export class SecurityMonitor {
     }
   }
 
-  private async logSecurityEvent(event: SecurityEvent) {
+  private async logSecurityEvent(event: ISecurityEvent) {
     // Write a system log about the security event itself
     await this.db.insert(SystemConstants.TABLE.LOGS, {
       plugin_slug: 'security-monitor',
-      level: event.severity === 'critical' ? 'ERROR' : 'WARN',
-      message: `[SECURITY ${event.type.toUpperCase()}] Plugin "${event.pluginSlug}": ${event.details}`,
+      level: event.severity === SecuritySeverity.CRITICAL ? 'ERROR' : 'WARN',
+      message: `[SECURITY ${event.type.value.toUpperCase()}] Plugin "${event.pluginSlug}": ${event.details}`,
       context: JSON.stringify(event.metadata || {}),
       timestamp: new Date()
     });

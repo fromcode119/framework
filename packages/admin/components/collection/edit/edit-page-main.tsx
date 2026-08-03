@@ -1,50 +1,64 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { FieldRenderer } from '@/components/collection/field-renderer';
-import type { EditPageMainProps } from './edit-page-main.interfaces';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
 
-export class EditPageMain extends React.Component<EditPageMainProps> {
-  render(): React.ReactNode {
-    const {
-      standardMainFieldSections, fullWidthMainFieldSections, theme, resolvedSlug, formData,
-      pluginSettings, fieldErrors, saving, isNew, slugWarning, slugManuallyEdited,
-      readOnlyOverrideFields, handleInputChange, handlePatch, handleReadOnlyOverrideRequest
-    } = this.props;
+import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
+import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 
-    const renderField = (field: any) => (
+export class EditPageMain extends PureReactor {
+  @prop declare standardMainFieldSections: Array<{ key: string; title?: string; fields: any[] }>;
+  @prop declare fullWidthMainFieldSections: Array<{ key: string; title?: string; fields: any[] }>;
+  @prop declare theme: ThemeMode;
+  @prop declare resolvedSlug: string;
+  @prop declare formData: Record<string, any>;
+  @prop declare pluginSettings: Record<string, any>;
+  @prop declare fieldErrors: Record<string, any>;
+  @prop declare saving: boolean;
+  @prop declare isNew: boolean;
+  @prop declare slugWarning?: string | null;
+  @prop declare slugManuallyEdited?: boolean;
+  @prop declare readOnlyOverrideFields: Record<string, true>;
+  @prop declare handleInputChange: (name: string, value: any) => void;
+  @prop declare handlePatch: (partial: Record<string, any>) => void;
+  @prop declare handleReadOnlyOverrideRequest: (target: { name: string; label: string }) => void;
+
+  @bound renderField(field: any): ReactNode {
+    return (
       <FieldRenderer
         key={field.name}
         field={field}
-        value={formData[field.name]}
-        onChange={(val) => handleInputChange(field.name, val)}
-        record={formData}
-        onPatch={handlePatch}
-        theme={theme}
-        collectionSlug={resolvedSlug}
-        pluginSettings={pluginSettings}
-        disabled={saving}
-        isNew={isNew}
-        errors={fieldErrors[field.name]}
-        slugWarning={field.name === 'slug' ? slugWarning : undefined}
-        slugManuallyEdited={field.name === 'slug' ? slugManuallyEdited : undefined}
-        readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
-        onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+        value={this.formData[field.name]}
+        onChange={(val) => this.handleInputChange(field.name, val)}
+        record={this.formData}
+        onPatch={this.handlePatch}
+        theme={this.theme}
+        collectionSlug={this.resolvedSlug}
+        pluginSettings={this.pluginSettings}
+        disabled={this.saving}
+        isNew={this.isNew}
+        errors={this.fieldErrors[field.name]}
+        slugWarning={field.name === 'slug' ? this.slugWarning : undefined}
+        slugManuallyEdited={field.name === 'slug' ? this.slugManuallyEdited : undefined}
+        readOnlyOverrideGranted={Boolean(this.readOnlyOverrideFields[field.name])}
+        onReadOnlyOverrideRequest={this.handleReadOnlyOverrideRequest}
       />
     );
+  }
 
+  render(): ReactNode {
     return (
       <>
-        {standardMainFieldSections.map((section) => (
+        {this.standardMainFieldSections.map((section) => (
           <Card key={section.key} id={`section-${section.key}`} title={section.title}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-              {section.fields.map(renderField)}
+              {section.fields.map(this.renderField)}
             </div>
           </Card>
         ))}
-        {fullWidthMainFieldSections.map((section) => (
+        {this.fullWidthMainFieldSections.map((section) => (
           <Card key={`full-width-${section.key}`} id={`section-${section.key}`} title={section.title}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-              {section.fields.map(renderField)}
+              {section.fields.map(this.renderField)}
             </div>
           </Card>
         ))}

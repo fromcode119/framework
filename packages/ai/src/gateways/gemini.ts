@@ -1,9 +1,9 @@
 import { UrlUtils } from '@fromcode119/core/client';
-import { AssistantClient } from '../types.interfaces';
-import type { GeminiConfig } from './gemini.types';
+import type { IAssistantClient } from '@ai/interfaces/assistant-client.interface';
+import type { IGeminiConfig } from '@ai/gateways/interfaces/gemini-config.interface';
 
 export class GeminiGateway {
-  static normalizeGeminiConfig(input: Record<string, any>): GeminiConfig {
+  static normalizeGeminiConfig(input: Record<string, any>): IGeminiConfig {
       return {
         apiKey: String(input?.apiKey || '').trim(),
         model: String(input?.model || 'gemini-1.5-pro').trim() || 'gemini-1.5-pro',
@@ -16,7 +16,7 @@ export class GeminiGateway {
 
   }
 
-  static createGeminiClient(input: Record<string, any>): AssistantClient {
+  static createGeminiClient(input: Record<string, any>): IAssistantClient {
       const config = GeminiGateway.normalizeGeminiConfig(input);
       if (!config.apiKey) {
         throw new Error('Gemini API key is required for AI Assistant integration.');

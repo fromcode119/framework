@@ -1,9 +1,10 @@
-import { RuntimeMiscHelpers } from '../helpers/runtime-misc-helpers';
-import { FactualQueryHelpers } from './factual-query-helpers';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import { RuntimeMiscHelpers } from '@ai/admin-assistant-runtime/helpers/runtime-misc-helpers';
+import { FactualQueryHelpers } from '@ai/admin-assistant-runtime/runtime/factual-query-helpers';
 
 export class ReadOnlyChatToolLoopRepairService {
   static async repairToolCalls(
-    aiClient: { chat: (params: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> },
+    aiClient: { chat: (params: { messages: Array<{ role: AssistantRole; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> },
     message: string,
     tools: Array<{ tool: string; description: string; metadata?: Record<string, unknown> }>,
     checkpointContext: string,
@@ -48,15 +49,15 @@ export class ReadOnlyChatToolLoopRepairService {
   }
 
   private static async requestToolCalls(
-    aiClient: { chat: (params: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> },
+    aiClient: { chat: (params: { messages: Array<{ role: AssistantRole; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> },
     prompt: string,
     message: string,
     json: boolean,
   ): Promise<Array<{ tool: string; input: Record<string, any> }>> {
     const response = await aiClient.chat({
       messages: [
-        { role: 'system', content: prompt },
-        { role: 'user', content: message },
+        { role: AssistantRole.SYSTEM, content: prompt },
+        { role: AssistantRole.USER, content: message },
       ],
       json,
       temperature: 0.1,

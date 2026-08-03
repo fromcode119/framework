@@ -1,4 +1,4 @@
-import type { SystemLocaleOption } from './system-locale-field.types';
+import { ISystemLocaleOption } from '@/components/collection/fields/interfaces/system-locale-option.interface';
 
 /**
  * Complete ISO 3166-1 country catalog (alpha-2 code → English short name). Countries are a stable
@@ -6,7 +6,7 @@ import type { SystemLocaleOption } from './system-locale-field.types';
  * dependency. Consumed by {@link CountryField}; reusable by any plugin via `admin.component:'CountryField'`.
  */
 export class CountryCatalog {
-  static readonly OPTIONS: SystemLocaleOption[] = [
+  static readonly OPTIONS: ISystemLocaleOption[] = [
     { value: 'AF', label: 'Afghanistan' },
     { value: 'AX', label: 'Åland Islands' },
     { value: 'AL', label: 'Albania' },

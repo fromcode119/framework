@@ -1,3 +1,6 @@
+import { MeasurementWeightUnit } from '@core/enums/measurement-weight-unit.enum';
+import { MeasurementLengthUnit } from '@core/enums/measurement-length-unit.enum';
+import { MeasurementSystem } from '@core/enums/measurement-system.enum';
 /**
  * Universal measurement-system knowledge owned by the framework (like ISO country codes) — NOT a
  * business-domain concern. The platform `measurement_system` setting (admin Settings → Localization,
@@ -15,10 +18,10 @@ export class MeasurementSystemUtils {
   private static readonly INCHES_TO_CENTIMETERS = 2.54;
 
   /** Coerce any value to a valid system, DEFAULTING TO METRIC (kg/cm). */
-  static normalize(value: unknown): 'metric' | 'imperial' {
+  static normalize(value: unknown): MeasurementSystem {
     return String(value ?? '').trim().toLowerCase() === MeasurementSystemUtils.IMPERIAL
-      ? 'imperial'
-      : 'metric';
+      ? MeasurementSystem.IMPERIAL
+      : MeasurementSystem.METRIC;
   }
 
   /**
@@ -26,27 +29,27 @@ export class MeasurementSystemUtils {
    * when explicitly configured; otherwise `fallback` (itself defaulting to metric) — so a deployment that
    * never set the option, and a record with no prior unit, both land on metric.
    */
-  static resolve(globalSettings?: Record<string, unknown> | null, fallback?: unknown): 'metric' | 'imperial' {
+  static resolve(globalSettings?: Record<string, unknown> | null, fallback?: unknown): MeasurementSystem {
     const raw = String(globalSettings?.[MeasurementSystemUtils.SETTING_KEY] ?? '').trim().toLowerCase();
-    if (raw === MeasurementSystemUtils.IMPERIAL) return 'imperial';
-    if (raw === MeasurementSystemUtils.METRIC) return 'metric';
+    if (raw === MeasurementSystemUtils.IMPERIAL) return MeasurementSystem.IMPERIAL;
+    if (raw === MeasurementSystemUtils.METRIC) return MeasurementSystem.METRIC;
     return MeasurementSystemUtils.normalize(fallback);
   }
 
   /** Length unit label for a system: imperial → `in`, metric → `cm`. */
-  static lengthUnit(system: unknown): 'cm' | 'in' {
-    return MeasurementSystemUtils.normalize(system) === 'imperial' ? 'in' : 'cm';
+  static lengthUnit(system: unknown): MeasurementLengthUnit {
+    return MeasurementSystemUtils.normalize(system) === MeasurementSystem.IMPERIAL ? MeasurementLengthUnit.IN : MeasurementLengthUnit.CM;
   }
 
   /** Weight unit label for a system: imperial → `lb`, metric → `kg`. */
-  static weightUnit(system: unknown): 'kg' | 'lb' {
-    return MeasurementSystemUtils.normalize(system) === 'imperial' ? 'lb' : 'kg';
+  static weightUnit(system: unknown): MeasurementWeightUnit {
+    return MeasurementSystemUtils.normalize(system) === MeasurementSystem.IMPERIAL ? MeasurementWeightUnit.LB : MeasurementWeightUnit.KG;
   }
 
   /** Convert a weight expressed in the system's unit to canonical KILOGRAMS (couriers always use kg). */
   static toKilograms(weight: number, system: unknown): number {
     const value = Number(weight) || 0;
-    return MeasurementSystemUtils.normalize(system) === 'imperial'
+    return MeasurementSystemUtils.normalize(system) === MeasurementSystem.IMPERIAL
       ? Number((value * MeasurementSystemUtils.POUNDS_TO_KILOGRAMS).toFixed(3))
       : value;
   }
@@ -54,7 +57,7 @@ export class MeasurementSystemUtils {
   /** Convert a length expressed in the system's unit to canonical CENTIMETERS. */
   static toCentimeters(length: number, system: unknown): number {
     const value = Number(length) || 0;
-    return MeasurementSystemUtils.normalize(system) === 'imperial'
+    return MeasurementSystemUtils.normalize(system) === MeasurementSystem.IMPERIAL
       ? Number((value * MeasurementSystemUtils.INCHES_TO_CENTIMETERS).toFixed(3))
       : value;
   }

@@ -1,11 +1,13 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import type { DashboardActivityBreakdownProps } from './dashboard-activity-breakdown.interfaces';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
 
 /** Aggregates the recent activity log by source (plugin/system) into a compact share bar list. */
-export class DashboardActivityBreakdown extends React.Component<DashboardActivityBreakdownProps> {
-  render(): React.ReactNode {
-    const { activity } = this.props;
+export class DashboardActivityBreakdown extends PureReactor {
+  @prop declare activity: Array<{ plugin?: string; level?: string; timestamp?: string | number }>;
+
+  render(): ReactNode {
+    const activity = this.activity;
 
     const counts: Record<string, number> = {};
     for (const item of activity || []) {

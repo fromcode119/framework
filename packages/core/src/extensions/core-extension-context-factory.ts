@@ -1,7 +1,8 @@
-import { Logger } from '../logging';
+import { Logger } from '@core/logging';
 import { IDatabaseManager } from '@fromcode119/database';
-import { CapabilityRegistry } from '../capabilities';
-import { LoadedCoreExtension, CoreExtensionContext } from './types';
+import { CapabilityRegistry } from '@core/capabilities';
+import type { ILoadedCoreExtension } from '@core/extensions/interfaces/loaded-core-extension.interface';
+import type { ICoreExtensionContext } from '@core/extensions/interfaces/core-extension-context.interface';
 
 /**
  * CoreExtensionContextFactory
@@ -22,7 +23,7 @@ export class CoreExtensionContextFactory {
     private getServices: () => { integrations?: any; hooks?: any; plugins?: any },
   ) {}
 
-  public create(extension: LoadedCoreExtension): CoreExtensionContext {
+  public create(extension: ILoadedCoreExtension): ICoreExtensionContext {
     const logger = this.logger.child(extension.manifest.slug);
     const extensionCapabilities: string[] = [];
     const services = this.getServices();

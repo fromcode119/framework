@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import semver from 'semver';
 import { SystemConstants } from '@fromcode119/core';
-import { CliUtils } from '../utils';
+import { CliUtils } from '@cli/utils';
 
 /**
  * Terminal download + update for installed plugins, straight from the marketplace registry.

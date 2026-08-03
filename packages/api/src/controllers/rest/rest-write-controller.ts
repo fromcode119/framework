@@ -1,12 +1,13 @@
+import { EntityParseMode } from '@fromcode119/core';
 import { Response } from 'express';
-import { Collection, CoreServices, HookEventUtils } from '@fromcode119/core';
-import { QueryHelper } from '../../services/query-helper';
-import { RestControllerRuntime } from './rest-controller-runtime';
+import { ICollection, CoreServices, HookEventUtils } from '@fromcode119/core';
+import { QueryHelper } from '@api/services/query-helper';
+import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 
 export class RestWriteController {
   constructor(private readonly runtime: RestControllerRuntime) {}
 
-  async create(collection: Collection, req: any, res?: Response) {
+  async create(collection: ICollection, req: any, res?: Response) {
     try {
       await this.runtime.accessPolicy.ensureCreateAllowed(collection, req);
       const extracted = this.runtime.fieldGuard.extractReadOnlyOverrideMetadata(req.body);
@@ -22,7 +23,7 @@ export class RestWriteController {
         overrideMeta: extracted.overrideMeta,
       });
 
-      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: 'create' });
+      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: EntityParseMode.CREATE });
       if (parsed.errors.length > 0) {
         if (!res) {
           const error = new Error(parsed.errors.map((entry) => entry.message).join(', '));
@@ -81,7 +82,7 @@ export class RestWriteController {
     }
   }
 
-  async update(collection: Collection, req: any, res?: Response) {
+  async update(collection: ICollection, req: any, res?: Response) {
     try {
       await this.runtime.accessPolicy.ensureUpdateAllowed(collection, req);
       const extracted = this.runtime.fieldGuard.extractReadOnlyOverrideMetadata(req.body);
@@ -112,7 +113,7 @@ export class RestWriteController {
       });
 
       const overrideFieldNames = [...extracted.overrideMeta.fields];
-      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: 'update', allowSystemFields: overrideFieldNames });
+      const parsed = CoreServices.getInstance().entityValueParser.parseCollectionInput(collection, data, { mode: EntityParseMode.UPDATE, allowSystemFields: overrideFieldNames });
       if (parsed.errors.length > 0) {
         if (!res) {
           const error = new Error(parsed.errors.map((entry) => entry.message).join(', '));
@@ -175,7 +176,7 @@ export class RestWriteController {
     }
   }
 
-  async delete(collection: Collection, req: any, res?: Response) {
+  async delete(collection: ICollection, req: any, res?: Response) {
     try {
       await this.runtime.accessPolicy.ensureDeleteAllowed(collection, req);
       const primaryKey = collection.primaryKey || 'id';
@@ -204,7 +205,7 @@ export class RestWriteController {
     }
   }
 
-  async restoreVersion(collection: Collection, req: any, res: Response) {
+  async restoreVersion(collection: ICollection, req: any, res: Response) {
     try {
       const restoredData = await this.runtime.versioningService.restoreVersion(
         collection,

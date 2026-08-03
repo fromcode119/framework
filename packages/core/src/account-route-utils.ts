@@ -1,4 +1,4 @@
-import { RouteConstants } from './route-constants';
+import { RouteConstants } from '@core/constants/route.constants';
 
 /**
  * Single source of truth for the account section URL shape (`/account`, `/account/:section`).

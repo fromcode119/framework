@@ -3,7 +3,10 @@
  * properties so a theme can restyle it by overriding the variables (or any `.fc-acct-*` class) without
  * the shell depending on the theme. Imported by account-shell.tsx (bundled by the consuming Next app).
  */
-.fc-acct {
+/* Tokens: on the default shell AND on the standalone token class, so a replacement shell (see
+   `AccountClass.TOKENS`) inherits the palette every panel paints from without inheriting this layout. */
+.fc-acct,
+.fc-acct-tokens {
   --fc-acct-accent: #7c3aed;
   --fc-acct-accent-soft: rgba(124, 58, 237, .10);
   --fc-acct-fg: #0f172a;
@@ -11,6 +14,9 @@
   --fc-acct-border: #e7e8ee;
   --fc-acct-bg: #ffffff;
   --fc-acct-bg-soft: #f8fafc;
+}
+
+.fc-acct {
   max-width: 1120px;
   margin: 0 auto;
   padding: 40px 20px 64px;
@@ -18,7 +24,8 @@
   color: var(--fc-acct-fg);
 }
 
-.fc-acct * { box-sizing: border-box; }
+.fc-acct *,
+.fc-acct-tokens * { box-sizing: border-box; }
 .fc-acct-empty { color: var(--fc-acct-muted); padding: 48px 0; text-align: center; }
 .fc-acct-header { margin-bottom: 28px; }
 .fc-acct-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--fc-acct-accent); }
@@ -28,12 +35,100 @@
 .fc-acct-navlink { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; text-decoration: none; color: #334155; font-weight: 600; font-size: 14px; transition: background .15s, color .15s; border: 1px solid transparent; }
 .fc-acct-navlink:hover { background: var(--fc-acct-bg-soft); color: var(--fc-acct-fg); }
 .fc-acct-navlink.active { background: var(--fc-acct-accent-soft); color: var(--fc-acct-accent); border-color: transparent; }
+/* Switching section no longer reloads the document, so the clicked link KEEPS focus — and a theme's
+   global `a:focus` glow then sits on the active item permanently. Suppress the ring for pointer users
+   only; `:focus-visible` (keyboard) still gets it. */
+.fc-acct-navlink:focus:not(:focus-visible),
+.fc-acct-stat:focus:not(:focus-visible),
+.fc-acct-quicklink:focus:not(:focus-visible) { outline: none; box-shadow: none; }
 .fc-acct-navicon { display: inline-flex; width: 20px; height: 20px; flex: 0 0 20px; color: currentColor; }
 .fc-acct-navicon svg { width: 20px; height: 20px; }
 .fc-acct-navlabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-acct-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 /* Give plugin/framework panels a consistent surface even if they render a bare element. */
 .fc-acct-main > * { min-width: 0; }
+
+/* ── Overview section ───────────────────────────────────────────────────────
+   The framework's own default design for the account landing page. A theme restyles it by overriding
+   these classes; none of it lives in TypeScript. */
+.fc-acct-overview { display: grid; gap: 20px; }
+.fc-acct-card { background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(15, 23, 42, .04); }
+.fc-acct-card-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fc-acct-muted); margin: 0 0 12px; }
+.fc-acct-greeting { font-size: 15px; font-weight: 600; color: var(--fc-acct-fg); margin: 0 0 4px; }
+.fc-acct-intro { color: var(--fc-acct-muted); font-size: 14px; margin: 0; }
+.fc-acct-loading { color: var(--fc-acct-muted); font-size: 14px; }
+
+/* Stat cards. `--fc-acct-stat-accent` is set per card by the contributing plugin — the only value the
+   component passes as an inline style, because the colour belongs to that plugin, not to the framework. */
+.fc-acct-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.fc-acct-stat { display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border: 1px solid var(--fc-acct-border); border-top: 3px solid var(--fc-acct-stat-accent, var(--fc-acct-accent)); border-radius: 16px; background: var(--fc-acct-bg); box-shadow: 0 1px 3px rgba(15, 23, 42, .04); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.fc-acct-stat:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, .08); }
+.fc-acct-stat-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fc-acct-muted); }
+.fc-acct-stat-value { font-size: 27px; font-weight: 800; line-height: 1.1; color: var(--fc-acct-fg); margin: 6px 0 2px; overflow-wrap: anywhere; }
+.fc-acct-stat-sub { font-size: 13px; color: var(--fc-acct-muted); }
+
+.fc-acct-quicklinks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+/* A row of icon, label and chevron — the shape of an account dashboard everywhere it works. The icon
+   carries the scan, the label carries the meaning, the chevron says it goes somewhere. Nothing else. */
+.fc-acct-quicklink { display: flex; align-items: center; gap: 12px; padding: 18px 16px; border: 1px solid var(--fc-acct-border); border-radius: 10px; background: var(--fc-acct-bg); color: var(--fc-acct-fg); text-decoration: none; transition: border-color .15s, background .15s; }
+.fc-acct-quicklink:hover { border-color: var(--fc-acct-accent); background: var(--fc-acct-accent-soft); }
+.fc-acct-quicklink-icon { flex: 0 0 auto; display: grid; place-items: center; width: 24px; height: 24px; color: var(--fc-acct-accent); }
+.fc-acct-quicklink-icon svg { width: 22px; height: 22px; }
+.fc-acct-quicklink-label { flex: 1 1 auto; min-width: 0; font-weight: 600; font-size: 15px; }
+.fc-acct-quicklink-go { flex: 0 0 auto; width: 16px; height: 16px; color: var(--fc-acct-muted); }
+
+/* ── Shared panel primitives ────────────────────────────────────────────────
+   Every framework account panel (profile, security, sessions, two-factor, the auth gate) is built from
+   these. They exist so no panel needs a style object in TypeScript, and so a theme restyles the whole
+   account by overriding a handful of classes rather than fighting inline styles it cannot reach. */
+.fc-acct-h2 { font-size: 19px; font-weight: 700; margin: 0 0 18px; }
+.fc-acct-muted { color: var(--fc-acct-muted); font-size: 14px; margin: 0 0 16px; }
+.fc-acct-error { color: #dc2626; font-size: 13px; margin: 0 0 12px; }
+.fc-acct-success { color: #16a34a; font-size: 13px; margin: 0 0 12px; }
+
+.fc-acct-form { max-width: 420px; }
+.fc-acct-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.fc-acct-field { display: block; margin-bottom: 14px; font-size: 13px; color: #475569; }
+.fc-acct-input { display: block; width: 100%; margin-top: 4px; padding: 10px 12px; border: 1px solid var(--fc-acct-border); border-radius: 10px; font: inherit; font-size: 14px; background: var(--fc-acct-bg); color: var(--fc-acct-fg); }
+.fc-acct-input:focus { outline: none; border-color: var(--fc-acct-accent); box-shadow: 0 0 0 3px var(--fc-acct-accent-soft); }
+/* Off-screen but still focusable/readable — a hidden username field keeps password managers happy. */
+.fc-acct-sronly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); border: 0; }
+
+.fc-acct-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fc-acct-btn { padding: 10px 22px; border: none; border-radius: 999px; background: #1a1a2e; color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s, background .15s; }
+.fc-acct-btn:hover:not(:disabled) { background: #2b2b45; }
+.fc-acct-btn:disabled { opacity: .6; cursor: default; }
+.fc-acct-btn--muted { background: #e2e8f0; color: #334155; }
+.fc-acct-btn--muted:hover:not(:disabled) { background: #cbd5e1; }
+.fc-acct-btn--danger { background: #fee2e2; color: #b91c1c; }
+.fc-acct-btn--danger:hover:not(:disabled) { background: #fecaca; }
+.fc-acct-btn--link { display: inline-block; text-decoration: none; background: var(--fc-acct-accent); }
+
+/* Sessions */
+.fc-acct-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.fc-acct-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--fc-acct-border); border-radius: 12px; }
+.fc-acct-row-main { min-width: 0; }
+.fc-acct-row-title { font-size: 14px; font-weight: 600; }
+.fc-acct-row-meta { font-size: 12px; color: var(--fc-acct-muted); }
+.fc-acct-row-actions { display: flex; align-items: center; gap: 12px; }
+.fc-acct-badge { font-size: 12px; font-weight: 600; color: #15803d; }
+.fc-acct-btn--small { padding: 6px 14px; font-size: 12px; white-space: nowrap; background: transparent; color: #dc2626; border: 1px solid #fecaca; }
+.fc-acct-btn--small:hover:not(:disabled) { background: #fef2f2; }
+.fc-acct-empty-note { color: var(--fc-acct-muted); font-size: 14px; }
+
+/* Two-factor */
+.fc-acct-qr { display: block; width: 200px; height: 200px; margin: 8px 0; border: 1px solid var(--fc-acct-border); border-radius: 12px; }
+.fc-acct-code { display: block; word-break: break-all; background: var(--fc-acct-bg-soft); padding: 10px; border-radius: 8px; font-size: 12px; margin: 8px 0; }
+.fc-acct-hint { font-size: 13px; color: #475569; }
+.fc-acct-block { margin: 8px 0; }
+.fc-acct-block-label { font-size: 12px; color: var(--fc-acct-muted); margin-bottom: 4px; }
+.fc-acct-inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.fc-acct-inline-form .fc-acct-input { width: auto; margin-top: 0; }
+
+/* Auth gate */
+.fc-acct-gate { max-width: 420px; margin: 64px auto; padding: 32px; text-align: center; background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; box-shadow: 0 1px 3px rgba(15, 23, 42, .04); }
+.fc-acct-gate-title { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+.fc-acct-gate-body { color: var(--fc-acct-muted); font-size: 14px; margin: 0 0 20px; }
 
 @media (max-width: 860px) {
   .fc-acct { padding: 24px 14px 48px; }
@@ -42,4 +137,28 @@
   .fc-acct-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; padding: 8px; }
   .fc-acct-navlink { padding: 9px 12px; font-size: 13px; }
   .fc-acct-navlabel { white-space: normal; }
+}
+
+/* ── Skeleton ───────────────────────────────────────────────────────────────
+   `AccountShellSkeleton` — the shell's shape while the code-split, auth-gated real shell is unavailable
+   (server render, and the window before its chunk lands). Dimensions match the real elements so the
+   layout does not move on handover. */
+.fc-acct-skeleton-title { height: 34px; width: min(320px, 70%); border-radius: 8px; margin: 6px 0 0; }
+.fc-acct-skeleton-navlink { height: 40px; border-radius: 12px; margin-bottom: 4px; }
+.fc-acct-skeleton-line { height: 14px; border-radius: 7px; margin-bottom: 14px; }
+.fc-acct-skeleton-line:nth-child(2) { width: 82%; }
+.fc-acct-skeleton-line:nth-child(3) { width: 64%; }
+.fc-acct-skeleton-line:last-child { width: 45%; margin-bottom: 0; }
+.fc-acct-skeleton-title,
+.fc-acct-skeleton-navlink,
+.fc-acct-skeleton-line {
+  background: linear-gradient(90deg, #eef2f7 25%, #f6f8fb 37%, #eef2f7 63%);
+  background-size: 400% 100%;
+  animation: fc-acct-shimmer 1.4s ease infinite;
+}
+@keyframes fc-acct-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+@media (prefers-reduced-motion: reduce) {
+  .fc-acct-skeleton-title,
+  .fc-acct-skeleton-navlink,
+  .fc-acct-skeleton-line { animation: none; }
 }

@@ -1,11 +1,11 @@
 /** CollectionFieldGuard — enforces read-only and permalink constraints. Extracted from RESTController (ARC-007). */
 
-import { Collection } from '@fromcode119/core';
+import { ICollection } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { IDatabaseManager } from '@fromcode119/database';
-import { ApiUrlUtils } from '../utils/url';
-import { ApiConfig } from '../config/api-config';
+import { ApiUrlUtils } from '@api/utils/url';
+import { ApiConfig } from '@api/config/api-config';
 
 export class CollectionFieldGuard {
   constructor(
@@ -76,7 +76,7 @@ export class CollectionFieldGuard {
   }
 
   async enforceReadOnlyFieldConstraints(args: {
-    collection: Collection;
+    collection: ICollection;
     incomingData: Record<string, any>;
     existingRecord: any | null;
     req: any;
@@ -112,7 +112,7 @@ export class CollectionFieldGuard {
     if (!passwordMatches) throw this.makeClientError('Current password is invalid.');
   }
 
-  assertPermalinkNotReserved(collection: Collection, data: Record<string, any>) {
+  assertPermalinkNotReserved(collection: ICollection, data: Record<string, any>) {
     if (!collection || !data || typeof data !== 'object') return;
     const permalinkFields = ['slug', 'customPermalink', 'path', 'permalink'];
     const existingFields = new Set((collection.fields || []).map((f) => String(f?.name || '')));

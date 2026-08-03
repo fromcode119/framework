@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PublicRouteProxy } from '../lib/public-route-proxy';
-import { ServerApiUtils } from '../lib/server-api';
+import { PublicRouteProxy } from '@/lib/public-route-proxy';
+import { ServerApiUtils } from '@/lib/server-api';
 
 vi.mock('next/headers', () => ({
   headers: vi.fn(),

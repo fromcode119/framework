@@ -1,6 +1,6 @@
-import { ThemeManifest } from '../types';
-import { SystemConstants } from '../constants';
-import { ThemeState } from './theme-state.enums';
+import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import { SystemConstants } from '@core/constants/system.constants';
+import { ThemeState } from '@core/theme/enums/theme-state.enum';
 
 /**
  * ThemeConfigService
@@ -13,7 +13,7 @@ import { ThemeState } from './theme-state.enums';
 export class ThemeConfigService {
   constructor(
     private db: any,
-    private themes: Map<string, ThemeManifest>,
+    private themes: Map<string, IThemeManifest>,
   ) {}
 
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
@@ -33,7 +33,7 @@ export class ThemeConfigService {
       await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: JSON.stringify(config), updated_at: new Date() });
     } else {
       const manifest = this.themes.get(slug)!;
-      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.INACTIVE, config: JSON.stringify(config), created_at: new Date(), updated_at: new Date() });
+      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.INACTIVE.value, config: JSON.stringify(config), created_at: new Date(), updated_at: new Date() });
     }
   }
 
@@ -42,7 +42,7 @@ export class ThemeConfigService {
     return row?.config || {};
   }
 
-  async getFrontendMetadata(theme: ThemeManifest | null, runtimeModules: Record<string, any> = {}) {
+  async getFrontendMetadata(theme: IThemeManifest | null, runtimeModules: Record<string, any> = {}) {
     if (!theme) return { activeTheme: null, runtimeModules };
     const config = await this.getThemeConfig(theme.slug);
     const variables = { ...(theme.variables || {}), ...(config.variables || {}) };

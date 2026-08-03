@@ -1,15 +1,25 @@
-import fs from 'fs';
-import path from 'path';
-import { Logger } from '../../logging';
-import { RuntimeBridge } from '../../runtime-bridge';
-import { RuntimeConstants } from '../../runtime-constants';
-import { LoadedPlugin } from '../../types';
-import type { RuntimeModuleConfig } from './runtime-service.interfaces';
+import { RuntimeModuleKind } from '@core/plugin/services/enums/runtime-module-kind.enum';
+import { Logger } from '@core/logging';
+
+import { RuntimeConstants } from '@core/constants/runtime.constants';
+import { RuntimeRegistryAccess } from '@core/runtime-registry-access';
+import { IconBridgeTemplate } from '@core/plugin/services/bridges/icon-bridge-template';
+import { LibBridgeTemplate } from '@core/plugin/services/bridges/lib-bridge-template';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IRuntimeModuleConfig } from '@core/plugin/services/interfaces/runtime-module-config.interface';
 
 // React runtime bridge exports — framework integration API only.
 // All registration and hook access must go through ContextBridge.* and ContextHooks.* class-based namespaces.
 // Utility access is via SDK class names in RuntimeConstants.SDK_UTIL_CLASS_NAMES (CoercionUtils, etc.)
-const REACT_RUNTIME_EXPORT_KEYS = [
+
+// SDK constants and utility classes available to plugin sandboxes.
+// Plugin code uses class methods: CoercionUtils.toNumber(), StringUtils.slugify(), etc.
+
+// Every reactor export, so externalized appearance bundles get the SAME decorator/base instances as the admin
+// (discovery can't `require('@fromcode119/reactor')` — its dist barrel is bundler-only, extensionless).
+
+export class RuntimeService {
+  private static readonly REACT_RUNTIME_EXPORT_KEYS = [
   'Slot',
   'Override',
   'PluginsProvider',
@@ -19,11 +29,11 @@ const REACT_RUNTIME_EXPORT_KEYS = [
   'FrameworkIconRegistry',
   'IconNames',
   'ContextBridge',
+  'PluginUiRegistrar',
   'ContextHooks',
   'SystemShortcodes',
 ] as const;
-
-const REACT_BROWSER_RUNTIME_EXPORT_KEYS = [
+  private static readonly REACT_BROWSER_RUNTIME_EXPORT_KEYS = [
   'useState',
   'useEffect',
   'useMemo',
@@ -53,29 +63,26 @@ const REACT_BROWSER_RUNTIME_EXPORT_KEYS = [
   'useId',
   'useSyncExternalStore',
 ] as const;
-
-// SDK constants and utility classes available to plugin sandboxes.
-// Plugin code uses class methods: CoercionUtils.toNumber(), StringUtils.slugify(), etc.
-const SDK_RUNTIME_EXPORT_KEYS = [
+  private static readonly SDK_RUNTIME_EXPORT_KEYS = [
   'SystemConstants',
   'resolveRelationValue',
   ...RuntimeConstants.SDK_UTIL_CLASS_NAMES,
 ] as const;
-
-const mergeModuleKeys = (discovered: string[], required: readonly string[]): string[] =>
+  private static readonly REACTOR_RUNTIME_EXPORT_KEYS = [
+  'Reactor', 'PureReactor', 'Provider', 'Context', 'Transition', 'Registry', 'html', 'Enum', 'Protocol',
+  'implement', 'bound', 'watch', 'state', 'prop', 'ref', 'template', 'ReactiveMetadata', 'Platform',
+] as const;
+  private static readonly mergeModuleKeys = (discovered: string[], required: readonly string[]): string[] =>
   Array.from(new Set([...(Array.isArray(discovered) ? discovered : []), ...required]));
 
-export class RuntimeService {
-  private registry: Map<string, RuntimeModuleConfig> = new Map();
-  private templates: Record<string, string> = {};
+  private registry: Map<string, IRuntimeModuleConfig> = new Map();
   private logger = new Logger({ namespace: 'runtime-service' });
 
   constructor(private rootDir: string) {
-    this.templates = this.loadBridgeTemplates(rootDir);
     this.initializeDefaultRegistry();
   }
 
-  private discoverModuleKeys(name: string, type: 'icon' | 'lib' = 'lib'): string[] {
+  private discoverModuleKeys(name: string, type: RuntimeModuleKind = RuntimeModuleKind.LIB): string[] {
     try {
       // Anchor paths for module resolution. Node will crawl up from these locations.
       const searchPaths = [process.cwd(), this.rootDir, __dirname];
@@ -84,13 +91,13 @@ export class RuntimeService {
       const mod = require(modulePath);
       const keys = Object.keys(mod);
       
-      if (type === 'icon') {
+      if (RuntimeModuleKind.resolve(type) === RuntimeModuleKind.ICON) {
         // Lucide icons are PascalCase
         return keys.filter(k => k.length >= 1 && k[0] === k[0].toUpperCase() && k !== 'default');
       }
       return keys;
     } catch (e) {
-      if (type !== 'icon') {
+      if (type !== RuntimeModuleKind.ICON) {
         this.logger.warn(`Could not resolve module ${name} for discovery`);
       }
       return [];
@@ -100,104 +107,96 @@ export class RuntimeService {
   private initializeDefaultRegistry() {
     // Standard UI libraries - Discovery allows version-agnostic export mapping
     this.registry.set('react', {
-      type: 'lib',
-      keys: mergeModuleKeys(this.discoverModuleKeys('react'), REACT_BROWSER_RUNTIME_EXPORT_KEYS)
+      type: RuntimeModuleKind.LIB,
+      keys: RuntimeService.mergeModuleKeys(this.discoverModuleKeys('react'), RuntimeService.REACT_BROWSER_RUNTIME_EXPORT_KEYS)
     });
     this.registry.set('react-dom', {
-      type: 'lib',
+      type: RuntimeModuleKind.LIB,
       keys: this.discoverModuleKeys('react-dom') || ['render', 'hydrate', 'createPortal', 'createRoot']
     });
     this.registry.set('react-dom/client', {
-      type: 'lib',
+      type: RuntimeModuleKind.LIB,
       keys: this.discoverModuleKeys('react-dom/client') || ['createRoot', 'hydrateRoot']
     });
 
     // Framework modules - We trust @fromcode119/sdk and @fromcode119/react to be available
     this.registry.set('@fromcode119/react', {
-      type: 'lib',
+      type: RuntimeModuleKind.LIB,
       // Keep core bridge exports stable even if local package discovery misses some names.
-      keys: mergeModuleKeys(this.discoverModuleKeys('@fromcode119/react'), REACT_RUNTIME_EXPORT_KEYS)
+      keys: RuntimeService.mergeModuleKeys(this.discoverModuleKeys('@fromcode119/react'), RuntimeService.REACT_RUNTIME_EXPORT_KEYS)
     });
     this.registry.set('@fromcode119/sdk', {
-       type: 'lib',
+       type: RuntimeModuleKind.LIB,
        // Prevent runtime import failures for plugin bundles that import canonical SDK coercers.
-       keys: mergeModuleKeys(this.discoverModuleKeys('@fromcode119/sdk'), SDK_RUNTIME_EXPORT_KEYS)
+       keys: RuntimeService.mergeModuleKeys(this.discoverModuleKeys('@fromcode119/sdk'), RuntimeService.SDK_RUNTIME_EXPORT_KEYS)
+    });
+    // reactor — externalized appearance bundles resolve it from the ONE shared runtime instance, so the
+    // `@state`/`@watch` decorators (and the Reactor base) are the SAME instances the baked admin uses.
+    this.registry.set('@fromcode119/reactor', {
+      type: RuntimeModuleKind.LIB,
+      keys: [...RuntimeService.REACTOR_RUNTIME_EXPORT_KEYS]
     });
 
     // JSX Runtimes (Internal React usage)
-    this.registry.set('react-jsx', { type: 'lib', keys: [] });
-    this.registry.set('react/jsx-runtime', { type: 'lib', keys: ['jsx', 'jsxs', 'Fragment'] });
-    this.registry.set('react/jsx-dev-runtime', { type: 'lib', keys: ['jsxDEV', 'Fragment'] });
+    this.registry.set('react-jsx', { type: RuntimeModuleKind.LIB, keys: [] });
+    this.registry.set('react/jsx-runtime', { type: RuntimeModuleKind.LIB, keys: ['jsx', 'jsxs', 'Fragment'] });
+    this.registry.set('react/jsx-dev-runtime', { type: RuntimeModuleKind.LIB, keys: ['jsxDEV', 'Fragment'] });
 
     // Core Admin Modules (Driven by SDK constants)
     this.registry.set(RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS, {
-      type: 'lib',
+      type: RuntimeModuleKind.LIB,
       keys: [...RuntimeConstants.ADMIN_RUNTIME_EXPORT_KEYS]
     });
     this.registry.set(RuntimeConstants.MODULE_NAMES.ADMIN, {
-      type: 'lib',
+      type: RuntimeModuleKind.LIB,
       keys: [...RuntimeConstants.ADMIN_RUNTIME_EXPORT_KEYS]
     });
 
     // Icons
-    const lucideKeys = this.discoverModuleKeys('lucide-react', 'icon');
+    const lucideKeys = this.discoverModuleKeys('lucide-react', RuntimeModuleKind.ICON);
     this.registry.set('lucide-react', {
-      type: 'icon',
+      type: RuntimeModuleKind.ICON,
       keys: lucideKeys
     });
   }
 
-  private loadBridgeTemplates(rootDir: string): Record<string, string> {
-    const templates: Record<string, string> = {};
-    const bridgesDir = path.join(rootDir, 'packages/core/bridges');
-    
-    try {
-      if (fs.existsSync(bridgesDir)) {
-        const files = fs.readdirSync(bridgesDir);
-        files.forEach(file => {
-          if (file.endsWith('.js')) {
-            const name = file.replace('.js', '');
-            templates[name] = fs.readFileSync(path.join(bridgesDir, file), 'utf8');
-          }
-        });
-      }
-    } catch (err) {
-      this.logger.warn('Failed to load bridge templates:', err);
-    }
-    
-    return templates;
-  }
-
-  public registerModule(name: string, config: RuntimeModuleConfig) {
+  public registerModule(name: string, config: IRuntimeModuleConfig) {
     this.registry.set(name, config);
   }
 
   public generateBridgeSource(name: string, config: any): string | null {
     if (config.url) return null;
 
+    // NOTE: there is deliberately no `react/jsx-runtime` branch here. Those three names
+    // (`react-jsx`, `react/jsx-runtime`, `react/jsx-dev-runtime`) are permanent members of
+    // `RuntimeConstants.CLIENT_HANDLED_MODULES`, and every caller of this method skips that set — so the
+    // branch was unreachable. The JSX runtime the browser actually receives is the inline `data:` URL
+    // built by `ImportMapInstaller.buildStaticImports`. Keeping a second copy here only invited the two
+    // to drift apart (they already had).
     let source = '';
-    if (name === 'react-jsx' || name === 'react/jsx-runtime' || name === 'react/jsx-dev-runtime') {
-      source = this.templates['jsx'] || '';
-    } else if (config.type === 'icon') {
+    if (config.type === 'icon') {
+      // Icons resolve through the single runtime registry's bridge (getIcon), not a bare window global.
+      const bridgeExpr = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_BRIDGE);
       const exports = (config.keys || [])
-        .map((key: string) => `export const ${key} = window.Fromcode.getIcon('${key}');`)
+        .map((key: string) => `export const ${key} = (${bridgeExpr}).getIcon('${key}');`)
         .join('\n');
-      
-      source = (this.templates['icons'] || '').replace('{{EXPORTS}}', exports);
+
+      source = IconBridgeTemplate.SOURCE.replace('{{EXPORTS}}', exports);
     } else {
-      let globalObject = 'window.Fromcode';
+      // Everything resolves through the ONE namespaced runtime registry — no `window.Fromcode`/`window.React`.
+      let globalObject = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_BRIDGE);
 
       if (name === 'react') {
-        globalObject = 'window.React';
+        globalObject = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT);
       } else if (name.startsWith('react-dom')) {
-        globalObject = 'window.ReactDOM || window.ReactDom';
+        globalObject = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_DOM);
       } else if (name.startsWith('@fromcode119/')) {
-        // Use the centralized runtime module registry if available
-        globalObject = `(window.${RuntimeConstants.GLOBALS.MODULES} && window.${RuntimeConstants.GLOBALS.MODULES}['${name}']) || window.Fromcode`;
-        
+        // Resolve the module's own registry entry, falling back to the react bridge.
+        globalObject = `${RuntimeRegistryAccess.accessorExpr(name)} || ${RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_BRIDGE)}`;
+
         // Special case for admin components which might be bundled together
         if (name === RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS || name === RuntimeConstants.MODULE_NAMES.ADMIN) {
-          globalObject = `(window.${RuntimeConstants.GLOBALS.MODULES} && (window.${RuntimeConstants.GLOBALS.MODULES}['${RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS}'] || window.${RuntimeConstants.GLOBALS.MODULES}['${RuntimeConstants.MODULE_NAMES.ADMIN}'] || window.Fromcode))`;
+          globalObject = `(${RuntimeRegistryAccess.accessorExpr(RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS)} || ${RuntimeRegistryAccess.accessorExpr(RuntimeConstants.MODULE_NAMES.ADMIN)})`;
         }
       }
 
@@ -207,7 +206,7 @@ export class RuntimeService {
         .map((key: string) => `export const ${key} = ${scopedGlobalObject} ? ${scopedGlobalObject}['${key}'] : undefined;`)
         .join('\n');
 
-      source = (this.templates['lib'] || '')
+      source = LibBridgeTemplate.SOURCE
         .replace('{{EXPORTS}}', exports)
         .replace(/{{SCOPE}}/g, scopedGlobalObject);
     }
@@ -216,7 +215,7 @@ export class RuntimeService {
     return Buffer.from(source).toString('base64');
   }
 
-  public getModules(activePlugins: LoadedPlugin[]): Record<string, any> {
+  public getModules(activePlugins: ILoadedPlugin[]): Record<string, any> {
     const modules: Record<string, any> = {};
 
     // 1. From registry (System defaults)
@@ -239,7 +238,7 @@ export class RuntimeService {
         p.manifest.runtimeModules.forEach(name => {
           if (RuntimeConstants.CLIENT_HANDLED_MODULES.has(name)) return;
           if (!modules[name]) {
-            const config: RuntimeModuleConfig = { keys: [], type: 'lib' };
+            const config: IRuntimeModuleConfig = { keys: [], type: RuntimeModuleKind.LIB };
             modules[name] = { ...config, source: this.generateBridgeSource(name, config) };
           }
         });
@@ -257,7 +256,7 @@ export class RuntimeService {
             const config = val as any;
             modules[name] = { ...config, source: this.generateBridgeSource(name, config) };
           } else {
-            const config: RuntimeModuleConfig = { keys: [], type: (val as any) || 'lib' };
+            const config: IRuntimeModuleConfig = { keys: [], type: (val as any) || 'lib' };
             modules[name] = { ...config, source: this.generateBridgeSource(name, config) };
           }
         });

@@ -1,19 +1,18 @@
-import { Logger } from '../logging';
-import { SystemConstants } from '../constants';
-import { CoreServices } from '../services';
-import { IntegrationProfileService } from './integration-profile-service';
-import { SecretService } from '../security/secret-service';
-import {
-  IntegrationProviderDefinition,
-  IntegrationStoredProvider,
-  IntegrationTypeRuntime,
-} from './integration-registry.interfaces';
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
+import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import { CoreServices } from '@core/services';
+import { IntegrationProfileService } from '@core/integrations/integration-profile-service';
+import { SecretService } from '@core/security/secret-service';
+import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
+import type { IIntegrationStoredProvider } from '@core/integrations/interfaces/integration-stored-provider.interface';
+import type { IIntegrationTypeRuntime } from '@core/integrations/interfaces/integration-type-runtime.interface';
 
 export class IntegrationStoredProviderService {
   constructor(
     private readonly db: any,
     private readonly logger: Logger,
-    private readonly types: Map<string, IntegrationTypeRuntime<any>>,
+    private readonly types: Map<string, IIntegrationTypeRuntime<any>>,
     private readonly profileService: IntegrationProfileService,
   ) {}
 
@@ -49,7 +48,7 @@ export class IntegrationStoredProviderService {
     const providerId = existing?.id || normalizedProviderId || `${normalizedProvider}-${Date.now().toString(36)}`;
     const providerName = String(options.providerName || '').trim() || existing?.name || provider.label;
 
-    const nextEntry: IntegrationStoredProvider = {
+    const nextEntry: IIntegrationStoredProvider = {
       id: providerId,
       name: providerName,
       providerKey: normalizedProvider,
@@ -97,7 +96,7 @@ export class IntegrationStoredProviderService {
     };
   }
 
-  async readStoredProvidersConfig(typeKey: string): Promise<IntegrationStoredProvider[] | null> {
+  async readStoredProvidersConfig(typeKey: string): Promise<IIntegrationStoredProvider[] | null> {
     const normalizedType = this.normalize(typeKey);
     const providers = await this.readStoredProvidersInternal(normalizedType);
     if (!providers?.length) {
@@ -155,7 +154,7 @@ export class IntegrationStoredProviderService {
     await this.writeStoredProviders(normalizedType, nextProviders);
   }
 
-  async readStoredProvidersInternal(typeKey: string): Promise<IntegrationStoredProvider[] | null> {
+  async readStoredProvidersInternal(typeKey: string): Promise<IIntegrationStoredProvider[] | null> {
     const normalizedType = this.profileService.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) return null;
@@ -182,7 +181,7 @@ export class IntegrationStoredProviderService {
           createdAt: entry?.createdAt || undefined,
           updatedAt: entry?.updatedAt || undefined,
         }))
-        .filter((entry: IntegrationStoredProvider) => !!entry.id && !!entry.providerKey && runtime.providers.has(entry.providerKey));
+        .filter((entry: IIntegrationStoredProvider) => !!entry.id && !!entry.providerKey && runtime.providers.has(entry.providerKey));
 
       return normalized.length ? normalized : null;
     } catch (error: any) {
@@ -192,7 +191,7 @@ export class IntegrationStoredProviderService {
   }
 
   resolveRuntimeConfig(
-    provider: IntegrationProviderDefinition<any>,
+    provider: IIntegrationProviderDefinition<any>,
     config: Record<string, any>,
   ): Record<string, any> {
     const passwordFields = this.getPasswordFieldNames(provider);
@@ -207,7 +206,7 @@ export class IntegrationStoredProviderService {
     return resolvedConfig;
   }
 
-  private async writeStoredProviders(typeKey: string, providers: IntegrationStoredProvider[]) {
+  private async writeStoredProviders(typeKey: string, providers: IIntegrationStoredProvider[]) {
     const normalizedType = this.profileService.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) throw new Error(`Integration type "${normalizedType}" is not registered`);
@@ -236,7 +235,7 @@ export class IntegrationStoredProviderService {
 
   private buildStoredConfig(
     typeKey: string,
-    provider: IntegrationProviderDefinition<any>,
+    provider: IIntegrationProviderDefinition<any>,
     nextConfig: Record<string, any>,
     existingConfig: Record<string, any>,
   ): Record<string, any> {
@@ -270,7 +269,7 @@ export class IntegrationStoredProviderService {
   }
 
   private sanitizeConfigForAdmin(
-    provider: IntegrationProviderDefinition<any>,
+    provider: IIntegrationProviderDefinition<any>,
     config: Record<string, any>,
   ): Record<string, any> {
     const passwordFields = this.getPasswordFieldNames(provider);
@@ -287,9 +286,9 @@ export class IntegrationStoredProviderService {
     return sanitizedConfig;
   }
 
-  private getPasswordFieldNames(provider: IntegrationProviderDefinition<any>): string[] {
+  private getPasswordFieldNames(provider: IIntegrationProviderDefinition<any>): string[] {
     return (provider.fields || [])
-      .filter((field) => field.type === 'password')
+      .filter((field) => IntegrationConfigFieldType.resolve(field.type) === IntegrationConfigFieldType.PASSWORD)
       .map((field) => String(field.name || '').trim())
       .filter(Boolean);
   }

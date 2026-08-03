@@ -1,8 +1,13 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-export class AccountDashboardHero extends React.Component<{ user?: any; isDark?: boolean }> {
-  render(): React.ReactNode {
-    const { user } = this.props;
+import { Reactor, prop } from '@fromcode119/reactor';
+
+export class AccountDashboardHero extends Reactor {
+  @prop declare user?: any;
+  @prop declare isDark?: boolean;
+
+  render(): ReactNode {
+    const user = this.user;
     return (
       <div style={{ padding: '48px 24px', background: '#f8fafc' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 900 }}>

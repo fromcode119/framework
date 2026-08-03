@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { EnvUtils } from '../utils/env-utils';
+import { EnvUtils } from '@core/utils/env-utils';
 
 /**
  * Plugin Signature Service

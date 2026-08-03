@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { CookieConstants, LocalizationUtils } from '@fromcode119/core';
-import { RequestCookieService } from './request-cookie-service';
+import { RequestCookieService } from '@api/services/request/request-cookie-service';
 
 export class RequestLocaleService {
   constructor(private readonly cookies: RequestCookieService = new RequestCookieService()) {}

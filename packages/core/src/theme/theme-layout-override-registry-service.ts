@@ -1,30 +1,29 @@
-import type {
-  RegisteredThemeLayoutDisableDefinition,
-  RegisteredThemeLayoutReplacementDefinition,
-  ThemeLayoutDisableDefinition,
-  ThemeLayoutOverrideRegistration,
-  ThemeLayoutReplacementDefinition,
-} from '../types';
+import { LayoutTargetKind } from '@core/layout/enums/layout-target-kind.enum';
+import type { IRegisteredThemeLayoutDisableDefinition } from '@core/layout/interfaces/registered-theme-layout-disable-definition.interface';
+import type { IRegisteredThemeLayoutReplacementDefinition } from '@core/layout/interfaces/registered-theme-layout-replacement-definition.interface';
+import type { IThemeLayoutDisableDefinition } from '@core/layout/interfaces/theme-layout-disable-definition.interface';
+import type { IThemeLayoutOverrideRegistration } from '@core/layout/interfaces/theme-layout-override-registration.interface';
+import type { IThemeLayoutReplacementDefinition } from '@core/layout/interfaces/theme-layout-replacement-definition.interface';
 
 export class ThemeLayoutOverrideRegistryService {
-  private readonly disables = new Map<string, RegisteredThemeLayoutDisableDefinition>();
-  private readonly replacements = new Map<string, RegisteredThemeLayoutReplacementDefinition>();
+  private readonly disables = new Map<string, IRegisteredThemeLayoutDisableDefinition>();
+  private readonly replacements = new Map<string, IRegisteredThemeLayoutReplacementDefinition>();
 
   get serviceName(): string {
     return 'ThemeLayoutOverrideRegistryService';
   }
 
-  register(registration: ThemeLayoutOverrideRegistration): void {
+  register(registration: IThemeLayoutOverrideRegistration): void {
     const themeSlug = this.normalizeRequiredString(registration.themeSlug, 'themeSlug');
     this.registerDisables(themeSlug, Array.isArray(registration.disables) ? registration.disables : []);
     this.registerReplacements(themeSlug, Array.isArray(registration.replacements) ? registration.replacements : []);
   }
 
-  listDisables(): RegisteredThemeLayoutDisableDefinition[] {
+  listDisables(): IRegisteredThemeLayoutDisableDefinition[] {
     return Array.from(this.disables.values()).map((entry) => ({ ...entry }));
   }
 
-  listReplacements(): RegisteredThemeLayoutReplacementDefinition[] {
+  listReplacements(): IRegisteredThemeLayoutReplacementDefinition[] {
     return Array.from(this.replacements.values()).map((entry) => ({ ...entry }));
   }
 
@@ -49,7 +48,7 @@ export class ThemeLayoutOverrideRegistryService {
     this.replacements.clear();
   }
 
-  private registerDisables(themeSlug: string, entries: ThemeLayoutDisableDefinition[]): void {
+  private registerDisables(themeSlug: string, entries: IThemeLayoutDisableDefinition[]): void {
     for (const entry of entries) {
       const normalized = this.createDisableEntry(themeSlug, entry);
       if (this.disables.has(normalized.canonicalKey)) {
@@ -59,7 +58,7 @@ export class ThemeLayoutOverrideRegistryService {
     }
   }
 
-  private registerReplacements(themeSlug: string, entries: ThemeLayoutReplacementDefinition[]): void {
+  private registerReplacements(themeSlug: string, entries: IThemeLayoutReplacementDefinition[]): void {
     for (const entry of entries) {
       const normalized = this.createReplacementEntry(themeSlug, entry);
       if (this.replacements.has(normalized.canonicalKey)) {
@@ -71,9 +70,9 @@ export class ThemeLayoutOverrideRegistryService {
 
   private createDisableEntry(
     themeSlug: string,
-    entry: ThemeLayoutDisableDefinition,
-  ): RegisteredThemeLayoutDisableDefinition {
-    const targetKind = this.normalizeRequiredString(entry.targetKind, 'entry.targetKind') as RegisteredThemeLayoutDisableDefinition['targetKind'];
+    entry: IThemeLayoutDisableDefinition,
+  ): IRegisteredThemeLayoutDisableDefinition {
+    const targetKind = LayoutTargetKind.resolve(this.normalizeRequiredString(String(entry.targetKind ?? ''), 'entry.targetKind'));
     const targetKey = this.normalizeRequiredString(entry.targetKey, 'entry.targetKey');
     const namespace = this.normalizeRequiredString(entry.namespace, 'entry.namespace');
     const pluginSlug = this.normalizeRequiredString(entry.pluginSlug, 'entry.pluginSlug');
@@ -91,9 +90,9 @@ export class ThemeLayoutOverrideRegistryService {
 
   private createReplacementEntry(
     themeSlug: string,
-    entry: ThemeLayoutReplacementDefinition,
-  ): RegisteredThemeLayoutReplacementDefinition {
-    const targetKind = this.normalizeRequiredString(entry.targetKind, 'entry.targetKind') as RegisteredThemeLayoutReplacementDefinition['targetKind'];
+    entry: IThemeLayoutReplacementDefinition,
+  ): IRegisteredThemeLayoutReplacementDefinition {
+    const targetKind = LayoutTargetKind.resolve(this.normalizeRequiredString(String(entry.targetKind ?? ''), 'entry.targetKind'));
     const targetKey = this.normalizeRequiredString(entry.targetKey, 'entry.targetKey');
     const namespace = this.normalizeRequiredString(entry.namespace, 'entry.namespace');
     const pluginSlug = this.normalizeRequiredString(entry.pluginSlug, 'entry.pluginSlug');

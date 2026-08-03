@@ -1,19 +1,7 @@
-import { 
-  GraphQLSchema, 
-  GraphQLObjectType, 
-  GraphQLString, 
-  GraphQLInt, 
-  GraphQLBoolean, 
-  GraphQLList, 
-  GraphQLNonNull, 
-  GraphQLInputObjectType,
-  GraphQLScalarType,
-  GraphQLFieldConfig,
-  GraphQLResolveInfo
-} from 'graphql';
-import { Collection, Field, FieldType } from '@fromcode119/core';
+import { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLInputObjectType } from 'graphql';
+import { ICollection, IField, FieldType } from '@fromcode119/core';
 import { PluginManager } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest/rest-controller';
+import { RESTController } from '@api/controllers/rest/rest-controller';
 
 export class GraphQLService {
   private typeCache: Map<string, GraphQLObjectType> = new Map();
@@ -159,7 +147,7 @@ export class GraphQLService {
     });
   }
 
-  private getOrCreateType(collection: Collection): GraphQLObjectType {
+  private getOrCreateType(collection: ICollection): GraphQLObjectType {
     const typeName = (collection.shortSlug || collection.slug).charAt(0).toUpperCase() + (collection.shortSlug || collection.slug).slice(1);
     
     if (this.typeCache.has(typeName)) {
@@ -192,7 +180,7 @@ export class GraphQLService {
     return type;
   }
 
-  private getOrCreateInputType(collection: Collection): GraphQLInputObjectType {
+  private getOrCreateInputType(collection: ICollection): GraphQLInputObjectType {
     const typeName = (collection.shortSlug || collection.slug).charAt(0).toUpperCase() + (collection.shortSlug || collection.slug).slice(1) + 'Input';
     
     if (this.inputTypeCache.has(typeName)) {
@@ -217,32 +205,32 @@ export class GraphQLService {
     return type;
   }
 
-  private mapFieldToGraphQLType(field: Field, isInput: boolean = false): any {
+  private mapFieldToGraphQLType(field: IField, isInput: boolean = false): any {
     let type: any;
 
     switch (field.type) {
-      case 'text':
-      case 'textarea':
-      case 'date':
-      case 'datetime':
-      case 'richText':
-      case 'select':
-      case 'color':
-      case 'code':
+      case FieldType.TEXT:
+      case FieldType.TEXTAREA:
+      case FieldType.DATE:
+      case FieldType.DATETIME:
+      case FieldType.RICH_TEXT:
+      case FieldType.SELECT:
+      case FieldType.COLOR:
+      case FieldType.CODE:
         type = GraphQLString;
         break;
-      case 'number':
+      case FieldType.NUMBER:
         type = GraphQLInt;
         break;
-      case 'boolean':
+      case FieldType.BOOLEAN:
         type = GraphQLBoolean;
         break;
-      case 'json':
-      case 'array':
+      case FieldType.JSON:
+      case FieldType.ARRAY:
         type = GraphQLString; // Simplified for now
         break;
-      case 'relationship':
-      case 'upload':
+      case FieldType.RELATIONSHIP:
+      case FieldType.UPLOAD:
         type = field.hasMany ? new GraphQLList(GraphQLInt) : GraphQLInt;
         break;
       default:

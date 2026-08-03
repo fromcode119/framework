@@ -1,5 +1,5 @@
 import { SystemConstants } from '@fromcode119/core/client';
-import type { SecondaryPanelState } from '../context.interfaces';
+import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
 
 export class ContextProviderStateService {
   static readonly inFlightGetRequests = new Map<string, Promise<any>>();
@@ -12,7 +12,7 @@ export class ContextProviderStateService {
 
   static readonly GET_ERROR_TTL_MS = 15000;
 
-  static createEmptySecondaryPanelState(): SecondaryPanelState {
+  static createEmptySecondaryPanelState(): ISecondaryPanelState {
     return {
       version: 1,
       contexts: {},
@@ -30,9 +30,9 @@ export class ContextProviderStateService {
     };
   }
 
-  static resolveNextSecondaryPanelState(previous: SecondaryPanelState, next: unknown): SecondaryPanelState {
+  static resolveNextSecondaryPanelState(previous: ISecondaryPanelState, next: unknown): ISecondaryPanelState {
     if (next && typeof next === 'object') {
-      return next as SecondaryPanelState;
+      return next as ISecondaryPanelState;
     }
 
     return ContextProviderStateService.isEmptySecondaryPanelState(previous)
@@ -40,7 +40,7 @@ export class ContextProviderStateService {
       : ContextProviderStateService.createEmptySecondaryPanelState();
   }
 
-  static isEmptySecondaryPanelState(state: SecondaryPanelState): boolean {
+  static isEmptySecondaryPanelState(state: ISecondaryPanelState): boolean {
     if (!state) {
       return false;
     }

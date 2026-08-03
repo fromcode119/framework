@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/react",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -16,8 +16,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w"
+    "build": "node ../typor/dist/typor-cli.cjs build && npm run copy:styles",
+    "dev": "tsc -w",
+    "copy:styles": "mkdir -p dist/account && cp -r src/account/*.css dist/account/"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
@@ -25,13 +26,14 @@
   },
   "dependencies": {
     "@fromcode119/core": "*",
+    "@fromcode119/reactor": "*",
     "@fromcode119/sdk": "*",
     "lucide-react": "^0.563.0"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0"
   },
   "publishConfig": {
     "access": "public",

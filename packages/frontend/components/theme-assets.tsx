@@ -4,7 +4,7 @@ import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import { ThemePrefetchRequestCache } from '@/lib/theme/theme-prefetch-request-cache';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
-import { ApiPathUtils, RuntimeConstants} from '@fromcode119/core/client';
+import { ApiPathUtils, RuntimeConstants } from '@fromcode119/core/client';
 
 /**
  * Server Component: injects active theme CSS and head link hints into <head>.
@@ -28,7 +28,9 @@ import { ApiPathUtils, RuntimeConstants} from '@fromcode119/core/client';
  * }
  * ```
  */
-export default async function ThemeAssets() {
+
+export class ThemeAssetsView {
+  static async render() {
   try {
     const config = await FrontendConfigCache.read() as Record<string, any>;
     const theme = config?.activeTheme;
@@ -174,8 +176,15 @@ export default async function ThemeAssets() {
           // stylesheets (Google Fonts) so React 19's resource-hoisting cannot interfere.
           // modulepreload: bypasses crossOrigin stripping that would cause credentials-mode mismatch.
           // stylesheets: media="print" trick defers rendering until after fonts load — no FCP penalty.
+          //
+          // The modulepreloads wait for `load`. They used to start at ~78 ms, alongside the LCP image,
+          // and the theme entry plus its vendor chunks are ~130 KB — bandwidth the image needed more.
+          // Nothing on screen depends on them any more: the server renders the page, and the runtime
+          // bundles only take over interactivity (see FrontendRuntimeScheduler, which imports them on
+          // the same schedule). The stylesheet injection stays immediate — fonts are wanted early and
+          // the media="print" swap keeps them off the critical path.
           <script dangerouslySetInnerHTML={{ __html:
-            `(function(){var u=${JSON.stringify([versionedEntryUrl, ...modulePreloadUrls])};for(var i=0;i<u.length;i++){var l=document.createElement('link');l.rel='modulepreload';l.href=u[i];document.head.appendChild(l);}${
+            `(function(){var u=${JSON.stringify([versionedEntryUrl, ...modulePreloadUrls])};var p=function(){for(var i=0;i<u.length;i++){var l=document.createElement('link');l.rel='modulepreload';l.href=u[i];document.head.appendChild(l);}};var d=function(){if(window.requestIdleCallback){window.requestIdleCallback(p,{timeout:1500});}else{setTimeout(p,1);}};if(document.readyState==='complete'){d();}else{addEventListener('load',d,{once:true});}${
               externalStylesheets.length > 0
                 ? externalStylesheets.map((href: string) =>
                     `var f=document.createElement('link');f.rel='stylesheet';f.href=${JSON.stringify(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`
@@ -190,4 +199,5 @@ export default async function ThemeAssets() {
     console.error('[ThemeAssets] Error:', error);
     return null;
   }
+}
 }

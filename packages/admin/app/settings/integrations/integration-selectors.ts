@@ -1,30 +1,27 @@
-import type {
-  IntegrationProvider,
-  IntegrationRecord,
-  ProviderEditorState,
-  StoredProvider,
-} from './integrations-settings-page-client.interfaces';
-
+import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
+import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
+import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
+import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
 /**
  * Pure derived selectors for the integrations settings page state.
  */
 export class IntegrationSelectors {
-  static integrationOptions(integrations: IntegrationRecord[]): Array<{ label: string; value: string }> {
+  static integrationOptions(integrations: IIntegrationRecord[]): Array<{ label: string; value: string }> {
     return integrations.map((integration) => ({
       label: integration.label,
       value: integration.key
     }));
   }
 
-  static activeIntegration(integrations: IntegrationRecord[], activeType: string): IntegrationRecord | null {
+  static activeIntegration(integrations: IIntegrationRecord[], activeType: string): IIntegrationRecord | null {
     return integrations.find((integration) => integration.key === activeType) || null;
   }
 
-  static activeProviders(activeIntegration: IntegrationRecord | null): StoredProvider[] {
+  static activeProviders(activeIntegration: IIntegrationRecord | null): IStoredProvider[] {
     return activeIntegration?.storedProviders || [];
   }
 
-  static runtimeProviderId(activeIntegration: IntegrationRecord | null): string {
+  static runtimeProviderId(activeIntegration: IIntegrationRecord | null): string {
     if (!activeIntegration) return '';
     const runtimeKey = String(activeIntegration.active?.provider || activeIntegration.stored?.providerKey || '').trim();
     if (!runtimeKey) return '';
@@ -35,17 +32,17 @@ export class IntegrationSelectors {
   }
 
   static currentProviderDefinition(
-    activeIntegration: IntegrationRecord | null,
-    editor: ProviderEditorState | null,
-  ): IntegrationProvider | null {
+    activeIntegration: IIntegrationRecord | null,
+    editor: IProviderEditorState | null,
+  ): IIntegrationProvider | null {
     if (!activeIntegration || !editor?.providerKey) return null;
     return activeIntegration.providers.find((provider) => provider.key === editor.providerKey) || null;
   }
 
   static selectedProviderDefinition(
-    activeIntegration: IntegrationRecord | null,
+    activeIntegration: IIntegrationRecord | null,
     selectedProviderId: string,
-  ): IntegrationProvider | null {
+  ): IIntegrationProvider | null {
     if (!activeIntegration || !selectedProviderId) return null;
     const selectedProvider = (activeIntegration.storedProviders || []).find((provider) => provider.id === selectedProviderId);
     if (!selectedProvider) return null;

@@ -1,5 +1,5 @@
-import { ApiPathUtils } from '../api/api-path-utils';
-import { ApiRequestService } from '../api/api-request-service';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { ApiRequestService } from '@core/api/api-request-service';
 
 export class AdminGlobalClient {
   constructor(

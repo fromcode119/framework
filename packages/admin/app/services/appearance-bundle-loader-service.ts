@@ -1,3 +1,4 @@
+import { Platform } from '@fromcode119/reactor';
 import { AppPathConstants } from '@fromcode119/core/client';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';
 import { GlobalReadinessService } from '@/lib/global-readiness-service';
@@ -19,7 +20,7 @@ export class AppearanceBundleLoaderService {
   }
 
   private static injectStylesheet(origin: string, id: string): void {
-    if (typeof document === 'undefined') return;
+    if (!Platform.isBrowser) return;
     const linkId = `fc-appearance-css-${id}`;
     if (document.getElementById(linkId)) return;
     const link = document.createElement('link');
@@ -42,7 +43,7 @@ export class AppearanceBundleLoaderService {
     if (!desired || desired === 'default') return true;
     if (AdminAppearanceRegistry.shared.has(desired) || AppearanceBundleLoaderService.loaded.has(desired)) return true;
     await GlobalReadinessService.waitForReady();
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const origin = Platform.isBrowser ? window.location.origin : '';
     // Inject the appearance's own compiled CSS (LESS → dist/appearance.css), then load its bundle.
     AppearanceBundleLoaderService.injectStylesheet(origin, desired);
     const attempts = 2;

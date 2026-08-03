@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/marketplace-client",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "browser": {
@@ -10,7 +10,7 @@
     "fs": false
   },
   "scripts": {
-    "build": "tsc",
+    "build": "node ../typor/dist/typor-cli.cjs build",
     "dev": "tsc -w"
   },
   "dependencies": {

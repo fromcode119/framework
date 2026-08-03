@@ -1,25 +1,50 @@
-import React from 'react';
-import { TextArea } from '@/components/ui/text-area';
-import { BooleanToggleField } from '@/components/ui/boolean-toggle-field';
-import { DateTimePicker } from '@/components/ui/date-time-picker';
-import { ColorField } from '@/components/ui/color-field';
-import { CodeEditor } from '@/components/ui/code-editor';
-import { LocalizedTextField } from './fields/localized-text-field';
-import { ArrayField } from '@/components/ui/array-field';
-import { Input } from '@/components/ui/input';
-import { TagFieldLocal } from './tag-field-local';
-import { RelationshipSelectLocal } from './relationship-select-local';
-import { MediaRelationField } from './media-relation-field';
-import { FieldRendererUtils } from './field-renderer-utils';
-import { PermalinkField } from '@/components/ui/permalink-field';
-import { FieldCustomComponent } from './field-custom-component';
-import { FieldSelectControl } from './field-select-control';
-import { FieldTextInput } from './field-text-input';
-import { FieldTextualControl } from './field-textual-control';
-import type { FieldControlRendererProps } from './field-renderer.interfaces';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
 
-export class FieldControlRenderer extends React.Component<FieldControlRendererProps> {
-  render(): React.ReactNode {
+import { PureReactor, prop } from '@fromcode119/reactor';
+
+import { BooleanToggleField } from '@/components/ui/view/boolean-toggle-field.client';
+import { DateTimePicker } from '@/components/ui/date-time-picker/view/index.client';
+import { ColorField } from '@/components/ui/view/color-field.client';
+import { CodeEditor } from '@/components/ui/view/code-editor.client';
+import { LocalizedTextField } from '@/components/collection/fields/view/localized-text-field.client';
+import { ArrayField } from '@/components/ui/view/array-field.client';
+
+import { TagFieldLocal } from '@/components/collection/view/tag-field-local.client';
+import { RelationshipSelectLocal } from '@/components/collection/view/relationship-select-local.client';
+import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
+import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
+import { PermalinkField } from '@/components/ui/view/permalink-field.client';
+import { FieldCustomComponent } from '@/components/collection/field-custom-component';
+import { FieldSelectControl } from '@/components/collection/field-select-control';
+import { FieldTextInput } from '@/components/collection/field-text-input';
+import { FieldTextualControl } from '@/components/collection/field-textual-control';
+import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+
+export class FieldControlRenderer extends PureReactor {
+  @prop declare field: ICollectionField;
+  @prop declare currentValue: any;
+  @prop declare resolvedCurrentText: string;
+  @prop declare updateValue: (value: any) => void;
+  @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
+  @prop declare theme: ThemeMode;
+  @prop declare collectionSlug: string;
+  @prop declare pluginSettings?: Record<string, any>;
+  @prop declare globalSettings?: Record<string, any>;
+  @prop declare fieldComponents: Record<string, any>;
+  @prop declare isFieldReadOnly: boolean;
+  @prop declare isNew: boolean;
+  @prop declare errors?: string[];
+  @prop declare label: string;
+  @prop declare slugWarning?: string | null;
+  @prop declare slugManuallyEdited?: boolean;
+  @prop declare isLocalizedField: boolean;
+  @prop declare shouldInlineLocaleSwitcher: boolean;
+  @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
+  @prop declare record?: Record<string, any>;
+  @prop declare onPatch?: (partial: Record<string, any>) => void;
+
+  render(): ReactNode {
     const {
       field,
       currentValue,
@@ -42,7 +67,7 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
       localeSwitcher,
       record,
       onPatch
-    } = this.props;
+    } = this;
     return (
       <>
       {/* A registered custom component wins over every built-in control (incl. the media
@@ -80,8 +105,7 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
             field={field}
             value={currentValue}
             onChange={updateValue}
-            theme={theme}
-            record={record || {}}
+            themeMode={theme}
             onPatch={onPatch || (() => {})}
           />
         )
@@ -91,7 +115,7 @@ export class FieldControlRenderer extends React.Component<FieldControlRendererPr
             field={field}
             value={currentValue}
             onChange={updateValue}
-            theme={theme}
+            themeMode={theme}
             collectionSlug={collectionSlug}
           />
         )

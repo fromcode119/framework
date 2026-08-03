@@ -1,7 +1,5 @@
-import type {
-  EntityRecordProviderRegistration,
-  RegisteredEntityRecordProvider,
-} from './entity-record.interfaces';
+import type { IEntityRecordProviderRegistration } from '@core/services/entity-records/interfaces/entity-record-provider-registration.interface';
+import type { IRegisteredEntityRecordProvider } from '@core/services/entity-records/interfaces/registered-entity-record-provider.interface';
 
 /**
  * Registry of entity-record providers.
@@ -14,9 +12,9 @@ import type {
  * replaces the previous one, so a plugin re-init never stacks duplicates.
  */
 export class PluginEntityRecordsRegistryService {
-  private readonly providers = new Map<string, RegisteredEntityRecordProvider>();
+  private readonly providers = new Map<string, IRegisteredEntityRecordProvider>();
 
-  register(registration: EntityRecordProviderRegistration): RegisteredEntityRecordProvider | null {
+  register(registration: IEntityRecordProviderRegistration): IRegisteredEntityRecordProvider | null {
     const entry = this.createEntry(registration);
     if (!entry) return null;
     this.providers.set(entry.canonicalKey, entry);
@@ -37,7 +35,7 @@ export class PluginEntityRecordsRegistryService {
     }
   }
 
-  list(): RegisteredEntityRecordProvider[] {
+  list(): IRegisteredEntityRecordProvider[] {
     return Array.from(this.providers.values());
   }
 
@@ -46,8 +44,8 @@ export class PluginEntityRecordsRegistryService {
   }
 
   private createEntry(
-    registration: EntityRecordProviderRegistration,
-  ): RegisteredEntityRecordProvider | null {
+    registration: IEntityRecordProviderRegistration,
+  ): IRegisteredEntityRecordProvider | null {
     const namespace = String(registration?.namespace || '').trim();
     const pluginSlug = String(registration?.pluginSlug || '').trim();
     const key = String(registration?.key || '').trim();

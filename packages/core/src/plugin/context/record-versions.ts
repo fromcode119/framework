@@ -1,5 +1,5 @@
-import type { PluginManagerInterface } from './utils.interfaces';
-import { SystemConstants } from '../../constants';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class RecordVersionsContextProxy {
   /**
@@ -7,7 +7,7 @@ export class RecordVersionsContextProxy {
    * table; plugins must NOT query it via context.db (that path is blocked) — they read history through
    * here. Uses the RAW manager db so the framework owns the only access to the system table.
    */
-  static createRecordVersionsProxy(manager: PluginManagerInterface) {
+  static createRecordVersionsProxy(manager: IPluginManagerInterface) {
     return {
       async getById(id: any): Promise<Record<string, any> | null> {
         if (id == null || id === '') return null;

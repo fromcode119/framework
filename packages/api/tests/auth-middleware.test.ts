@@ -1,5 +1,5 @@
 import { AuthManager } from '@fromcode119/auth';
-import { CookieConstants } from '../../core/src/cookie-constants';
+import { CookieConstants } from '../../core/src/constants/cookie.constants';
 import * as jwt from 'jsonwebtoken';
 
 describe('AuthManager Middleware Conflict Fix', () => {

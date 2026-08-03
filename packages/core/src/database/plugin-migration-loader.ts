@@ -2,8 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
 import { pathToFileURL } from 'url';
-import { Logger } from '../logging';
-import type { SystemMigration } from '../types';
+import { Logger } from '@core/logging';
+import type { ISystemMigration } from '@core/interfaces/system-migration.interface';
 
 /**
  * A CommonJS require bound to this module.
@@ -14,12 +14,12 @@ import type { SystemMigration } from '../types';
  * so every migration silently failed to load in production (it only worked under tsx in dev).
  * Loading the CJS module by absolute path with a real require avoids the URL problem entirely.
  */
-const migrationRequire = createRequire(__filename);
-
 export class PluginMigrationLoader {
+  private static readonly migrationRequire = createRequire(__filename);
+
   private static readonly logger = new Logger({ namespace: 'plugin-migration-loader' });
 
-  static async load(pluginSlug: string, pluginPath: string, relativeMigrationsPath?: string): Promise<SystemMigration[]> {
+  static async load(pluginSlug: string, pluginPath: string, relativeMigrationsPath?: string): Promise<ISystemMigration[]> {
     if (!relativeMigrationsPath) {
       return [];
     }
@@ -36,13 +36,13 @@ export class PluginMigrationLoader {
       .filter((file) => this.isLoadableFile(migrationsDir, file))
       .sort((left, right) => left.localeCompare(right));
 
-    const migrations: SystemMigration[] = [];
+    const migrations: ISystemMigration[] = [];
     let fallbackIndex = 0;
 
     for (const file of files) {
       const absolutePath = path.resolve(migrationsDir, file);
       try {
-        const imported = migrationRequire(absolutePath);
+        const imported = PluginMigrationLoader.migrationRequire(absolutePath);
         const migrationModule = this.resolveMigrationExport(imported);
 
         if (!migrationModule || typeof migrationModule.up !== 'function') {
@@ -87,10 +87,13 @@ export class PluginMigrationLoader {
    *    interop wraps module.exports as `default`, so the instance is at module.default.default
    *  - `export default class Migration extends BaseMigration` → the class itself; up() lives on
    *    the prototype, so it must be instantiated
+   *  - `export class Migration extends BaseMigration` → a NAMED export, which is the only export form
+   *    plugin source is allowed to write; the module's own exports are searched for it
    *  - the module object itself carrying up() (defensive)
    */
   private static resolveMigrationExport(module: any): { up?: unknown; down?: unknown } | undefined {
-    const candidates = [module?.default?.default, module?.default, module];
+    const named = module && typeof module === 'object' ? Object.values(module) : [];
+    const candidates = [module?.default?.default, module?.default, module, ...named];
     for (const candidate of candidates) {
       if (!candidate) {
         continue;

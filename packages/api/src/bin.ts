@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-import { APIServer } from './index';
+import { ApiEntry } from '@api/api-entry';
 
-APIServer.bootstrap().catch(err => {
-  console.error('Unhandled exception during bootstrap execution:', err);
-  process.exit(1);
-});
+ApiEntry.main();

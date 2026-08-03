@@ -1,9 +1,9 @@
-import { MediaManager, StorageDriver } from './index';
+import { MediaManager, IStorageDriver } from '@media/index';
 
 export class MediaService {
   private manager: MediaManager;
 
-  constructor(driver: StorageDriver) {
+  constructor(driver: IStorageDriver) {
     this.manager = new MediaManager(driver);
   }
 

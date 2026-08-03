@@ -1,14 +1,15 @@
+
 import path from 'path';
-import type { StorageDriver } from './storage-factory.interfaces';
-import { MediaImageOptimizer } from './media-image-optimizer';
-import { MediaMagicByteValidator } from './media-magic-byte-validator';
-import { MediaSvgSanitizer } from './media-svg-sanitizer';
-import type { MediaWebPConversionOptions } from './media-image-optimizer.interfaces';
+import type { IStorageDriver } from '@media/interfaces/storage-driver.interface';
+import { MediaImageOptimizer } from '@media/media-image-optimizer';
+import { MediaMagicByteValidator } from '@media/media-magic-byte-validator';
+import { MediaSvgSanitizer } from '@media/media-svg-sanitizer';
+import type { IMediaWebPConversionOptions } from '@media/interfaces/media-web-p-conversion-options.interface';
 
 export class MediaManager {
-  public driver: StorageDriver;
+  public driver: IStorageDriver;
 
-  constructor(driver: StorageDriver) {
+  constructor(driver: IStorageDriver) {
     this.driver = driver;
   }
 
@@ -74,7 +75,7 @@ export class MediaManager {
    */
   async createWebPVariant(
     originalPath: string,
-    options?: MediaWebPConversionOptions,
+    options?: IMediaWebPConversionOptions,
   ): Promise<{ path: string; url: string; width: number; height: number; size: number; originalSize: number }> {
     const original = await this.driver.read(originalPath);
     const result = await MediaImageOptimizer.convertToWebP(original, options);

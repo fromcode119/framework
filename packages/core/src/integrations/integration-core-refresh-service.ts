@@ -1,12 +1,11 @@
 import path from 'path';
-import { EmailManager, EmailFactory } from '@fromcode119/email';
+import { EmailFactory, EmailManager } from '@fromcode119/email';
+import type { IEmailDriver } from '@fromcode119/email';
 import { MediaManager, StorageFactory } from '@fromcode119/media';
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
-import { Logger } from '../logging';
-import { IntegrationRegistry } from './integration-registry';
-import { MultiProviderEmailSender } from './multi-provider-email-sender';
-
-type EmailSender = Pick<EmailManager, 'send'>;
+import { Logger } from '@core/logging';
+import { IntegrationRegistry } from '@core/integrations/integration-registry';
+import { MultiProviderEmailSender } from '@core/integrations/multi-provider-email-sender';
 
 /**
  * IntegrationCoreRefreshService
@@ -23,7 +22,7 @@ export class IntegrationCoreRefreshService {
     private readonly projectRoot: string,
   ) {}
 
-  async refreshEmail(preferStored: boolean): Promise<{ email: EmailSender; resolved: any }> {
+  async refreshEmail(preferStored: boolean): Promise<{ email: IEmailDriver; resolved: any }> {
     try {
       const resolvedInstances = await this.registry.instantiateMany<EmailManager>('email', {
         preferStored,

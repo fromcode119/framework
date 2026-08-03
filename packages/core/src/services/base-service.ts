@@ -1,4 +1,4 @@
-import { EnvUtils } from '../utils/env-utils';
+import { EnvUtils } from '@core/utils/env-utils';
 
 /**
  * Base class for all core services.

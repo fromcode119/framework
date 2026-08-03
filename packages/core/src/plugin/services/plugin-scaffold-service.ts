@@ -2,9 +2,10 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { Logger } from '../../logging';
-import { ProjectPaths } from '../../config/paths';
-import type { ScaffoldPluginInput, ScaffoldPluginResult } from './plugin-scaffold-service.interfaces';
+import { Logger } from '@core/logging';
+import { ProjectPaths } from '@core/config/paths';
+import type { IScaffoldPluginInput } from '@core/plugin/services/interfaces/scaffold-plugin-input.interface';
+import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/scaffold-plugin-result.interface';
 
 export class PluginScaffoldService {
   constructor(
@@ -14,7 +15,7 @@ export class PluginScaffoldService {
     private readonly enable: (slug: string) => Promise<void>,
   ) {}
 
-  async scaffoldPlugin(input: ScaffoldPluginInput): Promise<ScaffoldPluginResult> {
+  async scaffoldPlugin(input: IScaffoldPluginInput): Promise<IScaffoldPluginResult> {
     const slug = String(input.slug || '').trim().toLowerCase();
     const name = String(input.name || '').trim();
     const description = String(input.description || '').trim();
@@ -57,7 +58,7 @@ export class PluginScaffoldService {
       'export const init = () => {',
       `  console.info('[${slug}] UI initialized.');`,
       '};', '',
-      'if (typeof window !== "undefined" && (window).Fromcode) {',
+      'if (typeof window !== "undefined" && window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules["@fromcode119/react"]) {',
       '  init();',
       '}', '',
     ].join('\n');

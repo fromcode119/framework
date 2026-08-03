@@ -1,11 +1,9 @@
-import {
-  AdminSecondaryPanelAllowlistEntry,
-  AdminSecondaryPanelNormalizedItem,
-  AdminSecondaryPanelRejection,
-} from './admin-secondary-panel.interfaces';
+import type { IAdminSecondaryPanelAllowlistEntry } from '@core/plugin/services/interfaces/admin-secondary-panel-allowlist-entry.interface';
+import type { IAdminSecondaryPanelNormalizedItem } from '@core/plugin/services/interfaces/admin-secondary-panel-normalized-item.interface';
+import type { IAdminSecondaryPanelRejection } from '@core/plugin/services/interfaces/admin-secondary-panel-rejection.interface';
 
 export class AdminSecondaryPanelGovernanceService {
-  isAllowed(item: AdminSecondaryPanelNormalizedItem, allowlistEntries: AdminSecondaryPanelAllowlistEntry[]): AdminSecondaryPanelRejection | null {
+  isAllowed(item: IAdminSecondaryPanelNormalizedItem, allowlistEntries: IAdminSecondaryPanelAllowlistEntry[]): IAdminSecondaryPanelRejection | null {
     if (item.scope === 'self') {
       return null;
     }
@@ -53,7 +51,7 @@ export class AdminSecondaryPanelGovernanceService {
     return expiresAt < Date.now();
   }
 
-  private rejection(reasonCode: string, item: AdminSecondaryPanelNormalizedItem, details: string): AdminSecondaryPanelRejection {
+  private rejection(reasonCode: string, item: IAdminSecondaryPanelNormalizedItem, details: string): IAdminSecondaryPanelRejection {
     return {
       reasonCode,
       sourceCanonicalKey: item.sourceCanonicalKey,

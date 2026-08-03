@@ -1,13 +1,13 @@
-import { IDatabaseManager, users } from '@fromcode119/database';
+import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { Logger, RecordVersions } from '@fromcode119/core';
-import { type Collection, SystemConstants } from '@fromcode119/core';
+import { type ICollection, SystemConstants } from '@fromcode119/core';
 
 export class VersioningService {
   private logger = new Logger({ namespace: 'versioning' });
 
   constructor(private db: IDatabaseManager) {}
 
-  async createSnapshot(collection: Collection, refId: any, data: any, user: any, summary: string) {
+  async createSnapshot(collection: ICollection, refId: any, data: any, user: any, summary: string) {
     try {
       if (collection.slug === SystemConstants.TABLE.RECORD_VERSIONS || collection.slug === SystemConstants.TABLE.LOGS) return;
       
@@ -54,7 +54,7 @@ export class VersioningService {
     if (versions.length > 0) {
       const userIds = [...new Set(versions.map(v => v.updated_by).filter(Boolean))];
       if (userIds.length > 0) {
-        const userData = await this.db.find(users, { where: this.db.inArray(users.id, userIds) });
+        const userData = await this.db.find(Schema.users, { where: this.db.inArray(Schema.users.id, userIds) });
         const userMap = new Map(userData.map(u => [u.id, u.email || u.username]));
         versions = versions.map(v => ({ 
           ...v, 
@@ -103,7 +103,7 @@ export class VersioningService {
     return {};
   }
 
-  async restoreVersion(collection: Collection, refId: any, version: number, user: any) {
+  async restoreVersion(collection: ICollection, refId: any, version: number, user: any) {
     const targetVersion = await this.getVersion(collection.slug, refId, version);
     if (!targetVersion) {
       throw new Error(`Version ${version} not found for ${collection.slug}/${refId}`);

@@ -1,10 +1,10 @@
-import { HookManager } from '../hooks/hook-manager';
-import { Logger } from '../logging';
-import { PluginSignatureService } from '../security/plugin-signature-service';
-import { SecretService } from '../security/secret-service';
-import { HookEventUtils } from '../hook-events';
-import { WebhooksCollection } from '../collections/webhooks';
-import { SystemConstants } from '../constants';
+import { HookManager } from '@core/hooks/hook-manager';
+import { Logger } from '@core/logging';
+import { PluginSignatureService } from '@core/security/plugin-signature-service';
+import { SecretService } from '@core/security/secret-service';
+import { HookEventUtils } from '@core/hook-events';
+import { WebhooksCollection } from '@core/collections/webhooks';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class WebhookService {
     private logger = new Logger({ namespace: 'webhook-service' });

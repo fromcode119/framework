@@ -1,14 +1,17 @@
-import React from 'react';
-import { AppPathConstants } from '@fromcode119/core/app-path-constants';
+import type { ReactNode } from 'react';
+import { Reactor } from '@fromcode119/reactor';
+import { AppPathConstants } from '@fromcode119/core/constants/app-path.constants';
 import { redirect } from 'next/navigation';
-import { ForgeClient } from '../forge/forge-client';
+import { ForgeClient } from '@/app/forge/components/view/forge-client.client';
 import { AppEnv } from '@/lib/env';
 
-// Next.js App Router route page — must be a function component (RSC pages have no class API).
-export default function AtlantisPage(): React.ReactNode {
-  if (!AppEnv.AI_ENABLED) {
-    redirect(AppPathConstants.ADMIN.ROOT);
-  }
+/** Admin AI workspace route. */
+export class AtlantisPage extends Reactor {
+  render(): ReactNode {
+    if (!AppEnv.AI_ENABLED) {
+      redirect(AppPathConstants.ADMIN.ROOT);
+    }
 
-  return <ForgeClient />;
+    return <ForgeClient />;
+  }
 }

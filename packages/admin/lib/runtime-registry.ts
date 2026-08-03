@@ -1,6 +1,7 @@
 import * as Lucide from 'lucide-react';
 
-const SYSTEM_ICON_NAMES = [
+export class AdminRuntimeRegistry {
+  private static readonly SYSTEM_ICON_NAMES = [
   'Dashboard',
   'plugins',
   'Users',
@@ -79,11 +80,10 @@ const SYSTEM_ICON_NAMES = [
   'UserPlus'
 ];
 
-export class AdminRuntimeRegistry {
   static generateAdminRegistryContent(): string {
       const uniqueNames = Array.from(
         new Set(
-          [...SYSTEM_ICON_NAMES, ...Object.keys(Lucide)]
+          [...AdminRuntimeRegistry.SYSTEM_ICON_NAMES, ...Object.keys(Lucide)]
             .map((name) => String(name || '').trim())
             .filter(Boolean)
         )
@@ -98,7 +98,7 @@ export class AdminRuntimeRegistry {
         .join('\n');
 
       return [
-        'const __icons = (globalThis.FrameworkIcons || globalThis.Lucide || {});',
+        "const __icons = (window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules['lucide-react']) || {};",
         exports,
         'export default __icons;'
       ]

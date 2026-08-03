@@ -1,18 +1,18 @@
 import fs from 'fs';
 import path from 'path';
-import { SystemConstants } from '../../constants';
-import { ProjectPaths } from '../../config/paths';
-import type { LoadedPlugin } from '../../types';
-import { PluginContextFileReader } from './plugin-context-file-reader';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { ThemeState } from '../../theme/theme-state.enums';
+import { SystemConstants } from '@core/constants/system.constants';
+import { ProjectPaths } from '@core/config/paths';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { PluginContextFileReader } from '@core/plugin/context/plugin-context-file-reader';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ThemeState } from '@core/theme/enums/theme-state.enum';
 
 export class PluginPathContextProxy {
   private readonly fileReader: PluginContextFileReader;
 
   constructor(
-    private readonly plugin: LoadedPlugin,
-    private readonly manager: PluginManagerInterface,
+    private readonly plugin: ILoadedPlugin,
+    private readonly manager: IPluginManagerInterface,
   ) {
     this.fileReader = new PluginContextFileReader(
       () => this.resolveCurrentPluginRoot(),
@@ -51,7 +51,7 @@ export class PluginPathContextProxy {
   }
 
   async resolveActiveThemeSlug(): Promise<string | null> {
-    const activeTheme = await this.manager.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE });
+    const activeTheme = await this.manager.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
     const slug = String(activeTheme?.slug || '').trim();
     return slug || null;
   }

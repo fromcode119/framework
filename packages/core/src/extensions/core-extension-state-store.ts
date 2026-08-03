@@ -1,7 +1,7 @@
-import { Logger } from '../logging';
-import { SystemConstants } from '../constants';
+import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
 import { IDatabaseManager } from '@fromcode119/database';
-import { CoreExtensionState } from './types';
+import type { ICoreExtensionState } from '@core/extensions/interfaces/core-extension-state.interface';
 
 /**
  * CoreExtensionStateStore
@@ -12,14 +12,14 @@ import { CoreExtensionState } from './types';
  * the manager holds one instance and reads/writes state through it.
  */
 export class CoreExtensionStateStore {
-  private states: Map<string, CoreExtensionState> = new Map();
+  private states: Map<string, ICoreExtensionState> = new Map();
 
   constructor(
     private db: IDatabaseManager,
     private logger: Logger,
   ) {}
 
-  public get(slug: string): CoreExtensionState | undefined {
+  public get(slug: string): ICoreExtensionState | undefined {
     return this.states.get(slug);
   }
 
@@ -35,7 +35,7 @@ export class CoreExtensionStateStore {
 
       for (const row of rows) {
         try {
-          const state: CoreExtensionState = JSON.parse(row.value);
+          const state: ICoreExtensionState = JSON.parse(row.value);
           this.states.set(state.slug, state);
         } catch (error) {
           this.logger.error(`Failed to parse state for ${row.key}:`, error);
@@ -53,14 +53,14 @@ export class CoreExtensionStateStore {
    */
   public async updateExtensionState(
     slug: string,
-    updates: Partial<CoreExtensionState>
+    updates: Partial<ICoreExtensionState>
   ): Promise<void> {
     const currentState = this.states.get(slug) || {
       slug,
       enabled: false,
     };
 
-    const newState: CoreExtensionState = {
+    const newState: ICoreExtensionState = {
       ...currentState,
       ...updates,
       updatedAt: new Date(),

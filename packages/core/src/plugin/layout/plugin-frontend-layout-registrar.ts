@@ -1,11 +1,9 @@
-import { CoreServices } from '../../services/core-services';
-import type {
-  PluginFrontendLayoutRegistrarOptions,
-  PluginFrontendLayoutRegistration,
-} from './plugin-frontend-layout-registrar.interfaces';
+import { CoreServices } from '@core/services/core-services';
+import type { IPluginFrontendLayoutRegistrarOptions } from '@core/plugin/layout/interfaces/plugin-frontend-layout-registrar-options.interface';
+import type { IPluginFrontendLayoutRegistration } from '@core/plugin/layout/interfaces/plugin-frontend-layout-registration.interface';
 
 export abstract class PluginFrontendLayoutRegistrar {
-  constructor(private readonly options: PluginFrontendLayoutRegistrarOptions) {}
+  constructor(private readonly options: IPluginFrontendLayoutRegistrarOptions) {}
 
   get serviceName(): string {
     return 'PluginFrontendLayoutRegistrar';
@@ -20,9 +18,9 @@ export abstract class PluginFrontendLayoutRegistrar {
     CoreServices.getInstance().defaultDesignRuntimeBridge.registerPluginDefaults(registration);
   }
 
-  protected abstract buildPageLayouts(): PluginFrontendLayoutRegistration['layouts'];
+  protected abstract buildPageLayouts(): IPluginFrontendLayoutRegistration['layouts'];
 
-  protected getRegistration(): PluginFrontendLayoutRegistration {
+  protected getRegistration(): IPluginFrontendLayoutRegistration {
     return {
       namespace: this.options.namespace,
       pluginSlug: this.options.pluginSlug,

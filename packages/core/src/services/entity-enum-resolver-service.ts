@@ -1,8 +1,8 @@
-import { CoercionUtils } from '../coercion-utils';
-import type { EntityEnumOptions } from '../types/entity-field-config.interfaces';
+import { CoercionUtils } from '@core/coercion-utils';
+import type { IEntityEnumOptions } from '@core/interfaces/entity-enum-options.interface';
 
 export class EntityEnumResolverService {
-  static resolve(value: unknown, options: EntityEnumOptions): string {
+  static resolve(value: unknown, options: IEntityEnumOptions): string {
     const normalized = CoercionUtils.toString(value).trim().toLowerCase();
     for (const [target, aliases] of Object.entries(options.values)) {
       if (normalized === target.toLowerCase()) {

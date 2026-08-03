@@ -1,26 +1,24 @@
+import { ClientType } from '@fromcode119/core/client';
 import React from 'react';
-import {
-  ApiVersionUtils,
-  BrowserStateClient,
-  CookieConstants,
-  SystemConstants,
-} from '@fromcode119/core/client';
-import type { CollectionMetadata, SecondaryPanelState } from '../context.interfaces';
-import { ContextProviderStateService } from './context-provider-state-service';
-import { ContextProviderConfigLoaderHooks } from './context-provider-config-loader-hooks';
+import { Platform } from '@fromcode119/reactor';
+import { ApiVersionUtils, BrowserStateClient, CookieConstants, SystemConstants } from '@fromcode119/core/client';
+import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
+import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
+import { ContextProviderStateService } from '@react/context/context-provider-state-service';
+import { ContextProviderConfigLoaderHooks } from '@react/context/context-provider-config-loader-hooks';
 
 export class ContextProviderApiHooks {
   static useApiRuntime(args: {
     apiUrl: string;
-    clientType: 'admin-ui' | 'frontend-ui';
+    clientType: ClientType;
     browserState: BrowserStateClient;
     locale: string;
     settings: Record<string, any>;
     setServerRuntimeModules: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setPlugins: React.Dispatch<React.SetStateAction<any[]>>;
-    setCollections: React.Dispatch<React.SetStateAction<CollectionMetadata[]>>;
+    setCollections: React.Dispatch<React.SetStateAction<ICollectionMetadata[]>>;
     setMenuItems: React.Dispatch<React.SetStateAction<any[]>>;
-    setSecondaryPanel: React.Dispatch<React.SetStateAction<SecondaryPanelState>>;
+    setSecondaryPanel: React.Dispatch<React.SetStateAction<ISecondaryPanelState>>;
     setSettings: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setActiveTheme: React.Dispatch<React.SetStateAction<any>>;
     setThemeVariables: React.Dispatch<React.SetStateAction<Record<string, string>>>;
@@ -81,9 +79,9 @@ export class ContextProviderApiHooks {
       // shadow the fc_token cookie (which carries the admin role). Let the cookie travel on its own.
       const existingHeaders = (fetchOptions.headers || {}) as Record<string, string>;
       const explicitClientType = existingHeaders['X-Framework-Client'] || existingHeaders['x-framework-client'] || '';
-      const token = (explicitClientType === 'admin-ui')
+      const token = (explicitClientType === ClientType.ADMIN_UI.value)
         ? ''
-        : (clientType === 'frontend-ui' ? browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN) : '');
+        : (clientType === ClientType.FRONTEND_UI ? browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN) : '');
       const csrfToken = browserState.readCookie(CookieConstants.AUTH_CSRF);
       const method = String(fetchOptions.method || 'GET').toUpperCase();
       const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(method);
@@ -247,7 +245,7 @@ export class ContextProviderApiHooks {
           query += `&fallback_locale=${encodeURIComponent(fallbackLocale)}`;
         }
 
-        if (typeof window !== 'undefined') {
+        if (Platform.isBrowser) {
           const currentUrl = new URL(window.location.href);
           const params = currentUrl.searchParams;
           if (params.get('preview') === '1') {

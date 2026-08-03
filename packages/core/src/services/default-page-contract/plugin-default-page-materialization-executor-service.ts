@@ -1,18 +1,20 @@
-import type {
-  PluginDefaultPageContractAssociationPersistResult,
-  PluginDefaultPageContractBackfillAssociationMaps,
-  PluginDefaultPageContractBackfillAssociationRecord,
-  PluginDefaultPageContractPageSnapshot,
-  PluginDefaultPageContractMaterializationExecutionEntrySummary,
-  PluginDefaultPageContractMaterializationExecutionInput,
-  PluginDefaultPageContractMaterializationExecutionOutcome,
-  PluginDefaultPageContractMaterializationExecutionReport,
-  PluginDefaultPageContractMaterializationExecutionReportSummary,
-  PluginDefaultPageContractMaterializationPlanEntry,
-} from '../../types';
-import { BaseService } from '../base-service';
-import { SeedPageService } from '../seed-page-service';
-import { PluginDefaultPageBackfillAssociationService } from './plugin-default-page-backfill-association-service';
+import type { IPluginDefaultPageContractAssociationPersistResult } from '@core/default-page-contract/interfaces/plugin-default-page-contract-association-persist-result.interface';
+import type { IPluginDefaultPageContractBackfillAssociationMaps } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-maps.interface';
+import type { IPluginDefaultPageContractBackfillAssociationRecord } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-record.interface';
+import type { IPluginDefaultPageContractPageSnapshot } from '@core/default-page-contract/interfaces/plugin-default-page-contract-page-snapshot.interface';
+import type { IPluginDefaultPageContractMaterializationExecutionEntrySummary } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-execution-entry-summary.interface';
+import type { IPluginDefaultPageContractMaterializationExecutionInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-execution-input.interface';
+import type { IPluginDefaultPageContractMaterializationExecutionReport } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-execution-report.interface';
+import type { IPluginDefaultPageContractMaterializationExecutionReportSummary } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-execution-report-summary.interface';
+import type { IPluginDefaultPageContractMaterializationPlanEntry } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-plan-entry.interface';
+import { BaseService } from '@core/services/base-service';
+import { SeedPageService } from '@core/services/seed-page-service';
+import { PluginDefaultPageBackfillAssociationService } from '@core/services/default-page-contract/plugin-default-page-backfill-association-service';
+import { PluginDefaultPageContractMaterializationAction } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-action.enum';
+import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
+import { PluginDefaultPageContractMaterializationStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-status.enum';
+import { PluginDefaultPageContractAssociationPersistStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-association-persist-status.enum';
+import { PluginDefaultPageContractMaterializationExecutionOutcome } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-execution-outcome.enum';
 
 export class PluginDefaultPageMaterializationExecutorService extends BaseService {
   private readonly seedPageService = new SeedPageService();
@@ -25,11 +27,11 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
     return 'PluginDefaultPageMaterializationExecutorService';
   }
 
-  async execute(input: PluginDefaultPageContractMaterializationExecutionInput): Promise<PluginDefaultPageContractMaterializationExecutionReport> {
+  async execute(input: IPluginDefaultPageContractMaterializationExecutionInput): Promise<IPluginDefaultPageContractMaterializationExecutionReport> {
     const entries = input.plan.entries
       .slice()
       .sort((left, right) => left.canonicalKey.localeCompare(right.canonicalKey));
-    const reportEntries: PluginDefaultPageContractMaterializationExecutionEntrySummary[] = [];
+    const reportEntries: IPluginDefaultPageContractMaterializationExecutionEntrySummary[] = [];
 
     for (const entry of entries) {
       reportEntries.push(await this.executeEntry(entry, input));
@@ -42,32 +44,32 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
   }
 
   private async executeEntry(
-    entry: PluginDefaultPageContractMaterializationPlanEntry,
-    input: PluginDefaultPageContractMaterializationExecutionInput,
-  ): Promise<PluginDefaultPageContractMaterializationExecutionEntrySummary> {
+    entry: IPluginDefaultPageContractMaterializationPlanEntry,
+    input: IPluginDefaultPageContractMaterializationExecutionInput,
+  ): Promise<IPluginDefaultPageContractMaterializationExecutionEntrySummary> {
     if (!this.isExecutableEntry(entry)) {
-      return this.createEntrySummary(entry, 'skipped', entry.reasons);
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.SKIPPED, entry.reasons);
     }
 
-    if (entry.action === 'create-missing') {
+    if (entry.action === PluginDefaultPageContractMaterializationAction.CREATE_MISSING) {
       return this.executeCreateMissingEntry(entry, input);
     }
 
     if (entry.matchedPageId === undefined) {
-      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'matched-page-id-missing'));
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.FAILED, this.appendReason(entry.reasons, 'matched-page-id-missing'));
     }
 
     const pageId = entry.matchedPageId;
     const freshPage = await input.pageLookupRepository.findPageById(pageId);
 
     if (!freshPage) {
-      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'matched-page-missing'));
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.FAILED, this.appendReason(entry.reasons, 'matched-page-missing'));
     }
 
     if (!this.matchesLookupCandidates(entry, freshPage)) {
       return this.createEntrySummary(
         entry,
-        'failed',
+        PluginDefaultPageContractMaterializationExecutionOutcome.FAILED,
         this.appendReason(entry.reasons, 'matched-page-no-longer-matches-lookup-candidates'),
       );
     }
@@ -78,11 +80,11 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
 
     const conflictReasons = this.getAssociationConflictReasons(entry, associationMaps, pageId);
     if (conflictReasons.length) {
-      return this.createEntrySummary(entry, 'failed', conflictReasons);
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.FAILED, conflictReasons);
     }
 
     if (this.hasSameAssociation(associationMaps, entry.canonicalKey, pageId)) {
-      return this.createEntrySummary(entry, 'noop', entry.reasons, pageId);
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.NOOP, entry.reasons, pageId);
     }
 
     const persistResult = await input.associationPersistRepository.persistAssociation({
@@ -93,33 +95,33 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
     return this.createPersistSummary(entry, pageId, persistResult);
   }
 
-  private isExecutableEntry(entry: PluginDefaultPageContractMaterializationPlanEntry): boolean {
-    return entry.materializationMode === 'singleton-document'
-      && entry.status === 'ready'
-      && (entry.action === 'adopt-existing' || entry.action === 'create-missing');
+  private isExecutableEntry(entry: IPluginDefaultPageContractMaterializationPlanEntry): boolean {
+    return entry.materializationMode === PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT
+      && entry.status === PluginDefaultPageContractMaterializationStatus.READY
+      && (entry.action === PluginDefaultPageContractMaterializationAction.ADOPT_EXISTING || entry.action === PluginDefaultPageContractMaterializationAction.CREATE_MISSING);
   }
 
   private async executeCreateMissingEntry(
-    entry: PluginDefaultPageContractMaterializationPlanEntry,
-    input: PluginDefaultPageContractMaterializationExecutionInput,
-  ): Promise<PluginDefaultPageContractMaterializationExecutionEntrySummary> {
+    entry: IPluginDefaultPageContractMaterializationPlanEntry,
+    input: IPluginDefaultPageContractMaterializationExecutionInput,
+  ): Promise<IPluginDefaultPageContractMaterializationExecutionEntrySummary> {
     if (!entry.createPayload) {
-      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'create-payload-missing'));
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.FAILED, this.appendReason(entry.reasons, 'create-payload-missing'));
     }
 
     const createdPage = await input.pageCreateRepository.createPage(entry.createPayload);
     if (!createdPage) {
-      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'created-page-missing'));
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.FAILED, this.appendReason(entry.reasons, 'created-page-missing'));
     }
 
     if (createdPage.id === undefined || createdPage.id === null) {
-      return this.createEntrySummary(entry, 'failed', this.appendReason(entry.reasons, 'created-page-id-missing'));
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.FAILED, this.appendReason(entry.reasons, 'created-page-id-missing'));
     }
 
     if (!this.matchesLookupCandidates(entry, createdPage)) {
       return this.createEntrySummary(
         entry,
-        'failed',
+        PluginDefaultPageContractMaterializationExecutionOutcome.FAILED,
         this.appendReason(entry.reasons, 'created-page-no-longer-matches-lookup-candidates'),
         createdPage.id,
       );
@@ -130,11 +132,11 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
     );
     const conflictReasons = this.getAssociationConflictReasons(entry, associationMaps, createdPage.id);
     if (conflictReasons.length) {
-      return this.createEntrySummary(entry, 'failed', conflictReasons, createdPage.id);
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.FAILED, conflictReasons, createdPage.id);
     }
 
     if (this.hasSameAssociation(associationMaps, entry.canonicalKey, createdPage.id)) {
-      return this.createEntrySummary(entry, 'noop', entry.reasons, createdPage.id);
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.NOOP, entry.reasons, createdPage.id);
     }
 
     const persistResult = await input.associationPersistRepository.persistAssociation({
@@ -146,8 +148,8 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
   }
 
   private getAssociationConflictReasons(
-    entry: PluginDefaultPageContractMaterializationPlanEntry,
-    associationMaps: PluginDefaultPageContractBackfillAssociationMaps,
+    entry: IPluginDefaultPageContractMaterializationPlanEntry,
+    associationMaps: IPluginDefaultPageContractBackfillAssociationMaps,
     pageId: number | string,
   ): string[] {
     const pageIdKey = String(pageId);
@@ -170,8 +172,8 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
   }
 
   private matchesLookupCandidates(
-    entry: PluginDefaultPageContractMaterializationPlanEntry,
-    page: PluginDefaultPageContractPageSnapshot,
+    entry: IPluginDefaultPageContractMaterializationPlanEntry,
+    page: IPluginDefaultPageContractPageSnapshot,
   ): boolean {
     const customPermalinkCandidates = this.seedPageService.buildPageLookupCandidates([], {
       customPermalink: page.customPermalink,
@@ -192,7 +194,7 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
   }
 
   private hasSameAssociation(
-    associationMaps: PluginDefaultPageContractBackfillAssociationMaps,
+    associationMaps: IPluginDefaultPageContractBackfillAssociationMaps,
     canonicalKey: string,
     pageId: number | string,
   ): boolean {
@@ -204,7 +206,7 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
   }
 
   private isSameAssociation(
-    record: PluginDefaultPageContractBackfillAssociationRecord | undefined,
+    record: IPluginDefaultPageContractBackfillAssociationRecord | undefined,
     canonicalKey: string,
     pageId: number | string,
   ): boolean {
@@ -212,32 +214,32 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
   }
 
   private createPersistSummary(
-    entry: PluginDefaultPageContractMaterializationPlanEntry,
+    entry: IPluginDefaultPageContractMaterializationPlanEntry,
     pageId: number | string,
-    persistResult: PluginDefaultPageContractAssociationPersistResult,
-  ): PluginDefaultPageContractMaterializationExecutionEntrySummary {
-    if (persistResult.status === 'applied') {
-      return this.createEntrySummary(entry, 'applied', entry.reasons, pageId);
+    persistResult: IPluginDefaultPageContractAssociationPersistResult,
+  ): IPluginDefaultPageContractMaterializationExecutionEntrySummary {
+    if (persistResult.status === PluginDefaultPageContractAssociationPersistStatus.APPLIED) {
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.APPLIED, entry.reasons, pageId);
     }
 
-    if (persistResult.status === 'noop') {
-      return this.createEntrySummary(entry, 'noop', entry.reasons, pageId);
+    if (persistResult.status === PluginDefaultPageContractAssociationPersistStatus.NOOP) {
+      return this.createEntrySummary(entry, PluginDefaultPageContractMaterializationExecutionOutcome.NOOP, entry.reasons, pageId);
     }
 
     return this.createEntrySummary(
       entry,
-      'failed',
+      PluginDefaultPageContractMaterializationExecutionOutcome.FAILED,
       this.appendReason(entry.reasons, persistResult.reason || 'association-persist-conflict'),
       pageId,
     );
   }
 
   private createEntrySummary(
-    entry: PluginDefaultPageContractMaterializationPlanEntry,
+    entry: IPluginDefaultPageContractMaterializationPlanEntry,
     executionOutcome: PluginDefaultPageContractMaterializationExecutionOutcome,
     reasons: string[],
     matchedPageId?: number | string,
-  ): PluginDefaultPageContractMaterializationExecutionEntrySummary {
+  ): IPluginDefaultPageContractMaterializationExecutionEntrySummary {
     return {
       canonicalKey: entry.canonicalKey,
       namespace: entry.namespace,
@@ -253,9 +255,9 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
   }
 
   private createSummary(
-    entries: PluginDefaultPageContractMaterializationExecutionEntrySummary[],
-  ): PluginDefaultPageContractMaterializationExecutionReportSummary {
-    const summary: PluginDefaultPageContractMaterializationExecutionReportSummary = {
+    entries: IPluginDefaultPageContractMaterializationExecutionEntrySummary[],
+  ): IPluginDefaultPageContractMaterializationExecutionReportSummary {
+    const summary: IPluginDefaultPageContractMaterializationExecutionReportSummary = {
       total: entries.length,
       byOutcome: {
         applied: 0,
@@ -266,7 +268,7 @@ export class PluginDefaultPageMaterializationExecutorService extends BaseService
     };
 
     for (const entry of entries) {
-      summary.byOutcome[entry.executionOutcome] += 1;
+      summary.byOutcome[entry.executionOutcome.value] += 1;
     }
 
     return summary;

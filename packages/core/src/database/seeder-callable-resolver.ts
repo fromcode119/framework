@@ -1,11 +1,13 @@
-import { SeederCallableResolverErrorCodes } from './seeder-callable-resolver-error-codes';
-import type { SeederCallableResolution, SeederCallableSymbol } from './seeder-callable-resolver.types';
+import { SeederCallableResolverErrorCodes } from '@core/database/seeder-callable-resolver-error-codes';
+import type { ISeederCallableResolution } from '@core/database/interfaces/seeder-callable-resolution.interface';
+import { SeederCallableSymbol } from '@core/database/enums/seeder-callable-symbol.enum';
+import { SeederCallableSourceType } from '@core/database/enums/seeder-callable-source-type.enum';
 
 export class SeederCallableResolver {
-  private static readonly PRECEDENCE: SeederCallableSymbol[] = ['default', 'seed', 'run', 'execute'];
-  private static readonly STATIC_METHOD_PRECEDENCE: SeederCallableSymbol[] = ['seed', 'run', 'execute'];
+  private static readonly PRECEDENCE: SeederCallableSymbol[] = SeederCallableSymbol.values() as SeederCallableSymbol[];
+  private static readonly STATIC_METHOD_PRECEDENCE: SeederCallableSymbol[] = [SeederCallableSymbol.SEED, SeederCallableSymbol.RUN, SeederCallableSymbol.EXECUTE];
 
-  resolveCallable(moduleExports: unknown): SeederCallableResolution {
+  resolveCallable(moduleExports: unknown): ISeederCallableResolution {
     if (!moduleExports || (typeof moduleExports !== 'object' && typeof moduleExports !== 'function')) {
       throw this.buildResolverError(
         SeederCallableResolverErrorCodes.INVALID_MODULE_EXPORTS,
@@ -16,9 +18,9 @@ export class SeederCallableResolver {
     const exportsRecord = moduleExports as Record<string, unknown>;
 
     for (const symbolName of SeederCallableResolver.PRECEDENCE) {
-      const candidate = symbolName === 'default'
+      const candidate = symbolName === SeederCallableSymbol.DEFAULT
         ? this.readDefaultCandidate(moduleExports, exportsRecord)
-        : exportsRecord[symbolName];
+        : exportsRecord[symbolName.value];
 
       if (candidate === undefined || candidate === null) {
         continue;
@@ -41,7 +43,7 @@ export class SeederCallableResolver {
       return {
         callable: candidate as (...args: unknown[]) => unknown,
         symbolName,
-        sourceType: symbolName === 'default' ? 'default' : 'named'
+        sourceType: symbolName === SeederCallableSymbol.DEFAULT ? SeederCallableSourceType.DEFAULT : SeederCallableSourceType.NAMED
       };
     }
 
@@ -67,18 +69,18 @@ export class SeederCallableResolver {
    * return that method bound to the class. Plain functions have no such static members, so they
    * fall through and resolve as direct callables — keeping the old behavior intact.
    */
-  private resolveClassStaticCallable(value: unknown): SeederCallableResolution | null {
+  private resolveClassStaticCallable(value: unknown): ISeederCallableResolution | null {
     if (typeof value !== 'function') {
       return null;
     }
     const owner = value as unknown as Record<string, unknown>;
     for (const methodName of SeederCallableResolver.STATIC_METHOD_PRECEDENCE) {
-      const method = owner[methodName];
+      const method = owner[methodName.value];
       if (typeof method === 'function') {
         return {
           callable: (...args: unknown[]) => (method as (...args: unknown[]) => unknown).apply(value, args),
           symbolName: methodName,
-          sourceType: 'static'
+          sourceType: SeederCallableSourceType.STATIC
         };
       }
     }

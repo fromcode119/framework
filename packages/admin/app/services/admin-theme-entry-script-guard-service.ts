@@ -1,6 +1,8 @@
+import { Platform } from '@fromcode119/reactor';
+
 export class AdminThemeEntryScriptGuardService {
   static install(): void {
-    if (typeof window === 'undefined' || typeof Element === 'undefined') {
+    if (!Platform.isBrowser || typeof Element === 'undefined') {
       return;
     }
 
@@ -24,7 +26,7 @@ export class AdminThemeEntryScriptGuardService {
         node.async = true;
       }
 
-      return originalAppendChild.call(this, node);
+      return originalAppendChild.call(this, node) as T;
     };
 
     globalWindow.__fromcodeAdminThemeEntryScriptGuardInstalled = true;

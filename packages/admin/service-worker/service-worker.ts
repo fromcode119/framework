@@ -7,14 +7,29 @@
  * identity.
  *
  * This file runs in a ServiceWorkerGlobalScope, NOT the DOM — it is excluded from the app's tsconfig and
- * type-checked against the WebWorker lib via `service-worker/tsconfig.json`.
+ * type-checked against the WebWorker lib via `service-worker/tsconfig.json`. The ambient global is
+ * narrowed by the private `scope` accessor rather than a module-level `declare const self`, so nothing
+ * lives outside the class.
+ *
+ * A worker entry has to start itself, and that bootstrap is BUILD glue, not source: `build:sw` bundles
+ * with `--global-name=AdminServiceWorkerModule` and appends the `register()` call as a footer — the same
+ * rule nextor applies to Next's route exports, so the only hand-written export here is `export class`.
  */
-import { AdminServiceWorkerConstants } from '../lib/pwa/admin-service-worker-constants';
+import { AdminServiceWorkerConstants } from '@/lib/pwa/constants/admin-service-worker.constants';
 
-export {};
-declare let self: ServiceWorkerGlobalScope;
+export class AdminServiceWorker {
+  /**
+   * The worker's own global, narrowed from the ambient `WorkerGlobalScope`.
+   *
+   * A service worker's `self` carries `clients`, `skipWaiting()` and the typed `fetch`/`activate` events
+   * that the base worker scope does not. Reading it through an accessor keeps that narrowing INSIDE the
+   * class — a module-level `declare const self` put a declaration outside it, and a `.d.ts` cannot express
+   * this at all (an ambient global can only be shadowed from within a module).
+   */
+  private static get scope(): ServiceWorkerGlobalScope {
+    return self as unknown as ServiceWorkerGlobalScope;
+  }
 
-class AdminServiceWorker {
   /** True when the request must bypass the cache entirely (live API/socket traffic). */
   private static isNetworkOnly(url: URL): boolean {
     return AdminServiceWorkerConstants.NETWORK_ONLY_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
@@ -26,7 +41,7 @@ class AdminServiceWorker {
     await Promise.all(
       keys.filter((key) => key !== AdminServiceWorkerConstants.SHELL_CACHE).map((key) => caches.delete(key)),
     );
-    await self.clients.claim();
+    await AdminServiceWorker.scope.clients.claim();
   }
 
   /** Network-first with a cache write-through; falls back to the cached copy when the network fails. */
@@ -49,15 +64,17 @@ class AdminServiceWorker {
   }
 
   static register(): void {
-    self.addEventListener('install', () => {
-      self.skipWaiting();
+    const scope = AdminServiceWorker.scope;
+
+    scope.addEventListener('install', () => {
+      scope.skipWaiting();
     });
 
-    self.addEventListener('activate', (event) => {
+    scope.addEventListener('activate', (event) => {
       event.waitUntil(AdminServiceWorker.activate());
     });
 
-    self.addEventListener('fetch', (event) => {
+    scope.addEventListener('fetch', (event) => {
       const request = event.request;
       if (request.method !== 'GET') return;
       if (AdminServiceWorker.isNetworkOnly(new URL(request.url))) return;
@@ -65,5 +82,3 @@ class AdminServiceWorker {
     });
   }
 }
-
-AdminServiceWorker.register();

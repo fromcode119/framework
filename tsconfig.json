@@ -12,6 +12,31 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
+      // `@ai/*` is the ai package's PRIVATE alias for its own source. typor-build resolves it to a
+      // relative path before tsc runs, so nothing reaches dist — see AliasEmitRewrite.
+      "@ai/*": [
+        "packages/ai/src/*"
+      ],
+      // Every other typor-built package carries the same kind of PRIVATE alias for its own source,
+      // resolved to a relative path by AliasEmitRewrite before tsc emits. NOT declared for archor /
+      // reactor / nextor / typor: those build with raw `tsc` (no typor-build wrapper), so an alias
+      // would survive verbatim into their dist and Node could not resolve it.
+      "@core/*": ["packages/core/src/*"],
+      "@database/*": ["packages/database/src/*"],
+      "@react/*": ["packages/react/src/*"],
+      "@api/*": ["packages/api/src/*"],
+      "@auth/*": ["packages/auth/src/*"],
+      "@cache/*": ["packages/cache/src/*"],
+      "@marketplace-client/*": ["packages/marketplace-client/src/*"],
+      "@media/*": ["packages/media/src/*"],
+      "@email/*": ["packages/email/src/*"],
+      "@scheduler/*": ["packages/scheduler/src/*"],
+      "@plugins/*": ["packages/plugins/src/*"],
+      "@mcp/*": ["packages/mcp/src/*"],
+      "@sdk/*": ["packages/sdk/src/*"],
+      "@nextjs/*": ["packages/next/src/*"],
+      "@cli/*": ["packages/cli/src/*"],
+      
       "@fromcode119/core": ["packages/core/src"],
       "@fromcode119/core/client": ["packages/core/src/client.ts"],
       "@fromcode119/core/*": ["packages/core/src/*"],

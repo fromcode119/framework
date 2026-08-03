@@ -1,11 +1,10 @@
-import React from 'react';
-import type { PluginStateContextValue } from './plugin-state-context.interfaces';
+import { Context as ReactorContext } from '@fromcode119/reactor';
+import type { IPluginStateContextValue } from '@react/context/interfaces/plugin-state-context-value.interface';
 
-const defaultValue: PluginStateContextValue = {
+export class PluginStateContext {
+  private static readonly defaultValue = {
   pluginState: {},
   setPluginState: () => {},
 };
-
-export class PluginStateContext {
-  static readonly Context = React.createContext<PluginStateContextValue>(defaultValue);
+  static readonly Context = new ReactorContext<IPluginStateContextValue>(PluginStateContext.defaultValue).raw;
 }

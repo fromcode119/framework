@@ -1,14 +1,12 @@
-import {
-  AdminSecondaryPanelContext,
-  AdminSecondaryPanelNormalizedItem,
-  AdminSecondaryPanelPayload,
-} from './admin-secondary-panel.interfaces';
+import type { IAdminSecondaryPanelContext } from '@core/plugin/services/interfaces/admin-secondary-panel-context.interface';
+import type { IAdminSecondaryPanelNormalizedItem } from '@core/plugin/services/interfaces/admin-secondary-panel-normalized-item.interface';
+import type { IAdminSecondaryPanelPayload } from '@core/plugin/services/interfaces/admin-secondary-panel-payload.interface';
 
 export class AdminSecondaryPanelResolver {
-  resolve(items: AdminSecondaryPanelNormalizedItem[], allowlistEntriesCount: number): AdminSecondaryPanelPayload {
-    const contexts: Record<string, AdminSecondaryPanelContext> = {};
-    const itemsByContext: Record<string, AdminSecondaryPanelNormalizedItem[]> = {};
-    const globalItems: AdminSecondaryPanelNormalizedItem[] = [];
+  resolve(items: IAdminSecondaryPanelNormalizedItem[], allowlistEntriesCount: number): IAdminSecondaryPanelPayload {
+    const contexts: Record<string, IAdminSecondaryPanelContext> = {};
+    const itemsByContext: Record<string, IAdminSecondaryPanelNormalizedItem[]> = {};
+    const globalItems: IAdminSecondaryPanelNormalizedItem[] = [];
 
     for (const item of items) {
       if (item.scope === 'global') {

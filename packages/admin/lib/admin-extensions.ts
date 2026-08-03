@@ -1,16 +1,17 @@
-import { AppEnv } from './env';
-import type { AdminExtensionBridge, AdminExtensionModule } from './admin-extensions.types';
+import { AppEnv } from '@/lib/env';
+import type { IAdminExtensionBridge } from '@/lib/interfaces/admin-extension-bridge.interface';
+import type { IAdminExtensionModule } from '@/lib/interfaces/admin-extension-module.interface';
 
 /**
  * Dynamic loader registry for optional core admin extensions. Each loader attempts to load an
  * optional extension (e.g. the AI admin extension), failing gracefully if unavailable.
  */
 export class AdminExtensions {
-  static readonly loaders: Array<() => Promise<AdminExtensionModule>> = [
+  static readonly loaders: Array<() => Promise<IAdminExtensionModule>> = [
     () => AdminExtensions.loadAiExtension(),
   ];
 
-  private static async loadAiExtension(): Promise<AdminExtensionModule> {
+  private static async loadAiExtension(): Promise<IAdminExtensionModule> {
     if (!AppEnv.AI_ENABLED) {
       return {};
     }
@@ -24,13 +25,13 @@ export class AdminExtensions {
       };
       const directRegister =
         typeof aiAdmin.registerAdminExtension === 'function'
-          ? (aiAdmin.registerAdminExtension as (bridge: AdminExtensionBridge) => void)
+          ? (aiAdmin.registerAdminExtension as (bridge: IAdminExtensionBridge) => void)
           : undefined;
       const registryRegister =
         aiAdmin.AdminExtensionRegistry && typeof aiAdmin.AdminExtensionRegistry.registerAdminExtension === 'function'
-          ? (aiAdmin.AdminExtensionRegistry.registerAdminExtension as (bridge: AdminExtensionBridge) => void)
+          ? (aiAdmin.AdminExtensionRegistry.registerAdminExtension as (bridge: IAdminExtensionBridge) => void)
           : undefined;
-      const registerAdminExtension: AdminExtensionModule['registerAdminExtension'] = directRegister || registryRegister;
+      const registerAdminExtension: IAdminExtensionModule['registerAdminExtension'] = directRegister || registryRegister;
 
       return { registerAdminExtension };
     } catch (error: any) {

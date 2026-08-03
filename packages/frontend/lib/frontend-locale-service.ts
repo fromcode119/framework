@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
-import { FrontendPublicSettings } from './frontend-public-settings';
-import { QueryParamUtils } from './query-param-utils';
-import type { LocaleStrategy, SearchParams } from './dynamic-page-resolver.types';
+import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
+import { QueryParamUtils } from '@/lib/query-param-utils';
+import { LocaleUrlStrategy } from '@fromcode119/core/client';
 
 export class FrontendLocaleService {
   static async readDefaultLocale(): Promise<string> {
@@ -19,16 +19,16 @@ export class FrontendLocaleService {
   }
 
   static async resolveLocale(
-    searchParams: SearchParams | undefined,
+    searchParams: Record<string, string | string[] | undefined> | undefined,
     pathLocale: string | undefined,
-    strategy: LocaleStrategy,
+    strategy: LocaleUrlStrategy,
   ): Promise<string> {
     const normalizedPathLocale = FrontendLocaleService.normalize(pathLocale);
     if (normalizedPathLocale) {
       return normalizedPathLocale;
     }
 
-    if (strategy === 'query') {
+    if (strategy === LocaleUrlStrategy.QUERY) {
       const fromQuery = FrontendLocaleService.normalize(
         QueryParamUtils.readSearchValue(searchParams, 'locale') || QueryParamUtils.readSearchValue(searchParams, 'lang'),
       );
@@ -44,6 +44,16 @@ export class FrontendLocaleService {
     }
 
     return FrontendLocaleService.readDefaultLocale();
+  }
+
+  /**
+   * The locale stamped on `<html lang>` by the root layout — and therefore the locale a theme's
+   * browser bundle detects (`FrontendI18nService.detectInitialLocale` reads `document.documentElement.lang`).
+   * Server-rendering a theme must resolve copy against THIS locale, or the words painted server-side
+   * differ from the words the theme renders after it boots.
+   */
+  static async resolveDocumentLocale(strategy: LocaleUrlStrategy): Promise<string> {
+    return FrontendLocaleService.resolveLocale(undefined, undefined, strategy);
   }
 
   private static normalize(value: unknown): string {

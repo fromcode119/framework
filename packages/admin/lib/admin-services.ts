@@ -1,14 +1,14 @@
-import { FormatterService } from './services/formatter-service';
-import { StringService } from './services/string-service';
-import { MediaService } from './services/media-service';
-import { ValidationService } from './services/validation-service';
-import { LocalizationService } from './services/localization-service';
-import { StatusService } from './services/status-service';
-import { CollectionService } from './services/collection-service';
-import { DateService } from './services/date-service';
-import { UrlService } from './services/url-service';
-import { UiPreferenceService } from './services/ui-preference-service';
-import { EntityFormDataService } from './services/entity-form-data-service';
+import { FormatterService } from '@/lib/services/formatter-service';
+import { StringService } from '@/lib/services/string-service';
+import { MediaService } from '@/lib/services/media-service';
+import { ValidationService } from '@/lib/services/validation-service';
+import { LocalizationService } from '@/lib/services/localization-service';
+import { StatusService } from '@/lib/services/status-service';
+import { CollectionService } from '@/lib/services/collection-service';
+import { DateService } from '@/lib/services/date-service';
+import { UrlService } from '@/lib/services/url-service';
+import { UiPreferenceService } from '@/lib/services/ui-preference-service';
+import { EntityFormDataService } from '@/lib/services/entity-form-data-service';
 
 /**
  * Service Locator for Admin utilities.

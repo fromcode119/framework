@@ -1,13 +1,9 @@
 import * as jwt from 'jsonwebtoken';
 import { PluginManager } from '@fromcode119/core';
-import { SsoJwksKeyProvider } from './sso-jwks-key-provider';
+import { SsoJwksKeyProvider } from '@api/controllers/auth/sso/sso-jwks-key-provider';
 
 // Provider verification metadata (issuer + JWKS endpoint). Plain literals — no domain logic, just the public
 // OpenID endpoints for the two supported identity providers.
-const PROVIDERS: Record<string, { issuer: string | string[]; jwksUri: string }> = {
-  google: { issuer: ['https://accounts.google.com', 'accounts.google.com'], jwksUri: 'https://www.googleapis.com/oauth2/v3/certs' },
-  apple: { issuer: 'https://appleid.apple.com', jwksUri: 'https://appleid.apple.com/auth/keys' },
-};
 
 /**
  * Resolves a verified user identity from a Google/Apple OIDC id-token. Registered on the
@@ -20,6 +16,11 @@ const PROVIDERS: Record<string, { issuer: string | string[]; jwksUri: string }> 
  * rejected, so a token minted for a different app can never be accepted.
  */
 export class SsoUserResolverService {
+  private static readonly PROVIDERS: Record<string, { issuer: string | string[]; jwksUri: string }> = {
+  google: { issuer: ['https://accounts.google.com', 'accounts.google.com'], jwksUri: 'https://www.googleapis.com/oauth2/v3/certs' },
+  apple: { issuer: 'https://appleid.apple.com', jwksUri: 'https://appleid.apple.com/auth/keys' },
+};
+
   private keys = new SsoJwksKeyProvider();
 
   constructor(private manager: PluginManager) {}
@@ -27,7 +28,7 @@ export class SsoUserResolverService {
   async resolve(payload: any): Promise<any> {
     const provider = String(payload?.provider || '').trim().toLowerCase();
     const idToken = String(payload?.idToken || '').trim();
-    const meta = PROVIDERS[provider];
+    const meta = SsoUserResolverService.PROVIDERS[provider];
     if (!meta) throw new Error(`SSO provider "${provider}" is not supported`);
     if (!idToken) throw new Error('An id token is required for SSO login');
 

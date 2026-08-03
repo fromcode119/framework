@@ -1,7 +1,10 @@
+import { MovingItemType } from '@/app/media/enums/moving-item-type.enum';
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
-import type { MediaFolder, MediaItem, MediaLibraryPage, MovingItem } from './media-page.interfaces';
-
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
+import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
+import type { IMediaLibraryPage } from '@/app/media/interfaces/media-library-page.interface';
+import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
 /**
  * Data access + business logic for the media library. Hook-free by contract: the page-client class
  * owns React state and lifecycle; this controller owns "how to fetch/do it".
@@ -15,7 +18,7 @@ export class MediaPageController {
    * Items + folders for a folder/search view. With no folder and no query the listing is pinned to
    * the root (`folderId=null`); a search deliberately spans every folder.
    */
-  static async fetchLibrary(currentFolderId: number | null, searchQuery: string): Promise<MediaLibraryPage> {
+  static async fetchLibrary(currentFolderId: number | null, searchQuery: string): Promise<IMediaLibraryPage> {
     const q = searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : '';
     const f = currentFolderId !== null ? `&folderId=${currentFolderId}` : (searchQuery ? '' : '&folderId=null');
 
@@ -28,7 +31,7 @@ export class MediaPageController {
   }
 
   /** Breadcrumb trail for a folder. The root has no trail. */
-  static async fetchFolderPath(currentFolderId: number | null): Promise<MediaFolder[]> {
+  static async fetchFolderPath(currentFolderId: number | null): Promise<IMediaFolder[]> {
     if (!currentFolderId) return [];
     return AdminApi.get(`${MediaPageController.base}/folders/${currentFolderId}/path`);
   }
@@ -46,9 +49,9 @@ export class MediaPageController {
   }
 
   /** Re-parent a file or folder. The API expects the string `'null'` to mean "the root". */
-  static async move(movingItem: MovingItem, targetFolderId: number | null): Promise<void> {
+  static async move(movingItem: IMovingItem, targetFolderId: number | null): Promise<void> {
     const target = targetFolderId === null ? 'null' : targetFolderId;
-    if (movingItem.type === 'file') {
+    if (movingItem.type === MovingItemType.FILE) {
       await AdminApi.patch(`${MediaPageController.base}/${movingItem.id}`, { folderId: target });
       return;
     }
@@ -74,7 +77,7 @@ export class MediaPageController {
   }
 
   /** Generate an optimized derivative; returns the fields to merge into the cached item. */
-  static async optimize(itemId: number): Promise<Partial<MediaItem>> {
+  static async optimize(itemId: number): Promise<Partial<IMediaItem>> {
     const result = await AdminApi.post(`${MediaPageController.base}/${itemId}/optimize`, {});
     return {
       optimizedUrl: result.optimizedUrl,

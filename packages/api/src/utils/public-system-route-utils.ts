@@ -1,5 +1,5 @@
 import { PublicRouteConstants } from '@fromcode119/core';
-import { ApiConfig } from '../config/api-config';
+import { ApiConfig } from '@api/config/api-config';
 
 export class PublicSystemRouteUtils {
   static readonly AUTH_SUFFIX = PublicRouteConstants.AUTH_SUFFIX;

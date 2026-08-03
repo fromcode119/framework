@@ -1,14 +1,17 @@
-import fs from 'fs';
+import { DependencyIssueKind } from '@core/plugin/services/enums/dependency-issue-kind.enum';
+
 import path from 'path';
 import semver from 'semver';
-import { Logger } from '../../logging';
-import { FromcodePlugin, LoadedPlugin, PluginManifest } from '../../types';
+import { Logger } from '@core/logging';
+import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
 
-import type { DependencyIssue } from './discovery-service.interfaces';
-import { PluginDependencyInstallerService } from './plugin-dependency-installer-service';
-import { PluginArchiveInstallerService } from './plugin-archive-installer-service';
-import { PluginDirectoryScannerService } from './plugin-directory-scanner-service';
-import { PluginState } from './plugin-state.enums';
+import type { IDependencyIssue } from '@core/plugin/services/interfaces/dependency-issue.interface';
+import { PluginDependencyInstallerService } from '@core/plugin/services/plugin-dependency-installer-service';
+import { PluginArchiveInstallerService } from '@core/plugin/services/plugin-archive-installer-service';
+import { PluginDirectoryScannerService } from '@core/plugin/services/plugin-directory-scanner-service';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class DiscoveryService {
   private logger = new Logger({ namespace: 'discovery-service' });
@@ -23,7 +26,7 @@ export class DiscoveryService {
   }
 
   public async discoverPlugins(
-    existingPlugins: Map<string, LoadedPlugin>,
+    existingPlugins: Map<string, ILoadedPlugin>,
     installedState: Record<string, { sandboxConfig?: any }> = {}
   ): Promise<{
     discovered: { plugin: any, path: string }[],
@@ -32,10 +35,10 @@ export class DiscoveryService {
     return this.scanner.discoverPlugins(existingPlugins, installedState);
   }
 
-  public resolveDependencies(plugins: FromcodePlugin[]): FromcodePlugin[] {
+  public resolveDependencies(plugins: IFromcodePlugin[]): IFromcodePlugin[] {
     const adj: Map<string, string[]> = new Map();
     const inDegree: Map<string, number> = new Map();
-    const pluginMap: Map<string, FromcodePlugin> = new Map();
+    const pluginMap: Map<string, IFromcodePlugin> = new Map();
 
     plugins.forEach(p => {
       pluginMap.set(p.manifest.slug, p);
@@ -63,7 +66,7 @@ export class DiscoveryService {
       if (degree === 0) queue.push(slug);
     });
 
-    const result: FromcodePlugin[] = [];
+    const result: IFromcodePlugin[] = [];
     const processed = new Set<string>();
 
     while (queue.length > 0) {
@@ -102,37 +105,37 @@ export class DiscoveryService {
     return result;
   }
 
-  public checkDependencies(manifest: PluginManifest, plugins: Map<string, LoadedPlugin>, options: { checkActive?: boolean } = {}): DependencyIssue[] {
-    const issues: DependencyIssue[] = [];
+  public checkDependencies(manifest: IPluginManifest, plugins: Map<string, ILoadedPlugin>, options: { checkActive?: boolean } = {}): IDependencyIssue[] {
+    const issues: IDependencyIssue[] = [];
     if (!manifest.dependencies) return issues;
 
     for (const [depSlug, versionRange] of Object.entries(manifest.dependencies)) {
       const dependency = plugins.get(depSlug);
       
       if (!dependency) {
-        issues.push({ slug: depSlug, expected: versionRange, type: 'missing' });
+        issues.push({ slug: depSlug, expected: versionRange, type: DependencyIssueKind.MISSING });
         continue;
       }
 
       if (!semver.satisfies(dependency.manifest.version, versionRange)) {
-        issues.push({ slug: depSlug, expected: versionRange, actual: dependency.manifest.version, type: 'incompatible' });
+        issues.push({ slug: depSlug, expected: versionRange, actual: dependency.manifest.version, type: DependencyIssueKind.INCOMPATIBLE });
         continue;
       }
 
       if (options.checkActive && dependency.state !== PluginState.ACTIVE) {
-        issues.push({ slug: depSlug, expected: versionRange, type: 'inactive' });
+        issues.push({ slug: depSlug, expected: versionRange, type: DependencyIssueKind.INACTIVE });
       }
     }
     return issues;
   }
 
-  public validateDependencies(manifest: PluginManifest, plugins: Map<string, LoadedPlugin>): void {
+  public validateDependencies(manifest: IPluginManifest, plugins: Map<string, ILoadedPlugin>): void {
     const issues = this.checkDependencies(manifest, plugins);
     if (issues.length > 0) {
       const issue = issues[0];
-      if (issue.type === 'missing') {
+      if (issue.type === DependencyIssueKind.MISSING) {
         throw new Error(`Missing dependency: Plugin "${manifest.slug}" requires "${issue.slug}" (${issue.expected})`);
-      } else if (issue.type === 'incompatible') {
+      } else if (issue.type === DependencyIssueKind.INCOMPATIBLE) {
         throw new Error(`Incompatible dependency: Plugin "${manifest.slug}" requires "${issue.slug}" version "${issue.expected}", but version "${issue.actual}" is installed.`);
       }
     }
@@ -146,7 +149,7 @@ export class DiscoveryService {
     this.archiveInstaller.moveDir(src, dest);
   }
 
-  async installFromZip(filePath: string): Promise<PluginManifest> {
+  async installFromZip(filePath: string): Promise<IPluginManifest> {
     return this.archiveInstaller.installFromZip(filePath);
   }
 }

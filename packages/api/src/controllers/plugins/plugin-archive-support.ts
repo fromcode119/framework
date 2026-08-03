@@ -1,10 +1,11 @@
+import { ExtensionKind } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { BackupService, PluginManager, PluginState, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
-import { ArchiveUploadRequestParser } from '../archive-upload-request-parser';
+import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-request-parser';
 
 /**
  * Archive inspection/extraction, upload-request parsing, asset serving and
@@ -12,7 +13,7 @@ import { ArchiveUploadRequestParser } from '../archive-upload-request-parser';
  * keep each file under the size limit; PluginController instantiates this with
  * the same PluginManager and delegates, so behavior is unchanged.
  */
-import { AssetCacheHeaderService } from '../../services/asset-cache-header-service';
+import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
 
 export class PluginArchiveSupport {
 
@@ -101,7 +102,7 @@ export class PluginArchiveSupport {
   }
 
   async inspectPluginArchive(filePath: string, originalFilename?: string) {
-    const extractedDir = await this.extractArchiveToTemporaryDirectory(filePath, originalFilename, 'plugin');
+    const extractedDir = await this.extractArchiveToTemporaryDirectory(filePath, originalFilename, ExtensionKind.PLUGIN);
     try {
       const manifestPath = this.findManifestPath(extractedDir, 'manifest.json');
       if (!manifestPath) {
@@ -141,7 +142,7 @@ export class PluginArchiveSupport {
     }
   }
 
-  private async extractArchiveToTemporaryDirectory(filePath: string, originalFilename: string | undefined, type: 'plugin' | 'theme'): Promise<string> {
+  private async extractArchiveToTemporaryDirectory(filePath: string, originalFilename: string | undefined, type: ExtensionKind): Promise<string> {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `fromcode-${type}-inspect-`));
     try {
       if (this.isZipArchive(filePath, originalFilename)) {

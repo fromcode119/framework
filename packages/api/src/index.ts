@@ -2,37 +2,22 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import * as http from 'http';
-import { 
-  PluginManager, 
-  ThemeManager, 
-  Logger, 
-  RecordVersions, 
-  WebSocketManager, 
-} from '@fromcode119/core';
+import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
 import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, RouteConstants } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
-import { RESTController } from './controllers/rest/rest-controller';
-import { ApiConfig } from './config/api-config';
-import { CoreCollections } from './collections/core';
-import { CSRFMiddleware } from './middlewares/csrf-middleware';
-import { XSSMiddleware } from './middlewares/xss-middleware';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { ApiConfig } from '@api/config/api-config';
+import { CoreCollections } from '@api/collections/core';
+import { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
+import { XSSMiddleware } from '@api/middlewares/xss-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
-import { GraphQLService } from './services/graph-ql-service';
-import {
-  ApiBootstrapService,
-  ServerCorsSetup,
-  ServerAuthSetup,
-  ServerMaintenanceService,
-  ServerMiddlewareSetup,
-  ServerRoutesSetup,
-  ServerSettingsService,
-  ServerUploadsConfigService,
-} from './server/index';
-import { PublicSystemRouteUtils } from './utils/public-system-route-utils';
-import { WebhookRouteUtils } from './utils/webhook-route-utils';
-import { AdminBootstrapRateLimitUtils } from './utils/admin-bootstrap-rate-limit-utils';
+import { GraphQLService } from '@api/services/graph-ql-service';
+import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService } from '@api/server/index';
+import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
+import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
+import { AdminBootstrapRateLimitUtils } from '@api/utils/admin-bootstrap-rate-limit-utils';
 
 export class APIServer {
   public app = express();
@@ -90,6 +75,7 @@ export class APIServer {
   }
 
   public async initialize() {
+
     this.logger.info('Initializing API Server infrastructure...');
     
     // Support nested proxies (e.g. Traefik -> Nginx -> Node). In containerized deployments the reverse

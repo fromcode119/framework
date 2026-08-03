@@ -1,11 +1,12 @@
-import type { CoreExtensionContext } from '@fromcode119/core';
+import { AuditOutcome } from '@fromcode119/core';
+import type { ICoreExtensionContext } from '@fromcode119/core';
 import { AuditManager } from '@fromcode119/core';
-import { ProviderCapabilitiesUtils } from './gateways/integration-provider';
-import { AiActComplianceWrapper } from './gateways/ai-act-compliance-wrapper';
-import { AssistantRouter } from './api/routes';
+import { ProviderCapabilitiesUtils } from '@ai/gateways/integration-provider';
+import { AiActComplianceWrapper } from '@ai/gateways/ai-act-compliance-wrapper';
+import { AssistantRouter } from '@ai/api/routes';
 
 export class AiExtension {
-  static async onInit(context: CoreExtensionContext): Promise<void> {
+  static async onInit(context: ICoreExtensionContext): Promise<void> {
     const { logger, integrations, db } = context.services;
 
     logger.info('Initializing AI extension...');
@@ -16,7 +17,7 @@ export class AiExtension {
     if (db) {
       const audit = new AuditManager(db);
       AiActComplianceWrapper.useSink((entry) => {
-        void audit.logAction('system', 'ai.invoke', entry.purpose || 'unspecified', entry.ok ? 'allowed' : 'violation', {
+        void audit.logAction('system', 'ai.invoke', entry.purpose || 'unspecified', entry.ok ? AuditOutcome.ALLOWED : AuditOutcome.VIOLATION, {
           provider: entry.provider, model: entry.model, riskTier: entry.riskTier, ms: entry.ms,
           promptChars: entry.promptChars, responseChars: entry.responseChars, ok: entry.ok, error: entry.error,
         });
@@ -48,11 +49,11 @@ export class AiExtension {
     logger.info('AI extension initialized successfully');
   }
 
-  static async onEnable(context: CoreExtensionContext): Promise<void> {
+  static async onEnable(context: ICoreExtensionContext): Promise<void> {
     context.services.logger.info('AI extension enabled');
   }
 
-  static async onDisable(context: CoreExtensionContext): Promise<void> {
+  static async onDisable(context: ICoreExtensionContext): Promise<void> {
     const { logger, integrations } = context.services;
     logger.info('AI extension disabled - cleaning up...');
 

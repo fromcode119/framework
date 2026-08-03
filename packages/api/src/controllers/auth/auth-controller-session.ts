@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
-import { AuthControllerLifecycle } from './auth-controller-lifecycle';
-import { AuthSessionRecordService } from './auth-session-record-service';
+import { AuthControllerLifecycle } from '@api/controllers/auth/auth-controller-lifecycle';
+import { AuthSessionRecordService } from '@api/controllers/auth/auth-session-record-service';
 
 /**
  * Session listing/revocation handlers. Extracted from AuthControllerAccount to

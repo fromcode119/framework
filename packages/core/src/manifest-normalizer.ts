@@ -1,25 +1,27 @@
 import fs from 'fs';
 import path from 'path';
-import type { PluginManifest, ThemeManifest } from './types/manifests.interfaces';
-import type { PluginManifestInput, ThemeManifestInput } from './types/manifests.types';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import type { IPluginManifestInput } from '@core/interfaces/plugin-manifest-input.interface';
+import type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';
 
 export class ManifestNormalizer {
-  static plugin(input: PluginManifestInput, basePath?: string): PluginManifest {
+  static plugin(input: IPluginManifestInput, basePath?: string): IPluginManifest {
     const version = input.version ?? ManifestNormalizer.readPackageVersion(basePath) ?? '1.0.0';
     return {
       category: 'general',
       ...input,
       version,
-    } as PluginManifest;
+    } as IPluginManifest;
   }
 
-  static theme(input: ThemeManifestInput, basePath?: string): ThemeManifest {
+  static theme(input: IThemeManifestInput, basePath?: string): IThemeManifest {
     const version = input.version ?? ManifestNormalizer.readPackageVersion(basePath) ?? '1.0.0';
     return {
       layouts: [],
       ...input,
       version,
-    } as ThemeManifest;
+    } as IThemeManifest;
   }
 
   private static readPackageVersion(basePath?: string): string | undefined {

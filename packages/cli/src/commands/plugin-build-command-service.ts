@@ -4,9 +4,9 @@ import fs from 'fs-extra';
 import path from 'path';
 import { spawn } from 'child_process';
 import * as esbuild from 'esbuild';
-import { PluginManifest } from '@fromcode119/core';
-import { CliUtils } from '../utils';
-import { PluginDependencyCommandService } from '../services/plugin-dependency-command-service';
+import { IPluginManifest } from '@fromcode119/core';
+import { CliUtils } from '@cli/utils';
+import { PluginDependencyCommandService } from '@cli/services/plugin-dependency-command-service';
 
 export class PluginBuildCommandService {
   static register(plugin: Command, dependencyService: PluginDependencyCommandService): void {
@@ -41,10 +41,10 @@ export class PluginBuildCommandService {
               path.join(pluginsDir, dir, 'plugin.json') // Support older format
             ];
 
-            let manifest: PluginManifest | null = null;
+            let manifest: IPluginManifest | null = null;
             for (const p of manifestPaths) {
               if (await fs.pathExists(p)) {
-                manifest = await fs.readJson(p) as PluginManifest;
+                manifest = await fs.readJson(p) as IPluginManifest;
                 break;
               }
             }

@@ -1,4 +1,4 @@
-import { Logger } from '../logging';
+import { Logger } from '@core/logging';
 
 /**
  * Resolver for NON-secret, NON-bootstrap platform configuration that may live either

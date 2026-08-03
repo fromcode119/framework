@@ -1,15 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import type { PluginManifest } from '../../types';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
 
 export class PluginPackageValidator {
-  static validateInstalledPackage(packageRoot: string, manifest: PluginManifest): void {
+  static validateInstalledPackage(packageRoot: string, manifest: IPluginManifest): void {
     this.validateServerEntry(packageRoot, manifest);
     this.validateUiEntries(packageRoot, manifest);
     this.validateMigrations(packageRoot, manifest);
   }
 
-  private static validateServerEntry(packageRoot: string, manifest: PluginManifest): void {
+  private static validateServerEntry(packageRoot: string, manifest: IPluginManifest): void {
     const entryFile = String(manifest.main || 'index.js').trim();
     if (!entryFile) {
       return;
@@ -31,7 +31,7 @@ export class PluginPackageValidator {
     throw new Error(`Uploaded plugin archive is invalid: missing server entry "${entryFile}".`);
   }
 
-  private static validateUiEntries(packageRoot: string, manifest: PluginManifest): void {
+  private static validateUiEntries(packageRoot: string, manifest: IPluginManifest): void {
     const uiRecord = manifest.ui && typeof manifest.ui === 'object'
       ? manifest.ui as Record<string, unknown>
       : null;
@@ -58,7 +58,7 @@ export class PluginPackageValidator {
     }
   }
 
-  private static validateMigrations(packageRoot: string, manifest: PluginManifest): void {
+  private static validateMigrations(packageRoot: string, manifest: IPluginManifest): void {
     const migrationsDirName = String(manifest?.migrations || '').trim();
     if (!migrationsDirName) {
       return;

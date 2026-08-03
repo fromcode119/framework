@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FrontendAssetVersionUrlService } from '../lib/frontend-asset-version-url-service';
+import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 
 describe('FrontendAssetVersionUrlService.appendVersion', () => {
   it('stamps the package version onto a relative manifest href', () => {

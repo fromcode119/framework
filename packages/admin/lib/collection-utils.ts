@@ -1,12 +1,12 @@
-import { Collection, CollectionIdentityService } from '@fromcode119/core/client';
-
-const collectionIdentityService = new CollectionIdentityService();
+import { ICollection, CollectionIdentityService } from '@fromcode119/core/client';
 
 /**
  * Resolves the collection-specific prefix from settings.
  */
 export class AdminCollectionUtils {
-  static supportsPreview(collection?: Collection | null): boolean {
+  private static readonly collectionIdentityService = new CollectionIdentityService();
+
+  static supportsPreview(collection?: ICollection | null): boolean {
     if (!collection || (collection.admin as any)?.preview === false) {
       return false;
     }
@@ -15,7 +15,7 @@ export class AdminCollectionUtils {
       && (collection as any).fields.some((field: any) => field?.name === 'slug');
   }
 
-  static getCollectionPrefix(collection: Collection, pluginSettings?: Record<string, any>): string {
+  static getCollectionPrefix(collection: ICollection, pluginSettings?: Record<string, any>): string {
     if (!pluginSettings || !collection.admin?.previewPrefixSettingsKey) return '';
     const prefixKey = collection.admin.previewPrefixSettingsKey;
     if (!pluginSettings[prefixKey]) return '';
@@ -25,7 +25,7 @@ export class AdminCollectionUtils {
   static generatePreviewUrl(
     frontendUrl: string,
     record: any,
-    collection: Collection,
+    collection: ICollection,
     permalinkStructure?: string,
     pluginSettings?: Record<string, any>
   ): string {
@@ -64,11 +64,11 @@ export class AdminCollectionUtils {
     return `${cleanBaseUrl}${path}?preview=1`;
   }
 
-  static resolveCollection(collections: Collection[], pluginSlug: string, slug: string): Collection | undefined {
+  static resolveCollection(collections: ICollection[], pluginSlug: string, slug: string): ICollection | undefined {
     const normPluginSlug = String(pluginSlug || 'system').toLowerCase();
     const isGlobalCollectionRoute = normPluginSlug === 'collections';
     const requestedPluginSlug = isGlobalCollectionRoute ? undefined : normPluginSlug;
-    const resolvedSlug = collectionIdentityService.resolveRegisteredSlug(slug, collections as any, requestedPluginSlug);
+    const resolvedSlug = AdminCollectionUtils.collectionIdentityService.resolveRegisteredSlug(slug, collections as any, requestedPluginSlug);
     const normalizedResolvedSlug = String(resolvedSlug || '').toLowerCase();
 
     return collections.find((collection) => {

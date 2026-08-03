@@ -1,3 +1,6 @@
+import { ToolFailureMode } from '@ai/api/forge/enums/tool-failure-mode.enum';
+import { SpeedTier } from '@ai/api/forge/enums/speed-tier.enum';
+import { CostTier } from '@ai/api/forge/enums/cost-tier.enum';
 /**
  * Tool Ranking Scorer
  *
@@ -5,10 +8,14 @@
  * keep files under the line limit.
  */
 
-import type { ToolMetadata, ToolWithMetadata, TaskContext } from './intelligent-tool-selector.interfaces';
+import type { IToolMetadata } from '@ai/api/forge/interfaces/tool-metadata.interface';
+
+import type { IToolWithMetadata } from '@ai/api/forge/interfaces/tool-with-metadata.interface';
+
+import type { ITaskContext } from '@ai/api/forge/interfaces/task-context.interface';
 
 export class ToolRankingScorer {
-  static calculateRelevance(task: TaskContext, tool: ToolWithMetadata, metadata: ToolMetadata): number {
+  static calculateRelevance(task: ITaskContext, tool: IToolWithMetadata, metadata: IToolMetadata): number {
     let score = 0;
     const taskWords = ToolRankingScorer.tokenize(task.taskDescription);
     const toolWords = ToolRankingScorer.tokenize(tool.description || '');
@@ -27,35 +34,35 @@ export class ToolRankingScorer {
   }
 
   static evaluateCostFitness(
-    maxCost: 'cheap' | 'moderate' | 'expensive' | undefined,
-    toolCost: 'cheap' | 'moderate' | 'expensive'
+    maxCost: CostTier | undefined,
+    toolCost: CostTier
   ): number {
     if (!maxCost) return 1; // No constraint
 
     const costOrder = { cheap: 1, moderate: 2, expensive: 3 };
-    const maxCostLevel = costOrder[maxCost];
-    const toolCostLevel = costOrder[toolCost];
+    const maxCostLevel = costOrder[maxCost.value];
+    const toolCostLevel = costOrder[toolCost.value];
 
     return toolCostLevel <= maxCostLevel ? 1 : 0.2;
   }
 
   static evaluateLatencyFitness(
-    maxLatency: 'fast' | 'medium' | 'slow' | undefined,
-    toolLatency: 'fast' | 'medium' | 'slow'
+    maxLatency: SpeedTier | undefined,
+    toolLatency: SpeedTier
   ): number {
     if (!maxLatency) return 1;
 
     const latencyOrder = { fast: 1, medium: 2, slow: 3 };
-    const maxLatencyLevel = latencyOrder[maxLatency];
-    const toolLatencyLevel = latencyOrder[toolLatency];
+    const maxLatencyLevel = latencyOrder[maxLatency.value];
+    const toolLatencyLevel = latencyOrder[toolLatency.value];
 
     return toolLatencyLevel <= maxLatencyLevel ? 1 : 0.5;
   }
 
   static generateRankingRationale(
-    task: TaskContext,
-    tool: ToolWithMetadata,
-    metadata: ToolMetadata,
+    task: ITaskContext,
+    tool: IToolWithMetadata,
+    metadata: IToolMetadata,
     scores: { relevance: number; reliability: number; costFitness: number; latencyFitness: number }
   ): string {
     const parts: string[] = [];
@@ -91,17 +98,17 @@ export class ToolRankingScorer {
       .match(/\b\w+\b/g) || [];
   }
 
-  static createDefaultMetadata(toolName: string, description: string): ToolMetadata {
+  static createDefaultMetadata(toolName: string, description: string): IToolMetadata {
     return {
       name: toolName,
       capabilities: [toolName],
       prerequisites: [],
-      costEstimate: 'moderate',
+      costEstimate: CostTier.MODERATE,
       successRate: 0.7,
       similarTools: [],
       category: 'generic',
-      latencyProfile: 'medium',
-      errorHandling: 'retry',
+      latencyProfile: SpeedTier.MEDIUM,
+      errorHandling: ToolFailureMode.RETRY,
     };
   }
 }

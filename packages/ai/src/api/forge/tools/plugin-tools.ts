@@ -1,12 +1,13 @@
+import { ExtensionArea } from '@ai/api/forge/enums/extension-area.enum';
 import { TypeUtils, PluginManager } from '@fromcode119/core';
-import type { McpToolDefinition } from '@fromcode119/mcp';
-import { AssistantToolingHelpers } from './helpers';
-
-const DEFAULT_MAX_SCANNED_FILES = 2000;
-const DEFAULT_SEARCH_MATCH_LIMIT = 80;
+import type { IMcpToolDefinition } from '@fromcode119/mcp';
+import { AssistantToolingHelpers } from '@ai/api/forge/tools/helpers';
 
 export class PluginTools {
-  static buildPluginManagementTools(input: { manager: PluginManager; helpers: AssistantToolingHelpers }): McpToolDefinition[] {
+  private static readonly DEFAULT_MAX_SCANNED_FILES = 2000;
+  private static readonly DEFAULT_SEARCH_MATCH_LIMIT = 80;
+
+  static buildPluginManagementTools(input: { manager: PluginManager; helpers: AssistantToolingHelpers }): IMcpToolDefinition[] {
     const { manager, helpers } = input;
 
   const pluginSummary = () =>
@@ -177,10 +178,10 @@ export class PluginTools {
         const query = String(input?.query || input?.text || '').trim();
         if (!query) throw new Error('Missing search query');
         const slug = helpers.toAssistantSlug(String(input?.slug || ''), '');
-        const maxMatches = Math.min(400, Math.max(1, Number(input?.maxMatches || DEFAULT_SEARCH_MATCH_LIMIT)));
-        const maxFiles = Math.min(5000, Math.max(1, Number(input?.maxFiles || DEFAULT_MAX_SCANNED_FILES)));
+        const maxMatches = Math.min(400, Math.max(1, Number(input?.maxMatches || PluginTools.DEFAULT_SEARCH_MATCH_LIMIT)));
+        const maxFiles = Math.min(5000, Math.max(1, Number(input?.maxFiles || PluginTools.DEFAULT_MAX_SCANNED_FILES)));
         const results = helpers.searchScopeFiles({
-          scope: 'plugins',
+          scope: ExtensionArea.PLUGINS,
           query,
           slug,
           maxMatches,
@@ -210,7 +211,7 @@ export class PluginTools {
         if (!slug && !filePathInput) throw new Error('Missing plugin slug or file path');
 
         const caseSensitive = TypeUtils.parseBoolean(input?.caseSensitive) === true;
-        const resolvedPath = helpers.resolveScopedFilePath('plugins', slug, filePathInput);
+        const resolvedPath = helpers.resolveScopedFilePath(ExtensionArea.PLUGINS, slug, filePathInput);
         const replacement = helpers.replaceTextInFile({
           filePath: resolvedPath,
           from,
@@ -221,7 +222,7 @@ export class PluginTools {
         return {
           operation: 'plugins.files.replace_text',
           dryRun: context?.dryRun === true,
-          slug: slug || helpers.scopeSlugFromPath('plugins', resolvedPath),
+          slug: slug || helpers.scopeSlugFromPath(ExtensionArea.PLUGINS, resolvedPath),
           ...replacement,
         };
       },

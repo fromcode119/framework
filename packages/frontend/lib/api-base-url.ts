@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils } from '@fromcode119/core/client';
+import { ApplicationUrlUtils, EnvUtils } from '@fromcode119/core/client';
 
 export class FrontendApiBaseUrl {
   static resolveFrontendApiBaseUrl(explicit?: string): string {
@@ -6,7 +6,7 @@ export class FrontendApiBaseUrl {
       if (fromExplicit) return fromExplicit;
 
       const fromBridge =
-        typeof window !== 'undefined' ? FrontendApiBaseUrl.normalizeCandidate(FrontendApiBaseUrl.readBridgeValue('FROMCODE_API_URL')) : '';
+        EnvUtils.isBrowser() ? FrontendApiBaseUrl.normalizeCandidate(FrontendApiBaseUrl.readBridgeValue('FROMCODE_API_URL')) : '';
       if (fromBridge) return fromBridge;
 
       const fromEnv = FrontendApiBaseUrl.normalizeCandidate(String(process.env.NEXT_PUBLIC_API_URL || ''));
@@ -38,7 +38,7 @@ export class FrontendApiBaseUrl {
   }
 
   private static readBridgeValue(key: string): string {
-    if (typeof window === 'undefined') return '';
+    if (!EnvUtils.isBrowser()) return '';
     return String((window as any)?.[key] || '').trim();
   }
 
@@ -60,7 +60,7 @@ export class FrontendApiBaseUrl {
   }
 
   private static inferFromBrowserLocation(): string {
-    if (typeof window === 'undefined') return '';
+    if (!EnvUtils.isBrowser()) return '';
     try {
       const current = new URL(window.location.href);
       const origin = FrontendApiBaseUrl.trimTrailingSlashes(current.origin);

@@ -1,0 +1,35 @@
+{
+  "name": "@fromcode119/archor",
+  "version": "0.1.80",
+  "description": "Architecture boundary enforcement — who may import what, which layer may call which, and the shape a plugin/theme/appearance must keep. Standalone like reactor/nextor/typor; Node-only build tooling, never imported by application code.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.cjs"
+    },
+    "./cli": "./dist/archor-cli.cjs"
+  },
+  "bin": {
+    "archor": "dist/archor-cli.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --outfile=dist/index.cjs && esbuild src/cli/archor-cli.ts --bundle --format=cjs --platform=node --outfile=dist/archor-cli.cjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "dependencies": {
+    "@fromcode119/typor": "*"
+  }
+}

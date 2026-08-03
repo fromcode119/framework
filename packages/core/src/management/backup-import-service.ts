@@ -1,9 +1,11 @@
+import { BackupStorageKind } from '@core/management/enums/backup-storage-kind.enum';
+import { BackupArchiveExtension } from '@core/management/enums/backup-archive-extension.enum';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import crypto from 'crypto';
-import { BackupOperationError } from './backup-operation-error';
-import { BackupService } from './backup-service';
+import { BackupOperationError } from '@core/management/backup-operation-error';
+import { BackupService } from '@core/management/backup-service';
 
 export class BackupImportService {
   private static readonly DEFAULT_FILENAME = 'imported-backup.tar.gz';
@@ -22,7 +24,7 @@ export class BackupImportService {
       throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, or .db backup.');
     }
 
-    const targetDirectory = BackupService.getBackupsDirectory(this.resolveTargetSubdirectory(extension));
+    const targetDirectory = BackupService.getBackupsDirectory(this.resolveTargetSubdirectory(extension).value);
     fs.mkdirSync(targetDirectory, { recursive: true });
 
     const targetPath = this.resolveUniqueDestinationPath(targetDirectory, sanitizedFilename, extension);
@@ -144,16 +146,16 @@ export class BackupImportService {
     return rawFilename.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-');
   }
 
-  private static resolveSupportedExtension(filename: string): '.tar.gz' | '.sql' | '.db' | null {
+  private static resolveSupportedExtension(filename: string): BackupArchiveExtension | null {
     const lowerCaseFilename = filename.toLowerCase();
-    if (lowerCaseFilename.endsWith('.tar.gz')) return '.tar.gz';
-    if (lowerCaseFilename.endsWith('.sql')) return '.sql';
-    if (lowerCaseFilename.endsWith('.db')) return '.db';
+    if (lowerCaseFilename.endsWith(BackupArchiveExtension.TAR_GZ.value)) return BackupArchiveExtension.TAR_GZ;
+    if (lowerCaseFilename.endsWith(BackupArchiveExtension.SQL.value)) return BackupArchiveExtension.SQL;
+    if (lowerCaseFilename.endsWith(BackupArchiveExtension.DB.value)) return BackupArchiveExtension.DB;
     return null;
   }
 
-  private static resolveTargetSubdirectory(extension: '.tar.gz' | '.sql' | '.db'): 'system' | 'database' {
-    return extension === '.sql' || extension === '.db' ? 'database' : 'system';
+  private static resolveTargetSubdirectory(extension: BackupArchiveExtension): BackupStorageKind {
+    return extension === BackupArchiveExtension.SQL || extension === BackupArchiveExtension.DB ? BackupStorageKind.DATABASE : BackupStorageKind.SYSTEM;
   }
 
   private static resolveSessionDirectory(uploadId: string): string {
@@ -232,8 +234,8 @@ export class BackupImportService {
     }
   }
 
-  private static resolveUniqueDestinationPath(directoryPath: string, filename: string, extension: '.tar.gz' | '.sql' | '.db'): string {
-    const basename = filename.slice(0, filename.length - extension.length) || 'imported-backup';
+  private static resolveUniqueDestinationPath(directoryPath: string, filename: string, extension: BackupArchiveExtension): string {
+    const basename = filename.slice(0, filename.length - extension.value.length) || 'imported-backup';
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     let candidatePath = path.join(directoryPath, `${basename}${extension}`);
     if (!fs.existsSync(candidatePath)) {

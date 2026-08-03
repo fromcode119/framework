@@ -1,20 +1,32 @@
-import type { McpBridge } from '@fromcode119/mcp';
-import type { AssistantAction, AssistantChatInput, AssistantChatResult, AssistantChatTrace, AssistantSkillDefinition, AssistantToolSummary, AdminAssistantRuntimeOptions } from '../types';
-import { AssistantCopyUtils } from '../../assistant-copy';
-import { ReplaceContentHelpers } from './replace-content-helpers';
-import { ActionSafetyHelpers } from './action-safety-helpers';
-import { RuntimeMiscHelpers } from './runtime-misc-helpers';
-import { IntentClassifier } from '../intents';
-import { ReplyMessageBuilders } from './reply-message-builders';
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
+import { AgentRole } from '@ai/api/forge/enums/agent-role.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
+import type { IMcpBridge } from '@fromcode119/mcp';
+
+import type { IAssistantChatInput } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-input.interface';
+import type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
+import type { IAssistantChatTrace } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-trace.interface';
+import type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import { AssistantCopyUtils } from '@ai/assistant-copy';
+import { ReplaceContentHelpers } from '@ai/admin-assistant-runtime/helpers/replace-content-helpers';
+import { ActionSafetyHelpers } from '@ai/admin-assistant-runtime/helpers/action-safety-helpers';
+import { RuntimeMiscHelpers } from '@ai/admin-assistant-runtime/helpers/runtime-misc-helpers';
+import { IntentClassifier } from '@ai/admin-assistant-runtime/intents';
+import { ReplyMessageBuilders } from '@ai/admin-assistant-runtime/helpers/reply-message-builders';
 
 export class ChatReplaceFlowHelpers {
   static async handle(
-    message: string, input: AssistantChatInput, options: AdminAssistantRuntimeOptions,
+    message: string, input: IAssistantChatInput, options: IAdminAssistantRuntimeOptions,
     replaceInstruction: { from: string; to: string }, replaceFlowMessage: string,
-    mcpBridge: McpBridge, availableTools: AssistantToolSummary[], isToolAllowed: (t: string) => boolean,
-    agentMode: string, selectedSkill: AssistantSkillDefinition, planId: string, sessionId: string | undefined,
-    sanitize: (msg: string, mode: 'basic' | 'advanced') => string, buildPlan: (opts: any) => any, buildUi: (opts: any) => any,
-  ): Promise<AssistantChatResult> {
+    mcpBridge: IMcpBridge, availableTools: IAssistantToolSummary[], isToolAllowed: (t: string) => boolean,
+    agentMode: ContextLevel, selectedSkill: IAssistantSkillDefinition, planId: string, sessionId: string | undefined,
+    sanitize: (msg: string, mode: ContextLevel) => string, buildPlan: (opts: any) => any, buildUi: (opts: any) => any,
+  ): Promise<IAssistantChatResult> {
     const FILE_MAX = 10_000;
     const FILE_TOOLS = new Set<string>(['plugins.files.search_text', 'themes.files.search_text']);
     const runSearchCalls = async (calls: Array<{ tool: string; input: Record<string, any> }>) => {
@@ -43,11 +55,11 @@ export class ChatReplaceFlowHelpers {
       if (deterministicActions.length) deterministicActions = ReplaceContentHelpers.filterReplaceActionsByEvidence(deterministicActions, replaceInstruction, deterministicResults);
     }
 
-    const fileReplaceActions = deterministicActions.filter((a) => a.type === 'mcp_call' && ['plugins.files.replace_text', 'themes.files.replace_text'].includes(String(a.tool || '')));
+    const fileReplaceActions = deterministicActions.filter((a) => a.type === AssistantActionType.MCP_CALL && ['plugins.files.replace_text', 'themes.files.replace_text'].includes(String(a.tool || '')));
     if (deterministicActions.length > 0 && fileReplaceActions.length === deterministicActions.length && fileReplaceActions.length > 1 && !IntentClassifier.isExplicitFileModificationIntent(message)) {
-      const q = sanitize([`I found ${fileReplaceActions.length} source-file matches for "${replaceInstruction.from}" -> "${replaceInstruction.to}".`, 'Do you want to update CMS/content values instead, or should I apply these file changes?'].join(' '), 'advanced');
-      const traces: AssistantChatTrace[] = [{ iteration: 1, message: 'Deterministic replace found multiple file-only matches; requested target scope clarification.', phase: 'planner', toolCalls: deterministicCalls }];
-      return { message: q, actions: [], model: '', agentMode: 'advanced', done: true, traces, plan: buildPlan({ message: q, traces, actions: [], loopCapReached: false, loopTimeLimitReached: false, done: true }), ui: buildUi({ hasActions: false, loopCapReached: false, loopTimeLimitReached: false, done: true, needsClarification: true, clarifyingQuestion: q, missingInputs: ['target_scope'], loopRecoveryMode: 'clarify' }), skill: selectedSkill, sessionId, checkpoint: { resumePrompt: 'Choose target scope: CMS/content records or source files.', reason: 'clarification_needed', stage: 'clarify', planningPassesUsed: Number(input?.checkpoint?.planningPassesUsed || 0) }, iterations: 1, loopCapReached: false };
+      const q = sanitize([`I found ${fileReplaceActions.length} source-file matches for "${replaceInstruction.from}" -> "${replaceInstruction.to}".`, 'Do you want to update CMS/content values instead, or should I apply these file changes?'].join(' '), ContextLevel.ADVANCED);
+      const traces: IAssistantChatTrace[] = [{ iteration: 1, message: 'Deterministic replace found multiple file-only matches; requested target scope clarification.', phase: AgentRole.PLANNER, toolCalls: deterministicCalls }];
+      return { message: q, actions: [], model: '', agentMode: ContextLevel.ADVANCED, done: true, traces, plan: buildPlan({ message: q, traces, actions: [], loopCapReached: false, loopTimeLimitReached: false, done: true }), ui: buildUi({ hasActions: false, loopCapReached: false, loopTimeLimitReached: false, done: true, needsClarification: true, clarifyingQuestion: q, missingInputs: ['target_scope'], loopRecoveryMode: ClarifyMode.CLARIFY }), skill: selectedSkill, sessionId, checkpoint: { resumePrompt: 'Choose target scope: CMS/content records or source files.', reason: CheckpointReason.CLARIFICATION_NEEDED, stage: RuntimeStage.CLARIFY, planningPassesUsed: Number(input?.checkpoint?.planningPassesUsed || 0) }, iterations: 1, loopCapReached: false };
     }
 
     const deterministicStats = RuntimeMiscHelpers.toolMatchStatsByTool(deterministicResults);
@@ -70,8 +82,8 @@ export class ChatReplaceFlowHelpers {
     }
 
     const deterministicMessage = AssistantCopyUtils.buildDeterministicReplaceMessage({ from: replaceInstruction.from, to: replaceInstruction.to, actionCount: deterministicActions.length, totalExactMatches, targetTextMatches, broadContentMatches, broadPluginMatches: broadPluginMatches + broadPluginFileMatches, broadThemeMatches: broadThemeMatches + broadThemeFileMatches, fallbackSummary: deterministicSummary, blockedSearchTools, fileSearchTruncated });
-    const deterministicText = sanitize(RuntimeMiscHelpers.normalizePlanModeMessage(deterministicMessage, 'advanced', deterministicActions.length > 0, true), 'advanced');
-    const deterministicTraces: AssistantChatTrace[] = [{ iteration: 1, message: AssistantCopyUtils.buildDeterministicTraceMessage(deterministicActions.length > 0), phase: 'planner', toolCalls: deterministicCalls }];
-    return { message: deterministicText, actions: deterministicActions, model: '', agentMode: 'advanced', done: true, traces: deterministicTraces, plan: buildPlan({ message: deterministicText, traces: deterministicTraces, actions: deterministicActions, loopCapReached: false, loopTimeLimitReached: false, done: true }), ui: buildUi({ hasActions: deterministicActions.length > 0, loopCapReached: false, loopTimeLimitReached: false, done: true }), skill: selectedSkill, sessionId, iterations: 1, loopCapReached: false };
+    const deterministicText = sanitize(RuntimeMiscHelpers.normalizePlanModeMessage(deterministicMessage, ContextLevel.ADVANCED, deterministicActions.length > 0, true), ContextLevel.ADVANCED);
+    const deterministicTraces: IAssistantChatTrace[] = [{ iteration: 1, message: AssistantCopyUtils.buildDeterministicTraceMessage(deterministicActions.length > 0), phase: AgentRole.PLANNER, toolCalls: deterministicCalls }];
+    return { message: deterministicText, actions: deterministicActions, model: '', agentMode: ContextLevel.ADVANCED, done: true, traces: deterministicTraces, plan: buildPlan({ message: deterministicText, traces: deterministicTraces, actions: deterministicActions, loopCapReached: false, loopTimeLimitReached: false, done: true }), ui: buildUi({ hasActions: deterministicActions.length > 0, loopCapReached: false, loopTimeLimitReached: false, done: true }), skill: selectedSkill, sessionId, iterations: 1, loopCapReached: false };
   }
 }

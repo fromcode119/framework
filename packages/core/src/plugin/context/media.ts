@@ -1,5 +1,5 @@
-import type { PluginManagerInterface } from './utils.interfaces';
-import { SystemConstants } from '../../constants';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class MediaContextProxy {
   /**
@@ -7,7 +7,7 @@ export class MediaContextProxy {
    * (that path is blocked) — they resolve a media item through here. Uses the RAW manager db so the
    * framework owns the only access to the system table.
    */
-  static createMediaProxy(manager: PluginManagerInterface) {
+  static createMediaProxy(manager: IPluginManagerInterface) {
     return {
       async findById(id: any): Promise<Record<string, any> | null> {
         if (id == null || id === '') return null;

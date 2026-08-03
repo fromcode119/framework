@@ -1,15 +1,17 @@
 import React from 'react';
-import type { CollectionMetadata, MenuItem, SlotComponent } from '../context.interfaces';
+import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
+import type { IMenuItem } from '@react/interfaces/menu-item.interface';
+import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
 
 export class ContextProviderSlotRegistrationHooks {
   static useSlotRegistration(args: {
-    setCollections: React.Dispatch<React.SetStateAction<CollectionMetadata[]>>;
+    setCollections: React.Dispatch<React.SetStateAction<ICollectionMetadata[]>>;
     setFieldComponents: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-    setMenuItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
-    setOverrides: React.Dispatch<React.SetStateAction<Record<string, SlotComponent>>>;
+    setMenuItems: React.Dispatch<React.SetStateAction<IMenuItem[]>>;
+    setOverrides: React.Dispatch<React.SetStateAction<Record<string, ISlotComponent>>>;
     setPlugins: React.Dispatch<React.SetStateAction<any[]>>;
     setSettings: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-    setSlots: React.Dispatch<React.SetStateAction<Record<string, SlotComponent[]>>>;
+    setSlots: React.Dispatch<React.SetStateAction<Record<string, ISlotComponent[]>>>;
     setThemeLayouts: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setThemeStyleVariants: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setThemeVariables: React.Dispatch<React.SetStateAction<Record<string, string>>>;
@@ -43,7 +45,7 @@ export class ContextProviderSlotRegistrationHooks {
         return;
       }
 
-      let componentObj: SlotComponent;
+      let componentObj: ISlotComponent;
       if (actualComponent && typeof actualComponent === 'object' && (actualComponent as any).component) {
         componentObj = {
           ...(actualComponent as any),
@@ -51,7 +53,7 @@ export class ContextProviderSlotRegistrationHooks {
           priority: typeof (actualComponent as any).priority === 'number'
             ? (actualComponent as any).priority
             : (priority || 0),
-        } as SlotComponent;
+        } as ISlotComponent;
       } else {
         componentObj = {
           component: actualComponent,
@@ -153,7 +155,7 @@ export class ContextProviderSlotRegistrationHooks {
         actualComponent = component.default;
       }
 
-      const componentObj: SlotComponent = typeof actualComponent === 'function' || (actualComponent && (actualComponent as any).$$typeof)
+      const componentObj: ISlotComponent = typeof actualComponent === 'function' || (actualComponent && (actualComponent as any).$$typeof)
         ? { component: actualComponent, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
         : actualComponent;
 
@@ -167,7 +169,7 @@ export class ContextProviderSlotRegistrationHooks {
       });
     }, [setOverrides]);
 
-    const registerMenuItem = React.useCallback((item: MenuItem) => {
+    const registerMenuItem = React.useCallback((item: IMenuItem) => {
       setMenuItems((prev) => {
         if (prev.some((menuItem) => menuItem.pluginSlug === item.pluginSlug && menuItem.path === item.path)) {
           return prev;
@@ -177,7 +179,7 @@ export class ContextProviderSlotRegistrationHooks {
       });
     }, [setMenuItems]);
 
-    const replaceMenuItems = React.useCallback((items: MenuItem[]) => {
+    const replaceMenuItems = React.useCallback((items: IMenuItem[]) => {
       setMenuItems(
         (Array.isArray(items) ? items : [])
           .slice()
@@ -185,7 +187,7 @@ export class ContextProviderSlotRegistrationHooks {
       );
     }, [setMenuItems]);
 
-    const registerCollection = React.useCallback((collection: CollectionMetadata) => {
+    const registerCollection = React.useCallback((collection: ICollectionMetadata) => {
       setCollections((prev) => {
         if (prev.some((entry) => entry.slug === collection.slug)) {
           return prev;
@@ -195,7 +197,7 @@ export class ContextProviderSlotRegistrationHooks {
       });
     }, [setCollections]);
 
-    const replaceCollections = React.useCallback((items: CollectionMetadata[]) => {
+    const replaceCollections = React.useCallback((items: ICollectionMetadata[]) => {
       setCollections(Array.isArray(items) ? items : []);
     }, [setCollections]);
 

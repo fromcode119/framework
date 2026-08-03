@@ -1,61 +1,20 @@
 import React from 'react';
+
+import { Platform } from '@fromcode119/reactor';
 import { usePathname, useRouter } from 'next/navigation';
-import { AuthHooks } from '@/components/use-auth';
-import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AuthHooks } from '@/components/view/use-auth.client';
+
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AuthUtils } from '@/lib/auth-utils';
 import { RuntimeConstants } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
+import { InitializationStatusCache } from '@/app/services/initialization-status-cache';
 import { AppEnv } from '@/lib/env';
 
-const adminServices = AdminServices.getInstance();
-const INITIALIZATION_STATUS_TTL_MS = 5000;
-const INITIALIZATION_ERROR_TTL_MS = 15000;
-
-let initializationStatusPromise: Promise<boolean> | null = null;
-let initializationStatusValue: boolean | null = null;
-let initializationStatusExpiresAt = 0;
-let initializationStatusError: unknown = null;
-let initializationStatusErrorExpiresAt = 0;
-
-async function getInitializationStatus(): Promise<boolean> {
-  const now = Date.now();
-
-  if (initializationStatusValue !== null && initializationStatusExpiresAt > now) {
-    return initializationStatusValue;
-  }
-
-  if (initializationStatusError && initializationStatusErrorExpiresAt > now) {
-    throw initializationStatusError;
-  }
-
-  if (initializationStatusPromise) {
-    return initializationStatusPromise;
-  }
-
-  initializationStatusPromise = AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS)
-    .then((data) => {
-      const initialized = data.initialized === true;
-      initializationStatusValue = initialized;
-      initializationStatusExpiresAt = Date.now() + INITIALIZATION_STATUS_TTL_MS;
-      initializationStatusError = null;
-      initializationStatusErrorExpiresAt = 0;
-      return initialized;
-    })
-    .catch((error) => {
-      initializationStatusError = error;
-      initializationStatusErrorExpiresAt = Date.now() + INITIALIZATION_ERROR_TTL_MS;
-      throw error;
-    })
-    .finally(() => {
-      initializationStatusPromise = null;
-    });
-
-  return initializationStatusPromise;
-}
-
 export class ClientLayoutAuthStateHooks {
+  private static readonly adminServices = AdminServices.getInstance();
+
   static useState() {
     const router = useRouter();
     const pathname = usePathname();
@@ -71,21 +30,21 @@ export class ClientLayoutAuthStateHooks {
       [normalizedPathname],
     );
     const [isAdvancedMode, setIsAdvancedMode] = React.useState<boolean>(() => {
-      if (typeof window === 'undefined') {
+      if (!Platform.isBrowser) {
         return false;
       }
 
-      return adminServices.uiPreference.readAdvancedMode();
+      return ClientLayoutAuthStateHooks.adminServices.uiPreference.readAdvancedMode();
     });
     const [isInitialized, setIsInitialized] = React.useState<boolean | null>(null);
     const initializationCheckKeyRef = React.useRef('');
 
     React.useEffect(() => {
-      if (typeof window === 'undefined') {
+      if (!Platform.isBrowser) {
         return;
       }
 
-      const syncMode = () => setIsAdvancedMode(adminServices.uiPreference.readAdvancedMode());
+      const syncMode = () => setIsAdvancedMode(ClientLayoutAuthStateHooks.adminServices.uiPreference.readAdvancedMode());
       window.addEventListener(RuntimeConstants.ADMIN_UI.EVENTS.MODE_CHANGED, syncMode as EventListener);
       window.addEventListener('storage', syncMode as EventListener);
 
@@ -104,7 +63,7 @@ export class ClientLayoutAuthStateHooks {
       initializationCheckKeyRef.current = checkKey;
       const checkInitialization = async () => {
         try {
-          const initialized = await getInitializationStatus();
+          const initialized = await InitializationStatusCache.get();
 
           setIsInitialized(initialized);
 

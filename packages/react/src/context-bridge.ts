@@ -1,15 +1,15 @@
 import { ApiPathUtils, ApiScopeClient } from '@fromcode119/core/client';
-import type { RuntimeBridgeInstallArgs } from './context-runtime-bridge.interfaces';
+import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 
 export class ContextBridge {
-  private static _args: RuntimeBridgeInstallArgs | null = null;
+  private static _args: IRuntimeBridgeInstallArgs | null = null;
 
   /**
    * Called once from ContextRuntimeBridge.installRuntimeBridge() to wire up the
    * live args object.  All static methods below delegate directly to _args —
    * no plain-object lookup required.
    */
-  static install(args: RuntimeBridgeInstallArgs): void {
+  static install(args: IRuntimeBridgeInstallArgs): void {
     ContextBridge._args = args;
   }
 

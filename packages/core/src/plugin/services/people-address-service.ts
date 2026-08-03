@@ -1,14 +1,7 @@
-import { SystemConstants } from '../../constants';
-import { PeopleAddressRepository } from './people-address-repository';
-import type { PeopleAddressRef } from './people-address-service.interfaces';
-
-interface PeopleResolverDb {
-  find(table: string, opts?: any): Promise<any[]>;
-  findOne(table: string, where: any): Promise<any | null>;
-  insert(table: string, data: any): Promise<any>;
-  update(table: string, where: any, data: any): Promise<any>;
-  delete(table: string, where: any): Promise<any>;
-}
+import type { IPeopleResolverDb } from '@core/plugin/services/interfaces/people-resolver-db.interface';
+import { SystemConstants } from '@core/constants/system.constants';
+import { PeopleAddressRepository } from '@core/plugin/services/people-address-repository';
+import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 
 /**
  * Framework-owned address book service backing `context.people.addresses`. Resolves the owning
@@ -25,12 +18,12 @@ interface PeopleResolverDb {
 export class PeopleAddressService {
   private readonly repo: PeopleAddressRepository;
 
-  constructor(private readonly db: PeopleResolverDb) {
+  constructor(private readonly db: IPeopleResolverDb) {
     this.repo = new PeopleAddressRepository(db as any);
   }
 
   /** List the addresses for the person identified by `ref`. Returns [] when no person resolves. */
-  async list(ref: PeopleAddressRef): Promise<any[]> {
+  async list(ref: IPeopleAddressRef): Promise<any[]> {
     const personId = await this.resolvePersonId(ref, false);
     if (personId == null) return [];
     return this.repo.listByPerson(personId);
@@ -42,7 +35,7 @@ export class PeopleAddressService {
    * `addr.isDefault === true` (or creating the person's first address) makes it the sole default.
    * Creates a minimal person from the ref when none exists yet.
    */
-  async upsert(ref: PeopleAddressRef, addr: Record<string, any>): Promise<any> {
+  async upsert(ref: IPeopleAddressRef, addr: Record<string, any>): Promise<any> {
     const personId = await this.resolvePersonId(ref, true);
     if (personId == null) throw new Error('people_address: cannot resolve or create a person for this address');
 
@@ -90,7 +83,7 @@ export class PeopleAddressService {
   }
 
   /** Mark one address as the sole default for the person identified by `ref`. */
-  async setDefault(ref: PeopleAddressRef, addressId: any): Promise<any> {
+  async setDefault(ref: IPeopleAddressRef, addressId: any): Promise<any> {
     const personId = await this.resolvePersonId(ref, false);
     const id = PeopleAddressService.toId(addressId);
     if (personId == null || id == null) return null;
@@ -105,7 +98,7 @@ export class PeopleAddressService {
    * identity (userId or email) but no person exists, a minimal person row is created. Returns null
    * when no person can be resolved (and, with create=false, never inserts).
    */
-  private async resolvePersonId(ref: PeopleAddressRef, create: boolean): Promise<number | null> {
+  private async resolvePersonId(ref: IPeopleAddressRef, create: boolean): Promise<number | null> {
     const direct = PeopleAddressService.toId(ref?.personId);
     if (direct != null) return direct;
 

@@ -6,7 +6,8 @@ import { DatabaseFactory, DatabaseManager } from '@fromcode119/database';
 import { ProjectPaths, DiscoveryService, MarketplaceCatalogService } from '@fromcode119/core';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 
-const translations: Record<string, Record<string, string>> = {
+export class CliUtils {
+  private static readonly translations = {
   en: {
     'cli.status.checking': 'Checking marketplace at {{registry}}...',
     'cli.status.no_core': 'Marketplace does not provide core version information yet.',
@@ -26,10 +27,8 @@ const translations: Record<string, Record<string, string>> = {
     'cli.install.success': '\n{{type}} {{slug}} installed successfully!',
   },
 };
+  private static readonly currentLocale = 'en';
 
-const currentLocale = 'en';
-
-export class CliUtils {
   static getProjectRoot(): string {
     return ProjectPaths.getProjectRoot();
   }
@@ -76,7 +75,7 @@ export class CliUtils {
   }
 
   static t(key: string, params: Record<string, string> = {}, defaultValue?: string): string {
-    let text = translations[currentLocale]?.[key] || defaultValue || key;
+    let text = CliUtils.translations[CliUtils.currentLocale]?.[key] || defaultValue || key;
     Object.keys(params).forEach((p) => {
       text = text.replace(`{{${p}}}`, params[p]);
     });

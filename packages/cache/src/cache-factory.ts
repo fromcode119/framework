@@ -1,15 +1,14 @@
-import type { CacheDriver } from './cache-factory.interfaces';
-import type { CacheDriverCreator } from './cache-factory.types';
-
+import type { ICacheDriver } from '@cache/interfaces/cache-driver.interface';
+import type { ICacheDriverCreator } from '@cache/interfaces/cache-driver-creator.interface';
 
 export class CacheFactory {
-  private static drivers: Map<string, CacheDriverCreator> = new Map();
+  private static drivers: Map<string, ICacheDriverCreator> = new Map();
 
-  static register(name: string, creator: CacheDriverCreator) {
+  static register(name: string, creator: ICacheDriverCreator) {
     this.drivers.set(name, creator);
   }
 
-  static create(name: string, config: any): CacheDriver {
+  static create(name: string, config: any): ICacheDriver {
     if (this.drivers.size === 0) {
       this.registerDefaults();
     }
@@ -23,11 +22,11 @@ export class CacheFactory {
 
   private static registerDefaults() {
     this.register('redis', (config) => {
-      const { RedisCacheDriver } = require('./drivers/redis');
+      const { RedisCacheDriver } = require('@cache/drivers/redis');
       return new RedisCacheDriver(config.url);
     });
     this.register('memory', () => {
-      const { MemoryCacheDriver } = require('./drivers/memory');
+      const { MemoryCacheDriver } = require('@cache/drivers/memory');
       return new MemoryCacheDriver();
     });
   }

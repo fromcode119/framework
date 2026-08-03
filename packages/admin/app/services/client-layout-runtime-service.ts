@@ -1,3 +1,4 @@
+import { Platform } from '@fromcode119/reactor';
 import { RuntimeConstants } from '@fromcode119/core/client';
 
 export class ClientLayoutRuntimeService {
@@ -49,7 +50,7 @@ export class ClientLayoutRuntimeService {
     return bridge;
   }
 
-  static buildRuntimeModules(source: Record<string, unknown>): Record<string, Record<string, unknown>> {
+  static buildRuntimeModules(source: Record<string, unknown>, reactorModule?: Record<string, unknown>): Record<string, Record<string, unknown>> {
     const adminRuntimeModule = ClientLayoutRuntimeService.buildAdminRuntimeModule(source);
     return {
       '@fromcode119/admin': adminRuntimeModule,
@@ -57,11 +58,14 @@ export class ClientLayoutRuntimeService {
       // `@fromcode119/sdk/admin` re-exports AdminServices from this sub-path; plugins (e.g. privacy
       // banner/policy editors) crash with `AdminServices is undefined` if it isn't registered.
       '@fromcode119/admin/services': adminRuntimeModule,
+      // reactor as ONE shared runtime instance — externalized appearance bundles resolve their `@state`/
+      // `@watch` decorators + `Reactor` base from here, so they register on the SAME `ReactiveMetadata`.
+      ...(reactorModule ? { '@fromcode119/reactor': reactorModule } : {}),
     };
   }
 
-  static seedWindowRuntimeModules(runtimeModule: Record<string, unknown>): void {
-    if (typeof window === 'undefined') {
+  static seedWindowRuntimeModules(runtimeModule: Record<string, unknown>, reactorModule?: Record<string, unknown>): void {
+    if (!Platform.isBrowser) {
       return;
     }
 
@@ -71,5 +75,6 @@ export class ClientLayoutRuntimeService {
     // The SDK re-exports AdminServices from `@fromcode119/admin/services`; register it so dynamic
     // plugin imports resolve it instead of crashing on `undefined.getInstance()`.
     runtimeRegistry['@fromcode119/admin/services'] = runtimeModule;
+    if (reactorModule) runtimeRegistry['@fromcode119/reactor'] = reactorModule;
   }
 }

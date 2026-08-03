@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { Collection, HookEventUtils } from '@fromcode119/core';
-import { QueryHelper } from '../../services/query-helper';
-import { RestControllerRuntime } from './rest-controller-runtime';
+import { ICollection, HookEventUtils } from '@fromcode119/core';
+import { QueryHelper } from '@api/services/query-helper';
+import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 
 export class RestBulkController {
   constructor(private readonly runtime: RestControllerRuntime) {}
 
-  async bulkCreate(collection: Collection, req: any, res?: Response) {
+  async bulkCreate(collection: ICollection, req: any, res?: Response) {
     try {
       await this.runtime.accessPolicy.ensureCreateAllowed(collection, req);
       const items = Array.isArray(req.body) ? req.body : [req.body];
@@ -54,7 +54,7 @@ export class RestBulkController {
     }
   }
 
-  async bulkUpdate(collection: Collection, req: any, res?: Response) {
+  async bulkUpdate(collection: ICollection, req: any, res?: Response) {
     try {
       await this.runtime.accessPolicy.ensureUpdateAllowed(collection, req);
       const ids = req.body.ids;
@@ -131,7 +131,7 @@ export class RestBulkController {
     }
   }
 
-  async bulkDelete(collection: Collection, req: any, res?: Response) {
+  async bulkDelete(collection: ICollection, req: any, res?: Response) {
     try {
       await this.runtime.accessPolicy.ensureDeleteAllowed(collection, req);
       const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
@@ -169,7 +169,7 @@ export class RestBulkController {
     }
   }
 
-  async import(collection: Collection, req: Request, res: Response) {
+  async import(collection: ICollection, req: Request, res: Response) {
     try {
       await this.runtime.accessPolicy.ensureCreateAllowed(collection, req);
       const items = req.body;

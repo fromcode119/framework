@@ -1,20 +1,18 @@
+import type { IPluginPathContext } from '@core/plugin/context/interfaces/plugin-path-context.interface';
+import { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
 import fs from 'fs';
 import path from 'path';
-import { TranslationMap, LoadedPlugin } from '../../types';
-import { LocalizationUtils } from '../../localization';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { ContextSecurityProxy } from './utils';
-
-interface PluginPathContext {
-  currentPluginRoot: string;
-}
-
+import type { ITranslationMap } from '@core/interfaces/translation-map.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { LocalizationUtils } from '@core/localization';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class I18nContextProxy {
   static createI18nProxy(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface,
-  paths: PluginPathContext,
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface,
+  paths: IPluginPathContext,
   security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
 ) {
       const { hasCapability, handleViolation } = security;
@@ -44,7 +42,7 @@ export class I18nContextProxy {
           try {
             const payload = JSON.parse(fs.readFileSync(path.join(translationDirectory, normalizedFileName), 'utf8'));
             if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
-              manager.i18n.registerTranslations(locale, plugin.manifest.slug, payload as TranslationMap);
+              manager.i18n.registerTranslations(locale, plugin.manifest.slug, payload as ITranslationMap);
             }
           } catch (error) {
             void manager.writeLog(
@@ -60,11 +58,11 @@ export class I18nContextProxy {
         const activeThemeSlug = String(manager.themeManager?.getActiveThemeManifest()?.slug || '').trim();
         return activeThemeSlug ? `${activeThemeSlug}.${String(key || '').trim()}` : String(key || '').trim();
       };
-      const resolveScopedKey = (key: string, scope?: 'plugin' | 'theme' | null) => {
-        if (scope === 'plugin') {
+      const resolveScopedKey = (key: string, scope?: ExtensionKind | null) => {
+        if (ExtensionKind.resolve(scope) === ExtensionKind.PLUGIN) {
           return scopePluginKey(key);
         }
-        if (scope === 'theme') {
+        if (ExtensionKind.resolve(scope) === ExtensionKind.THEME) {
           return scopeThemeKey(key);
         }
         return String(key || '').trim();
@@ -75,7 +73,7 @@ export class I18nContextProxy {
           key: string,
           params?: Record<string, any>,
           locale?: string,
-          scope?: 'plugin' | 'theme' | null,
+          scope?: ExtensionKind | null,
         ) => {
           if (!hasCapability('i18n')) handleViolation('i18n');
           return manager.i18n.translate(resolveScopedKey(key, scope), params, normalizeLocale(locale));
@@ -85,7 +83,7 @@ export class I18nContextProxy {
           fallback: string,
           params?: Record<string, any>,
           locale?: string,
-          scope?: 'plugin' | 'theme' | null,
+          scope?: ExtensionKind | null,
         ) => {
           if (!hasCapability('i18n')) handleViolation('i18n');
           return manager.i18n.translateOrFallback(
@@ -113,7 +111,7 @@ export class I18nContextProxy {
           manager.i18n.registerTranslations(
             localeOrDirectory,
             plugin.manifest.slug,
-            translations as TranslationMap,
+            translations as ITranslationMap,
           );
         }
       };

@@ -1,13 +1,15 @@
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
 /** Orchestrator listing and record inspection utilities. Extracted from orchestrator.ts (ARC-007). */
 
-import type { AssistantCollectionContext, AssistantSessionCheckpoint } from '../types';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+import type { IAssistantSessionCheckpoint } from '@ai/admin-assistant-runtime/interfaces/assistant-session-checkpoint.interface';
 
 /**
  * Utilities for orchestrator listing and record inspection operations.
  * All methods are static.
  */
 export class OrchestratorListingUtils {
-  static getListingMemory(checkpoint?: AssistantSessionCheckpoint): NonNullable<AssistantSessionCheckpoint['memory']>['listing'] | null {
+  static getListingMemory(checkpoint?: IAssistantSessionCheckpoint): NonNullable<IAssistantSessionCheckpoint['memory']>['listing'] | null {
   const listing = checkpoint?.memory?.listing;
   if (!listing || typeof listing !== 'object') return null;
   const collectionSlug = String(listing.collectionSlug || '').trim();
@@ -22,7 +24,7 @@ export class OrchestratorListingUtils {
   };
   }
 
-  static parseListingCollectionFromCheckpoint(checkpoint?: AssistantSessionCheckpoint): string {
+  static parseListingCollectionFromCheckpoint(checkpoint?: IAssistantSessionCheckpoint): string {
     const fromMemory = OrchestratorListingUtils.getListingMemory(checkpoint);
   if (fromMemory?.collectionSlug) return fromMemory.collectionSlug;
   const resumePrompt = String(checkpoint?.resumePrompt || '').trim();
@@ -31,9 +33,9 @@ export class OrchestratorListingUtils {
     return String(match?.[1] || '').trim();
   }
 
-  static parseListingCollectionFromHistory(history: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>): string {
+  static parseListingCollectionFromHistory(history: Array<{ role: AssistantRole; content: string }>): string {
   const source = Array.isArray(history) ? history : [];
-  const latestAssistant = [...source].reverse().find((entry) => entry?.role === 'assistant');
+  const latestAssistant = [...source].reverse().find((entry) => entry?.role === AssistantRole.ASSISTANT);
   const content = String(latestAssistant?.content || '');
   if (!content) return '';
   const foundMatch = content.match(/\bfound\s+\d+\s+records?\s+in\s+`?([a-z0-9_-]+)`?/i);
@@ -79,7 +81,7 @@ export class OrchestratorListingUtils {
       .filter(Boolean);
   }
 
-  static collectCollectionFieldNames(collection: AssistantCollectionContext | null | undefined, docs: any[]): string[] {
+  static collectCollectionFieldNames(collection: IAssistantCollectionContext | null | undefined, docs: any[]): string[] {
   const fromSchema = Array.isArray((collection as any)?.raw?.fields)
     ? (collection as any).raw.fields
         .map((field: any) => String(field?.name || '').trim())
@@ -202,7 +204,7 @@ export class OrchestratorListingUtils {
     return undefined;
   }
 
-  static resolveTargetRowIndex(message: string, docs: any[], listingMemory: NonNullable<AssistantSessionCheckpoint['memory']>['listing'] | null): number {
+  static resolveTargetRowIndex(message: string, docs: any[], listingMemory: NonNullable<IAssistantSessionCheckpoint['memory']>['listing'] | null): number {
     const explicit = OrchestratorListingUtils.parseRecordIndexHint(message);
   if (Number.isFinite(Number(explicit))) {
     const idx = Number(explicit);

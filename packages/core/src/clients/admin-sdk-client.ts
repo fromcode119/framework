@@ -1,6 +1,6 @@
-import { ApiPathUtils } from '../api/api-path-utils';
-import { AdminGlobalClient } from './admin-global-client';
-import { AdminResourceClient } from './admin-resource-client';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { AdminGlobalClient } from '@core/clients/admin-global-client';
+import { AdminResourceClient } from '@core/clients/admin-resource-client';
 
 export class AdminSdkClient {
   constructor(private readonly baseUrl: string) {}

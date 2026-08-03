@@ -1,7 +1,7 @@
-import type { PluginApiResolver } from './plugin-api-resolver.interfaces';
-import { RuntimeBridge } from './runtime-bridge';
+import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import { RuntimeBridge } from '@core/runtime-bridge';
 
-export class RuntimePluginsResolver implements PluginApiResolver {
+export class RuntimePluginsResolver implements IPluginApiResolver {
   has(namespace: string, slug: string): boolean {
     const bridge = RuntimeBridge.getBridge<any>();
     if (typeof bridge?.hasPluginApi === 'function') {

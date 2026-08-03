@@ -1,5 +1,5 @@
-import { AdminAppearanceConstants } from './admin-appearance-constants';
-import type { AdminAppearanceResolutionInput } from './admin-appearance-resolution-input.interfaces';
+import { AdminAppearanceConstants } from '@/lib/appearance/constants/admin-appearance.constants';
+import type { IAdminAppearanceResolutionInput } from '@/lib/appearance/interfaces/admin-appearance-resolution-input.interface';
 
 /**
  * Pure resolver that picks the active admin appearance id. Precedence: tenant override → deployment
@@ -7,7 +7,7 @@ import type { AdminAppearanceResolutionInput } from './admin-appearance-resoluti
  * is always returned as the final fallback even if absent from `registeredIds`.
  */
 export class AdminAppearanceResolver {
-  static resolveAppearanceId(input: AdminAppearanceResolutionInput): string {
+  static resolveAppearanceId(input: IAdminAppearanceResolutionInput): string {
     const candidates = [input.tenantAppearanceId, input.deploymentAppearanceId];
     for (const candidate of candidates) {
       const id = (candidate ?? '').trim();

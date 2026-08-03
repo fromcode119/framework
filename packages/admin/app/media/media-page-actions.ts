@@ -1,7 +1,8 @@
 import type React from 'react';
-import { MediaPageController } from './media-page-controller';
-import type { MediaItem, MediaPageClientState, MediaPageHost } from './media-page.interfaces';
-
+import { MediaPageController } from '@/app/media/media-page-controller';
+import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
+import type { IMediaPageClientState } from '@/app/media/interfaces/media-page-client-state.interface';
+import type { IMediaPageHost } from '@/app/media/interfaces/media-page-host.interface';
 /**
  * Orchestration for the media library: binds {@link MediaPageController} I/O to the page-client's
  * state. Hook-free — it only ever touches React through the host.
@@ -10,10 +11,10 @@ export class MediaPageActions {
   /** Nested dragenter/dragleave pairs — only the outermost leave clears the overlay. */
   private dragDepth = 0;
 
-  constructor(private readonly host: MediaPageHost) {}
+  constructor(private readonly host: IMediaPageHost) {}
 
   async fetchMedia(): Promise<void> {
-    const { searchQuery, currentFolderId } = this.host.state;
+    const { searchQuery, currentFolderId } = this.host;
     this.host.patch({ loading: true });
     try {
       const { items, folders } = await MediaPageController.fetchLibrary(currentFolderId, searchQuery);
@@ -33,7 +34,7 @@ export class MediaPageActions {
   async createFolder(name: string): Promise<void> {
     this.host.patch({ isActionLoading: true, error: null });
     try {
-      await MediaPageController.createFolder(name, this.host.state.currentFolderId);
+      await MediaPageController.createFolder(name, this.host.currentFolderId);
       this.host.patch({ isFolderPromptOpen: false });
       void this.host.refresh();
     } catch (err: any) {
@@ -45,7 +46,7 @@ export class MediaPageActions {
   }
 
   async renameFolder(name: string): Promise<void> {
-    const { editingFolder } = this.host.state;
+    const { editingFolder } = this.host;
     if (!editingFolder) return;
     this.host.patch({ isActionLoading: true, error: null });
     try {
@@ -61,7 +62,7 @@ export class MediaPageActions {
   }
 
   async deleteFolder(): Promise<void> {
-    const { editingFolder } = this.host.state;
+    const { editingFolder } = this.host;
     if (!editingFolder) return;
     this.host.patch({ isActionLoading: true });
     try {
@@ -77,7 +78,7 @@ export class MediaPageActions {
   }
 
   async move(targetFolderId: number | null): Promise<void> {
-    const { movingItem } = this.host.state;
+    const { movingItem } = this.host;
     if (!movingItem) return;
     this.host.patch({ isActionLoading: true });
     try {
@@ -97,7 +98,7 @@ export class MediaPageActions {
     if (list.length === 0) return;
     this.host.patch({ uploading: true, error: null });
     try {
-      await MediaPageController.uploadFiles(list, this.host.state.currentFolderId);
+      await MediaPageController.uploadFiles(list, this.host.currentFolderId);
       void this.host.refresh();
     } catch (err: any) {
       console.error('Upload failed:', err);
@@ -145,12 +146,12 @@ export class MediaPageActions {
   }
 
   async deleteItem(): Promise<void> {
-    const { deletingId } = this.host.state;
+    const { deletingId } = this.host;
     if (!deletingId) return;
     this.host.patch({ isActionLoading: true });
     try {
       await MediaPageController.deleteItem(deletingId);
-      this.host.patchWith((value: MediaPageClientState) => ({
+      this.host.patchWith((value: IMediaPageClientState) => ({
         items: value.items.filter((i) => i.id !== deletingId),
         isDeleteDialogOpen: false,
         deletingId: null,
@@ -163,12 +164,12 @@ export class MediaPageActions {
   }
 
   async updateDetails(alt: string, caption: string): Promise<void> {
-    const { editingItem } = this.host.state;
+    const { editingItem } = this.host;
     if (!editingItem) return;
     this.host.patch({ isActionLoading: true, error: null });
     try {
       await MediaPageController.updateDetails(editingItem.id, alt, caption);
-      this.host.patchWith((value: MediaPageClientState) => ({
+      this.host.patchWith((value: IMediaPageClientState) => ({
         items: value.items.map((i) => i.id === editingItem.id
           ? { ...i, alt: alt || null, caption: caption || null }
           : i),
@@ -182,11 +183,11 @@ export class MediaPageActions {
     }
   }
 
-  async optimize(item: MediaItem): Promise<void> {
+  async optimize(item: IMediaItem): Promise<void> {
     this.host.patch({ optimizingId: item.id, error: null });
     try {
       const optimized = await MediaPageController.optimize(item.id);
-      this.host.patchWith((value: MediaPageClientState) => ({
+      this.host.patchWith((value: IMediaPageClientState) => ({
         items: value.items.map((i) => i.id === item.id ? { ...i, ...optimized } : i),
       }));
     } catch (err: any) {

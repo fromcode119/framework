@@ -1,14 +1,8 @@
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
 import { headers } from 'next/headers';
-import { ServerApiUtils } from './server-api';
-
-type PublicRouteDefinition = {
-  pluginSlug: string;
-  path: string;
-  targetPath: string;
-  contentType: string;
-};
+import { ServerApiUtils } from '@/lib/server-api';
+import { PublicRouteDefinition } from '@/lib/public-route-definition';
 
 export class PublicRouteProxy {
   private static readonly DEFAULT_CONTENT_TYPE = 'text/plain; charset=utf-8';
@@ -75,12 +69,12 @@ export class PublicRouteProxy {
           continue;
         }
 
-        return {
+        return new PublicRouteDefinition(
           pluginSlug,
-          path: normalizedPath,
-          targetPath: PublicRouteProxy.normalizePath(route?.targetPath) || normalizedPath,
-          contentType: String(route?.contentType || '').trim() || PublicRouteProxy.DEFAULT_CONTENT_TYPE,
-        };
+          normalizedPath,
+          PublicRouteProxy.normalizePath(route?.targetPath) || normalizedPath,
+          String(route?.contentType || '').trim() || PublicRouteProxy.DEFAULT_CONTENT_TYPE,
+        );
       }
     }
 

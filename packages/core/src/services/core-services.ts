@@ -1,26 +1,30 @@
-import { LocalizationService } from './localization-service';
-import { ContentService } from './content-service';
-import { MenuService } from './menu-service';
-import { CollectionService } from './collection-service';
-import { CollectionWriteCompatibilityService } from './collection-write-compatibility-service';
-import { CollectionIdentityService } from './collection-identity-service';
-import { EntityValueParserService } from './entity-value-parser-service';
-import { LayoutDiagnosticService } from '../plugin/layout/layout-diagnostic-service';
-import { LayoutLifecycleService } from '../plugin/layout/layout-lifecycle-service';
-import { LayoutResolutionService } from '../plugin/layout/layout-resolution-service';
-import { LayoutRuntimeBridgeService } from '../plugin/layout/layout-runtime-bridge-service';
-import { PluginLayoutRegistryService } from '../plugin/layout/plugin-layout-registry-service';
-import { PluginDefaultPageBackfillService } from './default-page-contract/plugin-default-page-backfill-service';
-import { PluginDefaultPageDiagnosticService } from './default-page-contract/plugin-default-page-diagnostic-service';
-import { PluginDefaultPageMaterializationService } from './default-page-contract/plugin-default-page-materialization-service';
-import { PluginDefaultPageContractRegistryService } from './default-page-contract/plugin-default-page-contract-registry-service';
-import { PluginDefaultPageContractResolutionService } from './default-page-contract/plugin-default-page-contract-resolution-service';
-import { SeedPageService } from './seed-page-service';
-import { ThemeLayoutOverrideRegistryService } from '../theme/theme-layout-override-registry-service';
-import { ContentResolutionGateRegistryService } from './content-resolution-gate-registry-service';
-import { RedirectResolverRegistryService } from './redirect-resolver-registry-service';
-import { PluginEntityRecordsRegistryService } from './entity-records/plugin-entity-records-registry-service';
-import { EntityRecordsResolutionService } from './entity-records/entity-records-resolution-service';
+import { LocalizationService } from '@core/services/localization-service';
+import { ContentService } from '@core/services/content-service';
+import { MenuService } from '@core/services/menu-service';
+import { CollectionService } from '@core/services/collection-service';
+import { CollectionIdentityService } from '@core/services/collection-identity-service';
+import { EntityValueParserService } from '@core/services/entity-value-parser-service';
+// TYPE-only: these are SERVER services, resolved through ServerServiceRegistry so their modules never
+// enter a client bundle. `import type` is erased at compile time — a value import would put them back.
+import type { CollectionWriteCompatibilityService } from '@core/services/collection-write-compatibility-service';
+import type { PluginDefaultPageBackfillService } from '@core/services/default-page-contract/plugin-default-page-backfill-service';
+import type { PluginDefaultPageDiagnosticService } from '@core/services/default-page-contract/plugin-default-page-diagnostic-service';
+import type { PluginDefaultPageMaterializationService } from '@core/services/default-page-contract/plugin-default-page-materialization-service';
+import type { PluginDefaultPageContractRegistryService } from '@core/services/default-page-contract/plugin-default-page-contract-registry-service';
+import type { PluginDefaultPageContractResolutionService } from '@core/services/default-page-contract/plugin-default-page-contract-resolution-service';
+import type { SeedPageService } from '@core/services/seed-page-service';
+import type { ContentResolutionGateRegistryService } from '@core/services/content-resolution-gate-registry-service';
+import type { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
+import type { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
+import type { EntityRecordsResolutionService } from '@core/services/entity-records/entity-records-resolution-service';
+import { ServerServiceRegistry } from '@core/services/server-service-registry';
+import { ServerServiceKey } from '@core/services/server-service-key';
+import { LayoutDiagnosticService } from '@core/plugin/layout/layout-diagnostic-service';
+import { LayoutLifecycleService } from '@core/plugin/layout/layout-lifecycle-service';
+import { LayoutResolutionService } from '@core/plugin/layout/layout-resolution-service';
+import { LayoutRuntimeBridgeService } from '@core/plugin/layout/layout-runtime-bridge-service';
+import { PluginLayoutRegistryService } from '@core/plugin/layout/plugin-layout-registry-service';
+import { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
 
 /**
  * Core Services Singleton.
@@ -59,7 +63,6 @@ export class CoreServices {
   private _content: ContentService | null = null;
   private _menu: MenuService | null = null;
   private _collection: CollectionService | null = null;
-  private _collectionWriteCompatibility: CollectionWriteCompatibilityService | null = null;
   private _collectionIdentity: CollectionIdentityService | null = null;
   private _entityValueParser: EntityValueParserService | null = null;
   private _defaultDesignDiagnostic: LayoutDiagnosticService | null = null;
@@ -67,17 +70,7 @@ export class CoreServices {
   private _defaultDesignRegistry: PluginLayoutRegistryService | null = null;
   private _defaultDesignResolution: LayoutResolutionService | null = null;
   private _defaultDesignRuntimeBridge: LayoutRuntimeBridgeService | null = null;
-  private _defaultPageContracts: PluginDefaultPageContractRegistryService | null = null;
-  private _defaultPageContractResolution: PluginDefaultPageContractResolutionService | null = null;
-  private _defaultPageBackfill: PluginDefaultPageBackfillService | null = null;
-  private _defaultPageDiagnostic: PluginDefaultPageDiagnosticService | null = null;
-  private _defaultPageMaterialization: PluginDefaultPageMaterializationService | null = null;
-  private _seedPage: SeedPageService | null = null;
   private _themeDesignOverrides: ThemeLayoutOverrideRegistryService | null = null;
-  private _contentResolutionGates: ContentResolutionGateRegistryService | null = null;
-  private _redirectResolvers: RedirectResolverRegistryService | null = null;
-  private _entityRecords: PluginEntityRecordsRegistryService | null = null;
-  private _entityRecordsResolution: EntityRecordsResolutionService | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -134,10 +127,7 @@ export class CoreServices {
   }
 
   get collectionWriteCompatibility(): CollectionWriteCompatibilityService {
-    if (!this._collectionWriteCompatibility) {
-      this._collectionWriteCompatibility = new CollectionWriteCompatibilityService(this.collection);
-    }
-    return this._collectionWriteCompatibility;
+    return ServerServiceRegistry.require<CollectionWriteCompatibilityService>(ServerServiceKey.COLLECTION_WRITE_COMPATIBILITY);
   }
 
   get collectionIdentity(): CollectionIdentityService {
@@ -212,49 +202,27 @@ export class CoreServices {
   }
 
   get defaultPageContracts(): PluginDefaultPageContractRegistryService {
-    if (!this._defaultPageContracts) {
-      this._defaultPageContracts = new PluginDefaultPageContractRegistryService();
-    }
-    return this._defaultPageContracts;
+    return ServerServiceRegistry.require<PluginDefaultPageContractRegistryService>(ServerServiceKey.DEFAULT_PAGE_CONTRACTS);
   }
 
   get defaultPageContractResolution(): PluginDefaultPageContractResolutionService {
-    if (!this._defaultPageContractResolution) {
-      this._defaultPageContractResolution = new PluginDefaultPageContractResolutionService(this.defaultPageContracts);
-    }
-    return this._defaultPageContractResolution;
+    return ServerServiceRegistry.require<PluginDefaultPageContractResolutionService>(ServerServiceKey.DEFAULT_PAGE_CONTRACT_RESOLUTION);
   }
 
   get defaultPageBackfill(): PluginDefaultPageBackfillService {
-    if (!this._defaultPageBackfill) {
-      this._defaultPageBackfill = new PluginDefaultPageBackfillService(this.seedPage);
-    }
-    return this._defaultPageBackfill;
+    return ServerServiceRegistry.require<PluginDefaultPageBackfillService>(ServerServiceKey.DEFAULT_PAGE_BACKFILL);
   }
 
   get defaultPageDiagnostic(): PluginDefaultPageDiagnosticService {
-    if (!this._defaultPageDiagnostic) {
-      this._defaultPageDiagnostic = new PluginDefaultPageDiagnosticService(
-        this.defaultPageContractResolution,
-        this.defaultPageMaterialization,
-        this.defaultPageBackfill,
-      );
-    }
-    return this._defaultPageDiagnostic;
+    return ServerServiceRegistry.require<PluginDefaultPageDiagnosticService>(ServerServiceKey.DEFAULT_PAGE_DIAGNOSTIC);
   }
 
   get defaultPageMaterialization(): PluginDefaultPageMaterializationService {
-    if (!this._defaultPageMaterialization) {
-      this._defaultPageMaterialization = new PluginDefaultPageMaterializationService(this.seedPage);
-    }
-    return this._defaultPageMaterialization;
+    return ServerServiceRegistry.require<PluginDefaultPageMaterializationService>(ServerServiceKey.DEFAULT_PAGE_MATERIALIZATION);
   }
 
   get seedPage(): SeedPageService {
-    if (!this._seedPage) {
-      this._seedPage = new SeedPageService();
-    }
-    return this._seedPage;
+    return ServerServiceRegistry.require<SeedPageService>(ServerServiceKey.SEED_PAGE);
   }
 
   /**
@@ -263,10 +231,7 @@ export class CoreServices {
    * client (e.g. members-only paywall gating). The framework stays plugin-agnostic.
    */
   get contentResolutionGates(): ContentResolutionGateRegistryService {
-    if (!this._contentResolutionGates) {
-      this._contentResolutionGates = new ContentResolutionGateRegistryService();
-    }
-    return this._contentResolutionGates;
+    return ServerServiceRegistry.require<ContentResolutionGateRegistryService>(ServerServiceKey.CONTENT_RESOLUTION_GATES);
   }
 
   /**
@@ -276,10 +241,7 @@ export class CoreServices {
    * Backbone of the Person 360 / partner-CRM view.
    */
   get entityRecords(): PluginEntityRecordsRegistryService {
-    if (!this._entityRecords) {
-      this._entityRecords = new PluginEntityRecordsRegistryService();
-    }
-    return this._entityRecords;
+    return ServerServiceRegistry.require<PluginEntityRecordsRegistryService>(ServerServiceKey.ENTITY_RECORDS);
   }
 
   /**
@@ -288,17 +250,11 @@ export class CoreServices {
    * plugin-agnostic: it only runs the resolvers and returns the first match at the routing layer.
    */
   get redirectResolvers(): RedirectResolverRegistryService {
-    if (!this._redirectResolvers) {
-      this._redirectResolvers = new RedirectResolverRegistryService();
-    }
-    return this._redirectResolvers;
+    return ServerServiceRegistry.require<RedirectResolverRegistryService>(ServerServiceKey.REDIRECT_RESOLVERS);
   }
 
   get entityRecordsResolution(): EntityRecordsResolutionService {
-    if (!this._entityRecordsResolution) {
-      this._entityRecordsResolution = new EntityRecordsResolutionService(this.entityRecords);
-    }
-    return this._entityRecordsResolution;
+    return ServerServiceRegistry.require<EntityRecordsResolutionService>(ServerServiceKey.ENTITY_RECORDS_RESOLUTION);
   }
 
   /**

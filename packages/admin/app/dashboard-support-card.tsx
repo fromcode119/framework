@@ -1,12 +1,16 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AdminConstants } from '@/lib/constants';
-import type { DashboardSupportCardProps } from './dashboard-sections.interfaces';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import type { ReactNode } from 'react';
 
-export class DashboardSupportCard extends React.Component<DashboardSupportCardProps> {
-  render(): React.ReactNode {
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
+import { Button } from '@/components/ui/view/button.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+
+export class DashboardSupportCard extends PureReactor {
+  @prop declare onNavigateFramework: () => void;
+
+  render(): ReactNode {
     return (
       <Card title="Support & Docs">
          <div className="space-y-3">
@@ -16,7 +20,7 @@ export class DashboardSupportCard extends React.Component<DashboardSupportCardPr
               </p>
             </div>
             <Button
-              variant="secondary"
+              variant={ButtonVariant.SECONDARY}
               className="w-full justify-between group"
               as="a"
               href={AdminConstants.ROUTES.SETTINGS.FRAMEWORK}

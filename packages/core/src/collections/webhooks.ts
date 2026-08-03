@@ -1,8 +1,9 @@
-import type { Collection } from '../types';
-import { SystemConstants } from '../constants';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import { SystemConstants } from '@core/constants/system.constants';
+import { FieldType } from '@core/enums/field-type.enum';
 
 export class WebhooksCollection {
-  static readonly collection: Collection = {
+  static readonly collection: ICollection = {
     slug: SystemConstants.TABLE.WEBHOOKS,
     admin: {
       group: 'Settings',
@@ -13,17 +14,17 @@ export class WebhooksCollection {
     fields: [
       {
         name: 'name',
-        type: 'text',
+        type: FieldType.TEXT,
         required: true,
       },
       {
         name: 'url',
-        type: 'text',
+        type: FieldType.TEXT,
         required: true,
       },
       {
           name: 'method',
-          type: 'select',
+          type: FieldType.SELECT,
           defaultValue: 'POST',
           options: [
               { label: 'POST', value: 'POST' },
@@ -34,7 +35,7 @@ export class WebhooksCollection {
       },
       {
         name: 'events',
-        type: 'json', // Array of event patterns like ["collections:posts:afterCreate", "system:*"]
+        type: FieldType.JSON, // Array of event patterns like ["collections:posts:afterCreate", "system:*"]
         required: true,
         admin: {
             component: 'Tags'
@@ -42,38 +43,38 @@ export class WebhooksCollection {
       },
       {
         name: 'headers',
-        type: 'json', // Key-value pairs of custom headers
+        type: FieldType.JSON, // Key-value pairs of custom headers
         defaultValue: {},
       },
       {
         name: 'secret',
-        type: 'password',
+        type: FieldType.PASSWORD,
         admin: {
           description: 'Used to sign the payload (X-Fromcode-Signature)',
         }
       },
       {
         name: 'active',
-        type: 'boolean',
+        type: FieldType.BOOLEAN,
         defaultValue: true,
       },
       {
         name: 'lastTriggeredAt',
-        type: 'date',
+        type: FieldType.DATE,
         admin: {
             readOnly: true
         }
       },
       {
         name: 'lastStatus',
-        type: 'number',
+        type: FieldType.NUMBER,
         admin: {
             readOnly: true
         }
       },
       {
           name: 'lastResponse',
-          type: 'textarea',
+          type: FieldType.TEXTAREA,
           admin: {
               readOnly: true,
               hidden: true

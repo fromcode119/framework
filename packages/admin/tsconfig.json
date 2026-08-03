@@ -7,6 +7,8 @@
       "esnext"
     ],
     "allowJs": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -25,11 +27,28 @@
       }
     ],
     "paths": {
+      // A package tsconfig REPLACES the inherited `paths` map rather than merging into it, so every
+      // private package alias this app compiles through must be repeated here.
+      "@core/*": ["../core/src/*"],
+      "@database/*": ["../database/src/*"],
+      "@react/*": ["../react/src/*"],
+      "@api/*": ["../api/src/*"],
+      "@auth/*": ["../auth/src/*"],
+      "@cache/*": ["../cache/src/*"],
+      "@marketplace-client/*": ["../marketplace-client/src/*"],
+      "@media/*": ["../media/src/*"],
+      "@email/*": ["../email/src/*"],
+      "@scheduler/*": ["../scheduler/src/*"],
+      "@plugins/*": ["../plugins/src/*"],
+      "@mcp/*": ["../mcp/src/*"],
+      "@sdk/*": ["../sdk/src/*"],
+      "@nextjs/*": ["../next/src/*"],
+      "@cli/*": ["../cli/src/*"],
       "@/*": [
         "./*"
       ],
       "@fromcode119/core": [
-        "../core/src"
+        "../core/src/client.ts"
       ],
       "@fromcode119/core/*": [
         "../core/src/*"
@@ -45,6 +64,11 @@
       ],
       "@fromcode119/react/*": [
         "../react/src/*"
+      ],
+      // admin compiles ai's SOURCE, so it must know ai's private `@ai/*` alias. A package tsconfig
+      // REPLACES the inherited `paths` map rather than merging into it, so the root entry is not enough.
+      "@ai/*": [
+        "../ai/src/*"
       ],
       "@fromcode119/ai": [
         "../ai/src"

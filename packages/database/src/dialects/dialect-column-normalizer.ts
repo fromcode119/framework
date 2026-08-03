@@ -1,4 +1,4 @@
-import { NamingStrategy } from '../naming-strategy';
+import { NamingStrategy } from '@database/naming-strategy';
 
 /**
  * DialectColumnNormalizer - Shared JSON-column-aware value normalization.

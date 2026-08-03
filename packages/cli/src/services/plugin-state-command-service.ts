@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { PluginState, SystemConstants } from '@fromcode119/core';
-import { CliUtils } from '../utils';
+import { CliUtils } from '@cli/utils';
 
 /**
  * Offline plugin-state recovery. Talks DIRECTLY to the database (the `_system_plugins` registry),
@@ -11,7 +11,8 @@ import { CliUtils } from '../utils';
  */
 export class PluginStateCommandService {
   private static readonly TABLE = SystemConstants.TABLE.PLUGINS;
-  private static readonly STATE_ACTIVE = 'active';
+  /** The persisted column value, taken FROM the enum so there is one source of truth. */
+  private static readonly STATE_ACTIVE = PluginState.ACTIVE.value;
   private static readonly STATE_DISABLED = 'disabled';
 
   static register(plugin: Command): void {
@@ -44,10 +45,12 @@ export class PluginStateCommandService {
       console.log(chalk.white(`\n${rows.length} plugin(s):`));
       console.log(chalk.gray('--------------------------------------------------'));
       for (const row of rows) {
-        const state = String(row.state || 'unknown');
-        const color = state === PluginStateCommandService.STATE_ACTIVE ? chalk.green : state === PluginState.ERROR ? chalk.red : chalk.yellow;
+        // The column holds the enum's string value; resolve once so BOTH comparisons are real. Comparing
+        // the raw string to `PluginState.ERROR` was always false, so an errored plugin never printed red.
+        const state = PluginState.resolve(row.state);
+        const color = state === PluginState.ACTIVE ? chalk.green : state === PluginState.ERROR ? chalk.red : chalk.yellow;
         const health = row.healthStatus ? chalk.gray(` health:${row.healthStatus}`) : '';
-        console.log(`${color(state.padEnd(9))} ${chalk.bold(row.slug)} ${chalk.gray('v' + (row.version || '?'))}${health}`);
+        console.log(`${color(state.value.padEnd(9))} ${chalk.bold(row.slug)} ${chalk.gray('v' + (row.version || '?'))}${health}`);
       }
       console.log('');
       process.exit(0);

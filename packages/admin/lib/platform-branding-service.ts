@@ -1,4 +1,4 @@
-import { AppEnv } from './env';
+import { AppEnv } from '@/lib/env';
 
 export class PlatformBrandingService {
   static resolvePlatformName(settings?: Record<string, unknown> | null): string {

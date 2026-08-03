@@ -1,16 +1,18 @@
+import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 import * as fs from 'fs';
 import * as path from 'path';
-import { BackupService } from '../../management/backup-service';
-import { PluginMigrationLoader } from '../../database/plugin-migration-loader';
-import { Logger } from '../../logging';
-import { MigrationManager } from '../../database/migration-manager';
-import { DiscoveryService } from './discovery-service';
-import { MarketplaceCatalogService } from '../../marketplace/marketplace-catalog-service';
-import type { LoadedPlugin, PluginManifest } from '../../types';
-import type { PluginInstallProgressReporter } from '../plugin-installation.interfaces';
-import { PluginStateService } from './plugin-state-service';
-import { PluginRuntimeRestartService } from './plugin-runtime-restart-service';
-import { PluginState } from './plugin-state.enums';
+import { BackupService } from '@core/management/backup-service';
+import { PluginMigrationLoader } from '@core/database/plugin-migration-loader';
+import { Logger } from '@core/logging';
+import { MigrationManager } from '@core/database/migration-manager';
+import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
+import { PluginStateService } from '@core/plugin/services/plugin-state-service';
+import { PluginRuntimeRestartService } from '@core/plugin/services/plugin-runtime-restart-service';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class PluginInstallationService {
   constructor(
@@ -20,7 +22,7 @@ export class PluginInstallationService {
     private readonly migrationManager: MigrationManager,
     private readonly registry: PluginStateService,
     private readonly runtimeRestart: PluginRuntimeRestartService,
-    private readonly plugins: Map<string, LoadedPlugin>,
+    private readonly plugins: Map<string, ILoadedPlugin>,
     private readonly pluginsRoot: string,
     private readonly discoverPlugins: () => Promise<void>,
     private readonly enablePlugin: (slug: string) => Promise<void>,
@@ -28,8 +30,8 @@ export class PluginInstallationService {
 
   async installOrUpdateFromMarketplace(
     slug: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter; version?: string } = {},
-  ): Promise<PluginManifest> {
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; version?: string } = {},
+  ): Promise<IPluginManifest> {
     const pkg = await this.marketplace.getPluginInfo(slug, options.version);
     if (!pkg) {
       throw new Error(`Plugin "${slug}"${options.version ? ` v${options.version}` : ''} not found in marketplace.`);
@@ -57,7 +59,7 @@ export class PluginInstallationService {
         message: `Creating backup for "${slug}" before update...`,
         pluginSlug: slug,
       });
-      await BackupService.create(slug, existing.path, 'plugins');
+      await BackupService.create(slug, existing.path, BackupSectionKey.PLUGINS);
     }
 
     const manifest = await this.marketplace.downloadAndInstall(slug, new Set(), options.progressReporter, options.version);
@@ -70,8 +72,8 @@ export class PluginInstallationService {
 
   async installUploadedPluginArchive(
     filePath: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
-  ): Promise<PluginManifest> {
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
+  ): Promise<IPluginManifest> {
     options.progressReporter?.({
       phase: 'extracting-package',
       message: 'Extracting uploaded plugin package...',
@@ -85,7 +87,7 @@ export class PluginInstallationService {
 
   async finalizeInstalledPlugin(
     slug: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<void> {
     const existingPlugin = this.plugins.get(slug);
     const manifestPath = path.join(this.pluginsRoot, slug, 'manifest.json');
@@ -93,7 +95,7 @@ export class PluginInstallationService {
       throw new Error(`Installed plugin manifest not found for "${slug}".`);
     }
 
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as PluginManifest;
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as IPluginManifest;
     const pluginPath = path.dirname(manifestPath);
     await this.runPluginMigrations(slug, pluginPath, manifest, options.progressReporter);
 
@@ -147,8 +149,8 @@ export class PluginInstallationService {
   private async runPluginMigrations(
     slug: string,
     pluginPath: string,
-    manifest: PluginManifest,
-    progressReporter?: PluginInstallProgressReporter,
+    manifest: IPluginManifest,
+    progressReporter?: IPluginInstallProgressReporter,
   ): Promise<void> {
     progressReporter?.({
       phase: 'checking-migrations',

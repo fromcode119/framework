@@ -1,10 +1,10 @@
-import type { DatabaseDialectDefinition } from './database-dialect-definition.interfaces';
-import { BuiltInDatabaseDialectDefinitions } from './built-in-database-dialect-definitions';
+import type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
+import { BuiltInDatabaseDialectDefinitions } from '@database/dialects/built-in-database-dialect-definitions';
 
 export class DatabaseDialectDefinitionLoader {
-  private static cache: DatabaseDialectDefinition[] | null = null;
+  private static cache: IDatabaseDialectDefinition[] | null = null;
 
-  static load(): DatabaseDialectDefinition[] {
+  static load(): IDatabaseDialectDefinition[] {
     if (this.cache) {
       return this.cache;
     }

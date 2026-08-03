@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { CliUtils } from '../utils';
+import { CliUtils } from '@cli/utils';
 
 export class PluginScaffoldCommandService {
   static register(plugin: Command): void {
@@ -119,7 +119,6 @@ export default DashboardWidget;
 
     // 4. ui/banner.tsx
     const banner = `
-import React from 'react';
 
 const Banner = () => {
   return (
@@ -149,8 +148,9 @@ export const init = () => {
 };
 
 // --- Self-Registration ---
-if (typeof window !== 'undefined' && (window as any).Fromcode) {
-  const Fromcode = (window as any).Fromcode;
+const __fcRegistry = typeof window !== 'undefined' ? (window as any).__fromcodeRuntimeModules : null;
+if (__fcRegistry && __fcRegistry['@fromcode119/react']) {
+  const Fromcode = __fcRegistry['@fromcode119/react'];
 
   // Register slots
   Object.entries(slots).forEach(([slotName, config]: [string, any]) => {

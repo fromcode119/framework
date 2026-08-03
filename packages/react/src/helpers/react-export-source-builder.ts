@@ -12,6 +12,7 @@ export class ReactExportSourceBuilder {
     'ContextBridge',
     'ContextHooks',
     'SystemShortcodes',
+    'PluginUiRegistrar',
   ]);
 
   static readonly SDK_REACT_EXPORT_KEYS: readonly string[] = [
@@ -21,6 +22,16 @@ export class ReactExportSourceBuilder {
     'Slot',
     'Override',
     'AccountShell',
+    'SlotsContext',
+    'Platform',
+    'AccountShellDefault',
+    'AccountSectionRegistry',
+    'AccountSection',
+    'AccountSectionIcons',
+    'AccountShellSkeleton',
+    'AccountShellPlaceholder',
+    'AccountClass',
+    'AuthShell',
     'RecordsHub',
     'RootFramework',
     'CollectionQueryUtils',
@@ -34,6 +45,20 @@ export class ReactExportSourceBuilder {
     'PluginRuntimeContext',
     'PluginRuntimeProvider',
     'PluginComponent',
+    'Reactor',
+    'PureReactor',
+    'Provider',
+    'Bridge',
+    'Enum',
+    // React's own values (Fragment/Suspense/lazy/createElement/…) surfaced from reactor so plugin and
+    // theme bundles never import 'react' directly. A missing name here fails the bundle at LOAD.
+    'ReactPrimitives',
+    'Context',
+    'prop',
+    'state',
+    'bound',
+    'watch',
+    'ref',
   ];
 
   private static readonly REQUIRED_REACT_EXPORT_KEYS: readonly string[] = [
@@ -43,7 +68,6 @@ export class ReactExportSourceBuilder {
 
   static buildReactExportSource(bridge: Record<string, unknown>, reactModuleAccessor: string): string {
     const scopedReactModuleAccessor = `(${reactModuleAccessor})`;
-    const reactBridgeAccessor = `${scopedReactModuleAccessor} || window.Fromcode`;
     return (
       Object.keys(bridge)
         .filter((key) => {
@@ -52,27 +76,26 @@ export class ReactExportSourceBuilder {
           if (ReactExportSourceBuilder.BANNED_STANDALONE_EXPORTS.has(key)) return false;
           return typeof bridge[key] !== 'undefined';
         })
-        // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
-        // when this data URL module is evaluated (e.g. timing race during bundle load).
-        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
+        // The registry is populated during the pre-boot stub phase, so the accessor resolves before
+        // any bundle imports this module; the null-safe ternary only guards a pathological early eval.
+        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : undefined;`)
         .join('\n') +
       ReactExportSourceBuilder.buildRequiredExports(scopedReactModuleAccessor) +
       ReactExportSourceBuilder.buildGroupedExports(scopedReactModuleAccessor) +
-      `export default ${reactBridgeAccessor};`
+      `export default ${scopedReactModuleAccessor};`
     );
   }
 
   static buildSdkReactExportSource(reactModuleAccessor: string): string {
     const scopedReactModuleAccessor = `(${reactModuleAccessor})`;
-    const reactBridgeAccessor = `${scopedReactModuleAccessor} || window.Fromcode`;
     return (
       ReactExportSourceBuilder.SDK_REACT_EXPORT_KEYS
-        // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
-        // when this data URL module is evaluated (e.g. timing race during bundle load).
-        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
+        // The registry is populated during the pre-boot stub phase, so the accessor resolves before
+        // any bundle imports this module; the null-safe ternary only guards a pathological early eval.
+        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : undefined;`)
         .join('\n') +
       ReactExportSourceBuilder.buildGroupedExports(scopedReactModuleAccessor) +
-      `export default ${reactBridgeAccessor};`
+      `export default ${scopedReactModuleAccessor};`
     );
   }
 
@@ -81,18 +104,19 @@ export class ReactExportSourceBuilder {
     // Export the ACTUAL class objects stored on the bridge — not proxy plain-objects.
     // ContextBridge / ContextHooks / SystemShortcodes are real ES classes with static
     // methods that call getBridge() at invocation time, so there are no timing races.
-    // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
-    // when this data URL module is evaluated (e.g. during early bundle load).
+    // The registry is populated during the pre-boot stub phase, so the accessor resolves before any
+    // bundle imports this module; the null-safe ternary only guards a pathological early eval.
     return (
-      `\nexport const ContextBridge = ${R} ? ${R}.ContextBridge : (window.Fromcode && window.Fromcode.ContextBridge);\n` +
-      `export const ContextHooks = ${R} ? ${R}.ContextHooks : (window.Fromcode && window.Fromcode.ContextHooks);\n` +
-      `export const SystemShortcodes = ${R} ? ${R}.SystemShortcodes : (window.Fromcode && window.Fromcode.SystemShortcodes);\n`
+      `\nexport const ContextBridge = ${R} ? ${R}.ContextBridge : undefined;\n` +
+      `export const ContextHooks = ${R} ? ${R}.ContextHooks : undefined;\n` +
+      `export const SystemShortcodes = ${R} ? ${R}.SystemShortcodes : undefined;\n` +
+      `export const PluginUiRegistrar = ${R} ? ${R}.PluginUiRegistrar : undefined;\n`
     );
   }
 
   private static buildRequiredExports(reactModuleAccessor: string): string {
     return ReactExportSourceBuilder.REQUIRED_REACT_EXPORT_KEYS
-      .map((key) => `\nexport const ${key} = ((${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : null) ?? (window.Fromcode && window.Fromcode.${key}));`)
+      .map((key) => `\nexport const ${key} = (${reactModuleAccessor} ? ${reactModuleAccessor}.${key} : undefined);`)
       .join('');
   }
 }

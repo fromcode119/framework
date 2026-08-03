@@ -1,6 +1,6 @@
 import { SystemConstants } from '@fromcode119/core';
-import { PeopleSelfService } from './people-self-service';
-import type { UserManagementService } from './user-management-service';
+import { PeopleSelfService } from '@api/services/people-self-service';
+import type { UserManagementService } from '@api/services/user-management-service';
 
 /**
  * Admin-facing management of the unified `people` model: list person records and promote a person

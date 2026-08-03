@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { Env } from './env.types';
 
 /**
  * Validates the current environment variables.
@@ -60,7 +59,7 @@ export class EnvConfig {
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info')
   });
 
-  static validate(): Env {
+  static validate(): z.infer<typeof EnvConfig.schema> {
     const result = EnvConfig.schema.safeParse(process.env);
 
     if (!result.success) {
@@ -76,6 +75,6 @@ export class EnvConfig {
       }
     }
 
-    return result.data as Env;
+    return result.data as z.infer<typeof EnvConfig.schema>;
   }
 }

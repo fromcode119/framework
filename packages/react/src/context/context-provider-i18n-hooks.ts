@@ -1,8 +1,11 @@
 import React from 'react';
 import { SystemConstants } from '@fromcode119/core/client';
-import type { CollectionMetadata, MenuItem, SecondaryPanelState, SlotComponent } from '../context.interfaces';
-import { ContextProviderStateService } from './context-provider-state-service';
-import { FrontendI18nService } from './frontend-i18n-service';
+import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
+import type { IMenuItem } from '@react/interfaces/menu-item.interface';
+import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
+import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
+import { ContextProviderStateService } from '@react/context/context-provider-state-service';
+import { FrontendI18nService } from '@react/context/frontend-i18n-service';
 
 export class ContextProviderI18nHooks {
   static useI18nRuntime(args: {
@@ -13,11 +16,11 @@ export class ContextProviderI18nHooks {
     loadedConfigPathsRef: React.MutableRefObject<Set<string>>;
     setTranslations: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setRefreshVersion: React.Dispatch<React.SetStateAction<number>>;
-    setSlots: React.Dispatch<React.SetStateAction<Record<string, SlotComponent[]>>>;
-    setOverrides: React.Dispatch<React.SetStateAction<Record<string, SlotComponent>>>;
-    setMenuItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
-    setSecondaryPanel: React.Dispatch<React.SetStateAction<SecondaryPanelState>>;
-    setCollections: React.Dispatch<React.SetStateAction<CollectionMetadata[]>>;
+    setSlots: React.Dispatch<React.SetStateAction<Record<string, ISlotComponent[]>>>;
+    setOverrides: React.Dispatch<React.SetStateAction<Record<string, ISlotComponent>>>;
+    setMenuItems: React.Dispatch<React.SetStateAction<IMenuItem[]>>;
+    setSecondaryPanel: React.Dispatch<React.SetStateAction<ISecondaryPanelState>>;
+    setCollections: React.Dispatch<React.SetStateAction<ICollectionMetadata[]>>;
   }) {
     const {
       api,
@@ -66,26 +69,14 @@ export class ContextProviderI18nHooks {
       [translations, registeredTranslations, locale],
     );
 
-    const t = React.useCallback((key: string, params: Record<string, any> = {}, defaultValue?: string) => {
-      let value: any = effectiveTranslations;
-      const parts = key.split('.');
-      for (const part of parts) {
-        if (value && typeof value === 'object' && part in value) {
-          value = value[part];
-        } else {
-          return defaultValue || key;
-        }
-      }
-
-      if (typeof value !== 'string') {
-        return defaultValue || key;
-      }
-
-      return value.replace(/\{\{(.+?)\}\}/g, (_, match) => {
-        const paramKey = match.trim();
-        return params[paramKey] !== undefined ? String(params[paramKey]) : `{{${paramKey}}}`;
-      });
-    }, [effectiveTranslations]);
+    // Lookup lives in FrontendI18nService so the server-side pre-render of a theme resolves keys
+    // through the SAME code — a second copy would drift, and drift here reads as text changing
+    // between the server paint and hydration.
+    const t = React.useCallback(
+      (key: string, params: Record<string, any> = {}, defaultValue?: string) =>
+        FrontendI18nService.translate(effectiveTranslations, key, params, defaultValue),
+      [effectiveTranslations],
+    );
 
     React.useEffect(() => {
       loadTranslations(locale);

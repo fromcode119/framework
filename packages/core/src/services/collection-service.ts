@@ -1,5 +1,8 @@
-import { Collection, CollectionQueryInterface, CandidateLookupOptions, UpsertByCandidatesOptions } from '../types';
-import { BaseService } from './base-service';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollectionQueryInterface } from '@core/interfaces/collection-query-interface.interface';
+import type { ICandidateLookupOptions } from '@core/interfaces/candidate-lookup-options.interface';
+import type { IUpsertByCandidatesOptions } from '@core/interfaces/upsert-by-candidates-options.interface';
+import { BaseService } from '@core/services/base-service';
 
 /**
  * Collection Service.
@@ -30,10 +33,10 @@ export class CollectionService extends BaseService {
    * @returns Matching collection or undefined
    */
   resolveBySlug(
-    collections: Collection[],
+    collections: ICollection[],
     pluginSlug: string,
     slug: string
-  ): Collection | undefined {
+  ): ICollection | undefined {
     const normSlug = String(slug || '').toLowerCase();
     const normPluginSlug = String(pluginSlug || 'system').toLowerCase();
 
@@ -65,7 +68,7 @@ export class CollectionService extends BaseService {
   generatePreviewUrl(
     baseUrl: string,
     record: any,
-    collection: Collection,
+    collection: ICollection,
     options?: {
       permalinkStructure?: string;
       prefix?: string;
@@ -144,9 +147,9 @@ export class CollectionService extends BaseService {
    * @returns Matching record or null
    */
   async findByCandidates(
-    collection: CollectionQueryInterface,
+    collection: ICollectionQueryInterface,
     candidates: string[],
-    options?: CandidateLookupOptions
+    options?: ICandidateLookupOptions
   ): Promise<any | null> {
     const fields = options?.fields || ['slug', 'customPermalink', 'path'];
     const scanLimit = options?.scanLimit ?? 2000;
@@ -192,10 +195,10 @@ export class CollectionService extends BaseService {
    * @returns Object with record and created flag
    */
   async findAndUpsert(
-    collection: CollectionQueryInterface,
+    collection: ICollectionQueryInterface,
     candidates: string[],
     data: Record<string, any>,
-    options?: UpsertByCandidatesOptions
+    options?: IUpsertByCandidatesOptions
   ): Promise<{ record: any; created: boolean }> {
     const existing = await this.findByCandidates(collection, candidates, options);
     const idField = options?.idField || 'id';

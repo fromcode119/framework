@@ -1,5 +1,6 @@
-import { Collection } from '@fromcode119/core';
-import { LocalizationService } from './localization-service';
+import { ICollection } from '@fromcode119/core';
+import { LocalizationService } from '@api/services/localization-service';
+import { FieldType } from '@fromcode119/core';
 
 export class DataProcessorService {
   constructor(
@@ -8,7 +9,7 @@ export class DataProcessorService {
   ) {}
 
   public async processIncomingData(
-    collection: Collection,
+    collection: ICollection,
     data: any,
     table: any,
     options: {
@@ -95,7 +96,7 @@ export class DataProcessorService {
   }
 
   public filterHiddenFields(
-    collection: Collection, 
+    collection: ICollection, 
     data: any, 
     options: { localeContext: any; rawLocalized: boolean }
   ) {
@@ -111,14 +112,17 @@ export class DataProcessorService {
     // unconditionally stripped from every outgoing document (reads AND the echoed doc in write
     // responses), regardless of admin.hidden or access flags. This is a data-type rule: a stored
     // secret/credential hash is write-only through this layer.
+    // `FieldType.resolve(...)`, not `field.type === FieldType.PASSWORD`: a collection may declare its
+    // field type as the raw literal (`type: 'password'`) — every plugin does — and a raw string is never
+    // reference-equal to the Enum member, so the direct comparison silently strips nothing.
     collection.fields.forEach((field) => {
-      if (field.type === 'password') {
+      if (FieldType.resolve(field.type) === FieldType.PASSWORD) {
         delete transformed[field.name];
       }
     });
 
     // Ensure array fields are parsed if they came back as strings
-    collection.fields.filter(f => f.type === 'array').forEach((field) => {
+    collection.fields.filter((f) => FieldType.resolve(f.type) === FieldType.ARRAY).forEach((field) => {
         const value = transformed[field.name];
         if (typeof value === 'string') {
             try {

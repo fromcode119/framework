@@ -1,7 +1,7 @@
 import type { Pool } from 'mysql2/promise';
 import { sql, and, or, like, count as drizzleCount } from 'drizzle-orm';
-import { BaseDialect } from '../base-dialect';
-import { MysqlColumnNormalizer } from './column-normalizer';
+import { BaseDialect } from '@database/dialects/base-dialect';
+import { MysqlColumnNormalizer } from '@database/dialects/mysql/column-normalizer';
 
 /**
  * MysqlReadOperations - SELECT / count read path for the MySQL manager.

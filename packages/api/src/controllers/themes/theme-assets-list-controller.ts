@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { ThemeManager, Logger, ApiPathUtils } from '@fromcode119/core';
-import { ApiUrlUtils } from '../../utils/url';
-import type { ThemeAssetEntry, ThemeAssetsListResponse } from './theme-assets-list-controller.interfaces';
+import { ApiUrlUtils } from '@api/utils/url';
+import type { IThemeAssetEntry } from '@api/controllers/themes/interfaces/theme-asset-entry.interface';
+import type { IThemeAssetsListResponse } from '@api/controllers/themes/interfaces/theme-assets-list-response.interface';
 
-const IMAGE_MIME: Record<string, string> = {
+export class ThemeAssetsListController {
+  private static readonly IMAGE_MIME: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
@@ -14,16 +16,13 @@ const IMAGE_MIME: Record<string, string> = {
   '.svg': 'image/svg+xml',
   '.avif': 'image/avif',
 };
-
-const VIDEO_MIME: Record<string, string> = {
+  private static readonly VIDEO_MIME: Record<string, string> = {
   '.mp4': 'video/mp4',
   '.webm': 'video/webm',
   '.mov': 'video/quicktime',
 };
+  private static readonly SCANNED_SUBDIRS = ['images', 'videos'];
 
-const SCANNED_SUBDIRS = ['images', 'videos'];
-
-export class ThemeAssetsListController {
   private logger = new Logger({ namespace: 'theme-assets-list-controller' });
 
   constructor(private themeManager: ThemeManager) {}
@@ -33,22 +32,22 @@ export class ThemeAssetsListController {
       const manifest = this.themeManager.getActiveThemeManifest();
       const themeSlug = String(manifest?.slug || '').trim() || null;
       if (!themeSlug) {
-        res.json({ themeSlug: null, assets: [] } satisfies ThemeAssetsListResponse);
+        res.json({ themeSlug: null, assets: [] } satisfies IThemeAssetsListResponse);
         return;
       }
 
       const themeDir = this.themeManager.getThemeDirectory(themeSlug);
       const uiRoot = path.resolve(themeDir, 'ui');
 
-      const assets: ThemeAssetEntry[] = [];
-      for (const subdir of SCANNED_SUBDIRS) {
+      const assets: IThemeAssetEntry[] = [];
+      for (const subdir of ThemeAssetsListController.SCANNED_SUBDIRS) {
         const absoluteSubdir = path.join(uiRoot, subdir);
         if (!this.isDirectory(absoluteSubdir)) continue;
         this.walk(absoluteSubdir, subdir, themeSlug, req, assets);
       }
       assets.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 
-      res.json({ themeSlug, assets } satisfies ThemeAssetsListResponse);
+      res.json({ themeSlug, assets } satisfies IThemeAssetsListResponse);
     } catch (err: any) {
       this.logger.error(`Failed to list theme assets: ${err?.message || err}`);
       res.status(500).json({ error: err?.message || 'Failed to list theme assets' });
@@ -60,7 +59,7 @@ export class ThemeAssetsListController {
     relativeDir: string,
     themeSlug: string,
     req: Request,
-    out: ThemeAssetEntry[],
+    out: IThemeAssetEntry[],
   ): void {
     let entries: fs.Dirent[];
     try {
@@ -76,7 +75,7 @@ export class ThemeAssetsListController {
       }
       if (!entry.isFile()) continue;
       const ext = path.extname(entry.name).toLowerCase();
-      const mimeType = IMAGE_MIME[ext] || VIDEO_MIME[ext];
+      const mimeType = ThemeAssetsListController.IMAGE_MIME[ext] || ThemeAssetsListController.VIDEO_MIME[ext];
       if (!mimeType) continue;
       const url = ApiUrlUtils.resolvePublicUrl(req, ApiPathUtils.themeUiAssetPath(themeSlug, relativeChild));
       out.push({ filename: entry.name, relativePath: relativeChild, mimeType, url });

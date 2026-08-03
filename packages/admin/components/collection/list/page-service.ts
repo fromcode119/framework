@@ -1,12 +1,13 @@
+import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import React from 'react';
+import type { ReactNode } from 'react';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/view/badge.client';
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
-import { CollectionKeyUtils } from '../collection-key-utils';
-import { CollectionListRelationshipCellValue } from './relationship-cell-value';
-import { CollectionListUtils } from './utils';
+import { CollectionListRelationshipCellValue } from '@/components/collection/list/view/relationship-cell-value.client';
+import { CollectionListUtils } from '@/components/collection/list/utils';
 
 export class CollectionListPageService {
   static resolveStatusField(collection: any): any {
@@ -169,9 +170,9 @@ export class CollectionListPageService {
    * temporary anchor — the same pattern as the system-backup download. This replaces the old
    * `window.open(...export?token=...)`, which opened a blank tab and frequently downloaded nothing.
    */
-  static async exportRecords(resolvedSlug: string, format: 'json' | 'csv', ids?: string[]): Promise<void> {
+  static async exportRecords(resolvedSlug: string, format: ExportFormat, ids?: string[]): Promise<void> {
     if (typeof window === 'undefined') return;
-    const params = new URLSearchParams({ format });
+    const params = new URLSearchParams({ format: format.value });
     if (ids?.length) params.append('ids', ids.join(','));
     const { blob, filename } = await AdminApi.download(
       `${AdminConstants.ENDPOINTS.COLLECTIONS.EXPORT(resolvedSlug)}?${params.toString()}`,
@@ -249,7 +250,7 @@ export class CollectionListPageService {
     field: any;
     header: string;
     raw: any;
-  }): React.ReactNode {
+  }): ReactNode {
     if (columnName === 'status') return this.renderStatusBadge(raw);
 
     if (CollectionListUtils.shouldRenderBooleanBadge(field, columnName, header, raw)) {
@@ -277,7 +278,7 @@ export class CollectionListPageService {
     return CollectionListUtils.formatCellValue(raw);
   }
 
-  private static renderStatusBadge(raw: any): React.ReactNode {
+  private static renderStatusBadge(raw: any): ReactNode {
     const value = String(raw || '').trim();
     if (!value) return '-';
     const lower = value.toLowerCase();

@@ -1,12 +1,16 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { PluginTrendChart } from '@/components/plugin-dashboard/plugin-trend-chart';
-import type { DashboardActivityChartProps } from './dashboard-activity-chart.interfaces';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
+import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 
 /** Aggregates the recent activity log into per-day counts and renders a compact trend chart. */
-export class DashboardActivityChart extends React.Component<DashboardActivityChartProps> {
-  render(): React.ReactNode {
-    const { activity, days = 14 } = this.props;
+export class DashboardActivityChart extends PureReactor {
+  @prop declare activity: Array<{ timestamp?: string | number; level?: string }>;
+  @prop declare days?: number;
+
+  render(): ReactNode {
+    const activity = this.activity;
+    const days = this.days ?? 14;
 
     const buckets: { key: string; label: string; total: number; errors: number }[] = [];
     const index: Record<string, number> = {};

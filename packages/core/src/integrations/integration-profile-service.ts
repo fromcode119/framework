@@ -1,21 +1,20 @@
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 /** Integration profile and persistence service. Extracted from IntegrationRegistry (ARC-007). */
 
-import { Logger } from '../logging';
-import { SystemConstants } from '../constants';
-import { CoreServices } from '../services';
-import {
-  IntegrationTypeRuntime,
-  IntegrationStoredProfile,
-  IntegrationStoredProfiles,
-  IntegrationStoredProvider,
-  IntegrationProviderDefinition,
-} from './integration-registry.interfaces';
+import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import { CoreServices } from '@core/services';
+import type { IIntegrationTypeRuntime } from '@core/integrations/interfaces/integration-type-runtime.interface';
+import type { IIntegrationStoredProfile } from '@core/integrations/interfaces/integration-stored-profile.interface';
+import type { IIntegrationStoredProfiles } from '@core/integrations/interfaces/integration-stored-profiles.interface';
+
+import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
 
 export class IntegrationProfileService {
   constructor(
     private readonly db: any,
     private readonly logger: Logger,
-    private readonly types: Map<string, IntegrationTypeRuntime<any>>,
+    private readonly types: Map<string, IIntegrationTypeRuntime<any>>,
   ) {}
 
   // --- Profile management ---
@@ -110,7 +109,7 @@ export class IntegrationProfileService {
 
   // --- Private profile storage helpers ---
 
-  async readStoredProfiles(typeKey: string): Promise<IntegrationStoredProfiles | null> {
+  async readStoredProfiles(typeKey: string): Promise<IIntegrationStoredProfiles | null> {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) return null;
@@ -123,7 +122,7 @@ export class IntegrationProfileService {
         const parsed = this.safeParseJson(rawProfiles, {});
         const incomingProfiles = Array.isArray(parsed?.profiles) ? parsed.profiles : [];
         const activeProfileId = this.normalize(String(parsed?.activeProfileId || '')) || '';
-        const profiles: IntegrationStoredProfile[] = incomingProfiles
+        const profiles: IIntegrationStoredProfile[] = incomingProfiles
           .map((profile: any) => ({
             id: this.normalize(String(profile?.id || '')),
             name: String(profile?.name || '').trim() || 'Profile',
@@ -133,7 +132,7 @@ export class IntegrationProfileService {
             updatedAt: profile?.updatedAt || undefined,
           }))
           .filter(
-            (profile: IntegrationStoredProfile) =>
+            (profile: IIntegrationStoredProfile) =>
               !!profile.id && !!profile.providerKey && runtime.providers.has(profile.providerKey),
           );
 
@@ -153,7 +152,7 @@ export class IntegrationProfileService {
     return null;
   }
 
-  async writeStoredProfiles(typeKey: string, payload: IntegrationStoredProfiles) {
+  async writeStoredProfiles(typeKey: string, payload: IIntegrationStoredProfiles) {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) {
@@ -227,7 +226,7 @@ export class IntegrationProfileService {
 
   validateProviderConfig(
     typeKey: string,
-    provider: IntegrationProviderDefinition<any>,
+    provider: IIntegrationProviderDefinition<any>,
     config: Record<string, any>,
   ) {
     for (const field of provider.fields || []) {
@@ -236,7 +235,7 @@ export class IntegrationProfileService {
       if (field.required && isEmpty) {
         throw new Error(`Integration "${typeKey}" provider "${provider.key}" requires field "${field.name}".`);
       }
-      if (field.type === 'number' && !isEmpty && Number.isNaN(Number(value))) {
+      if (IntegrationConfigFieldType.resolve(field.type) === IntegrationConfigFieldType.NUMBER && !isEmpty && Number.isNaN(Number(value))) {
         throw new Error(`Integration "${typeKey}" provider "${provider.key}" field "${field.name}" must be a number.`);
       }
     }

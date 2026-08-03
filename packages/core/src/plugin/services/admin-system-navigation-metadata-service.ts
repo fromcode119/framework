@@ -1,13 +1,15 @@
-import { AppPathConstants } from '../../app-path-constants';
-import type { MenuItemManifest, SecondaryPanelItemManifest } from '../../types';
-import type { AdminSecondaryPanelInputItem } from './admin-secondary-panel.interfaces';
+import { CapabilityScope } from '@core/enums/capability-scope.enum';
+import { AppPathConstants } from '@core/constants/app-path.constants';
+import type { IMenuItemManifest } from '@core/interfaces/menu-item-manifest.interface';
+import type { ISecondaryPanelItemManifest } from '@core/interfaces/secondary-panel-item-manifest.interface';
+import type { IAdminSecondaryPanelInputItem } from '@core/plugin/services/interfaces/admin-secondary-panel-input-item.interface';
 
 export class AdminSystemNavigationMetadataService {
   private static readonly SYSTEM_NAMESPACE = 'org.fromcode';
   private static readonly SYSTEM_PLUGIN = 'system';
   private static readonly SYSTEM_CANONICAL_KEY = 'org.fromcode:system';
 
-  getMenuItems(): MenuItemManifest[] {
+  getMenuItems(): IMenuItemManifest[] {
     return [
       { label: 'Dashboard', path: AppPathConstants.ADMIN.ROOT, icon: 'Dashboard', group: 'Core', priority: 10 },
       { label: 'Users', path: AppPathConstants.ADMIN.USERS.ROOT, icon: 'Users', group: 'Platform', priority: 11 },
@@ -19,7 +21,7 @@ export class AdminSystemNavigationMetadataService {
     ];
   }
 
-  getSecondaryPanelInputs(): AdminSecondaryPanelInputItem[] {
+  getSecondaryPanelInputs(): IAdminSecondaryPanelInputItem[] {
     return this.getSecondaryPanelItems().map((item) => ({
       sourceNamespace: AdminSystemNavigationMetadataService.SYSTEM_NAMESPACE,
       sourcePlugin: AdminSystemNavigationMetadataService.SYSTEM_PLUGIN,
@@ -28,14 +30,14 @@ export class AdminSystemNavigationMetadataService {
     }));
   }
 
-  private getSecondaryPanelItems(): SecondaryPanelItemManifest[] {
+  private getSecondaryPanelItems(): ISecondaryPanelItemManifest[] {
     return [
       ...this.getUsersSecondaryPanelItems(),
       ...this.getSettingsSecondaryPanelItems(),
     ];
   }
 
-  private getUsersSecondaryPanelItems(): SecondaryPanelItemManifest[] {
+  private getUsersSecondaryPanelItems(): ISecondaryPanelItemManifest[] {
     return [
       {
         id: 'users-list',
@@ -43,7 +45,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.USERS.LIST,
         sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
         icon: 'Users',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 10,
         requiredRoles: ['admin'],
       },
@@ -53,7 +55,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.PEOPLE.ROOT,
         sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
         icon: 'Users',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 15,
         requiredRoles: ['admin'],
       },
@@ -63,7 +65,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.USERS.ROLE_LIST,
         sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
         icon: 'Shield',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 20,
         requiredRoles: ['admin'],
       },
@@ -73,14 +75,14 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.USERS.PERMISSIONS,
         sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
         icon: 'Lock',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 30,
         requiredRoles: ['admin'],
       },
     ];
   }
 
-  private getSettingsSecondaryPanelItems(): SecondaryPanelItemManifest[] {
+  private getSettingsSecondaryPanelItems(): ISecondaryPanelItemManifest[] {
     return [
       {
         id: 'general',
@@ -88,7 +90,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.GENERAL,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Settings',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 100,
         requiredRoles: ['admin'],
       },
@@ -98,7 +100,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.FRAMEWORK,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'System',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 110,
         requiredRoles: ['admin'],
       },
@@ -108,7 +110,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.INTEGRATIONS,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Orbit',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 120,
         requiredRoles: ['admin'],
       },
@@ -118,7 +120,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.LOCALIZATION,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Globe',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 130,
         requiredRoles: ['admin'],
       },
@@ -128,7 +130,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.APPEARANCE,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Palette',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 135,
         requiredRoles: ['admin'],
       },
@@ -138,7 +140,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.ROUTING,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Link',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 140,
         requiredRoles: ['admin'],
       },
@@ -148,7 +150,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.SECURITY,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Shield',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 150,
         requiredRoles: ['admin'],
       },
@@ -158,7 +160,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.INFRASTRUCTURE,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Activity',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 160,
         requiredRoles: ['admin'],
       },
@@ -168,7 +170,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.BACKUPS,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Database',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 170,
         requiredRoles: ['admin'],
       },
@@ -178,7 +180,7 @@ export class AdminSystemNavigationMetadataService {
         path: AppPathConstants.ADMIN.SETTINGS.UPDATES,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
         icon: 'Refresh',
-        scope: 'self',
+        scope: CapabilityScope.SELF,
         priority: 180,
         requiredRoles: ['admin'],
       },

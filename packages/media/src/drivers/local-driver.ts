@@ -1,9 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { StorageDriver } from '../index';
+import { IStorageDriver } from '@media/index';
 
-export class LocalStorageDriver implements StorageDriver {
+export class LocalStorageDriver implements IStorageDriver {
   public readonly provider = 'local';
   constructor(private uploadDir: string, private publicUrlBase: string) {}
 

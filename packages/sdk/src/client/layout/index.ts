@@ -1,10 +1,2 @@
-export {
-  PluginFrontendLayoutRegistrar,
-  ThemeFrontendLayoutRegistrar,
-} from '@fromcode119/core/client';
-export type {
-  PluginFrontendLayoutRegistrarOptions,
-  PluginFrontendLayoutRegistration,
-  ThemeFrontendLayoutRegistrarOptions,
-  ThemeFrontendLayoutRegistration,
-} from '@fromcode119/core/client';
+export { PluginFrontendLayoutRegistrar, ThemeFrontendLayoutRegistrar } from '@fromcode119/core/client';
+export type { IPluginFrontendLayoutRegistrarOptions, IPluginFrontendLayoutRegistration, IThemeFrontendLayoutRegistrarOptions, IThemeFrontendLayoutRegistration } from '@fromcode119/core/client';

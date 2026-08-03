@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import { Collection, CoercionUtils } from '@fromcode119/core';
-import { users } from '@fromcode119/database';
-import { QueryHelper } from '../../services/query-helper';
-import { RestControllerRuntime } from './rest-controller-runtime';
+import { ICollection, CoercionUtils } from '@fromcode119/core';
+import { Schema } from '@fromcode119/database';
+import { QueryHelper } from '@api/services/query-helper';
+import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 
 export class RestReadController {
   constructor(private readonly runtime: RestControllerRuntime) {}
 
-  async find(collection: Collection, req: any, res?: Response) {
+  async find(collection: ICollection, req: any, res?: Response) {
     try {
       const { limit, page, offset, sort, search, locale_mode, ...filters } = req.query || {};
       delete (filters as any).locale;
@@ -50,8 +50,8 @@ export class RestReadController {
       if (collection.slug === '_system_record_versions' && rowsResult.length > 0) {
         const userIds = [...new Set(rowsResult.map((row) => row.updated_by).filter(Boolean))];
         if (userIds.length > 0) {
-          const userData = await this.runtime.db.find(users, {
-            where: this.runtime.db.inArray(users.id, userIds),
+          const userData = await this.runtime.db.find(Schema.users, {
+            where: this.runtime.db.inArray(Schema.users.id, userIds),
           });
           const userMap = new Map(userData.map((user) => [user.id, user.email || user.username]));
           rowsResult = rowsResult.map((row) => ({
@@ -117,7 +117,7 @@ export class RestReadController {
     return matches;
   }
 
-  async findOne(collection: Collection, req: any, res?: Response) {
+  async findOne(collection: ICollection, req: any, res?: Response) {
     try {
       const accessConstraints = await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
       const table = QueryHelper.getVirtualTable(collection);
@@ -175,7 +175,7 @@ export class RestReadController {
     }
   }
 
-  async getSuggestions(collection: Collection, req: Request, res: Response) {
+  async getSuggestions(collection: ICollection, req: Request, res: Response) {
     try {
       await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
       const field = req.params.field;
@@ -186,7 +186,7 @@ export class RestReadController {
     }
   }
 
-  async export(collection: Collection, req: Request, res: Response) {
+  async export(collection: ICollection, req: Request, res: Response) {
     try {
       await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
       const format = req.query.format || 'json';
@@ -225,7 +225,7 @@ export class RestReadController {
     }
   }
 
-  async getVersions(collection: Collection, req: any, res: Response) {
+  async getVersions(collection: ICollection, req: any, res: Response) {
     try {
       const id = req.params.id;
       const limit = req.query.limit;
@@ -239,7 +239,7 @@ export class RestReadController {
     }
   }
 
-  async getVersion(collection: Collection, req: any, res: Response) {
+  async getVersion(collection: ICollection, req: any, res: Response) {
     try {
       const id = req.params.id;
       const version = parseInt(req.params.version, 10);

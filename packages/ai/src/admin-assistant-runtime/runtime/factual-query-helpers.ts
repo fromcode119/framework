@@ -1,4 +1,4 @@
-import { TextHelpers } from './helpers/text-helpers';
+import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
 
 export class FactualQueryHelpers {
   static trimLeadingGreeting(message: string): string {

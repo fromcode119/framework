@@ -1,4 +1,4 @@
-import { ApiRequestError } from './api-request-error';
+import { ApiRequestError } from '@core/api/api-request-error';
 
 export class ApiRequestService {
   static buildUrl(baseUrl: string, path: string): string {

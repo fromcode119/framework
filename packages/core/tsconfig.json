@@ -4,9 +4,11 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
+    "useDefineForClassFields": false,
     "ignoreDeprecations": "5.0"
   },
   "include": ["src/**/*"],
+  "exclude": ["**/tests/**", "**/*.test.ts", "**/*.test.tsx"],
   "references": [
     { "path": "../database" },
     { "path": "../media" },

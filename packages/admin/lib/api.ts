@@ -1,6 +1,6 @@
 import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
-import { AdminApiHttpService } from './api-http-service';
-import { AdminApiSessionGuardService } from './api-session-guard-service';
+import { AdminApiHttpService } from '@/lib/api-http-service';
+import { AdminApiSessionGuardService } from '@/lib/api-session-guard-service';
 
 export class AdminApi {
   private static readonly browserState = new BrowserStateClient();

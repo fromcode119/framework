@@ -1,7 +1,7 @@
 /** Plugin telemetry service — email alerting and digest. Extracted from PluginManager (ARC-007). */
 
-import { SystemConstants } from '../../constants';
-import { ApplicationUrlUtils } from '../../application-url-utils';
+import { SystemConstants } from '@core/constants/system.constants';
+import { ApplicationUrlUtils } from '@core/application-url-utils';
 import { IDatabaseManager } from '@fromcode119/database';
 import { createHash } from 'crypto';
 

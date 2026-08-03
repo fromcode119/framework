@@ -1,9 +1,9 @@
-import type { AsyncDataControllerCallbacks } from './async-data-controller.interfaces';
+import type { IAsyncDataControllerCallbacks } from '@react/interfaces/async-data-controller-callbacks.interface';
 
 export class AsyncDataController<T> {
   private requestId = 0;
 
-  async load(fetcher: () => Promise<T>, callbacks: AsyncDataControllerCallbacks<T>): Promise<void> {
+  async load(fetcher: () => Promise<T>, callbacks: IAsyncDataControllerCallbacks<T>): Promise<void> {
     const nextRequestId = ++this.requestId;
     callbacks.onStart?.();
 

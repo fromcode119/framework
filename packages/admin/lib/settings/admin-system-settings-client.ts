@@ -1,5 +1,5 @@
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 export class AdminSystemSettingsClient {
   static async getAll(): Promise<Record<string, any>> {

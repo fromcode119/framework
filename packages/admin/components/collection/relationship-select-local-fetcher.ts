@@ -1,12 +1,13 @@
 import { CollectionQueryUtils } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
-import { RelationshipSelectLocalUtils } from './relationship-select-local-utils';
-import type { RelationshipFetchContext, SelectOption } from './relationship-select-local.interfaces';
+import { RelationshipSelectLocalUtils } from '@/components/collection/relationship-select-local-utils';
+import type { IRelationshipFetchContext } from '@/components/collection/interfaces/relationship-fetch-context.interface';
+import type { SelectOption } from '@/components/collection/select-option';
 
 export class RelationshipSelectLocalFetcher {
-  private ctx: RelationshipFetchContext;
+  private ctx: IRelationshipFetchContext;
 
-  constructor(ctx: RelationshipFetchContext) {
+  constructor(ctx: IRelationshipFetchContext) {
     this.ctx = ctx;
   }
 

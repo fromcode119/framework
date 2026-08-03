@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { CookieConstants } from '@fromcode119/core';
-import { ApiUrlUtils } from '../../../utils/url';
-import { AuthControllerEmailInfrastructure } from './auth-controller-email-infrastructure';
+import { ApiUrlUtils } from '@api/utils/url';
+import { AuthControllerEmailInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-email-infrastructure';
 
 export class AuthControllerCookieInfrastructure extends AuthControllerEmailInfrastructure {
   protected clearAuthCookies(req: Request, res: Response) {

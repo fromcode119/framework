@@ -1,7 +1,7 @@
-import type { ResolvedPluginDefaultPageContract } from '@fromcode119/core';
+import type { IResolvedPluginDefaultPageContract } from '@fromcode119/core';
 
 export class ResolutionContractPresentationService {
-  static applyToDoc(doc: any, contract: ResolvedPluginDefaultPageContract): any {
+  static applyToDoc(doc: any, contract: IResolvedPluginDefaultPageContract): any {
     if (!doc || typeof doc !== 'object') {
       return doc;
     }

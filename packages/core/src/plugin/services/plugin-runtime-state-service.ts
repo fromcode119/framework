@@ -1,17 +1,18 @@
-import { SystemConstants } from '../../constants';
-import { Logger } from '../../logging';
-import { PluginStateService } from './plugin-state-service';
-import type { Collection, LoadedPlugin } from '../../types';
-import { PluginState } from './plugin-state.enums';
+import { SystemConstants } from '@core/constants/system.constants';
+import { Logger } from '@core/logging';
+import { PluginStateService } from '@core/plugin/services/plugin-state-service';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class PluginRuntimeStateService {
   constructor(
     private readonly logger: Logger,
     private readonly db: any,
     private readonly registry: PluginStateService,
-    private readonly plugins: Map<string, LoadedPlugin>,
+    private readonly plugins: Map<string, ILoadedPlugin>,
     private readonly headInjections: Map<string, any[]>,
-    private readonly registeredCollections: Map<string, { collection: Collection; pluginSlug: string }>,
+    private readonly registeredCollections: Map<string, { collection: ICollection; pluginSlug: string }>,
     private readonly pluginSettings: Map<string, any>,
   ) {}
 
@@ -54,11 +55,11 @@ export class PluginRuntimeStateService {
     return this.headInjections.get(slug.toLowerCase()) || [];
   }
 
-  getCollections(): Collection[] {
+  getCollections(): ICollection[] {
     return Array.from(this.registeredCollections.values()).map((entry) => entry.collection);
   }
 
-  getCollection(slug: string): { collection: Collection; pluginSlug: string } | undefined {
+  getCollection(slug: string): { collection: ICollection; pluginSlug: string } | undefined {
     const entry = this.registeredCollections.get(slug);
     if (entry) {
       return entry;

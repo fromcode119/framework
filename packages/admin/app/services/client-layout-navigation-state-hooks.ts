@@ -1,12 +1,15 @@
 import React from 'react';
+
 import { NavUtils } from '@/lib/nav-utils';
-import { SecondarySidebarStateService } from './secondary-sidebar-state-service';
-import { SecondarySidebarContextResolver } from './secondary-sidebar-context-resolver';
-import { ClientLayoutSidebarStateHooks } from './client-layout-sidebar-state-hooks';
-const secondarySidebarStateService = new SecondarySidebarStateService();
-const secondarySidebarContextResolver = new SecondarySidebarContextResolver();
+import { SecondarySidebarStateService } from '@/app/services/secondary-sidebar-state-service';
+import { SecondarySidebarMode } from '@/app/services/enums/secondary-sidebar-mode.enum';
+import { SecondarySidebarContextResolver } from '@/app/services/secondary-sidebar-context-resolver';
+import { ClientLayoutSidebarStateHooks } from '@/app/services/client-layout-sidebar-state-hooks';
 
 export class ClientLayoutNavigationStateHooks {
+  private static readonly secondarySidebarStateService = new SecondarySidebarStateService();
+  private static readonly secondarySidebarContextResolver = new SecondarySidebarContextResolver();
+
   static useState(args: { normalizedPathname: string; isMinimalPath: boolean; isAuthPage: boolean; user: any }) {
     const sidebarState = ClientLayoutSidebarStateHooks.useState(args);
     const [activePrimaryContextId, setActivePrimaryContextId] = React.useState('');
@@ -17,20 +20,20 @@ export class ClientLayoutNavigationStateHooks {
 
     const secondaryMode = React.useMemo(() => {
       if (args.isMinimalPath) {
-        return 'minimal' as const;
+        return SecondarySidebarMode.MINIMAL;
       }
-      return secondarySidebarStateService.resolveMode({ viewportWidth: sidebarState.viewportWidth, isMini: sidebarState.isMini });
+      return ClientLayoutNavigationStateHooks.secondarySidebarStateService.resolveMode({ viewportWidth: sidebarState.viewportWidth, isMini: sidebarState.isMini });
     }, [args.isMinimalPath, sidebarState.isMini, sidebarState.viewportWidth]);
 
     const secondaryResolved = React.useMemo(() => {
-      return secondarySidebarContextResolver.resolve({
+      return ClientLayoutNavigationStateHooks.secondarySidebarContextResolver.resolve({
         pathname: args.normalizedPathname,
         primaryContextId: activePrimaryContextId,
         menuItems: sidebarState.menuItems,
         secondaryPanel: sidebarState.effectiveSecondaryPanel,
         plugins: sidebarState.plugins,
         userRoles: args.user?.roles || [],
-        userCapabilities: args.user?.capabilities || [],
+        userCapabilities: args.user?.permissions || [],
       });
     }, [args.normalizedPathname, activePrimaryContextId, sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
 
@@ -59,14 +62,14 @@ export class ClientLayoutNavigationStateHooks {
           continue;
         }
 
-        const resolved = secondarySidebarContextResolver.resolve({
+        const resolved = ClientLayoutNavigationStateHooks.secondarySidebarContextResolver.resolve({
           pathname: itemPath,
           primaryContextId: String(item?.pluginSlug || ''),
           menuItems: sidebarState.menuItems,
           secondaryPanel: sidebarState.effectiveSecondaryPanel,
           plugins: sidebarState.plugins,
           userRoles: args.user?.roles || [],
-          userCapabilities: args.user?.capabilities || [],
+          userCapabilities: args.user?.permissions || [],
         });
 
         if (resolved.items.length > 0) {
@@ -88,18 +91,18 @@ export class ClientLayoutNavigationStateHooks {
 
     const hoveredSecondaryResolved = React.useMemo(() => {
       const normalizedHoveredPath = NavUtils.normalizePath(hoveredPrimaryPath);
-      if (!normalizedHoveredPath || secondaryMode !== 'desktop' || !hoveredPrimaryItem) {
+      if (!normalizedHoveredPath || secondaryMode !== SecondarySidebarMode.DESKTOP || !hoveredPrimaryItem) {
         return null;
       }
 
-      const resolved = secondarySidebarContextResolver.resolve({
+      const resolved = ClientLayoutNavigationStateHooks.secondarySidebarContextResolver.resolve({
         pathname: normalizedHoveredPath,
         primaryContextId: String(hoveredPrimaryItem?.pluginSlug || ''),
         menuItems: sidebarState.menuItems,
         secondaryPanel: sidebarState.effectiveSecondaryPanel,
         plugins: sidebarState.plugins,
         userRoles: args.user?.roles || [],
-        userCapabilities: args.user?.capabilities || [],
+        userCapabilities: args.user?.permissions || [],
       });
 
       return resolved.items.length > 0 ? resolved : null;
@@ -123,14 +126,14 @@ export class ClientLayoutNavigationStateHooks {
     const hasDesktopPreviewablePaths = previewablePrimaryPaths.length > 0;
     // True when the displayed secondary is driven by a HOVER (not docked open) —
     // the panel should then float as an overlay instead of reserving layout width.
-    const isDesktopSecondaryHoverPreview = secondaryMode === 'desktop'
+    const isDesktopSecondaryHoverPreview = secondaryMode === SecondarySidebarMode.DESKTOP
       && !sidebarState.isDesktopSecondaryOpen
       && Boolean(activePreviewPath && hoveredSecondaryResolved);
     const activeSecondaryAnchorPath = hasSecondaryItems ? String(activePrimaryItem?.path || '') : '';
-    const showSecondaryTrigger = secondarySidebarStateService.shouldShowTrigger(secondaryMode, hasSecondaryItems);
-    const showSecondaryOverlay = secondarySidebarStateService.shouldShowOverlay(secondaryMode, hasSecondaryItems, sidebarState.isSecondaryOpen);
-    const showSecondaryInlineInSidebar = secondaryMode === 'mobile' && hasSecondaryItems;
-    const showCollapsedDesktopSecondaryHandle = secondaryMode === 'desktop' && hasDisplayedSecondaryItems;
+    const showSecondaryTrigger = ClientLayoutNavigationStateHooks.secondarySidebarStateService.shouldShowTrigger(secondaryMode, hasSecondaryItems);
+    const showSecondaryOverlay = ClientLayoutNavigationStateHooks.secondarySidebarStateService.shouldShowOverlay(secondaryMode, hasSecondaryItems, sidebarState.isSecondaryOpen);
+    const showSecondaryInlineInSidebar = secondaryMode === SecondarySidebarMode.MOBILE && hasSecondaryItems;
+    const showCollapsedDesktopSecondaryHandle = secondaryMode === SecondarySidebarMode.DESKTOP && hasDisplayedSecondaryItems;
 
     React.useEffect(() => {
       if (!hasSecondaryItems) {
@@ -139,14 +142,14 @@ export class ClientLayoutNavigationStateHooks {
     }, [hasSecondaryItems, sidebarState.setSecondaryOpen]);
 
     React.useEffect(() => {
-      if (secondaryMode !== 'desktop') {
+      if (secondaryMode !== SecondarySidebarMode.DESKTOP) {
         setHoveredPrimaryPath('');
         setPreviewPinned(false);
       }
     }, [secondaryMode]);
 
     React.useEffect(() => {
-      if (secondarySidebarStateService.shouldCloseOnRouteChange(secondaryMode)) {
+      if (ClientLayoutNavigationStateHooks.secondarySidebarStateService.shouldCloseOnRouteChange(secondaryMode)) {
         sidebarState.setSecondaryOpen(false);
       }
       setHoveredPrimaryPath('');

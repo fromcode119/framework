@@ -1,0 +1,49 @@
+{
+  "name": "@fromcode119/nextor",
+  "version": "0.1.80",
+  "description": "Next.js + build integration for @fromcode119/reactor — `.client` directive injection and the Registry-resolved JSX template compiler. Keeps reactor pure React; all build/Next-specific machinery lives here.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./route-export-loader.cjs": "./route-export-loader.cjs",
+    "./cli": "./dist/nextor-cli.cjs"
+  },
+  "files": [
+    "dist",
+    "route-export-loader.cjs"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --platform=node --format=cjs --external:@babel/parser --outfile=dist/index.cjs && esbuild src/cli/nextor-cli.ts --bundle --platform=node --format=cjs --external:@babel/parser --outfile=dist/nextor-cli.cjs"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.0.0"
+  },
+  "peerDependencies": {
+    "@fromcode119/reactor": "*"
+  },
+  "peerDependenciesMeta": {
+    "@fromcode119/reactor": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@fromcode119/reactor": "*",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "bin": {
+    "nextor": "dist/nextor-cli.cjs"
+  }
+}

@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
-import { CookieConstants, SystemConstants } from '@fromcode119/core';
+import { SystemConstants } from '@fromcode119/core';
 import { randomUUID } from 'crypto';
-import { AuthControllerInfrastructure } from './auth-controller-infrastructure/auth-controller-infrastructure';
-import type { AccountStatus } from './auth-controller.types';
-import type {
-  PasswordPolicySettings,
-  LoginThrottleSettings,
-  LoginThrottleState
-} from './auth-controller.interfaces';
+import { AuthControllerInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-infrastructure';
+import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
+import type { IPasswordPolicySettings } from '@api/controllers/auth/interfaces/password-policy-settings.interface';
+import type { ILoginThrottleSettings } from '@api/controllers/auth/interfaces/login-throttle-settings.interface';
+import type { ILoginThrottleState } from '@api/controllers/auth/interfaces/login-throttle-state.interface';
 
 export class AuthControllerPolicy extends AuthControllerInfrastructure {
   protected async issueLoginSession(req: Request, res: Response, user: any) {
@@ -74,7 +72,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     return String(value).trim().toLowerCase() === 'true';
   }
 
-  protected async getPasswordPolicySettings(): Promise<PasswordPolicySettings> {
+  protected async getPasswordPolicySettings(): Promise<IPasswordPolicySettings> {
     return {
       minLength: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH, 8, 8, 128),
       requireUppercase: await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE, true),
@@ -145,7 +143,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     return null;
   }
 
-  protected async getLoginThrottleSettings(): Promise<LoginThrottleSettings> {
+  protected async getLoginThrottleSettings(): Promise<ILoginThrottleSettings> {
     return {
       threshold: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD, 5, 1, 50),
       windowMinutes: await this.getSettingNumber(SystemConstants.META_KEY.AUTH_LOCKOUT_WINDOW_MINUTES, 15, 1, 1440),
@@ -161,7 +159,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     return `auth:login_throttle:${this.normalizeEmail(`${normalizedEmail}|${normalizedIp}`)}`;
   }
 
-  protected async readLoginThrottleState(key: string): Promise<LoginThrottleState> {
+  protected async readLoginThrottleState(key: string): Promise<ILoginThrottleState> {
     const row = await this.readMetaRow(key);
     if (!row?.value) return { count: 0 };
     try {
@@ -177,19 +175,19 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     }
   }
 
-  protected isLoginLocked(state: LoginThrottleState): boolean {
+  protected isLoginLocked(state: ILoginThrottleState): boolean {
     if (!state?.lockedUntil) return false;
     const lockUntil = new Date(state.lockedUntil).getTime();
     if (Number.isNaN(lockUntil)) return false;
     return lockUntil > Date.now();
   }
 
-  protected requiresCaptcha(state: LoginThrottleState, settings: LoginThrottleSettings): boolean {
+  protected requiresCaptcha(state: ILoginThrottleState, settings: ILoginThrottleSettings): boolean {
     if (!settings.captchaEnabled) return false;
     return Number(state?.count || 0) >= settings.captchaThreshold;
   }
 
-  protected async recordLoginFailure(key: string, settings: LoginThrottleSettings) {
+  protected async recordLoginFailure(key: string, settings: ILoginThrottleSettings) {
     const state = await this.readLoginThrottleState(key);
     const now = Date.now();
     const windowMs = settings.windowMinutes * 60 * 1000;
@@ -204,7 +202,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
 
     const firstFailureAt = countFailures === 1 ? new Date(now).toISOString() : (state.firstFailureAt || new Date(now).toISOString());
     const lastFailureAt = new Date(now).toISOString();
-    const payload: LoginThrottleState = { count: countFailures, firstFailureAt, lastFailureAt };
+    const payload: ILoginThrottleState = { count: countFailures, firstFailureAt, lastFailureAt };
 
     if (countFailures >= settings.threshold) {
       payload.lockedUntil = new Date(now + settings.lockoutMinutes * 60 * 1000).toISOString();
@@ -252,14 +250,13 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
   }
 
   protected async setUserAccountStatus(userId: number, status: AccountStatus) {
-    await this.upsertMeta(this.getUserAccountStatusKey(userId), status);
+    await this.upsertMeta(this.getUserAccountStatusKey(userId), status.value);
   }
 
   protected async getUserAccountStatus(userId: number): Promise<AccountStatus> {
     const row = await this.readMetaRow(this.getUserAccountStatusKey(userId));
     const value = String(row?.value || '').trim().toLowerCase();
-    if (value === 'suspended') return 'suspended';
-    return 'active';
+    return AccountStatus.resolve(value);
   }
 
   protected async setForcePasswordReset(userId: number, enabled: boolean) {

@@ -1,13 +1,6 @@
+import type { IAddressDb } from '@core/plugin/services/interfaces/address-db.interface';
 import { NamingStrategy } from '@fromcode119/database';
-import { SystemConstants } from '../../constants';
-
-interface AddressDb {
-  find(table: string, opts?: any): Promise<any[]>;
-  findOne(table: string, where: any): Promise<any | null>;
-  insert(table: string, data: any): Promise<any>;
-  update(table: string, where: any, data: any): Promise<any>;
-  delete(table: string, where: any): Promise<any>;
-}
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Raw data access for the framework-owned `people_addresses` table — the reusable address book every
@@ -20,7 +13,7 @@ interface AddressDb {
  * delivery binding (Econt city/office, delivery provider) without polluting the shared columns.
  */
 export class PeopleAddressRepository {
-  constructor(private readonly db: AddressDb) {}
+  constructor(private readonly db: IAddressDb) {}
 
   async listByPerson(personId: number): Promise<any[]> {
     const rows = await this.db.find(SystemConstants.TABLE.PEOPLE_ADDRESSES, {

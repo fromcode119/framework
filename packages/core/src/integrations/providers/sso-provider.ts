@@ -1,154 +1,72 @@
-import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
-
-type SsoProviderConfig = Record<string, any>;
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
+import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
+import { SsoProviderUtils } from '@core/integrations/providers/sso-provider-utils';
 
 /**
- * Utility helpers for SSO provider configuration.
+ * The `sso` integration descriptor: which providers exist, what each needs configured, and how a
+ * submitted config is normalised. Behaviour lives in {@link SsoProviderUtils}.
  */
-class SsoProviderUtils {
-  static normalizeSsoConfig(input: Record<string, any>): SsoProviderConfig {
+export class SsoIntegrationDefinition {
+  private static readonly commonOauthFields = [
+    {
+      name: 'clientId',
+      label: 'Client ID',
+      type: IntegrationConfigFieldType.TEXT,
+      required: true,
+    },
+    {
+      name: 'clientSecret',
+      label: 'Client Secret',
+      type: IntegrationConfigFieldType.PASSWORD,
+      required: true,
+    },
+    {
+      name: 'scopes',
+      label: 'Scopes',
+      type: IntegrationConfigFieldType.TEXT,
+      description: 'Space-separated scopes. Example: "openid email profile".',
+    },
+  ];
+
+  /** The extra endpoint fields a generic OIDC provider needs on top of the common OAuth ones. */
+  private static readonly openIdFields = [
+    { name: 'issuer', label: 'Issuer URL', type: IntegrationConfigFieldType.TEXT, required: true },
+    { name: 'authorizeUrl', label: 'Authorize URL', type: IntegrationConfigFieldType.TEXT, required: true },
+    { name: 'tokenUrl', label: 'Token URL', type: IntegrationConfigFieldType.TEXT, required: true },
+    { name: 'userInfoUrl', label: 'UserInfo URL', type: IntegrationConfigFieldType.TEXT, required: false },
+  ];
+
+  /** One provider entry; the four differ only by key/label/description and field list. */
+  private static provider(key: string, label: string, description: string, extraFields: typeof SsoIntegrationDefinition.openIdFields = []) {
     return {
-      clientId: String(input?.clientId || '').trim(),
-      clientSecret: String(input?.clientSecret || '').trim(),
-      scopes: String(input?.scopes || '').trim(),
-      issuer: String(input?.issuer || '').trim(),
-      authorizeUrl: String(input?.authorizeUrl || '').trim(),
-      tokenUrl: String(input?.tokenUrl || '').trim(),
-      userInfoUrl: String(input?.userInfoUrl || '').trim()
+      key,
+      label,
+      description,
+      fields: [...SsoIntegrationDefinition.commonOauthFields, ...extraFields],
+      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
+      create: (config: Record<string, unknown>) => ({
+        provider: key,
+        ...SsoProviderUtils.normalizeSsoConfig(config),
+      }),
     };
   }
 
-  static resolveSsoFromEnv() {
-    const configured = String(process.env.SSO_PROVIDER || '').trim().toLowerCase();
-    if (configured) {
-      return { provider: configured, config: {} };
-    }
-
-    if (process.env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_SECRET) {
-      return {
-        provider: 'google',
-        config: {
-          clientId: process.env.GOOGLE_CLIENT_ID || '',
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-          scopes: process.env.GOOGLE_SCOPES || 'openid email profile'
-        }
-      };
-    }
-
-    if (process.env.MICROSOFT_CLIENT_ID || process.env.MICROSOFT_CLIENT_SECRET) {
-      return {
-        provider: 'microsoft',
-        config: {
-          clientId: process.env.MICROSOFT_CLIENT_ID || '',
-          clientSecret: process.env.MICROSOFT_CLIENT_SECRET || '',
-          scopes: process.env.MICROSOFT_SCOPES || 'openid email profile'
-        }
-      };
-    }
-
-    if (process.env.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_SECRET) {
-      return {
-        provider: 'github',
-        config: {
-          clientId: process.env.GITHUB_CLIENT_ID || '',
-          clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-          scopes: process.env.GITHUB_SCOPES || 'read:user user:email'
-        }
-      };
-    }
-
-    return null;
-  }
-}
-
-const commonOauthFields = [
-  {
-    name: 'clientId',
-    label: 'Client ID',
-    type: 'text' as const,
-    required: true
-  },
-  {
-    name: 'clientSecret',
-    label: 'Client Secret',
-    type: 'password' as const,
-    required: true
-  },
-  {
-    name: 'scopes',
-    label: 'Scopes',
-    type: 'text' as const,
-    description: 'Space-separated scopes. Example: "openid email profile".'
-  }
-];
-
-export class SsoIntegrationDefinition {
-  static readonly definition: IntegrationTypeDefinition<any> = {
-  key: 'sso',
-  label: 'Federated Login (SSO)',
-  description: 'OAuth/OpenID provider credentials used for customer/admin single sign-on.',
-  defaultProvider: 'google',
-  resolveFromEnv: SsoProviderUtils.resolveSsoFromEnv,
-  providers: [
-    {
-      key: 'google',
-      label: 'Google OAuth',
-      description: 'Sign in with Google accounts.',
-      fields: commonOauthFields,
-      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
-      create: (config) => ({ provider: 'google', ...SsoProviderUtils.normalizeSsoConfig(config) })
-    },
-    {
-      key: 'microsoft',
-      label: 'Microsoft OAuth',
-      description: 'Sign in with Microsoft/Azure AD accounts.',
-      fields: commonOauthFields,
-      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
-      create: (config) => ({ provider: 'microsoft', ...SsoProviderUtils.normalizeSsoConfig(config) })
-    },
-    {
-      key: 'github',
-      label: 'GitHub OAuth',
-      description: 'Sign in with GitHub accounts.',
-      fields: commonOauthFields,
-      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
-      create: (config) => ({ provider: 'github', ...SsoProviderUtils.normalizeSsoConfig(config) })
-    },
-    {
-      key: 'openid',
-      label: 'Generic OpenID Connect',
-      description: 'Custom OpenID Connect provider (self-hosted/enterprise).',
-      fields: [
-        ...commonOauthFields,
-        {
-          name: 'issuer',
-          label: 'Issuer URL',
-          type: 'text',
-          required: true
-        },
-        {
-          name: 'authorizeUrl',
-          label: 'Authorize URL',
-          type: 'text',
-          required: true
-        },
-        {
-          name: 'tokenUrl',
-          label: 'Token URL',
-          type: 'text',
-          required: true
-        },
-        {
-          name: 'userInfoUrl',
-          label: 'UserInfo URL',
-          type: 'text',
-          required: false
-        }
-      ],
-      normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
-      create: (config) => ({ provider: 'openid', ...SsoProviderUtils.normalizeSsoConfig(config) })
-    }
-  ]
-};
-
+  static readonly definition: IIntegrationTypeDefinition<Record<string, unknown>> = {
+    key: 'sso',
+    label: 'Federated Login (SSO)',
+    description: 'OAuth/OpenID provider credentials used for customer/admin single sign-on.',
+    defaultProvider: 'google',
+    resolveFromEnv: SsoProviderUtils.resolveSsoFromEnv,
+    providers: [
+      SsoIntegrationDefinition.provider('google', 'Google OAuth', 'Sign in with Google accounts.'),
+      SsoIntegrationDefinition.provider('microsoft', 'Microsoft OAuth', 'Sign in with Microsoft/Azure AD accounts.'),
+      SsoIntegrationDefinition.provider('github', 'GitHub OAuth', 'Sign in with GitHub accounts.'),
+      SsoIntegrationDefinition.provider(
+        'openid',
+        'Generic OpenID Connect',
+        'Custom OpenID Connect provider (self-hosted/enterprise).',
+        SsoIntegrationDefinition.openIdFields,
+      ),
+    ],
+  };
 }

@@ -1,10 +1,10 @@
 import type Redis from 'ioredis';
-import { HookMessagingAdapter } from '../types';
+import { IHookMessagingAdapter } from '@core/hooks/interfaces/hook-messaging-adapter.interface';
 
 /**
  * Redis adapter: Distributes hooks across instances via Pub/Sub
  */
-export class RedisHookAdapter implements HookMessagingAdapter {
+export class RedisHookAdapter implements IHookMessagingAdapter {
   private pub: Redis;
   private sub: Redis;
   private channel: string;

@@ -1,6 +1,6 @@
 import type { Pool } from 'mysql2/promise';
-import { DialectColumnNormalizer } from '../dialect-column-normalizer';
-import { NamingStrategy } from '../../naming-strategy';
+import { DialectColumnNormalizer } from '@database/dialects/dialect-column-normalizer';
+import { NamingStrategy } from '@database/naming-strategy';
 
 /**
  * MysqlColumnNormalizer - MySQL-specific JSON column lookup.

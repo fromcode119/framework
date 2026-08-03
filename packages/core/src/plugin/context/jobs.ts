@@ -1,11 +1,11 @@
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { ContextSecurityProxy } from './utils';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class JobsContextProxy {
   static createJobsProxy(
-    plugin: LoadedPlugin,
-    manager: PluginManagerInterface,
+    plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface,
     security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
     const { hasCapability, handleViolation } = security;
@@ -22,8 +22,8 @@ export class JobsContextProxy {
   }
 
   static createRedisProxy(
-    plugin: LoadedPlugin,
-    manager: PluginManagerInterface,
+    plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface,
     security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
     const { hasCapability, handleViolation } = security;

@@ -1,8 +1,7 @@
 import { NamingStrategy } from '@fromcode119/database';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { SystemConstants } from '../../constants';
-import { StringUtils } from '../../string-utils';
-
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { SystemConstants } from '@core/constants/system.constants';
+import { StringUtils } from '@core/string-utils';
 
 export class RolesContextProxy {
 
@@ -12,7 +11,7 @@ export class RolesContextProxy {
    * written via assignRole). Static so both the id and email proxy methods share it without relying
    * on `this` (proxy methods may be detached by callers).
    */
-  private static async resolveUserIdsWithRole(manager: PluginManagerInterface, slug: string): Promise<number[]> {
+  private static async resolveUserIdsWithRole(manager: IPluginManagerInterface, slug: string): Promise<number[]> {
     const roleSlug = String(slug).trim().toLowerCase();
     if (!roleSlug) return [];
     const ids = new Set<number>();
@@ -36,7 +35,7 @@ export class RolesContextProxy {
    * Creates a roles proxy for plugins.
    * Plugins should use context.roles.ensure() instead of querying the system roles table directly.
    */
-  static createRolesProxy(manager: PluginManagerInterface) {
+  static createRolesProxy(manager: IPluginManagerInterface) {
     // Runtime authorization (UserPermissionChecker) reads a user's roles from the `users.roles` JSON
     // column — NOT the junction table. assign/removeRole must keep that column in sync or granting/
     // revoking a role is a silent no-op for access control (mirrors the API's saveUserRoles fix). Reads

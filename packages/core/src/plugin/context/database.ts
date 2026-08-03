@@ -1,28 +1,29 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { NamingStrategy } from '@fromcode119/database';
 import { sql, eq, and, or } from 'drizzle-orm';
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { ContextSecurityProxy } from './utils';
-import { RateLimiter } from '../../security/rate-limiter';
-import { SystemConstants } from '../../constants';
-
-const dbLimiter = new RateLimiter(5000, 60000);
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { RateLimiter } from '@core/security/rate-limiter';
+import { SystemConstants } from '@core/constants/system.constants';
 
 // Plugins read with the schema's camelCase field names. Raw-SQL paths in
 // the dialects return rows keyed by snake_case DB columns; convert top-level
 // keys here so plugin code can stick to one canonical name.
-const ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update']);
 
 // Methods whose FIRST argument is a table name — guarded against system/other-plugin table access.
-const TABLE_ARG_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'delete', 'count']);
+
 // Framework-owned system tables. Plugins must reach these ONLY through the dedicated context APIs
 // (context.users / context.people / context.meta / context.media / context.recordVersions / …),
 // which use the RAW manager db and so bypass this guard. Direct context.db access is a security
 // violation (cross-plugin PII reads, tampering with auth/sessions/plugins, etc.).
-const SYSTEM_TABLES = new Set<string>(Object.values(SystemConstants.TABLE).map((t) => String(t).toLowerCase()));
 
 export class DatabaseContextProxy {
+  private static readonly dbLimiter = new RateLimiter(5000, 60000);
+  private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update']);
+  private static readonly TABLE_ARG_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'delete', 'count']);
+  private static readonly SYSTEM_TABLES = new Set<string>(Object.values(SystemConstants.TABLE).map((t) => String(t).toLowerCase()));
+
   private static denormalizeResult(result: any): any { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (result == null) return result;
     if (Array.isArray(result)) return result.map((row) => NamingStrategy.denormalizeRecord(row));
@@ -39,7 +40,7 @@ export class DatabaseContextProxy {
     const name = String(table ?? '').trim().toLowerCase();
     if (!name) return false;
     if (name.startsWith('_system_')) return true;
-    if (SYSTEM_TABLES.has(name)) return true;
+    if (DatabaseContextProxy.SYSTEM_TABLES.has(name)) return true;
     // Another plugin's physical table (fcp_<otherslug>_…). A plugin's own prefix is allowed.
     if (PhysicalTableNameUtils.hasPlatformPrefix(name) && !name.startsWith(ownPrefix.toLowerCase())) return true;
     return false;
@@ -58,8 +59,8 @@ export class DatabaseContextProxy {
   }
 
   static createDatabaseProxy(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface,
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface,
   security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
 ) {
       const { hasCapability, handleViolation, handleRateLimit } = security;
@@ -85,7 +86,7 @@ export class DatabaseContextProxy {
 
           const dbMethods = ['find', 'findOne', 'create', 'update', 'delete', 'execute', 'count'];
           if (typeof prop === 'string' && dbMethods.includes(prop)) {
-            if (!dbLimiter.check(plugin.manifest.slug)) {
+            if (!DatabaseContextProxy.dbLimiter.check(plugin.manifest.slug)) {
               handleRateLimit('database');
             }
 
@@ -99,10 +100,10 @@ export class DatabaseContextProxy {
           if (prop === 'and') return and;
           if (prop === 'or') return or;
 
-          if (typeof prop === 'string' && TABLE_ARG_METHODS.has(prop)) {
+          if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop)) {
             const fn = (target as any)[prop];
             if (typeof fn !== 'function') return fn;
-            const shouldDenormalize = ROW_RETURNING_METHODS.has(prop);
+            const shouldDenormalize = DatabaseContextProxy.ROW_RETURNING_METHODS.has(prop);
             return function (this: any, ...args: any[]) {
               // SECURITY: deny direct access to framework system tables and other plugins' tables.
               // The framework's own context proxies (users/people/meta/media/recordVersions/…) use the

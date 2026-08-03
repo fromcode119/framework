@@ -1,0 +1,70 @@
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
+import type { IMarketplaceTheme } from '@fromcode119/core/client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { AdminClass } from '@/lib/admin-class';
+
+export class ThemeMarketplaceAbout extends PureReactor {
+  @prop declare theme: IMarketplaceTheme;
+  @prop declare adminTheme: ThemeMode;
+
+  render(): ReactNode {
+    const { theme, adminTheme } = this;
+    return (
+      <>
+        <div className="space-y-3">
+          <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
+            About {theme.name}
+          </h3>
+          <p className={`text-base font-medium leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
+            {theme.description}
+          </p>
+        </div>
+
+        {theme.changelog && theme.changelog.length > 0 && (
+          <div className="space-y-4 mt-6">
+            <div className="flex items-center gap-3">
+              <div className={`h-6 w-1.5 rounded-full ${adminTheme === ThemeMode.DARK ? 'bg-indigo-500/40' : 'bg-indigo-600'}`}></div>
+              <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>Technical Changelog</h3>
+              <div className={`h-px flex-1 ${adminTheme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200/60'}`}></div>
+            </div>
+
+            <div className="space-y-4">
+              {theme.changelog.map((log, idx) => (
+                <div key={idx} className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 text-[9px] font-semibold rounded-lg uppercase tracking-wide">v{log.version}</Badge>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Released {log.date}</span>
+                  </div>
+                  <div className={`${AdminClass.SURFACE} overflow-hidden`}>
+                    <ul className={`divide-y ${adminTheme === ThemeMode.DARK ? 'divide-slate-800/50' : 'divide-slate-50'}`}>
+                      {log.changes.map((change, cIdx) => (
+                        <li key={cIdx} className={`p-4 flex items-start gap-4 transition-all duration-300 group ${adminTheme === ThemeMode.DARK ? 'hover:bg-slate-800/30' : 'hover:bg-indigo-50/30'}`}>
+                          <div className={`mt-0.5 h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                            adminTheme === ThemeMode.DARK
+                              ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white'
+                              : 'bg-indigo-50 text-indigo-600 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 group-hover:shadow-lg group-hover:shadow-indigo-600/20'
+                          }`}>
+                            <FrameworkIcons.Check size={14} strokeWidth={3} />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <p className={`text-[13px] font-semibold leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-900'}`}>
+                              {change}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+}

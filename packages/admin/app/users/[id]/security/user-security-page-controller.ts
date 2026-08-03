@@ -1,15 +1,13 @@
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
-import { UserSecurityPageService } from './user-security-page-service';
-import type {
-  AuthActivityEntry,
-  SecurityUserRecord,
-  UserApiTokenRecord,
-  UserSessionRecord,
-  UserTwoFactorSetupResponse,
-  UserTwoFactorStatusResponse,
-  UserTwoFactorVerifyResponse,
-} from './user-security-page.interfaces';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import { UserSecurityPageService } from '@/app/users/[id]/security/user-security-page-service';
+import type { IAuthActivityEntry } from '@/app/users/[id]/security/interfaces/auth-activity-entry.interface';
+import type { ISecurityUserRecord } from '@/app/users/[id]/security/interfaces/security-user-record.interface';
+import type { IUserApiTokenRecord } from '@/app/users/[id]/security/interfaces/user-api-token-record.interface';
+import type { IUserSessionRecord } from '@/app/users/[id]/security/interfaces/user-session-record.interface';
+import type { IUserTwoFactorSetupResponse } from '@/app/users/[id]/security/interfaces/user-two-factor-setup-response.interface';
+import type { IUserTwoFactorStatusResponse } from '@/app/users/[id]/security/interfaces/user-two-factor-status-response.interface';
+import type { IUserTwoFactorVerifyResponse } from '@/app/users/[id]/security/interfaces/user-two-factor-verify-response.interface';
 
 /**
  * Data access + business logic for the user security page. Hook-free by contract: the page-client
@@ -19,16 +17,16 @@ export class UserSecurityPageController {
   private static readonly AUTH_ACTIVITY_LIMIT = 25;
   private static readonly VERIFICATION_CODE_LENGTH = 6;
 
-  static async fetchUser(id: string): Promise<SecurityUserRecord> {
-    return AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(id)) as Promise<SecurityUserRecord>;
+  static async fetchUser(id: string): Promise<ISecurityUserRecord> {
+    return AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(id)) as Promise<ISecurityUserRecord>;
   }
 
-  static async fetchTwoFactorStatus(id: string): Promise<UserTwoFactorStatusResponse> {
-    return AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_STATUS(id)) as Promise<UserTwoFactorStatusResponse>;
+  static async fetchTwoFactorStatus(id: string): Promise<IUserTwoFactorStatusResponse> {
+    return AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_STATUS(id)) as Promise<IUserTwoFactorStatusResponse>;
   }
 
   /** Auth-relevant log lines for a user. An empty email has no activity by definition. */
-  static async fetchAuthActivity(email: string): Promise<AuthActivityEntry[]> {
+  static async fetchAuthActivity(email: string): Promise<IAuthActivityEntry[]> {
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return [];
 
@@ -41,12 +39,12 @@ export class UserSecurityPageController {
     );
   }
 
-  static async fetchMySessions(): Promise<UserSessionRecord[]> {
+  static async fetchMySessions(): Promise<IUserSessionRecord[]> {
     const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.MY_SESSIONS);
     return UserSecurityPageService.extractSessions(response);
   }
 
-  static async fetchMyApiTokens(): Promise<UserApiTokenRecord[]> {
+  static async fetchMyApiTokens(): Promise<IUserApiTokenRecord[]> {
     const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.API_TOKENS);
     return UserSecurityPageService.extractApiTokens(response);
   }
@@ -80,21 +78,21 @@ export class UserSecurityPageController {
     await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA(id));
   }
 
-  static async setupTwoFactor(id: string): Promise<UserTwoFactorSetupResponse> {
-    return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_SETUP(id), {}) as Promise<UserTwoFactorSetupResponse>;
+  static async setupTwoFactor(id: string): Promise<IUserTwoFactorSetupResponse> {
+    return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_SETUP(id), {}) as Promise<IUserTwoFactorSetupResponse>;
   }
 
   static async regenerateRecoveryCodes(id: string): Promise<string[]> {
     const response = await AdminApi.post(
       AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_RECOVERY_REGENERATE(id), {},
-    ) as UserTwoFactorVerifyResponse;
+    ) as IUserTwoFactorVerifyResponse;
     return Array.isArray(response.recoveryCodes) ? response.recoveryCodes : [];
   }
 
   static async verifyTwoFactor(id: string, token: string): Promise<string[]> {
     const response = await AdminApi.post(
       AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_VERIFY(id), { token },
-    ) as UserTwoFactorVerifyResponse;
+    ) as IUserTwoFactorVerifyResponse;
     return Array.isArray(response.recoveryCodes) ? response.recoveryCodes : [];
   }
 

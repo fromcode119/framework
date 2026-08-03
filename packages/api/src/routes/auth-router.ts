@@ -1,9 +1,9 @@
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
-import { AuthController } from '../controllers/auth';
+import { AuthController } from '@api/controllers/auth';
 import { RouteConstants } from '@fromcode119/core';
-import { SsoUserResolverService } from '../controllers/auth/sso/sso-user-resolver-service';
+import { SsoUserResolverService } from '@api/controllers/auth/sso/sso-user-resolver-service';
 
 /**
  * Authentication router (class-based implementation).

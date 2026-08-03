@@ -1,9 +1,9 @@
-import { BaseRouter } from '../../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
 import { ThemeManager } from '@fromcode119/core';
-import { ThemeController } from '../../controllers/themes/theme-controller';
-import { ThemeAssetsListController } from '../../controllers/themes/theme-assets-list-controller';
+import { ThemeController } from '@api/controllers/themes/theme-controller';
+import { ThemeAssetsListController } from '@api/controllers/themes/theme-assets-list-controller';
 import { RouteConstants } from '@fromcode119/core';
 
 export class ThemeRouter extends BaseRouter {

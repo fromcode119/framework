@@ -1,8 +1,8 @@
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
-import { RESTController } from '../controllers/rest/rest-controller';
-import { CollectionMiddleware } from '../middlewares/collection-middleware';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { CollectionMiddleware } from '@api/middlewares/collection-middleware';
 import { RouteConstants } from '@fromcode119/core';
 
 /**

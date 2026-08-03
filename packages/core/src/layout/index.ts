@@ -1,10 +1,22 @@
-export { PluginFrontendLayoutRegistrar } from '../plugin/layout/plugin-frontend-layout-registrar';
-export type {
-  PluginFrontendLayoutRegistrarOptions,
-  PluginFrontendLayoutRegistration,
-} from '../plugin/layout/plugin-frontend-layout-registrar.interfaces';
-export { ThemeFrontendLayoutRegistrar } from '../theme/layout/theme-frontend-layout-registrar';
-export type {
-  ThemeFrontendLayoutRegistrarOptions,
-  ThemeFrontendLayoutRegistration,
-} from '../theme/layout/theme-frontend-layout-registrar.interfaces';
+export { PluginFrontendLayoutRegistrar } from '@core/plugin/layout/plugin-frontend-layout-registrar';
+export type { IPluginFrontendLayoutRegistrarOptions } from '@core/plugin/layout/interfaces/plugin-frontend-layout-registrar-options.interface';
+export type { IPluginFrontendLayoutRegistration } from '@core/plugin/layout/interfaces/plugin-frontend-layout-registration.interface';
+export { ThemeFrontendLayoutRegistrar } from '@core/theme/layout/theme-frontend-layout-registrar';
+export type { IThemeFrontendLayoutRegistrarOptions } from '@core/theme/layout/interfaces/theme-frontend-layout-registrar-options.interface';
+export type { IThemeFrontendLayoutRegistration } from '@core/theme/layout/interfaces/theme-frontend-layout-registration.interface';
+export type { ILayoutOwnerIdentity } from '@core/layout/interfaces/layout-owner-identity.interface';
+export type { IPluginLayoutDefinition } from '@core/layout/interfaces/plugin-layout-definition.interface';
+export type { IPluginLayoutRegistration } from '@core/layout/interfaces/plugin-layout-registration.interface';
+export type { IRegisteredPluginLayoutDefinition } from '@core/layout/interfaces/registered-plugin-layout-definition.interface';
+export type { IThemeLayoutReplacementDefinition } from '@core/layout/interfaces/theme-layout-replacement-definition.interface';
+export type { IThemeLayoutDisableDefinition } from '@core/layout/interfaces/theme-layout-disable-definition.interface';
+export type { IThemeLayoutOverrideRegistration } from '@core/layout/interfaces/theme-layout-override-registration.interface';
+export type { IRegisteredThemeLayoutDisableDefinition } from '@core/layout/interfaces/registered-theme-layout-disable-definition.interface';
+export type { IRegisteredThemeLayoutReplacementDefinition } from '@core/layout/interfaces/registered-theme-layout-replacement-definition.interface';
+export type { ILayoutDiagnosticEntry } from '@core/layout/interfaces/layout-diagnostic-entry.interface';
+export type { IResolvedLayout } from '@core/layout/interfaces/resolved-layout.interface';
+export { LayoutTargetKind } from '@core/layout/enums/layout-target-kind.enum';
+export { LayoutResolutionSource } from '@core/layout/enums/layout-resolution-source.enum';
+export { LayoutResolutionStatus } from '@core/layout/enums/layout-resolution-status.enum';
+export { LayoutDiagnosticSeverity } from '@core/layout/enums/layout-diagnostic-severity.enum';
+export { LayoutDiagnosticCode } from '@core/layout/enums/layout-diagnostic-code.enum';

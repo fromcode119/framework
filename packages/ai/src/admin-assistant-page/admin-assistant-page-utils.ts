@@ -1,4 +1,5 @@
-import { AssistantConstants } from '../assistant-core-constants';
+import { ConversationMode } from '@ai/enums/conversation-mode.enum';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
 
 export class AdminAssistantPageUtils {
   static readonly DEFAULT_ADMIN_BASE_PATH = '/admin';
@@ -34,7 +35,7 @@ export class AdminAssistantPageUtils {
     return raw;
   }
 
-  static parseModeSwitchCommand(input: string): 'chat' | 'build' | 'quickfix' | null {
+  static parseModeSwitchCommand(input: string): ConversationMode | null {
     const normalized = String(input || '')
       .trim()
       .toLowerCase()
@@ -43,9 +44,9 @@ export class AdminAssistantPageUtils {
     const match = normalized.match(/^(switch|change|set|use)\s+(to\s+)?(chat|build|quick\s*fix)(\s+mode)?[.!?]*$/i);
     if (!match) return null;
     const target = String(match[3] || '').replace(/\s+/g, '').toLowerCase();
-    if (target === 'chat') return 'chat';
-    if (target === 'build') return 'build';
-    if (target === 'quickfix') return 'quickfix';
+    if (target === ConversationMode.CHAT.value) return ConversationMode.CHAT;
+    if (target === ConversationMode.BUILD.value) return ConversationMode.BUILD;
+    if (target === ConversationMode.QUICKFIX.value) return ConversationMode.QUICKFIX;
     return null;
   }
 

@@ -1,19 +1,18 @@
-import type { McpBridge } from '@fromcode119/mcp';
-import type {
-  AdminAssistantRuntimeOptions,
-  AssistantAction,
-  AssistantExecuteInput,
-  AssistantExecuteResult,
-  AssistantSettingValue,
-} from '../admin-assistant-runtime/types';
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import type { IMcpBridge } from '@fromcode119/mcp';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import type { IAssistantExecuteInput } from '@ai/admin-assistant-runtime/interfaces/assistant-execute-input.interface';
+import type { IAssistantExecuteResult } from '@ai/admin-assistant-runtime/interfaces/assistant-execute-result.interface';
+import type { IAssistantSettingValue } from '@ai/admin-assistant-runtime/interfaces/assistant-setting-value.interface';
 
 export class AdminAssistantRuntimeActionExecutor {
-  constructor(private readonly options: AdminAssistantRuntimeOptions) {}
+  constructor(private readonly options: IAdminAssistantRuntimeOptions) {}
 
   async executeActions(
-    input: AssistantExecuteInput,
-    createBridge: (dryRun: boolean) => Promise<McpBridge>,
-  ): Promise<AssistantExecuteResult> {
+    input: IAssistantExecuteInput,
+    createBridge: (dryRun: boolean) => Promise<IMcpBridge>,
+  ): Promise<IAssistantExecuteResult> {
     const actions = this.sanitizeActions(Array.isArray(input?.actions) ? input.actions : []);
     const dryRun = input?.dryRun !== false;
     const context = input?.context || {};
@@ -54,11 +53,11 @@ export class AdminAssistantRuntimeActionExecutor {
     };
   }
 
-  private sanitizeActions(actions: any[]): AssistantAction[] {
+  private sanitizeActions(actions: any[]): IAssistantAction[] {
     return (Array.isArray(actions) ? actions : [])
       .filter((action: any) => action && typeof action === 'object')
       .map((action: any) => ({
-        type: String(action.type || '').trim(),
+        type: AssistantActionType.resolve(action.type),
         collectionSlug: action.collectionSlug ? String(action.collectionSlug) : undefined,
         data: action.data && typeof action.data === 'object' ? action.data : undefined,
         key: action.key ? String(action.key) : undefined,
@@ -67,11 +66,11 @@ export class AdminAssistantRuntimeActionExecutor {
         tool: action.tool ? String(action.tool) : undefined,
         input: action.input && typeof action.input === 'object' ? action.input : undefined,
       }))
-      .filter((action: any) => ['create_content', 'update_setting', 'mcp_call'].includes(action.type)) as AssistantAction[];
+      .filter((action: any) => ['create_content', 'update_setting', 'mcp_call'].includes(action.type)) as IAssistantAction[];
   }
 
   private async executeCreateContent(
-    rawAction: AssistantAction,
+    rawAction: IAssistantAction,
     dryRun: boolean,
     context: Record<string, any>,
     results: any[],
@@ -93,7 +92,7 @@ export class AdminAssistantRuntimeActionExecutor {
   }
 
   private async executeUpdateSetting(
-    rawAction: AssistantAction,
+    rawAction: IAssistantAction,
     dryRun: boolean,
     results: any[],
   ): Promise<void> {
@@ -122,10 +121,10 @@ export class AdminAssistantRuntimeActionExecutor {
   }
 
   private async executeMcpCall(
-    rawAction: AssistantAction,
+    rawAction: IAssistantAction,
     dryRun: boolean,
     context: Record<string, any>,
-    mcpBridge: McpBridge,
+    mcpBridge: IMcpBridge,
     results: any[],
   ): Promise<void> {
     const type = String(rawAction?.type || '').trim();
@@ -148,7 +147,7 @@ export class AdminAssistantRuntimeActionExecutor {
     results.push({ ok: true, type, tool, input: callInput, dryRun, output: callResult.output });
   }
 
-  private validateWritableSettingKey(key: string, existing: AssistantSettingValue): string | null {
+  private validateWritableSettingKey(key: string, existing: IAssistantSettingValue): string | null {
     const normalized = String(key || '').trim();
     if (!normalized) return 'Missing setting key';
     if (normalized.startsWith('_')) {

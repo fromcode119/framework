@@ -1,10 +1,12 @@
-import { RuntimeMiscHelpers } from '../helpers/runtime-misc-helpers';
-import { ReplyMessageBuilders } from '../helpers/reply-message-builders';
-import { FactualQueryHelpers } from './factual-query-helpers';
-import { FactualQueryToolService } from './factual-query-tool-service';
-import { ReadOnlyChatToolLoopRepairService } from './read-only-chat-tool-loop-repair-service';
-import type { RuntimeContext } from './types.types';
-import type { ChatReply } from './chat-responder.types';
+import { ResponderRoute } from '@ai/admin-assistant-runtime/enums/responder-route.enum';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import { RuntimeMiscHelpers } from '@ai/admin-assistant-runtime/helpers/runtime-misc-helpers';
+import { ReplyMessageBuilders } from '@ai/admin-assistant-runtime/helpers/reply-message-builders';
+import { FactualQueryHelpers } from '@ai/admin-assistant-runtime/runtime/factual-query-helpers';
+import { FactualQueryToolService } from '@ai/admin-assistant-runtime/runtime/factual-query-tool-service';
+import { ReadOnlyChatToolLoopRepairService } from '@ai/admin-assistant-runtime/runtime/read-only-chat-tool-loop-repair-service';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IChatReply } from '@ai/admin-assistant-runtime/runtime/interfaces/chat-reply.interface';
 
 export class ReadOnlyChatToolLoop {
   static requiresToolGrounding(message: string): boolean {
@@ -19,15 +21,15 @@ export class ReadOnlyChatToolLoop {
   }
 
   static async generateReply(input: {
-    context: RuntimeContext;
+    context: IRuntimeContext;
     systemPrompt: string;
-    history: Array<{ role: 'user' | 'assistant'; content: string }>;
+    history: Array<{ role: AssistantRole; content: string }>;
     message: string;
-    aiClient: { chat: (params: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
+    aiClient: { chat: (params: { messages: Array<{ role: AssistantRole; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
     temperature: number;
     maxTokens: number;
     provider: string;
-  }): Promise<ChatReply | null> {
+  }): Promise<IChatReply | null> {
     const readOnlyTools = ReadOnlyChatToolLoop.selectReadOnlyTools(input.context, input.message);
     const checkpointContext = ReadOnlyChatToolLoop.buildCheckpointContext(input.context);
     const toolResults: Array<{ tool: string; input: Record<string, any>; result: any }> = [];
@@ -80,7 +82,7 @@ export class ReadOnlyChatToolLoop {
           return {
             message: directMessage,
             model: String(toolPlan?.model || input.provider || 'ai'),
-            source: 'tool_model',
+            source: ResponderRoute.TOOL_MODEL,
           };
         }
         break;
@@ -124,14 +126,14 @@ export class ReadOnlyChatToolLoop {
         RuntimeMiscHelpers.formatToolLabel,
       ),
       model: input.provider || 'tool-summary',
-      source: 'tool_model',
+      source: ResponderRoute.TOOL_MODEL,
     };
   }
 
   private static async planToolCalls(input: {
-    aiClient: { chat: (params: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
+    aiClient: { chat: (params: { messages: Array<{ role: AssistantRole; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
     systemPrompt: string;
-    history: Array<{ role: 'user' | 'assistant'; content: string }>;
+    history: Array<{ role: AssistantRole; content: string }>;
     message: string;
     tools: Array<{ tool: string; description: string; metadata?: Record<string, unknown> }>;
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>;
@@ -165,9 +167,9 @@ export class ReadOnlyChatToolLoop {
     try {
       const response = await input.aiClient.chat({
         messages: [
-          { role: 'system', content: plannerPrompt },
+          { role: AssistantRole.SYSTEM, content: plannerPrompt },
           ...input.history,
-          { role: 'user', content: input.message },
+          { role: AssistantRole.USER, content: input.message },
         ],
         json: true,
         temperature: Math.min(0.2, input.temperature),
@@ -195,16 +197,16 @@ export class ReadOnlyChatToolLoop {
   }
 
   private static async summarizeToolResults(input: {
-    aiClient: { chat: (params: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
+    aiClient: { chat: (params: { messages: Array<{ role: AssistantRole; content: string }>; json?: boolean; temperature?: number; maxTokens?: number }) => Promise<{ content?: string; model?: string }> };
     systemPrompt: string;
-    history: Array<{ role: 'user' | 'assistant'; content: string }>;
+    history: Array<{ role: AssistantRole; content: string }>;
     message: string;
     toolResults: Array<{ tool: string; input: Record<string, any>; result: any }>;
     checkpointContext?: string;
     temperature: number;
     maxTokens: number;
     provider: string;
-  }): Promise<ChatReply | null> {
+  }): Promise<IChatReply | null> {
     const replyPromptLines = [
       input.systemPrompt,
       '',
@@ -221,9 +223,9 @@ export class ReadOnlyChatToolLoop {
     try {
       const response = await input.aiClient.chat({
         messages: [
-          { role: 'system', content: replyPrompt },
+          { role: AssistantRole.SYSTEM, content: replyPrompt },
           ...input.history,
-          { role: 'user', content: input.message },
+          { role: AssistantRole.USER, content: input.message },
         ],
         json: false,
         temperature: input.temperature,
@@ -236,14 +238,14 @@ export class ReadOnlyChatToolLoop {
       return {
         message: content,
         model: String(response?.model || input.provider || 'ai'),
-        source: 'tool_model',
+        source: ResponderRoute.TOOL_MODEL,
       };
     } catch {
       return null;
     }
   }
   private static selectReadOnlyTools(
-    context: RuntimeContext,
+    context: IRuntimeContext,
     message: string,
   ): Array<{ tool: string; description: string; metadata?: Record<string, unknown> }> {
     const allTools = (Array.isArray(context.tools) ? context.tools : [])
@@ -279,7 +281,7 @@ export class ReadOnlyChatToolLoop {
     })));
   }
 
-  private static buildCheckpointContext(context: RuntimeContext): string {
+  private static buildCheckpointContext(context: IRuntimeContext): string {
     const factual = context.checkpoint?.memory?.factual;
     if (factual?.tool) {
       return JSON.stringify({

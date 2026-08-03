@@ -1,11 +1,10 @@
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 
 export class UiContextProxy {
   static createUiProxy(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface
 ) {
       return {
         registerHeadInjection: (injection: any) => {

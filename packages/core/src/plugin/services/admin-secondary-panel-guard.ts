@@ -1,7 +1,8 @@
-import { AdminSecondaryPanelNormalizedItem, AdminSecondaryPanelRejection } from './admin-secondary-panel.interfaces';
+import type { IAdminSecondaryPanelNormalizedItem } from '@core/plugin/services/interfaces/admin-secondary-panel-normalized-item.interface';
+import type { IAdminSecondaryPanelRejection } from '@core/plugin/services/interfaces/admin-secondary-panel-rejection.interface';
 
 export class AdminSecondaryPanelGuard {
-  validate(item: AdminSecondaryPanelNormalizedItem): AdminSecondaryPanelRejection | null {
+  validate(item: IAdminSecondaryPanelNormalizedItem): IAdminSecondaryPanelRejection | null {
     if (!item.sourceNamespace || !item.sourcePlugin) {
       return this.rejection('INVALID_SOURCE_IDENTITY', item, 'Registration-derived source identity is missing');
     }
@@ -42,7 +43,7 @@ export class AdminSecondaryPanelGuard {
     return null;
   }
 
-  private rejection(reasonCode: string, item: AdminSecondaryPanelNormalizedItem, details: string): AdminSecondaryPanelRejection {
+  private rejection(reasonCode: string, item: IAdminSecondaryPanelNormalizedItem, details: string): IAdminSecondaryPanelRejection {
     return {
       reasonCode,
       sourceCanonicalKey: item.sourceCanonicalKey,

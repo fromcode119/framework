@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class MediaColumnsBackfill extends BaseMigration {
+export class MediaColumnsBackfill extends BaseMigration {
   readonly version = 5;
   readonly name = 'Ensure media table has extended columns';
 
@@ -101,4 +101,3 @@ class MediaColumnsBackfill extends BaseMigration {
     });
   }
 }
-export default new MediaColumnsBackfill();

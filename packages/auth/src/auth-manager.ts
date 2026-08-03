@@ -3,14 +3,15 @@ import * as bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
 import { CookieConstants, Logger, RequestSurfaceUtils, RouteConstants } from '@fromcode119/core';
-import { UserPermissionChecker } from './permission-checker';
-import type { User } from './index.interfaces';
-import type { SessionValidator, ApiKeyValidator } from './index.types';
+import { UserPermissionChecker } from '@auth/permission-checker';
+import type { IUser } from '@auth/interfaces/user.interface';
+import type { ISessionValidator } from '@auth/interfaces/session-validator.interface';
+import type { IApiKeyValidator } from '@auth/interfaces/api-key-validator.interface';
 
 export class AuthManager {
   private secret: string;
-  private sessionValidator?: SessionValidator;
-  private apiKeyValidator?: ApiKeyValidator;
+  private sessionValidator?: ISessionValidator;
+  private apiKeyValidator?: IApiKeyValidator;
   private permissionChecker?: UserPermissionChecker;
   private logger = new Logger({ namespace: 'auth-manager' });
 
@@ -21,11 +22,11 @@ export class AuthManager {
     this.secret = secret;
   }
 
-  setSessionValidator(validator: SessionValidator) {
+  setSessionValidator(validator: ISessionValidator) {
     this.sessionValidator = validator;
   }
 
-  setApiKeyValidator(validator: ApiKeyValidator) {
+  setApiKeyValidator(validator: IApiKeyValidator) {
     this.apiKeyValidator = validator;
   }
 
@@ -55,7 +56,7 @@ export class AuthManager {
     return bcrypt.compare(password, hash);
   }
 
-  async generateToken(user: User, options: { expiresIn?: SignOptions['expiresIn'] } = {}): Promise<string> {
+  async generateToken(user: IUser, options: { expiresIn?: SignOptions['expiresIn'] } = {}): Promise<string> {
     const payload = {
       ...user,
       jti: user.jti || randomUUID(),
@@ -63,7 +64,7 @@ export class AuthManager {
     return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: options.expiresIn ?? '15m' });
   }
 
-  async generateRefreshToken(user: User): Promise<string> {
+  async generateRefreshToken(user: IUser): Promise<string> {
     const payload = {
       id: user.id,
       jti: user.jti || randomUUID(),
@@ -72,7 +73,7 @@ export class AuthManager {
     return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: '7d' });
   }
 
-  async verifyToken(token: string): Promise<User> {
+  async verifyToken(token: string): Promise<IUser> {
     try {
       const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
 
@@ -85,7 +86,7 @@ export class AuthManager {
         if (!isValid) throw new Error('Session revoked or expired');
       }
 
-      return decoded as User;
+      return decoded as IUser;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Invalid or expired token');
     }

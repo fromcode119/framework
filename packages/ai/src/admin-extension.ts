@@ -1,9 +1,9 @@
-import { AdminAssistantPage } from './admin-assistant-page';
-import type { AdminExtensionBridge } from './admin-extension.types';
+import { AdminAssistantPage } from '@ai/view/admin-assistant-page.client';
+import type { IAdminExtensionBridge } from '@ai/interfaces/admin-extension-bridge.interface';
 import { AppPathConstants } from '@fromcode119/core/client';
 
 export class AdminExtensionRegistry {
-  static registerAdminExtension(bridge: AdminExtensionBridge) {
+  static registerAdminExtension(bridge: IAdminExtensionBridge) {
       // Register Atlantis Intelligence UI component to admin.minimal.root slot
       bridge.registerSlotComponent('admin.minimal.root', AdminAssistantPage, 'ai', 100);
 

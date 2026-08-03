@@ -1,2 +1,2 @@
 export { FromcodeThemeOverridesPlugin } from './fromcode-theme-overrides-plugin';
-export type { FromcodeThemeOverridesOptions } from './fromcode-theme-overrides-plugin.interfaces';
+export type { IFromcodeThemeOverridesOptions } from './interfaces/fromcode-theme-overrides-options.interface';

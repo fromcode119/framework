@@ -1,90 +1,24 @@
-import type { RuntimeBridgeInstallArgs } from '../context-runtime-bridge.interfaces';
-import { AsyncDataController } from '../async-data-controller';
-import {
-  AdminGlobalClient,
-  AdminResourceClient,
-  AdminSdkClient,
-  AdminUserClient,
-  ApplicationUrlUtils,
-  ApiPathUtils,
-  ApiQueryUtils,
-  ApiRequestError,
-  ApiRequestService,
-  ApiScopeClient,
-  BaseController,
-  BaseRepository,
-  BaseService,
-  BrowserStateClient,
-  BrowserStateRuntimeBuilder,
-  CapabilityRegistry,
-  ClientRuntimeConstants,
-  CollectionScopeClient,
-  CollectionUtils,
-  CoercionUtils,
-  InteractiveCanvas,
-  LiveBlocks,
-  LocalizedField,
-  PublicSettings,
-  CoreServices,
-  CookieConstants,
-  DataSourceConstants,
-  EnvConfig,
-  FormatUtils,
-  HookEventUtils,
-  IntegrationRegistry,
-  LocalizationUtils,
-  Logger,
-  LogLevel,
-  MeasurementSystemUtils,
-  MediaRelationService,
-  MiddlewareStage,
-  NamespacedPluginsFacade,
-  NumberUtils,
-  PaginationUtils,
-  PluginFrontendLayoutRegistrar,
-  PluginCapability,
-  PluginDefinitionUtils,
-  Plugins,
-  PluginsFacade,
-  PluginsRegistry,
-  PublicAssetUrlUtils,
-  PublicRouteConstants,
-  RecordVersions,
-  RelationUtils,
-  RouteConstants,
-  AccountRouteUtils,
-  RouteUtils,
-  RuntimeBridge,
-  RuntimeLocationUtils,
-  RuntimeConstants,
-  SettingsScopeClient,
-  SdkClient,
-  ShortcodeUtils,
-  StringUtils,
-  SystemAuthClient,
-  SystemAuthSession,
-  SystemConstants,
-  ThemeFrontendLayoutRegistrar,
-  UrlUtils,
-  ApiVersionUtils,
-} from '@fromcode119/core/client';
-import { ContextBridge } from '../context-bridge';
-import { ContextHooks } from '../context-hooks';
-import { ThemeOverrideRegistrar } from '../theme-override-registrar';
-import { LazyComponentLoaderService } from '../lazy-component-loader-service';
-import { LazyLoadClass } from '../lazy-load-class';
-import { PageStyleContext } from '../page-style-context';
-import { PageStyleProvider } from '../page-style-provider';
-import { PageStyleHooks } from '../page-style-hooks';
-import { SystemShortcodes } from '../system-shortcodes';
-import { PluginRuntimeContext } from '../plugin-runtime-context';
-import { PluginRuntimeProvider } from '../plugin-runtime-provider';
-import { PluginComponent } from '../plugin-component';
+import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
+import { AsyncDataController } from '@react/async-data-controller';
+import { AdminGlobalClient, AdminResourceClient, AdminSdkClient, AdminUserClient, ApplicationUrlUtils, ApiPathUtils, ApiQueryUtils, ApiRequestError, ApiRequestService, ApiScopeClient, BaseController, BaseRepository, BaseService, BrowserStateClient, BrowserStateRuntimeBuilder, CapabilityRegistry, ClientRuntimeConstants, CollectionScopeClient, CollectionUtils, CoercionUtils, InteractiveCanvas, LiveBlocks, LocalizedField, PublicSettings, CoreServices, CookieConstants, DataSourceConstants, FormatUtils, HookEventUtils, LocalizationUtils, Logger, LogLevel, MeasurementSystemUtils, MediaRelationService, MiddlewareStage, NamespacedPluginsFacade, NumberUtils, PaginationUtils, PluginFrontendLayoutRegistrar, PluginCapability, PluginDefinitionUtils, Plugins, PluginsFacade, PluginsRegistry, PublicAssetUrlUtils, PublicRouteConstants, RecordVersions, RelationUtils, RouteConstants, AccountRouteUtils, RouteUtils, RuntimeBridge, RuntimeLocationUtils, RuntimeConstants, SettingsScopeClient, SdkClient, ShortcodeUtils, StringUtils, SystemAuthClient, SystemAuthSession, ThemeMode, SystemConstants, ThemeFrontendLayoutRegistrar, UrlUtils, ApiVersionUtils } from '@fromcode119/core/client';
+import { ContextBridge } from '@react/context-bridge';
+import { PluginUiRegistrar } from '@react/plugin-ui-registrar';
+import { ContextHooks } from '@react/context-hooks/context-hooks';
+import { ThemeOverrideRegistrar } from '@react/theme-override-registrar';
+import { LazyComponentLoaderService } from '@react/lazy-component-loader-service';
+import { LazyLoadClass } from '@react/lazy-load-class';
+import { PageStyleContext } from '@react/page-style-context';
+import { PageStyleProvider } from '@react/page-style-provider';
+import { PageStyleHooks } from '@react/page-style-hooks';
+import { SystemShortcodes } from '@react/system-shortcodes';
+import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
+import { PluginRuntimeProvider } from '@react/view/plugin-runtime-provider.client';
+import { PluginComponent } from '@react/view/plugin-component.client';
 
 export class BridgeObjectBuilder {
   // buildRegisterMethods() is REMOVED — ContextBridge now owns args directly via
   // ContextBridge.install(), called from ContextRuntimeBridge.installRuntimeBridge().
-  static build(args: RuntimeBridgeInstallArgs): Record<string, unknown> {
+  static build(args: IRuntimeBridgeInstallArgs): Record<string, unknown> {
     return {
       ...BridgeObjectBuilder.buildIconRefs(args),
       ...BridgeObjectBuilder.buildRuntimeStateRefs(args),
@@ -93,7 +27,7 @@ export class BridgeObjectBuilder {
     };
   }
 
-  private static buildIconRefs(args: RuntimeBridgeInstallArgs): Record<string, unknown> {
+  private static buildIconRefs(args: IRuntimeBridgeInstallArgs): Record<string, unknown> {
     return {
       React: args.ReactRef,
       ReactDOM: args.ReactDOMRef,
@@ -101,7 +35,29 @@ export class BridgeObjectBuilder {
       Slot: args.Slot,
       Override: args.Override,
       AccountShell: args.AccountShell,
+      SlotsContext: args.SlotsContext,
+      Platform: args.Platform,
+      AccountShellDefault: args.AccountShellDefault,
+      AccountSectionRegistry: args.AccountSectionRegistry,
+      AccountSection: args.AccountSection,
+      AccountSectionIcons: args.AccountSectionIcons,
+      AccountShellSkeleton: args.AccountShellSkeleton,
+      AccountShellPlaceholder: args.AccountShellPlaceholder,
+      AccountClass: args.AccountClass,
+      AuthShell: args.AuthShell,
       RecordsHub: args.RecordsHub,
+      Reactor: args.Reactor,
+      PureReactor: args.PureReactor,
+      Provider: args.Provider,
+      Bridge: args.Bridge,
+      Enum: args.Enum,
+      Context: args.Context,
+      prop: args.prop,
+      state: args.state,
+      bound: args.bound,
+      watch: args.watch,
+      ref: args.ref,
+
       getIcon: args.getIcon,
       IconRegistry: args.FrameworkIconRegistry,
       FrameworkIconRegistry: args.FrameworkIconRegistry,
@@ -112,7 +68,7 @@ export class BridgeObjectBuilder {
     };
   }
 
-  private static buildRuntimeStateRefs(args: RuntimeBridgeInstallArgs): Record<string, unknown> {
+  private static buildRuntimeStateRefs(args: IRuntimeBridgeInstallArgs): Record<string, unknown> {
     return {
       getState: () => args.stabilityRef.current,
       loadConfig: args.stableLoadConfig,
@@ -121,9 +77,10 @@ export class BridgeObjectBuilder {
     };
   }
 
-  private static buildUtilRefs(args: RuntimeBridgeInstallArgs): Record<string, unknown> {
+  private static buildUtilRefs(args: IRuntimeBridgeInstallArgs): Record<string, unknown> {
     return {
       ContextBridge,
+      PluginUiRegistrar,
       ContextHooks,
       SystemShortcodes,
       AsyncDataController,
@@ -167,6 +124,7 @@ export class BridgeObjectBuilder {
       BrowserStateRuntimeBuilder,
       SystemAuthClient,
       SystemAuthSession,
+      ThemeMode,
       Plugins,
       PluginsFacade,
       NamespacedPluginsFacade,
@@ -197,9 +155,7 @@ export class BridgeObjectBuilder {
       DataSourceConstants,
       Logger,
       LogLevel,
-      EnvConfig,
       CapabilityRegistry,
-      IntegrationRegistry,
       PluginFrontendLayoutRegistrar,
       ThemeFrontendLayoutRegistrar,
       ThemeOverrideRegistrar,

@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import type { ValidationOptions } from './validation-middleware.interfaces';
-import { BaseMiddleware } from '../base-middleware';
+import type { IValidationOptions } from '@api/middlewares/validation/interfaces/validation-options.interface';
+import { BaseMiddleware } from '@api/middlewares/base-middleware';
 
 export class ValidationMiddleware extends BaseMiddleware {
-  constructor(private options: ValidationOptions) {
+  constructor(private options: IValidationOptions) {
     super();
   }
 
@@ -46,7 +46,7 @@ export class ValidationMiddleware extends BaseMiddleware {
     params?: any;
     headers?: any;
   }): ValidationMiddleware {
-    const options: ValidationOptions = {};
+    const options: IValidationOptions = {};
 
     if (schemas.body) {
       options.body = async (data) => {
@@ -101,7 +101,7 @@ export class ValidationMiddleware extends BaseMiddleware {
     params?: any;
     headers?: any;
   }): ValidationMiddleware {
-    const options: ValidationOptions = {};
+    const options: IValidationOptions = {};
 
     if (schemas.body) {
       options.body = async (data) => {

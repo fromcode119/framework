@@ -1,8 +1,9 @@
 import type { IDatabaseManager } from '@fromcode119/database';
-import { StringUtils } from '../string-utils';
-import type { CollectionQueryInterface, UpsertByCandidatesOptions } from '../types';
-import { BaseService } from './base-service';
-import { CollectionService } from './collection-service';
+import { StringUtils } from '@core/string-utils';
+import type { ICollectionQueryInterface } from '@core/interfaces/collection-query-interface.interface';
+import type { IUpsertByCandidatesOptions } from '@core/interfaces/upsert-by-candidates-options.interface';
+import { BaseService } from '@core/services/base-service';
+import { CollectionService } from '@core/services/collection-service';
 
 export class CollectionWriteCompatibilityService extends BaseService {
   private static readonly DEFAULT_MAX_ATTEMPTS = 8;
@@ -18,10 +19,10 @@ export class CollectionWriteCompatibilityService extends BaseService {
   }
 
   async findAndUpsert(
-    collection: CollectionQueryInterface,
+    collection: ICollectionQueryInterface,
     candidates: string[],
     data: Record<string, any>,
-    options?: UpsertByCandidatesOptions & { targetKey?: string; maxAttempts?: number },
+    options?: IUpsertByCandidatesOptions & { targetKey?: string; maxAttempts?: number },
   ): Promise<{ record: any; created: boolean }> {
     const targetKey = this.resolveTargetKey(collection, options?.targetKey);
     const existing = await this.collectionService.findByCandidates(collection, candidates, options);
@@ -77,7 +78,7 @@ export class CollectionWriteCompatibilityService extends BaseService {
   }
 
   async updateCollection(
-    collection: CollectionQueryInterface,
+    collection: ICollectionQueryInterface,
     where: Record<string, any>,
     data: Record<string, any>,
     options?: { targetKey?: string; maxAttempts?: number },
@@ -167,7 +168,7 @@ export class CollectionWriteCompatibilityService extends BaseService {
     throw new Error(`Failed to update compatible payload for "${targetKey}": too many unsupported fields detected.`);
   }
 
-  private resolveTargetKey(collection: CollectionQueryInterface, explicitTargetKey?: string): string {
+  private resolveTargetKey(collection: ICollectionQueryInterface, explicitTargetKey?: string): string {
     return String(explicitTargetKey || (collection as any)?.slug || (collection as any)?.label || 'collection').trim();
   }
 

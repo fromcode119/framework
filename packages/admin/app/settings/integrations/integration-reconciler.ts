@@ -1,31 +1,25 @@
-import type { IntegrationsFieldOptionsService } from './integrations-field-options-service';
-import type {
-  IntegrationConfigField,
-  IntegrationProvider,
-  IntegrationRecord,
-  ProviderEditorState,
-} from './integrations-settings-page-client.interfaces';
-
-interface DynamicFieldState {
-  dynamicFieldOptions: Record<string, Array<{ label: string; value: string }>>;
-  dynamicFieldErrors: Record<string, string>;
-  dynamicFieldLoading: Record<string, boolean>;
-}
+import type { IDynamicFieldState } from '@/app/settings/integrations/interfaces/dynamic-field-state.interface';
+import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
+import type { IntegrationsFieldOptionsService } from '@/app/settings/integrations/integrations-field-options-service';
+import type { IIntegrationConfigField } from '@/app/settings/integrations/interfaces/integration-config-field.interface';
+import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
+import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
+import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
 
 /**
  * Pure key-builders and dynamic-field option loading for the integrations
  * settings page reconciliation effects.
  */
 export class IntegrationReconciler {
-  static activeTypeKey(integrations: IntegrationRecord[], queryType: string, activeType: string): string {
+  static activeTypeKey(integrations: IIntegrationRecord[], queryType: string, activeType: string): string {
     return JSON.stringify({ ids: integrations.map((i) => i.key), queryType, activeType });
   }
 
   static editorBuildKey(
-    activeIntegration: IntegrationRecord | null,
+    activeIntegration: IIntegrationRecord | null,
     selectedProviderId: string,
-    editor: ProviderEditorState | null,
-    selectedProviderDefinition: IntegrationProvider | null,
+    editor: IProviderEditorState | null,
+    selectedProviderDefinition: IIntegrationProvider | null,
   ): string {
     return JSON.stringify({
       activeKey: activeIntegration?.key || '',
@@ -36,7 +30,7 @@ export class IntegrationReconciler {
     });
   }
 
-  static dynamicKey(currentProviderDefinition: IntegrationProvider | null, editor: ProviderEditorState | null): string {
+  static dynamicKey(currentProviderDefinition: IIntegrationProvider | null, editor: IProviderEditorState | null): string {
     return JSON.stringify({
       defKey: currentProviderDefinition?.key || '',
       editorId: editor ? editor.providerId : null,
@@ -46,15 +40,15 @@ export class IntegrationReconciler {
     });
   }
 
-  static dynamicFields(currentProviderDefinition: IntegrationProvider): IntegrationConfigField[] {
+  static dynamicFields(currentProviderDefinition: IIntegrationProvider): IIntegrationConfigField[] {
     return (currentProviderDefinition.fields || []).filter(
-      (field) => field.type === 'select' && !!field.optionsEndpoint
+      (field) => field.type === IntegrationFieldType.SELECT && !!field.optionsEndpoint
     );
   }
 
   static initialLoadingState(
     service: IntegrationsFieldOptionsService,
-    dynamicFields: IntegrationConfigField[],
+    dynamicFields: IIntegrationConfigField[],
     providerId: string,
     providerKey: string,
   ): Record<string, boolean> {
@@ -66,10 +60,10 @@ export class IntegrationReconciler {
 
   static async loadFieldOptions(
     service: IntegrationsFieldOptionsService,
-    editor: ProviderEditorState,
-    dynamicFields: IntegrationConfigField[],
+    editor: IProviderEditorState,
+    dynamicFields: IIntegrationConfigField[],
     providerId: string,
-  ): Promise<DynamicFieldState> {
+  ): Promise<IDynamicFieldState> {
     const dynamicFieldOptions: Record<string, Array<{ label: string; value: string }>> = {};
     const dynamicFieldErrors: Record<string, string> = {};
     const dynamicFieldLoading: Record<string, boolean> = {};

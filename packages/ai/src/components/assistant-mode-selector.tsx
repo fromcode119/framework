@@ -1,74 +1,55 @@
-'use client';
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import type { ConversationMode } from '@ai/enums/conversation-mode.enum';
+import { AssistantMode } from '@ai/components/enums/assistant-mode.enum';
 
-import React from 'react';
-import { FrameworkIcons } from '@fromcode119/react';
-import { GlassMorphism } from '../ui/glass-morphism';
+/**
+ * Segmented mode picker (chat / build / quick-fix). Presentational → `PureReactor`; options come from the
+ * `AssistantMode` enum, and each button carries its value as `data-mode` read by one `@bound` handler.
+ */
+export class AssistantModeSelector extends PureReactor {
+  @prop declare mode: ConversationMode;
+  @prop declare onChange: (mode: ConversationMode) => void;
+  @prop declare disabled?: boolean;
 
-import type { ConversationMode } from './assistant-mode-selector.types';
+  @bound
+  protected onSelect(event: ReactMouseEvent<HTMLButtonElement>): void {
+    if (this.disabled) return;
+    this.onChange(event.currentTarget.dataset.mode as unknown as ConversationMode);
+  }
 
-interface AssistantModeSelectorProps {
-  mode: ConversationMode;
-  onChange: (mode: ConversationMode) => void;
-  disabled?: boolean;
-}
+  private renderMode(option: AssistantMode): ReactNode {
+    const isActive = this.mode.value === option.value;
+    const Icon = option.icon;
+    const tone = isActive
+      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white';
+    const cursor = this.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer';
+    return (
+      <button
+        key={option.value}
+        type="button"
+        data-mode={option.value}
+        onClick={this.onSelect}
+        disabled={this.disabled}
+        className={`group relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${tone} ${cursor}`}
+        title={option.description}
+      >
+        <Icon size={14} />
+        <span>{option.label}</span>
+        <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-white dark:text-slate-900">
+          {option.description}
+          <div className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-4 border-transparent border-t-slate-900 dark:border-t-white" />
+        </div>
+      </button>
+    );
+  }
 
-const modes: Array<{
-  value: ConversationMode;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  description: string;
-}> = [
-  {
-    value: 'chat',
-    icon: FrameworkIcons.MessageSquare,
-    label: 'Chat',
-    description: 'Answer questions and give advice',
-  },
-  {
-    value: 'build',
-    icon: FrameworkIcons.Wrench,
-    label: 'Build',
-    description: 'Make changes to my site',
-  },
-  {
-    value: 'quickfix',
-    icon: FrameworkIcons.Zap,
-    label: 'Quick Fix',
-    description: 'Apply simple updates immediately',
-  },
-];
-
-export function AssistantModeSelector({ mode, onChange, disabled = false }: AssistantModeSelectorProps) {
-  return (
-    <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
-      {modes.map((modeOption) => {
-        const Icon = modeOption.icon;
-        const isActive = mode === modeOption.value;
-        
-        return (
-          <button
-            key={modeOption.value}
-            type="button"
-            onClick={() => !disabled && onChange(modeOption.value)}
-            disabled={disabled}
-            className={`group relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-              isActive
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-            } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-            title={modeOption.description}
-          >
-            <Icon size={14} />
-            <span>{modeOption.label}</span>
-            
-            {/* Tooltip on hover */}
-            <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-white dark:text-slate-900">
-              {modeOption.description}
-              <div className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-4 border-transparent border-t-slate-900 dark:border-t-white" />
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
+  render(): ReactNode {
+    return (
+      <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
+        {AssistantMode.values().map((option) => this.renderMode(option))}
+      </div>
+    );
+  }
 }

@@ -8,9 +8,9 @@ import { ApplicationUrlUtils, SystemConstants, SecretService } from '@fromcode11
 import { createHash, randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
-import { users } from '@fromcode119/database';
-import { AuthUtils } from '../../utils/auth';
-import { UserManagementService } from '../../services/user-management-service';
+import { Schema } from '@fromcode119/database';
+import { AuthUtils } from '@api/utils/auth';
+import { UserManagementService } from '@api/services/user-management-service';
 
 export class SystemTwoFactorService {
   constructor(
@@ -204,7 +204,7 @@ export class SystemTwoFactorService {
     try {
       const enabled = await this.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS });
       if (String(enabled?.value || 'true').trim().toLowerCase() !== 'true') return;
-      const user = await this.db.findOne(users, { id: options.userId });
+      const user = await this.db.findOne(Schema.users, { id: options.userId });
       const recipient = AuthUtils.normalizeEmail(user?.email);
       if (!recipient) return;
       const appName = await this.resolveFrameworkAppName();

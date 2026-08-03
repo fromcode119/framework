@@ -1,7 +1,9 @@
 import { ApiVersionUtils } from '@fromcode119/core/client';
-import { AssistantConstants } from '../admin-assistant-core';
-import { AdminAssistantPageUtils } from './admin-assistant-page-utils';
-import type { AssistantSkill, AssistantToolOption } from '../admin-assistant-core';
+import { Platform } from '@fromcode119/reactor';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
+import { AdminAssistantPageUtils } from '@ai/admin-assistant-page/admin-assistant-page-utils';
+import type { IAssistantSkill } from '@ai/interfaces/assistant-skill.interface';
+import type { IAssistantToolOption } from '@ai/interfaces/assistant-tool-option.interface';
 
 export class AdminAssistantPageGatewayService {
   static async fetchIntegration(api: any): Promise<{
@@ -102,7 +104,7 @@ export class AdminAssistantPageGatewayService {
     }
   }
 
-  static async fetchTools(api: any): Promise<AssistantToolOption[]> {
+  static async fetchTools(api: any): Promise<IAssistantToolOption[]> {
     const response = await api.get(AssistantConstants.ENDPOINTS.TOOLS);
     return Array.isArray(response?.tools)
       ? response.tools
@@ -111,11 +113,11 @@ export class AdminAssistantPageGatewayService {
             description: entry?.description ? String(entry.description) : undefined,
             readOnly: entry?.readOnly === true,
           }))
-          .filter((entry: AssistantToolOption) => !!entry.tool)
+          .filter((entry: IAssistantToolOption) => !!entry.tool)
       : [];
   }
 
-  static async fetchSkills(api: any): Promise<AssistantSkill[]> {
+  static async fetchSkills(api: any): Promise<IAssistantSkill[]> {
     const response = await api.get(AssistantConstants.ENDPOINTS.SKILLS);
     const skills = Array.isArray(response?.skills)
       ? response.skills
@@ -126,10 +128,10 @@ export class AdminAssistantPageGatewayService {
             defaultMode: entry?.defaultMode ? String(entry.defaultMode).trim().toLowerCase() : undefined,
             riskPolicy: entry?.riskPolicy ? String(entry.riskPolicy).trim().toLowerCase() : undefined,
           }))
-          .filter((entry: AssistantSkill) => !!entry.id)
+          .filter((entry: IAssistantSkill) => !!entry.id)
       : [];
 
-    return skills.some((entry) => entry.id === 'general')
+    return skills.some((entry: { id?: string }) => entry.id === 'general')
       ? skills
       : [{ id: 'general', label: 'General' }, ...skills];
   }
@@ -242,7 +244,7 @@ export class AdminAssistantPageGatewayService {
     try {
       const parsed = new URL(baseUrl);
       const currentHost =
-        typeof window !== 'undefined' ? String(window.location.hostname || '').trim().toLowerCase() : '';
+        Platform.isBrowser ? String(window.location.hostname || '').trim().toLowerCase() : '';
       const candidateHost = String(parsed.hostname || '').trim().toLowerCase();
       const candidatePath = String(parsed.pathname || '').trim().toLowerCase();
       const apiPrefix = ApiVersionUtils.prefix().toLowerCase();

@@ -1,7 +1,7 @@
-import { Collection } from '../../types';
+import type { ICollection } from '@core/interfaces/collection.interface';
 import { IDatabaseManager, and, ne, lte, sql } from '@fromcode119/database';
-import { Logger } from '../../logging';
-import { HookManager } from '../../hooks/hook-manager';
+import { Logger } from '@core/logging';
+import { HookManager } from '@core/hooks/hook-manager';
 
 export class WorkflowService {
   private logger = new Logger({ namespace: 'workflow-service' });
@@ -14,7 +14,7 @@ export class WorkflowService {
   /**
    * Scans all collections with workflow enabled and processes scheduled publishing.
    */
-  async processScheduledContent(collections: Collection[]) {
+  async processScheduledContent(collections: ICollection[]) {
     const now = new Date();
     const workflowCollections = collections.filter(c => c.workflow);
 

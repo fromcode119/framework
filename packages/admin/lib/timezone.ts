@@ -1,26 +1,28 @@
-import type {
-  ZonedDateParts,
-  LocaleArg,
-  DateLocaleFormatter,
-  TimezoneOption,
-  WindowWithFromcode,
-} from './timezone.types';
+import { DateLocaleMethod } from '@/lib/enums/date-locale-method.enum';
+import { Platform } from '@fromcode119/reactor';
+import { RuntimeRegistryAccess } from '@fromcode119/core/client';
+import { IZonedDateParts } from '@/lib/interfaces/zoned-date-parts.interface';
+import { ITimezoneOption } from '@/lib/interfaces/timezone-option.interface';
+import { IDateLocaleFormatter } from '@/lib/interfaces/date-locale-formatter.interface';
 
-const DEFAULT_TIMEZONE = 'UTC';
-const DEFAULT_LOCALE = 'en-US';
-
-const dateLocalePatchState: {
-  timezone: string | null;
-  originalToLocaleString: DateLocaleFormatter | null;
-  originalToLocaleDateString: DateLocaleFormatter | null;
-  originalToLocaleTimeString: DateLocaleFormatter | null;
-} = {
-  timezone: null,
-  originalToLocaleString: null,
-  originalToLocaleDateString: null,
-  originalToLocaleTimeString: null
-};
 export class TimezoneUtils {
+  private static readonly DEFAULT_TIMEZONE = 'UTC';
+  private static readonly DEFAULT_LOCALE = 'en-US';
+
+  // State of the Date#toLocale* patch: the timezone currently installed, and the untouched originals to
+  // format against. Four named fields rather than one anonymous-typed bag — the bag was a data shape
+  // declared inline in a class file, which is the thing the conventions forbid.
+  private static patchedTimezone: string | null = null;
+  private static originalToLocaleString: IDateLocaleFormatter | null = null;
+  private static originalToLocaleDateString: IDateLocaleFormatter | null = null;
+  private static originalToLocaleTimeString: IDateLocaleFormatter | null = null;
+
+  /** The framework runtime bridge, resolved from the single runtime registry (no window.Fromcode). */
+  private static runtimeBridge(): any {
+    if (!Platform.isBrowser) return null;
+    return (window as any)?.[RuntimeRegistryAccess.globalName]?.[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] || null;
+  }
+
   static parseDateValue(value: any): Date | null {
       if (!value) return null;
       const date = value instanceof Date ? value : new Date(value);
@@ -33,7 +35,7 @@ export class TimezoneUtils {
       const tz = String(value || '').trim();
       if (!tz) return false;
       try {
-        new Intl.DateTimeFormat(DEFAULT_LOCALE, { timeZone: tz }).format(new Date());
+        new Intl.DateTimeFormat(TimezoneUtils.DEFAULT_LOCALE, { timeZone: tz }).format(new Date());
         return true;
       } catch {
         return false;
@@ -48,27 +50,26 @@ export class TimezoneUtils {
       const fromBridge = TimezoneUtils.readTimezoneFromBridge();
       if (fromBridge && TimezoneUtils.isValidTimezone(fromBridge)) return fromBridge;
 
-      return DEFAULT_TIMEZONE;
+      return TimezoneUtils.DEFAULT_TIMEZONE;
 
   }
 
   static resolveSystemLocale(preferred?: string): string {
       const explicit = String(preferred || '').trim();
       if (explicit) return explicit;
-      if (typeof window === 'undefined') return DEFAULT_LOCALE;
+      if (!Platform.isBrowser) return TimezoneUtils.DEFAULT_LOCALE;
 
-      const win = window as WindowWithFromcode;
-      const fromBridge = String(win?.Fromcode?.locale || '').trim();
+      const fromBridge = String(TimezoneUtils.runtimeBridge()?.locale || '').trim();
       if (fromBridge) return fromBridge;
 
       const fromNavigator = String(window.navigator?.language || '').trim();
       if (fromNavigator) return fromNavigator;
 
-      return DEFAULT_LOCALE;
+      return TimezoneUtils.DEFAULT_LOCALE;
 
   }
 
-  static getTimezoneOptions(preferred?: string): TimezoneOption[] {
+  static getTimezoneOptions(preferred?: string): ITimezoneOption[] {
       const knownTimezones = new Set<string>(TimezoneUtils.readSupportedTimezoneValues());
       const explicit = String(preferred || '').trim();
       if (explicit && TimezoneUtils.isValidTimezone(explicit)) {
@@ -130,7 +131,7 @@ export class TimezoneUtils {
 
   }
 
-  static getZonedDateParts(value: any, preferredTimezone?: string): ZonedDateParts | null {
+  static getZonedDateParts(value: any, preferredTimezone?: string): IZonedDateParts | null {
       const date = TimezoneUtils.parseDateValue(value);
       if (!date) return null;
       const timeZone = TimezoneUtils.resolveSystemTimezone(preferredTimezone);
@@ -166,7 +167,7 @@ export class TimezoneUtils {
 
   }
 
-  static zonedPartsToUtcDate(parts: ZonedDateParts, preferredTimezone?: string): Date {
+  static zonedPartsToUtcDate(parts: IZonedDateParts, preferredTimezone?: string): Date {
       const timeZone = TimezoneUtils.resolveSystemTimezone(preferredTimezone);
       const desiredUtcMs = TimezoneUtils.toUtcMsFromParts(parts);
       let targetMs = desiredUtcMs;
@@ -186,13 +187,13 @@ export class TimezoneUtils {
 
   static applyDateLocaleTimezonePatch(preferredTimezone?: string): string {
       const timezone = TimezoneUtils.resolveSystemTimezone(preferredTimezone);
-      if (typeof window === 'undefined') return timezone;
-      if (dateLocalePatchState.timezone === timezone) return timezone;
+      if (!Platform.isBrowser) return timezone;
+      if (TimezoneUtils.patchedTimezone === timezone) return timezone;
 
-      TimezoneUtils.patchLocaleMethod('toLocaleString', timezone);
-      TimezoneUtils.patchLocaleMethod('toLocaleDateString', timezone);
-      TimezoneUtils.patchLocaleMethod('toLocaleTimeString', timezone);
-      dateLocalePatchState.timezone = timezone;
+      TimezoneUtils.patchLocaleMethod(DateLocaleMethod.TO_LOCALE_STRING, timezone);
+      TimezoneUtils.patchLocaleMethod(DateLocaleMethod.TO_LOCALE_DATE_STRING, timezone);
+      TimezoneUtils.patchLocaleMethod(DateLocaleMethod.TO_LOCALE_TIME_STRING, timezone);
+      TimezoneUtils.patchedTimezone = timezone;
       return timezone;
 
   }
@@ -202,11 +203,11 @@ export class TimezoneUtils {
   // ---------------------------------------------------------------------------
 
   private static readTimezoneFromBridge(): string {
-    if (typeof window === 'undefined') return '';
-    const win = window as WindowWithFromcode;
-    const direct = String(win?.Fromcode?.settings?.timezone || '').trim();
+    if (!Platform.isBrowser) return '';
+    const bridge = TimezoneUtils.runtimeBridge();
+    const direct = String(bridge?.settings?.timezone || '').trim();
     if (direct) return direct;
-    return String(win?.Fromcode?.getState?.()?.settings?.timezone || '').trim();
+    return String(bridge?.getState?.()?.settings?.timezone || '').trim();
   }
 
   private static readSupportedTimezoneValues(): string[] {
@@ -217,7 +218,7 @@ export class TimezoneUtils {
     if (Array.isArray(timezoneValues) && timezoneValues.length > 0) {
       return timezoneValues;
     }
-    return [DEFAULT_TIMEZONE];
+    return [TimezoneUtils.DEFAULT_TIMEZONE];
   }
 
   private static formatTimezoneLabel(timezone: string): string {
@@ -235,7 +236,7 @@ export class TimezoneUtils {
     return { ...options, timeZone: timezone };
   }
 
-  private static toUtcMsFromParts(parts: ZonedDateParts): number {
+  private static toUtcMsFromParts(parts: IZonedDateParts): number {
     return Date.UTC(
       parts.year,
       parts.month - 1,
@@ -247,26 +248,26 @@ export class TimezoneUtils {
     );
   }
 
-  private static patchLocaleMethod(method: 'toLocaleString' | 'toLocaleDateString' | 'toLocaleTimeString', timezone: string) {
+  private static patchLocaleMethod(method: DateLocaleMethod, timezone: string) {
     if (
-      !dateLocalePatchState.originalToLocaleString ||
-      !dateLocalePatchState.originalToLocaleDateString ||
-      !dateLocalePatchState.originalToLocaleTimeString
+      !TimezoneUtils.originalToLocaleString ||
+      !TimezoneUtils.originalToLocaleDateString ||
+      !TimezoneUtils.originalToLocaleTimeString
     ) {
-      dateLocalePatchState.originalToLocaleString = Date.prototype.toLocaleString;
-      dateLocalePatchState.originalToLocaleDateString = Date.prototype.toLocaleDateString;
-      dateLocalePatchState.originalToLocaleTimeString = Date.prototype.toLocaleTimeString;
+      TimezoneUtils.originalToLocaleString = Date.prototype.toLocaleString;
+      TimezoneUtils.originalToLocaleDateString = Date.prototype.toLocaleDateString;
+      TimezoneUtils.originalToLocaleTimeString = Date.prototype.toLocaleTimeString;
     }
 
-    const originals = {
-      toLocaleString: dateLocalePatchState.originalToLocaleString!,
-      toLocaleDateString: dateLocalePatchState.originalToLocaleDateString!,
-      toLocaleTimeString: dateLocalePatchState.originalToLocaleTimeString!
+    const originals: Record<string, any> = {
+      toLocaleString: TimezoneUtils.originalToLocaleString!,
+      toLocaleDateString: TimezoneUtils.originalToLocaleDateString!,
+      toLocaleTimeString: TimezoneUtils.originalToLocaleTimeString!
     };
 
-    (Date.prototype as any)[method] = function patchedDateLocale(this: Date, locales?: LocaleArg, options?: Intl.DateTimeFormatOptions) {
+    (Date.prototype as any)[method.value] = function patchedDateLocale(this: Date, locales?: string | string[], options?: Intl.DateTimeFormatOptions) {
       const normalized = TimezoneUtils.withTimezoneOption(options, timezone);
-      return originals[method].call(this, locales, normalized);
-    } as DateLocaleFormatter;
+      return originals[method.value].call(this, locales, normalized);
+    } as IDateLocaleFormatter;
   }
 }

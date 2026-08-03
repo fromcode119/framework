@@ -1,13 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import type { ThemeDefaultPageContractOverride } from '../types';
+import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
 
 export class ThemeDefaultPageContractOverrideLoader {
   private static readonly FILE_BASENAME = 'theme-default-page-contract-overrides';
   private static readonly SEARCH_DIR = 'seeds';
 
-  async load(themeDirectory: string): Promise<ThemeDefaultPageContractOverride[]> {
+  async load(themeDirectory: string): Promise<IThemeDefaultPageContractOverride[]> {
     const overrideModulePath = this.resolveOverrideModulePath(themeDirectory);
     if (!overrideModulePath) {
       return [];
@@ -37,7 +37,7 @@ export class ThemeDefaultPageContractOverrideLoader {
     }
   }
 
-  private readOverrides(moduleExports: any): ThemeDefaultPageContractOverride[] {
+  private readOverrides(moduleExports: any): IThemeDefaultPageContractOverride[] {
     const callable = this.resolveOverrideProvider(moduleExports);
     const overrides = callable();
     if (!Array.isArray(overrides)) {
@@ -47,7 +47,7 @@ export class ThemeDefaultPageContractOverrideLoader {
     return overrides.map((override) => this.cloneOverride(override));
   }
 
-  private resolveOverrideProvider(moduleExports: any): () => ThemeDefaultPageContractOverride[] {
+  private resolveOverrideProvider(moduleExports: any): () => IThemeDefaultPageContractOverride[] {
     if (typeof moduleExports?.getOverrides === 'function') {
       return (...args: unknown[]) => moduleExports.getOverrides(...args);
     }
@@ -57,7 +57,7 @@ export class ThemeDefaultPageContractOverrideLoader {
     }
 
     for (const value of Object.values(moduleExports || {})) {
-      const provider = value as { getOverrides?: () => ThemeDefaultPageContractOverride[] } | undefined;
+      const provider = value as { getOverrides?: () => IThemeDefaultPageContractOverride[] } | undefined;
       if (typeof provider?.getOverrides === 'function') {
         return () => provider.getOverrides!.call(value);
       }
@@ -66,7 +66,7 @@ export class ThemeDefaultPageContractOverrideLoader {
     throw new Error('Theme override module must export a getOverrides() provider.');
   }
 
-  private cloneOverride(override: ThemeDefaultPageContractOverride): ThemeDefaultPageContractOverride {
+  private cloneOverride(override: IThemeDefaultPageContractOverride): IThemeDefaultPageContractOverride {
     return {
       contract: {
         namespace: String(override?.contract?.namespace || '').trim(),

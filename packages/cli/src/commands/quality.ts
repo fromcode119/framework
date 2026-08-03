@@ -3,8 +3,7 @@ import chalk from 'chalk';
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs-extra';
-import { CliUtils } from '../utils';
-
+import { CliUtils } from '@cli/utils';
 
 export class QualityCommands {
   static registerQualityCommands(program: Command) {

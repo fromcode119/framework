@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import { Platform } from '@fromcode119/reactor';
 import { CookieConstants } from '@fromcode119/core/client';
 
 /**
@@ -10,7 +11,7 @@ export class AuthUtils {
    * and all possible parent domain variations to resolve session conflicts.
    */
   static purgeAuth(): void {
-    if (typeof document === 'undefined') return;
+    if (!Platform.isBrowser) return;
 
     const cookiesToClear = [...CookieConstants.AUTH_COOKIES_TO_CLEAR];
     const hostname = window.location.hostname;
@@ -50,7 +51,7 @@ export class AuthUtils {
    * Returns the apex domain (e.g. `.example.com`) or undefined for localhost/IP.
    */
   static getCookieDomain(): string | undefined {
-    if (typeof window === 'undefined') return undefined;
+    if (!Platform.isBrowser) return undefined;
     const hostname = window.location.hostname;
 
     if (hostname.includes('.') && !hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {

@@ -1,4 +1,4 @@
-import { SystemConstants } from '../constants';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class SystemAuthClient {
   constructor(

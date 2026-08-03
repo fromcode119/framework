@@ -1,4 +1,4 @@
-import { EnvUtils } from '../../utils/env-utils';
+import { EnvUtils } from '@core/utils/env-utils';
 
 /**
  * Policy for whether a plugin whose manifest capabilities drifted from the approved set may be

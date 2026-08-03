@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
-import { CacheDriver } from '../index';
+import { ICacheDriver } from '@cache/index';
 
-export class RedisCacheDriver implements CacheDriver {
+export class RedisCacheDriver implements ICacheDriver {
   private client: Redis;
 
   constructor(url: string) {

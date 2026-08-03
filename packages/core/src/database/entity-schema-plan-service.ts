@@ -1,9 +1,10 @@
 import { createHash } from 'crypto';
-import type { Collection, Field } from '../types';
-import type { EntitySchemaPlan } from './entity-schema-plan.interfaces';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import type { IField } from '@core/interfaces/field.interface';
+import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 
 export class EntitySchemaPlanService {
-  buildPlan(collection: Collection, exists: boolean, existingColumns: string[]): EntitySchemaPlan {
+  buildPlan(collection: ICollection, exists: boolean, existingColumns: string[]): IEntitySchemaPlan {
     const existing = new Set(existingColumns.map((column) => column.toLowerCase()));
 
     return {
@@ -20,7 +21,7 @@ export class EntitySchemaPlanService {
     };
   }
 
-  createFingerprint(collection: Collection): string {
+  createFingerprint(collection: ICollection): string {
     const payload = {
       slug: collection.slug,
       fields: this.resolveSyncableFields(collection).map((field) => ({
@@ -46,11 +47,11 @@ export class EntitySchemaPlanService {
     return value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
   }
 
-  private resolveSyncableFields(collection: Collection): Field[] {
+  private resolveSyncableFields(collection: ICollection): IField[] {
     return (collection.fields || []).filter((field) => field.name !== 'id');
   }
 
-  private resolveUnsupportedIndexes(collection: Collection): string[] {
+  private resolveUnsupportedIndexes(collection: ICollection): string[] {
     return (collection.indexes || [])
       .filter((index) => index.fields.length > 0)
       .map((index) => index.name || `${collection.slug}_${index.fields.join('_')}_idx`);

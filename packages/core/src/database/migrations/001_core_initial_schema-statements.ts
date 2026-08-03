@@ -1,6 +1,6 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
-import { InitialFrameworkPostgresTables } from './001_core_initial_schema-postgres-tables';
-import { InitialFrameworkSqliteTables } from './001_core_initial_schema-sqlite-tables';
+import { InitialFrameworkPostgresTables } from '@core/database/migrations/001_core_initial_schema-postgres-tables';
+import { InitialFrameworkSqliteTables } from '@core/database/migrations/001_core_initial_schema-sqlite-tables';
 
 /**
  * Table-creation and seed statements for the initial framework migration. Each method

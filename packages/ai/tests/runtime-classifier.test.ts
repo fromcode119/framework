@@ -1,10 +1,12 @@
 import { McpBridgeFactory } from '@fromcode119/mcp';
 import { IntentClassifier } from '../src/admin-assistant-runtime/runtime/intent-classifier';
 import { OrchestratorRunner } from '../src/admin-assistant-runtime/runtime/orchestrator';
-import type { AdminAssistantRuntimeOptions, AssistantChatInput, AssistantSkillDefinition } from '../src/admin-assistant-runtime/types';
+import type { IAdminAssistantRuntimeOptions } from '../src/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import type { IAssistantChatInput } from '../src/admin-assistant-runtime/interfaces/assistant-chat-input.interface';
+import type { IAssistantSkillDefinition } from '../src/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
 import { ProviderCapabilitiesUtils } from '../src/gateways/integration-provider';
 
-function createOptions(overrides?: Partial<AdminAssistantRuntimeOptions>): AdminAssistantRuntimeOptions {
+function createOptions(overrides?: Partial<IAdminAssistantRuntimeOptions>): IAdminAssistantRuntimeOptions {
   return {
     aiClient: null,
     getCollections: () => [],
@@ -16,9 +18,9 @@ function createOptions(overrides?: Partial<AdminAssistantRuntimeOptions>): Admin
   };
 }
 
-function createDeps(options?: Partial<AdminAssistantRuntimeOptions>) {
+function createDeps(options?: Partial<IAdminAssistantRuntimeOptions>) {
   const runtimeOptions = createOptions(options);
-  const generalSkill: AssistantSkillDefinition = {
+  const generalSkill: IAssistantSkillDefinition = {
     id: 'general',
     label: 'General',
     defaultMode: 'chat',
@@ -150,7 +152,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('answers simple factual prompt directly without forcing staging language', async () => {
-    const input: AssistantChatInput = {
+    const input: IAssistantChatInput = {
       message: 'what is 5+5',
       agentMode: 'basic',
     };
@@ -187,7 +189,7 @@ describe('runtime classifier and fallback behavior', () => {
   });
 
   it('returns a natural chat fallback instead of staged-action boilerplate', async () => {
-    const input: AssistantChatInput = {
+    const input: IAssistantChatInput = {
       message: 'blorp',
       agentMode: 'basic',
     };

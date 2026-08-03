@@ -3,8 +3,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { MigrationManager, Seeder } from '@fromcode119/core';
-import { CliUtils } from '../utils';
-
+import { CliUtils } from '@cli/utils';
 
 export class DatabaseCommands {
   static registerDatabaseCommands(program: Command) {

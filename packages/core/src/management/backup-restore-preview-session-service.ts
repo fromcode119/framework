@@ -1,17 +1,17 @@
 import { randomBytes, randomUUID } from 'crypto';
-import { BackupOperationError } from './backup-operation-error';
-import type { RestorePreviewSession } from './backup-restore-guard-service.interfaces';
-import type { RestoreTargetKind } from './backup-restore-guard-service.types';
+import { BackupOperationError } from '@core/management/backup-operation-error';
+import type { IRestorePreviewSession } from '@core/management/interfaces/restore-preview-session.interface';
+import type { RestoreTarget } from '@core/management/restore-target';
 
 export class BackupRestorePreviewSessionService {
   private static readonly SESSION_TTL_MS = 10 * 60 * 1000;
 
-  private readonly sessions = new Map<string, RestorePreviewSession>();
+  private readonly sessions = new Map<string, IRestorePreviewSession>();
 
-  createSession(input: { backupId: string; targetKind: RestoreTargetKind }): RestorePreviewSession {
+  createSession(input: { backupId: string; targetKind: RestoreTarget }): IRestorePreviewSession {
     this.removeExpiredSessions();
 
-    const session: RestorePreviewSession = {
+    const session: IRestorePreviewSession = {
       token: randomUUID(),
       backupId: input.backupId,
       targetKind: input.targetKind,
@@ -26,9 +26,9 @@ export class BackupRestorePreviewSessionService {
   consumeSession(input: {
     previewToken: string;
     backupId: string;
-    targetKind: RestoreTargetKind;
+    targetKind: RestoreTarget;
     confirmationText: string;
-  }): RestorePreviewSession {
+  }): IRestorePreviewSession {
     this.removeExpiredSessions();
 
     const previewToken = String(input.previewToken || '').trim();
@@ -41,7 +41,11 @@ export class BackupRestorePreviewSessionService {
       throw new BackupOperationError(409, 'Restore preview session was not found or has expired. Run restore preview again.');
     }
 
-    if (session.backupId !== input.backupId || session.targetKind !== input.targetKind) {
+    // Compare the target by VALUE, not identity: `RestoreTarget.parse()` builds a NEW instance per call,
+    // so `!==` on the objects is always true and every execute would be rejected. (`toString()` yields the
+    // wire form the session was created from.)
+    const sameTarget = String(session.targetKind) === String(input.targetKind);
+    if (session.backupId !== input.backupId || !sameTarget) {
       this.sessions.delete(previewToken);
       throw new BackupOperationError(409, 'Restore preview session does not match the requested backup target. Run restore preview again.');
     }

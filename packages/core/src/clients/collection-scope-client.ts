@@ -1,4 +1,4 @@
-import { CollectionUtils } from '../collection-utils';
+import { CollectionUtils } from '@core/collection-utils';
 
 export class CollectionScopeClient {
   constructor(

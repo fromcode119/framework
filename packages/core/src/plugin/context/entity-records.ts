@@ -1,6 +1,6 @@
-import { LoadedPlugin } from '../../types';
-import { CoreServices } from '../../services/core-services';
-import type { EntityRecordProviderRegistration } from '../../services/entity-records/entity-record.interfaces';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { CoreServices } from '@core/services/core-services';
+import type { IEntityRecordProviderRegistration } from '@core/services/entity-records/interfaces/entity-record-provider-registration.interface';
 
 /**
  * Plugin-facing facade over the framework's entity-records registry.
@@ -12,13 +12,13 @@ import type { EntityRecordProviderRegistration } from '../../services/entity-rec
  * records into one grouped timeline for the Person 360 / partner-CRM view.
  */
 export class EntityRecordsContextProxy {
-  static createEntityRecordsProxy(plugin: LoadedPlugin) {
+  static createEntityRecordsProxy(plugin: ILoadedPlugin) {
     const namespace = String(plugin?.manifest?.namespace || '').trim();
     const pluginSlug = String(plugin?.manifest?.slug || '').trim();
 
     return {
       registerProvider(
-        input: Pick<EntityRecordProviderRegistration, 'key' | 'label' | 'resolve'>,
+        input: Pick<IEntityRecordProviderRegistration, 'key' | 'label' | 'resolve'>,
       ) {
         return CoreServices.getInstance().entityRecords.register({
           namespace,

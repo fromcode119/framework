@@ -1,7 +1,7 @@
 import { PluginManager } from '@fromcode119/core';
-import type { McpToolDefinition } from '@fromcode119/mcp';
-import { AssistantCatalogService } from './catalog-service';
-import { PluginPublicApiResolver } from './plugin-public-api-resolver';
+import type { IMcpToolDefinition } from '@fromcode119/mcp';
+import { AssistantCatalogService } from '@ai/api/forge/catalog-service';
+import { PluginPublicApiResolver } from '@ai/api/forge/plugin-public-api-resolver';
 
 export class PluginAssistantDiscoveryService {
   private readonly apiResolver: PluginPublicApiResolver;
@@ -13,8 +13,8 @@ export class PluginAssistantDiscoveryService {
     this.apiResolver = new PluginPublicApiResolver(manager);
   }
 
-  buildTools(): McpToolDefinition[] {
-    const tools: McpToolDefinition[] = [];
+  buildTools(): IMcpToolDefinition[] {
+    const tools: IMcpToolDefinition[] = [];
 
     for (const plugin of this.apiResolver.listInstalledPlugins()) {
       tools.push(this.createPluginInfoTool(plugin));
@@ -67,7 +67,7 @@ export class PluginAssistantDiscoveryService {
     return `${slug} (${methodNames.slice(0, 5).join(', ')})`;
   }
 
-  private createPluginInfoTool(plugin: any): McpToolDefinition {
+  private createPluginInfoTool(plugin: any): IMcpToolDefinition {
     const slug = String(plugin?.manifest?.slug || '').trim();
 
     return {
@@ -82,7 +82,7 @@ export class PluginAssistantDiscoveryService {
     plugin: any,
     publicApi: unknown,
     methodName: string,
-  ): McpToolDefinition | null {
+  ): IMcpToolDefinition | null {
     const method = publicApi && (publicApi as any)[methodName];
     if (typeof method !== 'function') {
       return null;

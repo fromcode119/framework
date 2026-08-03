@@ -1,27 +1,25 @@
-import React from 'react';
+import type { IAccountSessionsPanelState } from '@react/account/interfaces/account-sessions-panel-state.interface';
+import type { ReactNode } from 'react';
+import { Platform, state } from '@fromcode119/reactor';
 import { RouteConstants } from '@fromcode119/core/client';
-import { PluginComponent } from '../plugin-component';
-import { AccountAuthClient } from './auth-client';
-import { AccountSessionDeviceService } from './session-device-service';
-
-interface AccountSessionsPanelState {
-  loading: boolean;
-  revoking: boolean;
-  revokingId: string;
-  error: string;
-  sessions: any[];
-}
+import { PluginComponent } from '@react/view/plugin-component.client';
+import { AccountAuthClient } from '@react/account/auth-client';
+import { AccountSessionDeviceService } from '@react/account/session-device-service';
+import { AccountClass } from '@react/account/account-class';
 
 /** Plugin-owned default Sessions section for the framework AccountShell. Lists the signed-in user's
  * active sessions with device/browser, IP and start time, marks the current one, and lets them sign
  * out a single session or all the others. Registered into `account.panels`. */
-export class AccountSessionsPanel extends PluginComponent<Record<string, unknown>, AccountSessionsPanelState> {
-  static readonly accountSection = { key: 'sessions', labelKey: 'account.section.sessions', priority: 65 };
+export class AccountSessionsPanel extends PluginComponent {
+  @state loading: boolean = true;
+  @state revoking: boolean = false;
+  @state revokingId: string = '';
+  @state error: string = '';
+  @state sessions: any[] = [];
+  static readonly accountSection = { key: 'sessions', labelKey: 'account.section.sessions', priority: 65, descriptionKey: 'account.description.sessions' };
 
   private mounted = false;
-
-  state: AccountSessionsPanelState = { loading: true, revoking: false, revokingId: '', error: '', sessions: [] };
-
+  
   componentDidMount(): void {
     this.mounted = true;
     void this.load();
@@ -59,7 +57,7 @@ export class AccountSessionsPanel extends PluginComponent<Record<string, unknown
       const path = String(RouteConstants.SEGMENTS.SESSIONS_ID_REVOKE).replace(':id', encodeURIComponent(id));
       const res = await AccountAuthClient.of(this.api).post(path, {});
       // Revoking the current session signs this device out — send the user back to a clean state.
-      if (res?.revokedCurrent && typeof window !== 'undefined') { window.location.href = '/'; return; }
+      if (res?.revokedCurrent && Platform.isBrowser) { window.location.href = '/'; return; }
       await this.load();
       if (this.mounted) this.setState({ revokingId: '' });
     } catch (error: any) {
@@ -72,7 +70,7 @@ export class AccountSessionsPanel extends PluginComponent<Record<string, unknown
     return d && !Number.isNaN(d.getTime()) ? d.toLocaleString(this.locale || 'bg-BG') : '';
   }
 
-  private renderRow(s: any, i: number): React.ReactNode {
+  private renderRow(s: any, i: number): ReactNode {
     // The sessions API may return camelCase (mapped) or raw snake_case rows — read both so the device,
     // IP and time always render (this is what made /account/sessions look empty before).
     const current = Boolean(s?.current ?? s?.isCurrent ?? s?.is_current);
@@ -81,18 +79,18 @@ export class AccountSessionsPanel extends PluginComponent<Record<string, unknown
     const device = AccountSessionDeviceService.label(ua) || this.t('account.sessions.unknownDevice');
     const ip = String(s?.ipAddress ?? s?.ip_address ?? s?.ip ?? '').trim();
     const started = this.formatDate(s?.lastActiveAt ?? s?.last_active_at ?? s?.lastActivityAt ?? s?.last_activity_at ?? s?.createdAt ?? s?.created_at);
-    const busy = this.state.revokingId === id;
+    const busy = this.revokingId === id;
     return (
-      <div key={id || i} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px 14px', display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: '14px', fontWeight: 600 }}>{device}</div>
-          {ip ? <div style={{ fontSize: '12px', color: '#64748b' }}>{this.t('account.sessions.ip')}: {ip}</div> : null}
-          {started ? <div style={{ fontSize: '12px', color: '#64748b' }}>{this.t('account.sessions.created')}: {started}</div> : null}
+      <div className={AccountClass.of('row')} key={id || i}>
+        <div className={AccountClass.of('row-main')}>
+          <div className={AccountClass.of('row-title')}>{device}</div>
+          {ip ? <div className={AccountClass.of('row-meta')}>{this.t('account.sessions.ip')}: {ip}</div> : null}
+          {started ? <div className={AccountClass.of('row-meta')}>{this.t('account.sessions.created')}: {started}</div> : null}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {current ? <span style={{ fontSize: '12px', fontWeight: 600, color: '#15803d' }}>{this.t('account.sessions.current')}</span> : null}
+        <div className={AccountClass.of('row-actions')}>
+          {current ? <span className={AccountClass.of('badge')}>{this.t('account.sessions.current')}</span> : null}
           {id ? (
-            <button onClick={() => void this.revokeOne(id)} disabled={busy} style={{ padding: '6px 14px', background: 'transparent', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '999px', fontSize: '12px', fontWeight: 600, cursor: busy ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
+            <button className={AccountClass.of('btn', 'small')} onClick={() => void this.revokeOne(id)} disabled={busy}>
               {busy ? this.t('account.sessions.revokingOne') : this.t('account.sessions.revoke')}
             </button>
           ) : null}
@@ -101,19 +99,18 @@ export class AccountSessionsPanel extends PluginComponent<Record<string, unknown
     );
   }
 
-  render(): React.ReactNode {
-    const { loading, revoking, error, sessions } = this.state;
-    const card: React.CSSProperties = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' };
-    if (loading) return <div style={card}>{this.t('account.sessions.loading')}</div>;
+  render(): ReactNode {
+    const { loading, revoking, error, sessions } = this;
+    if (loading) return <div className={AccountClass.of('card')}>{this.t('account.sessions.loading')}</div>;
     return (
-      <div style={card}>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 18px' }}>{this.t('account.section.sessions')}</h2>
-        {error ? <p style={{ color: '#dc2626', fontSize: '13px' }}>{error}</p> : null}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+      <div className={AccountClass.of('card')}>
+        <h2 className={AccountClass.of('h2')}>{this.t('account.section.sessions')}</h2>
+        {error ? <p className={AccountClass.of('error')}>{error}</p> : null}
+        <div className={AccountClass.of('list')}>
           {sessions.map((s, i) => this.renderRow(s, i))}
-          {sessions.length === 0 ? <p style={{ color: '#64748b', fontSize: '14px' }}>{this.t('account.sessions.none')}</p> : null}
+          {sessions.length === 0 ? <p className={AccountClass.of('empty-note')}>{this.t('account.sessions.none')}</p> : null}
         </div>
-        <button onClick={() => void this.revokeOthers()} disabled={revoking} style={{ padding: '10px 22px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: '999px', fontSize: '14px', fontWeight: 600, cursor: revoking ? 'default' : 'pointer' }}>
+        <button className={AccountClass.of('btn', 'muted')} onClick={() => void this.revokeOthers()} disabled={revoking}>
           {revoking ? this.t('account.sessions.revoking') : this.t('account.sessions.revokeOthers')}
         </button>
       </div>

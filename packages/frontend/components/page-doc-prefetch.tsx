@@ -17,16 +17,18 @@ import { PageDocPrefetchRequestCache } from '@/lib/theme/page-doc-prefetch-reque
  * read it synchronously through their PrefetchedDataService equivalent and paint
  * page data (e.g. the record a page renders) without a client XHR round-trip.
  */
-export default async function PageDocPrefetch({ content }: { content: unknown }) {
-  try {
-    // Shared per-request pass — SsrContentShell reads the SAME payloads for its LCP image.
-    const results = await PageDocPrefetchRequestCache.read(content);
-    if (!Object.keys(results).length) return null;
+export class PageDocPrefetchView {
+  static async render({ content }: { content: unknown }) {
 
-    return <script dangerouslySetInnerHTML={{ __html: PageDocPrefetcher.buildMergeScript(results) }} />;
-  } catch (error) {
-    // Non-critical — the theme keeps its client fetch fallback.
-    console.error('[PageDocPrefetch] Error:', error);
-    return null;
+    try {
+      // Shared per-request pass — SsrContentShell reads the SAME payloads for its LCP image.
+      const results = await PageDocPrefetchRequestCache.read(content);
+      if (!Object.keys(results).length) return null;
+      return <script dangerouslySetInnerHTML={{ __html: PageDocPrefetcher.buildMergeScript(results) }} />;
+    } catch (error) {
+      // Non-critical — the theme keeps its client fetch fallback.
+      console.error('[PageDocPrefetch] Error:', error);
+      return null;
+    }
   }
 }

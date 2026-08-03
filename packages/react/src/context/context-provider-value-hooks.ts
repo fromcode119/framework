@@ -1,9 +1,9 @@
 import React from 'react';
-import type { PluginContextValue } from '../context.interfaces';
+import type { IPluginContextValue } from '@react/interfaces/plugin-context-value.interface';
 
 export class ContextProviderValueHooks {
-  static useContextValue(s: Record<string, any>): PluginContextValue {
-    return React.useMemo<PluginContextValue>(() => ({
+  static useContextValue(s: Record<string, any>): IPluginContextValue {
+    return React.useMemo<IPluginContextValue>(() => ({
       slots: s.slots,
       overrides: s.overrides,
       themeVariables: s.themeVariables,

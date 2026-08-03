@@ -1,6 +1,6 @@
-import type { PluginApiResolver } from './plugin-api-resolver.interfaces';
+import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
 
-export class PluginsRegistry implements PluginApiResolver {
+export class PluginsRegistry implements IPluginApiResolver {
   private readonly entries = new Map<string, unknown>();
 
   register(namespace: string, slug: string, api: unknown): void {

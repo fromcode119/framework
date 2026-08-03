@@ -1,11 +1,7 @@
+import type { ILiveBlocksSnapshot } from '@core/interfaces/live-blocks-snapshot.interface';
 import React from 'react';
-import { RuntimeConstants } from './runtime-constants';
-
-interface LiveBlocksSnapshot {
-  pageId: string | number | null;
-  slug: string | null;
-  blocks: any[];
-}
+import { RuntimeConstants } from '@core/constants/runtime.constants';
+import { EnvUtils } from '@core/utils/env-utils';
 
 /**
  * Cross-package "live blocks" bus. Lets the visual editor publish optimistic
@@ -17,19 +13,19 @@ interface LiveBlocksSnapshot {
  * Themes that don't care about live preview simply don't call useLiveBlocks.
  */
 export class LiveBlocks {
-  static publish(snapshot: LiveBlocksSnapshot): void {
-    if (typeof window === 'undefined') return;
+  static publish(snapshot: ILiveBlocksSnapshot): void {
+    if (EnvUtils.isServer()) return;
     (window as any)[RuntimeConstants.FRONTEND.GLOBAL_KEYS.LIVE_BLOCKS] = snapshot;
     window.dispatchEvent(new Event(RuntimeConstants.FRONTEND.EVENTS.LIVE_BLOCKS_CHANGED));
   }
 
-  static getSnapshot(): LiveBlocksSnapshot | null {
-    if (typeof window === 'undefined') return null;
-    return ((window as any)[RuntimeConstants.FRONTEND.GLOBAL_KEYS.LIVE_BLOCKS] ?? null) as LiveBlocksSnapshot | null;
+  static getSnapshot(): ILiveBlocksSnapshot | null {
+    if (EnvUtils.isServer()) return null;
+    return ((window as any)[RuntimeConstants.FRONTEND.GLOBAL_KEYS.LIVE_BLOCKS] ?? null) as ILiveBlocksSnapshot | null;
   }
 
   static subscribe(handler: () => void): () => void {
-    if (typeof window === 'undefined') return () => {};
+    if (EnvUtils.isServer()) return () => {};
     window.addEventListener(RuntimeConstants.FRONTEND.EVENTS.LIVE_BLOCKS_CHANGED, handler);
     return () => window.removeEventListener(RuntimeConstants.FRONTEND.EVENTS.LIVE_BLOCKS_CHANGED, handler);
   }
@@ -41,7 +37,7 @@ export class LiveBlocks {
    */
   static useLiveBlocks(page: any): any[] | null {
     const subscribe = React.useCallback((onChange: () => void) => LiveBlocks.subscribe(onChange), []);
-    const snapshot = React.useSyncExternalStore<LiveBlocksSnapshot | null>(
+    const snapshot = React.useSyncExternalStore<ILiveBlocksSnapshot | null>(
       subscribe,
       () => LiveBlocks.getSnapshot(),
       () => null,

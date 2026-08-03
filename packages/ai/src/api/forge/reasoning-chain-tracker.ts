@@ -1,3 +1,6 @@
+import { RecoveryOutcome } from '@ai/api/forge/enums/recovery-outcome.enum';
+import { AttemptResult } from '@ai/api/forge/enums/attempt-result.enum';
+import { ComplexityTier } from '@ai/api/forge/enums/complexity-tier.enum';
 /**
  * Reasoning Chain Tracker
  * 
@@ -5,12 +8,16 @@
  * Provides full audit trail and enables backtracking on errors.
  */
 
-import type { StepType } from './reasoning-chain-tracker.types';
-import type { AlternativeOption, ReasoningStep, RecoveryAttempt, ErrorRecovery, ReasoningReport } from './reasoning-chain-tracker.interfaces';
+import { StepType } from '@ai/api/forge/enums/step-type.enum';
+import type { IAlternativeOption } from '@ai/api/forge/interfaces/alternative-option.interface';
+import type { IReasoningStep } from '@ai/api/forge/interfaces/reasoning-step.interface';
+import type { IRecoveryAttempt } from '@ai/api/forge/interfaces/recovery-attempt.interface';
+import type { IErrorRecovery } from '@ai/api/forge/interfaces/error-recovery.interface';
+import type { IReasoningReport } from '@ai/api/forge/interfaces/reasoning-report.interface';
 
 export class ReasoningChainTracker {
-  private steps: ReasoningStep[] = [];
-  private errorRecoveries: Map<string, ErrorRecovery> = new Map();
+  private steps: IReasoningStep[] = [];
+  private errorRecoveries: Map<string, IErrorRecovery> = new Map();
   private currentStepNumber = 0;
   private sessionStartTime: number;
 
@@ -27,10 +34,10 @@ export class ReasoningChainTracker {
     input: Record<string, any>,
     output: Record<string, any>,
     confidence: number = 0.5,
-    alternatives?: AlternativeOption[],
-    selectedChoice?: AlternativeOption
-  ): ReasoningStep {
-    const step: ReasoningStep = {
+    alternatives?: IAlternativeOption[],
+    selectedChoice?: IAlternativeOption
+  ): IReasoningStep {
+    const step: IReasoningStep = {
       stepNumber: ++this.currentStepNumber,
       timestamp: Date.now(),
       type,
@@ -52,9 +59,9 @@ export class ReasoningChainTracker {
   startErrorRecovery(
     errorMessage: string,
     errorType?: string
-  ): ErrorRecovery {
+  ): IErrorRecovery {
     const errorId = `err_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    const recovery: ErrorRecovery = {
+    const recovery: IErrorRecovery = {
       errorId,
       originalStepNumber: this.currentStepNumber,
       timestamp: Date.now(),
@@ -74,13 +81,13 @@ export class ReasoningChainTracker {
   recordRecoveryAttempt(
     errorId: string,
     strategy: string,
-    result: 'success' | 'failure',
+    result: AttemptResult,
     message?: string
-  ): RecoveryAttempt {
+  ): IRecoveryAttempt {
     const recovery = this.errorRecoveries.get(errorId);
     if (!recovery) throw new Error(`Unknown error ID: ${errorId}`);
 
-    const attempt: RecoveryAttempt = {
+    const attempt: IRecoveryAttempt = {
       attemptNumber: recovery.recoveryAttempts.length + 1,
       strategy,
       result,
@@ -88,9 +95,9 @@ export class ReasoningChainTracker {
     };
 
     recovery.recoveryAttempts.push(attempt);
-    if (result === 'success') {
+    if (result === AttemptResult.SUCCESS) {
       recovery.recovered = true;
-      recovery.finalStatus = 'recovered';
+      recovery.finalStatus = RecoveryOutcome.RECOVERED;
     }
 
     return attempt;
@@ -101,13 +108,13 @@ export class ReasoningChainTracker {
    */
   closeErrorRecovery(
     errorId: string,
-    finalStatus: 'recovered' | 'abandoned' | 'escalated'
+    finalStatus: RecoveryOutcome
   ): void {
     const recovery = this.errorRecoveries.get(errorId);
     if (!recovery) throw new Error(`Unknown error ID: ${errorId}`);
 
     recovery.finalStatus = finalStatus;
-    if (finalStatus === 'recovered') {
+    if (finalStatus === RecoveryOutcome.RECOVERED) {
       recovery.recovered = true;
     }
   }
@@ -115,7 +122,7 @@ export class ReasoningChainTracker {
   /**
    * Backtrack to a previous step and continue from there
    */
-  backtrackToStep(stepNumber: number): ReasoningStep | null {
+  backtrackToStep(stepNumber: number): IReasoningStep | null {
     if (stepNumber < 1 || stepNumber >= this.steps.length) {
       return null; // Invalid step number
     }
@@ -136,7 +143,7 @@ export class ReasoningChainTracker {
   /**
    * Get reasoning history up to current point
    */
-  getReasoningHistory(limit?: number): ReasoningStep[] {
+  getReasoningHistory(limit?: number): IReasoningStep[] {
     if (!limit) return [...this.steps];
     return this.steps.slice(-limit);
   }
@@ -144,7 +151,7 @@ export class ReasoningChainTracker {
   /**
    * Find a specific step by number
    */
-  getStep(stepNumber: number): ReasoningStep | null {
+  getStep(stepNumber: number): IReasoningStep | null {
     const step = this.steps.find((s) => s.stepNumber === stepNumber);
     return step || null;
   }
@@ -152,7 +159,7 @@ export class ReasoningChainTracker {
   /**
    * Get all error recoveries
    */
-  getErrorRecoveries(): ErrorRecovery[] {
+  getErrorRecoveries(): IErrorRecovery[] {
     return Array.from(this.errorRecoveries.values());
   }
 
@@ -168,7 +175,7 @@ export class ReasoningChainTracker {
   /**
    * Generate comprehensive reasoning report
    */
-  generateReport(): ReasoningReport {
+  generateReport(): IReasoningReport {
     const recoveries = Array.from(this.errorRecoveries.values());
     const successfulRecoveries = recoveries.filter((r) => r.recovered).length;
     const failedRecoveries = recoveries.length - successfulRecoveries;
@@ -178,7 +185,7 @@ export class ReasoningChainTracker {
 
     // Extract key decisions
     const keyDecisions = this.steps
-      .filter((s) => s.type === 'decision' && s.selectedChoice)
+      .filter((s) => s.type === StepType.DECISION && s.selectedChoice)
       .map((s) => `${s.selectedChoice?.description}`)
       .filter((d) => d);
 
@@ -188,12 +195,12 @@ export class ReasoningChainTracker {
     if (averageConfidence < 0.6) riskScore += 1;
     if (recoveries.length > 2) riskScore += 1;
 
-    const riskAssessment: 'low' | 'medium' | 'high' =
-      riskScore === 0 ? 'low' : riskScore === 1 ? 'medium' : 'high';
+    const riskAssessment: ComplexityTier =
+      riskScore === 0 ? ComplexityTier.LOW : riskScore === 1 ? ComplexityTier.MEDIUM : ComplexityTier.HIGH;
 
     return {
       totalSteps: this.steps.length,
-      successfulSteps: this.steps.filter((s) => s.type !== 'error-recovery').length,
+      successfulSteps: this.steps.filter((s) => s.type !== StepType.ERROR_RECOVERY).length,
       recoveries,
       averageConfidence,
       totalDuration,
@@ -214,7 +221,7 @@ export class ReasoningChainTracker {
     lines.push(`Successful: ${report.successfulSteps}/${report.totalSteps}`);
     lines.push(`Average Confidence: ${(report.averageConfidence * 100).toFixed(1)}%`);
     lines.push(`Duration: ${(report.totalDuration / 1000).toFixed(2)}s`);
-    lines.push(`Risk Assessment: ${report.riskAssessment.toUpperCase()}`);
+    lines.push(`Risk Assessment: ${report.riskAssessment.value.toUpperCase()}`);
 
     if (report.keyDecisions.length > 0) {
       lines.push('\nKey Decisions:');
@@ -240,7 +247,7 @@ export class ReasoningChainTracker {
   /**
    * Get recent steps with context
    */
-  getContextWindow(windowSize: number = 10): ReasoningStep[] {
+  getContextWindow(windowSize: number = 10): IReasoningStep[] {
     const start = Math.max(0, this.steps.length - windowSize);
     return this.steps.slice(start);
   }
@@ -248,15 +255,15 @@ export class ReasoningChainTracker {
   /**
    * Find steps by type
    */
-  getStepsByType(type: StepType): ReasoningStep[] {
+  getStepsByType(type: StepType): IReasoningStep[] {
     return this.steps.filter((s) => s.type === type);
   }
 
   /**
    * Get decision points with alternatives
    */
-  getDecisionPoints(): ReasoningStep[] {
-    return this.steps.filter((s) => s.type === 'decision' && s.alternatives && s.alternatives.length > 0);
+  getDecisionPoints(): IReasoningStep[] {
+    return this.steps.filter((s) => s.type === StepType.DECISION && s.alternatives && s.alternatives.length > 0);
   }
 
   /**

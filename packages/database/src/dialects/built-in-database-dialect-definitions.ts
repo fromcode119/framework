@@ -1,10 +1,10 @@
-import type { DatabaseDialectDefinition } from './database-dialect-definition.interfaces';
-import { MysqlDatabaseDialect } from './mysql/database-dialect';
-import { PostgresDatabaseDialect } from './postgres-database-dialect';
-import { SqliteDatabaseDialect } from './sqlite-database-dialect';
+import type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
+import { MysqlDatabaseDialect } from '@database/dialects/mysql/database-dialect';
+import { PostgresDatabaseDialect } from '@database/dialects/postgres/database-dialect';
+import { SqliteDatabaseDialect } from '@database/dialects/sqlite/database-dialect';
 
 export class BuiltInDatabaseDialectDefinitions {
-  static load(): DatabaseDialectDefinition[] {
+  static load(): IDatabaseDialectDefinition[] {
     return [
       new SqliteDatabaseDialect(),
       new PostgresDatabaseDialect(),

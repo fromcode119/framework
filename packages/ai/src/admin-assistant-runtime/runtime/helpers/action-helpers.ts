@@ -1,7 +1,8 @@
-import type { AssistantAction } from '../../types';
-import { RuntimeUtils } from '../types';
-import type { RuntimeRetrievalResult } from '../types.types';
-import { TextHelpers } from './text-helpers';
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import type { IRuntimeRetrievalResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-retrieval-result.interface';
+import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
 
 /**
  * Action building utilities for AI runtime
@@ -59,7 +60,7 @@ export class ActionHelpers {
    * const grouped = ActionHelpers.collectMatchesByTool(retrieval);
    * const contentMatches = grouped.get('content.search_text') || [];
    */
-  static collectMatchesByTool(retrieval: RuntimeRetrievalResult): Map<string, any[]> {
+  static collectMatchesByTool(retrieval: IRuntimeRetrievalResult): Map<string, any[]> {
     const grouped = new Map<string, any[]>();
     for (const item of retrieval.results) {
       const matches = RuntimeUtils.listMatchesFromToolOutput(item.output || {});
@@ -81,8 +82,8 @@ export class ActionHelpers {
    * const actions = ActionHelpers.stageContentUpdates(matches, 'old', 'new');
    * // => [{ type: 'mcp_call', tool: 'content.update', ... }]
    */
-  static stageContentUpdates(matches: any[], from: string, to: string): AssistantAction[] {
-    const actions: AssistantAction[] = [];
+  static stageContentUpdates(matches: any[], from: string, to: string): IAssistantAction[] {
+    const actions: IAssistantAction[] = [];
     const seen = new Set<string>();
     for (const match of matches) {
       const collectionSlug = String((match as any)?.collectionSlug || '').trim();
@@ -96,7 +97,7 @@ export class ActionHelpers {
       if (seen.has(dedupeKey)) continue;
       seen.add(dedupeKey);
       actions.push({
-        type: 'mcp_call',
+        type: AssistantActionType.MCP_CALL,
         tool: 'content.update',
         input: {
           collectionSlug,
@@ -124,12 +125,12 @@ export class ActionHelpers {
    * const actions = ActionHelpers.stageConfigUpdates('plugins.settings.update', matches, 'old', 'new');
    */
   static stageConfigUpdates(
-    tool: 'plugins.settings.update' | 'themes.config.update',
+    tool: string,
     matches: any[],
     from: string,
     to: string,
-  ): AssistantAction[] {
-    const actions: AssistantAction[] = [];
+  ): IAssistantAction[] {
+    const actions: IAssistantAction[] = [];
     const grouped = new Map<string, Record<string, any>>();
     for (const match of matches) {
       const slug = String((match as any)?.slug || '').trim();
@@ -145,7 +146,7 @@ export class ActionHelpers {
 
     for (const [slug, data] of grouped.entries()) {
       actions.push({
-        type: 'mcp_call',
+        type: AssistantActionType.MCP_CALL,
         tool,
         input: { slug, data, merge: true },
         reason: `Replace "${from}" with "${to}" in ${slug} configuration`,
@@ -168,12 +169,12 @@ export class ActionHelpers {
    * const actions = ActionHelpers.stageFileUpdates('themes.files.replace_text', matches, 'old', 'new');
    */
   static stageFileUpdates(
-    tool: 'plugins.files.replace_text' | 'themes.files.replace_text',
+    tool: string,
     matches: any[],
     from: string,
     to: string,
-  ): AssistantAction[] {
-    const actions: AssistantAction[] = [];
+  ): IAssistantAction[] {
+    const actions: IAssistantAction[] = [];
     const seen = new Set<string>();
     for (const match of matches) {
       const slug = String((match as any)?.slug || '').trim();
@@ -187,7 +188,7 @@ export class ActionHelpers {
       if (seen.has(key)) continue;
       seen.add(key);
       actions.push({
-        type: 'mcp_call',
+        type: AssistantActionType.MCP_CALL,
         tool,
         input: {
           slug: slug || undefined,

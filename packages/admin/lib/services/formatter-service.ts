@@ -1,5 +1,5 @@
-import { BaseService } from './base-service';
-import { TimezoneUtils } from '../timezone';
+import { BaseService } from '@/lib/services/base-service';
+import { TimezoneUtils } from '@/lib/timezone';
 
 /**
  * Service for formatting values into human-readable strings.

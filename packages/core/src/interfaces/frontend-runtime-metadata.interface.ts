@@ -1,0 +1,10 @@
+export interface IFrontendRuntimeMetadata {
+  activeTheme: any;
+  themeLayouts: Record<string, any>;
+  themeStyleVariants: Record<string, any>;
+  themeVariables: Record<string, string>;
+  settings: Record<string, any>;
+  menuItems: any[];
+  collections: any[];
+  plugins: any[];
+}

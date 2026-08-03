@@ -1,6 +1,5 @@
 import { AppPathConstants } from '@fromcode119/core/client';
-import type { AppearanceSurfaces } from './admin-appearance-manifest.interfaces';
-
+import type { IAppearanceSurfaces } from '@/lib/appearance/interfaces/appearance-surfaces.interface';
 /**
  * Decides whether a given admin path is exposed by an appearance's surface allowlist.
  *
@@ -17,7 +16,7 @@ export class AppearanceSurfacePolicy {
    */
   private static readonly ALWAYS_ALLOWED: readonly string[] = [AppPathConstants.ADMIN.SETTINGS.APPEARANCE];
 
-  static isPathAllowed(surfaces: AppearanceSurfaces | undefined, path: string): boolean {
+  static isPathAllowed(surfaces: IAppearanceSurfaces | undefined, path: string): boolean {
     if (!surfaces) return true;
     const p = AppearanceSurfacePolicy.normalize(path);
     if (p === '/') return true;

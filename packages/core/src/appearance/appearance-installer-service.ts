@@ -1,10 +1,10 @@
 import path from 'path';
 import fs from 'fs';
-import { Logger } from '../logging';
-import { BackupService } from '../management/backup-service';
-import { SafeArchive } from '../security/safe-archive';
+import { Logger } from '@core/logging';
+import { BackupService } from '@core/management/backup-service';
+import { SafeArchive } from '@core/security/safe-archive';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
-import type { AppearanceManifest } from './appearance-manifest.interfaces';
+import type { IAppearanceManifest } from '@core/appearance/interfaces/appearance-manifest.interface';
 
 /**
  * Installs an admin appearance package (marketplace download or uploaded zip) into the appearances
@@ -19,7 +19,7 @@ export class AppearanceInstallerService {
     private readonly client: MarketplaceClient,
   ) {}
 
-  async installAppearance(pkg: { slug: string; downloadUrl: string }): Promise<AppearanceManifest> {
+  async installAppearance(pkg: { slug: string; downloadUrl: string }): Promise<IAppearanceManifest> {
     const slug = String(pkg?.slug || '').trim();
     if (!slug) throw new Error('Appearance install requires a slug.');
     const downloadUrl = this.client.resolveDownloadUrl(pkg.downloadUrl);
@@ -34,7 +34,7 @@ export class AppearanceInstallerService {
     }
   }
 
-  async installFromUrl(url: string): Promise<AppearanceManifest> {
+  async installFromUrl(url: string): Promise<IAppearanceManifest> {
     const trimmed = String(url || '').trim();
     if (!trimmed) throw new Error('Appearance install requires a URL.');
     this.logger.info(`Installing appearance from URL ${trimmed}...`);
@@ -48,7 +48,7 @@ export class AppearanceInstallerService {
     }
   }
 
-  async installFromZip(filePath: string): Promise<AppearanceManifest> {
+  async installFromZip(filePath: string): Promise<IAppearanceManifest> {
     const tempDir = path.join(path.dirname(filePath), `appearance-ext-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
@@ -65,10 +65,10 @@ export class AppearanceInstallerService {
     }
   }
 
-  private finalize(extractedDir: string, expectedSlug: string): AppearanceManifest {
+  private finalize(extractedDir: string, expectedSlug: string): IAppearanceManifest {
     const contentDir = this.findManifestDir(extractedDir);
     if (!contentDir) throw new Error('Invalid appearance: appearance.json not found in the archive.');
-    const manifest: AppearanceManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'appearance.json'), 'utf8'));
+    const manifest: IAppearanceManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'appearance.json'), 'utf8'));
     const slug = String(manifest?.slug || expectedSlug || '').trim();
     if (!slug) throw new Error('Invalid appearance: missing "slug" in appearance.json.');
     const targetDir = path.join(this.appearancesRoot, slug);

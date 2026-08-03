@@ -48,6 +48,10 @@ COPY packages/plugins/package.json ./packages/plugins/
 COPY packages/react/package.json ./packages/react/
 COPY packages/scheduler/package.json ./packages/scheduler/
 COPY packages/sdk/package.json ./packages/sdk/
+COPY packages/reactor/package.json ./packages/reactor/
+COPY packages/nextor/package.json ./packages/nextor/
+COPY packages/typor/package.json ./packages/typor/
+COPY packages/archor/package.json ./packages/archor/
 
 # Install dependencies
 RUN npm install --no-audit
@@ -83,9 +87,29 @@ RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode1
 # Output written to file then replayed so errors appear at the END of the layer
 # log (Coolify log viewer only shows the tail of each step's output).
 
+# Step 0: Build the reactor package FIRST of all — core (LocaleSwitcher etc.), react (PluginComponent),
+# the AI extension, and admin (AdminComponent) all `extends Reactor`, so its built type declarations must
+# exist before ANY project (including the api graph, which compiles core) is compiled.
+RUN npm run build --workspace=@fromcode119/reactor > /tmp/build-reactor.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-reactor.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:reactor FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:reactor OK ==="
+
+# Step 0b: Build the nextor package — its build-time esbuild plugins (UseClientPlugin) are consumed by the
+# ai package's post-build `nextor stamp-client`, which uses nextor's ClientDirectiveStamper
+# directly. It must be compiled before the ai build (Step 4) runs.
+RUN npm run build --workspace=@fromcode119/typor > /tmp/build-typor.log 2>&1; ec=$?; \
+    tail -40 /tmp/build-typor.log; \
+    [ $ec -ne 0 ] && echo "=== build:typor FAILED ===" && exit $ec; \
+    echo "=== build:typor OK ==="
+RUN npm run build --workspace=@fromcode119/nextor > /tmp/build-nextor.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-nextor.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:nextor FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:nextor OK ==="
+
 # Step 1: Build API runtime project graph only.
 # This avoids compiling UI-only transitive packages via shared SDK aliases.
-RUN ./node_modules/.bin/tsc -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
+RUN node packages/typor/dist/typor-cli.cjs build -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
     cat /tmp/tsc-api.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:api FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:api OK ==="
@@ -97,7 +121,7 @@ RUN npm run copy:templates --workspace=@fromcode119/api > /tmp/copy-templates.lo
     [ $ec -ne 0 ] && echo "=== copy:templates FAILED (exit $ec) ===" && exit $ec; \
     echo "=== copy:templates OK ==="
 
-# Step 2: Build React package FIRST — the SDK (and AI extension) consume its built type
+# Step 2: Build React package — the SDK (and AI extension) consume its built type
 # declarations (e.g. PluginContextRegistry), so react must be compiled before sdk.
 RUN npm run build --workspace=@fromcode119/react > /tmp/build-react.log 2>&1; ec=$?; \
     tail -80 /tmp/build-react.log; \
@@ -155,10 +179,10 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:
 # ===================================
 # MODE 3B: Single-Domain Gateway
 # ===================================
-FROM base AS gateway-only
+FROM builder AS gateway-only
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=gateway
-CMD ["./node_modules/.bin/tsx", "scripts/single-domain-gateway.ts"]
+CMD ["./node_modules/.bin/tsx", "packages/cli/src/bin.ts", "system", "gateway"]
 
 # ===================================
 # MODE 4: Frontend Only (Edge deployment)

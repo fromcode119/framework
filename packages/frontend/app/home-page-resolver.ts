@@ -4,11 +4,12 @@ import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
 import { ServerApiUtils } from '@/lib/server-api';
 import { QueryParamUtils } from '@/lib/query-param-utils';
-import type { ResolvedDocResult } from '@/lib/dynamic-page-resolver.types';
-import type { HomeTargetResolution, LocaleUrlStrategy, MaybePromise, SearchParams } from './home-page.types';
+import { IResolvedDocResult } from '@/lib/interfaces/resolved-doc-result.interface';
+import { IHomeTargetResolution } from '@/app/interfaces/home-target-resolution.interface';
+import { LocaleUrlStrategy } from '@fromcode119/core/client';
 
 export class HomePageResolver {
-  static async resolve(searchParams?: MaybePromise<SearchParams>): Promise<HomeTargetResolution> {
+  static async resolve(searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>)): Promise<IHomeTargetResolution> {
     const resolvedSearchParams = await QueryParamUtils.resolveSearchParams(searchParams);
     const localeStrategy = await this.getLocaleUrlStrategy();
     const locale = await this.resolveLocale(resolvedSearchParams, localeStrategy);
@@ -23,13 +24,10 @@ export class HomePageResolver {
 
   private static async getLocaleUrlStrategy(): Promise<LocaleUrlStrategy> {
     const value = (await this.readSettingValue('locale_url_strategy')).toLowerCase();
-    if (value === 'path' || value === 'none') {
-      return value;
-    }
-    return 'query';
+    return LocaleUrlStrategy.resolve(value);
   }
 
-  private static async resolveLocale(searchParams: SearchParams | undefined, strategy: LocaleUrlStrategy): Promise<string> {
+  private static async resolveLocale(searchParams: Record<string, string | string[] | undefined> | undefined, strategy: LocaleUrlStrategy): Promise<string> {
     return FrontendLocaleService.resolveLocale(searchParams, '', strategy);
   }
 
@@ -38,7 +36,7 @@ export class HomePageResolver {
     return result?.doc || null;
   }
 
-  static async resolveBySlugResult(slug: string, locale: string, fallbackLocale: string): Promise<ResolvedDocResult | null> {
+  static async resolveBySlugResult(slug: string, locale: string, fallbackLocale: string): Promise<IResolvedDocResult | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
     if (locale) {
@@ -56,7 +54,7 @@ export class HomePageResolver {
     };
   }
 
-  private static isHomeCandidate(result: ResolvedDocResult | null): boolean {
+  private static isHomeCandidate(result: IResolvedDocResult | null): boolean {
     if (!result?.doc) {
       return false;
     }
@@ -69,7 +67,7 @@ export class HomePageResolver {
     );
   }
 
-  private static async resolveHomeTarget(locale: string, fallbackLocale: string): Promise<HomeTargetResolution> {
+  private static async resolveHomeTarget(locale: string, fallbackLocale: string): Promise<IHomeTargetResolution> {
     const target = (await this.readSettingValue('routing_home_target')) || 'auto';
 
     if (target.startsWith('layout:')) {

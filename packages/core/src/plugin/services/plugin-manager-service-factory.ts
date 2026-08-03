@@ -1,25 +1,25 @@
-import { ProjectPaths } from '../../config/paths';
-import { MarketplaceCatalogService } from '../../marketplace/marketplace-catalog-service';
-import { CoreExtensionManager } from '../../extensions/extension-manager';
-import { MigrationManager } from '../../database/migration-manager';
-import { MigrationCoordinator } from '../../management/migration-coordinator';
-import { RuntimeService } from './runtime-service';
-import { PluginStateService } from './plugin-state-service';
-import { DiscoveryService } from './discovery-service';
-import { AdminMetadataService } from './admin-metadata-service';
-import { LifecycleService } from './lifecycle-service';
-import { WorkflowService } from './workflow-service';
-import { PluginTelemetryService } from './plugin-telemetry-service';
-import { PluginScaffoldService } from './plugin-scaffold-service';
-import { PluginAdminRuntimeService } from './plugin-admin-runtime-service';
-import { PluginInstallationService } from './plugin-installation-service';
-import { PluginRuntimeStateService } from './plugin-runtime-state-service';
-import { PluginRuntimeRestartService } from './plugin-runtime-restart-service';
-import { PluginManagerInitService } from './plugin-manager-init-service';
-import { PluginDiscoveryCoordinatorService } from './plugin-discovery-coordinator-service';
-import { PluginManagerShutdownService } from './plugin-manager-shutdown-service';
-import { PluginExtensionArchiveInstaller } from './plugin-extension-archive-installer';
-import type { PluginManagerServiceBundle } from './plugin-manager-service-factory.interfaces';
+import { ProjectPaths } from '@core/config/paths';
+import { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';
+import { CoreExtensionManager } from '@core/extensions/extension-manager';
+import { MigrationManager } from '@core/database/migration-manager';
+import { MigrationCoordinator } from '@core/management/migration-coordinator';
+import { RuntimeService } from '@core/plugin/services/runtime-service';
+import { PluginStateService } from '@core/plugin/services/plugin-state-service';
+import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { AdminMetadataService } from '@core/plugin/services/admin-metadata-service';
+import { LifecycleService } from '@core/plugin/services/lifecycle-service';
+import { WorkflowService } from '@core/plugin/services/workflow-service';
+import { PluginTelemetryService } from '@core/plugin/services/plugin-telemetry-service';
+import { PluginScaffoldService } from '@core/plugin/services/plugin-scaffold-service';
+import { PluginAdminRuntimeService } from '@core/plugin/services/plugin-admin-runtime-service';
+import { PluginInstallationService } from '@core/plugin/services/plugin-installation-service';
+import { PluginRuntimeStateService } from '@core/plugin/services/plugin-runtime-state-service';
+import { PluginRuntimeRestartService } from '@core/plugin/services/plugin-runtime-restart-service';
+import { PluginManagerInitService } from '@core/plugin/services/plugin-manager-init-service';
+import { PluginDiscoveryCoordinatorService } from '@core/plugin/services/plugin-discovery-coordinator-service';
+import { PluginManagerShutdownService } from '@core/plugin/services/plugin-manager-shutdown-service';
+import { PluginExtensionArchiveInstaller } from '@core/plugin/services/plugin-extension-archive-installer';
+import type { IPluginManagerServiceBundle } from '@core/plugin/services/interfaces/plugin-manager-service-bundle.interface';
 
 /**
  * PluginManagerServiceFactory
@@ -37,7 +37,7 @@ export class PluginManagerServiceFactory {
       coordinator: MigrationCoordinator;
       workflow: WorkflowService;
     },
-  ): PluginManagerServiceBundle {
+  ): IPluginManagerServiceBundle {
     const runtime = new RuntimeService(manager.projectRoot);
     const registry = new PluginStateService(manager.db);
     const discovery = new DiscoveryService(manager.pluginsRoot, manager.projectRoot);

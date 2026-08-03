@@ -1,33 +1,31 @@
-import { IntegrationsPageUtils } from './IntegrationsPageUtils';
-import type {
-  IntegrationConfigField,
-  IntegrationProvider,
-  IntegrationRecord,
-  ProviderEditorState,
-  StoredProvider,
-} from './integrations-settings-page-client.interfaces';
-
+import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
+import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-page-utils';
+import type { IIntegrationConfigField } from '@/app/settings/integrations/interfaces/integration-config-field.interface';
+import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
+import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
+import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
+import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
 /**
  * Pure helpers for the integrations provider editor: validation, payload
  * building, next-selection resolution, and editor-state construction.
  */
 export class IntegrationProviderFormHelper {
-  static validate(fields: IntegrationConfigField[], editor: ProviderEditorState): string[] {
+  static validate(fields: IIntegrationConfigField[], editor: IProviderEditorState): string[] {
     const errors: string[] = [];
     for (const field of fields) {
       const value = editor.config?.[field.name];
-      const hasSavedSecret = field.type === 'password' && editor.preservedSecretFields?.[field.name] === true;
+      const hasSavedSecret = field.type === IntegrationFieldType.PASSWORD && editor.preservedSecretFields?.[field.name] === true;
       if (field.required && IntegrationsPageUtils.isBlank(value) && !hasSavedSecret) {
         errors.push(`${field.label} is required.`);
       }
-      if (field.type === 'number' && !IntegrationsPageUtils.isBlank(value) && Number.isNaN(Number(value))) {
+      if (field.type === IntegrationFieldType.NUMBER && !IntegrationsPageUtils.isBlank(value) && Number.isNaN(Number(value))) {
         errors.push(`${field.label} must be a valid number.`);
       }
     }
     return errors;
   }
 
-  static buildSavePayload(providerDefinition: IntegrationProvider, editor: ProviderEditorState): Record<string, any> {
+  static buildSavePayload(providerDefinition: IIntegrationProvider, editor: IProviderEditorState): Record<string, any> {
     const payload: Record<string, any> = {
       provider: editor.providerKey,
       config: IntegrationsPageUtils.copyConfigForFields(providerDefinition.fields || [], editor.config || {}),
@@ -38,7 +36,7 @@ export class IntegrationProviderFormHelper {
     return payload;
   }
 
-  static resolveNextProviderId(updated: IntegrationRecord, editor: ProviderEditorState): string {
+  static resolveNextProviderId(updated: IIntegrationRecord, editor: IProviderEditorState): string {
     const updatedProviders = updated.storedProviders || [];
     let nextProviderId = '';
 
@@ -66,9 +64,9 @@ export class IntegrationProviderFormHelper {
   }
 
   static buildEditorForProvider(
-    selected: StoredProvider,
-    providerDefinition: IntegrationProvider | null,
-  ): ProviderEditorState {
+    selected: IStoredProvider,
+    providerDefinition: IIntegrationProvider | null,
+  ): IProviderEditorState {
     return {
       isNew: false,
       providerId: selected.id,
@@ -80,8 +78,8 @@ export class IntegrationProviderFormHelper {
     };
   }
 
-  static extractUpdatedIntegration(response: any): IntegrationRecord {
-    const updatedIntegration = response?.integration as IntegrationRecord;
+  static extractUpdatedIntegration(response: any): IIntegrationRecord {
+    const updatedIntegration = response?.integration as IIntegrationRecord;
     if (!updatedIntegration?.key) {
       throw new Error('Integration update returned an invalid response.');
     }

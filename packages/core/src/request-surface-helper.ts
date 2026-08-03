@@ -1,4 +1,4 @@
-import { ApiVersionUtils } from './api-version';
+import { ApiVersionUtils } from '@core/api-version';
 
 /**
  * Internal helpers for {@link RequestSurfaceUtils} — header/path normalization and

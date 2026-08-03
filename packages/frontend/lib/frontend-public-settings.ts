@@ -1,5 +1,6 @@
 import { cache } from 'react';
-import { FrontendConfigCache } from './frontend-config-cache';
+
+import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 
 export class FrontendPublicSettings {
   private static readonly settingsMapCache = cache(async (): Promise<Map<string, string>> => {

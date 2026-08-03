@@ -1,15 +1,21 @@
+import { TaskProgress } from '@ai/api/forge/enums/task-progress.enum';
+import { TaskStatus } from '@ai/api/forge/enums/task-status.enum';
 /**
  * Planning Engine
  * 
  * Decomposes complex tasks into structured plans with checkpoints and dependencies.
  */
 
-import type { Subtask, Checkpoint, TaskPlan, ExecutionResult, PlanStatusSummary } from './planning-engine.interfaces';
-import { PlanReporter } from './plan-reporter';
+import type { ISubtask } from '@ai/api/forge/interfaces/subtask.interface';
+import type { ICheckpoint } from '@ai/api/forge/interfaces/checkpoint.interface';
+import type { ITaskPlan } from '@ai/api/forge/interfaces/task-plan.interface';
+import type { IExecutionResult } from '@ai/api/forge/interfaces/execution-result.interface';
+import type { IPlanStatusSummary } from '@ai/api/forge/interfaces/plan-status-summary.interface';
+import { PlanReporter } from '@ai/api/forge/plan-reporter';
 
 export class PlanningEngine {
-  private plans: Map<string, TaskPlan> = new Map();
-  private completionCallbacks: Map<string, (result: ExecutionResult) => void> = new Map();
+  private plans: Map<string, ITaskPlan> = new Map();
+  private completionCallbacks: Map<string, (result: IExecutionResult) => void> = new Map();
 
   /**
    * Generate a structured plan for a complex goal
@@ -17,12 +23,12 @@ export class PlanningEngine {
   generatePlan(
     goal: string,
     context: { availableTools: string[]; systemState: Record<string, any> }
-  ): TaskPlan {
+  ): ITaskPlan {
     const planId = `plan_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     // This would be enhanced by AI to actually decompose tasks,
     // but here's the structure:
-    const plan: TaskPlan = {
+    const plan: ITaskPlan = {
       id: planId,
       goalStatement: goal,
       subtasks: [],
@@ -30,7 +36,7 @@ export class PlanningEngine {
       checkpoints: [],
       createdAt: Date.now(),
       estimatedTotalDuration: 0,
-      status: 'not-started',
+      status: TaskProgress.NOT_STARTED,
     };
 
     this.plans.set(planId, plan);
@@ -49,17 +55,17 @@ export class PlanningEngine {
     priority: number = 5,
     estimatedDuration?: number,
     parentTaskId?: string
-  ): Subtask {
+  ): ISubtask {
     const plan = this.plans.get(planId);
     if (!plan) throw new Error(`Plan not found: ${planId}`);
 
-    const subtask: Subtask = {
+    const subtask: ISubtask = {
       id: `task_${planId}_${plan.subtasks.length}`,
       title,
       description,
       requiredTools,
       expectedOutput,
-      status: 'pending',
+      status: TaskStatus.PENDING,
       priority,
       estimatedDuration,
       parentTaskId,
@@ -97,11 +103,11 @@ export class PlanningEngine {
     afterSubtaskId: string,
     verificationCriteria: string,
     state: Record<string, any>
-  ): Checkpoint {
+  ): ICheckpoint {
     const plan = this.plans.get(planId);
     if (!plan) throw new Error(`Plan not found: ${planId}`);
 
-    const checkpoint: Checkpoint = {
+    const checkpoint: ICheckpoint = {
       id: `checkpoint_${planId}_${plan.checkpoints.length}`,
       title,
       afterSubtaskId,
@@ -118,21 +124,21 @@ export class PlanningEngine {
   /**
    * Get next executable subtask(s)
    */
-  getNextExecutableTasks(planId: string): Subtask[] {
+  getNextExecutableTasks(planId: string): ISubtask[] {
     const plan = this.plans.get(planId);
     if (!plan) throw new Error(`Plan not found: ${planId}`);
 
-    if (plan.status === 'completed' || plan.status === 'failed' || plan.status === 'abandoned') {
+    if (plan.status === TaskProgress.COMPLETED || plan.status === TaskProgress.FAILED || plan.status === 'abandoned') {
       return [];
     }
 
     const completedIds = new Set(
-      plan.subtasks.filter((t) => t.status === 'completed').map((t) => t.id)
+      plan.subtasks.filter((t) => t.status === TaskStatus.COMPLETED).map((t) => t.id)
     );
 
     const executable = plan.subtasks.filter((task) => {
       // Must be pending
-      if (task.status !== 'pending') return false;
+      if (task.status !== TaskStatus.PENDING) return false;
 
       // All dependencies must be completed
       const deps = plan.dependencies.filter((d) => d.to === task.id);
@@ -151,24 +157,24 @@ export class PlanningEngine {
     subtaskId: string,
     result: Record<string, any>,
     duration: number
-  ): ExecutionResult {
+  ): IExecutionResult {
     const plan = this.plans.get(planId);
     if (!plan) throw new Error(`Plan not found: ${planId}`);
 
     const task = plan.subtasks.find((t) => t.id === subtaskId);
     if (!task) throw new Error(`Subtask not found: ${subtaskId}`);
 
-    task.status = 'completed';
+    task.status = TaskStatus.COMPLETED;
     task.result = result;
     task.actualDuration = duration;
 
     // Check if all tasks are completed
-    if (plan.subtasks.every((t) => t.status === 'completed' || t.status === 'skipped')) {
-      plan.status = 'completed';
+    if (plan.subtasks.every((t) => t.status === TaskStatus.COMPLETED || t.status === TaskStatus.SKIPPED)) {
+      plan.status = TaskProgress.COMPLETED;
       plan.actualTotalDuration = Date.now() - plan.createdAt;
     }
 
-    const executionResult: ExecutionResult = {
+    const executionResult: IExecutionResult = {
       success: true,
       subtaskId,
       output: result,
@@ -185,7 +191,7 @@ export class PlanningEngine {
   /**
    * Mark subtask as failed
    */
-  failSubtask(planId: string, subtaskId: string, error: string, duration: number): ExecutionResult {
+  failSubtask(planId: string, subtaskId: string, error: string, duration: number): IExecutionResult {
     const plan = this.plans.get(planId);
     if (!plan) throw new Error(`Plan not found: ${planId}`);
 
@@ -196,16 +202,16 @@ export class PlanningEngine {
     task.retryCount = attempt;
 
     if (attempt >= (task.maxRetries || 3)) {
-      task.status = 'failed';
-      plan.status = 'failed';
+      task.status = TaskStatus.FAILED;
+      plan.status = TaskProgress.FAILED;
     } else {
-      task.status = 'pending'; // Retry
+      task.status = TaskStatus.PENDING; // Retry
     }
 
     task.error = error;
     task.actualDuration = duration;
 
-    const executionResult: ExecutionResult = {
+    const executionResult: IExecutionResult = {
       success: false,
       subtaskId,
       error,
@@ -236,7 +242,7 @@ export class PlanningEngine {
   /**
    * Get plan status
    */
-  getPlanStatus(planId: string): PlanStatusSummary {
+  getPlanStatus(planId: string): IPlanStatusSummary {
     const plan = this.plans.get(planId);
     if (!plan) throw new Error(`Plan not found: ${planId}`);
     return PlanReporter.getPlanStatus(plan);
@@ -245,7 +251,7 @@ export class PlanningEngine {
   /**
    * Get plan details
    */
-  getPlan(planId: string): TaskPlan | null {
+  getPlan(planId: string): ITaskPlan | null {
     return this.plans.get(planId) || null;
   }
 

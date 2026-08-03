@@ -1,9 +1,10 @@
-import { Collection } from '../types';
+import type { ICollection } from '@core/interfaces/collection.interface';
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '../logging';
-import { SystemConstants } from '../constants';
-import { EntitySchemaPlanService } from './entity-schema-plan-service';
-import type { EntitySchemaPlan } from './entity-schema-plan.interfaces';
+import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import { EntitySchemaPlanService } from '@core/database/entity-schema-plan-service';
+import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
+import type { IField } from '@core/interfaces/field.interface';
 
 export class SchemaManager {
   private logger = new Logger({ namespace: 'schema-manager' });
@@ -11,7 +12,7 @@ export class SchemaManager {
 
   constructor(private db: IDatabaseManager) {}
 
-  async syncCollection(collection: Collection): Promise<void> {
+  async syncCollection(collection: ICollection): Promise<void> {
     const tableName = collection.slug;
     if (!tableName) {
       throw new Error(
@@ -27,7 +28,9 @@ export class SchemaManager {
 
       if (!exists) {
         this.logger.info(`Creating table ${tableName}...`);
-        await this.db.createTable(collection);
+        // The database layer types field `type` as a plain string, so flatten the FieldType members
+        // to their bare values at this boundary rather than leaking enum instances into the dialects.
+        await this.db.createTable(SchemaManager.toSchemaCollection(collection));
       } else {
         await this.updateTable(plan);
       }
@@ -40,7 +43,7 @@ export class SchemaManager {
     }
   }
 
-  async planCollection(collection: Collection, tableExists?: boolean): Promise<EntitySchemaPlan> {
+  async planCollection(collection: ICollection, tableExists?: boolean): Promise<IEntitySchemaPlan> {
     const tableName = collection.slug;
     const exists = typeof tableExists === 'boolean'
       ? tableExists
@@ -50,14 +53,24 @@ export class SchemaManager {
     return this.entitySchemaPlan.buildPlan(collection, exists, existingColumnNames);
   }
 
-  private async updateTable(plan: EntitySchemaPlan): Promise<void> {
+  /** Flatten a collection's field types to bare strings for the database layer. */
+  private static toSchemaCollection(collection: ICollection): any {
+    return { ...collection, fields: (collection.fields || []).map((field) => SchemaManager.toSchemaField(field)) };
+  }
+
+  /** Flatten one field's `type` enum member to its bare string. */
+  private static toSchemaField(field: IField): any {
+    return { ...field, type: String(field.type) };
+  }
+
+  private async updateTable(plan: IEntitySchemaPlan): Promise<void> {
     for (const column of plan.missingColumns) {
       this.logger.info(`Adding column ${column.columnName} to ${plan.tableName}...`);
-      await this.db.addColumn(plan.tableName, column.field);
+      await this.db.addColumn(plan.tableName, SchemaManager.toSchemaField(column.field));
     }
   }
 
-  private warnUnsupportedIndexes(plan: EntitySchemaPlan): void {
+  private warnUnsupportedIndexes(plan: IEntitySchemaPlan): void {
     if (plan.unsupportedIndexes.length === 0) {
       return;
     }
@@ -68,7 +81,7 @@ export class SchemaManager {
     );
   }
 
-  private async persistSchemaFingerprint(plan: EntitySchemaPlan): Promise<void> {
+  private async persistSchemaFingerprint(plan: IEntitySchemaPlan): Promise<void> {
     const metaTableExists = await this.db.tableExists(SystemConstants.TABLE.META);
     if (!metaTableExists) {
       return;

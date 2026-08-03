@@ -1,17 +1,13 @@
-import React from 'react';
+import type { IBuildPageClientPropsArgs } from '@/components/collection/list/interfaces/build-page-client-props-args.interface';
+import { ReorderDirection } from '@/components/collection/list/enums/reorder-direction.enum';
+import type React from 'react';
 
-import { CollectionListPageActions } from './page-actions';
-import { CollectionListUtils } from './utils';
-import type { CollectionListPageViewModel } from './collection-list-page.interfaces';
-
-interface BuildPageClientPropsArgs {
-  pluginSlug: string;
-  slug: string;
-  state: CollectionListPageViewModel;
-}
+import { CollectionListPageActions } from '@/components/collection/list/page-actions';
+import { CollectionListUtils } from '@/components/collection/list/utils';
+import type { ICollectionListPageViewModel } from '@/components/collection/list/interfaces/collection-list-page-view-model.interface';
 
 export class CollectionListPageProps {
-  static build({ pluginSlug, slug, state }: BuildPageClientPropsArgs) {
+  static build({ pluginSlug, slug, state }: IBuildPageClientPropsArgs) {
     const {
       router, settings, theme, columnsMenuRef, collection, resolvedSlug, slotSlug,
       data, pluginSettings, total, loading, search, setSearch, page, setPage, sort, handleSort,
@@ -28,7 +24,7 @@ export class CollectionListPageProps {
         collection, slug, theme, search, setSearch, statusFilter, setStatusFilter, statusOptions, setPage,
         showColumnsMenu, setShowColumnsMenu, columnsMenuRef, allColumns, visibleColumnIds,
         toggleColumn: (columnId: string) => CollectionListPageActions.toggleColumn({ columnId, pluginSlug, resolvedSlug, setVisibleColumnIds }),
-        reorderColumn: (columnId: string, direction: 'up' | 'down') => CollectionListPageActions.reorderColumn({ columnId, direction, pluginSlug, resolvedSlug, setVisibleColumnIds }),
+        reorderColumn: (columnId: string, direction: ReorderDirection) => CollectionListPageActions.reorderColumn({ columnId, direction, pluginSlug, resolvedSlug, setVisibleColumnIds }),
         selectFilterFields, fieldFilters, setFieldFilters,
         prettifyColumnName: CollectionListUtils.prettifyColumnName
       },

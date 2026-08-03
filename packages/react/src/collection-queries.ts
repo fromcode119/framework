@@ -1,19 +1,18 @@
-import { CollectionListPathOptions, CollectionUtils } from '@fromcode119/core/client';
-import type { CollectionApiClient } from './collection-queries.interfaces';
-
+import { ICollectionListPathOptions, CollectionUtils } from '@fromcode119/core/client';
+import type { ICollectionApiClient } from '@react/interfaces/collection-api-client.interface';
 
 export class CollectionQueryUtils {
   static async queryCollectionDocs(
-    api: CollectionApiClient,
+    api: ICollectionApiClient,
     collectionSlug: string,
-    options: CollectionListPathOptions = {},
+    options: ICollectionListPathOptions = {},
   ): Promise<any[]> {
     const response = await api.get(CollectionUtils.listPath(collectionSlug, options));
     return CollectionUtils.extractDocs(response);
   }
 
   static async queryCollectionDocById(
-    api: CollectionApiClient,
+    api: ICollectionApiClient,
     collectionSlug: string,
     recordId: string | number,
   ): Promise<any> {
@@ -21,7 +20,7 @@ export class CollectionQueryUtils {
   }
 
   static async queryCollectionDocByField(
-    api: CollectionApiClient,
+    api: ICollectionApiClient,
     collectionSlug: string,
     field: string,
     value: string | number,

@@ -1,5 +1,5 @@
-import type { PhysicalTableReference } from './physical-table-name-utils.interfaces';
-import { NamingStrategy } from './naming-strategy';
+import type { IPhysicalTableReference } from '@database/interfaces/physical-table-reference.interface';
+import { NamingStrategy } from '@database/naming-strategy';
 
 export class PhysicalTableNameUtils {
   static readonly PLATFORM_PREFIX = 'fcp_' as const;
@@ -28,7 +28,7 @@ export class PhysicalTableNameUtils {
     return normalizedValue.startsWith(PhysicalTableNameUtils.PLATFORM_PREFIX);
   }
 
-  static parse(value: string): PhysicalTableReference | null {
+  static parse(value: string): IPhysicalTableReference | null {
     const rawValue = String(value || '').trim();
     if (!rawValue) {
       return null;
@@ -50,7 +50,7 @@ export class PhysicalTableNameUtils {
     return parsed?.semanticName || '';
   }
 
-  private static parseSemanticReference(value: string): PhysicalTableReference | null {
+  private static parseSemanticReference(value: string): IPhysicalTableReference | null {
     const parts = value.slice(1).split('/').filter(Boolean);
     if (parts.length < 2) {
       return null;
@@ -65,7 +65,7 @@ export class PhysicalTableNameUtils {
     return PhysicalTableNameUtils.createReference(pluginSlug, tableName);
   }
 
-  private static parsePhysicalName(value: string): PhysicalTableReference | null {
+  private static parsePhysicalName(value: string): IPhysicalTableReference | null {
     const withoutPrefix = value.slice(PhysicalTableNameUtils.PLATFORM_PREFIX.length);
     const separatorIndex = withoutPrefix.indexOf('_');
     if (separatorIndex <= 0 || separatorIndex >= withoutPrefix.length - 1) {
@@ -81,7 +81,7 @@ export class PhysicalTableNameUtils {
     return PhysicalTableNameUtils.createReference(pluginSlug, tableName);
   }
 
-  private static createReference(pluginSlug: string, tableName: string): PhysicalTableReference {
+  private static createReference(pluginSlug: string, tableName: string): IPhysicalTableReference {
     return {
       pluginSlug,
       tableName,

@@ -1,12 +1,12 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
  * In-app notification inbox — one row per (user, message). Written ONLY by the framework's
  * notifications context (notifyAdmins fan-out + notifyUser); plugins never touch this table
  * directly. `read_at` NULL = unread. Idempotent CREATE TABLE IF NOT EXISTS per dialect.
  */
-class SystemNotificationsMigration extends BaseMigration {
+export class SystemNotificationsMigration extends BaseMigration {
   readonly version = 11;
   readonly name = 'Create _system_notifications (in-app inbox)';
 
@@ -66,5 +66,3 @@ class SystemNotificationsMigration extends BaseMigration {
     });
   }
 }
-
-export default new SystemNotificationsMigration();

@@ -1,11 +1,11 @@
 {
   "name": "@fromcode119/cli",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "bin": {
     "fromcode": "dist/bin.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "node ../typor/dist/typor-cli.cjs build",
     "dev": "tsc -w",
     "test": "tsx --test src/site-transfer-bundle.test.ts"
   },

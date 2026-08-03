@@ -1,7 +1,7 @@
-import type { MarketplaceData } from './marketplace-client.interfaces';
-import { MarketplaceClientConstants } from './marketplace-client-constants';
-import { MarketplaceClientLogger } from './marketplace-client-logger';
-import { MarketplaceUrlService } from './marketplace-url-service';
+import type { IMarketplaceData } from '@marketplace-client/interfaces/marketplace-data.interface';
+import { MarketplaceClientConstants } from '@marketplace-client/constants/marketplace-client.constants';
+import { MarketplaceClientLogger } from '@marketplace-client/marketplace-client-logger';
+import { MarketplaceUrlService } from '@marketplace-client/marketplace-url-service';
 
 export class MarketplaceClient {
   private marketplaceUrl: string;
@@ -20,7 +20,7 @@ export class MarketplaceClient {
   /**
    * Fetch the full marketplace data
    */
-  public async fetch(): Promise<MarketplaceData> {
+  public async fetch(): Promise<IMarketplaceData> {
     if (this.disabled) {
       return { plugins: [], themes: [] };
     }
@@ -38,7 +38,7 @@ export class MarketplaceClient {
         if (!response.ok) {
           throw new Error(`Failed to fetch marketplace: ${response.statusText}`);
         }
-        return await response.json() as MarketplaceData;
+        return await response.json() as IMarketplaceData;
       }
 
       const fs = require('fs-extra');
@@ -47,7 +47,7 @@ export class MarketplaceClient {
       if (!fs.existsSync(localPath)) {
         throw new Error(`Local marketplace file not found: ${localPath}`);
       }
-      return await fs.readJson(localPath) as MarketplaceData;
+      return await fs.readJson(localPath) as IMarketplaceData;
     } catch (error: any) {
       MarketplaceClientLogger.error(`[MarketplaceClient] Failed to fetch marketplace: ${error.message}`);
       return { plugins: [], themes: [] };

@@ -1,15 +1,11 @@
-export { MarketplaceClient } from './marketplace-client';
-export { MarketplaceClientConstants } from './marketplace-client-constants';
-export { MarketplaceUrlService } from './marketplace-url-service';
-export type {
-  MarketplaceData,
-  MarketplacePlugin,
-  MarketplaceTheme,
-  MarketplaceAppearance,
-} from './marketplace-client.interfaces';
-export type {
-  MarketplaceChangelogEntry,
-  MarketplaceCoreInfo,
-  MarketplaceRating,
-  ScreenshotEntry,
-} from './marketplace-client.types';
+export { MarketplaceClient } from '@marketplace-client/marketplace-client';
+export { Screenshot } from '@marketplace-client/screenshot';
+export { MarketplaceClientConstants } from '@marketplace-client/constants/marketplace-client.constants';
+export { MarketplaceUrlService } from '@marketplace-client/marketplace-url-service';
+export type { IMarketplaceData } from '@marketplace-client/interfaces/marketplace-data.interface';
+export { MarketplacePlugin } from '@marketplace-client/marketplace-plugin';
+export type { IMarketplaceTheme } from '@marketplace-client/interfaces/marketplace-theme.interface';
+export type { IMarketplaceAppearance } from '@marketplace-client/interfaces/marketplace-appearance.interface';
+export { IMarketplaceChangelogEntry } from '@marketplace-client/interfaces/marketplace-changelog-entry.interface';
+export { IMarketplaceCoreInfo } from '@marketplace-client/interfaces/marketplace-core-info.interface';
+export { IMarketplaceRating } from '@marketplace-client/interfaces/marketplace-rating.interface';

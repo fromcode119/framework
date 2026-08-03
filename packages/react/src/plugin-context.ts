@@ -1,5 +1,5 @@
-import { createContext } from 'react';
-import type { PluginContextValue } from './context.interfaces';
+import { Context as ReactorContext } from '@fromcode119/reactor';
+import type { IPluginContextValue } from '@react/interfaces/plugin-context-value.interface';
 
 /**
  * Registry holding the React context for plugin context values.
@@ -7,5 +7,5 @@ import type { PluginContextValue } from './context.interfaces';
  * context-hooks.ts → context.tsx → system-shortcodes.ts → context-hooks.ts
  */
 export class PluginContextRegistry {
-  static readonly Context = createContext<PluginContextValue | null>(null);
+  static readonly Context = new ReactorContext<IPluginContextValue | null>(null).raw;
 }

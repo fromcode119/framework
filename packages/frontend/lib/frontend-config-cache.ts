@@ -1,5 +1,6 @@
 import { cache } from 'react';
-import { ServerApiUtils } from './server-api';
+
+import { ServerApiUtils } from '@/lib/server-api';
 
 /**
  * Per-request memoized `/system/frontend` payload (React `cache()`).

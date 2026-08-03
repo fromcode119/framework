@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { BackupOperationError } from './backup-operation-error';
+import { BackupOperationError } from '@core/management/backup-operation-error';
 
 export class ArchiveUploadSessionService {
   private static readonly DEFAULT_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;

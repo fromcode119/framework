@@ -1,4 +1,4 @@
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 

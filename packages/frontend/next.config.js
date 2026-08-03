@@ -4,11 +4,30 @@ const { NextConfigEnv } = require('../../config/next-config-env');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // `.client` is the client-boundary filename convention: a CLIENT route entry is `page.client.tsx` /
+  // `layout.client.tsx` (directive stamped in by scripts/stamp-client-src.mjs), a SERVER one stays `page.tsx`.
+  // Listing `client.tsx`/`client.ts` here makes Next recognize `page.client.tsx` as the route `page`, so no
+  // one-line re-export wrapper file is needed. A dir has EITHER page.tsx OR page.client.tsx, never both.
+  pageExtensions: ['client.tsx', 'client.ts', 'tsx', 'ts', 'jsx', 'js'],
   experimental: {},
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages
   // are replaced with no-op stubs via webpack aliases below, so no external resolution needed.
   transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk'],
   turbopack: {
+    // [nextor] Source declares ONLY `export class`. This loader generates, at BUILD time, the two
+    // things Next needs but a class cannot express: the exports it resolves routes by (GET/POST,
+    // default, generateMetadata, manifest) and the literal `'use client'` directive.
+    // See @fromcode119/nextor RouteExportPlugin + ClientDirectivePlugin.
+    rules: {
+      '**/{app,components,lib,hooks,src}/**/*.{ts,tsx}': {
+        loaders: [
+          require.resolve('@fromcode119/nextor/route-export-loader.cjs'),
+          // typor: multiple-inheritance `extends` -> Typor.mixin(...). Loaders run RIGHT-to-LEFT, so the
+          // syntax rewrite lands first and nextor then sees ordinary TypeScript.
+          require.resolve('@fromcode119/typor/typor-loader.cjs'),
+        ],
+      },
+    },
     resolveAlias: {
       '@fromcode119/react': '../react/src',
       '@fromcode119/react/*': '../react/src/*',
@@ -24,6 +43,19 @@ const nextConfig = {
     remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
   },
   webpack: (config, { dev, isServer }) => {
+    // [nextor + typor] Same build-time source contracts as the turbopack rules above. `next dev` runs
+    // with --webpack, so without this the dev server would never see the generated route exports and
+    // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
+    config.module.rules.unshift({
+      test: /[\\/](app|components|lib|hooks|src)[\\/].*\.(ts|tsx)$/,
+      exclude: /[\\/]node_modules[\\/]/,
+      use: [
+        { loader: require.resolve('@fromcode119/nextor/route-export-loader.cjs') },
+        // Loaders run RIGHT-to-LEFT: the typor syntax rewrite lands first.
+        { loader: require.resolve('@fromcode119/typor/typor-loader.cjs') },
+      ],
+    });
+
     // Force aliasing of @ to handle cases where the package is inside node_modules
     config.resolve.alias['@'] = path.resolve(__dirname);
 
@@ -118,13 +150,21 @@ const nextConfig = {
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {
+        // The live client bundle (`/fc-live/<slug>/<version>/live.js`) is content-addressed by the
+        // theme VERSION in its path — a theme update mints a new URL — so it is safe to cache
+        // immutably for a year, exactly like the hashed build chunks above. Without this rule the
+        // document-route rule below would clobber it down to `no-cache`.
+        source: '/fc-live/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
         // Override Next.js force-dynamic's `no-store` header to allow bfcache.
         // `private, no-cache` lets the browser use bfcache (back/forward navigation)
         // while still revalidating with the server on normal navigations.
-        // Scoped to exclude `/_next/static/*` so hashed assets keep the immutable
-        // rule above — HTML/data routes stay private/no-cache (they can contain
-        // user-gated content).
-        source: '/((?!_next/static/).*)',
+        // Scoped to exclude `/_next/static/*` and `/fc-live/*` so those hashed/versioned
+        // assets keep their immutable rule above — HTML/data routes stay private/no-cache
+        // (they can contain user-gated content).
+        source: '/((?!_next/static/|fc-live/).*)',
         headers: [{ key: 'Cache-Control', value: 'private, no-cache' }],
       },
     ];

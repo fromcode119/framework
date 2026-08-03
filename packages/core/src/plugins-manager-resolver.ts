@@ -1,9 +1,9 @@
-import type { PluginApiResolver } from './plugin-api-resolver.interfaces';
-import type { LoadedPlugin } from './types';
-import { PluginState } from './plugin/services/plugin-state.enums';
+import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
-export class PluginsManagerResolver implements PluginApiResolver {
-  constructor(private readonly plugins: Map<string, LoadedPlugin>) {}
+export class PluginsManagerResolver implements IPluginApiResolver {
+  constructor(private readonly plugins: Map<string, ILoadedPlugin>) {}
 
   has(namespace: string, slug: string): boolean {
     return this.resolve(namespace, slug) !== undefined;

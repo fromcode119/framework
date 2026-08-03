@@ -1,4 +1,4 @@
-import { RuntimeConstants } from '@fromcode119/core/client';
+import { RuntimeConstants, RuntimeRegistryAccess } from '@fromcode119/core/client';
 
 export class GlobalReadinessService {
   private static readonly MAX_POLLS = 100;
@@ -10,16 +10,17 @@ export class GlobalReadinessService {
   }
 
   static isReady(): boolean {
+    // Everything the admin needs lives under the ONE runtime registry — react, the lucide proxy, the
+    // framework bridge, and the admin module. No bare window.React / window.Fromcode / window.Lucide.
+    const registry = (window as any)?.[RuntimeConstants.GLOBALS.MODULES] || {};
     const mod = GlobalReadinessService.resolveAdminModule();
     return !!(
-      (window as any).FrameworkIcons &&
-      (window as any).React &&
-      (window as any).Lucide &&
-      (window as any).Fromcode &&
+      registry[RuntimeRegistryAccess.KEYS.REACT] &&
+      registry[RuntimeRegistryAccess.KEYS.LUCIDE] &&
+      registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] &&
       mod &&
       typeof mod.Select !== 'undefined' &&
-      document.getElementById('fc-runtime-import-map') &&
-      (window as any).__fromcodeRuntimeModules?.['@fromcode119/react']
+      document.getElementById('fc-runtime-import-map')
     );
   }
 

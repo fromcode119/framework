@@ -1,14 +1,8 @@
-import type { IDatabaseManager, ISchemaField, ISchemaCollection } from './types';
-import { TableResolver } from './table-resolver';
-
-const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
-
-function assertSafeIdentifier(value: string, kind: string): string {
-  if (typeof value !== 'string' || !IDENTIFIER_PATTERN.test(value)) {
-    throw new Error(`Refusing unsafe SQL identifier for ${kind}: ${String(value)}`);
-  }
-  return value;
-}
+import { SortDirection } from '@database/enums/sort-direction.enum';
+import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
+import type { ISchemaField } from '@database/interfaces/schema-field.interface';
+import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
+import { TableResolver } from '@database/table-resolver';
 
 /**
  * Abstract base class for plugin migrations.
@@ -38,6 +32,24 @@ function assertSafeIdentifier(value: string, kind: string): string {
  * ```
  */
 export abstract class BaseMigration {
+  private static readonly IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+  /**
+   * Gate an identifier that is about to be interpolated into SQL.
+   *
+   * The value comes from a PLUGIN's migration, i.e. untrusted input at a SQL boundary — this is a
+   * validation gate, not a defensive check against a framework contract. `instanceof`/`typeof` would
+   * not do: `IDENTIFIER_PATTERN.test(null)` coerces to the string `'null'`, which MATCHES the pattern,
+   * so a non-string must be rejected before the regex runs.
+   */
+  protected static assertSafeIdentifier(value: string, kind: string): string {
+    const isString = Object.prototype.toString.call(value) === '[object String]';
+    if (!isString || !BaseMigration.IDENTIFIER_PATTERN.test(value)) {
+      throw new Error(`Refusing unsafe SQL identifier for ${kind}: ${String(value)}`);
+    }
+    return value;
+  }
+
   /** Monotonically increasing integer that determines execution order. */
   abstract readonly version: number;
 
@@ -139,17 +151,17 @@ export abstract class BaseMigration {
     db: IDatabaseManager,
     tableName: string,
     indexName: string,
-    columns: Array<string | { name: string; order?: 'ASC' | 'DESC' }>,
+    columns: Array<string | { name: string; order?: SortDirection }>,
     options?: { unique?: boolean },
   ): Promise<void> {
-    const table = assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
-    assertSafeIdentifier(indexName, 'index');
+    const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
+    BaseMigration.assertSafeIdentifier(indexName, 'index');
     const unique = options?.unique ? 'UNIQUE ' : '';
     const cols = columns
       .map((c) => {
-        if (typeof c === 'string') return `"${assertSafeIdentifier(c, 'column')}"`;
-        const colName = assertSafeIdentifier(c.name, 'column');
-        return c.order === 'ASC' || c.order === 'DESC' ? `"${colName}" ${c.order}` : `"${colName}"`;
+        if (typeof c === 'string') return `"${BaseMigration.assertSafeIdentifier(c, 'column')}"`;
+        const colName = BaseMigration.assertSafeIdentifier(c.name, 'column');
+        return c.order === SortDirection.ASC || c.order === SortDirection.DESC ? `"${colName}" ${c.order}` : `"${colName}"`;
       })
       .join(', ');
     await db.execute(
@@ -170,7 +182,7 @@ export abstract class BaseMigration {
     db: IDatabaseManager,
     tableName: string,
   ): Promise<void> {
-    const table = assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
+    const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
     await db.execute(`DROP TABLE IF EXISTS "${table}"`);
   }
 
@@ -191,8 +203,8 @@ export abstract class BaseMigration {
     tableName: string,
     column: string,
   ): Promise<void> {
-    const table = assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
-    const safeColumn = assertSafeIdentifier(column, 'column');
+    const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
+    const safeColumn = BaseMigration.assertSafeIdentifier(column, 'column');
     try {
       await db.execute(`ALTER TABLE "${table}" DROP COLUMN IF EXISTS "${safeColumn}"`);
     } catch {

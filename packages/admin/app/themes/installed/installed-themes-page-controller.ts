@@ -1,12 +1,9 @@
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
-import { InstalledThemesUploadService } from './installed-themes-upload-service';
-import type {
-  InstalledThemeManifest,
-  InstalledThemesArchiveInspection,
-  InstalledThemesFetchResult,
-} from './installed-themes-page.interfaces';
-
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import { InstalledThemesUploadService } from '@/app/themes/installed/installed-themes-upload-service';
+import type { IInstalledThemeManifest } from '@/app/themes/installed/interfaces/installed-theme-manifest.interface';
+import type { IInstalledThemesArchiveInspection } from '@/app/themes/installed/interfaces/installed-themes-archive-inspection.interface';
+import type { IInstalledThemesFetchResult } from '@/app/themes/installed/interfaces/installed-themes-fetch-result.interface';
 /**
  * Data access + business logic for the installed-themes page. Hook-free by contract: the page-client
  * class owns React state, lifecycle and notifications; this controller owns "how to fetch/do it".
@@ -15,7 +12,7 @@ export class InstalledThemesPageController {
   private static readonly ARCHIVE_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
 
   /** Load installed + marketplace themes, normalizing both list shapes the API may return. */
-  static async fetchThemes(): Promise<InstalledThemesFetchResult> {
+  static async fetchThemes(): Promise<IInstalledThemesFetchResult> {
     const [installedData, marketplaceData] = await Promise.all([
       AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST),
       AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE),
@@ -27,7 +24,7 @@ export class InstalledThemesPageController {
     };
   }
 
-  private static normalizeThemeList(data: any): InstalledThemeManifest[] {
+  private static normalizeThemeList(data: any): IInstalledThemeManifest[] {
     return Array.isArray(data) ? data : data?.themes || [];
   }
 
@@ -38,7 +35,7 @@ export class InstalledThemesPageController {
   static async inspectArchive(
     file: File,
     onProgress: (label: string, percent: number) => void,
-  ): Promise<InstalledThemesArchiveInspection> {
+  ): Promise<IInstalledThemesArchiveInspection> {
     if (!InstalledThemesUploadService.isSupportedArchive(file)) return { supported: false };
 
     const uploadId = await InstalledThemesUploadService.stageArchive(file, {
@@ -81,8 +78,8 @@ export class InstalledThemesPageController {
 
   /** The marketplace version when it differs from the installed one, else null. */
   static resolveUpdateVersion(
-    installedTheme: InstalledThemeManifest,
-    marketplaceThemes: InstalledThemeManifest[],
+    installedTheme: IInstalledThemeManifest,
+    marketplaceThemes: IInstalledThemeManifest[],
   ): string | null {
     const marketplaceTheme = marketplaceThemes.find((item) => item.slug === installedTheme.slug);
     if (!marketplaceTheme || marketplaceTheme.version === installedTheme.version) return null;

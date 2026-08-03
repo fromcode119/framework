@@ -1,6 +1,7 @@
+import { ThemeMode } from '@fromcode119/core/client';
 import { BrowserStateClient, ClientRuntimeConstants } from '@fromcode119/core/client';
-import { BaseService } from './base-service';
-import { AppEnv } from '../env';
+import { BaseService } from '@/lib/services/base-service';
+import { AppEnv } from '@/lib/env';
 
 export class UiPreferenceService extends BaseService {
   private static readonly THEME_KEY = 'theme';
@@ -16,7 +17,7 @@ export class UiPreferenceService extends BaseService {
     return this.browserState.readLocalString(UiPreferenceService.THEME_KEY);
   }
 
-  writeThemePreference(theme: string): void {
+  writeThemePreference(theme: ThemeMode): void {
     this.browserState.writeLocalString(UiPreferenceService.THEME_KEY, String(theme || '').trim());
   }
 

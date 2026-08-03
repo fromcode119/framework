@@ -1,7 +1,8 @@
+import { JoinType } from '@database/enums/join-type.enum';
 import { sql, eq } from 'drizzle-orm';
-import { NamingStrategy } from '../naming-strategy';
-import type { JoinClause } from '../types';
-import { OrderByBuilder } from './order-by-builder';
+import { NamingStrategy } from '@database/naming-strategy';
+import type { IJoinClause } from '@database/interfaces/join-clause.interface';
+import { OrderByBuilder } from '@database/dialects/order-by-builder';
 
 /**
  * BaseDialect - Shared utilities for database dialect implementations
@@ -137,7 +138,7 @@ export abstract class BaseDialect {
    */
   protected buildJoinedSQL(
     tableName: string,
-    joins: JoinClause[],
+    joins: IJoinClause[],
     options: { where?: any; limit?: number; offset?: number; orderBy?: any; columns?: Record<string, boolean> }
   ): { sql: string; values: any[] } {
     const { where, limit, offset, orderBy, columns } = options;
@@ -164,7 +165,7 @@ export abstract class BaseDialect {
     for (let i = 0; i < joins.length; i++) {
       const join = joins[i];
       const alias = `t${i + 1}`;
-      const joinType = join.type === 'left' ? 'LEFT JOIN' : 'INNER JOIN';
+      const joinType = join.type === JoinType.LEFT ? 'LEFT JOIN' : 'INNER JOIN';
       sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0"."${NamingStrategy.toSnakeCase(join.on.from)}" = "${alias}"."${NamingStrategy.toSnakeCase(join.on.to)}"`;
     }
 
@@ -208,7 +209,7 @@ export abstract class BaseDialect {
    * Columns prefixed with "j{n}__" are extracted and either merged flat or
    * nested under join.as (if specified).
    */
-  protected processJoinedRows(rows: any[], joins: JoinClause[]): any[] {
+  protected processJoinedRows(rows: any[], joins: IJoinClause[]): any[] {
     return rows.map(row => {
       const result: any = {};
       const joinData: Record<number, any> = {};

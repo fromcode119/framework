@@ -1,10 +1,12 @@
+import { ExtensionArea } from '@ai/api/forge/enums/extension-area.enum';
 import { ProjectPaths } from '@fromcode119/core';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const MAX_TEXT_FILE_BYTES = 1024 * 1024;
-const DEFAULT_PREVIEW_CHARS = 280;
-const SKIP_DIRS = new Set([
+export class AssistantToolingFileHelpers {
+  private static readonly MAX_TEXT_FILE_BYTES = 1024 * 1024;
+  private static readonly DEFAULT_PREVIEW_CHARS = 280;
+  private static readonly SKIP_DIRS = new Set([
   '.git',
   '.svn',
   '.hg',
@@ -18,15 +20,14 @@ const SKIP_DIRS = new Set([
   'tmp',
   'temp',
 ]);
-const TEXT_FILE_EXTENSIONS = new Set([
+  private static readonly TEXT_FILE_EXTENSIONS = new Set([
   '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json', '.html', '.htm', '.css', '.scss', '.sass', '.less',
   '.md', '.mdx', '.txt', '.yml', '.yaml', '.toml', '.xml', '.svg', '.njk', '.liquid', '.hbs', '.mustache', '.ejs',
   '.php', '.twig', '.ini', '.conf', '.env', '.sql', '.graphql', '.gql', '.vue', '.svelte',
 ]);
 
-export class AssistantToolingFileHelpers {
-  static scopeRoot(scope: 'plugins' | 'themes'): string {
-    return path.resolve(ProjectPaths.getProjectRoot(), scope);
+  static scopeRoot(scope: ExtensionArea): string {
+    return path.resolve(ProjectPaths.getProjectRoot(), scope.value);
   }
 
   static normalizeRelativePath(baseDir: string, fullPath: string): string {
@@ -42,7 +43,7 @@ export class AssistantToolingFileHelpers {
 
   static isTextFilePath(filePath: string): boolean {
     const extension = path.extname(String(filePath || '')).toLowerCase();
-    if (TEXT_FILE_EXTENSIONS.has(extension)) return true;
+    if (AssistantToolingFileHelpers.TEXT_FILE_EXTENSIONS.has(extension)) return true;
     const basename = path.basename(String(filePath || '')).toLowerCase();
     return basename === '.env' || basename.startsWith('.env.');
   }
@@ -68,7 +69,7 @@ export class AssistantToolingFileHelpers {
         const entryPath = path.join(currentDir, entryName);
 
         if (entry.isDirectory()) {
-          if (SKIP_DIRS.has(entryName)) continue;
+          if (AssistantToolingFileHelpers.SKIP_DIRS.has(entryName)) continue;
           stack.push(entryPath);
           continue;
         }
@@ -91,7 +92,7 @@ export class AssistantToolingFileHelpers {
     textMatchesQuery: (value: string, queryLower: string, queryTokens: string[]) => boolean,
   ): Array<{ line: number; column: number; value: string }> {
     const stat = fs.statSync(filePath);
-    if (!stat.isFile() || stat.size > MAX_TEXT_FILE_BYTES) return [];
+    if (!stat.isFile() || stat.size > AssistantToolingFileHelpers.MAX_TEXT_FILE_BYTES) return [];
     const content = fs.readFileSync(filePath, 'utf8');
     if (!content.trim()) return [];
 
@@ -111,7 +112,7 @@ export class AssistantToolingFileHelpers {
       matches.push({
         line: index + 1,
         column: columnIndex >= 0 ? columnIndex + 1 : 1,
-        value: line.length > DEFAULT_PREVIEW_CHARS ? `${line.slice(0, DEFAULT_PREVIEW_CHARS)}...` : line,
+        value: line.length > AssistantToolingFileHelpers.DEFAULT_PREVIEW_CHARS ? `${line.slice(0, AssistantToolingFileHelpers.DEFAULT_PREVIEW_CHARS)}...` : line,
       });
     }
 

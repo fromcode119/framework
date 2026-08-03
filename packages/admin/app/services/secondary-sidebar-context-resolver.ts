@@ -1,13 +1,14 @@
 import { NavUtils } from '@/lib/nav-utils';
-import type { MenuItem, SecondaryPanelItem } from '@fromcode119/react';
-import type { SecondarySidebarResolveInput, SecondarySidebarResolveResult } from './secondary-sidebar-context-resolver.interfaces';
-
-const EMPTY_RESULT: SecondarySidebarResolveResult = { activeContextId: '', activeContext: null, activeSourcePath: '', items: [] };
+import type { IMenuItem, ISecondaryPanelItem } from '@fromcode119/react';
+import type { ISecondarySidebarResolveInput } from '@/app/services/interfaces/secondary-sidebar-resolve-input.interface';
+import type { ISecondarySidebarResolveResult } from '@/app/services/interfaces/secondary-sidebar-resolve-result.interface';
 
 export class SecondarySidebarContextResolver {
-  resolve(input: SecondarySidebarResolveInput): SecondarySidebarResolveResult {
+  private static readonly EMPTY_RESULT: ISecondarySidebarResolveResult = { activeContextId: '', activeContext: null, activeSourcePath: '', items: [] };
+
+  resolve(input: ISecondarySidebarResolveInput): ISecondarySidebarResolveResult {
     if (!input.secondaryPanel?.contexts) {
-      return EMPTY_RESULT;
+      return SecondarySidebarContextResolver.EMPTY_RESULT;
     }
 
     const activeMenuEntry = this.resolveFromPath(input.pathname, input.menuItems);
@@ -26,7 +27,7 @@ export class SecondarySidebarContextResolver {
     };
   }
 
-  private resolveContextId(input: SecondarySidebarResolveInput): string {
+  private resolveContextId(input: ISecondarySidebarResolveInput): string {
     const fromPrimary = this.resolveFromPrimaryContext(input.primaryContextId, input.secondaryPanel.contexts);
     if (fromPrimary) {
       return fromPrimary;
@@ -80,7 +81,7 @@ export class SecondarySidebarContextResolver {
     return String(match?.id || '');
   }
 
-  private resolveFromPath(pathname: string, menuItems: MenuItem[]): { pluginSlug: string; path: string } | null {
+  private resolveFromPath(pathname: string, menuItems: IMenuItem[]): { pluginSlug: string; path: string } | null {
     const flattened = this.flattenMenu(menuItems);
     const bestPath = NavUtils.resolveBestMatchPath(pathname, flattened.map((entry) => entry.path));
     if (!bestPath) {
@@ -90,7 +91,7 @@ export class SecondarySidebarContextResolver {
     return flattened.find((entry) => entry.path === bestPath) || null;
   }
 
-  private flattenMenu(menuItems: MenuItem[]): Array<{ pluginSlug: string; path: string }> {
+  private flattenMenu(menuItems: IMenuItem[]): Array<{ pluginSlug: string; path: string }> {
     const entries: Array<{ pluginSlug: string; path: string }> = [];
 
     for (const item of menuItems || []) {
@@ -130,7 +131,7 @@ export class SecondarySidebarContextResolver {
     return `${namespace}:${slug}`;
   }
 
-  private filterAccessibleItems(items: SecondaryPanelItem[], userRoles: string[], userCapabilities: string[]): SecondaryPanelItem[] {
+  private filterAccessibleItems(items: ISecondaryPanelItem[], userRoles: string[], userCapabilities: string[]): ISecondaryPanelItem[] {
     const normalizedRoles = new Set((userRoles || []).map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean));
     const normalizedCapabilities = new Set((userCapabilities || []).map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean));
 
@@ -138,12 +139,17 @@ export class SecondarySidebarContextResolver {
       const requiredRoles = (item.requiredRoles || []).map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean);
       const requiredCapabilities = (item.requiredCapabilities || []).map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean);
       const roleAllowed = !requiredRoles.length || requiredRoles.some((entry) => normalizedRoles.has(entry));
-      const capabilityAllowed = !requiredCapabilities.length || requiredCapabilities.every((entry) => normalizedCapabilities.has(entry));
+      // `userCapabilities` carries the session's effective PERMISSIONS (baked by the login/security
+      // payloads). Admins get the `*` wildcard, which satisfies every declared requirement — without this
+      // an admin would be denied any capability-gated item, since they hold no per-capability entries.
+      const capabilityAllowed = !requiredCapabilities.length
+        || normalizedCapabilities.has('*')
+        || requiredCapabilities.every((entry) => normalizedCapabilities.has(entry));
       return roleAllowed && capabilityAllowed;
     });
   }
 
-  private resolveActiveSourcePath(items: SecondaryPanelItem[], pathname: string, activeMenuPath: string): string {
+  private resolveActiveSourcePath(items: ISecondaryPanelItem[], pathname: string, activeMenuPath: string): string {
     const normalizedActiveMenuPath = NavUtils.normalizePath(activeMenuPath);
     const matchedSecondaryItem = NavUtils.resolveBestMatchEntry(pathname, items);
     if (!matchedSecondaryItem) {
@@ -162,7 +168,7 @@ export class SecondarySidebarContextResolver {
     return sourcePaths[0] || normalizedActiveMenuPath;
   }
 
-  private filterBySourcePaths(items: SecondaryPanelItem[], pathname: string, activeMenuPath: string): SecondaryPanelItem[] {
+  private filterBySourcePaths(items: ISecondaryPanelItem[], pathname: string, activeMenuPath: string): ISecondaryPanelItem[] {
     const normalizedActiveMenuPath = NavUtils.normalizePath(activeMenuPath);
 
     return items.filter((item) => {

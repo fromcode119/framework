@@ -1,11 +1,11 @@
 import React from 'react';
-import { PluginStateContext } from './plugin-state-context';
-import { TranslationContext } from './translation-context';
-import { PluginContextRegistry } from '../plugin-context';
-import type { PluginContextValue } from '../context.interfaces';
+import { PluginStateContext } from '@react/context/plugin-state-context';
+import { TranslationContext } from '@react/context/translation-context';
+import { PluginContextRegistry } from '@react/plugin-context';
+import type { IPluginContextValue } from '@react/interfaces/plugin-context-value.interface';
 
 export class ContextBridgeHooks {
-  static usePluginsBridgeHook(): PluginContextValue {
+  static usePluginsBridgeHook(): IPluginContextValue {
     const context = React.useContext(PluginContextRegistry.Context);
     if (!context) {
       throw new Error('usePlugins must be used within a PluginsProvider');

@@ -1,23 +1,62 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from './setting-row';
-import type { GeneralSystemCardsProps } from './general-system-cards.interfaces';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 
-export class GeneralSystemCards extends React.Component<GeneralSystemCardsProps> {
-  render(): React.ReactNode {
-    const {
-      settings,
-      setSettings,
-      theme,
-      timezoneOptions,
-      isSendingTelemetryTest,
-      onSendTelemetryTest,
-    } = this.props;
+import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
+import { Button } from '@/components/ui/view/button.client';
+import { Input } from '@/components/ui/view/input.client';
+import { Select } from '@/components/ui/view/select.client';
+import { Switch } from '@/components/ui/view/switch.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { SettingRow } from '@/app/settings/general/setting-row';
+
+export class GeneralSystemCards extends PureReactor {
+  @prop declare settings: Record<string, any>;
+  @prop declare setSettings: Dispatch<SetStateAction<Record<string, any>>>;
+  @prop declare theme: ThemeMode;
+  @prop declare timezoneOptions: { label: string; value: string }[];
+  @prop declare isSendingTelemetryTest: boolean;
+  @prop declare onSendTelemetryTest: () => void;
+
+  @bound
+  protected changeTimezone(value: string): void {
+    this.setSettings((prev) => ({ ...prev, timezone: value }));
+  }
+
+  @bound
+  protected changeNotificationEmail(e: ChangeEvent<HTMLInputElement>): void {
+    const notification_email = e.target.value;
+    this.setSettings((prev) => ({ ...prev, notification_email }));
+  }
+
+  @bound
+  protected changeNotificationEmailCc(e: ChangeEvent<HTMLInputElement>): void {
+    const notification_email_cc = e.target.value;
+    this.setSettings((prev) => ({ ...prev, notification_email_cc }));
+  }
+
+  @bound
+  protected changeEmailNotifications(val: boolean): void {
+    this.setSettings((prev) => ({ ...prev, email_notifications: val }));
+  }
+
+  @bound
+  protected changeFrontendAuthEnabled(val: boolean): void {
+    this.setSettings((prev) => ({
+      ...prev,
+      frontend_auth_enabled: val,
+      frontend_registration_enabled: val ? prev.frontend_registration_enabled : false
+    }));
+  }
+
+  @bound
+  protected changeFrontendRegistrationEnabled(val: boolean): void {
+    this.setSettings((prev) => ({ ...prev, frontend_registration_enabled: val }));
+  }
+
+  render(): ReactNode {
+    const settings = this.settings;
+    const theme = this.theme;
     return (
       <>
         <Card title="Regional Defaults">
@@ -29,8 +68,8 @@ export class GeneralSystemCards extends React.Component<GeneralSystemCardsProps>
           >
             <Select
               value={settings.timezone}
-              onChange={(value) => setSettings((prev) => ({ ...prev, timezone: value }))}
-              options={timezoneOptions}
+              onChange={this.changeTimezone}
+              options={this.timezoneOptions}
               placeholder="Select system timezone"
               searchable
               theme={theme}
@@ -49,7 +88,7 @@ export class GeneralSystemCards extends React.Component<GeneralSystemCardsProps>
           >
             <Input
               value={settings.notification_email}
-              onChange={(e) => setSettings((prev) => ({ ...prev, notification_email: e.target.value }))}
+              onChange={this.changeNotificationEmail}
               className="w-full md:w-80 font-bold"
               placeholder="hello@example.com"
             />
@@ -63,7 +102,7 @@ export class GeneralSystemCards extends React.Component<GeneralSystemCardsProps>
           >
             <Input
               value={settings.notification_email_cc}
-              onChange={(e) => setSettings((prev) => ({ ...prev, notification_email_cc: e.target.value }))}
+              onChange={this.changeNotificationEmailCc}
               className="w-full md:w-80 font-bold"
               placeholder="ops@example.com, sales@example.com"
             />
@@ -78,11 +117,11 @@ export class GeneralSystemCards extends React.Component<GeneralSystemCardsProps>
             <div className="flex items-center gap-3">
               <Switch
                 checked={settings.email_notifications}
-                onChange={(val) => setSettings(prev => ({ ...prev, email_notifications: val }))}
+                onChange={this.changeEmailNotifications}
               />
               <Button
-                onClick={onSendTelemetryTest}
-                isLoading={isSendingTelemetryTest}
+                onClick={this.onSendTelemetryTest}
+                isLoading={this.isSendingTelemetryTest}
                 icon={<FrameworkIcons.Mail size={13} />}
                 className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
               >
@@ -101,13 +140,7 @@ export class GeneralSystemCards extends React.Component<GeneralSystemCardsProps>
           >
             <Switch
               checked={settings.frontend_auth_enabled}
-              onChange={(val) =>
-                setSettings((prev) => ({
-                  ...prev,
-                  frontend_auth_enabled: val,
-                  frontend_registration_enabled: val ? prev.frontend_registration_enabled : false
-                }))
-              }
+              onChange={this.changeFrontendAuthEnabled}
             />
           </SettingRow>
 
@@ -119,7 +152,7 @@ export class GeneralSystemCards extends React.Component<GeneralSystemCardsProps>
           >
             <Switch
               checked={settings.frontend_registration_enabled}
-              onChange={(val) => setSettings((prev) => ({ ...prev, frontend_registration_enabled: val }))}
+              onChange={this.changeFrontendRegistrationEnabled}
               disabled={!settings.frontend_auth_enabled}
             />
           </SettingRow>

@@ -3,39 +3,10 @@
 // These exports transitively depend on express, fs, path, or server-only @fromcode119/* packages.
 export { APIServer } from '@fromcode119/api';
 export { AuthManager } from '@fromcode119/auth';
-export {
-  BasePluginRouter,
-  BaseRouter,
-  BaseController,
-  AccessLevel,
-  EnvUtils,
-  PluginHealthResponseBuilder,
-  PluginHealthRouteHandler,
-  PluginManager,
-  Plugins,
-  ThemeManager,
-  Logger,
-  ProjectPaths,
-  IntegrationManager,
-  RequestContextUtils,
-  PluginDefinitionUtils,
-  MediaPathUtils
-} from '@fromcode119/core';
+export { BasePluginRouter, BaseRouter, BaseController, AccessLevel, EnvConfig, EnvUtils, PluginHealthResponseBuilder, PluginHealthRouteHandler, PluginManager, Plugins, ThemeManager, Logger, ProjectPaths, IntegrationManager, RequestContextUtils, PluginDefinitionUtils, MediaPathUtils } from '@fromcode119/core';
 
-export type {
-  BasePluginRouterOptions,
-  PluginHealthBuildOptions, 
-  PluginHealthIdentity, 
-  PluginHealthProbeResult, 
-  PluginHealthResponse, 
-  PluginHealthRouteHandlerOptions, 
-  PluginHealthStatus,
-  RequestStore
-} from '@fromcode119/core';
+export type { IBasePluginRouterOptions, IPluginHealthBuildOptions, IPluginHealthIdentity, IPluginHealthProbeResult, IPluginHealthResponse, IPluginHealthRouteHandlerOptions, PluginHealthStatus, IRequestStore } from '@fromcode119/core';
 
 export { PluginRegistry } from '@fromcode119/plugins';
 export { MediaImageOptimizer } from '@fromcode119/media';
-export type { 
-  MediaImageOptimizationOptions, 
-  MediaImageOptimizationResult 
-} from '@fromcode119/media';
+export type { IMediaImageOptimizationOptions, IMediaImageOptimizationResult } from '@fromcode119/media';

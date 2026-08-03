@@ -4,11 +4,17 @@
  * Smart tool selection based on task context, prerequisites, and historical success rates.
  */
 
-import type { ToolMetadata, ToolWithMetadata, ToolRanking, TaskContext } from './intelligent-tool-selector.interfaces';
-import { ToolRankingScorer } from './tool-ranking-scorer';
+import type { IToolMetadata } from '@ai/api/forge/interfaces/tool-metadata.interface';
+
+import type { IToolWithMetadata } from '@ai/api/forge/interfaces/tool-with-metadata.interface';
+
+import type { IToolRanking } from '@ai/api/forge/interfaces/tool-ranking.interface';
+
+import type { ITaskContext } from '@ai/api/forge/interfaces/task-context.interface';
+import { ToolRankingScorer } from '@ai/api/forge/tool-ranking-scorer';
 
 export class IntelligentToolSelector {
-  private toolMetadata: Map<string, ToolMetadata> = new Map();
+  private toolMetadata: Map<string, IToolMetadata> = new Map();
   private executionHistory: Array<{
     tool: string;
     success: boolean;
@@ -16,7 +22,7 @@ export class IntelligentToolSelector {
     duration: number;
   }> = [];
 
-  constructor(tools: ToolWithMetadata[]) {
+  constructor(tools: IToolWithMetadata[]) {
     // Initialize tool metadata from available tools
     for (const tool of tools) {
       if (tool.metadata) {
@@ -31,8 +37,8 @@ export class IntelligentToolSelector {
   /**
    * Rank available tools for a specific task
    */
-  rankToolsForTask(task: TaskContext, availableTools: ToolWithMetadata[]): ToolRanking[] {
-    const rankings: ToolRanking[] = [];
+  rankToolsForTask(task: ITaskContext, availableTools: IToolWithMetadata[]): IToolRanking[] {
+    const rankings: IToolRanking[] = [];
 
     for (const tool of availableTools) {
       const metadata = this.toolMetadata.get(tool.tool);
@@ -76,10 +82,10 @@ export class IntelligentToolSelector {
    */
   getSuggestedToolSequence(
     goal: string,
-    availableTools: ToolWithMetadata[],
+    availableTools: IToolWithMetadata[],
     context: Record<string, any> = {}
   ): string[] {
-    const taskContext: TaskContext = {
+    const taskContext: ITaskContext = {
       taskDescription: goal,
       goal,
       availableContext: context,
@@ -180,8 +186,8 @@ export class IntelligentToolSelector {
    */
   findAlternativeTools(
     primaryTool: string,
-    availableTools: ToolWithMetadata[]
-  ): ToolWithMetadata[] {
+    availableTools: IToolWithMetadata[]
+  ): IToolWithMetadata[] {
     const metadata = this.toolMetadata.get(primaryTool);
     if (!metadata) return [];
 
@@ -204,11 +210,11 @@ export class IntelligentToolSelector {
    */
   suggestToolSwap(
     failedTool: string,
-    availableTools: ToolWithMetadata[]
-  ): ToolRanking[] {
+    availableTools: IToolWithMetadata[]
+  ): IToolRanking[] {
     const alternatives = this.findAlternativeTools(failedTool, availableTools);
 
-    const taskContext: TaskContext = {
+    const taskContext: ITaskContext = {
       taskDescription: `Alternative to ${failedTool}`,
       goal: `Complete task without using ${failedTool}`,
       availableContext: {},
@@ -219,7 +225,7 @@ export class IntelligentToolSelector {
 
   // ==================== Private Methods ====================
 
-  private calculateReliability(tool: string, metadata: ToolMetadata): number {
+  private calculateReliability(tool: string, metadata: IToolMetadata): number {
     const stats = this.getToolStats(tool);
     return stats.successRate;
   }

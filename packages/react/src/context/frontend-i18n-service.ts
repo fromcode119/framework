@@ -7,6 +7,8 @@
  * bucket and applies to every locale, so plugins that have not migrated keep functioning. This
  * replaces the old per-plugin `document.documentElement.lang` overlay hack.
  */
+import { Platform } from '@fromcode119/reactor';
+
 export class FrontendI18nService {
   static readonly WILDCARD = '*';
 
@@ -64,10 +66,42 @@ export class FrontendI18nService {
     );
   }
 
+  /**
+   * Resolve one key against an already-effective dictionary, with `{{token}}` interpolation.
+   *
+   * The single implementation behind BOTH the browser `t()` (`ContextProviderI18nHooks`) and the
+   * server-side translator used to pre-render a theme. Two copies of this lookup would drift, and a
+   * drifted lookup shows up as text that changes between the server paint and hydration.
+   */
+  static translate(
+    dictionary: Record<string, any>,
+    key: string,
+    params: Record<string, any> = {},
+    defaultValue?: string,
+  ): string {
+    let value: any = dictionary;
+    for (const part of String(key || '').split('.')) {
+      if (value && typeof value === 'object' && part in value) {
+        value = value[part];
+      } else {
+        return defaultValue || key;
+      }
+    }
+
+    if (typeof value !== 'string') {
+      return defaultValue || key;
+    }
+
+    return value.replace(/\{\{(.+?)\}\}/g, (_, match) => {
+      const paramKey = match.trim();
+      return params[paramKey] !== undefined ? String(params[paramKey]) : `{{${paramKey}}}`;
+    });
+  }
+
   /** Auto-detect the active locale from the rendered document (`<html lang>`, set by the framework
    * per the configured locale), falling back to `fallback` when unavailable (e.g. SSR). */
   static detectInitialLocale(fallback = 'en'): string {
-    if (typeof document !== 'undefined') {
+    if (Platform.isBrowser) {
       const lang = String(document.documentElement?.lang || '').trim();
       if (lang) return FrontendI18nService.normalizeLocale(lang);
     }

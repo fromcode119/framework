@@ -1,10 +1,10 @@
-import { EntityObjectMapperService } from '../services/entity-object-mapper-service';
-import { EntityMetadataService } from '../services/entity-metadata-service';
-import { CoercionUtils } from '../coercion-utils';
-import type { EntityFieldsConfig } from '../types/entity-field-config.types';
+import { EntityObjectMapperService } from '@core/services/entity-object-mapper-service';
+import { EntityMetadataService } from '@core/services/entity-metadata-service';
+import { CoercionUtils } from '@core/coercion-utils';
+import type { IEntityFieldsConfig } from '@core/interfaces/entity-fields-config.interface';
 
 export abstract class BaseEntity<TRecord extends object> {
-  readonly fields?: EntityFieldsConfig;
+  readonly fields?: IEntityFieldsConfig;
 
   constructor(private readonly record?: TRecord) {}
 
@@ -50,7 +50,7 @@ export abstract class BaseEntity<TRecord extends object> {
     return this.record ?? this.map({});
   }
 
-  entityFields(): EntityFieldsConfig {
+  entityFields(): IEntityFieldsConfig {
     return this.fields || EntityMetadataService.resolveFields(this);
   }
 

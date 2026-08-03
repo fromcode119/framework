@@ -1,8 +1,8 @@
-import type { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 
 export class ThemeContextProxy {
-  static createThemeProxy(plugin: LoadedPlugin, manager: PluginManagerInterface) {
+  static createThemeProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface) {
     const getActiveConfig = async (): Promise<Record<string, any>> => {
       const slug = String(manager.themeManager?.getActiveThemeManifest()?.slug || '').trim();
       if (!slug || !manager.themeManager) {

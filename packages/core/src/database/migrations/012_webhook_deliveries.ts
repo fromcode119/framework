@@ -1,12 +1,12 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
  * Per-delivery webhook log — one row per dispatch attempt (event, HTTP status, response snippet,
  * and the request body so a failed delivery can be resent). The webhook row still keeps `lastStatus`
  * for a quick glance; this table is the full history behind the admin webhooks/deliveries UI.
  */
-class WebhookDeliveriesMigration extends BaseMigration {
+export class WebhookDeliveriesMigration extends BaseMigration {
   readonly version = 12;
   readonly name = 'Create _system_webhook_deliveries (webhook delivery log)';
 
@@ -60,5 +60,3 @@ class WebhookDeliveriesMigration extends BaseMigration {
     });
   }
 }
-
-export default new WebhookDeliveriesMigration();

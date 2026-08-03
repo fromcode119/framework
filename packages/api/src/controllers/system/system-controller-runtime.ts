@@ -1,17 +1,17 @@
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager } from '@fromcode119/core';
 import { IDatabaseManager } from '@fromcode119/database';
-import { PublicFrontendSettingsService } from '../../services/public-frontend-settings-service';
-import { ResolutionService } from '../../services/resolution-service';
-import { ShortcodeService } from '../../services/shortcode-service';
-import { SystemService } from '../../services/system-service';
-import { UserManagementService } from '../../services/user-management-service';
-import { PeopleManagementService } from '../../services/people-management-service';
-import { AdminSearchService } from '../../services/admin-search-service';
-import { NotificationInboxService } from '../../services/notification-inbox-service';
-import { UserPreferencesService } from '../../services/user-preferences-service';
-import { RESTController } from '../rest/rest-controller';
-import { SystemTwoFactorService } from './system-2fa-service';
+import { PublicFrontendSettingsService } from '@api/services/public-frontend-settings-service';
+import { ResolutionService } from '@api/services/resolution-service';
+import { ShortcodeService } from '@api/services/shortcode-service';
+import { SystemService } from '@api/services/system-service';
+import { UserManagementService } from '@api/services/user-management-service';
+import { PeopleManagementService } from '@api/services/people-management-service';
+import { AdminSearchService } from '@api/services/admin-search-service';
+import { NotificationInboxService } from '@api/services/notification-inbox-service';
+import { UserPreferencesService } from '@api/services/user-preferences-service';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { SystemTwoFactorService } from '@api/controllers/system/system-2fa-service';
 
 export class SystemControllerRuntime {
   readonly db: IDatabaseManager;

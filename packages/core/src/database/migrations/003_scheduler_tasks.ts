@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class SchedulerTasksMigration extends BaseMigration {
+export class SchedulerTasksMigration extends BaseMigration {
   readonly version = 3;
   readonly name = 'Scheduler tasks schema';
 
@@ -46,5 +46,3 @@ class SchedulerTasksMigration extends BaseMigration {
     await db.execute(sql`DROP TABLE IF EXISTS "_system_scheduler_tasks"`);
   }
 }
-
-export default new SchedulerTasksMigration();

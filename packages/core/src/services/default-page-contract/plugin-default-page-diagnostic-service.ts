@@ -1,20 +1,18 @@
-import type {
-  PluginDefaultPageContractBackfillPlan,
-  PluginDefaultPageContractBackfillPlanSummary,
-  PluginDefaultPageContractDiagnosticBackfillInput,
-  PluginDefaultPageContractDiagnosticInput,
-  PluginDefaultPageContractDiagnosticMaterializationInput,
-  PluginDefaultPageContractDiagnosticReport,
-  PluginDefaultPageContractDiagnosticResolvedSummary,
-  PluginDefaultPageContractDiagnosticSummary,
-  PluginDefaultPageContractMaterializationPlan,
-  PluginDefaultPageContractMaterializationPlanSummary,
-  ResolvedPluginDefaultPageContract,
-} from '../../types';
-import { BaseService } from '../base-service';
-import { PluginDefaultPageBackfillService } from './plugin-default-page-backfill-service';
-import { PluginDefaultPageContractResolutionService } from './plugin-default-page-contract-resolution-service';
-import { PluginDefaultPageMaterializationService } from './plugin-default-page-materialization-service';
+import type { IPluginDefaultPageContractBackfillPlan } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-plan.interface';
+import type { IPluginDefaultPageContractBackfillPlanSummary } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-plan-summary.interface';
+import type { IPluginDefaultPageContractDiagnosticBackfillInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-diagnostic-backfill-input.interface';
+import type { IPluginDefaultPageContractDiagnosticInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-diagnostic-input.interface';
+import type { IPluginDefaultPageContractDiagnosticMaterializationInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-diagnostic-materialization-input.interface';
+import type { IPluginDefaultPageContractDiagnosticReport } from '@core/default-page-contract/interfaces/plugin-default-page-contract-diagnostic-report.interface';
+import type { IPluginDefaultPageContractDiagnosticResolvedSummary } from '@core/default-page-contract/interfaces/plugin-default-page-contract-diagnostic-resolved-summary.interface';
+import type { IPluginDefaultPageContractDiagnosticSummary } from '@core/default-page-contract/interfaces/plugin-default-page-contract-diagnostic-summary.interface';
+import type { IPluginDefaultPageContractMaterializationPlan } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-plan.interface';
+import type { IPluginDefaultPageContractMaterializationPlanSummary } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-plan-summary.interface';
+import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
+import { BaseService } from '@core/services/base-service';
+import { PluginDefaultPageBackfillService } from '@core/services/default-page-contract/plugin-default-page-backfill-service';
+import { PluginDefaultPageContractResolutionService } from '@core/services/default-page-contract/plugin-default-page-contract-resolution-service';
+import { PluginDefaultPageMaterializationService } from '@core/services/default-page-contract/plugin-default-page-materialization-service';
 
 export class PluginDefaultPageDiagnosticService extends BaseService {
   constructor(
@@ -29,7 +27,7 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
     return 'PluginDefaultPageDiagnosticService';
   }
 
-  createReport(input?: PluginDefaultPageContractDiagnosticInput): PluginDefaultPageContractDiagnosticReport {
+  createReport(input?: IPluginDefaultPageContractDiagnosticInput): IPluginDefaultPageContractDiagnosticReport {
     const resolvedContracts = this.resolutionService.resolveAll(input?.resolution);
     const materializationPlan = this.createMaterializationPlan(resolvedContracts, input?.materialization);
     const backfillPlan = this.createBackfillPlan(resolvedContracts, input?.backfill);
@@ -43,9 +41,9 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
   }
 
   private createMaterializationPlan(
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
-    input?: PluginDefaultPageContractDiagnosticMaterializationInput,
-  ): PluginDefaultPageContractMaterializationPlan | undefined {
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+    input?: IPluginDefaultPageContractDiagnosticMaterializationInput,
+  ): IPluginDefaultPageContractMaterializationPlan | undefined {
     if (!input?.existingPages) {
       return undefined;
     }
@@ -57,9 +55,9 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
   }
 
   private createBackfillPlan(
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
-    input?: PluginDefaultPageContractDiagnosticBackfillInput,
-  ): PluginDefaultPageContractBackfillPlan | undefined {
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+    input?: IPluginDefaultPageContractDiagnosticBackfillInput,
+  ): IPluginDefaultPageContractBackfillPlan | undefined {
     if (!input?.existingPages || !input.existingAssociations) {
       return undefined;
     }
@@ -72,10 +70,10 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
   }
 
   private createSummary(
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
-    materializationPlanSummary?: PluginDefaultPageContractMaterializationPlanSummary,
-    backfillPlanSummary?: PluginDefaultPageContractBackfillPlanSummary,
-  ): PluginDefaultPageContractDiagnosticSummary {
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+    materializationPlanSummary?: IPluginDefaultPageContractMaterializationPlanSummary,
+    backfillPlanSummary?: IPluginDefaultPageContractBackfillPlanSummary,
+  ): IPluginDefaultPageContractDiagnosticSummary {
     return {
       resolvedContracts: this.createResolvedSummary(resolvedContracts),
       materializationPlan: materializationPlanSummary ? this.cloneMaterializationSummary(materializationPlanSummary) : undefined,
@@ -84,9 +82,9 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
   }
 
   private createResolvedSummary(
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
-  ): PluginDefaultPageContractDiagnosticResolvedSummary {
-    const summary: PluginDefaultPageContractDiagnosticResolvedSummary = {
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+  ): IPluginDefaultPageContractDiagnosticResolvedSummary {
+    const summary: IPluginDefaultPageContractDiagnosticResolvedSummary = {
       total: resolvedContracts.length,
       byStatus: {
         blocked: 0,
@@ -101,7 +99,7 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
     };
 
     for (const contract of resolvedContracts) {
-      summary.byStatus[contract.status] += 1;
+      summary.byStatus[contract.status.value] += 1;
       summary.installEnabled += contract.install ? 1 : 0;
       summary.installDisabled += contract.install ? 0 : 1;
       summary.prerequisiteReady += contract.prerequisiteReady ? 1 : 0;
@@ -113,8 +111,8 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
   }
 
   private cloneMaterializationSummary(
-    summary: PluginDefaultPageContractMaterializationPlanSummary,
-  ): PluginDefaultPageContractMaterializationPlanSummary {
+    summary: IPluginDefaultPageContractMaterializationPlanSummary,
+  ): IPluginDefaultPageContractMaterializationPlanSummary {
     return {
       total: summary.total,
       byAction: {
@@ -135,7 +133,7 @@ export class PluginDefaultPageDiagnosticService extends BaseService {
     };
   }
 
-  private cloneBackfillSummary(summary: PluginDefaultPageContractBackfillPlanSummary): PluginDefaultPageContractBackfillPlanSummary {
+  private cloneBackfillSummary(summary: IPluginDefaultPageContractBackfillPlanSummary): IPluginDefaultPageContractBackfillPlanSummary {
     return {
       total: summary.total,
       byAction: {

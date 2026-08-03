@@ -1,5 +1,8 @@
-import type { RuntimeContext, RuntimeIntent, RuntimeToolCall, RuntimeToolResult } from '../types.types';
-import { RuntimeUtils } from '../types';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
+import type { IRuntimeToolCall } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-call.interface';
+import type { IRuntimeToolResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-result.interface';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
 
 /**
  * Retrieval utilities for AI runtime
@@ -16,7 +19,7 @@ export class RetrievalHelpers {
    * const tools = RetrievalHelpers.toolSetFromContext(context);
    * const hasContentSearch = tools.has('content.search_text');
    */
-  static toolSetFromContext(context: RuntimeContext): Set<string> {
+  static toolSetFromContext(context: IRuntimeContext): Set<string> {
     const set = new Set<string>();
     for (const tool of Array.isArray(context.tools) ? context.tools : []) {
       const name = String((tool as any)?.tool || '').trim();
@@ -38,12 +41,12 @@ export class RetrievalHelpers {
    * console.log('Blocked:', result.blocked);
    */
   static withAllowedTools(
-    calls: RuntimeToolCall[],
-    context: RuntimeContext,
-  ): { runnable: RuntimeToolCall[]; blocked: string[] } {
+    calls: IRuntimeToolCall[],
+    context: IRuntimeContext,
+  ): { runnable: IRuntimeToolCall[]; blocked: string[] } {
     const availableToolNames = RetrievalHelpers.toolSetFromContext(context);
     const allowedToolSet = context.allowedToolSet || new Set<string>();
-    const runnable: RuntimeToolCall[] = [];
+    const runnable: IRuntimeToolCall[] = [];
     const blocked: string[] = [];
     for (const call of calls) {
       const name = String(call.tool || '').trim();
@@ -67,7 +70,7 @@ export class RetrievalHelpers {
    * const calls = RetrievalHelpers.buildReplaceCalls(intent);
    * // => [{ tool: 'content.search_text', input: { query: '...', ... } }, ...]
    */
-  static buildReplaceCalls(intent: RuntimeIntent): RuntimeToolCall[] {
+  static buildReplaceCalls(intent: IRuntimeIntent): IRuntimeToolCall[] {
     const query = String(intent.replace?.from || intent.queryHint || '').trim();
     if (!query) return [];
     return [
@@ -89,7 +92,7 @@ export class RetrievalHelpers {
    * const calls = RetrievalHelpers.buildReplaceCallsForQuery('homepage');
    * // => [{ tool: 'content.search_text', input: { query: 'homepage', ... } }, ...]
    */
-  static buildReplaceCallsForQuery(query: string): RuntimeToolCall[] {
+  static buildReplaceCallsForQuery(query: string): IRuntimeToolCall[] {
     const value = String(query || '').trim();
     if (!value) return [];
     return [
@@ -135,7 +138,7 @@ export class RetrievalHelpers {
    * const calls = RetrievalHelpers.buildUrlHintCalls(intent);
    * // => [{ tool: 'content.search_text', input: { query: 'my-page', ... } }, ...]
    */
-  static buildUrlHintCalls(intent: RuntimeIntent): RuntimeToolCall[] {
+  static buildUrlHintCalls(intent: IRuntimeIntent): IRuntimeToolCall[] {
     const queryHint = RetrievalHelpers.extractUrlQueryHint(String(intent.urlHint || ''));
     if (!queryHint) return [];
     return [
@@ -155,7 +158,7 @@ export class RetrievalHelpers {
    * const total = RetrievalHelpers.totalMatches(results);
    * console.log(`Found ${total} matches`);
    */
-  static totalMatches(results: RuntimeToolResult[]): number {
+  static totalMatches(results: IRuntimeToolResult[]): number {
     return results.reduce((acc, item) => acc + RuntimeUtils.listMatchesFromToolOutput(item.output || {}).length, 0);
   }
 
@@ -169,7 +172,7 @@ export class RetrievalHelpers {
    * const queries = RetrievalHelpers.deriveRefinedQueries(intent);
    * // => ['homepage', 'home', 'page']
    */
-  static deriveRefinedQueries(intent: RuntimeIntent): string[] {
+  static deriveRefinedQueries(intent: IRuntimeIntent): string[] {
     const urlHint = String(intent.urlHint || '').trim();
     const from = String(intent.replace?.from || intent.queryHint || '').trim();
     const tokens = new Set<string>();

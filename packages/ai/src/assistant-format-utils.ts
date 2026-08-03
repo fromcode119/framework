@@ -1,13 +1,14 @@
-import type { AssistantAction, HumanActionPreview } from './assistant-core-constants.types';
-import { AssistantConstants } from './assistant-core-constants';
-import { AssistantCoreUtils } from './assistant-core-utils';
-import { AssistantSurfaceUtils } from './assistant-surface-utils';
-
-const TOOL_DESCRIPTION_FALLBACKS = AssistantConstants.TOOL_DESCRIPTION_FALLBACKS;
+import { ExecutionKind } from '@ai/enums/assistant-execution-kind.enum';
+import type { IAssistantAction } from '@ai/interfaces/assistant-action.interface';
+import { HumanActionPreview } from '@ai/human-action-preview';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
+import { AssistantCoreUtils } from '@ai/assistant-core-utils';
+import { AssistantSurfaceUtils } from '@ai/assistant-surface-utils';
 
 export class AssistantFormatUtils {
+  private static readonly TOOL_DESCRIPTION_FALLBACKS = AssistantConstants.TOOL_DESCRIPTION_FALLBACKS;
 
-  static formatActionLabel(action: AssistantAction): string {
+  static formatActionLabel(action: IAssistantAction): string {
   if (action.type === 'create_content') {
     return `create_content ${action.collectionSlug ? `• ${action.collectionSlug}` : ''}`;
   }
@@ -27,29 +28,29 @@ export class AssistantFormatUtils {
   return action.type || action.tool || 'action';
   }
 
-  static summarizeActionForHumans(action: AssistantAction): HumanActionPreview {
+  static summarizeActionForHumans(action: IAssistantAction): HumanActionPreview {
   if (action.type === 'create_content') {
     const payload = action.data && typeof action.data === 'object' ? action.data : {};
     const { fields, previews } = AssistantCoreUtils.summarizeFieldPatch(payload);
-    return {
+    return HumanActionPreview.from({
       title: 'Create content',
       target: String(action.collectionSlug || '').trim() || 'selected collection',
       summary: fields.length
         ? `Will set ${fields.length} field${fields.length > 1 ? 's' : ''}: ${fields.slice(0, 4).join(', ')}.`
         : 'Will create a new record.',
       fieldPreviews: previews,
-    };
+    });
   }
 
   if (action.type === 'update_setting') {
     const key = String(action.key || '').trim() || 'setting';
     const valuePreview = AssistantCoreUtils.describeActionValue(action.value);
-    return {
+    return HumanActionPreview.from({
       title: 'Update setting',
       target: key,
       summary: 'Will update this setting value.',
       fieldPreviews: [{ field: key, value: valuePreview }],
-    };
+    });
   }
 
   if (action.type === 'mcp_call') {
@@ -59,14 +60,14 @@ export class AssistantFormatUtils {
     if (tool === 'content.update') {
       const patch = input?.data && typeof input.data === 'object' ? input.data : {};
       const { fields, previews } = AssistantCoreUtils.summarizeFieldPatch(patch);
-      return {
+      return HumanActionPreview.from({
         title: 'Update content',
         target: AssistantCoreUtils.resolveActionTarget(input),
         summary: fields.length
           ? `Will update ${fields.length} field${fields.length > 1 ? 's' : ''}: ${fields.slice(0, 4).join(', ')}.`
           : 'Will update this record.',
         fieldPreviews: previews,
-      };
+      });
     }
 
     if (tool === 'plugins.settings.update' || tool === 'themes.config.update') {
@@ -77,30 +78,30 @@ export class AssistantFormatUtils {
             ? input.config
             : {};
       const { fields, previews } = AssistantCoreUtils.summarizeFieldPatch(patch);
-      return {
+      return HumanActionPreview.from({
         title: tool === 'plugins.settings.update' ? 'Update plugin settings' : 'Update theme settings',
         target: AssistantCoreUtils.resolveActionTarget(input),
         summary: fields.length
           ? `Will update ${fields.length} field${fields.length > 1 ? 's' : ''}: ${fields.slice(0, 4).join(', ')}.`
           : 'Will update configuration.',
         fieldPreviews: previews,
-      };
+      });
     }
 
-    return {
+    return HumanActionPreview.from({
       title: AssistantFormatUtils.formatActionLabel(action),
       target: AssistantCoreUtils.resolveActionTarget(input),
       summary: 'Will run this action.',
       fieldPreviews: [],
-    };
+    });
   }
 
-  return {
+  return HumanActionPreview.from({
     title: AssistantFormatUtils.formatActionLabel(action),
     target: 'selected target',
     summary: 'Will run this action.',
     fieldPreviews: [],
-  };
+  });
   }
 
   static formatFileSize(size?: number): string {
@@ -130,7 +131,7 @@ export class AssistantFormatUtils {
   const explicit = String(providedDescription || '').trim();
   if (explicit) return explicit;
   const key = String(toolName || '').trim();
-  const fallbackMap = TOOL_DESCRIPTION_FALLBACKS as Record<string, string>;
+  const fallbackMap = AssistantFormatUtils.TOOL_DESCRIPTION_FALLBACKS as Record<string, string>;
   if (!key) return 'No description available.';
   if (fallbackMap[key]) return fallbackMap[key];
   if (key.startsWith('content.')) return 'Content operation tool.';
@@ -152,15 +153,15 @@ export class AssistantFormatUtils {
   const kind = AssistantSurfaceUtils.resolveExecutionKind(item);
 
   if (tool === 'content.update') {
-    if (kind === 'failed') return `Could not update ${collection || 'record'}`;
-    if (kind === 'skipped') return `No change needed for ${collection || 'record'}`;
+    if (kind === ExecutionKind.FAILED) return `Could not update ${collection || 'record'}`;
+    if (kind === ExecutionKind.SKIPPED) return `No change needed for ${collection || 'record'}`;
     return `Updated ${collection || 'record'}`;
   }
   if (tool === 'themes.config.update') {
-    return kind === 'failed' ? 'Could not update theme setting' : kind === 'skipped' ? 'No theme changes needed' : 'Updated theme setting';
+    return kind === ExecutionKind.FAILED ? 'Could not update theme setting' : kind === ExecutionKind.SKIPPED ? 'No theme changes needed' : 'Updated theme setting';
   }
   if (tool === 'plugins.settings.update') {
-    return kind === 'failed' ? 'Could not update plugin setting' : kind === 'skipped' ? 'No plugin changes needed' : 'Updated plugin setting';
+    return kind === ExecutionKind.FAILED ? 'Could not update plugin setting' : kind === ExecutionKind.SKIPPED ? 'No plugin changes needed' : 'Updated plugin setting';
   }
   if (selector !== null && selector !== undefined && String(selector).trim()) {
     return `${tool} • ${String(selector)}`;
@@ -182,7 +183,7 @@ export class AssistantFormatUtils {
   const output = item?.output && typeof item.output === 'object' ? item.output : null;
   if (output?.reason) return String(output.reason);
   const changedFields = Array.isArray(output?.changedFields) ? output.changedFields : [];
-  if (changedFields.length === 0 && AssistantSurfaceUtils.resolveExecutionKind(item) === 'skipped') {
+  if (changedFields.length === 0 && AssistantSurfaceUtils.resolveExecutionKind(item) === ExecutionKind.SKIPPED) {
     return 'Already up to date.';
   }
   return '';

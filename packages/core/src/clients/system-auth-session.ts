@@ -1,5 +1,6 @@
-import { CookieConstants } from '../cookie-constants';
-import { BrowserStateClient } from './browser-state-client';
+import { CookieConstants } from '@core/constants/cookie.constants';
+import { BrowserStateClient } from '@core/clients/browser-state-client';
+import { EnvUtils } from '@core/utils/env-utils';
 
 export class SystemAuthSession {
   private static readonly USER_CACHE_KEY = 'userData' as const;
@@ -25,7 +26,7 @@ export class SystemAuthSession {
       );
     }
 
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -36,7 +37,7 @@ export class SystemAuthSession {
   clearSession(): void {
     this.browserState.clearCookie(CookieConstants.CLIENT_AUTH_TOKEN);
 
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -45,7 +46,7 @@ export class SystemAuthSession {
   }
 
   readStoredUser(): any | null {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return null;
     }
 
@@ -64,7 +65,7 @@ export class SystemAuthSession {
   }
 
   mergeStoredUser(user: any): void {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -84,7 +85,7 @@ export class SystemAuthSession {
   }
 
   private dispatchAuthStateChanged(): void {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 

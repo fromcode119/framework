@@ -1,6 +1,7 @@
-import { ApiVersionUtils, RuntimeConstants} from '@fromcode119/core/client';
-import { ServerApiUtils } from '../server-api';
-import type { ThemePrefetchApiEntry, LcpImagePreload } from './theme-data-prefetcher.interfaces';
+import { ApiVersionUtils, RuntimeConstants } from '@fromcode119/core/client';
+import { ServerApiUtils } from '@/lib/server-api';
+import type { ThemePrefetchApiEntry } from '@/lib/theme/theme-prefetch-api-entry';
+import type { ILcpImagePreload } from '@/lib/theme/interfaces/lcp-image-preload.interface';
 
 /**
  * Fetches plugin data server-side based on theme.json `ui.prefetchApis` config
@@ -79,7 +80,7 @@ export class ThemeDataPrefetcher {
     prefetchData: Record<string, unknown>,
     apis: ThemePrefetchApiEntry[],
     publicApiBase: string,
-  ): LcpImagePreload | null {
+  ): ILcpImagePreload | null {
     for (const entry of apis) {
       const lcp = entry.lcp;
       if (!lcp?.imagePath || !lcp?.urlTemplate) continue;

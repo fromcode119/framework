@@ -1,15 +1,13 @@
-import { Logger } from '../logging';
+import { Logger } from '@core/logging';
 import { IDatabaseManager } from '@fromcode119/database';
 import * as path from 'path';
 import * as fs from 'fs';
-import {
-  LoadedCoreExtension,
-  CoreExtensionModule,
-} from './types';
-import { CoreExtensionStateStore } from './core-extension-state-store';
-import { ExtensionState } from './extension-state.enums';
-import { CoreExtensionContextFactory } from './core-extension-context-factory';
-import { CoreExtensionDiscoveryService } from './core-extension-discovery-service';
+import type { ILoadedCoreExtension } from '@core/extensions/interfaces/loaded-core-extension.interface';
+import type { ICoreExtensionModule } from '@core/extensions/interfaces/core-extension-module.interface';
+import { CoreExtensionStateStore } from '@core/extensions/core-extension-state-store';
+import { ExtensionState } from '@core/extensions/enums/extension-state.enum';
+import { CoreExtensionContextFactory } from '@core/extensions/core-extension-context-factory';
+import { CoreExtensionDiscoveryService } from '@core/extensions/core-extension-discovery-service';
 
 /**
  * CoreExtensionManager
@@ -18,7 +16,7 @@ import { CoreExtensionDiscoveryService } from './core-extension-discovery-servic
  * at runtime. Similar to PluginManager but for packages in packages/ directory.
  */
 export class CoreExtensionManager {
-  private extensions: Map<string, LoadedCoreExtension> = new Map();
+  private extensions: Map<string, ILoadedCoreExtension> = new Map();
   private stateStore: CoreExtensionStateStore;
   private contextFactory: CoreExtensionContextFactory;
   private discoveryService: CoreExtensionDiscoveryService;
@@ -136,11 +134,11 @@ export class CoreExtensionManager {
       // Supports both named-function exports and class-based extensions (single class with static lifecycle methods).
       const rawModule = await import(modulePath);
       const rawExports = Object.values(rawModule);
-      const module: CoreExtensionModule = (
+      const module: ICoreExtensionModule = (
         rawExports.length === 1 &&
         typeof rawExports[0] === 'function' &&
         ('onInit' in rawExports[0] || 'onEnable' in rawExports[0] || 'onDisable' in rawExports[0])
-      ) ? (rawExports[0] as CoreExtensionModule) : rawModule;
+      ) ? (rawExports[0] as ICoreExtensionModule) : rawModule;
       extension.module = module;
       extension.state = ExtensionState.LOADED;
       
@@ -221,14 +219,14 @@ export class CoreExtensionManager {
   /**
    * Get all discovered extensions
    */
-  public getExtensions(): LoadedCoreExtension[] {
+  public getExtensions(): ILoadedCoreExtension[] {
     return Array.from(this.extensions.values());
   }
 
   /**
    * Get a specific extension
    */
-  public getExtension(slug: string): LoadedCoreExtension | undefined {
+  public getExtension(slug: string): ILoadedCoreExtension | undefined {
     return this.extensions.get(slug);
   }
 
@@ -295,7 +293,7 @@ export class CoreExtensionManager {
   /**
    * Get all active extensions
    */
-  getActiveExtensions(): LoadedCoreExtension[] {
+  getActiveExtensions(): ILoadedCoreExtension[] {
     return Array.from(this.extensions.values()).filter((ext) => ext.state === ExtensionState.ACTIVE);
   }
 }

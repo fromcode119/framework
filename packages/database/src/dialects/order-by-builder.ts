@@ -1,5 +1,6 @@
+import { SortDirection } from '@database/enums/sort-direction.enum';
 import { sql, desc, asc } from 'drizzle-orm';
-import { NamingStrategy } from '../naming-strategy';
+import { NamingStrategy } from '@database/naming-strategy';
 
 /**
  * OrderByBuilder - Stateless ORDER BY parsing / clause construction.
@@ -13,8 +14,8 @@ export class OrderByBuilder {
    * Whitelist an ORDER BY direction to exactly ASC | DESC.
    * Anything that is not (case-insensitively) "desc" falls back to ASC.
    */
-  normalizeOrderDirection(direction: unknown): 'ASC' | 'DESC' {
-    return String(direction ?? '').trim().toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+  normalizeOrderDirection(direction: unknown): SortDirection {
+    return String(direction ?? '').trim().toUpperCase() === SortDirection.DESC.value ? SortDirection.DESC : SortDirection.ASC;
   }
 
   /**
@@ -22,7 +23,7 @@ export class OrderByBuilder {
    * { column, direction } pairs. Columns must be plain identifiers
    * (letters, digits, underscore, $); anything else is rejected.
    */
-  parseOrderByString(orderBy: string): Array<{ column: string; direction: 'ASC' | 'DESC' }> {
+  parseOrderByString(orderBy: string): Array<{ column: string; direction: SortDirection }> {
     return String(orderBy)
       .split(',')
       .map((part) => part.trim())
@@ -52,7 +53,7 @@ export class OrderByBuilder {
       const parts = this.parseOrderByString(orderBy);
       if (parts.length === 0) return null;
       return parts.map((part) => {
-        const orderFn = part.direction === 'DESC' ? desc : asc;
+        const orderFn = part.direction === SortDirection.DESC ? desc : asc;
         return orderFn(sql.identifier(NamingStrategy.toSnakeCase(part.column)));
       });
     }

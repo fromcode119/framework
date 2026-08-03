@@ -1,35 +1,42 @@
-import React from 'react';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { PromptDialog } from '@/components/ui/prompt-dialog';
-import type { EditPageDialogsProps } from './edit-page-dialogs.interfaces';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
+import type { IOverrideTarget } from '@/components/collection/edit/interfaces/override-target.interface';
+export class EditPageDialogs extends PureReactor {
+  @prop declare readOnlyOverrideTarget: IOverrideTarget | null;
+  @prop declare setReadOnlyOverrideTarget: (target: IOverrideTarget | null) => void;
+  @prop declare openReadOnlyOverridePasswordPrompt: () => void;
+  @prop declare readOnlyOverridePasswordTarget: IOverrideTarget | null;
+  @prop declare setReadOnlyOverridePasswordTarget: (target: IOverrideTarget | null) => void;
+  @prop declare handleReadOnlyOverridePasswordConfirm: (password: string) => void;
+  @prop declare readOnlyOverrideVerifying: boolean;
+  @prop declare showDeleteConfirm: boolean;
+  @prop declare setShowDeleteConfirm: (open: boolean) => void;
+  @prop declare handleDelete: () => void;
+  @prop declare deleting: boolean;
 
-export class EditPageDialogs extends React.Component<EditPageDialogsProps> {
-  render(): React.ReactNode {
-    const {
-      readOnlyOverrideTarget, setReadOnlyOverrideTarget, openReadOnlyOverridePasswordPrompt,
-      readOnlyOverridePasswordTarget, setReadOnlyOverridePasswordTarget, handleReadOnlyOverridePasswordConfirm,
-      readOnlyOverrideVerifying, showDeleteConfirm, setShowDeleteConfirm, handleDelete, deleting
-    } = this.props;
+  render(): ReactNode {
     return (
       <>
         <ConfirmDialog
-          isOpen={Boolean(readOnlyOverrideTarget)}
-          onClose={() => setReadOnlyOverrideTarget(null)}
-          onConfirm={openReadOnlyOverridePasswordPrompt}
+          isOpen={Boolean(this.readOnlyOverrideTarget)}
+          onClose={() => this.setReadOnlyOverrideTarget(null)}
+          onConfirm={this.openReadOnlyOverridePasswordPrompt}
           title="Override Generated Value?"
-          description={`"${readOnlyOverrideTarget?.label || 'This field'}" is read-only because it is generated automatically. Continue to unlock manual override?`}
+          description={`"${this.readOnlyOverrideTarget?.label || 'This field'}" is read-only because it is generated automatically. Continue to unlock manual override?`}
           confirmLabel="Continue"
           cancelLabel="Cancel"
           variant="primary"
         />
 
         <PromptDialog
-          isOpen={Boolean(readOnlyOverridePasswordTarget)}
-          onClose={() => setReadOnlyOverridePasswordTarget(null)}
-          onConfirm={handleReadOnlyOverridePasswordConfirm}
-          isLoading={readOnlyOverrideVerifying}
+          isOpen={Boolean(this.readOnlyOverridePasswordTarget)}
+          onClose={() => this.setReadOnlyOverridePasswordTarget(null)}
+          onConfirm={this.handleReadOnlyOverridePasswordConfirm}
+          isLoading={this.readOnlyOverrideVerifying}
           title="Confirm With Password"
-          description={`Enter your account password to unlock "${readOnlyOverridePasswordTarget?.label || 'this field'}".`}
+          description={`Enter your account password to unlock "${this.readOnlyOverridePasswordTarget?.label || 'this field'}".`}
           placeholder="Current password"
           confirmLabel="Unlock Field"
           cancelLabel="Cancel"
@@ -37,10 +44,10 @@ export class EditPageDialogs extends React.Component<EditPageDialogsProps> {
         />
 
         <ConfirmDialog
-          isOpen={showDeleteConfirm}
-          onClose={() => setShowDeleteConfirm(false)}
-          onConfirm={handleDelete}
-          isLoading={deleting}
+          isOpen={this.showDeleteConfirm}
+          onClose={() => this.setShowDeleteConfirm(false)}
+          onConfirm={this.handleDelete}
+          isLoading={this.deleting}
           title="Delete Record"
           description="Are you sure you want to delete this record? This action is permanent and cannot be undone."
           confirmLabel="Delete Permanently"

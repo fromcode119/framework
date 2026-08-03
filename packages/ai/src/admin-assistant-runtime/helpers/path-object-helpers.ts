@@ -1,4 +1,4 @@
-import type { AssistantCollectionContext } from '../types';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
 
 /** Path traversal and object utility methods extracted from AdminAssistantRuntime. */
 export class PathObjectHelpers {
@@ -98,7 +98,7 @@ export class PathObjectHelpers {
   }
 
   static filterContentPayloadByCollectionFields(
-    collection: AssistantCollectionContext,
+    collection: IAssistantCollectionContext,
     payload: Record<string, any>,
   ): Record<string, any> {
     const source = payload && typeof payload === 'object' ? payload : {};

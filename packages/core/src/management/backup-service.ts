@@ -2,12 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import * as tar from 'tar';
 import { DatabaseFactory } from '@fromcode119/database';
-import { ProjectPaths } from '../config/paths';
-import { SafeArchive } from '../security/safe-archive';
-import type { CreateSystemBackupOptions, CreateSystemBackupResult } from './backup-service.interfaces';
-import type { BackupSectionKey } from './backup-service.types';
-import { BackupArchivePathService } from './helpers/backup-archive-path-service';
-import { SystemBackupHelper } from './helpers/system-backup-helper';
+import { ProjectPaths } from '@core/config/paths';
+import { SafeArchive } from '@core/security/safe-archive';
+import type { ICreateSystemBackupOptions } from '@core/management/interfaces/create-system-backup-options.interface';
+import type { ICreateSystemBackupResult } from '@core/management/interfaces/create-system-backup-result.interface';
+import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+import { BackupArchivePathService } from '@core/management/helpers/backup-archive-path-service';
+import { SystemBackupHelper } from '@core/management/helpers/system-backup-helper';
 
 /**
  * Backup Service
@@ -42,8 +43,8 @@ export class BackupService {
    * @param type - Optional subfolder for organization
    * @returns The path to the created backup file
    */
-  static async create(slug: string, entityPath: string, type: 'plugins' | 'themes' = 'plugins'): Promise<string> {
-    const backupsPath = this.ensureBackupsDir(type);
+  static async create(slug: string, entityPath: string, type: BackupSectionKey = BackupSectionKey.PLUGINS): Promise<string> {
+    const backupsPath = this.ensureBackupsDir(type.value);
     
     if (!fs.existsSync(entityPath)) {
       throw new Error(`Path does not exist: ${entityPath}`);
@@ -63,7 +64,7 @@ export class BackupService {
     );
 
     // Optional: Cleanup old backups (keep last 3)
-    this.cleanupOld(slug, type);
+    this.cleanupOld(slug, type.value);
 
     return backupPath;
   }
@@ -169,12 +170,12 @@ export class BackupService {
    * Creates a full system backup
    * @returns The path to the created backup file
    */
-  static async createSystemBackup(options: CreateSystemBackupOptions = {}): Promise<string> {
+  static async createSystemBackup(options: ICreateSystemBackupOptions = {}): Promise<string> {
     const result = await this.createSystemBackupBundle(options);
     return result.backupPath;
   }
 
-  static async createSystemBackupBundle(options: CreateSystemBackupOptions = {}): Promise<CreateSystemBackupResult> {
+  static async createSystemBackupBundle(options: ICreateSystemBackupOptions = {}): Promise<ICreateSystemBackupResult> {
     const backupsPath = this.ensureBackupsDir('system');
     const rootDir = ProjectPaths.getProjectRoot();
 
@@ -220,7 +221,7 @@ export class BackupService {
     };
   }
 
-  private static async createDatabaseOnlyBackup(requestedSections: BackupSectionKey[]): Promise<CreateSystemBackupResult> {
+  private static async createDatabaseOnlyBackup(requestedSections: BackupSectionKey[]): Promise<ICreateSystemBackupResult> {
     const backupPath = await this.backupDatabase();
     if (!backupPath || !fs.existsSync(backupPath)) {
       throw new Error('Database backup was requested, but no database snapshot is available in this environment.');
@@ -231,7 +232,7 @@ export class BackupService {
     return {
       backupPath,
       requestedSections,
-      includedSections: ['database'],
+      includedSections: [BackupSectionKey.DATABASE],
       warnings: [],
     };
   }
@@ -241,7 +242,7 @@ export class BackupService {
     requestedSections: BackupSectionKey[],
     timestamp: string,
   ): Promise<{ tempDbFile: string | null; warnings: string[] }> {
-    if (!requestedSections.includes('database')) {
+    if (!requestedSections.includes(BackupSectionKey.DATABASE)) {
       return { tempDbFile: null, warnings: [] };
     }
 

@@ -1,16 +1,8 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import {
-  HotReloadService,
-  Logger,
-  PluginManager,
-  PlatformSettingsService,
-  SystemConstants,
-  SystemUpdateService,
-  ThemeManager,
-} from '@fromcode119/core';
-import { FrameworkAccountPageContractService } from '../services/framework-account-page-contract-service';
+import { HotReloadService, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemUpdateService, ThemeManager } from '@fromcode119/core';
+import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -19,6 +11,12 @@ export class ApiBootstrapService {
     createServer: (manager: PluginManager, themeManager: ThemeManager, auth: AuthManager) => any,
   ): Promise<void> {
     dotenv.config();
+    // FIRST, before anything can resolve a core service. `CoreServices` reaches the server-only ones
+    // through a registry rather than importing them (so browser bundles stay ~47 KB lighter), and
+    // plugins hit the very first of them — `defaultPageContracts.register(...)` — inside
+    // `manager.init()` below. Registering later than this throws on plugin boot.
+    ServerCoreServices.register();
+
     const manager = new PluginManager();
     const pluginApiRouter = express.Router();
     manager.setApiHost(pluginApiRouter);

@@ -1,11 +1,5 @@
-import { SystemConstants } from '../../constants';
-
-interface CatalogDb {
-  find(table: string, opts?: any): Promise<any[]>;
-  findOne(table: string, where: any): Promise<any | null>;
-  insert(table: string, data: any): Promise<any>;
-  update(table: string, where: any, data: any): Promise<any>;
-}
+import type { ICatalogDb } from '@core/plugin/services/interfaces/catalog-db.interface';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class PersonCatalogService {
   private static readonly DEFAULTS: { kind: string; key: string; label: string }[] = [
@@ -16,7 +10,7 @@ export class PersonCatalogService {
     { kind: 'source', key: 'contact', label: 'people.source.contact' }
   ];
 
-  constructor(private readonly db: CatalogDb) {}
+  constructor(private readonly db: ICatalogDb) {}
 
   async register(kind: string, entry: { key: string; label: string; pluginSlug?: string }): Promise<void> {
     const normalizedKind = String(kind ?? '').trim();

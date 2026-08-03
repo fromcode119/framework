@@ -1,3 +1,5 @@
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
+
 /**
  * Shared UI styling constants and utilities for consistent design across the framework.
  */
@@ -37,8 +39,9 @@ export class UiFieldUtils {
     SUBTEXT: 'text-[11px] font-medium text-slate-400 mt-1 ml-0.5 leading-relaxed'
   };
 
-  static getFieldClasses(size: keyof typeof UiFieldUtils.FIELD.sizes = 'md', extra: string = '', isContainer: boolean = false): string {
-    const sizeConfig = UiFieldUtils.FIELD.sizes[size];
+  static getFieldClasses(size: FieldSize = FieldSize.MD, extra: string = '', isContainer: boolean = false): string {
+    const sizes = UiFieldUtils.FIELD.sizes as Record<string, { layout: string; container: string }>;
+    const sizeConfig = sizes[size.value] ?? sizes.md;
     const sizeClasses = isContainer ? sizeConfig.container : sizeConfig.layout;
 
     if (!extra) {

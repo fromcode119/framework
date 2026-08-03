@@ -1,7 +1,7 @@
-import type { SecondaryPanelState } from '@fromcode119/react';
+import type { ISecondaryPanelState } from '@fromcode119/react';
 
 export class ClientLayoutPanelStateService {
-  static createEmptyState(): SecondaryPanelState {
+  static createEmptyState(): ISecondaryPanelState {
     return {
       version: 1,
       contexts: {},

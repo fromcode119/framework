@@ -1,14 +1,30 @@
+import { ThemeMode } from '@fromcode119/core/client';
 import React from 'react';
-import { FrameworkIcons } from '@fromcode119/react';
-import { CustomFieldErrorBoundary } from './custom-field-error-boundary';
-import type { FieldCustomComponentProps } from './field-renderer.interfaces';
+import type { ReactNode } from 'react';
 
-export class FieldCustomComponent extends React.Component<FieldCustomComponentProps> {
-  render(): React.ReactNode {
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { FrameworkIcons } from '@fromcode119/react';
+import { CustomFieldErrorBoundary } from '@/components/collection/custom-field-error-boundary';
+import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+export class FieldCustomComponent extends PureReactor {
+  @prop declare field: ICollectionField;
+  @prop declare currentValue: any;
+  @prop declare updateValue: (value: any) => void;
+  @prop declare theme: ThemeMode;
+  @prop declare collectionSlug: string;
+  @prop declare pluginSettings?: Record<string, any>;
+  @prop declare globalSettings?: Record<string, any>;
+  @prop declare fieldComponents: Record<string, any>;
+  @prop declare isFieldReadOnly: boolean;
+  @prop declare record?: Record<string, any>;
+  @prop declare onPatch?: (partial: Record<string, any>) => void;
+  @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
+
+  render(): ReactNode {
     const {
       field, currentValue, updateValue, theme, collectionSlug, pluginSettings, globalSettings,
       fieldComponents, isFieldReadOnly, record, onPatch, wrapWithReadOnlyOverride
-    } = this.props;
+    } = this;
     const componentName = field.admin!.component as string;
     const registeredComponent = fieldComponents[componentName];
     let CustomComponent: any = registeredComponent;

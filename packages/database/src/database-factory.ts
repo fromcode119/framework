@@ -1,9 +1,10 @@
-import type { IDatabaseManager, DatabaseDriverCreator } from './types';
-import { TableResolver } from './table-resolver';
-import type { DatabaseDialectDefinition } from './dialects/database-dialect-definition.interfaces';
-import type { DatabaseDialectResolver } from './dialects/database-dialect-resolver.interfaces';
-import { DatabaseDialectDefinitionLoader } from './dialects/database-dialect-definition-loader';
-import { DatabaseDialectRegistry } from './dialects/database-dialect-registry';
+import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
+import type { IDatabaseDriverCreator } from '@database/interfaces/database-driver-creator.interface';
+import { TableResolver } from '@database/table-resolver';
+import type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
+import type { IDatabaseDialectResolver } from '@database/dialects/interfaces/database-dialect-resolver.interface';
+import { DatabaseDialectDefinitionLoader } from '@database/dialects/database-dialect-definition-loader';
+import { DatabaseDialectRegistry } from '@database/dialects/database-dialect-registry';
 
 /**
  * Universal Database Factory.
@@ -11,17 +12,17 @@ import { DatabaseDialectRegistry } from './dialects/database-dialect-registry';
  * Supports dynamic registration of custom dialects.
  */
 export class DatabaseFactory {
-  private static drivers: Map<string, DatabaseDriverCreator> = new Map();
+  private static drivers: Map<string, IDatabaseDriverCreator> = new Map();
 
-  static register(protocol: string, creator: DatabaseDriverCreator) {
+  static register(protocol: string, creator: IDatabaseDriverCreator) {
     this.drivers.set(protocol, creator);
   }
 
-  static registerDialectDefinition(definition: DatabaseDialectDefinition): void {
+  static registerDialectDefinition(definition: IDatabaseDialectDefinition): void {
     DatabaseDialectRegistry.registerDefinition(definition);
   }
 
-  static registerDialectResolver(resolver: DatabaseDialectResolver): void {
+  static registerDialectResolver(resolver: IDatabaseDialectResolver): void {
     DatabaseDialectRegistry.registerResolver(resolver);
   }
 

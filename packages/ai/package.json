@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/ai",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -27,13 +27,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "node ../typor/dist/typor-cli.cjs build && node ../nextor/dist/nextor-cli.cjs stamp-client dist",
     "dev": "tsc -w",
     "test": "jest -c jest.config.js"
   },
   "dependencies": {
     "@fromcode119/mcp": "*",
     "@fromcode119/react": "*",
+    "@fromcode119/reactor": "*",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "@fromcode119/sdk": "*"

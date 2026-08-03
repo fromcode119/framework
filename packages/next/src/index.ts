@@ -1,19 +1,17 @@
-import { LoadedPlugin } from '@fromcode119/core';
-import type { HeadInjection, SSRContext } from './index.interfaces';
 
+import type { IHeadInjection } from '@nextjs/interfaces/head-injection.interface';
 
 export class SSRRegistry {
-  private injections: Map<string, HeadInjection[]> = new Map();
+  private injections: Map<string, IHeadInjection[]> = new Map();
 
-  registerHeadInjection(pluginSlug: string, injection: HeadInjection) {
+  registerHeadInjection(pluginSlug: string, injection: IHeadInjection) {
     const existing = this.injections.get(pluginSlug) || [];
     this.injections.set(pluginSlug, [...existing, injection]);
   }
 
-  getAllInjections(): HeadInjection[] {
+  getAllInjections(): IHeadInjection[] {
     return Array.from(this.injections.values()).flat();
   }
 }
-
 
 // Next.js specific components like a HeadInjector could go here

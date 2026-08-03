@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import type { BackupSectionKey } from '../backup-service.types';
-import { BackupArchivePathService } from './backup-archive-path-service';
+import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+import { BackupArchivePathService } from '@core/management/helpers/backup-archive-path-service';
 
 /**
  * Pure, stateless helpers for the system-backup flow — section resolution, root-entry collection,
@@ -10,11 +10,11 @@ import { BackupArchivePathService } from './backup-archive-path-service';
  */
 export class SystemBackupHelper {
   static isDatabaseOnlyRequest(requestedSections: BackupSectionKey[]): boolean {
-    return requestedSections.length === 1 && requestedSections[0] === 'database';
+    return requestedSections.length === 1 && requestedSections[0] === BackupSectionKey.DATABASE;
   }
 
   static resolveRequestedSections(sections?: BackupSectionKey[]): BackupSectionKey[] {
-    const allowedSections: BackupSectionKey[] = ['core', 'database', 'plugins', 'themes'];
+    const allowedSections: BackupSectionKey[] = BackupSectionKey.values() as BackupSectionKey[];
     if (sections === undefined) {
       return [...allowedSections];
     }
@@ -41,12 +41,12 @@ export class SystemBackupHelper {
       }
 
       if (item === 'plugins') {
-        return requestedSections.includes('plugins');
+        return requestedSections.includes(BackupSectionKey.PLUGINS);
       }
       if (item === 'themes') {
-        return requestedSections.includes('themes');
+        return requestedSections.includes(BackupSectionKey.THEMES);
       }
-      return requestedSections.includes('core');
+      return requestedSections.includes(BackupSectionKey.CORE);
     });
   }
 
@@ -58,17 +58,17 @@ export class SystemBackupHelper {
     const includesCoreFiles = rootEntries.some((entry) => entry !== 'plugins' && entry !== 'themes');
     const includedSections: BackupSectionKey[] = [];
 
-    if (requestedSections.includes('core') && includesCoreFiles) {
-      includedSections.push('core');
+    if (requestedSections.includes(BackupSectionKey.CORE) && includesCoreFiles) {
+      includedSections.push(BackupSectionKey.CORE);
     }
-    if (requestedSections.includes('database') && Boolean(tempDbFile)) {
-      includedSections.push('database');
+    if (requestedSections.includes(BackupSectionKey.DATABASE) && Boolean(tempDbFile)) {
+      includedSections.push(BackupSectionKey.DATABASE);
     }
-    if (requestedSections.includes('plugins') && rootEntries.includes('plugins')) {
-      includedSections.push('plugins');
+    if (requestedSections.includes(BackupSectionKey.PLUGINS) && rootEntries.includes('plugins')) {
+      includedSections.push(BackupSectionKey.PLUGINS);
     }
-    if (requestedSections.includes('themes') && rootEntries.includes('themes')) {
-      includedSections.push('themes');
+    if (requestedSections.includes(BackupSectionKey.THEMES) && rootEntries.includes('themes')) {
+      includedSections.push(BackupSectionKey.THEMES);
     }
 
     return includedSections;

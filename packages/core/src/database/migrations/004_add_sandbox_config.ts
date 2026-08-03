@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class AddSandboxConfigMigration extends BaseMigration {
+export class AddSandboxConfigMigration extends BaseMigration {
   readonly version = 4;
   readonly name = 'Add sandbox configuration to plugins table';
 
@@ -46,5 +46,3 @@ class AddSandboxConfigMigration extends BaseMigration {
     });
   }
 }
-
-export default new AddSandboxConfigMigration();

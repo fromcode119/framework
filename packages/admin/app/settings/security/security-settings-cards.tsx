@@ -1,14 +1,41 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { NumberStepper } from '@/components/ui/number-stepper';
-import { Switch } from '@/components/ui/switch';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from './setting-row';
-import type { SecuritySettingsCardsProps } from './security-settings-cards.interfaces';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode, SetStateAction } from 'react';
 
-export class SecuritySettingsCards extends React.Component<SecuritySettingsCardsProps> {
-  render(): React.ReactNode {
-    const { settings, setSettings, theme } = this.props;
+import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
+import { NumberStepper } from '@/components/ui/number-stepper';
+import { Switch } from '@/components/ui/view/switch.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { SettingRow } from '@/app/settings/security/setting-row';
+
+export class SecuritySettingsCards extends PureReactor {
+  @prop declare settings: Record<string, any>;
+  @prop declare setSettings: (update: SetStateAction<Record<string, any>>) => void;
+  @prop declare theme: ThemeMode;
+
+  @bound
+  setSessionDuration(v: number | string): void {
+    this.setSettings(prev => ({ ...prev, auth_session_duration_minutes: v === '' ? '' : String(v) }));
+  }
+
+  @bound
+  setTwoFactorEnabled(val: boolean): void {
+    this.setSettings(prev => ({ ...prev, two_factor_enabled: val }));
+  }
+
+  @bound
+  setRateLimitMax(v: number | string): void {
+    this.setSettings(prev => ({ ...prev, rate_limit_max: v === '' ? '' : String(v) }));
+  }
+
+  @bound
+  setRateLimitWindow(v: number | string): void {
+    this.setSettings(prev => ({ ...prev, rate_limit_window: v === '' ? '' : String(v) }));
+  }
+
+  render(): ReactNode {
+    const settings = this.settings;
+    const theme = this.theme;
     return (
       <>
         <Card title="Account Defense">
@@ -22,7 +49,7 @@ export class SecuritySettingsCards extends React.Component<SecuritySettingsCards
               min={15}
               max={43200}
               value={settings.auth_session_duration_minutes}
-              onChange={(v) => setSettings(prev => ({ ...prev, auth_session_duration_minutes: v === '' ? '' : String(v) }))}
+              onChange={this.setSessionDuration}
             />
           </SettingRow>
 
@@ -34,7 +61,7 @@ export class SecuritySettingsCards extends React.Component<SecuritySettingsCards
           >
             <Switch
               checked={settings.two_factor_enabled}
-              onChange={(val) => setSettings(prev => ({ ...prev, two_factor_enabled: val }))}
+              onChange={this.setTwoFactorEnabled}
             />
           </SettingRow>
         </Card>
@@ -49,7 +76,7 @@ export class SecuritySettingsCards extends React.Component<SecuritySettingsCards
             <NumberStepper
               min={0}
               value={settings.rate_limit_max}
-              onChange={(v) => setSettings(prev => ({ ...prev, rate_limit_max: v === '' ? '' : String(v) }))}
+              onChange={this.setRateLimitMax}
             />
           </SettingRow>
 
@@ -62,7 +89,7 @@ export class SecuritySettingsCards extends React.Component<SecuritySettingsCards
             <NumberStepper
               min={0}
               value={settings.rate_limit_window}
-              onChange={(v) => setSettings(prev => ({ ...prev, rate_limit_window: v === '' ? '' : String(v) }))}
+              onChange={this.setRateLimitWindow}
             />
           </SettingRow>
         </Card>

@@ -1,11 +1,12 @@
+import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { PluginManifest } from '../../types';
-import { BackupService } from '../../management/backup-service';
-import { SafeArchive } from '../../security/safe-archive';
-import { PluginPackageValidator } from './plugin-package-validator';
-import { PluginDependencyInstallerService } from './plugin-dependency-installer-service';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import { BackupService } from '@core/management/backup-service';
+import { SafeArchive } from '@core/security/safe-archive';
+import { PluginPackageValidator } from '@core/plugin/services/plugin-package-validator';
+import { PluginDependencyInstallerService } from '@core/plugin/services/plugin-dependency-installer-service';
 
 /**
  * PluginArchiveInstallerService
@@ -74,7 +75,7 @@ export class PluginArchiveInstallerService {
     }
   }
 
-  async installFromZip(filePath: string): Promise<PluginManifest> {
+  async installFromZip(filePath: string): Promise<IPluginManifest> {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-ext-'));
 
     try {
@@ -97,12 +98,12 @@ export class PluginArchiveInstallerService {
       }
 
       const manifestContent = fs.readFileSync(path.join(contentDir, 'manifest.json'), 'utf8');
-      const manifest: PluginManifest = JSON.parse(manifestContent);
+      const manifest: IPluginManifest = JSON.parse(manifestContent);
       PluginPackageValidator.validateInstalledPackage(contentDir, manifest);
       const targetDir = path.join(this.pluginsRoot, manifest.slug);
 
       if (fs.existsSync(targetDir)) {
-          await BackupService.create(manifest.slug, targetDir, 'plugins');
+          await BackupService.create(manifest.slug, targetDir, BackupSectionKey.PLUGINS);
           fs.rmSync(targetDir, { recursive: true, force: true });
       }
       fs.mkdirSync(targetDir, { recursive: true });

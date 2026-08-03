@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { MediaManager } from '@fromcode119/media';
-import { ApiConfig } from '../config/api-config';
-import { ApiUrlUtils } from '../utils/url';
+import { ApiConfig } from '@api/config/api-config';
+import { ApiUrlUtils } from '@api/utils/url';
 
 export class ServerUploadsConfigService {
   static resolve(

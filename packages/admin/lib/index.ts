@@ -6,18 +6,28 @@
  */
 
 // Services (singleton pattern for utilities)
-export * from './services';
+export * from '@/lib/services';
 
 // Utilities
-export * from './admin-path';
-export * from './api';
-export * from './auth-utils';
-export * from './collection-utils';
-export * from './constants';
-export * from './nav-utils';
-export * from './settings';
-export * from './theme-preview-utils';
-export * from './timezone';
-export * from './url-utils';
-export * from './admin-extensions';
-export * from './admin-proxy';
+export * from '@/lib/admin-path';
+export * from '@/lib/api';
+export * from '@/lib/auth-utils';
+export * from '@/lib/collection-utils';
+export * from '@/lib/constants/admin.constants';
+export * from '@/lib/nav-utils';
+export * from '@/lib/settings';
+export * from '@/lib/theme-preview-utils';
+export * from '@/lib/timezone';
+export * from '@/lib/url-utils';
+export * from '@/lib/admin-extensions';
+export * from '@/lib/admin-proxy';
+
+/**
+ * The appearance engine + shared admin components.
+ *
+ * At runtime `@fromcode119/admin`, `@fromcode119/admin/components` and `@fromcode119/admin/services` are
+ * ONE module (see ClientLayoutRuntimeService.buildAdminRuntimeModule), so an appearance bundle importing
+ * `AdminComponent` from the bare specifier resolves fine. The types said otherwise, which made every such
+ * import an error — this re-export makes the declared surface match what is actually served.
+ */
+export * from '@/components';

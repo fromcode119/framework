@@ -1,6 +1,7 @@
+import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
-import { AuthControllerSession } from './auth-controller-session';
+import { AuthControllerSession } from '@api/controllers/auth/auth-controller-session';
 
 export class AuthControllerAccount extends AuthControllerSession {
   async verifyPassword(req: any, res: Response) {
@@ -195,7 +196,7 @@ export class AuthControllerAccount extends AuthControllerSession {
     const result = await this.consumeEmailChangeToken(token);
     if (!result.ok || !result.userId || !result.newEmail || !result.oldEmail) {
       return res.status(400).json({
-        error: result.reason === 'expired'
+        error: result.reason === TokenErrorReason.EXPIRED
           ? 'Email change link has expired. Please request a new one.'
           : 'Invalid email change token'
       });

@@ -1,5 +1,9 @@
-import type { AssistantPromptCopy, AssistantPromptProfile } from '../../types';
-import type { RuntimeIntent, RuntimeContext } from '../types.types';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import type { IAssistantPromptCopy } from '@ai/admin-assistant-runtime/interfaces/assistant-prompt-copy.interface';
+import type { IAssistantPromptProfile } from '@ai/admin-assistant-runtime/interfaces/assistant-prompt-profile.interface';
+import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import { RuntimeIntentKind } from '@ai/admin-assistant-runtime/runtime/enums/runtime-intent-kind.enum';
 
 /**
  * Chat operations utilities for AI assistant runtime
@@ -13,7 +17,7 @@ export class ChatHelpers {
    * @returns Friendly fallback response
    * 
    * @example
-   * const response = ChatHelpers.fallbackSmalltal('hey there');
+   * const response = ChatHelpers.fallbackSmalltalk('hey there');
    * // => "Hey. What do you want to talk about?"
    */
   static fallbackSmalltalk(message: string): string {
@@ -27,10 +31,10 @@ export class ChatHelpers {
    * @returns Factual fallback response
    * 
    * @example
-   * const response = ChatHelpers.fallbackFactual({ kind: 'factual_qa', quickAnswer: 'Answer' });
+   * const response = ChatHelpers.fallbackFactual({ kind: RuntimeIntentKind.FACTUAL_QA, quickAnswer: 'Answer' });
    * // => "Answer"
    */
-  static fallbackFactual(intent: RuntimeIntent): string {
+  static fallbackFactual(intent: IRuntimeIntent): string {
     if (intent.quickAnswer) return intent.quickAnswer;
     return 'Ask a concrete target, metric, or time window and I will check it directly.';
   }
@@ -50,13 +54,13 @@ export class ChatHelpers {
    * // => [{ role: 'user', content: 'Hello' }, { role: 'assistant', content: 'Hi there!' }]
    */
   static normalizeChatHistory(
-    history: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>
-  ): Array<{ role: 'user' | 'assistant'; content: string }> {
+    history: Array<{ role: AssistantRole; content: string }>
+  ): Array<{ role: AssistantRole; content: string }> {
     return (Array.isArray(history) ? history : [])
-      .filter((entry) => entry.role === 'user' || entry.role === 'assistant')
+      .filter((entry) => entry.role === AssistantRole.USER || entry.role === AssistantRole.ASSISTANT)
       .slice(-16)
       .map((entry) => ({
-        role: (entry.role === 'assistant' ? 'assistant' : 'user') as 'assistant' | 'user',
+        role: entry.role === AssistantRole.ASSISTANT ? AssistantRole.ASSISTANT : AssistantRole.USER,
         content: String(entry.content || '').trim(),
       }))
       .filter((entry) => !!entry.content);
@@ -71,9 +75,9 @@ export class ChatHelpers {
    * @example
    * const { profile, copy } = await ChatHelpers.resolvePromptInput(context);
    */
-  static async resolvePromptInput(context: RuntimeContext): Promise<{
-    profile: AssistantPromptProfile;
-    copy: AssistantPromptCopy;
+  static async resolvePromptInput(context: IRuntimeContext): Promise<{
+    profile: IAssistantPromptProfile;
+    copy: IAssistantPromptCopy;
   }> {
     const collections = Array.isArray(context.collections) ? context.collections : [];
     const plugins = typeof context.options.getPlugins === 'function' ? context.options.getPlugins() || [] : [];
@@ -99,15 +103,15 @@ export class ChatHelpers {
    * const prompt = ChatHelpers.buildSystemPrompt({
    *   profile: { basicSystem: 'Assistant persona', advancedSystem: 'Advanced system' },
    *   copy: { basic: ['Be helpful'], advanced: ['Execute precisely'] },
-   *   intent: { kind: 'chat', confidence: 0.9 },
+   *   intent: { kind: RuntimeIntentKind.CHAT, confidence: 0.9 },
    *   workspaceSummary: 'Collections: posts, pages'
    * });
    * // => "You are Atlantis Intelligence.\nChat naturally..."
    */
  static buildSystemPrompt(input: {
-    profile: AssistantPromptProfile;
-    copy: AssistantPromptCopy;
-    intent: RuntimeIntent;
+    profile: IAssistantPromptProfile;
+    copy: IAssistantPromptCopy;
+    intent: IRuntimeIntent;
     workspaceSummary: string;
   }): string {
     const base = [
@@ -119,12 +123,12 @@ export class ChatHelpers {
     ];
 
     const profileLine =
-      input.intent.kind === 'chat' || input.intent.kind === 'smalltalk' || input.intent.kind === 'factual_qa'
+      input.intent.kind === RuntimeIntentKind.CHAT || input.intent.kind === RuntimeIntentKind.SMALLTALK || input.intent.kind === RuntimeIntentKind.FACTUAL_QA
         ? String(input.profile.basicSystem || '').trim()
         : String(input.profile.advancedSystem || '').trim();
     if (profileLine) base.push(profileLine);
 
-    const copyLines = input.intent.kind === 'chat' || input.intent.kind === 'smalltalk' || input.intent.kind === 'factual_qa'
+    const copyLines = input.intent.kind === RuntimeIntentKind.CHAT || input.intent.kind === RuntimeIntentKind.SMALLTALK || input.intent.kind === RuntimeIntentKind.FACTUAL_QA
       ? (Array.isArray(input.copy.basic) ? input.copy.basic : [])
       : (Array.isArray(input.copy.advanced) ? input.copy.advanced : []);
     for (const line of copyLines.slice(0, 8)) {

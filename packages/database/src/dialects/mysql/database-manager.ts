@@ -2,11 +2,13 @@ import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
 import { mysqlTable, text } from 'drizzle-orm/mysql-core';
-import { IDatabaseManager, ISchemaCollection, ISchemaField } from '../../types';
-import { BaseDialect } from '../base-dialect';
-import { MysqlColumnNormalizer } from './column-normalizer';
-import { MysqlSchemaBuilder } from './schema-builder';
-import { MysqlReadOperations } from './read-operations';
+import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
+import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
+import type { ISchemaField } from '@database/interfaces/schema-field.interface';
+import { BaseDialect } from '@database/dialects/base-dialect';
+import { MysqlColumnNormalizer } from '@database/dialects/mysql/column-normalizer';
+import { MysqlSchemaBuilder } from '@database/dialects/mysql/schema-builder';
+import { MysqlReadOperations } from '@database/dialects/mysql/read-operations';
 
 export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: mysql.Pool;

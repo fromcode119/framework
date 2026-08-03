@@ -1,7 +1,8 @@
+import { Platform } from '@fromcode119/reactor';
 import { ClientRuntimeConstants } from '@fromcode119/core/client';
 import { AppEnv } from '@/lib/env';
-import { AdminAppearanceRegistry } from './admin-appearance-registry';
-import { AdminAppearanceResolver } from './admin-appearance-resolver';
+import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';
+import { AdminAppearanceResolver } from '@/lib/appearance/admin-appearance-resolver';
 
 /**
  * Resolves the active admin appearance id from runtime inputs: the per-tenant override (system setting
@@ -18,7 +19,7 @@ export class ActiveAdminAppearanceService {
 
   static firstPaintHint(): string {
     const deploymentDefault = String(AppEnv.ADMIN_APPEARANCE || '').trim();
-    if (typeof window === 'undefined') return deploymentDefault;
+    if (!Platform.isBrowser) return deploymentDefault;
     try {
       return (window.localStorage.getItem(ActiveAdminAppearanceService.HINT_KEY) || '').trim() || deploymentDefault;
     } catch {
@@ -28,7 +29,7 @@ export class ActiveAdminAppearanceService {
 
   /** Keep the first-paint hint in sync with the resolved active appearance id. */
   static rememberHint(id: string): void {
-    if (typeof window === 'undefined') return;
+    if (!Platform.isBrowser) return;
     const desired = (id || '').trim();
     try {
       if (!desired || desired === 'default') {

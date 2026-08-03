@@ -1,3 +1,4 @@
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
 /**
  * Enhanced Context Manager
  * 
@@ -5,12 +6,14 @@
  * Preserves critical context while summarizing older conversations.
  */
 
-import type { ContextFrame, ContextSummary } from './enhanced-context-manager.interfaces';
-import type { MessageImportance } from './enhanced-context-manager.types';
+import type { IContextFrame } from '@ai/api/forge/interfaces/context-frame.interface';
+
+import type { IContextSummary } from '@ai/api/forge/interfaces/context-summary.interface';
+import { MessageImportance } from '@ai/api/forge/enums/message-importance.enum';
 
 export class EnhancedContextManager {
-  private frames: ContextFrame[] = [];
-  private summaries: ContextSummary[] = [];
+  private frames: IContextFrame[] = [];
+  private summaries: IContextSummary[] = [];
   private readonly maxTokens: number;
   private readonly criticalRetentionTokens: number;
 
@@ -26,12 +29,12 @@ export class EnhancedContextManager {
    * Add a new message to context with importance scoring
    */
   addFrame(
-    role: 'system' | 'user' | 'assistant',
+    role: AssistantRole,
     content: string,
-    importance: MessageImportance = 'MEDIUM',
-    metadata?: ContextFrame['metadata']
-  ): ContextFrame {
-    const frame: ContextFrame = {
+    importance: MessageImportance = MessageImportance.MEDIUM,
+    metadata?: IContextFrame['metadata']
+  ): IContextFrame {
+    const frame: IContextFrame = {
       messageId: `msg_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       role,
       content,
@@ -50,9 +53,9 @@ export class EnhancedContextManager {
    * Get context frames suitable for LLM input
    * Returns in chronological order, respects token limits
    */
-  getContextForLLM(): ContextFrame[] {
+  getContextForLLM(): IContextFrame[] {
     let totalTokens = 0;
-    const result: ContextFrame[] = [];
+    const result: IContextFrame[] = [];
 
     // Start with most recent, work backwards
     for (let i = this.frames.length - 1; i >= 0; i--) {
@@ -62,7 +65,7 @@ export class EnhancedContextManager {
       if (newTotal <= this.maxTokens) {
         result.unshift(frame); // Keep chronological order
         totalTokens = newTotal;
-      } else if (frame.importance === 'CRITICAL' && totalTokens < this.criticalRetentionTokens) {
+      } else if (frame.importance === MessageImportance.CRITICAL && totalTokens < this.criticalRetentionTokens) {
         // Force include critical frames
         result.unshift(frame);
         totalTokens = newTotal;
@@ -75,9 +78,9 @@ export class EnhancedContextManager {
       const summaryContent = this.formatSummary(latestSummary);
       result.unshift({
         messageId: `summary_${latestSummary.periodEnd}`,
-        role: 'system',
+        role: AssistantRole.SYSTEM,
         content: summaryContent,
-        importance: 'HIGH',
+        importance: MessageImportance.HIGH,
         tokens: this.estimateTokens(summaryContent),
         timestamp: latestSummary.periodEnd,
         isCheckpointSummary: true,
@@ -90,7 +93,7 @@ export class EnhancedContextManager {
   /**
    * Score message importance based on content and context
    */
-  scoreImportance(role: string, content: string, metadata?: ContextFrame['metadata']): MessageImportance {
+  scoreImportance(role: string, content: string, metadata?: IContextFrame['metadata']): MessageImportance {
     let score = 0;
 
     // Role-based baseline
@@ -109,16 +112,16 @@ export class EnhancedContextManager {
     if (metadata?.decision) score += 1.5;
     if (metadata?.toolsUsed && metadata.toolsUsed.length > 0) score += 1;
 
-    if (score >= 4) return 'CRITICAL';
-    if (score >= 2.5) return 'HIGH';
-    if (score >= 1) return 'MEDIUM';
-    return 'LOW';
+    if (score >= 4) return MessageImportance.CRITICAL;
+    if (score >= 2.5) return MessageImportance.HIGH;
+    if (score >= 1) return MessageImportance.MEDIUM;
+    return MessageImportance.LOW;
   }
 
   /**
    * Create checkpoint summary and clean up old frames
    */
-  createCheckpoint(criteria: string = 'Task completed or significant progress'): ContextSummary {
+  createCheckpoint(criteria: string = 'Task completed or significant progress'): IContextSummary {
     const summary = this.summarizeFrames(criteria);
     this.summaries.push(summary);
 
@@ -126,7 +129,7 @@ export class EnhancedContextManager {
     this.frames = this.frames.filter((frame) => {
       const age = Date.now() - frame.timestamp;
       if (age < 5 * 60 * 1000) return true; // Keep if less than 5 minutes old
-      if (frame.importance !== 'LOW') return true; // Keep non-low priority
+      if (frame.importance !== MessageImportance.LOW) return true; // Keep non-low priority
       return false;
     });
 
@@ -140,7 +143,7 @@ export class EnhancedContextManager {
     totalFrames: number;
     totalTokens: number;
     summaries: number;
-    distribution: Record<MessageImportance, number>;
+    distribution: Record<string, number>;
   } {
     const totalTokens = this.frames.reduce((sum, f) => sum + f.tokens, 0);
     const distribution = {
@@ -151,7 +154,7 @@ export class EnhancedContextManager {
     };
 
     for (const frame of this.frames) {
-      distribution[frame.importance]++;
+      distribution[frame.importance.value]++;
     }
 
     return {
@@ -178,7 +181,7 @@ export class EnhancedContextManager {
     if (totalTokens <= this.maxTokens) return;
 
     // Remove LOW priority frames first
-    this.frames = this.frames.filter((f) => f.importance !== 'LOW');
+    this.frames = this.frames.filter((f) => f.importance !== MessageImportance.LOW);
     totalTokens = this.frames.reduce((sum, f) => sum + f.tokens, 0);
 
     if (totalTokens <= this.maxTokens) return;
@@ -187,7 +190,7 @@ export class EnhancedContextManager {
     const now = Date.now();
     const fiveMinutesAgo = now - 5 * 60 * 1000;
     this.frames = this.frames.filter((f) => {
-      if (f.importance !== 'MEDIUM') return true;
+      if (f.importance !== MessageImportance.MEDIUM) return true;
       return f.timestamp > fiveMinutesAgo;
     });
 
@@ -198,8 +201,8 @@ export class EnhancedContextManager {
     // Last resort: keep only CRITICAL and most recent HIGH
     this.frames = this.frames
       .sort((a, b) => {
-        if (a.importance === 'CRITICAL') return -1;
-        if (b.importance === 'CRITICAL') return 1;
+        if (a.importance === MessageImportance.CRITICAL) return -1;
+        if (b.importance === MessageImportance.CRITICAL) return 1;
         return b.timestamp - a.timestamp;
       })
       .slice(0, Math.max(5, Math.floor(this.maxTokens / 200)));
@@ -210,7 +213,7 @@ export class EnhancedContextManager {
     return Math.ceil(content.length / 4);
   }
 
-  private summarizeFrames(criteria: string): ContextSummary {
+  private summarizeFrames(criteria: string): IContextSummary {
     const now = Date.now();
     const keyDecisions: string[] = [];
     const completedTasks: string[] = [];
@@ -237,7 +240,7 @@ export class EnhancedContextManager {
     };
   }
 
-  private formatSummary(summary: ContextSummary): string {
+  private formatSummary(summary: IContextSummary): string {
     const lines = [
       '=== CONTEXT SUMMARY ===',
       `Period: ${new Date(summary.periodStart).toLocaleTimeString()} - ${new Date(summary.periodEnd).toLocaleTimeString()}`,

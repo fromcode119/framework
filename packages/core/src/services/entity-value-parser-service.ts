@@ -1,16 +1,21 @@
-import { CoercionUtils } from '../coercion-utils';
-import type { Collection, Field } from '../types/schema.interfaces';
-import type { EntityField, EntityInputAlias, EntityParseOptions, EntityParseResult } from '../types/entity.interfaces';
+import { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
+import { CoercionUtils } from '@core/coercion-utils';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import type { IField } from '@core/interfaces/field.interface';
+import type { IEntityField } from '@core/interfaces/entity-field.interface';
+import type { IEntityInputAlias } from '@core/interfaces/entity-input-alias.interface';
+import type { IEntityParseOptions } from '@core/interfaces/entity-parse-options.interface';
+import type { IEntityParseResult } from '@core/interfaces/entity-parse-result.interface';
 
 export class EntityValueParserService {
   parseCollectionInput(
-    collection: Collection,
+    collection: ICollection,
     input: Record<string, unknown>,
-    options: EntityParseOptions = {},
-  ): EntityParseResult {
+    options: IEntityParseOptions = {},
+  ): IEntityParseResult {
     const source = CoercionUtils.toObject(input);
     const data: Record<string, unknown> = options.includeUnknown ? { ...source } : {};
-    const errors: EntityParseResult['errors'] = [];
+    const errors: IEntityParseResult['errors'] = [];
 
     for (const field of collection.fields || []) {
       const name = String(field.name || '').trim();
@@ -19,13 +24,13 @@ export class EntityValueParserService {
       }
 
       const resolved = this.resolveIncomingValue(collection, field, source);
-      if (!resolved.exists && options.mode === 'update') {
+      if (!resolved.exists && options.mode === EntityParseMode.UPDATE) {
         continue;
       }
 
       const value = resolved.exists ? resolved.value : field.defaultValue;
       if (this.isEmpty(value)) {
-        if (field.required && (options.mode !== 'update' || resolved.exists)) {
+        if (field.required && (options.mode !== EntityParseMode.UPDATE || resolved.exists)) {
           errors.push({ field: name, message: `Field "${field.label || name}" is required` });
         }
         if (resolved.exists) {
@@ -42,15 +47,15 @@ export class EntityValueParserService {
     return { data, errors };
   }
 
-  cleanCollectionInput(collection: Collection, input: Record<string, unknown>, options: EntityParseOptions = {}): Record<string, unknown> {
+  cleanCollectionInput(collection: ICollection, input: Record<string, unknown>, options: IEntityParseOptions = {}): Record<string, unknown> {
     return this.parseCollectionInput(collection, input, options).data;
   }
 
-  validateCollectionInput(collection: Collection, input: Record<string, unknown>, options: EntityParseOptions = {}): EntityParseResult['errors'] {
+  validateCollectionInput(collection: ICollection, input: Record<string, unknown>, options: IEntityParseOptions = {}): IEntityParseResult['errors'] {
     return this.parseCollectionInput(collection, input, options).errors;
   }
 
-  private shouldSkipField(field: Field, options: EntityParseOptions): boolean {
+  private shouldSkipField(field: IField, options: IEntityParseOptions): boolean {
     if (field.name === 'id') return true;
     if (field.name === 'createdAt' || field.name === 'updatedAt') {
       // Normally skipped as auto-managed timestamps, but let through when the caller has
@@ -61,8 +66,8 @@ export class EntityValueParserService {
   }
 
   private resolveIncomingValue(
-    collection: Collection,
-    field: Field,
+    collection: ICollection,
+    field: IField,
     source: Record<string, unknown>,
   ): { exists: boolean; value: unknown } {
     const name = String(field.name || '').trim();
@@ -79,11 +84,11 @@ export class EntityValueParserService {
     return { exists: false, value: undefined };
   }
 
-  private resolveInputPaths(collection: Collection, field: Field): string[] {
-    const aliases = ((collection as any).inputAliases || []) as EntityInputAlias[];
+  private resolveInputPaths(collection: ICollection, field: IField): string[] {
+    const aliases = ((collection as any).inputAliases || []) as IEntityInputAlias[];
     const fieldName = String(field.name || '').trim();
     const entityAlias = aliases.find((alias) => alias.field === fieldName);
-    const fieldAliases = ((field as EntityField).inputAliases || []) as string[];
+    const fieldAliases = ((field as IEntityField).inputAliases || []) as string[];
     return [...(entityAlias?.from || []), ...fieldAliases, fieldName].filter(Boolean);
   }
 
@@ -99,7 +104,7 @@ export class EntityValueParserService {
     return current;
   }
 
-  private coerceFieldValue(field: Field, value: unknown): unknown {
+  private coerceFieldValue(field: IField, value: unknown): unknown {
     if (field.localized && value && typeof value === 'object') {
       return value;
     }
@@ -135,7 +140,7 @@ export class EntityValueParserService {
     }
   }
 
-  private coerceEmptyFieldValue(field: Field): unknown {
+  private coerceEmptyFieldValue(field: IField): unknown {
     switch (String(field.type)) {
       case 'number':
       case 'date':
@@ -195,7 +200,7 @@ export class EntityValueParserService {
     return value;
   }
 
-  private coerceSelectValue(field: Field, value: unknown): unknown {
+  private coerceSelectValue(field: IField, value: unknown): unknown {
     if ((field.admin as any)?.multiple || (field as any).multiple) {
       return this.coerceArrayValue(value);
     }

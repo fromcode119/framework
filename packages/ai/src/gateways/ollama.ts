@@ -1,9 +1,9 @@
 import { UrlUtils } from '@fromcode119/core/client';
-import { AssistantClient } from '../types.interfaces';
-import type { OllamaConfig } from './ollama.types';
+import type { IAssistantClient } from '@ai/interfaces/assistant-client.interface';
+import type { IOllamaConfig } from '@ai/gateways/interfaces/ollama-config.interface';
 
 export class OllamaGateway {
-  static normalizeOllamaConfig(input: Record<string, any>): OllamaConfig {
+  static normalizeOllamaConfig(input: Record<string, any>): IOllamaConfig {
       return {
         model: String(input?.model || 'llama3.1').trim() || 'llama3.1',
         baseUrl: UrlUtils.trimTrailingSlash(String(input?.baseUrl || 'http://127.0.0.1:11434').trim() || 'http://127.0.0.1:11434'),
@@ -13,7 +13,7 @@ export class OllamaGateway {
 
   }
 
-  static createOllamaClient(input: Record<string, any>): AssistantClient {
+  static createOllamaClient(input: Record<string, any>): IAssistantClient {
       const config = OllamaGateway.normalizeOllamaConfig(input);
       const explicitBaseUrl = UrlUtils.trimTrailingSlash(String(input?.baseUrl || '').trim());
       const configuredHost = (() => {

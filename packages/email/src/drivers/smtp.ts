@@ -1,7 +1,8 @@
 import nodemailer from 'nodemailer';
-import type { EmailDriver, EmailOptions } from '../email-factory.interfaces';
+import type { IEmailDriver } from '@email/interfaces/email-driver.interface';
+import type { IEmailOptions } from '@email/interfaces/email-options.interface';
 
-export class SMTPDriver implements EmailDriver {
+export class SMTPDriver implements IEmailDriver {
   private transporter: nodemailer.Transporter;
 
   constructor(config: {
@@ -17,7 +18,7 @@ export class SMTPDriver implements EmailDriver {
     this.transporter = nodemailer.createTransport(config);
   }
 
-  async send(options: EmailOptions): Promise<any> {
+  async send(options: IEmailOptions): Promise<any> {
     return this.transporter.sendMail({
       from: options.from,
       to: options.to,

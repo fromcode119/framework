@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PassthroughLayout } from '../components/passthrough-layout';
-import { ContentRenderingUtils } from '../lib/content-rendering-utils';
+import { PassthroughLayout } from '@/components/view/passthrough-layout.client';
+import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 
 /**
  * Regression for the pre-theme layout fallback in DynamicContentClient / HomeClient.
@@ -13,7 +13,7 @@ import { ContentRenderingUtils } from '../lib/content-rendering-utils';
  */
 describe('PassthroughLayout', () => {
   it('is a stable module-level component (same identity on every resolution)', async () => {
-    const again = await import('../components/passthrough-layout');
+    const again = await import('@/components/view/passthrough-layout.client');
     expect(again.PassthroughLayout).toBe(PassthroughLayout);
   });
 

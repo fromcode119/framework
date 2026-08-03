@@ -1,4 +1,5 @@
-import { AdminUrlUtils } from './url-utils';
+import { ThemeMode } from '@fromcode119/core/client';
+import { AdminUrlUtils } from '@/lib/url-utils';
 
 /**
  * Utilities for theme preview rendering and color palette resolution
@@ -58,7 +59,7 @@ export class ThemePreviewUtils {
    * // => { primary: '#6366f1', background: '#000', ... }
    */
   static resolvePreviewPalette(params: {
-    adminTheme: 'dark' | 'light';
+    adminTheme: ThemeMode;
     current: Record<string, string>;
     defaults?: Record<string, string>;
   }): {
@@ -93,7 +94,7 @@ export class ThemePreviewUtils {
     };
 
     const DEFAULT_PREVIEW_PRIMARY = '#6366f1';
-    const themeFallbacks = PREVIEW_THEME_FALLBACKS[adminTheme];
+    const themeFallbacks = PREVIEW_THEME_FALLBACKS[adminTheme === ThemeMode.DARK ? 'dark' : 'light'];
 
     const primary =
       ThemePreviewUtils.toNonEmptyString(current.primary) ||

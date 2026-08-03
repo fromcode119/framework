@@ -1,36 +1,30 @@
-import type { AssistantAction } from '../types';
-import { RuntimeUtils } from './types';
-import type { RuntimeIntent, RuntimeRetrievalResult } from './types.types';
-import { ActionHelpers } from './helpers/action-helpers';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
+import type { IRuntimeRetrievalResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-retrieval-result.interface';
+import { ActionHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/action-helpers';
+import { ScopedSearchTool } from '@ai/admin-assistant-runtime/enums/scoped-search-tool.enum';
 
 export class ActionBuilder {
-  static buildReplaceActions(intent: RuntimeIntent, retrieval: RuntimeRetrievalResult): AssistantAction[] {
+  static buildReplaceActions(intent: IRuntimeIntent, retrieval: IRuntimeRetrievalResult): IAssistantAction[] {
       const from = String(intent.replace?.from || '').trim();
       const to = String(intent.replace?.to || '').trim();
       if (!from || !to) return [];
 
       const grouped = ActionHelpers.collectMatchesByTool(retrieval);
       const contentActions = ActionHelpers.stageContentUpdates(grouped.get('content.search_text') || [], from, to);
-      const pluginConfigActions = ActionHelpers.stageConfigUpdates(
-        'plugins.settings.update',
-        grouped.get('plugins.settings.search_text') || [],
-        from,
-        to,
-      );
-      const themeConfigActions = ActionHelpers.stageConfigUpdates(
-        'themes.config.update',
-        grouped.get('themes.config.search_text') || [],
-        from,
-        to,
-      );
+      // The scope's search AND update tool both come from the SAME enum member, so a staged write can
+      // never land in the other scope (a mismatch here silently rewrote theme config as plugin config).
+      const stageConfig = (scope: ScopedSearchTool): IAssistantAction[] =>
+        ActionHelpers.stageConfigUpdates(scope.updateTool, grouped.get(scope.value) || [], from, to);
+      const pluginConfigActions = stageConfig(ScopedSearchTool.PLUGIN_CONFIG);
+      const themeConfigActions = stageConfig(ScopedSearchTool.THEME_CONFIG);
 
       const preferManaged = contentActions.length + pluginConfigActions.length + themeConfigActions.length > 0;
-      const pluginFileActions = preferManaged
-        ? []
-        : ActionHelpers.stageFileUpdates('plugins.files.replace_text', grouped.get('plugins.files.search_text') || [], from, to);
-      const themeFileActions = preferManaged
-        ? []
-        : ActionHelpers.stageFileUpdates('themes.files.replace_text', grouped.get('themes.files.search_text') || [], from, to);
+      const stageFiles = (scope: ScopedSearchTool): IAssistantAction[] =>
+        preferManaged ? [] : ActionHelpers.stageFileUpdates(scope.updateTool, grouped.get(scope.value) || [], from, to);
+      const pluginFileActions = stageFiles(ScopedSearchTool.PLUGIN_FILES);
+      const themeFileActions = stageFiles(ScopedSearchTool.THEME_FILES);
 
       const actions = [
         ...contentActions,
@@ -44,7 +38,7 @@ export class ActionBuilder {
 
   }
 
-  static summarizeReplaceEvidence(retrieval: RuntimeRetrievalResult): { totalMatches: number; byTool: Record<string, number> } {
+  static summarizeReplaceEvidence(retrieval: IRuntimeRetrievalResult): { totalMatches: number; byTool: Record<string, number> } {
     const byTool: Record<string, number> = {};
     let totalMatches = 0;
     for (const result of retrieval.results) {

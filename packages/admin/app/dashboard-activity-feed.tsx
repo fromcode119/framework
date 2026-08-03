@@ -1,13 +1,20 @@
-import React from 'react';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
 import { Slot } from '@fromcode119/react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/view/card.client';
+import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import type { DashboardActivityFeedProps } from './dashboard-sections.interfaces';
 
-export class DashboardActivityFeed extends React.Component<DashboardActivityFeedProps> {
-  render(): React.ReactNode {
-    const { activity, loadingActivity, hasMainContent, onViewAll } = this.props;
+export class DashboardActivityFeed extends PureReactor {
+  @prop declare activity: any[];
+  @prop declare loadingActivity: boolean;
+  @prop declare hasMainContent: boolean;
+  @prop declare onViewAll: () => void;
+
+  render(): ReactNode {
+    const { activity, loadingActivity, hasMainContent, onViewAll } = this;
     return (
       <Card noPadding className="overflow-hidden border-0 bg-white shadow-sm ring-1 ring-slate-100 dark:bg-transparent dark:shadow-none dark:ring-0">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
@@ -16,8 +23,8 @@ export class DashboardActivityFeed extends React.Component<DashboardActivityFeed
             <p className="text-[11px] text-slate-400 mt-0.5">Real-time lifecycle telemetry</p>
            </div>
            <Button
-             variant="ghost"
-             size="sm"
+             variant={ButtonVariant.GHOST}
+             size={FieldSize.SM}
              onClick={onViewAll}
              className="text-[11px] font-medium px-3 group text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors dark:text-indigo-400 dark:hover:bg-slate-800"
            >

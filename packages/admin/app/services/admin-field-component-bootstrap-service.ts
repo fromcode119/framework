@@ -1,6 +1,6 @@
-import { SystemLocaleField } from '@/components/collection/fields/system-locale-field';
-import { CountryField } from '@/components/collection/fields/country-field';
-import { ThemeLayoutField } from '@/components/collection/fields/theme-layout-field';
+import { SystemLocaleField } from '@/components/collection/fields/view/system-locale-field.client';
+import { CountryField } from '@/components/collection/fields/view/country-field.client';
+import { ThemeLayoutField } from '@/components/collection/fields/view/theme-layout-field.client';
 
 /**
  * Owns the framework's built-in collection field components and registers them into the live

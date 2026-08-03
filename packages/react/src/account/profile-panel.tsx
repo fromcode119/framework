@@ -1,23 +1,21 @@
-import React from 'react';
+import { state } from '@fromcode119/reactor';
+import type { IAccountProfilePanelState } from '@react/account/interfaces/account-profile-panel-state.interface';
+import type { ReactNode } from 'react';
 import { RouteConstants } from '@fromcode119/core/client';
-import { PluginComponent } from '../plugin-component';
-import { AccountAuthClient } from './auth-client';
+import { PluginComponent } from '@react/view/plugin-component.client';
+import { AccountAuthClient } from '@react/account/auth-client';
+import { AccountClass } from '@react/account/account-class';
 
-interface AccountProfilePanelState {
-  loading: boolean;
-  saving: boolean;
-  saved: boolean;
-  error: string;
-  person: Record<string, any> | null;
-}
-
-export class AccountProfilePanel extends PluginComponent<Record<string, unknown>, AccountProfilePanelState> {
-  static readonly accountSection = { key: 'profile', labelKey: 'account.section.profile', priority: 0 };
+export class AccountProfilePanel extends PluginComponent {
+  @state loading: boolean = true;
+  @state saving: boolean = false;
+  @state saved: boolean = false;
+  @state error: string = '';
+  @state person: Record<string, any> | null = null;
+  static readonly accountSection = { key: 'profile', labelKey: 'account.section.profile', priority: 0, descriptionKey: 'account.description.profile' };
 
   private mounted = false;
-
-  state: AccountProfilePanelState = { loading: true, saving: false, saved: false, error: '', person: null };
-
+  
   private get client(): any {
     return AccountAuthClient.of(this.api);
   }
@@ -42,11 +40,11 @@ export class AccountProfilePanel extends PluginComponent<Record<string, unknown>
   }
 
   private setField(key: string, value: string): void {
-    this.setState({ person: { ...(this.state.person || {}), [key]: value }, saved: false });
+    this.setState({ person: { ...(this.person || {}), [key]: value }, saved: false });
   }
 
   private async save(): Promise<void> {
-    const p = this.state.person || {};
+    const p = this.person || {};
     this.setState({ saving: true, saved: false, error: '' });
     try {
       const res = await this.client.patch(RouteConstants.SEGMENTS.ME_PERSON, {
@@ -62,54 +60,39 @@ export class AccountProfilePanel extends PluginComponent<Record<string, unknown>
     }
   }
 
-  private renderField(key: string, type: string): React.ReactNode {
-    const p = this.state.person || {};
-    const inputStyle: React.CSSProperties = {
-      display: 'block', width: '100%', padding: '10px 12px', border: '1px solid #e2e8f0',
-      borderRadius: '10px', fontSize: '14px', boxSizing: 'border-box', marginTop: '4px',
-    };
+  private renderField(key: string, type: string): ReactNode {
+    const p = this.person || {};
     return (
-      <label style={{ display: 'block', marginBottom: '14px', fontSize: '13px', color: '#475569' }}>
+      <label className={AccountClass.of('field')} key={key}>
         {this.t(`account.profile.${key}`)}
         <input
+          className={AccountClass.of('input')}
           type={type}
           value={String(p[key] ?? '')}
           onChange={(e) => this.setField(key, e.target.value)}
-          style={inputStyle}
         />
       </label>
     );
   }
 
-  render(): React.ReactNode {
-    const { loading, saving, saved, error } = this.state;
-    const cardStyle: React.CSSProperties = {
-      background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    };
-    if (loading) return <div style={cardStyle}>{this.t('account.profile.loading')}</div>;
+  render(): ReactNode {
+    const { loading, saving, saved, error } = this;
+    if (loading) return <div className={AccountClass.of('card')}>{this.t('account.profile.loading')}</div>;
     return (
-      <div style={cardStyle}>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 18px' }}>{this.t('account.profile.heading')}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+      <div className={AccountClass.of('card')}>
+        <h2 className={AccountClass.of('h2')}>{this.t('account.profile.heading')}</h2>
+        <div className={AccountClass.of('grid-2')}>
           {this.renderField('firstName', 'text')}
           {this.renderField('lastName', 'text')}
           {this.renderField('birthDate', 'date')}
           {this.renderField('phone', 'tel')}
         </div>
-        {error ? <p style={{ color: '#dc2626', fontSize: '13px', margin: '0 0 12px' }}>{error}</p> : null}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            onClick={() => void this.save()}
-            disabled={saving}
-            style={{
-              padding: '10px 22px', background: '#1a1a2e', color: '#fff', border: 'none',
-              borderRadius: '999px', fontSize: '14px', fontWeight: 600, cursor: saving ? 'default' : 'pointer',
-            }}
-          >
+        {error ? <p className={AccountClass.of('error')}>{error}</p> : null}
+        <div className={AccountClass.of('actions')}>
+          <button className={AccountClass.of('btn')} onClick={() => void this.save()} disabled={saving}>
             {saving ? this.t('account.profile.saving') : this.t('account.profile.save')}
           </button>
-          {saved ? <span style={{ color: '#16a34a', fontSize: '13px' }}>✓ {this.t('account.profile.saved')}</span> : null}
+          {saved ? <span className={AccountClass.of('success')}>✓ {this.t('account.profile.saved')}</span> : null}
         </div>
       </div>
     );

@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager } from '@fromcode119/database';
 
-class AddThemeNameColumn extends BaseMigration {
+export class AddThemeNameColumn extends BaseMigration {
   readonly version = 6;
   readonly name = 'Add name and version columns to _system_themes';
 
@@ -14,5 +14,3 @@ class AddThemeNameColumn extends BaseMigration {
 
   async down(_db: IDatabaseManager): Promise<void> {}
 }
-
-export default new AddThemeNameColumn();

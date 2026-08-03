@@ -1,10 +1,10 @@
-import { TextHelpers } from './helpers/text-helpers';
-import { FactualQueryHelpers } from './factual-query-helpers';
-import type { RuntimeContext } from './types.types';
+import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
+import { FactualQueryHelpers } from '@ai/admin-assistant-runtime/runtime/factual-query-helpers';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
 
 export class FactualQueryToolService {
   static rankReadOnlyTools(
-    context: RuntimeContext,
+    context: IRuntimeContext,
     message: string,
   ): Array<{ tool: string; description: string; score: number }> {
     const plugin = FactualQueryToolService.matchPlugin(context, message);
@@ -28,7 +28,7 @@ export class FactualQueryToolService {
       .sort((left, right) => right.score - left.score || left.tool.localeCompare(right.tool));
   }
 
-  static matchPlugin(context: RuntimeContext, message: string): any | null {
+  static matchPlugin(context: IRuntimeContext, message: string): any | null {
     const token = TextHelpers.normalizeToken(message);
     const plugins = Array.isArray(context.workspaceMap?.plugins) ? context.workspaceMap.plugins : [];
     let best: any | null = null;
@@ -50,7 +50,7 @@ export class FactualQueryToolService {
     return best;
   }
 
-  static hasTool(context: RuntimeContext, toolName: string): boolean {
+  static hasTool(context: IRuntimeContext, toolName: string): boolean {
     return (Array.isArray(context.tools) ? context.tools : [])
       .some((tool: any) => String(tool?.tool || '').trim() === toolName);
   }

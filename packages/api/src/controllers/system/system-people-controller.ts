@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { CoreServices } from '@fromcode119/core';
-import { SystemControllerRuntime } from './system-controller-runtime';
+import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 /** Admin endpoints for the unified `people` model: list people and promote a person to a login account. */
 export class SystemPeopleController {

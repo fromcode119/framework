@@ -1,4 +1,6 @@
-import type { AssistantMessage } from './assistant-core-constants.types';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
+import { AssistantPlanStatus } from '@ai/admin-assistant-runtime/enums/assistant-plan-status.enum';
 
 export class AssistantIntentUtils {
 
@@ -15,8 +17,8 @@ export class AssistantIntentUtils {
   return /(replace|change|update|create|delete|remove|fix|set|install|uninstall|rename|modify|stage|apply|migrate|edit)\b/.test(normalized);
   }
 
-  static isPlanGuidanceMessage(entry: AssistantMessage): boolean {
-  if (entry.role !== 'assistant') return false;
+  static isPlanGuidanceMessage(entry: IAssistantMessage): boolean {
+  if (entry.role !== AssistantRole.ASSISTANT) return false;
   if (Array.isArray(entry.actions) && entry.actions.length > 0) return false;
   const text = String(entry.content || '').toLowerCase();
   if (!text) return false;
@@ -26,18 +28,17 @@ export class AssistantIntentUtils {
   );
   }
 
-  static shouldShowPlanCard(entry: AssistantMessage): boolean {
-  if (entry.role !== 'assistant' || !entry.plan) return false;
-  const status = String(entry.plan.status || '').trim().toLowerCase();
+  static shouldShowPlanCard(entry: IAssistantMessage): boolean {
+  if (entry.role !== AssistantRole.ASSISTANT || !entry.plan) return false;
   const hasActions = Array.isArray(entry.actions) && entry.actions.length > 0;
-  const shouldShowForStatus = ['searching', 'staged', 'paused', 'ready_for_preview', 'ready_for_apply', 'failed'].includes(status);
+  const shouldShowForStatus = AssistantPlanStatus.resolve(entry.plan.status).showsPlanCard;
   if (hasActions) return true;
   if (entry.ui?.canContinue || entry.ui?.requiresApproval) return true;
   return shouldShowForStatus;
   }
 
-  static shouldHideAssistantBody(entry: AssistantMessage): boolean {
-  if (entry.role !== 'assistant') return false;
+  static shouldHideAssistantBody(entry: IAssistantMessage): boolean {
+  if (entry.role !== AssistantRole.ASSISTANT) return false;
   if (entry.plan && AssistantIntentUtils.shouldShowPlanCard(entry)) return true;
   const text = String(entry.content || '').trim();
   if (!text) return false;

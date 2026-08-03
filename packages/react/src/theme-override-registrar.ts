@@ -1,7 +1,6 @@
 import React from 'react';
-import { ContextBridge } from './context-bridge';
-
-type BlockRendererLoader = () => Promise<{ default: React.ComponentType<any> }>;
+import { ContextBridge } from '@react/context-bridge';
+import type { IBlockRendererLoader } from '@react/interfaces/block-renderer-loader.interface';
 
 export class ThemeOverrideRegistrar {
   private static readonly BASE_PRIORITY = 11;
@@ -14,7 +13,11 @@ export class ThemeOverrideRegistrar {
   ): void {
     for (const [slotKey, loader] of Object.entries(slots)) {
       const Lazy = React.lazy(loader);
-      ContextBridge.registerOverride(slotKey, ThemeOverrideRegistrar.withSuspense(Lazy), themeSlug, priority);
+      // The RAW loader rides along as a fifth argument. The browser reducer takes four and ignores it;
+      // a SERVER render needs it, because `renderToStaticMarkup` cannot resolve `React.lazy` — it emits
+      // the Suspense fallback instead of the renderer, which for the home hero is the LCP element. The
+      // server registry awaits these loaders once and registers the resolved component in place.
+      ContextBridge.registerOverride(slotKey, ThemeOverrideRegistrar.withSuspense(Lazy), themeSlug, priority, loader);
     }
   }
 
@@ -40,8 +43,8 @@ export class ThemeOverrideRegistrar {
   ): void {
     const prefix = String(slotPrefix || '');
     if (!prefix) return;
-    const base: Record<string, BlockRendererLoader> = {};
-    const overrides: Record<string, BlockRendererLoader> = {};
+    const base: Record<string, IBlockRendererLoader> = {};
+    const overrides: Record<string, IBlockRendererLoader> = {};
 
     for (const [path, loader] of Object.entries(modules).sort(([a], [b]) => a.localeCompare(b))) {
       if (!/(?:^|\/)blocks\//.test(path)) continue;
@@ -74,7 +77,7 @@ export class ThemeOverrideRegistrar {
    * Renderer modules export their component as a NAMED export, but `React.lazy` needs a `default`.
    * Resolve to the component — explicit `default`, then a PascalCase function, then any function.
    */
-  private static normalizeLoader(loader: () => Promise<unknown>): BlockRendererLoader {
+  private static normalizeLoader(loader: () => Promise<unknown>): IBlockRendererLoader {
     return () =>
       loader().then((mod) => {
         const record = (mod ?? {}) as Record<string, unknown>;

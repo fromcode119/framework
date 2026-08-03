@@ -1,15 +1,15 @@
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import multer from 'multer';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager, RouteConstants } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest/rest-controller';
-import { SystemController } from '../controllers/system/system-controller';
-import { SystemBackupController } from '../controllers/system/system-backup-controller';
-import { SystemBackupRepository } from '../repositories/system-backup-repository';
-import { SystemBackupService } from '../services/system-backup-service';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { SystemController } from '@api/controllers/system/system-controller';
+import { SystemBackupController } from '@api/controllers/system/system-backup-controller';
+import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
+import { SystemBackupService } from '@api/services/system-backup-service';
 
 /**
  * System management router.

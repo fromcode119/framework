@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { CookieConstants, Logger } from '@fromcode119/core';
-import { RequestCookieService } from '../services/request/request-cookie-service';
-import { ApiUrlUtils } from '../utils/url';
-import { WebhookRouteUtils } from '../utils/webhook-route-utils';
-import { BaseMiddleware } from './base-middleware';
+import { RequestCookieService } from '@api/services/request/request-cookie-service';
+import { ApiUrlUtils } from '@api/utils/url';
+import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
+import { BaseMiddleware } from '@api/middlewares/base-middleware';
 
 export class CSRFMiddleware extends BaseMiddleware {
   private logger = new Logger({ namespace: 'security' });

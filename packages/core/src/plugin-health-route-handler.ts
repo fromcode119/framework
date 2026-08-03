@@ -1,14 +1,16 @@
+import { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
 import type { RequestHandler } from 'express';
-import { PluginHealthResponseBuilder } from './plugin-health-response';
-import type { PluginHealthIdentity } from './plugin-health-response.interfaces';
-import type { PluginHealthProbeResult, PluginHealthRouteHandlerOptions } from './plugin-health-route-handler.interfaces';
+import { PluginHealthResponseBuilder } from '@core/plugin-health-response-builder';
+import type { IPluginHealthIdentity } from '@core/interfaces/plugin-health-identity.interface';
+import type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';
+import type { IPluginHealthRouteHandlerOptions } from '@core/interfaces/plugin-health-route-handler-options.interface';
 
 export class PluginHealthRouteHandler {
-  static createForPlugin(plugin: PluginHealthIdentity, probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>): RequestHandler {
+  static createForPlugin(plugin: IPluginHealthIdentity, probe?: () => IPluginHealthProbeResult | Promise<IPluginHealthProbeResult>): RequestHandler {
     return this.create({ getPlugin: () => plugin, probe });
   }
 
-  static create(options: PluginHealthRouteHandlerOptions): RequestHandler {
+  static create(options: IPluginHealthRouteHandlerOptions): RequestHandler {
     return async (_req, res, next) => {
       try {
         const plugin = await options.getPlugin();
@@ -21,12 +23,12 @@ export class PluginHealthRouteHandler {
     };
   }
 
-  private static resolveHttpStatus(probe: PluginHealthProbeResult | null): number {
+  private static resolveHttpStatus(probe: IPluginHealthProbeResult | null): number {
     if (typeof probe?.httpStatus === 'number' && probe.httpStatus >= 100) {
       return probe.httpStatus;
     }
 
-    if (probe?.status === 'error') {
+    if (PluginHealthStatus.resolve(probe?.status) === PluginHealthStatus.ERROR) {
       return 503;
     }
 

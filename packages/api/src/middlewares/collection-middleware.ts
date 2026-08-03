@@ -1,9 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { CoreServices, PluginManager, PluginState } from '@fromcode119/core';
 import { NamingStrategy } from '@fromcode119/database';
-import { BaseMiddleware } from './base-middleware';
-
-const RELATIONSHIP_SEARCH_TEXT_TYPES = new Set(['text', 'textarea', 'select']);
+import { BaseMiddleware } from '@api/middlewares/base-middleware';
 
 /**
  * Middleware for collection lookup and validation.
@@ -22,6 +20,8 @@ const RELATIONSHIP_SEARCH_TEXT_TYPES = new Set(['text', 'textarea', 'select']);
  * ```
  */
 export class CollectionMiddleware extends BaseMiddleware {
+  private static readonly RELATIONSHIP_SEARCH_TEXT_TYPES = new Set(['text', 'textarea', 'select']);
+
   constructor(private manager: PluginManager) {
     super();
   }
@@ -119,7 +119,7 @@ export class CollectionMiddleware extends BaseMiddleware {
       const columns = new Set<string>();
       if (related.admin?.useAsTitle) columns.add(NamingStrategy.toSnakeCase(related.admin.useAsTitle));
       for (const relatedField of (related.fields || [])) {
-        if (RELATIONSHIP_SEARCH_TEXT_TYPES.has(relatedField?.type)) {
+        if (CollectionMiddleware.RELATIONSHIP_SEARCH_TEXT_TYPES.has(String(relatedField?.type))) {
           columns.add(NamingStrategy.toSnakeCase(relatedField.name));
         }
       }

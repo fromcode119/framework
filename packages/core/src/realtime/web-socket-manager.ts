@@ -1,8 +1,8 @@
 import { WebSocket } from 'ws';
 import type { WebSocketServer } from 'ws';
-import { Logger } from '../logging';
-import { HookManager } from '../hooks/hook-manager';
-import type { Message } from './web-socket-manager.interfaces';
+import { Logger } from '@core/logging';
+import { HookManager } from '@core/hooks/hook-manager';
+import type { IMessage } from '@core/realtime/interfaces/message.interface';
 
 export class WebSocketManager {
   private wss: WebSocketServer | null = null;
@@ -56,7 +56,7 @@ export class WebSocketManager {
     }
   }
 
-  private handleMessage(ws: WebSocket, message: Message) {
+  private handleMessage(ws: WebSocket, message: IMessage) {
     this.logger.debug(`Received message: ${message.type}`);
     
     // Plugins can hook into these messages

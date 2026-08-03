@@ -1,8 +1,4 @@
-type PluginCollectionLike = {
-  slug?: string;
-  shortSlug?: string;
-  unprefixedSlug?: string;
-};
+import type { IPluginCollectionLike } from '@core/plugin/services/interfaces/plugin-collection-like.interface';
 
 export class AdminRouteUtils {
   static normalizePathSegments(pathValue: string): string[] {
@@ -16,7 +12,7 @@ export class AdminRouteUtils {
 
   }
 
-  static buildCollectionRouteKeySet(collections: PluginCollectionLike[]): Set<string> {
+  static buildCollectionRouteKeySet(collections: IPluginCollectionLike[]): Set<string> {
       const keys = new Set<string>();
       for (const collection of collections) {
         const candidates = [collection.shortSlug, collection.unprefixedSlug, collection.slug]

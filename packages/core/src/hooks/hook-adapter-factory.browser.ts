@@ -1,16 +1,16 @@
 // Light-weight HookAdapterFactory for the browser
-import { HookMessagingAdapter } from './types';
-import { LocalHookAdapter } from './adapters/local-hook-adapter';
-import type { HookAdapterCreator } from './hook-adapter-factory.browser.types';
+import { IHookMessagingAdapter } from '@core/hooks/interfaces/hook-messaging-adapter.interface';
+import { LocalHookAdapter } from '@core/hooks/adapters/local-hook-adapter';
+import type { IHookAdapterCreator } from '@core/hooks/interfaces/hook-adapter-creator.interface';
 
 export class HookAdapterFactory {
-  private static registry: Map<string, HookAdapterCreator> = new Map();
+  private static registry: Map<string, IHookAdapterCreator> = new Map();
 
-  static register(type: string, creator: HookAdapterCreator) {
+  static register(type: string, creator: IHookAdapterCreator) {
     this.registry.set(type, creator);
   }
 
-  static create(type?: string, options: any = {}): HookMessagingAdapter {
+  static create(type?: string, options: any = {}): IHookMessagingAdapter {
     return new LocalHookAdapter();
   }
 }

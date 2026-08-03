@@ -15,6 +15,10 @@ const nextConfig = {
   basePath: adminBasePath,
   allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
   reactStrictMode: true,
+  // `.client` filename convention: a CLIENT route entry is `page.client.tsx` / `layout.client.tsx` (directive
+  // stamped by scripts/stamp-client-src.mjs); a SERVER route stays `page.tsx`. Listing `client.tsx`/`client.ts`
+  // makes Next treat `page.client.tsx` as the route `page` — so no one-line re-export wrapper is needed.
+  pageExtensions: ['client.tsx', 'client.ts', 'tsx', 'ts', 'jsx', 'js'],
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages
   // are replaced with no-op stubs via webpack aliases below, so no external resolution needed.
   transpilePackages: [
@@ -24,6 +28,20 @@ const nextConfig = {
     ...extensions.map(ext => `@fromcode119/${ext}`),
   ],
   turbopack: {
+    // [nextor] Source declares ONLY `export class`. This loader generates, at BUILD time, the two
+    // things Next needs but a class cannot express: the exports it resolves routes by (GET/POST,
+    // default, generateMetadata, manifest) and the literal `'use client'` directive.
+    // See @fromcode119/nextor RouteExportPlugin + ClientDirectivePlugin.
+    rules: {
+      '**/{app,components,lib,hooks,src}/**/*.{ts,tsx}': {
+        loaders: [
+          require.resolve('@fromcode119/nextor/route-export-loader.cjs'),
+          // typor: multiple-inheritance `extends` -> Typor.mixin(...). Loaders run RIGHT-to-LEFT, so the
+          // syntax rewrite lands first and nextor then sees ordinary TypeScript.
+          require.resolve('@fromcode119/typor/typor-loader.cjs'),
+        ],
+      },
+    },
     resolveAlias: {
       '@fromcode119/react': '../react/src',
       '@fromcode119/react/*': '../react/src/*',
@@ -120,6 +138,19 @@ const nextConfig = {
     ];
   },
   webpack: (config, { isServer, dev }) => {
+    // [nextor + typor] Same build-time source contracts as the turbopack rules above. `next dev` runs
+    // with --webpack, so without this the dev server would never see the generated route exports and
+    // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
+    config.module.rules.unshift({
+      test: /[\\/](app|components|lib|hooks|src)[\\/].*\.(ts|tsx)$/,
+      exclude: /[\\/]node_modules[\\/]/,
+      use: [
+        { loader: require.resolve('@fromcode119/nextor/route-export-loader.cjs') },
+        // Loaders run RIGHT-to-LEFT: the typor syntax rewrite lands first.
+        { loader: require.resolve('@fromcode119/typor/typor-loader.cjs') },
+      ],
+    });
+
     // Force aliasing of @ to handle cases where the package is inside node_modules
     config.resolve.alias['@'] = path.resolve(__dirname);
 
@@ -169,6 +200,13 @@ const nextConfig = {
       config.resolve.alias[`@fromcode119/${ext}$`] = path.resolve(__dirname, `../${ext}/src/index.ts`);
       config.resolve.alias[`@fromcode119/${ext}/`] = path.resolve(__dirname, `../${ext}/src/`);
     });
+
+    // `ai` is consumed as BUILT output (dist), not src-transpiled, so its `.client.*` 'use client' stamp
+    // (injected at ai build time via nextor's UseClientPlugin) is honored — Next won't run custom transforms
+    // on transpiled-package SOURCE, so the directive must already be present in the module Next reads.
+    config.resolve.alias['@fromcode119/ai$'] = path.resolve(__dirname, '../ai/dist/index.js');
+    config.resolve.alias['@fromcode119/ai/admin$'] = path.resolve(__dirname, '../ai/dist/admin-extension.js');
+    config.resolve.alias['@fromcode119/ai/'] = path.resolve(__dirname, '../ai/dist/');
 
     config.resolve.symlinks = false;
 

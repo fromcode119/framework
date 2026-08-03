@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { spawnSync } from 'child_process';
-import { Logger } from '../../logging';
+import { Logger } from '@core/logging';
 
 export class PluginDependencyInstallerService {
   private logger = new Logger({ namespace: 'plugin-dependency-installer' });

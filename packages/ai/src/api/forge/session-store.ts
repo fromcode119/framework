@@ -1,6 +1,7 @@
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
 import { IDatabaseManager } from '@fromcode119/database';
 import { SystemConstants } from '@fromcode119/core/client';
-import type { AssistantHistoryEntry } from './session-store.types';
+import type { IAssistantHistoryEntry } from '@ai/api/forge/interfaces/assistant-history-entry.interface';
 
 export class AssistantSessionStore {
   constructor(
@@ -21,24 +22,24 @@ export class AssistantSessionStore {
     return `${this.keyPrefix}${sessionId}`;
   }
 
-  normalizeHistory(input: any): AssistantHistoryEntry[] {
+  normalizeHistory(input: any): IAssistantHistoryEntry[] {
     const source = Array.isArray(input) ? input : [];
-    const roles = new Set(['system', 'user', 'assistant']);
+
     return source
       .slice(-24)
       .map((entry: any) => {
         const role = String(entry?.role || 'user').trim().toLowerCase();
         const content = String(entry?.content || '').trim();
         return {
-          role: (roles.has(role) ? role : 'user') as 'system' | 'user' | 'assistant',
+          role: AssistantRole.resolve(role),
           content,
         };
       })
       .filter((entry) => !!entry.content);
   }
 
-  summarizeTitle(history: AssistantHistoryEntry[], fallback: string = 'Untitled session'): string {
-    const firstUser = history.find((entry) => entry.role === 'user' && String(entry.content || '').trim());
+  summarizeTitle(history: IAssistantHistoryEntry[], fallback: string = 'Untitled session'): string {
+    const firstUser = history.find((entry) => entry.role === AssistantRole.USER && String(entry.content || '').trim());
     const text = String(firstUser?.content || '').replace(/\s+/g, ' ').trim();
     if (!text) return fallback;
     return text.length > 80 ? `${text.slice(0, 79)}...` : text;

@@ -1,6 +1,6 @@
-import type { UploadPreviewSection } from '@/components/ui/upload-preview-dialog.interfaces';
+import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 export class InstalledPluginsUploadService {
   private static readonly MAX_CHUNK_RETRIES = 3;
@@ -70,7 +70,7 @@ export class InstalledPluginsUploadService {
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 
-  static buildPreviewSections(info: any): UploadPreviewSection[] {
+  static buildPreviewSections(info: any): IUploadPreviewSection[] {
     const dependencies = Array.isArray(info?.dependencies) ? info.dependencies : [];
     const peerDependencies = Array.isArray(info?.peerDependencies) ? info.peerDependencies : [];
     const existing = info?.existing || { installed: false };

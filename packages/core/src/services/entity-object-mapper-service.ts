@@ -1,11 +1,11 @@
-import { CoercionUtils } from '../coercion-utils';
-import { NumberUtils } from '../number-utils';
-import { EntityEnumResolverService } from './entity-enum-resolver-service';
-import type { EntityFieldConfig } from '../types/entity-field-config.interfaces';
-import type { EntityFieldsConfig } from '../types/entity-field-config.types';
+import { CoercionUtils } from '@core/coercion-utils';
+import { NumberUtils } from '@core/number-utils';
+import { EntityEnumResolverService } from '@core/services/entity-enum-resolver-service';
+import type { IEntityFieldConfig } from '@core/interfaces/entity-field-config.interface';
+import type { IEntityFieldsConfig } from '@core/interfaces/entity-fields-config.interface';
 
 export class EntityObjectMapperService {
-  static map<TOutput>(source: unknown, fields: EntityFieldsConfig): TOutput {
+  static map<TOutput>(source: unknown, fields: IEntityFieldsConfig): TOutput {
     const row = CoercionUtils.toParsedObject(source);
     const output: Record<string, unknown> = {};
 
@@ -16,7 +16,7 @@ export class EntityObjectMapperService {
     return output as TOutput;
   }
 
-  static clean<TOutput>(source: unknown, fields: EntityFieldsConfig): Partial<TOutput> {
+  static clean<TOutput>(source: unknown, fields: IEntityFieldsConfig): Partial<TOutput> {
     const row = CoercionUtils.toParsedObject(source);
     const output: Record<string, unknown> = {};
 
@@ -37,7 +37,7 @@ export class EntityObjectMapperService {
     row: Record<string, unknown>,
     output: Record<string, unknown>,
     targetKey: string,
-    config: EntityFieldConfig,
+    config: IEntityFieldConfig,
   ): unknown {
     const sources = config.from?.length ? config.from : [targetKey];
     for (const path of sources) {
@@ -61,7 +61,7 @@ export class EntityObjectMapperService {
     }, row);
   }
 
-  private static coerceValue(value: unknown, config: EntityFieldConfig): unknown {
+  private static coerceValue(value: unknown, config: IEntityFieldConfig): unknown {
     if (config.optional && (value === undefined || value === null || value === '')) {
       return undefined;
     }
@@ -72,7 +72,7 @@ export class EntityObjectMapperService {
     return nextValue;
   }
 
-  private static coerceBaseValue(value: unknown, config: EntityFieldConfig): unknown {
+  private static coerceBaseValue(value: unknown, config: IEntityFieldConfig): unknown {
     switch (config.type) {
       case 'number':
         return CoercionUtils.toNumber(value, CoercionUtils.toNumber(config.default, 0));
@@ -111,11 +111,14 @@ export class EntityObjectMapperService {
     }
   }
 
-  private static resolveTransforms(transforms: EntityFieldConfig['transform']): string[] {
+  private static resolveTransforms(transforms: IEntityFieldConfig['transform']): string[] {
     if (!transforms) {
       return [];
     }
-    return Array.isArray(transforms) ? transforms : [transforms];
+    // Config may name a transform as an EntityFieldTransform member OR a raw string; `Enum.toString()`
+    // yields the bare value, so normalizing once here keeps the comparisons below working for both.
+    const list = Array.isArray(transforms) ? transforms : [transforms];
+    return list.map((entry) => String(entry));
   }
 
   private static applyTransform(value: unknown, transform: string): unknown {

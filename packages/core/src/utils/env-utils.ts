@@ -1,4 +1,4 @@
-import { CoercionUtils } from '../coercion-utils';
+import { CoercionUtils } from '@core/coercion-utils';
 
 /**
  * Environment-variable helpers. Centralizes reading process.env so feature flags aren't parsed with
@@ -29,6 +29,19 @@ export class EnvUtils {
   }
 
   /**
+   * Read a string setting from the environment, trimmed. Unset or blank ⇒ `fallback` (default `''`).
+   * Centralizes string env parsing the same way `flag()` centralizes booleans.
+   *
+   * @example EnvUtils.text('THEMES_DIR')
+   */
+  static text(name: string, fallback = ''): string {
+    const raw = process.env[name];
+    if (raw === undefined || raw === null) return fallback;
+    const trimmed = String(raw).trim();
+    return trimmed || fallback;
+  }
+
+  /**
    * True when running in a production deployment (`NODE_ENV=production`). Use this instead of raw
    * `process.env.NODE_ENV` comparisons — e.g. to decide whether cookies should be `secure`.
    */
@@ -42,5 +55,19 @@ export class EnvUtils {
    */
   static isDevelopment(): boolean {
     return String(process.env.NODE_ENV).trim().toLowerCase() === 'development';
+  }
+
+  /**
+   * True when running in a browser (a live DOM is present). Use this instead of inline
+   * `typeof window === 'undefined'` / `typeof document === 'undefined'` guards in server/isomorphic
+   * framework code. (Client React packages use reactor's `Platform.isBrowser` — same check, no core dep.)
+   */
+  static isBrowser(): boolean {
+    return typeof document !== 'undefined';
+  }
+
+  /** True when running server-side / in Node (no DOM). The inverse of {@link isBrowser}. */
+  static isServer(): boolean {
+    return typeof document === 'undefined';
   }
 }

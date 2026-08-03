@@ -1,8 +1,9 @@
-import { AdminSecondaryPanelInputItem, AdminSecondaryPanelNormalizedItem } from './admin-secondary-panel.interfaces';
+import type { IAdminSecondaryPanelInputItem } from '@core/plugin/services/interfaces/admin-secondary-panel-input-item.interface';
+import type { IAdminSecondaryPanelNormalizedItem } from '@core/plugin/services/interfaces/admin-secondary-panel-normalized-item.interface';
 
 export class AdminSecondaryPanelNormalizer {
-  normalize(input: AdminSecondaryPanelInputItem): AdminSecondaryPanelNormalizedItem {
-    const scope = this.normalizeScope(input.item.scope);
+  normalize(input: IAdminSecondaryPanelInputItem): IAdminSecondaryPanelNormalizedItem {
+    const scope = this.normalizeScope(input.item.scope?.value);
     const targetNamespace = this.normalizeTargetNamespace(scope, input);
     const targetPlugin = this.normalizeTargetPlugin(scope, input);
     const targetCanonicalKey = `${targetNamespace}:${targetPlugin}`;
@@ -42,7 +43,7 @@ export class AdminSecondaryPanelNormalizer {
     return 'self';
   }
 
-  private normalizeTargetNamespace(scope: string, input: AdminSecondaryPanelInputItem): string {
+  private normalizeTargetNamespace(scope: string, input: IAdminSecondaryPanelInputItem): string {
     if (scope === 'plugin-target') {
       return String(input.item.targetNamespace || '').trim().toLowerCase();
     }
@@ -52,7 +53,7 @@ export class AdminSecondaryPanelNormalizer {
     return input.sourceNamespace;
   }
 
-  private normalizeTargetPlugin(scope: string, input: AdminSecondaryPanelInputItem): string {
+  private normalizeTargetPlugin(scope: string, input: IAdminSecondaryPanelInputItem): string {
     if (scope === 'plugin-target') {
       return String(input.item.targetPlugin || '').trim().toLowerCase();
     }

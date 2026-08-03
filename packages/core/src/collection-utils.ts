@@ -1,6 +1,6 @@
-import { ApiVersionUtils } from './api-version';
-import { SystemConstants } from './constants';
-import type { CollectionListPathOptions } from './collection-utils.interfaces';
+import { ApiVersionUtils } from '@core/api-version';
+import { SystemConstants } from '@core/constants/system.constants';
+import type { ICollectionListPathOptions } from '@core/interfaces/collection-list-path-options.interface';
 
 /**
  * Collection path and data utilities.
@@ -15,7 +15,7 @@ export class CollectionUtils {
     return `${ApiVersionUtils.prefix()}${SystemConstants.API_PATH.COLLECTIONS.BASE}`;
   }
 
-  static listPath(slug: string, options: CollectionListPathOptions = {}): string {
+  static listPath(slug: string, options: ICollectionListPathOptions = {}): string {
     const s = String(slug || '').trim();
     if (!s) return CollectionUtils.basePath();
 

@@ -1,11 +1,11 @@
-import type { EntityFieldConfig } from '../types/entity-field-config.interfaces';
-import type { EntityFieldsConfig } from '../types/entity-field-config.types';
-import type { EntityColumnMetadata } from '../types/entity-column.interfaces';
+import type { IEntityFieldConfig } from '@core/interfaces/entity-field-config.interface';
+import type { IEntityFieldsConfig } from '@core/interfaces/entity-fields-config.interface';
+import type { IEntityColumnMetadata } from '@core/interfaces/entity-column-metadata.interface';
 
 export class EntityMetadataService {
-  private static readonly registry = new WeakMap<Function, EntityColumnMetadata[]>();
+  private static readonly registry = new WeakMap<Function, IEntityColumnMetadata[]>();
 
-  static defineField(target: object, propertyKey: string | symbol, config: EntityFieldConfig): void {
+  static defineField(target: object, propertyKey: string | symbol, config: IEntityFieldConfig): void {
     const constructor = target.constructor;
     const fields = this.registry.get(constructor) || [];
     const name = String(propertyKey);
@@ -19,11 +19,11 @@ export class EntityMetadataService {
     this.registry.set(constructor, fields);
   }
 
-  static resolveFields(instanceOrConstructor: object | Function): EntityFieldsConfig {
+  static resolveFields(instanceOrConstructor: object | Function): IEntityFieldsConfig {
     const constructor = typeof instanceOrConstructor === 'function'
       ? instanceOrConstructor
       : instanceOrConstructor.constructor;
-    const fields: EntityFieldsConfig = {};
+    const fields: IEntityFieldsConfig = {};
 
     for (const metadata of this.resolveMetadataChain(constructor)) {
       fields[metadata.name] = metadata.config;
@@ -32,7 +32,7 @@ export class EntityMetadataService {
     return fields;
   }
 
-  private static resolveMetadataChain(constructor: Function): EntityColumnMetadata[] {
+  private static resolveMetadataChain(constructor: Function): IEntityColumnMetadata[] {
     const constructors: Function[] = [];
     let current: Function | null = constructor;
 

@@ -1,34 +1,36 @@
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { ResponderRoute } from '@ai/admin-assistant-runtime/enums/responder-route.enum';
+import { AgentRole } from '@ai/api/forge/enums/agent-role.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
 /** Orchestrator finalize stage. Extracted from orchestrator.ts (ARC-007). */
 
-import type { AssistantChatResult } from '../types';
-import type { RuntimeContext, RuntimeDependencies, RuntimeIntent } from './types.types';
-import { ResponseBuilder } from './response';
-import { ChatResponder } from './chat-responder';
-import { FactualQueryService } from './factual-query-service';
-import { WorkspaceMapService } from './workspace-map';
-import { OrchestratorActionUtils } from './orchestrator-action-utils';
-import { OrchestratorListingUtils } from './orchestrator-listing-utils';
-
-const { parseListingCollectionFromCheckpoint, parseListingCollectionFromHistory, getListingMemory, isRecordFollowupQuestion, collectCollectionFieldNames, resolveTargetRowIndex, resolveRequestedFieldHint, pickFieldFromRecord, fieldMatchesHint, extractRecordIdentity } = OrchestratorListingUtils;
-const { finalize, findInventoryFollowupReply } = OrchestratorActionUtils;
-
-export class OrchestratorFinalizeUtils {
+import type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IRuntimeDependencies } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-dependencies.interface';
+import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
+import { ResponseBuilder } from '@ai/admin-assistant-runtime/runtime/response';
+import { ChatResponder } from '@ai/admin-assistant-runtime/runtime/chat-responder';
+import { FactualQueryService } from '@ai/admin-assistant-runtime/runtime/factual-query-service';
+import { WorkspaceMapService } from '@ai/admin-assistant-runtime/runtime/workspace-map';
+import { OrchestratorActionUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-action-utils';
+import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-listing-utils';export class OrchestratorFinalizeUtils {
   static async finalizeChatLike(
-  deps: RuntimeDependencies,
-  context: RuntimeContext,
-  intent: RuntimeIntent,
+  deps: IRuntimeDependencies,
+  context: IRuntimeContext,
+  intent: IRuntimeIntent,
   message: string,
-  agentMode: 'basic' | 'advanced',
-  traces: Array<{ iteration: number; message: string; phase?: 'planner' | 'executor' | 'verifier'; toolCalls: Array<{ tool: string; input: Record<string, any> }> }>,
+  agentMode: ContextLevel,
+  traces: Array<{ iteration: number; message: string; phase?: AgentRole; toolCalls: Array<{ tool: string; input: Record<string, any> }> }>,
   planId: string,
-): Promise<AssistantChatResult> {
+): Promise<IAssistantChatResult> {
   const listingCollectionSlug =
-    parseListingCollectionFromCheckpoint(context.checkpoint) ||
-    parseListingCollectionFromHistory(context.history);
-  const listingMemory = getListingMemory(context.checkpoint);
+    OrchestratorListingUtils.parseListingCollectionFromCheckpoint(context.checkpoint) ||
+    OrchestratorListingUtils.parseListingCollectionFromHistory(context.history);
+  const listingMemory = OrchestratorListingUtils.getListingMemory(context.checkpoint);
   if (
     listingCollectionSlug &&
-    isRecordFollowupQuestion(message) &&
+    OrchestratorListingUtils.isRecordFollowupQuestion(message) &&
     typeof context.options.listContent === 'function'
   ) {
     const collectionContext = context.collections.find((item) => {
@@ -44,26 +46,26 @@ export class OrchestratorFinalizeUtils {
           context: {},
         });
         const docs = Array.isArray(listed?.docs) ? listed.docs : [];
-        const availableFields = collectCollectionFieldNames(collectionContext, docs);
-        const targetIndex = resolveTargetRowIndex(message, docs, listingMemory);
+        const availableFields = OrchestratorListingUtils.collectCollectionFieldNames(collectionContext, docs);
+        const targetIndex = OrchestratorListingUtils.resolveTargetRowIndex(message, docs, listingMemory);
         const record = docs[targetIndex] || docs[0] || null;
-        const requestedField = resolveRequestedFieldHint(message, availableFields);
+        const requestedField = OrchestratorListingUtils.resolveRequestedFieldHint(message, availableFields);
         const resolvedField =
           requestedField.field ||
           (!requestedField.query && listingMemory?.lastSelectedField
             ? String(listingMemory.lastSelectedField || '').trim()
             : '');
         const fieldHint = resolvedField || requestedField.query || '';
-        const picked = pickFieldFromRecord(record, resolvedField, availableFields);
+        const picked = OrchestratorListingUtils.pickFieldFromRecord(record, resolvedField, availableFields);
         const reply = !record
           ? `\`${collectionContext.slug}\` currently has no records to inspect.`
           : !picked
             ? `I found a record in \`${collectionContext.slug}\`, but it has no scalar fields I can read directly.`
-            : requestedField.explicit && fieldHint && !fieldMatchesHint(picked.key, fieldHint)
+            : requestedField.explicit && fieldHint && !OrchestratorListingUtils.fieldMatchesHint(picked.key, fieldHint)
               ? `I couldn't find a "${fieldHint}" field on that record. Closest available value is ${picked.key}: ${picked.value}`
               : `For \`${collectionContext.slug}\`, record ${targetIndex + 1} ${picked.key}: ${picked.value}`;
         const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });
-        return finalize(deps, {
+        return OrchestratorActionUtils.finalize(deps, {
           planId,
           goal: message,
           message: reply,
@@ -74,15 +76,15 @@ export class OrchestratorFinalizeUtils {
           selectedSkill: context.selectedSkill,
           sessionId: context.input?.sessionId,
           checkpoint: ResponseBuilder.makeCheckpoint({
-            reason: 'user_continue',
+            reason: CheckpointReason.USER_CONTINUE,
             resumePrompt: `Continue from ${collectionContext.slug} listing context.`,
-            stage: 'finalize',
+            stage: RuntimeStage.FINALIZE,
             planningPassesUsed: Number(context.input?.checkpoint?.planningPassesUsed || 0),
             memory: {
               listing: {
                 collectionSlug: collectionContext.slug,
                 lastSelectedRowIndex: targetIndex,
-                lastSelectedRecordId: record ? extractRecordIdentity(record) || undefined : undefined,
+                lastSelectedRecordId: record ? OrchestratorListingUtils.extractRecordIdentity(record) || undefined : undefined,
                 lastSelectedField: picked?.key || resolvedField || undefined,
               },
             },
@@ -114,12 +116,12 @@ export class OrchestratorFinalizeUtils {
           context: {},
         });
         const docs = Array.isArray(listed?.docs) ? listed.docs : [];
-        const availableFields = collectCollectionFieldNames(collectionContext, docs);
+        const availableFields = OrchestratorListingUtils.collectCollectionFieldNames(collectionContext, docs);
         const totalDocs = Number.isFinite(Number((listed as any)?.totalDocs))
           ? Number((listed as any).totalDocs)
           : docs.length;
         const toLine = (doc: any, index: number): string => {
-          const picked = pickFieldFromRecord(doc, '', availableFields);
+          const picked = OrchestratorListingUtils.pickFieldFromRecord(doc, '', availableFields);
           if (!picked) return `- Record ${index + 1}`;
           return `- ${picked.key}: ${picked.value}`;
         };
@@ -134,8 +136,8 @@ export class OrchestratorFinalizeUtils {
           : `\`${collectionContext.slug}\` currently has no records.`;
         const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });
         const firstRow = docs[0] || null;
-        const firstField = pickFieldFromRecord(firstRow, '', availableFields)?.key || undefined;
-        return finalize(deps, {
+        const firstField = OrchestratorListingUtils.pickFieldFromRecord(firstRow, '', availableFields)?.key || undefined;
+        return OrchestratorActionUtils.finalize(deps, {
           planId,
           goal: message,
           message: reply,
@@ -146,15 +148,15 @@ export class OrchestratorFinalizeUtils {
           selectedSkill: context.selectedSkill,
           sessionId: context.input?.sessionId,
           checkpoint: ResponseBuilder.makeCheckpoint({
-            reason: 'user_continue',
+            reason: CheckpointReason.USER_CONTINUE,
             resumePrompt: `Continue from ${collectionContext.slug} listing context.`,
-            stage: 'finalize',
+            stage: RuntimeStage.FINALIZE,
             planningPassesUsed: Number(context.input?.checkpoint?.planningPassesUsed || 0),
             memory: {
               listing: {
                 collectionSlug: collectionContext.slug,
                 lastSelectedRowIndex: 0,
-                lastSelectedRecordId: firstRow ? extractRecordIdentity(firstRow) || undefined : undefined,
+                lastSelectedRecordId: firstRow ? OrchestratorListingUtils.extractRecordIdentity(firstRow) || undefined : undefined,
                 lastSelectedField: firstField,
               },
             },
@@ -169,7 +171,7 @@ export class OrchestratorFinalizeUtils {
 
   if (WorkspaceMapService.isWorkspaceInventoryRequest(message)) {
     const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });
-    return finalize(deps, {
+    return OrchestratorActionUtils.finalize(deps, {
       planId,
       goal: message,
       message: WorkspaceMapService.buildWorkspaceInventoryMessage(context.workspaceMap),
@@ -180,9 +182,9 @@ export class OrchestratorFinalizeUtils {
       selectedSkill: context.selectedSkill,
       sessionId: context.input?.sessionId,
       checkpoint: ResponseBuilder.makeCheckpoint({
-        reason: 'user_continue',
+        reason: CheckpointReason.USER_CONTINUE,
         resumePrompt: 'Continue from workspace inventory context.',
-        stage: 'finalize',
+        stage: RuntimeStage.FINALIZE,
         planningPassesUsed: Number(context.input?.checkpoint?.planningPassesUsed || 0),
         memory: context.input?.checkpoint?.memory,
       }),
@@ -190,23 +192,23 @@ export class OrchestratorFinalizeUtils {
     });
   }
 
-  const inventoryFollowup = findInventoryFollowupReply(message, context);
+  const inventoryFollowup = OrchestratorActionUtils.findInventoryFollowupReply(message, context);
   const chatReply = inventoryFollowup
     ? null
     : await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
-  const factualReply = inventoryFollowup || (chatReply && chatReply.source !== 'fallback')
+  const factualReply = inventoryFollowup || (chatReply && chatReply.source !== ResponderRoute.FALLBACK)
     ? null
     : await FactualQueryService.resolveReply(context, message);
   const reply = inventoryFollowup
     ? { message: inventoryFollowup, model: 'inventory-followup' }
-    : chatReply && chatReply.source !== 'fallback'
+    : chatReply && chatReply.source !== ResponderRoute.FALLBACK
       ? chatReply
       : factualReply
         ? factualReply
         : chatReply || await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
 
   const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });
-  return finalize(deps, {
+  return OrchestratorActionUtils.finalize(deps, {
     planId,
     goal: message,
     message: reply.message,
@@ -217,9 +219,9 @@ export class OrchestratorFinalizeUtils {
     selectedSkill: context.selectedSkill,
     sessionId: context.input?.sessionId,
     checkpoint: ResponseBuilder.makeCheckpoint({
-      reason: 'user_continue',
+      reason: CheckpointReason.USER_CONTINUE,
       resumePrompt: 'Continue the conversation naturally.',
-      stage: 'finalize',
+      stage: RuntimeStage.FINALIZE,
       planningPassesUsed: Number(context.input?.checkpoint?.planningPassesUsed || 0),
       memory: factualReply?.memory
         ? { factual: factualReply.memory }

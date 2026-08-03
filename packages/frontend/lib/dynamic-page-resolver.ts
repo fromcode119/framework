@@ -1,11 +1,13 @@
 import { cache } from 'react';
+
 import { LocalizationUtils } from '@fromcode119/core/client';
-import { FrontendPublicSettings } from './frontend-public-settings';
-import { FrontendLocaleService } from './frontend-locale-service';
-import { ServerApiUtils } from './server-api';
-import { QueryParamUtils } from './query-param-utils';
-import { ResolvedContentShape } from './resolved-content-shape';
-import type { SearchParams, LocaleStrategy, ResolvedDocResult } from './dynamic-page-resolver.types';
+import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
+import { FrontendLocaleService } from '@/lib/frontend-locale-service';
+import { ServerApiUtils } from '@/lib/server-api';
+import { QueryParamUtils } from '@/lib/query-param-utils';
+import { ResolvedContentShape } from '@/lib/resolved-content-shape';
+import { LocaleUrlStrategy } from '@fromcode119/core/client';
+import { IResolvedDocResult } from '@/lib/interfaces/resolved-doc-result.interface';
 
 export class DynamicPageResolver {
   /**
@@ -27,16 +29,14 @@ export class DynamicPageResolver {
     return FrontendPublicSettings.readSettingValue(key);
   }
 
-  static async getLocaleRoutingConfig(): Promise<{ strategy: LocaleStrategy; enabledLocales: Set<string> }> {
+  static async getLocaleRoutingConfig(): Promise<{ strategy: LocaleUrlStrategy; enabledLocales: Set<string> }> {
     const [strategyValue, enabledLocalesValue, localizationLocalesValue] = await Promise.all([
       DynamicPageResolver.readSettingValue('locale_url_strategy'),
       DynamicPageResolver.readSettingValue('enabled_locales'),
       DynamicPageResolver.readSettingValue('localization_locales'),
     ]);
 
-    const strategy: LocaleStrategy = (['query', 'path', 'none'] as const).includes(strategyValue as any)
-      ? (strategyValue as LocaleStrategy)
-      : 'query';
+    const strategy: LocaleUrlStrategy = LocaleUrlStrategy.resolve(strategyValue);
 
     const enabledLocales = new Set<string>();
     String(enabledLocalesValue || '')
@@ -66,18 +66,18 @@ export class DynamicPageResolver {
   }
 
   static async resolveLocale(
-    searchParams: SearchParams | undefined,
+    searchParams: Record<string, string | string[] | undefined> | undefined,
     pathLocale: string | undefined,
-    strategy: LocaleStrategy,
+    strategy: LocaleUrlStrategy,
   ): Promise<string> {
     return FrontendLocaleService.resolveLocale(searchParams, pathLocale, strategy);
   }
 
   static async resolveDoc(
     slug: string,
-    searchParams: SearchParams | undefined,
+    searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
-    strategy: LocaleStrategy,
+    strategy: LocaleUrlStrategy,
   ): Promise<any | null> {
     const result = await DynamicPageResolver.resolveDocResult(slug, searchParams, localeOverride, strategy);
     return result?.doc || null;
@@ -85,10 +85,10 @@ export class DynamicPageResolver {
 
   static async resolveDocResult(
     slug: string,
-    searchParams: SearchParams | undefined,
+    searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
-    strategy: LocaleStrategy,
-  ): Promise<ResolvedDocResult | null> {
+    strategy: LocaleUrlStrategy,
+  ): Promise<IResolvedDocResult | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
     const locale = await DynamicPageResolver.resolveLocale(searchParams, localeOverride, strategy);
@@ -131,9 +131,9 @@ export class DynamicPageResolver {
 
   static async resolveDocWithPermalinkFallback(
     slug: string,
-    searchParams: SearchParams | undefined,
+    searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
-    strategy: LocaleStrategy,
+    strategy: LocaleUrlStrategy,
   ): Promise<any | null> {
     const result = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, searchParams, localeOverride, strategy);
     return result?.doc || null;
@@ -141,10 +141,10 @@ export class DynamicPageResolver {
 
   static async resolveDocWithPermalinkFallbackResult(
     slug: string,
-    searchParams: SearchParams | undefined,
+    searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
-    strategy: LocaleStrategy,
-  ): Promise<ResolvedDocResult | null> {
+    strategy: LocaleUrlStrategy,
+  ): Promise<IResolvedDocResult | null> {
     const cleanSlug = String(slug || '').trim().replace(/^\/+/, '');
     if (!cleanSlug) return null;
 
@@ -159,7 +159,7 @@ export class DynamicPageResolver {
     slug: string,
     locale: string,
     fallbackLocale: string,
-    searchParams?: SearchParams,
+    searchParams?: Record<string, string | string[] | undefined>,
   ): Promise<any | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
@@ -175,8 +175,8 @@ export class DynamicPageResolver {
     slug: string,
     locale: string,
     fallbackLocale: string,
-    searchParams?: SearchParams,
-  ): Promise<ResolvedDocResult | null> {
+    searchParams?: Record<string, string | string[] | undefined>,
+  ): Promise<IResolvedDocResult | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
     if (locale) query.set('locale', locale);
@@ -191,7 +191,7 @@ export class DynamicPageResolver {
     };
   }
 
-  private static isHomeCandidate(result: ResolvedDocResult | null): boolean {
+  private static isHomeCandidate(result: IResolvedDocResult | null): boolean {
     if (!result?.doc) {
       return false;
     }
@@ -207,8 +207,8 @@ export class DynamicPageResolver {
   static async resolveHomeTarget(
     locale: string,
     fallbackLocale: string,
-    searchParams?: SearchParams,
-  ): Promise<{ content: any | null; forcedLayout: string | null; resolution: ResolvedDocResult | null }> {
+    searchParams?: Record<string, string | string[] | undefined>,
+  ): Promise<{ content: any | null; forcedLayout: string | null; resolution: IResolvedDocResult | null }> {
     const target = (await DynamicPageResolver.readSettingValue('routing_home_target')) || 'auto';
 
     if (target.startsWith('layout:')) {

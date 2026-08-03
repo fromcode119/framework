@@ -1,21 +1,9 @@
+import type { ISeoHeadData } from '@/lib/interfaces/seo-head-data.interface';
 import { cache } from 'react';
-import type { Metadata } from 'next';
-import { ServerApiUtils } from './server-api';
-import { FrontendConfigCache } from './frontend-config-cache';
 
-interface SeoHeadData {
-  title: string;
-  description: string;
-  canonical: string;
-  robots: string;
-  siteName: string;
-  siteUrl: string;
-  ogTitle: string;
-  ogDescription: string;
-  ogImage: string;
-  twitterCard: string;
-  twitterHandle: string;
-}
+import type { Metadata } from 'next';
+import { ServerApiUtils } from '@/lib/server-api';
+import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 
 export class ResolvedContentMetadata {
   static build(content: Record<string, unknown> | null, resolutionType?: string): Metadata {
@@ -81,7 +69,7 @@ export class ResolvedContentMetadata {
   }
 
   /** Public helper for site-wide brand defaults (used by the root layout). */
-  static async fetchSite(): Promise<SeoHeadData | null> {
+  static async fetchSite(): Promise<ISeoHeadData | null> {
     return ResolvedContentMetadata.fetchSeoHeadData({ url: '/', contentType: '', contentId: '', title: '', description: '' });
   }
 
@@ -91,11 +79,11 @@ export class ResolvedContentMetadata {
    * whenever they build the identical query). Per-request only — no cross-request
    * persistence (storefront-performance-audit.md §1.2 / Phase 1.2).
    */
-  private static readonly seoHeadDataCache = cache(async (queryString: string): Promise<SeoHeadData | null> => {
+  private static readonly seoHeadDataCache = cache(async (queryString: string): Promise<ISeoHeadData | null> => {
     const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
     if (!provider) return null;
     const path = ServerApiUtils.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);
-    const data = (await ServerApiUtils.serverFetchJson(path)) as SeoHeadData | null;
+    const data = (await ServerApiUtils.serverFetchJson(path)) as ISeoHeadData | null;
     return data && typeof data === 'object' && typeof data.title === 'string' ? data : null;
   });
 
@@ -127,7 +115,7 @@ export class ResolvedContentMetadata {
     contentId: string;
     title: string;
     description: string;
-  }): Promise<SeoHeadData | null> {
+  }): Promise<ISeoHeadData | null> {
     const query = new URLSearchParams();
     query.set('url', params.url || '/');
     if (params.contentType) query.set('contentType', params.contentType);

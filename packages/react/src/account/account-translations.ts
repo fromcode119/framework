@@ -1,6 +1,6 @@
-import { ContextBridge } from '../context-bridge';
-import EN from './i18n/en.json';
-import BG from './i18n/bg.json';
+import { ContextBridge } from '@react/context-bridge';
+import EN from '@react/account/i18n/en.json';
+import BG from '@react/account/i18n/bg.json';
 
 /**
  * Registers the framework-default AccountShell copy so the shell renders complete on any install

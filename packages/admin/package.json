@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/admin",
-  "version": "0.1.79",
+  "version": "0.1.80",
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "bin": {
@@ -24,11 +24,11 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "build:sw": "esbuild service-worker/service-worker.ts --bundle --format=iife --target=es2020 --outfile=public/sw.js",
+    "build:sw": "node ../typor/dist/typor-cli.cjs esbuild service-worker/service-worker.ts --bundle --format=iife --global-name=AdminServiceWorkerModule --target=es2020 --tsconfig=tsconfig.json \"--footer:js=AdminServiceWorkerModule.AdminServiceWorker.register();\" --outfile=public/sw.js",
     "typecheck:sw": "tsc --noEmit -p service-worker/tsconfig.json",
-    "build": "npm run build:sw && next build",
+    "build": "npm run build:sw && node ../nextor/dist/nextor-cli.cjs with-middleware -- next build",
     "prepack": "npm run build:sw",
-    "dev": "next dev --webpack -H 0.0.0.0",
+    "dev": "node ../nextor/dist/nextor-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
     "start": "next start -H 0.0.0.0",
     "test": "vitest"
   },
@@ -55,7 +55,8 @@
     "@types/react-dom": "19.0.0",
     "autoprefixer": "^10.4.23",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "@fromcode119/reactor": "*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

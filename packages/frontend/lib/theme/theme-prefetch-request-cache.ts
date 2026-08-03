@@ -1,7 +1,8 @@
-import { RuntimeConstants } from '@fromcode119/core/client';
 import { cache } from 'react';
-import { FrontendConfigCache } from '../frontend-config-cache';
-import { ThemeDataPrefetcher } from './theme-data-prefetcher';
+import { RuntimeConstants } from '@fromcode119/core/client';
+
+import { FrontendConfigCache } from '@/lib/frontend-config-cache';
+import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 
 /**
  * Per-request memoized theme prefetch (React `cache()`), mirroring the pattern used by

@@ -1,3 +1,5 @@
+import { TaskProgress } from '@ai/api/forge/enums/task-progress.enum';
+import { TaskStatus } from '@ai/api/forge/enums/task-status.enum';
 /**
  * Plan Reporter
  *
@@ -5,18 +7,20 @@
  * files under the line limit. Operates on a resolved TaskPlan.
  */
 
-import type { TaskPlan, PlanStatusSummary } from './planning-engine.interfaces';
+import type { ITaskPlan } from '@ai/api/forge/interfaces/task-plan.interface';
+
+import type { IPlanStatusSummary } from '@ai/api/forge/interfaces/plan-status-summary.interface';
 
 export class PlanReporter {
   /**
    * Compute plan status counts and progress for a plan.
    */
-  static getPlanStatus(plan: TaskPlan): PlanStatusSummary {
+  static getPlanStatus(plan: ITaskPlan): IPlanStatusSummary {
     const total = plan.subtasks.length;
-    const completed = plan.subtasks.filter((t) => t.status === 'completed').length;
-    const inProgress = plan.subtasks.filter((t) => t.status === 'in-progress').length;
-    const pending = plan.subtasks.filter((t) => t.status === 'pending').length;
-    const failed = plan.subtasks.filter((t) => t.status === 'failed').length;
+    const completed = plan.subtasks.filter((t) => t.status === TaskStatus.COMPLETED).length;
+    const inProgress = plan.subtasks.filter((t) => t.status === TaskStatus.IN_PROGRESS).length;
+    const pending = plan.subtasks.filter((t) => t.status === TaskStatus.PENDING).length;
+    const failed = plan.subtasks.filter((t) => t.status === TaskStatus.FAILED).length;
 
     return {
       total,
@@ -31,13 +35,13 @@ export class PlanReporter {
   /**
    * Generate a human-readable plan summary.
    */
-  static generatePlanSummary(plan: TaskPlan): string {
+  static generatePlanSummary(plan: ITaskPlan): string {
     const status = PlanReporter.getPlanStatus(plan);
     const lines: string[] = [];
 
     lines.push('=== TASK PLAN SUMMARY ===');
     lines.push(`Goal: ${plan.goalStatement}`);
-    lines.push(`Status: ${plan.status.toUpperCase()}`);
+    lines.push(`Status: ${TaskProgress.resolve(plan.status).value.toUpperCase()}`);
     lines.push(`Progress: ${status.completed}/${status.total} (${status.progress.toFixed(1)}%)`);
 
     if (status.failed > 0) {
@@ -48,7 +52,7 @@ export class PlanReporter {
       lines.push('\nSubtasks:');
       plan.subtasks.forEach((t) => {
         const icon =
-          t.status === 'completed' ? '✓' : t.status === 'failed' ? '✗' : '○';
+          t.status === TaskStatus.COMPLETED ? '✓' : t.status === TaskStatus.FAILED ? '✗' : '○';
         lines.push(`  ${icon} [${t.priority}/10] ${t.title} (${t.status})`);
       });
     }

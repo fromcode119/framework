@@ -1,10 +1,8 @@
-import type { PluginEntityRecordsRegistryService } from './plugin-entity-records-registry-service';
-import type {
-  EntityRecordGroup,
-  EntityRecordItem,
-  EntityRecordRef,
-  EntityRecordsResult,
-} from './entity-record.interfaces';
+import type { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
+import type { IEntityRecordGroup } from '@core/services/entity-records/interfaces/entity-record-group.interface';
+import type { IEntityRecordItem } from '@core/services/entity-records/interfaces/entity-record-item.interface';
+import type { IEntityRecordRef } from '@core/services/entity-records/interfaces/entity-record-ref.interface';
+import type { IEntityRecordsResult } from '@core/services/entity-records/interfaces/entity-records-result.interface';
 
 /**
  * Runs every registered entity-record provider for a person reference and
@@ -16,12 +14,12 @@ import type {
 export class EntityRecordsResolutionService {
   constructor(private readonly registry: PluginEntityRecordsRegistryService) {}
 
-  async resolve(ref: EntityRecordRef): Promise<EntityRecordsResult> {
+  async resolve(ref: IEntityRecordRef): Promise<IEntityRecordsResult> {
     const safeRef = this.normalizeRef(ref);
     const providers = this.registry.list();
-    const items: EntityRecordItem[] = [];
+    const items: IEntityRecordItem[] = [];
     const usedProviders: string[] = [];
-    const errors: EntityRecordsResult['errors'] = [];
+    const errors: IEntityRecordsResult['errors'] = [];
 
     const settled = await Promise.all(
       providers.map(async (provider) => {
@@ -33,7 +31,7 @@ export class EntityRecordsResolutionService {
             provider: provider.canonicalKey,
             message: String(error?.message || error || 'provider failed'),
           });
-          return { provider, result: [] as EntityRecordItem[] };
+          return { provider, result: [] as IEntityRecordItem[] };
         }
       }),
     );
@@ -58,7 +56,7 @@ export class EntityRecordsResolutionService {
     };
   }
 
-  private normalizeRef(ref: EntityRecordRef): EntityRecordRef {
+  private normalizeRef(ref: IEntityRecordRef): IEntityRecordRef {
     return {
       personId: ref?.personId ?? null,
       userId: ref?.userId ?? null,
@@ -66,7 +64,7 @@ export class EntityRecordsResolutionService {
     };
   }
 
-  private normalizeItem(raw: EntityRecordItem, fallbackGroup: string): EntityRecordItem | null {
+  private normalizeItem(raw: IEntityRecordItem, fallbackGroup: string): IEntityRecordItem | null {
     const id = String(raw?.id ?? '').trim();
     const title = String(raw?.title ?? '').trim();
     if (!id || !title) return null;
@@ -79,9 +77,9 @@ export class EntityRecordsResolutionService {
     };
   }
 
-  private groupItems(items: EntityRecordItem[]): EntityRecordGroup[] {
+  private groupItems(items: IEntityRecordItem[]): IEntityRecordGroup[] {
     const order: string[] = [];
-    const buckets = new Map<string, EntityRecordItem[]>();
+    const buckets = new Map<string, IEntityRecordItem[]>();
     for (const item of items) {
       if (!buckets.has(item.group)) {
         buckets.set(item.group, []);
@@ -92,7 +90,7 @@ export class EntityRecordsResolutionService {
     return order.map((group) => ({ group, items: buckets.get(group)! }));
   }
 
-  private byDateDesc(a: EntityRecordItem, b: EntityRecordItem): number {
+  private byDateDesc(a: IEntityRecordItem, b: IEntityRecordItem): number {
     const da = a?.date ? Date.parse(a.date) : 0;
     const db = b?.date ? Date.parse(b.date) : 0;
     return (Number.isFinite(db) ? db : 0) - (Number.isFinite(da) ? da : 0);

@@ -1,3 +1,4 @@
+import { TaskComplexity } from '@ai/api/forge/enums/task-complexity.enum';
 /**
  * Task Complexity Detector
  * 
@@ -5,7 +6,7 @@
  * Reduces AI overhead and improves response time for basic operations.
  */
 
-import type { TaskComplexity } from './task-complexity-detector.interfaces';
+import type { ITaskComplexityAssessment } from '@ai/api/forge/interfaces/task-complexity-assessment.interface';
 
 export class TaskComplexityDetector {
   /**
@@ -15,14 +16,14 @@ export class TaskComplexityDetector {
     availableTools?: number;
     hasHistory?: boolean;
     agentMode?: string;
-  }): TaskComplexity {
+  }): ITaskComplexityAssessment {
     const msg = String(message || '').trim().toLowerCase();
     
     // Pattern: simple text replacement (change X with Y, replace X by Y, etc)
     const simpleReplacePattern = /^(change|replace|update|rename|swap|substitute|find\s+and\s+replace)[\s\w\s'"]*with\s+/i;
     if (simpleReplacePattern.test(message)) {
       return {
-        level: 'simple',
+        level: TaskComplexity.SIMPLE,
         reason: 'Simple text replacement operation',
         skipPlanning: true,
         estimatedIterations: 1,
@@ -34,7 +35,7 @@ export class TaskComplexityDetector {
     const singleOpPattern = /^(create|add|make|set|update|modify)[\s+]*(a|an|the)?\s*(new\s+)?\w+\s+(in|on|for|with)?\s+/i;
     if (singleOpPattern.test(message) && !msg.includes('and') && !msg.includes('then') && !msg.includes('multiple')) {
       return {
-        level: 'simple',
+        level: TaskComplexity.SIMPLE,
         reason: 'Single collection item operation',
         skipPlanning: true,
         estimatedIterations: 1,
@@ -46,7 +47,7 @@ export class TaskComplexityDetector {
     const lookupPattern = /^(find|search|list|show|get|retrieve|check|look(?:ing)?\s+for|find\s+all)\s+/i;
     if (lookupPattern.test(message) && !msg.includes('and create') && !msg.includes('and update')) {
       return {
-        level: 'simple',
+        level: TaskComplexity.SIMPLE,
         reason: 'Simple lookup or search operation',
         skipPlanning: true,
         estimatedIterations: 1,
@@ -58,7 +59,7 @@ export class TaskComplexityDetector {
     const settingPattern = /^(set|change|update)[\s+]*(the\s+)?\w+\s+(setting|configuration|config|option|value)\s+(to|=|as)\s+/i;
     if (settingPattern.test(message)) {
       return {
-        level: 'simple',
+        level: TaskComplexity.SIMPLE,
         reason: 'Single configuration setting change',
         skipPlanning: true,
         estimatedIterations: 1,
@@ -82,7 +83,7 @@ export class TaskComplexityDetector {
     // Determine complexity level
     if (complexityCount === 0 && msg.length < 100) {
       return {
-        level: 'simple',
+        level: TaskComplexity.SIMPLE,
         reason: 'Straightforward single operation',
         skipPlanning: true,
         estimatedIterations: 1,
@@ -90,7 +91,7 @@ export class TaskComplexityDetector {
       };
     } else if (complexityCount <= 2 && msg.length < 200) {
       return {
-        level: 'moderate',
+        level: TaskComplexity.MODERATE,
         reason: 'Multi-step operation with some logic',
         skipPlanning: false,
         estimatedIterations: 2,
@@ -98,7 +99,7 @@ export class TaskComplexityDetector {
       };
     } else {
       return {
-        level: 'complex',
+        level: TaskComplexity.COMPLEX,
         reason: 'Complex multi-step operation requiring analysis',
         skipPlanning: false,
         estimatedIterations: 3,
@@ -119,7 +120,7 @@ export class TaskComplexityDetector {
     }
 
     // Never skip first real iteration for complex tasks
-    if (complexity.level === 'complex') {
+    if (complexity.level === TaskComplexity.COMPLEX) {
       return false;
     }
 
@@ -130,13 +131,13 @@ export class TaskComplexityDetector {
   /**
    * Get recommended max iterations based on complexity
    */
-  getRecommendedMaxIterations(complexity: TaskComplexity): number {
+  getRecommendedMaxIterations(complexity: ITaskComplexityAssessment): number {
     switch (complexity.level) {
-      case 'simple':
+      case TaskComplexity.SIMPLE:
         return 5; // extra headroom for staged-action completion without pause loops
-      case 'moderate':
+      case TaskComplexity.MODERATE:
         return 7; // keep moderate tasks from prematurely pausing
-      case 'complex':
+      case TaskComplexity.COMPLEX:
         return 10; // full planning with recovery headroom
       default:
         return 7; // Fallback to moderate

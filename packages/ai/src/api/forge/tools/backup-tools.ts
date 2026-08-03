@@ -1,11 +1,10 @@
 import { BackupService, ProjectPaths } from '@fromcode119/core';
-import type { McpToolDefinition } from '@fromcode119/mcp';
+import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import * as fs from 'fs';
 import * as path from 'path';
 
-
 export class BackupTools {
-  static buildBackupManagementTools(): McpToolDefinition[] {
+  static buildBackupManagementTools(): IMcpToolDefinition[] {
       return [
         {
           tool: 'backups.list',

@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
-import { BaseMiddleware } from './base-middleware';
-import { ApiConfig } from '../config/api-config';
-import type { RateLimitOptions } from './rate-limit-middleware.interfaces';
-import { AdminBootstrapRateLimitUtils } from '../utils/admin-bootstrap-rate-limit-utils';
-import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
+import { BaseMiddleware } from '@api/middlewares/base-middleware';
+import { ApiConfig } from '@api/config/api-config';
+import type { IRateLimitOptions } from '@api/middlewares/interfaces/rate-limit-options.interface';
+import { AdminBootstrapRateLimitUtils } from '@api/utils/admin-bootstrap-rate-limit-utils';
+import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
 
 /**
  * Rate Limiting Middleware using express-rate-limit.
@@ -29,7 +29,7 @@ import { PublicSystemRouteUtils } from '../utils/public-system-route-utils';
 export class RateLimitMiddleware extends BaseMiddleware {
   private limiter: RateLimitRequestHandler;
 
-  constructor(options: RateLimitOptions = {}) {
+  constructor(options: IRateLimitOptions = {}) {
     super();
     const apiConfig = ApiConfig.getInstance();
 

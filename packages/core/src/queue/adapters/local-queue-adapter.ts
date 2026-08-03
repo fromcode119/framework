@@ -1,9 +1,9 @@
-import { QueueAdapter } from '../types';
+import { IQueueAdapter } from '@core/queue/interfaces/queue-adapter.interface';
 
 /**
  * Local adapter: Executes jobs immediately/asynchronously via setTimeout (for dev/test)
  */
-export class LocalQueueAdapter implements QueueAdapter {
+export class LocalQueueAdapter implements IQueueAdapter {
   private workers: Map<string, (job: any) => Promise<any>> = new Map();
 
   async addJob(queueName: string, name: string, data: any): Promise<any> {

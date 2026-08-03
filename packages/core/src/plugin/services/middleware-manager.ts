@@ -1,16 +1,17 @@
-import { MiddlewareConfig, MiddlewareStage } from '../../types';
+import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
+import { MiddlewareStage } from '@core/enums/middleware-stage.enum';
 
 export class MiddlewareManager {
-  private middlewares: MiddlewareConfig[] = [];
+  private middlewares: IMiddlewareConfig[] = [];
 
-  public register(config: MiddlewareConfig): void {
+  public register(config: IMiddlewareConfig): void {
     this.middlewares.push({
       ...config,
       priority: config.priority ?? 100
     });
   }
 
-  public getByStage(stage: MiddlewareStage): MiddlewareConfig[] {
+  public getByStage(stage: MiddlewareStage): IMiddlewareConfig[] {
     return this.middlewares
       .filter(m => m.stage === stage)
       .sort((a, b) => (a.priority ?? 100) - (b.priority ?? 100));

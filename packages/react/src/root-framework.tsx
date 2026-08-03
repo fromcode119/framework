@@ -1,31 +1,26 @@
-"use client";
+import type { ReactNode } from 'react';
+import { Reactor, prop, state } from '@fromcode119/reactor';
 
-import React from 'react';
-import { createPortal } from 'react-dom';
-import type { RootFrameworkProps } from './root-framework.interfaces';
+export class RootFramework extends Reactor {
+  @prop declare children: ReactNode;
+  @prop declare containerId?: string;
 
-type RootFrameworkState = {
-  container: HTMLElement | null;
-};
-
-export class RootFramework extends React.Component<RootFrameworkProps, RootFrameworkState> {
+  @state container: HTMLElement | null = null;
   private createdContainer = false;
 
-  constructor(props: RootFrameworkProps) {
-    super(props);
-    this.state = { container: null };
+  private get targetId(): string {
+    return this.containerId || 'portal-root';
   }
 
   componentDidMount(): void {
-    this.attachContainer(this.props.containerId || 'portal-root');
+    this.attachContainer(this.targetId);
   }
 
-  componentDidUpdate(prevProps: RootFrameworkProps): void {
-    const nextContainerId = this.props.containerId || 'portal-root';
-    const previousContainerId = prevProps.containerId || 'portal-root';
-    if (nextContainerId !== previousContainerId) {
+  componentDidUpdate(prevProps: Record<string, unknown>): void {
+    const previousContainerId = (prevProps.containerId as string) || 'portal-root';
+    if (this.targetId !== previousContainerId) {
       this.detachContainer();
-      this.attachContainer(nextContainerId);
+      this.attachContainer(this.targetId);
     }
   }
 
@@ -33,12 +28,8 @@ export class RootFramework extends React.Component<RootFrameworkProps, RootFrame
     this.detachContainer();
   }
 
-  render(): React.ReactNode {
-    if (!this.state.container) {
-      return null;
-    }
-
-    return createPortal(this.props.children, this.state.container);
+  render(): ReactNode {
+    return this.container ? this.portal(this.children, this.container) : null;
   }
 
   private attachContainer(containerId: string): void {
@@ -50,15 +41,15 @@ export class RootFramework extends React.Component<RootFrameworkProps, RootFrame
       this.createdContainer = true;
     }
 
-    this.setState({ container: element });
+    this.container = element;
   }
 
   private detachContainer(): void {
-    if (this.createdContainer && this.state.container?.parentNode) {
-      this.state.container.parentNode.removeChild(this.state.container);
+    if (this.createdContainer && this.container?.parentNode) {
+      this.container.parentNode.removeChild(this.container);
     }
 
     this.createdContainer = false;
-    this.setState({ container: null });
+    this.container = null;
   }
 }

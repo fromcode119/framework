@@ -1,4 +1,4 @@
-import { IDatabaseManager, systemLogs, systemAuditLogs, systemPlugins } from '@fromcode119/database';
+import { IDatabaseManager, Schema } from '@fromcode119/database';
 
 export class SystemService {
   constructor(private db: IDatabaseManager) {}
@@ -11,23 +11,23 @@ export class SystemService {
     const { or, and, eq, isNull, desc } = this.db;
 
     let whereClause = params.search ? or(
-      this.db.like(systemLogs.message, `%${params.search}%`),
-      this.db.like(systemLogs.pluginSlug, `%${params.search}%`)
+      this.db.like(Schema.systemLogs.message, `%${params.search}%`),
+      this.db.like(Schema.systemLogs.pluginSlug, `%${params.search}%`)
     ) : undefined;
 
     const activityFilter = or(
-      isNull(systemLogs.pluginSlug),
-      eq(systemLogs.pluginSlug, 'system'),
-      eq(systemPlugins.state, 'active')
+      isNull(Schema.systemLogs.pluginSlug),
+      eq(Schema.systemLogs.pluginSlug, 'system'),
+      eq(Schema.systemPlugins.state, 'active')
     );
     const finalWhere = whereClause ? and(whereClause, activityFilter) : activityFilter;
 
-    const totalDocs = await this.db.count(systemLogs, {
-      joins: [{ table: systemPlugins, on: eq(systemLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+    const totalDocs = await this.db.count(Schema.systemLogs, {
+      joins: [{ table: Schema.systemPlugins, on: eq(Schema.systemLogs.pluginSlug, Schema.systemPlugins.slug), type: 'left' }],
       where: finalWhere
     });
 
-    const docs = await this.db.find(systemLogs, {
+    const docs = await this.db.find(Schema.systemLogs, {
       columns: {
         id: true,
         pluginSlug: true,
@@ -36,9 +36,9 @@ export class SystemService {
         context: true,
         timestamp: true
       },
-      joins: [{ table: systemPlugins, on: eq(systemLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+      joins: [{ table: Schema.systemPlugins, on: eq(Schema.systemLogs.pluginSlug, Schema.systemPlugins.slug), type: 'left' }],
       where: finalWhere,
-      orderBy: desc(systemLogs.timestamp),
+      orderBy: desc(Schema.systemLogs.timestamp),
       limit,
       offset
     });
@@ -62,29 +62,29 @@ export class SystemService {
     const conditions: any[] = [];
     if (params.search) {
       conditions.push(or(
-        this.db.like(systemAuditLogs.resource, `%${params.search}%`),
-        this.db.like(systemAuditLogs.action, `%${params.search}%`),
-        this.db.like(systemAuditLogs.pluginSlug, `%${params.search}%`)
+        this.db.like(Schema.systemAuditLogs.resource, `%${params.search}%`),
+        this.db.like(Schema.systemAuditLogs.action, `%${params.search}%`),
+        this.db.like(Schema.systemAuditLogs.pluginSlug, `%${params.search}%`)
       ));
     }
     if (params.status) {
-      conditions.push(eq(systemAuditLogs.status, params.status));
+      conditions.push(eq(Schema.systemAuditLogs.status, params.status));
     }
 
     const baseWhere = conditions.length > 0 ? and(...conditions) : undefined;
     const auditFilter = or(
-      isNull(systemAuditLogs.pluginSlug),
-      eq(systemAuditLogs.pluginSlug, 'system'),
-      eq(systemPlugins.state, 'active')
+      isNull(Schema.systemAuditLogs.pluginSlug),
+      eq(Schema.systemAuditLogs.pluginSlug, 'system'),
+      eq(Schema.systemPlugins.state, 'active')
     );
     const finalWhere = baseWhere ? and(baseWhere, auditFilter) : auditFilter;
 
-    const totalDocs = await this.db.count(systemAuditLogs, {
-      joins: [{ table: systemPlugins, on: eq(systemAuditLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+    const totalDocs = await this.db.count(Schema.systemAuditLogs, {
+      joins: [{ table: Schema.systemPlugins, on: eq(Schema.systemAuditLogs.pluginSlug, Schema.systemPlugins.slug), type: 'left' }],
       where: finalWhere
     });
 
-    const docs = await this.db.find(systemAuditLogs, {
+    const docs = await this.db.find(Schema.systemAuditLogs, {
       columns: {
         id: true,
         pluginSlug: true,
@@ -94,9 +94,9 @@ export class SystemService {
         metadata: true,
         createdAt: true
       },
-      joins: [{ table: systemPlugins, on: eq(systemAuditLogs.pluginSlug, systemPlugins.slug), type: 'left' }],
+      joins: [{ table: Schema.systemPlugins, on: eq(Schema.systemAuditLogs.pluginSlug, Schema.systemPlugins.slug), type: 'left' }],
       where: finalWhere,
-      orderBy: desc(systemAuditLogs.createdAt),
+      orderBy: desc(Schema.systemAuditLogs.createdAt),
       limit,
       offset
     });

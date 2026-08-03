@@ -1,12 +1,12 @@
-"use client";
+import type { ComponentType, ReactNode } from 'react';
+import { Reactor } from '@fromcode119/reactor';
+import { SlotsContext } from '@react/context/slots-context';
+import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
+import type { ISlotProps } from '@react/interfaces/slot-props.interface';
 
-import React from 'react';
-import { SlotsContext } from './context/slots-context';
-import type { SlotComponent } from './context.interfaces';
-import type { SlotProps } from './slot.interfaces';
-
-export class Slot extends React.Component<SlotProps> {
-  render(): React.ReactNode {
+export class Slot extends Reactor {
+  declare props: Pick<ISlotProps, keyof ISlotProps>;
+  render(): ReactNode {
     return (
       <SlotsContext.Context.Consumer>
         {(slots) => {
@@ -18,7 +18,7 @@ export class Slot extends React.Component<SlotProps> {
     );
   }
 
-  private renderSlotComponent(item: SlotComponent, index: number): React.ReactNode {
+  private renderSlotComponent(item: ISlotComponent, index: number): ReactNode {
     if (!item?.component) {
       console.warn(`[Slot] Requested component for slot "${this.props.name}" is undefined. Plugin: ${item?.pluginSlug || 'unknown'}`);
       return null;
@@ -31,10 +31,8 @@ export class Slot extends React.Component<SlotProps> {
 
     try {
       const componentName = (item.component as any)?.displayName || (item.component as any)?.name || `c${index}`;
-      return React.createElement(item.component, {
-        ...this.props.props,
-        key: `${item.pluginSlug}-${componentName}-${index}`,
-      });
+      const Component = item.component as ComponentType<any>;
+      return <Component {...this.props.props} key={`${item.pluginSlug}-${componentName}-${index}`} />;
     } catch (error) {
       console.error(`[Slot] Runtime error in slot component "${this.props.name}":`, error);
       return null;

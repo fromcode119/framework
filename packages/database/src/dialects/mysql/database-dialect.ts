@@ -1,23 +1,23 @@
-import type { IDatabaseManager } from '../../types';
-import type { DatabaseDialectDefinition } from '../database-dialect-definition.interfaces';
-import type { DatabaseDialectResolver } from '../database-dialect-resolver.interfaces';
-import { MysqlDialectResolver } from './dialect-resolver';
+import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
+import type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
+import type { IDatabaseDialectResolver } from '@database/dialects/interfaces/database-dialect-resolver.interface';
+import { MysqlDialectResolver } from '@database/dialects/mysql/dialect-resolver';
 
-export class MysqlDatabaseDialect implements DatabaseDialectDefinition {
+export class MysqlDatabaseDialect implements IDatabaseDialectDefinition {
   readonly dialect = 'mysql';
 
   readonly protocols = ['mysql'] as const;
 
   createManager(connection: string): IDatabaseManager {
-    const { MysqlDatabaseManager } = require('./database-manager');
+    const { MysqlDatabaseManager } = require('@database/dialects/mysql/database-manager');
     return new MysqlDatabaseManager(connection);
   }
 
-  createResolver(): DatabaseDialectResolver {
+  createResolver(): IDatabaseDialectResolver {
     return new MysqlDialectResolver();
   }
 
-  createBackupHandler(): ReturnType<DatabaseDialectDefinition['createBackupHandler']> {
+  createBackupHandler(): ReturnType<IDatabaseDialectDefinition['createBackupHandler']> {
     return null;
   }
 }

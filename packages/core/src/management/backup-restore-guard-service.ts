@@ -1,18 +1,21 @@
+import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+import { SnapshotType } from '@core/management/enums/snapshot-type.enum';
+import { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
+import { BackupCatalogGroupKey } from '@core/management/enums/backup-catalog-group-key.enum';
 import fs from 'fs';
 import path from 'path';
-import { ProjectPaths } from '../config/paths';
-import { BackupService } from './backup-service';
-import { BackupCatalogService } from './backup-catalog-service';
-import { BackupOperationError } from './backup-operation-error';
-import { BackupRestorePreviewSessionService } from './backup-restore-preview-session-service';
-import type { BackupCatalogResolvedItem } from './backup-catalog-service.types';
-import type {
-  RestoreExecutionInput,
-  RestoreExecutionResult,
-  RestorePreviewInput,
-  RestoreTargetResolution,
-} from './backup-restore-guard-service.interfaces';
-import type { RestoreTargetKind } from './backup-restore-guard-service.types';
+import { ProjectPaths } from '@core/config/paths';
+import { BackupService } from '@core/management/backup-service';
+import { BackupCatalogService } from '@core/management/backup-catalog-service';
+import { BackupOperationError } from '@core/management/backup-operation-error';
+import { BackupRestorePreviewSessionService } from '@core/management/backup-restore-preview-session-service';
+import type { IBackupCatalogResolvedItem } from '@core/management/interfaces/backup-catalog-resolved-item.interface';
+import type { IRestoreExecutionInput } from '@core/management/interfaces/restore-execution-input.interface';
+import type { IRestoreExecutionResult } from '@core/management/interfaces/restore-execution-result.interface';
+import type { IRestorePreviewInput } from '@core/management/interfaces/restore-preview-input.interface';
+import type { IRestoreTargetResolution } from '@core/management/interfaces/restore-target-resolution.interface';
+import { RestoreTarget } from '@core/management/restore-target';
+import { RestoreTargetKind } from '@core/management/enums/restore-target-kind.enum';
 
 export class BackupRestoreGuardService {
   constructor(
@@ -20,7 +23,7 @@ export class BackupRestoreGuardService {
     private readonly previewSessions: BackupRestorePreviewSessionService = new BackupRestorePreviewSessionService(),
   ) {}
 
-  async previewRestore(input: RestorePreviewInput): Promise<RestoreTargetResolution> {
+  async previewRestore(input: IRestorePreviewInput): Promise<IRestoreTargetResolution> {
     const targetResolution = await this.resolveRestoreTarget(input);
     const previewSession = this.previewSessions.createSession({
       backupId: targetResolution.backup.id,
@@ -40,7 +43,7 @@ export class BackupRestoreGuardService {
     };
   }
 
-  async executeRestore(input: RestoreExecutionInput): Promise<RestoreExecutionResult> {
+  async executeRestore(input: IRestoreExecutionInput): Promise<IRestoreExecutionResult> {
     const preview = await this.resolveRestoreTarget(input);
     this.previewSessions.consumeSession({
       previewToken: input.previewToken,
@@ -60,37 +63,39 @@ export class BackupRestoreGuardService {
     };
   }
 
-  private ensureTargetCompatibility(backup: BackupCatalogResolvedItem, targetKind: RestoreTargetKind): void {
-    if (backup.group === 'system') {
-      if (targetKind !== 'system') {
+  private ensureTargetCompatibility(backup: IBackupCatalogResolvedItem, target: RestoreTarget): void {
+    if (backup.group === BackupCatalogGroupKey.SYSTEM) {
+      if (target.kind !== RestoreTargetKind.SYSTEM) {
         throw new BackupOperationError(400, 'Invalid restore target for system backup. System backups can only restore to system.');
       }
       return;
     }
 
-    if (backup.group === 'plugins') {
-      this.ensureScopedTargetCompatibility(backup, targetKind, 'plugin');
+    if (backup.group === BackupCatalogGroupKey.PLUGINS) {
+      this.ensureScopedTargetCompatibility(backup, target, ExtensionKind.PLUGIN);
       return;
     }
 
-    if (backup.group === 'themes') {
-      this.ensureScopedTargetCompatibility(backup, targetKind, 'theme');
+    if (backup.group === BackupCatalogGroupKey.THEMES) {
+      this.ensureScopedTargetCompatibility(backup, target, ExtensionKind.THEME);
       return;
     }
 
     throw new BackupOperationError(400, 'Invalid restore target for this backup type. Only system, plugin, and theme backups support restore.');
   }
 
-  private async resolveRestoreTarget(input: RestorePreviewInput): Promise<{
-    backup: BackupCatalogResolvedItem;
-    targetKind: RestoreTargetKind;
+  private async resolveRestoreTarget(input: IRestorePreviewInput): Promise<{
+    backup: IBackupCatalogResolvedItem;
+    targetKind: RestoreTarget;
     targetLabel: string;
     targetPath: string;
     warnings: string[];
-    snapshotType: 'system' | 'plugins' | 'themes';
+    snapshotType: SnapshotType;
   }> {
     const backup = await this.catalog.resolveById(input.backupId);
-    const targetResolution = this.resolveTarget(input.targetKind);
+    const target = RestoreTarget.parse(input.targetKind);
+    if (!target) throw new BackupOperationError(400, 'Unsupported restore target kind.');
+    const targetResolution = this.resolveTarget(target);
     this.ensureTargetCompatibility(backup, targetResolution.targetKind);
 
     return {
@@ -103,69 +108,54 @@ export class BackupRestoreGuardService {
     };
   }
 
-  private resolveTarget(targetKind: RestoreTargetKind): {
-    targetKind: RestoreTargetKind;
+  private resolveTarget(target: RestoreTarget): {
+    targetKind: RestoreTarget;
     targetLabel: string;
     targetPath: string;
-    snapshotType: 'system' | 'plugins' | 'themes';
+    snapshotType: SnapshotType;
   } {
-    if (targetKind === 'system') {
+    if (target.kind === RestoreTargetKind.SYSTEM) {
       return {
-        targetKind,
-        targetLabel: 'System',
+        targetKind: target,
+        targetLabel: target.label,
         targetPath: ProjectPaths.getProjectRoot(),
-        snapshotType: 'system',
+        snapshotType: SnapshotType.SYSTEM,
       };
     }
 
-    if (targetKind.startsWith('plugin:')) {
-      const slug = this.normalizeSlug(targetKind.slice('plugin:'.length));
-      const targetPath = path.join(ProjectPaths.getPluginsDir(), slug);
-      this.ensureDirectoryExists(targetPath, `Plugin "${slug}" does not exist.`);
-      return {
-        targetKind: `plugin:${slug}`,
-        targetLabel: `Plugin ${slug}`,
-        targetPath,
-        snapshotType: 'plugins',
-      };
-    }
-
-    if (targetKind.startsWith('theme:')) {
-      const slug = this.normalizeSlug(targetKind.slice('theme:'.length));
-      const targetPath = path.join(ProjectPaths.getThemesDir(), slug);
-      this.ensureDirectoryExists(targetPath, `Theme "${slug}" does not exist.`);
-      return {
-        targetKind: `theme:${slug}`,
-        targetLabel: `Theme ${slug}`,
-        targetPath,
-        snapshotType: 'themes',
-      };
-    }
-
-    throw new BackupOperationError(400, 'Unsupported restore target kind.');
+    const slug = this.normalizeSlug(target.slug ?? '');
+    const isPlugin = target.kind === RestoreTargetKind.PLUGIN;
+    const targetPath = path.join(
+      isPlugin ? ProjectPaths.getPluginsDir() : ProjectPaths.getThemesDir(),
+      slug,
+    );
+    this.ensureDirectoryExists(targetPath, `${isPlugin ? 'Plugin' : 'Theme'} "${slug}" does not exist.`);
+    const normalized = isPlugin ? RestoreTarget.plugin(slug) : RestoreTarget.theme(slug);
+    return {
+      targetKind: normalized,
+      targetLabel: normalized.label,
+      targetPath,
+      snapshotType: isPlugin ? SnapshotType.PLUGINS : SnapshotType.THEMES,
+    };
   }
 
-  private createWarnings(targetKind: RestoreTargetKind, backupFilename: string): string[] {
-    const warnings = [`Backup archive ${backupFilename} will overwrite files in ${targetKind}.`];
-    if (targetKind === 'system') {
+  private createWarnings(target: RestoreTarget, backupFilename: string): string[] {
+    const warnings = [`Backup archive ${backupFilename} will overwrite files in ${target}.`];
+    if (target.kind === RestoreTargetKind.SYSTEM) {
       warnings.push('System restore rewrites framework, plugin, theme, and data files under the project root.');
     }
     warnings.push('A pre-restore safety snapshot will be created before extraction begins.');
     return warnings;
   }
 
-  private async createSafetySnapshot(targetKind: RestoreTargetKind, targetPath: string): Promise<string> {
-    if (targetKind === 'system') {
+  private async createSafetySnapshot(target: RestoreTarget, targetPath: string): Promise<string> {
+    if (target.kind === RestoreTargetKind.SYSTEM) {
       return BackupService.createSystemBackup();
     }
 
-    if (targetKind.startsWith('plugin:')) {
-      const slug = this.normalizeSlug(targetKind.slice('plugin:'.length));
-      return BackupService.create(slug, targetPath, 'plugins');
-    }
-
-    const slug = this.normalizeSlug(targetKind.slice('theme:'.length));
-    return BackupService.create(slug, targetPath, 'themes');
+    const slug = this.normalizeSlug(target.slug ?? '');
+    const section = target.kind === RestoreTargetKind.PLUGIN ? BackupSectionKey.PLUGINS : BackupSectionKey.THEMES;
+    return BackupService.create(slug, targetPath, section);
   }
 
   private normalizeSlug(value: string): string {
@@ -183,18 +173,17 @@ export class BackupRestoreGuardService {
   }
 
   private ensureScopedTargetCompatibility(
-    backup: BackupCatalogResolvedItem,
-    targetKind: RestoreTargetKind,
-    scope: 'plugin' | 'theme',
+    backup: IBackupCatalogResolvedItem,
+    target: RestoreTarget,
+    scope: ExtensionKind,
   ): void {
     const backupSlug = this.normalizeSlug(String(backup.scopeSlug || ''));
-    if (!targetKind.startsWith(`${scope}:`)) {
-      throw new BackupOperationError(400, `Invalid restore target for ${scope} backup. ${this.capitalize(scope)} backups can only restore to ${scope}:${backupSlug}.`);
-    }
-
-    const targetSlug = this.normalizeSlug(targetKind.slice(scope.length + 1));
-    if (targetSlug !== backupSlug) {
-      throw new BackupOperationError(400, `Invalid restore target for ${scope} backup. ${this.capitalize(scope)} backups can only restore to ${scope}:${backupSlug}.`);
+    // Kind and slug are separate fields now, so this is two comparisons rather than a prefix test plus
+    // a `slice(scope.length + 1)` that had to know the wire format.
+    const sameKind = target.kind.value === scope.value;
+    const sameSlug = sameKind && this.normalizeSlug(target.slug ?? '') === backupSlug;
+    if (!sameKind || !sameSlug) {
+      throw new BackupOperationError(400, `Invalid restore target for ${scope} backup. ${this.capitalize(scope.value)} backups can only restore to ${scope}:${backupSlug}.`);
     }
   }
 

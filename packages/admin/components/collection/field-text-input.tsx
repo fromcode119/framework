@@ -1,16 +1,33 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
+import type { ReactNode } from 'react';
+
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { Input } from '@/components/ui/view/input.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { FrameworkIcons } from '@fromcode119/react';
-import type { FieldTextInputProps } from './field-renderer.interfaces';
+import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 
-export class FieldTextInput extends React.Component<FieldTextInputProps> {
-  render(): React.ReactNode {
+export class FieldTextInput extends PureReactor {
+  @prop declare field: ICollectionField;
+  @prop declare currentValue: any;
+  @prop declare resolvedCurrentText: string;
+  @prop declare updateValue: (value: any) => void;
+  @prop declare isFieldReadOnly: boolean;
+  @prop declare isNew: boolean;
+  @prop declare errors?: string[];
+  @prop declare label: string;
+  @prop declare slugWarning?: string | null;
+  @prop declare slugManuallyEdited?: boolean;
+  @prop declare isLocalizedField: boolean;
+  @prop declare shouldInlineLocaleSwitcher: boolean;
+  @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
+  @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
+
+  render(): ReactNode {
     const {
       field, currentValue, resolvedCurrentText, updateValue, isFieldReadOnly, isNew, errors,
       label, slugWarning, slugManuallyEdited, isLocalizedField, shouldInlineLocaleSwitcher,
       localeSwitcher, wrapWithReadOnlyOverride
-    } = this.props;
+    } = this;
     // Number fields use the platform stepper (input + explicit +/- controls), not the bare browser input.
     if (field.type === 'number') {
       const admin = (field.admin || {}) as Record<string, any>;
@@ -60,7 +77,7 @@ export class FieldTextInput extends React.Component<FieldTextInputProps> {
           </div>
         )}
         {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
-          <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-md text-[10px] font-semibold tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
+          <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[10px] font-semibold tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
             <FrameworkIcons.Refresh size={8} />
             Auto
           </div>

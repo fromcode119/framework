@@ -1,13 +1,13 @@
-import { TableNameResolver } from './types';
-import { NamingStrategy } from './naming-strategy';
-import { PhysicalTableNameUtils } from './physical-table-name-utils';
+import type { ITableNameResolver } from '@database/interfaces/table-name-resolver.interface';
+import { NamingStrategy } from '@database/naming-strategy';
+import { PhysicalTableNameUtils } from '@database/physical-table-name-utils';
 
 /**
  * Manages the resolution of semantic table names (e.g., @content/pages)
  * to physical database table names.
  */
 export class TableResolver {
-  private static resolver: TableNameResolver = (name: any): any => {
+  private static resolver: ITableNameResolver = (name: any): any => {
     if (typeof name !== 'string') return name;
     
     // Handle @plugin/entity format
@@ -26,7 +26,7 @@ export class TableResolver {
   /**
    * Overrides the default resolution logic.
    */
-  static set(resolver: TableNameResolver) {
+  static set(resolver: ITableNameResolver) {
     this.resolver = resolver;
   }
 

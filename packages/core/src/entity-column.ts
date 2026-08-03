@@ -1,79 +1,80 @@
-import { EntityMetadataService } from './services/entity-metadata-service';
-import type { EntityFieldConfig } from './types/entity-field-config.interfaces';
-import type { EntityColumnDecorator, EntityColumnOptions } from './types/entity-column.types';
+import { EntityMetadataService } from '@core/services/entity-metadata-service';
+import type { IEntityFieldConfig } from '@core/interfaces/entity-field-config.interface';
+import type { IEntityColumnDecorator } from '@core/interfaces/entity-column-decorator.interface';
+import type { IEntityColumnOptions } from '@core/interfaces/entity-column-options.interface';
 
 export class EntityColumn {
-  static field(config: EntityFieldConfig): EntityColumnDecorator {
+  static field(config: IEntityFieldConfig): IEntityColumnDecorator {
     return (target: object, propertyKey: string | symbol): void => {
       EntityMetadataService.defineField(target, propertyKey, config);
     };
   }
 
-  static text(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static text(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'string' });
   }
 
-  static string(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static string(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.text(options);
   }
 
-  static number(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static number(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'number' });
   }
 
-  static boolean(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static boolean(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'boolean' });
   }
 
-  static array(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static array(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'array' });
   }
 
-  static object(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static object(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'object' });
   }
 
-  static raw(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static raw(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'raw' });
   }
 
-  static enum(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static enum(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'enum' });
   }
 
-  static relationId(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static relationId(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'relationId' });
   }
 
-  static relationship(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static relationship(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'relationship' });
   }
 
-  static upload(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static upload(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'upload' });
   }
 
-  static json(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static json(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'json' });
   }
 
-  static group(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static group(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'group' });
   }
 
-  static richText(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static richText(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'richText' });
   }
 
-  static date(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static date(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'date' });
   }
 
-  static isoDate(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static isoDate(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'isoDate' });
   }
 
-  static isoDateOrNow(options: EntityColumnOptions = {}): EntityColumnDecorator {
+  static isoDateOrNow(options: IEntityColumnOptions = {}): IEntityColumnDecorator {
     return this.field({ ...options, type: 'isoDateOrNow' });
   }
 }

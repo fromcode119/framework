@@ -13,23 +13,26 @@ import { AppEnv } from '@/lib/env';
  * an admin to the dashboard) — the framework does not assume any plugin's routes exist. Full "Add to Home Screen"
  * install requires HTTPS in production; the manifest + responsive shell work over http too.
  */
-export default function manifest(): MetadataRoute.Manifest {
-  const name = String(AppEnv.APP_NAME || 'Admin');
-  const icon = AdminPathUtils.toAdminPath(AppEnv.PWA_ICON_PATH);
-  return {
-    name,
-    short_name: name,
-    description: `${name} — manage your platform on the go.`,
-    start_url: AdminPathUtils.toAdminPath('/'),
-    scope: AdminPathUtils.toAdminPath('/'),
-    display: 'standalone',
-    orientation: 'portrait-primary',
-    background_color: AppEnv.PWA_BACKGROUND_COLOR,
-    theme_color: AppEnv.PWA_THEME_COLOR,
-    icons: [
-      { src: icon, sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: icon, sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: icon, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-    ],
-  };
+export class AdminWebManifest {
+  /** Build the manifest document from the framework's own app config. */
+  static manifest(): MetadataRoute.Manifest {
+    const name = String(AppEnv.APP_NAME || 'Admin');
+    const icon = AdminPathUtils.toAdminPath(AppEnv.PWA_ICON_PATH);
+    return {
+      name,
+      short_name: name,
+      description: `${name} — manage your platform on the go.`,
+      start_url: AdminPathUtils.toAdminPath('/'),
+      scope: AdminPathUtils.toAdminPath('/'),
+      display: 'standalone',
+      orientation: 'portrait-primary',
+      background_color: AppEnv.PWA_BACKGROUND_COLOR,
+      theme_color: AppEnv.PWA_THEME_COLOR,
+      icons: [
+        { src: icon, sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: icon, sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: icon, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    };
+  }
 }

@@ -1,9 +1,4 @@
-const MENU_GROUP_CONFIG: Record<string, { label: string; order: number; manual?: boolean }> = {
-  core: { label: 'Core', order: 0 },
-  management: { label: 'Management', order: 1 },
-  settings: { label: 'Settings', order: 98, manual: true },
-  system: { label: 'System', order: 99, manual: true },
-};
+
 
 /**
  * Navigation path matching and menu utilities.
@@ -14,6 +9,13 @@ const MENU_GROUP_CONFIG: Record<string, { label: string; order: number; manual?:
  * NavUtils.isPathActive('/admin/settings', '/settings', ['/settings', '/users'])
  */
 export class NavUtils {
+  private static readonly MENU_GROUP_CONFIG: Record<string, { label: string; order: number; manual?: boolean }> = {
+  core: { label: 'Core', order: 0 },
+  management: { label: 'Management', order: 1 },
+  settings: { label: 'Settings', order: 98, manual: true },
+  system: { label: 'System', order: 99, manual: true },
+};
+
   static normalizePath(value?: string): string {
     const raw = String(value || '').trim();
     if (!raw) return '';
@@ -68,7 +70,7 @@ export class NavUtils {
   static getMenuGroupMeta(groupKey?: string): { key: string; label: string; order: number; manual?: boolean } {
     const raw = String(groupKey || '').trim();
     const normalized = NavUtils.normalizeGroupKey(groupKey);
-    const configured = MENU_GROUP_CONFIG[normalized];
+    const configured = NavUtils.MENU_GROUP_CONFIG[normalized];
     if (configured) return { key: normalized, ...configured };
     return { key: normalized, label: raw || normalized, order: Number.MAX_SAFE_INTEGER, manual: false };
   }

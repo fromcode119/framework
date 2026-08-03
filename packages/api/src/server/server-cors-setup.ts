@@ -1,11 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import {
-  ApplicationDomainSettingsUtils,
-  ApplicationHostUtils,
-  Logger,
-  SystemConstants,
-} from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, ApplicationHostUtils, Logger, SystemConstants } from '@fromcode119/core';
 
 export class ServerCorsSetup {
   constructor(

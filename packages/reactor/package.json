@@ -1,0 +1,42 @@
+{
+  "name": "@fromcode119/reactor",
+  "version": "0.1.80",
+  "description": "Class-based OOP primitives for React apps — a typed Reactor base component, @bound / @watch / @state decorators, and a method-bearing Enum base. React-only, zero framework dependencies, reusable in any project.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --external:react --external:react-dom --external:htm --outfile=dist/index.cjs"
+  },
+  "dependencies": {
+    "htm": "3.1.1"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "typescript": "^5.5.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

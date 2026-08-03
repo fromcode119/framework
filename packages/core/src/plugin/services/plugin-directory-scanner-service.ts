@@ -2,13 +2,22 @@ import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
 import Module from 'module';
-import { Logger } from '../../logging';
-import { LoadedPlugin } from '../../types';
-import { ProjectPaths } from '../../config/paths';
-import { ManifestNormalizer } from '../../manifest-normalizer';
-import { PluginDependencyInstallerService } from './plugin-dependency-installer-service';
+import { Logger } from '@core/logging';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { ProjectPaths } from '@core/config/paths';
+import { ManifestNormalizer } from '@core/manifest-normalizer';
+import { PluginDependencyInstallerService } from '@core/plugin/services/plugin-dependency-installer-service';
 
-const manifestSchema = z.object({
+/**
+ * PluginDirectoryScannerService
+ *
+ * Scans the plugins root (and theme-local plugin dirs) on disk, validates each
+ * manifest, loads the plugin module (with CJS/ESM fallback), and stages it.
+ * Extracted from DiscoveryService to keep that class under the size limit;
+ * DiscoveryService delegates discoverPlugins() to this service unchanged.
+ */
+export class PluginDirectoryScannerService {
+  private static readonly manifestSchema = z.object({
   name: z.string(),
   slug: z.string(),
   version: z.string(),
@@ -22,15 +31,6 @@ const manifestSchema = z.object({
   dependencies: z.record(z.string()).optional(),
 }).passthrough();
 
-/**
- * PluginDirectoryScannerService
- *
- * Scans the plugins root (and theme-local plugin dirs) on disk, validates each
- * manifest, loads the plugin module (with CJS/ESM fallback), and stages it.
- * Extracted from DiscoveryService to keep that class under the size limit;
- * DiscoveryService delegates discoverPlugins() to this service unchanged.
- */
-export class PluginDirectoryScannerService {
   constructor(
     private pluginsRoot: string,
     private projectRoot: string,
@@ -94,7 +94,7 @@ export class PluginDirectoryScannerService {
   }
 
   public async discoverPlugins(
-    existingPlugins: Map<string, LoadedPlugin>,
+    existingPlugins: Map<string, ILoadedPlugin>,
     installedState: Record<string, { sandboxConfig?: any }> = {}
   ): Promise<{
     discovered: { plugin: any, path: string }[],
@@ -145,7 +145,7 @@ export class PluginDirectoryScannerService {
             }
 
             // Validate manifest structure early
-            const validation = manifestSchema.safeParse(manifest);
+            const validation = PluginDirectoryScannerService.manifestSchema.safeParse(manifest);
             if (!validation.success) {
               const errorMsg = `Manifest Validation Error: ${validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
               this.logger.warn(`Invalid manifest for ${dir}: ${errorMsg}`);

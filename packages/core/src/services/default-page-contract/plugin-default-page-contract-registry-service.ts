@@ -1,19 +1,19 @@
-import type {
-  PluginDefaultPageContract,
-  PluginDefaultPageContractDependency,
-  PluginDefaultPageContractRegistration,
-  RegisteredPluginDefaultPageContract,
-} from '../../types';
-import { BaseService } from '../base-service';
+import type { IPluginDefaultPageContract } from '@core/default-page-contract/interfaces/plugin-default-page-contract.interface';
+import type { IPluginDefaultPageContractRegistration } from '@core/default-page-contract/interfaces/plugin-default-page-contract-registration.interface';
+import type { IRegisteredPluginDefaultPageContract } from '@core/default-page-contract/interfaces/registered-plugin-default-page-contract.interface';
+import { PluginDefaultPageContractDependency } from '@core/default-page-contract/enums/plugin-default-page-contract-dependency.enum';
+import { BaseService } from '@core/services/base-service';
+import { PluginDefaultPageContractKind } from '@core/default-page-contract/enums/plugin-default-page-contract-kind.enum';
+import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
 
 export class PluginDefaultPageContractRegistryService extends BaseService {
-  private readonly entries = new Map<string, RegisteredPluginDefaultPageContract>();
+  private readonly entries = new Map<string, IRegisteredPluginDefaultPageContract>();
 
   get serviceName(): string {
     return 'PluginDefaultPageContractRegistryService';
   }
 
-  register(registration: PluginDefaultPageContractRegistration): RegisteredPluginDefaultPageContract[] {
+  register(registration: IPluginDefaultPageContractRegistration): IRegisteredPluginDefaultPageContract[] {
     const nextEntries = this.createEntries(registration);
     if (nextEntries.length > 0) {
       this.unregisterByPlugin(nextEntries[0].namespace, nextEntries[0].pluginSlug);
@@ -30,11 +30,11 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
     return nextEntries.map((entry) => this.cloneEntry(entry));
   }
 
-  list(): RegisteredPluginDefaultPageContract[] {
+  list(): IRegisteredPluginDefaultPageContract[] {
     return Array.from(this.entries.values()).map((entry) => this.cloneEntry(entry));
   }
 
-  listByPlugin(namespace: string, pluginSlug: string): RegisteredPluginDefaultPageContract[] {
+  listByPlugin(namespace: string, pluginSlug: string): IRegisteredPluginDefaultPageContract[] {
     const expectedNamespace = this.normalizeRequiredString(namespace, 'namespace');
     const expectedPluginSlug = this.normalizeRequiredString(pluginSlug, 'pluginSlug');
 
@@ -58,7 +58,7 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
     this.entries.clear();
   }
 
-  private createEntries(registration: PluginDefaultPageContractRegistration): RegisteredPluginDefaultPageContract[] {
+  private createEntries(registration: IPluginDefaultPageContractRegistration): IRegisteredPluginDefaultPageContract[] {
     const namespace = this.normalizeRequiredString(registration.namespace, 'namespace');
     const pluginSlug = this.normalizeRequiredString(registration.pluginSlug, 'pluginSlug');
     const contracts = Array.isArray(registration.contracts) ? registration.contracts : [];
@@ -73,8 +73,8 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
   private createEntry(
     namespace: string,
     pluginSlug: string,
-    contract: PluginDefaultPageContract,
-  ): RegisteredPluginDefaultPageContract {
+    contract: IPluginDefaultPageContract,
+  ): IRegisteredPluginDefaultPageContract {
     const key = this.normalizeRequiredString(contract.key, 'contract.key');
     const defaultSlug = this.normalizeRequiredString(contract.defaultSlug, 'contract.defaultSlug');
     const capability = this.normalizeRequiredString(contract.capability, 'contract.capability');
@@ -83,6 +83,11 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
     return {
       ...contract,
       key,
+      // PLUGIN BOUNDARY: plugins compile separately and register these as RAW STRINGS. Hydrate them
+      // here or every downstream `mode === PluginDefaultPageContractMaterializationMode.X` comparison
+      // is silently false — which stops pages being materialized at all.
+      kind: PluginDefaultPageContractKind.resolve(contract.kind),
+      materializationMode: PluginDefaultPageContractMaterializationMode.resolve(contract.materializationMode),
       defaultSlug,
       recordCollection: this.normalizeOptionalString(contract.recordCollection),
       capability,
@@ -96,7 +101,7 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
     };
   }
 
-  private assertNoDuplicateKeys(entries: RegisteredPluginDefaultPageContract[]): void {
+  private assertNoDuplicateKeys(entries: IRegisteredPluginDefaultPageContract[]): void {
     const incomingKeys = new Set<string>();
 
     for (const entry of entries) {
@@ -129,13 +134,12 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
   }
 
   private normalizeDependencyArray(values: PluginDefaultPageContractDependency[]): PluginDefaultPageContractDependency[] {
-    return Array.from(
-      new Set(
-        values
-          .map((value) => String(value || '').trim())
-          .filter(Boolean),
-      ),
-    ) as PluginDefaultPageContractDependency[];
+    // Manifests supply raw strings, so resolve each to a member and drop anything unrecognised —
+    // the old `as` cast silently let unknown dependency names through as if they were valid.
+    const resolved = values
+      .map((value) => PluginDefaultPageContractDependency.resolve(value))
+      .filter((value): value is PluginDefaultPageContractDependency => Boolean(value));
+    return Array.from(new Set(resolved));
   }
 
   private normalizeStringArray(values: string[]): string[] {
@@ -148,7 +152,7 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
     );
   }
 
-  private cloneEntry(entry: RegisteredPluginDefaultPageContract): RegisteredPluginDefaultPageContract {
+  private cloneEntry(entry: IRegisteredPluginDefaultPageContract): IRegisteredPluginDefaultPageContract {
     return {
       ...entry,
       dependencies: [...entry.dependencies],

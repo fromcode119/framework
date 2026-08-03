@@ -1,4 +1,4 @@
-import { Collection, SystemConstants } from '@fromcode119/core';
+import { ICollection, SystemConstants } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { LocalizationUtils } from '@fromcode119/core';
 
@@ -98,7 +98,7 @@ export class LocalizationService {
   }
 
   public transformOutgoingData(
-    collection: Collection,
+    collection: ICollection,
     data: any,
     options: {
       localeContext: { chain: string[]; defaultLocale: string };

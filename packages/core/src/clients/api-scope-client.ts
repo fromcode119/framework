@@ -1,4 +1,4 @@
-import { ApiRequestService } from '../api/api-request-service';
+import { ApiRequestService } from '@core/api/api-request-service';
 
 export class ApiScopeClient {
   constructor(

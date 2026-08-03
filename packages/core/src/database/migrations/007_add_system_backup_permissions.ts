@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
-class AddSystemBackupPermissionsMigration extends BaseMigration {
+export class AddSystemBackupPermissionsMigration extends BaseMigration {
   readonly version = 7;
   readonly name = 'Add system backup permissions';
 
@@ -50,5 +50,3 @@ class AddSystemBackupPermissionsMigration extends BaseMigration {
     }
   }
 }
-
-export default new AddSystemBackupPermissionsMigration();

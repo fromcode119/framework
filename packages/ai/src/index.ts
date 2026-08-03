@@ -1,32 +1,41 @@
-export * from './types.types';
-export * from './types.interfaces';
-export * from './gateways/openai';
-export * from './gateways/ollama';
-export * from './gateways/anthropic';
-export * from './gateways/gemini';
-export * from './gateways/integration-provider';
-export { AiActComplianceWrapper } from './gateways/ai-act-compliance-wrapper';
-export { AdminAssistantRuntime } from './admin-assistant-runtime';
-export { AdminAssistantRuntimeEngine } from './admin-assistant-runtime-engine';
-export { AdminExtensionRegistry } from './admin-extension';
-export type { AdminExtensionBridge } from './admin-extension.types';
-export type {
-  AssistantAction as AssistantRuntimeAction,
-  AssistantChatInput,
-  AssistantChatResult,
-  AssistantChatTrace,
-  AssistantCollectionContext,
-  AssistantExecuteInput,
-  AssistantExecuteResult,
-  AssistantPlanArtifact,
-  AssistantPlanStatus,
-  AssistantRunMode,
-  AssistantSessionCheckpoint,
-  AssistantSettingValue,
-  AssistantToolSummary,
-  AssistantUiHints,
-  AssistantActionBatch,
-  ProviderCapabilities,
-  AdminAssistantRuntimeOptions,
-  AssistantSkillDefinition,
-} from './admin-assistant-runtime/types';
+export type { IAssistantAction } from '@ai/interfaces/assistant-action.interface';
+export type { IAssistantTrace } from '@ai/interfaces/assistant-trace.interface';
+export type { IAssistantToolOption } from '@ai/interfaces/assistant-tool-option.interface';
+export { AssistantRole } from '@ai/enums/assistant-role.enum';
+export type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
+export type { IAssistantSession } from '@ai/interfaces/assistant-session.interface';
+export type { IAssistantChatParams } from '@ai/interfaces/assistant-chat-params.interface';
+export type { IAssistantChatResponse } from '@ai/interfaces/assistant-chat-response.interface';
+export type { IAssistantClient } from '@ai/interfaces/assistant-client.interface';
+export type { IAiActAuditEntry } from '@ai/interfaces/ai-act-audit-entry.interface';
+export type { IAiActAuditSink } from '@ai/interfaces/ai-act-audit-sink.interface';
+export * from '@ai/gateways/openai';
+export * from '@ai/gateways/ollama';
+export * from '@ai/gateways/anthropic';
+export * from '@ai/gateways/gemini';
+export * from '@ai/gateways/integration-provider';
+export { AiActComplianceWrapper } from '@ai/gateways/ai-act-compliance-wrapper';
+export { AdminAssistantRuntime } from '@ai/admin-assistant-runtime';
+export { AdminAssistantRuntimeEngine } from '@ai/admin-assistant-runtime-engine';
+export { AdminExtensionRegistry } from '@ai/admin-extension';
+export type { IAdminExtensionBridge } from '@ai/interfaces/admin-extension-bridge.interface';
+export type { IAssistantAction as AssistantRuntimeAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+export type { IAssistantChatInput } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-input.interface';
+export type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
+export type { IAssistantChatTrace } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-trace.interface';
+export type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+export type { IAssistantExecuteInput } from '@ai/admin-assistant-runtime/interfaces/assistant-execute-input.interface';
+export type { IAssistantExecuteResult } from '@ai/admin-assistant-runtime/interfaces/assistant-execute-result.interface';
+export type { IAssistantPlanArtifact } from '@ai/admin-assistant-runtime/interfaces/assistant-plan-artifact.interface';
+export { AssistantRunMode } from '@ai/admin-assistant-runtime/enums/assistant-run-mode.enum';
+export type { IAssistantSessionCheckpoint } from '@ai/admin-assistant-runtime/interfaces/assistant-session-checkpoint.interface';
+export type { IAssistantSettingValue } from '@ai/admin-assistant-runtime/interfaces/assistant-setting-value.interface';
+export type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
+export type { IAssistantUiHints } from '@ai/admin-assistant-runtime/interfaces/assistant-ui-hints.interface';
+export type { IAssistantActionBatch } from '@ai/admin-assistant-runtime/interfaces/assistant-action-batch.interface';
+export type { IProviderCapabilities } from '@ai/admin-assistant-runtime/interfaces/provider-capabilities.interface';
+export type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+export type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
+
+// Value re-export: AssistantPlanStatus is an Enum CLASS, not a type alias.
+export { AssistantPlanStatus } from '@ai/admin-assistant-runtime/enums/assistant-plan-status.enum';

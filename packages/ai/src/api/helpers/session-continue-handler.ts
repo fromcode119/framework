@@ -1,9 +1,10 @@
+import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
 import { Request, Response } from 'express';
-import type { ControllerDeps } from './controller-deps';
+import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 
 /** Handles the continueAssistantSession endpoint logic. */
 export class SessionContinueHandler {
-  static async handle(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async handle(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     const startedAt = Date.now();
     let sessionProviderForTelemetry = '';
     try {
@@ -55,7 +56,7 @@ export class SessionContinueHandler {
       const resultMessage = String(result?.message || '');
       const pauseCountPerRequest = (resultMessage.match(/one more pass|continue planning|planning paused/gi) || []).length + (result?.ui?.canContinue === true ? 1 : 0);
       const durationMs = Date.now() - startedAt;
-      await deps.emitAssistantTelemetry('chat.continue', { sessionId, provider: resolvedAssistant.provider, skillId: String(req.body?.skillId || session?.skillId || 'general').trim().toLowerCase() || 'general', iterations: Number(result?.iterations || 0) || 0, actions: Array.isArray(result?.actions) ? result.actions.length : 0, loopCapReached: result?.loopCapReached === true, durationMs, reasoningSteps: reasoningStats?.totalSteps || 0, averageConfidence: reasoningStats?.averageConfidence || 0, pause_count_per_request: pauseCountPerRequest, repeated_pause_copy_detected: pauseCountPerRequest > 1 || result?.ui?.loopRecoveryMode === 'best_effort', draft_fast_path_used: Array.isArray(result?.traces) ? result.traces.some((t: any) => /draft fast-path/i.test(String(t?.message || ''))) : false, clarification_vs_continue_rate: result?.ui?.needsClarification === true ? 1 : result?.ui?.canContinue === true ? 0 : null, clarifier_count_per_turn: result?.ui?.needsClarification === true ? 1 : 0, loop_retry_count: Math.max(0, Number(result?.iterations || 0) - 1), false_success_detected: (!Array.isArray(result?.actions) || result.actions.length === 0) && /\b(applied|updated|changed)\b/i.test(resultMessage) && !/\b(no changes|not found|not applied|staged)\b/i.test(resultMessage), batch_state_transition: null, provider_model_latency_ms: durationMs, provider_model_error_rate: 0 });
+      await deps.emitAssistantTelemetry('chat.continue', { sessionId, provider: resolvedAssistant.provider, skillId: String(req.body?.skillId || session?.skillId || 'general').trim().toLowerCase() || 'general', iterations: Number(result?.iterations || 0) || 0, actions: Array.isArray(result?.actions) ? result.actions.length : 0, loopCapReached: result?.loopCapReached === true, durationMs, reasoningSteps: reasoningStats?.totalSteps || 0, averageConfidence: reasoningStats?.averageConfidence || 0, pause_count_per_request: pauseCountPerRequest, repeated_pause_copy_detected: pauseCountPerRequest > 1 || result?.ui?.loopRecoveryMode === ClarifyMode.BEST_EFFORT, draft_fast_path_used: Array.isArray(result?.traces) ? result.traces.some((t: any) => /draft fast-path/i.test(String(t?.message || ''))) : false, clarification_vs_continue_rate: result?.ui?.needsClarification === true ? 1 : result?.ui?.canContinue === true ? 0 : null, clarifier_count_per_turn: result?.ui?.needsClarification === true ? 1 : 0, loop_retry_count: Math.max(0, Number(result?.iterations || 0) - 1), false_success_detected: (!Array.isArray(result?.actions) || result.actions.length === 0) && /\b(applied|updated|changed)\b/i.test(resultMessage) && !/\b(no changes|not found|not applied|staged)\b/i.test(resultMessage), batch_state_transition: null, provider_model_latency_ms: durationMs, provider_model_error_rate: 0 });
 
       return res.json({ ...result, provider: resolvedAssistant.provider, sessionId, reasoningReport });
     } catch (e: any) {

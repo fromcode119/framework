@@ -1,37 +1,33 @@
+import { StepType } from '@ai/api/forge/enums/step-type.enum';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
 import { Request, Response } from 'express';
-import {
-  PluginManager,
-  ThemeManager,
-  TypeUtils,
-} from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core/client';
-import { AdminAssistantRuntime } from '@fromcode119/ai';
-import type { AssistantSkillDefinition, AssistantCollectionContext } from '../admin-assistant-runtime/types';
-import type { RESTController } from './controller.types';
-import { IDatabaseManager } from '@fromcode119/database';
-import { AssistantManagementToolsService } from './forge/management-tools-service';
-import { AssistantSessionStore } from './forge/session-store';
-import { AssistantCatalogService } from './forge/catalog-service';
-import { PluginAssistantDiscoveryService } from './forge/plugin-assistant-discovery-service';
-import { AssistantRuntimeFactoryService } from './forge/runtime-factory-service';
-import { AssistantRequestPayloadService } from './forge/request-payload-service';
-import { EnhancedContextManager } from './forge/enhanced-context-manager';
-import { ReasoningChainTracker } from './forge/reasoning-chain-tracker';
-import { IntelligentToolSelector } from './forge/intelligent-tool-selector';
-import { TaskComplexityDetector } from './forge/task-complexity-detector';
-import { AssistantChatHandler } from './helpers/assistant-chat-handler';
-import { SessionContinueHandler } from './helpers/session-continue-handler';
-import { ExecuteActionsHandler } from './helpers/execute-actions-handler';
-import { AssistantModelsHandler } from './helpers/assistant-models-handler';
-import { SessionManagementHandlers } from './helpers/session-management-handlers';
-import type { ControllerDeps } from './helpers/controller-deps';
+import { PluginManager, ThemeManager } from '@fromcode119/core';
 
-const ASSISTANT_PROMPT_BASIC_KEY = 'assistant.prompt.basic';
-const ASSISTANT_PROMPT_ADVANCED_KEY = 'assistant.prompt.advanced';
-const ASSISTANT_SESSION_KEY_PREFIX = 'assistant.session.';
-const ASSISTANT_SESSION_GROUP = 'assistant-session';
+import type { IRestController } from '@ai/api/interfaces/rest-controller.interface';
+import { IDatabaseManager } from '@fromcode119/database';
+import { AssistantManagementToolsService } from '@ai/api/forge/management-tools-service';
+import { AssistantSessionStore } from '@ai/api/forge/session-store';
+import { AssistantCatalogService } from '@ai/api/forge/catalog-service';
+import { PluginAssistantDiscoveryService } from '@ai/api/forge/plugin-assistant-discovery-service';
+import { AssistantRuntimeFactoryService } from '@ai/api/forge/runtime-factory-service';
+import { AssistantRequestPayloadService } from '@ai/api/forge/request-payload-service';
+import { EnhancedContextManager } from '@ai/api/forge/enhanced-context-manager';
+import { ReasoningChainTracker } from '@ai/api/forge/reasoning-chain-tracker';
+import { IntelligentToolSelector } from '@ai/api/forge/intelligent-tool-selector';
+import { TaskComplexityDetector } from '@ai/api/forge/task-complexity-detector';
+import { AssistantChatHandler } from '@ai/api/helpers/assistant-chat-handler';
+import { SessionContinueHandler } from '@ai/api/helpers/session-continue-handler';
+import { ExecuteActionsHandler } from '@ai/api/helpers/execute-actions-handler';
+import { AssistantModelsHandler } from '@ai/api/helpers/assistant-models-handler';
+import { SessionManagementHandlers } from '@ai/api/helpers/session-management-handlers';
+import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 
 export class AssistantController {
+  private static readonly ASSISTANT_PROMPT_BASIC_KEY = 'assistant.prompt.basic';
+  private static readonly ASSISTANT_PROMPT_ADVANCED_KEY = 'assistant.prompt.advanced';
+  private static readonly ASSISTANT_SESSION_KEY_PREFIX = 'assistant.session.';
+  private static readonly ASSISTANT_SESSION_GROUP = 'assistant-session';
+
   private db: IDatabaseManager;
   private managementTools: AssistantManagementToolsService;
   private sessions: AssistantSessionStore;
@@ -43,13 +39,13 @@ export class AssistantController {
   private complexityDetector: TaskComplexityDetector;
   private activeSessions: Map<string, { context: EnhancedContextManager; reasoning: ReasoningChainTracker }> = new Map();
 
-  constructor(private manager: PluginManager, private themeManager: ThemeManager, private restController: RESTController) {
+  constructor(private manager: PluginManager, private themeManager: ThemeManager, private restController: IRestController) {
     this.db = (manager as any).db;
     this.managementTools = new AssistantManagementToolsService(manager, themeManager);
-    this.sessions = new AssistantSessionStore(this.db, ASSISTANT_SESSION_KEY_PREFIX, ASSISTANT_SESSION_GROUP);
+    this.sessions = new AssistantSessionStore(this.db, AssistantController.ASSISTANT_SESSION_KEY_PREFIX, AssistantController.ASSISTANT_SESSION_GROUP);
     this.catalog = new AssistantCatalogService(manager, themeManager, restController, (value) => this.managementTools.normalizeSearchText(value));
     this.pluginAssistantDiscovery = new PluginAssistantDiscoveryService(manager, this.catalog);
-    this.runtimeFactory = new AssistantRuntimeFactoryService(manager, themeManager, restController, this.db, this.managementTools, this.catalog, this.pluginAssistantDiscovery, { basic: ASSISTANT_PROMPT_BASIC_KEY, advanced: ASSISTANT_PROMPT_ADVANCED_KEY });
+    this.runtimeFactory = new AssistantRuntimeFactoryService(manager, themeManager, restController, this.db, this.managementTools, this.catalog, this.pluginAssistantDiscovery, { basic: AssistantController.ASSISTANT_PROMPT_BASIC_KEY, advanced: AssistantController.ASSISTANT_PROMPT_ADVANCED_KEY });
     this.payloadService = new AssistantRequestPayloadService((input) => this.sessions.normalizeHistory(input));
     this.toolSelector = new IntelligentToolSelector(this.managementTools.buildTools() as any);
     this.complexityDetector = new TaskComplexityDetector();
@@ -66,17 +62,17 @@ export class AssistantController {
     const trackers = this.getSessionTrackers(sessionId);
     const history = this.sessions.normalizeHistory(session?.history || []);
     for (const entry of history) {
-      const importance = trackers.context.scoreImportance(entry.role, entry.content);
+      const importance = trackers.context.scoreImportance(entry.role.value, entry.content);
       trackers.context.addFrame(entry.role, entry.content, importance, { taskId: sessionId });
     }
     return trackers.context;
   }
 
-  private async prepareContextForLLM(sessionId: string | undefined, incomingHistory: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>) {
+  private async prepareContextForLLM(sessionId: string | undefined, incomingHistory: Array<{ role: AssistantRole; content: string }>) {
     if (!sessionId) return incomingHistory;
     const trackers = this.getSessionTrackers(sessionId);
     for (const entry of incomingHistory) {
-      const importance = trackers.context.scoreImportance(entry.role, entry.content);
+      const importance = trackers.context.scoreImportance(entry.role.value, entry.content);
       trackers.context.addFrame(entry.role, entry.content, importance);
     }
     const contextFrames = trackers.context.getContextForLLM();
@@ -86,7 +82,7 @@ export class AssistantController {
   private recordReasoningStep(sessionId: string | undefined, thinking: string, input: Record<string, any>, output: Record<string, any>, confidence: number = 0.5) {
     if (!sessionId) return;
     const trackers = this.getSessionTrackers(sessionId);
-    trackers.reasoning.recordStep('decision', thinking, input, output, confidence);
+    trackers.reasoning.recordStep(StepType.DECISION, thinking, input, output, confidence);
   }
 
   private getReasoningReport(sessionId: string | undefined): string | null {
@@ -196,7 +192,7 @@ export class AssistantController {
     return { client: fallbackClient, provider: fallbackProvider };
   }
 
-  private get _deps(): ControllerDeps {
+  private get _deps(): IControllerDeps {
     return {
       db: this.db, manager: this.manager, themeManager: this.themeManager,
       sessions: this.sessions, catalog: this.catalog, runtimeFactory: this.runtimeFactory,

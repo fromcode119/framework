@@ -1,7 +1,7 @@
 import type { Queue, Job } from 'bull';
-import { QueueAdapter } from '../types';
+import { IQueueAdapter } from '@core/queue/interfaces/queue-adapter.interface';
 
-export class BullQueueAdapter implements QueueAdapter {
+export class BullQueueAdapter implements IQueueAdapter {
   private queues: Map<string, Queue> = new Map();
   private redisUrl: string;
   private namespace: string;

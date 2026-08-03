@@ -1,5 +1,5 @@
-import { ThemedVerifyEmailTemplate } from '../email-templates/themed-verify-email-template';
-import { AuthControllerUrlInfrastructure } from './auth-controller-url-infrastructure';
+import { ThemedVerifyEmailTemplate } from '@api/controllers/auth/email-templates/themed-verify-email-template';
+import { AuthControllerUrlInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-url-infrastructure';
 
 export class AuthControllerThemeEmailInfrastructure extends AuthControllerUrlInfrastructure {
   protected async buildThemeVerifyEmail(options: {

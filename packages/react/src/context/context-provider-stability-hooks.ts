@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContextProviderStateService } from './context-provider-state-service';
+import { ContextProviderStateService } from '@react/context/context-provider-state-service';
 
 export class ContextProviderStabilityHooks {
   static useStabilitySnapshot(args: {

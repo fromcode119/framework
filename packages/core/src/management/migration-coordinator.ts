@@ -1,6 +1,6 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger } from '../logging';
-import { PluginManifest } from '../types';
+import { Logger } from '@core/logging';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
 
 /**
  * Migration Coordinator
@@ -18,7 +18,7 @@ export class MigrationCoordinator {
    * Validates a set of plugins for potential schema conflicts
    * @param manifests - Array of plugin manifests to coordinate
    */
-  async coordinate(manifests: PluginManifest[]): Promise<PluginManifest[]> {
+  async coordinate(manifests: IPluginManifest[]): Promise<IPluginManifest[]> {
     this.logger.info(`Coordinating migrations for ${manifests.length} plugins...`);
     
     // 1. Sort by migrationPriority (higher first or lower first? Usually 0 is high, or 100 is high)

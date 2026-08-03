@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '../logging';
-import { EnvUtils } from '../utils/env-utils';
+import { Logger } from '@core/logging';
+import { EnvUtils } from '@core/utils/env-utils';
 
 export class IntegrityService {
   private static logger = new Logger({ namespace: 'integrity-service' });

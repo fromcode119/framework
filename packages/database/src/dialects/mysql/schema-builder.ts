@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm';
-import { ISchemaCollection, ISchemaField } from '../../types';
-import { NamingStrategy } from '../../naming-strategy';
-import { ISchemaBuilderHost } from '../dialect-schema-builder.interfaces';
+import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
+import type { ISchemaField } from '@database/interfaces/schema-field.interface';
+import { NamingStrategy } from '@database/naming-strategy';
+import { ISchemaBuilderHost } from '@database/dialects/interfaces/schema-builder-host.interface';
 
 /**
  * MysqlSchemaBuilder - MySQL DDL generation and schema mutation.

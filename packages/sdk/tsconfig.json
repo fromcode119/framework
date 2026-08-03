@@ -6,24 +6,76 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../admin/*"],
-      "@fromcode119/core": ["../core/src"],
-      "@fromcode119/core/client": ["../core/src/client.ts"],
-      "@fromcode119/core/*": ["../core/src/*"],
-      "@fromcode119/database": ["../database/src"],
-      "@fromcode119/database/*": ["../database/src/*"],
-      "@fromcode119/plugins": ["../plugins/src"],
-      "@fromcode119/plugins/*": ["../plugins/src/*"],
-      "@fromcode119/sdk": ["./src/index.ts"],
-      "@fromcode119/sdk/*": ["./src/*"],
-      "@fromcode119/react": ["./src/react/react-shim.d.ts"],
-      "@fromcode119/admin/components": ["./src/admin/admin-components-shim.d.ts"]
+      // A package tsconfig REPLACES the inherited `paths` map rather than merging into it, so every
+      // private package alias this app compiles through must be repeated here.
+      "@core/*": ["../core/src/*"],
+      "@database/*": ["../database/src/*"],
+      "@react/*": ["../react/src/*"],
+      "@api/*": ["../api/src/*"],
+      "@auth/*": ["../auth/src/*"],
+      "@cache/*": ["../cache/src/*"],
+      "@marketplace-client/*": ["../marketplace-client/src/*"],
+      "@media/*": ["../media/src/*"],
+      "@email/*": ["../email/src/*"],
+      "@scheduler/*": ["../scheduler/src/*"],
+      "@plugins/*": ["../plugins/src/*"],
+      "@mcp/*": ["../mcp/src/*"],
+      "@sdk/*": ["../sdk/src/*"],
+      "@nextjs/*": ["../next/src/*"],
+      "@cli/*": ["../cli/src/*"],
+      "@/*": [
+        "../admin/*"
+      ],
+      "@fromcode119/core": [
+        "../core/src"
+      ],
+      "@fromcode119/core/client": [
+        "../core/src/client.ts"
+      ],
+      "@fromcode119/core/*": [
+        "../core/src/*"
+      ],
+      "@fromcode119/database": [
+        "../database/src"
+      ],
+      "@fromcode119/database/*": [
+        "../database/src/*"
+      ],
+      "@fromcode119/plugins": [
+        "../plugins/src"
+      ],
+      "@fromcode119/plugins/*": [
+        "../plugins/src/*"
+      ],
+      "@fromcode119/sdk": [
+        "./src/index.ts"
+      ],
+      "@fromcode119/sdk/*": [
+        "./src/*"
+      ],
+      "@fromcode119/react": [
+        "./src/react/react-shim.d.ts"
+      ],
+      "@fromcode119/admin/components": [
+        "./src/admin/admin-components-shim.d.ts"
+      ]
     }
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "references": [
-    { "path": "../database" },
-    { "path": "../core" },
-    { "path": "../marketplace-client" }
+    {
+      "path": "../database"
+    },
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../marketplace-client"
+    }
+  ],
+  "exclude": [
+    "src/vite/**"
   ]
 }

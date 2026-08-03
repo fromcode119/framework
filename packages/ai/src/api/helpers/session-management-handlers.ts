@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { TypeUtils } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core/client';
-import type { ControllerDeps } from './controller-deps';
+import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 
 /** Handles session CRUD and reasoning report endpoints. */
 export class SessionManagementHandlers {
-  static async assistantSessions(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async assistantSessions(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     try {
       const limit = Number(req.query?.limit || 60);
       const includeMessages = TypeUtils.parseBoolean(req.query?.includeMessages) === true;
@@ -22,7 +22,7 @@ export class SessionManagementHandlers {
     }
   }
 
-  static async assistantSession(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async assistantSession(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     try {
       const sessionId = deps.sessions.normalizeSessionId(req.params?.id);
       if (!sessionId) return res.status(400).json({ error: 'session id is required' });
@@ -36,7 +36,7 @@ export class SessionManagementHandlers {
     }
   }
 
-  static async forkAssistantSession(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async forkAssistantSession(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     try {
       const sessionId = deps.sessions.normalizeSessionId(req.params?.id);
       if (!sessionId) return res.status(400).json({ error: 'session id is required' });
@@ -58,7 +58,7 @@ export class SessionManagementHandlers {
     }
   }
 
-  static async deleteAssistantSession(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async deleteAssistantSession(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     try {
       const sessionId = deps.sessions.normalizeSessionId(req.params?.id);
       if (!sessionId) return res.status(400).json({ error: 'session id is required' });
@@ -70,7 +70,7 @@ export class SessionManagementHandlers {
     }
   }
 
-  static async assistantReasoningReport(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async assistantReasoningReport(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     const startedAt = Date.now();
     try {
       const sessionId = deps.sessions.normalizeSessionId(req.params?.id);

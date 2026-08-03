@@ -1,4 +1,4 @@
-import { BaseMiddleware } from './base-middleware';
+import { BaseMiddleware } from '@api/middlewares/base-middleware';
 import { Request, Response, NextFunction } from 'express';
 
 /**

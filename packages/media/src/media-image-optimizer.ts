@@ -1,11 +1,9 @@
 import path from 'path';
 import sharp from 'sharp';
-import type {
-  MediaImageOptimizationOptions,
-  MediaImageOptimizationResult,
-  MediaWebPConversionOptions,
-  MediaWebPConversionResult,
-} from './media-image-optimizer.interfaces';
+import type { IMediaImageOptimizationOptions } from '@media/interfaces/media-image-optimization-options.interface';
+import type { IMediaImageOptimizationResult } from '@media/interfaces/media-image-optimization-result.interface';
+import type { IMediaWebPConversionOptions } from '@media/interfaces/media-web-p-conversion-options.interface';
+import type { IMediaWebPConversionResult } from '@media/interfaces/media-web-p-conversion-result.interface';
 
 export class MediaImageOptimizer {
   private static readonly IMAGE_MIME_BY_EXT: Record<string, string> = {
@@ -15,7 +13,7 @@ export class MediaImageOptimizer {
     '.webp': 'image/webp',
   };
 
-  private static readonly DEFAULT_OPTIONS: Required<MediaImageOptimizationOptions> = {
+  private static readonly DEFAULT_OPTIONS: Required<IMediaImageOptimizationOptions> = {
     maxWidth: 1600,
     maxHeight: 1600,
     withoutEnlargement: true,
@@ -31,8 +29,8 @@ export class MediaImageOptimizer {
   static async optimizeBuffer(
     file: Buffer,
     filename: string,
-    options: MediaImageOptimizationOptions = {},
-  ): Promise<MediaImageOptimizationResult> {
+    options: IMediaImageOptimizationOptions = {},
+  ): Promise<IMediaImageOptimizationResult> {
     const ext = this.resolveSupportedExtension(filename);
     const mimeType = this.resolveMimeType(filename);
     if (!ext) {
@@ -85,8 +83,8 @@ export class MediaImageOptimizer {
 
   static async convertToWebP(
     file: Buffer,
-    options: MediaWebPConversionOptions = {},
-  ): Promise<MediaWebPConversionResult> {
+    options: IMediaWebPConversionOptions = {},
+  ): Promise<IMediaWebPConversionResult> {
     const maxWidth = options.maxWidth ?? 1600;
     const maxHeight = options.maxHeight ?? 1600;
     const quality = options.quality ?? 74;

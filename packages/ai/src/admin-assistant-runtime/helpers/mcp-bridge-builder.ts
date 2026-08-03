@@ -1,12 +1,12 @@
 import { McpBridgeFactory } from '@fromcode119/mcp';
-import type { McpBridge } from '@fromcode119/mcp';
-import type { AdminAssistantRuntimeOptions } from '../types';
-import { McpContentTools } from './mcp-content-tools';
-import { McpMiscTools } from './mcp-misc-tools';
+import type { IMcpBridge } from '@fromcode119/mcp';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import { McpContentTools } from '@ai/admin-assistant-runtime/helpers/mcp-content-tools';
+import { McpMiscTools } from '@ai/admin-assistant-runtime/helpers/mcp-misc-tools';
 
 /** Assembles the McpBridge from content + misc tool definitions. */
 export class McpBridgeBuilder {
-  static async build(options: AdminAssistantRuntimeOptions, dryRun: boolean): Promise<McpBridge> {
+  static async build(options: IAdminAssistantRuntimeOptions, dryRun: boolean): Promise<IMcpBridge> {
     const tools = [
       ...McpContentTools.build(options, dryRun),
       ...McpMiscTools.build(options, dryRun),

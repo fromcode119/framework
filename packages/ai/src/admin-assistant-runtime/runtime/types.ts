@@ -1,15 +1,6 @@
-import type { McpBridge, McpToolDefinition } from '@fromcode119/mcp';
-import type {
-  AdminAssistantRuntimeOptions,
-  AssistantAction,
-  AssistantChatInput,
-  AssistantCollectionContext,
-  AssistantSessionCheckpoint,
-  AssistantSkillDefinition,
-  AssistantToolSummary,
-  ProviderCapabilities,
-  AssistantWorkspaceMap,
-} from '../types';
+import type { IMcpToolDefinition } from '@fromcode119/mcp';
+
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
 
 export class RuntimeUtils {
   static normalizeToolResult(result: any): { ok: boolean; output?: any; error?: string } {
@@ -41,10 +32,10 @@ export class RuntimeUtils {
 
   }
 
-  static toToolSummaryList(tools: McpToolDefinition[]): AssistantToolSummary[] {
+  static toToolSummaryList(tools: IMcpToolDefinition[]): IAssistantToolSummary[] {
       return (Array.isArray(tools) ? tools : [])
         .map((tool) => {
-          const toolWithMetadata = tool as McpToolDefinition & { metadata?: Record<string, unknown> };
+          const toolWithMetadata = tool as IMcpToolDefinition & { metadata?: Record<string, unknown> };
           return {
             tool: String(toolWithMetadata?.tool || '').trim(),
             description: toolWithMetadata?.description ? String(toolWithMetadata.description) : undefined,

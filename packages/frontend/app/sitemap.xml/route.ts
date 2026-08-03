@@ -1,5 +1,8 @@
-import { PublicRouteProxy } from '../../lib/public-route-proxy';
+import { PublicRouteProxy } from '@/lib/public-route-proxy';
 
-export async function GET(): Promise<Response> {
-  return PublicRouteProxy.getResponse('sitemap.xml');
+/** Serves /sitemap.xml from the manifest-declared public-route registry. */
+export class SitemapRoute {
+  static async GET(): Promise<Response> {
+    return PublicRouteProxy.getResponse('sitemap.xml');
+  }
 }

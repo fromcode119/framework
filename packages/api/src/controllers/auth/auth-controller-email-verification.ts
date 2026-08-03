@@ -1,8 +1,10 @@
+import { TwoFactorMethod } from '@fromcode119/core';
+import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import * as speakeasy from 'speakeasy';
 import type { Request, Response } from 'express';
 import { randomBytes } from 'crypto';
 import { SystemConstants, SecretService } from '@fromcode119/core';
-import { AuthControllerPolicy } from './auth-controller-policy';
+import { AuthControllerPolicy } from '@api/controllers/auth/auth-controller-policy';
 
 /**
  * Email-verification tokens, 2FA recovery codes, and the non-password 2FA
@@ -92,7 +94,7 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
 
   protected async consumeEmailVerificationToken(token: string): Promise<{
     ok: boolean;
-    reason?: 'invalid' | 'expired';
+    reason?: TokenErrorReason;
     userId?: number;
     email?: string;
     context?: Record<string, any>;
@@ -101,28 +103,28 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
     const tokenKey = this.getEmailVerifyTokenKey(tokenHash);
     const row = await this.readMetaRow(tokenKey);
     if (!row?.value) {
-      return { ok: false, reason: 'invalid' };
+      return { ok: false, reason: TokenErrorReason.INVALID };
     }
 
     let payload: any = null;
     try {
       payload = JSON.parse(String(row.value));
     } catch {
-      return { ok: false, reason: 'invalid' };
+      return { ok: false, reason: TokenErrorReason.INVALID };
     }
 
     const userId = Number(payload?.userId || 0);
     const email = this.normalizeEmail(payload?.email);
     const expiresAt = new Date(String(payload?.expiresAt || 0));
     if (!userId || !email || Number.isNaN(expiresAt.getTime())) {
-      return { ok: false, reason: 'invalid' };
+      return { ok: false, reason: TokenErrorReason.INVALID };
     }
 
     if (expiresAt.getTime() < Date.now()) {
       await this.deleteMeta(tokenKey);
       await this.deleteMeta(this.getEmailVerifyTokenHashKey(userId));
       await this.deleteMeta(this.getEmailVerifyTokenExpiresKey(userId));
-      return { ok: false, reason: 'expired' };
+      return { ok: false, reason: TokenErrorReason.EXPIRED };
     }
 
     await this.setEmailVerified(userId, true);
@@ -186,7 +188,7 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
     }
 
     let verified = false;
-    let method: 'totp' | 'recovery' | null = null;
+    let method: TwoFactorMethod | null = null;
 
     if (totpToken) {
       const secretRow = await this.db.findOne(SystemConstants.TABLE.META, {
@@ -194,14 +196,14 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
       });
       if (secretRow?.value && this.verifyTOTP(SecretService.decrypt(secretRow.value), totpToken)) {
         verified = true;
-        method = 'totp';
+        method = TwoFactorMethod.TOTP;
       }
     }
 
     if (!verified && recoveryCode) {
       if (await this.consumeRecoveryCode(user.id, recoveryCode)) {
         verified = true;
-        method = 'recovery';
+        method = TwoFactorMethod.RECOVERY;
       }
     }
 

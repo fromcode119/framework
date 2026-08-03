@@ -1,11 +1,11 @@
-import { Logger } from '../../logging';
+import { Logger } from '@core/logging';
 import { IDatabaseManager } from '@fromcode119/database';
-import { MigrationManager } from '../../database/migration-manager';
-import { MigrationCoordinator } from '../../management/migration-coordinator';
-import { WorkflowService } from './workflow-service';
-import { PersonCatalogService } from './person-catalog-service';
-import { RecordVersions } from '../../collections/record-versions';
-import { WebhooksCollection } from '../../collections/webhooks';
+import { MigrationManager } from '@core/database/migration-manager';
+import { MigrationCoordinator } from '@core/management/migration-coordinator';
+import { WorkflowService } from '@core/plugin/services/workflow-service';
+import { PersonCatalogService } from '@core/plugin/services/person-catalog-service';
+import { RecordVersions } from '@core/collections/record-versions';
+import { WebhooksCollection } from '@core/collections/webhooks';
 
 /**
  * PluginManagerInitService

@@ -1,12 +1,12 @@
 import crypto from 'crypto';
-import type { PluginInstallProgress } from '@fromcode119/core';
-import type { PluginInstallOperationState } from './plugin-install-operation.interfaces';
+import type { IPluginInstallProgress } from '@fromcode119/core';
+import type { IPluginInstallOperationState } from '@api/services/interfaces/plugin-install-operation-state.interface';
 
 export class PluginInstallOperationService {
   private static readonly TTL_MS = 15 * 60 * 1000;
   private static instance: PluginInstallOperationService | null = null;
 
-  private readonly operations = new Map<string, PluginInstallOperationState>();
+  private readonly operations = new Map<string, IPluginInstallOperationState>();
 
   static getInstance(): PluginInstallOperationService {
     if (!this.instance) {
@@ -19,11 +19,11 @@ export class PluginInstallOperationService {
   start(
     pluginSlug: string,
     kind: string,
-    execute: (reportProgress: (progress: PluginInstallProgress) => void) => Promise<void>,
-  ): PluginInstallOperationState {
+    execute: (reportProgress: (progress: IPluginInstallProgress) => void) => Promise<void>,
+  ): IPluginInstallOperationState {
     this.pruneExpired();
 
-    const operation: PluginInstallOperationState = {
+    const operation: IPluginInstallOperationState = {
       id: crypto.randomUUID(),
       pluginSlug,
       kind,
@@ -46,12 +46,12 @@ export class PluginInstallOperationService {
     return operation;
   }
 
-  get(operationId: string): PluginInstallOperationState | null {
+  get(operationId: string): IPluginInstallOperationState | null {
     this.pruneExpired();
     return this.operations.get(operationId) || null;
   }
 
-  private reportProgress(operationId: string, progress: PluginInstallProgress): void {
+  private reportProgress(operationId: string, progress: IPluginInstallProgress): void {
     const operation = this.operations.get(operationId);
     if (!operation) {
       return;

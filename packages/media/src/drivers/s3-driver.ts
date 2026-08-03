@@ -2,9 +2,9 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { S3Client, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
-import { StorageDriver } from '../index';
+import { IStorageDriver } from '@media/index';
 
-export class S3StorageDriver implements StorageDriver {
+export class S3StorageDriver implements IStorageDriver {
     public readonly provider: string;
     private client: S3Client;
     private bucket: string;

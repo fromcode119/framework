@@ -1,6 +1,6 @@
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from './utils.interfaces';
-import { SystemConstants } from '../../constants';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class UsersContextProxy {
 
@@ -9,8 +9,8 @@ export class UsersContextProxy {
    * Plugins should use context.users.* instead of querying the system users table directly.
    */
   static createUsersProxy(
-    _plugin: LoadedPlugin,
-    manager: PluginManagerInterface
+    _plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface
   ) {
     return {
       async findAdmins(options?: { limit?: number }) {

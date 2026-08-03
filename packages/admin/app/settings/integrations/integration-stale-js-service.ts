@@ -1,10 +1,12 @@
+import { Platform } from '@fromcode119/reactor';
+
 /**
  * Clears cached admin assets (service workers + Cache Storage) and reloads the
  * page with a cache-busting query parameter to recover from stale JavaScript.
  */
 export class IntegrationStaleJsService {
   static isSupported(): boolean {
-    return typeof window !== 'undefined';
+    return Platform.isBrowser;
   }
 
   static async clearCaches(): Promise<void> {

@@ -1,5 +1,5 @@
-import { AdminApi } from './api';
-import { AdminConstants } from './constants';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 export class PluginRuntimeWaitService {
   private static readonly restartDelayMs = 3000;

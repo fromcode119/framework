@@ -1,5 +1,6 @@
-import { UrlUtils } from './url-utils';
-import { ApplicationUrlResolver } from './application-url-resolver';
+import { UrlUtils } from '@core/url-utils';
+import { ApplicationUrlResolver } from '@core/application-url-resolver';
+import { EnvUtils } from '@core/utils/env-utils';
 
 export class ApplicationUrlUtils {
   static readonly API_APP = 'api';
@@ -132,7 +133,7 @@ export class ApplicationUrlUtils {
    * append a path; an empty base is the deliberate "fall back to a relative URL" contract.
    */
   static inferBrowserBaseUrl(targetApp?: string): string {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return '';
     }
 

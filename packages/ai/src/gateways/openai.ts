@@ -1,11 +1,11 @@
 import { Logger, UrlUtils } from '@fromcode119/core/client';
-import { AssistantClient } from '../types.interfaces';
-import type { OpenAiConfig } from './openai.types';
-
-const logger = new Logger({ namespace: 'ai-openai' });
+import type { IAssistantClient } from '@ai/interfaces/assistant-client.interface';
+import type { IOpenAiConfig } from '@ai/gateways/interfaces/open-ai-config.interface';
 
 export class OpenAiGateway {
-  static normalizeOpenAiConfig(input: Record<string, any>): OpenAiConfig {
+  private static readonly logger = new Logger({ namespace: 'ai-openai' });
+
+  static normalizeOpenAiConfig(input: Record<string, any>): IOpenAiConfig {
       return {
         apiKey: String(input?.apiKey || '').trim(),
         model: String(input?.model || 'gpt-4o-mini').trim() || 'gpt-4o-mini',
@@ -24,7 +24,7 @@ export class OpenAiGateway {
       if (!apiKey) return null;
 
       if (provider !== 'openai') {
-        logger.warn(`AI provider "${provider}" is not implemented. Falling back to "openai".`);
+        OpenAiGateway.logger.warn(`AI provider "${provider}" is not implemented. Falling back to "openai".`);
       }
 
       return {
@@ -42,7 +42,7 @@ export class OpenAiGateway {
 
   }
 
-  static createOpenAiClient(input: Record<string, any>): AssistantClient {
+  static createOpenAiClient(input: Record<string, any>): IAssistantClient {
       const config = OpenAiGateway.normalizeOpenAiConfig(input);
       if (!config.apiKey) {
         throw new Error('OpenAI API key is required for AI Assistant integration.');
@@ -100,5 +100,4 @@ export class OpenAiGateway {
 
   }
 }
-
 

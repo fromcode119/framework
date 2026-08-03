@@ -1,14 +1,23 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { FrameworkIcons } from '@fromcode119/react';
-import type { LocaleRegistryCardProps } from './locale-registry-card.interfaces';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
 
-export class LocaleRegistryCard extends React.Component<LocaleRegistryCardProps> {
-  render(): React.ReactNode {
-    const { locales, theme, updateLocale, addLocale, removeLocale } = this.props;
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
+import { Button } from '@/components/ui/view/button.client';
+import { Input } from '@/components/ui/view/input.client';
+import { Switch } from '@/components/ui/view/switch.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
+
+export class LocaleRegistryCard extends PureReactor {
+  @prop declare locales: ILocaleItem[];
+  @prop declare theme: ThemeMode;
+  @prop declare updateLocale: (id: string, patch: Partial<ILocaleItem>) => void;
+  @prop declare addLocale: () => void;
+  @prop declare removeLocale: (id: string) => void;
+
+  render(): ReactNode {
+    const { locales, theme, updateLocale, removeLocale } = this;
     return (
       <Card title="Locale Registry">
         <div className="space-y-4 py-2">
@@ -21,7 +30,7 @@ export class LocaleRegistryCard extends React.Component<LocaleRegistryCardProps>
               <div
                 key={locale.id}
                 className={`rounded-xl border p-4 ${
-                  theme === 'dark' ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'
+                  theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'
                 }`}
               >
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
@@ -56,7 +65,7 @@ export class LocaleRegistryCard extends React.Component<LocaleRegistryCardProps>
                       className={`px-3 py-2 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${
                         locales.length <= 1
                           ? 'opacity-40 cursor-not-allowed bg-slate-200 text-slate-500'
-                          : theme === 'dark'
+                          : theme === ThemeMode.DARK
                             ? 'bg-rose-500/15 text-rose-300 hover:bg-rose-500/25'
                             : 'bg-rose-50 text-rose-600 hover:bg-rose-100'
                       }`}
@@ -72,7 +81,7 @@ export class LocaleRegistryCard extends React.Component<LocaleRegistryCardProps>
           <div className="pt-3">
             <Button
               icon={<FrameworkIcons.Plus size={14} strokeWidth={3} />}
-              onClick={addLocale}
+              onClick={this.addLocale}
               className="rounded-xl"
             >
               Add Locale

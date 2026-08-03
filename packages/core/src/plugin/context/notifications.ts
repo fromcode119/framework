@@ -1,6 +1,6 @@
-import type { PluginManagerInterface } from './utils.interfaces';
-import { RolesContextProxy } from './roles';
-import { SystemConstants } from '../../constants';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { RolesContextProxy } from '@core/plugin/context/roles';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Framework-owned notification dispatch. Generic cross-cutting work — "who are the platform admins"
@@ -11,7 +11,7 @@ import { SystemConstants } from '../../constants';
 export class NotificationsContextProxy {
   /** Persist one in-app inbox row. Framework-internal; best-effort (a missing table never throws). */
   private static async persistInApp(
-    manager: PluginManagerInterface,
+    manager: IPluginManagerInterface,
     userId: number,
     message: { title: string; body?: string; link?: string },
     source: string,
@@ -34,7 +34,7 @@ export class NotificationsContextProxy {
     }
   }
 
-  static createNotificationsProxy(manager: PluginManagerInterface, sourceSlug = '') {
+  static createNotificationsProxy(manager: IPluginManagerInterface, sourceSlug = '') {
     return {
       /** Persist an in-app inbox notification for one user (surfaced by the admin/portal bell). */
       async notifyUser(

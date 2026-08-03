@@ -1,11 +1,16 @@
-import React from 'react';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
 import { FrameworkIcons } from '@fromcode119/react';
-import { CompactPageHeader } from '@/components/ui/compact-page-header';
-import type { DashboardPageHeaderProps } from './dashboard-page-header.interfaces';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 
-export class DashboardPageHeader extends React.Component<DashboardPageHeaderProps> {
-  render(): React.ReactNode {
-    const { user, theme } = this.props;
+export class DashboardPageHeader extends PureReactor {
+  @prop declare user: any;
+  @prop declare theme: ThemeMode;
+
+  render(): ReactNode {
+    const user = this.user;
+    const theme = this.theme;
     return (
       <CompactPageHeader
         theme={theme}

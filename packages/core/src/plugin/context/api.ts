@@ -1,23 +1,24 @@
-import { LoadedPlugin, MiddlewareConfig } from '../../types';
-import { Logger } from '../../logging';
-import { PluginHealthRouteHandler } from '../../plugin-health-route-handler';
-import { RouteConstants } from '../../route-constants';
-import type { PluginManagerInterface } from './utils.interfaces';
-import type { PluginHealthProbeResult } from '../../plugin-health-route-handler.interfaces';
-import { ContextSecurityProxy } from './utils';
-import { RateLimiter } from '../../security/rate-limiter';
-import { ApiAccessGate } from './api-access-gate';
-import { AccessLevel } from './api-access-gate.enums';
-import type { ApiAccessLevel } from './api-access-gate.types';
-import { PluginState } from '../services/plugin-state.enums';
-
-const apiLimiter = new RateLimiter(1000, 60000);
-const reservedPaths = ['config', 'settings', 'toggle', 'logs', 'sandbox', 'active', 'marketplace', 'install', 'upload'];
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
+import { Logger } from '@core/logging';
+import { PluginHealthRouteHandler } from '@core/plugin-health-route-handler';
+import { RouteConstants } from '@core/constants/route.constants';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { RateLimiter } from '@core/security/rate-limiter';
+import { ApiAccessGate } from '@core/plugin/context/api-access-gate';
+import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
+import type { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class ApiContextProxy {
+  private static readonly apiLimiter = new RateLimiter(1000, 60000);
+  private static readonly reservedPaths = ['config', 'settings', 'toggle', 'logs', 'sandbox', 'active', 'marketplace', 'install', 'upload'];
+
   static createApiProxy(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface,
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface,
   pluginLogger: Logger,
   security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
 ) {
@@ -31,13 +32,13 @@ export class ApiContextProxy {
         // A route may DECLARE its access as a leading `{ access }` descriptor. The central fail-closed
         // gate (ApiAccessGate) enforces it when ENFORCE_AUTHZ_GATEWAY=true; undeclared => admin-only.
         // `use` (raw middleware) is exempt — it is not a terminal route.
-        let access: ApiAccessLevel | undefined;
+        let access: AccessLevel | ApiPermissionRequirement | undefined;
         if (method !== 'use' && ApiAccessGate.isDescriptor(handlers[0])) {
           access = handlers[0].access;
           handlers = handlers.slice(1);
         }
 
-        if (!apiLimiter.check(plugin.manifest.slug)) {
+        if (!ApiContextProxy.apiLimiter.check(plugin.manifest.slug)) {
           handleRateLimit('API Registration');
         }
 
@@ -48,7 +49,7 @@ export class ApiContextProxy {
         const cleanPath = path.startsWith('/') ? path.slice(1) : path;
         const firstSegment = cleanPath.split('/')[0];
 
-        if (reservedPaths.includes(firstSegment)) {
+        if (ApiContextProxy.reservedPaths.includes(firstSegment)) {
           throw new Error(`Conflict: Plugin "${plugin.manifest.slug}" attempted to register a reserved system path: /${firstSegment}.`);
         }
 
@@ -80,10 +81,10 @@ export class ApiContextProxy {
 
       return {
         get: createApiWrapper('get'),
-        health: (probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>) => {
+        health: (probe?: () => IPluginHealthProbeResult | Promise<IPluginHealthProbeResult>) => {
           createApiWrapper('get')(
             RouteConstants.SEGMENTS.HEALTH,
-            { access: AccessLevel.Public },
+            { access: AccessLevel.PUBLIC },
             PluginHealthRouteHandler.createForPlugin(plugin.manifest, probe),
           );
         },
@@ -91,15 +92,15 @@ export class ApiContextProxy {
         put: createApiWrapper('put'),
         delete: createApiWrapper('delete'),
         patch: createApiWrapper('patch'),
-        status: (probe?: () => PluginHealthProbeResult | Promise<PluginHealthProbeResult>) => {
+        status: (probe?: () => IPluginHealthProbeResult | Promise<IPluginHealthProbeResult>) => {
           createApiWrapper('get')(
             RouteConstants.SEGMENTS.STATUS,
-            { access: AccessLevel.Public },
+            { access: AccessLevel.PUBLIC },
             PluginHealthRouteHandler.createForPlugin(plugin.manifest, probe),
           );
         },
         use: createApiWrapper('use'),
-        registerMiddleware: (config: MiddlewareConfig) => {
+        registerMiddleware: (config: IMiddlewareConfig) => {
           if (!hasCapability('api')) {
             handleViolation('api');
           }

@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils } from './application-url-utils';
+import { ApplicationUrlUtils } from '@core/application-url-utils';
 
 export class ApplicationHostUtils {
   static readonly LOCALHOST_ORIGIN = 'http://localhost';

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SystemControllerRuntime } from './system-controller-runtime';
+import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 export class SystemUserController {
   constructor(private readonly runtime: SystemControllerRuntime) {}

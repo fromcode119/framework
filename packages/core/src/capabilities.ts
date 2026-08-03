@@ -5,12 +5,12 @@
  * Extensions register their capabilities during initialization.
  * Code can check capabilities before using extension-specific features.
  */
-import type { CapabilityMetadata } from './capabilities.interfaces';
+import type { ICapabilityMetadata } from '@core/interfaces/capability-metadata.interface';
 
 export class CapabilityRegistry {
   private static _instance: CapabilityRegistry;
   private capabilities = new Set<string>();
-  private metadata = new Map<string, CapabilityMetadata>();
+  private metadata = new Map<string, ICapabilityMetadata>();
 
   static getInstance(): CapabilityRegistry {
     if (!CapabilityRegistry._instance) {
@@ -22,7 +22,7 @@ export class CapabilityRegistry {
   /**
    * Register a capability as available
    */
-  register(capability: string, meta?: Partial<CapabilityMetadata>): void {
+  register(capability: string, meta?: Partial<ICapabilityMetadata>): void {
     this.capabilities.add(capability);
     
     if (meta) {
@@ -73,7 +73,7 @@ export class CapabilityRegistry {
   /**
    * Get capability metadata
    */
-  getMetadata(capability: string): CapabilityMetadata | undefined {
+  getMetadata(capability: string): ICapabilityMetadata | undefined {
     return this.metadata.get(capability);
   }
 

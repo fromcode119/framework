@@ -3,15 +3,30 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "useDefineForClassFields": false
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "references": [
-    { "path": "../react" },
-    { "path": "../sdk" },
-    { "path": "../mcp" },
-    { "path": "../core" },
-    { "path": "../database" },
-    { "path": "../auth" }
+    {
+      "path": "../react"
+    },
+    {
+      "path": "../sdk"
+    },
+    {
+      "path": "../mcp"
+    },
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../database"
+    },
+    {
+      "path": "../auth"
+    }
   ]
 }

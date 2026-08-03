@@ -1,11 +1,16 @@
-import type { AssistantMessage, UploadedAttachment, PlanCardSummary, ExecutionCardSummary } from './assistant-core-constants.types';
-import { AssistantSurfaceUtils } from './assistant-surface-utils';
-import { AssistantTextUtils } from './assistant-text-utils';
+import { ExecutionKind } from '@ai/enums/assistant-execution-kind.enum';
+import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
+
+import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
+import { PlanCardSummary } from '@ai/plan-card-summary';
+import { ExecutionCardSummary } from '@ai/execution-card-summary';
+import { AssistantSurfaceUtils } from '@ai/assistant-surface-utils';
+import { AssistantTextUtils } from '@ai/assistant-text-utils';
 
 export class AssistantPlanUtils {
   static sanitizeTraceToolCalls(input: any): Array<{ tool?: string; input?: Record<string, any> }> { return AssistantPlanUtils.sanitizeTraceToolCalls(input); }
 
-  static buildPlanCardSummary(entry: AssistantMessage): PlanCardSummary {
+  static buildPlanCardSummary(entry: IAssistantMessage): PlanCardSummary {
   const plan = entry.plan;
   const actionCount = Array.isArray(entry.actions) ? entry.actions.length : 0;
   const baseSummary = AssistantTextUtils.normalizeAssistantBodyText(entry.content || plan?.summary || '');
@@ -38,19 +43,19 @@ export class AssistantPlanUtils {
         ? 'Approve Preview first. If the visual/result diff looks correct, approve Apply.'
         : 'Approve Preview to inspect impact before any write.'
       : needsClarification
-        ? loopRecoveryMode === 'best_effort'
+        ? loopRecoveryMode === ClarifyMode.BEST_EFFORT
           ? 'Review the draft, confirm target collection + record, then approve changes.'
           : 'Reply with the missing target details so I can stage exact actions.'
         : 'Reply with exact target details so I can stage changes.';
 
-  return { goal, found, propose, approval };
+  return PlanCardSummary.from({ goal, found, propose, approval });
   }
 
   static buildExecutionCardSummary(execution: any): ExecutionCardSummary {
   const results = Array.isArray(execution?.results) ? execution.results : [];
-  const okCount = results.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'ok').length;
-  const skippedCount = results.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'skipped').length;
-  const failedCount = results.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'failed').length;
+  const okCount = results.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === ExecutionKind.OK).length;
+  const skippedCount = results.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === ExecutionKind.SKIPPED).length;
+  const failedCount = results.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === ExecutionKind.FAILED).length;
   const dryRun = execution?.dryRun === true;
 
   const changed = dryRun
@@ -82,6 +87,6 @@ export class AssistantPlanUtils {
   if (failedCount) statusParts.push(`${failedCount} failed`);
   const status = statusParts.join(' • ');
 
-  return { changed, where, status };
+  return ExecutionCardSummary.from({ changed, where, status });
   }
 }

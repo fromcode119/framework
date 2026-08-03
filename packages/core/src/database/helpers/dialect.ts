@@ -1,12 +1,11 @@
-import { Logger } from '../../logging';
-
-const logger = new Logger({ namespace: 'DialectHelper' });
+import { Logger } from '@core/logging';
 
 /**
  * Flexible dialect execution helper that supports any database dialect
  * without requiring rigid union types or code changes.
  */
 export class DialectHelper {
+  private static readonly logger = new Logger({ namespace: 'DialectHelper' });
   static executeForDialect(
     dialect: string,
     queries: Record<string, () => Promise<void>>

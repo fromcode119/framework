@@ -1,8 +1,9 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { Logger } from '../logging';
-import { CoreExtensionManifest, LoadedCoreExtension } from './types';
-import { ExtensionState } from './extension-state.enums';
+import { Logger } from '@core/logging';
+import type { ICoreExtensionManifest } from '@core/extensions/interfaces/core-extension-manifest.interface';
+import type { ILoadedCoreExtension } from '@core/extensions/interfaces/loaded-core-extension.interface';
+import { ExtensionState } from '@core/extensions/enums/extension-state.enum';
 
 /**
  * CoreExtensionDiscoveryService
@@ -22,16 +23,16 @@ export class CoreExtensionDiscoveryService {
    */
   public async discover(packagesRoot: string): Promise<{
     packagesRoot: string;
-    extensions: Map<string, LoadedCoreExtension>;
+    extensions: Map<string, ILoadedCoreExtension>;
   }> {
-    const extensions = new Map<string, LoadedCoreExtension>();
+    const extensions = new Map<string, ILoadedCoreExtension>();
     let resolvedRoot = packagesRoot;
 
     // Verify packages directory exists, if not try to fix it
     if (!fs.existsSync(resolvedRoot)) {
       this.logger.warn(`Packages directory not found at ${resolvedRoot}, attempting to locate...`);
       // Re-import ProjectPaths to get fresh path resolution
-      const { ProjectPaths } = await import('../config/paths');
+      const { ProjectPaths } = await import('@core/config/paths');
       resolvedRoot = ProjectPaths.getPackagesDir();
     }
 
@@ -56,12 +57,12 @@ export class CoreExtensionDiscoveryService {
 
       try {
         const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
-        const manifest: CoreExtensionManifest = JSON.parse(manifestContent);
+        const manifest: ICoreExtensionManifest = JSON.parse(manifestContent);
 
         // Only process core extensions (skip plugins, themes, etc.)
         if (manifest.type !== 'core-extension') continue;
 
-        const extension: LoadedCoreExtension = {
+        const extension: ILoadedCoreExtension = {
           manifest,
           path: path.join(resolvedRoot, dir.name),
           state: ExtensionState.DISCOVERED,

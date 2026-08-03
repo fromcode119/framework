@@ -1,19 +1,20 @@
 import { BrowserStateClient, RuntimeConstants } from '@fromcode119/core/client';
-import { AssistantConstants } from '../assistant-core-constants';
-import type { AdminAssistantUiPreferences } from './admin-assistant-browser-state-service.interfaces';
+import { Platform } from '@fromcode119/reactor';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
+import type { IAdminAssistantUiPreferences } from '@ai/services/interfaces/admin-assistant-ui-preferences.interface';
 
 export class AdminAssistantBrowserStateService {
   private static readonly THEME_STORAGE_KEY = 'theme';
 
   private readonly browserState = new BrowserStateClient();
 
-  readUiPreferences(): AdminAssistantUiPreferences {
+  readUiPreferences(): IAdminAssistantUiPreferences {
     return this.normalizeUiPreferences(
       this.browserState.readLocalJson<unknown>(AssistantConstants.STORAGE_KEYS.UI_PREFS, {}),
     );
   }
 
-  writeUiPreferences(preferences: AdminAssistantUiPreferences): void {
+  writeUiPreferences(preferences: IAdminAssistantUiPreferences): void {
     this.browserState.writeLocalJson(AssistantConstants.STORAGE_KEYS.UI_PREFS, {
       provider: String(preferences.provider || '').trim().toLowerCase(),
       model: String(preferences.model || '').trim(),
@@ -93,12 +94,12 @@ export class AdminAssistantBrowserStateService {
   enableAdvancedMode(): void {
     this.browserState.writeLocalString(RuntimeConstants.ADMIN_UI.STORAGE_KEYS.ADVANCED_MODE, 'true');
 
-    if (typeof window !== 'undefined') {
+    if (Platform.isBrowser) {
       window.dispatchEvent(new Event(RuntimeConstants.ADMIN_UI.EVENTS.MODE_CHANGED));
     }
   }
 
-  private normalizeUiPreferences(value: unknown): AdminAssistantUiPreferences {
+  private normalizeUiPreferences(value: unknown): IAdminAssistantUiPreferences {
     const source = this.isRecord(value) ? value : {};
     return {
       baseUrl: String(source.baseUrl || '').trim(),

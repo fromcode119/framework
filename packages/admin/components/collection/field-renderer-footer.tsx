@@ -1,10 +1,15 @@
-import React from 'react';
+import type React from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
 import { UiFieldUtils } from '@/lib/ui';
-import type { FieldRendererFooterProps } from './field-renderer.interfaces';
+import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 
-export class FieldRendererFooter extends React.Component<FieldRendererFooterProps> {
+export class FieldRendererFooter extends PureReactor {
+  @prop declare field: ICollectionField;
+  @prop declare resolvedFieldDescription: string;
+  @prop declare errors?: string[];
+
   render(): React.ReactNode {
-    const { field, resolvedFieldDescription, errors } = this.props;
+    const { field, resolvedFieldDescription, errors } = this;
     return (
       <>
         {resolvedFieldDescription && (

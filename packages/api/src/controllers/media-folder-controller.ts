@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { mediaFolders, IDatabaseManager } from '@fromcode119/database';
+import { IDatabaseManager, Schema } from '@fromcode119/database';
 
 /**
  * Media folder CRUD handlers. Extracted from MediaController to keep each file
@@ -14,9 +14,9 @@ export class MediaFolderController {
     const { parentId } = req.query;
     try {
       const targetParent = parentId === 'null' ? null : (parentId ? Number(parentId) : null);
-      const folders = await this.db.find(mediaFolders, {
-        where: targetParent === null ? this.db.isNull(mediaFolders.parentId) : this.db.eq(mediaFolders.parentId, targetParent),
-        orderBy: mediaFolders.name
+      const folders = await this.db.find(Schema.mediaFolders, {
+        where: targetParent === null ? this.db.isNull(Schema.mediaFolders.parentId) : this.db.eq(Schema.mediaFolders.parentId, targetParent),
+        orderBy: Schema.mediaFolders.name
       });
       res.json(folders);
     } catch (err: any) {
@@ -30,10 +30,10 @@ export class MediaFolderController {
       const pId = parentId ? Number(parentId) : null;
 
       // Check for duplicates
-      const [existing] = await this.db.find(mediaFolders, {
+      const [existing] = await this.db.find(Schema.mediaFolders, {
         where: this.db.and(
-            this.db.eq(mediaFolders.name, name),
-            pId === null ? this.db.isNull(mediaFolders.parentId) : this.db.eq(mediaFolders.parentId, pId)
+            this.db.eq(Schema.mediaFolders.name, name),
+            pId === null ? this.db.isNull(Schema.mediaFolders.parentId) : this.db.eq(Schema.mediaFolders.parentId, pId)
           ),
         limit: 1
       });
@@ -42,7 +42,7 @@ export class MediaFolderController {
         return res.status(400).json({ error: 'A folder with this name already exists here' });
       }
 
-      const folder = await this.db.insert(mediaFolders, {
+      const folder = await this.db.insert(Schema.mediaFolders, {
         name,
         parentId: pId
       });
@@ -68,7 +68,7 @@ export class MediaFolderController {
         if (pId !== null) {
           let checkParentId: number | null = pId;
           while (checkParentId !== null) {
-            const parent: any = await this.db.findOne(mediaFolders, { id: checkParentId });
+            const parent: any = await this.db.findOne(Schema.mediaFolders, { id: checkParentId });
             if (!parent) break;
             if (parent.parentId === folderId) {
               return res.status(400).json({ error: 'Cannot move a folder into its own descendant' });
@@ -80,17 +80,17 @@ export class MediaFolderController {
 
       // Check for name duplicates if name or parentId is changing
       if (name || pId !== undefined) {
-        const existingFolder: any = await this.db.findOne(mediaFolders, { id: folderId });
+        const existingFolder: any = await this.db.findOne(Schema.mediaFolders, { id: folderId });
         const finalName = name || existingFolder.name;
         const finalParentId = pId !== undefined ? pId : existingFolder.parentId;
 
         // Simplified duplicate check logic
         const conditions = [
-          this.db.eq(mediaFolders.name, finalName),
-          finalParentId === null ? this.db.isNull(mediaFolders.parentId) : this.db.eq(mediaFolders.parentId, finalParentId)
+          this.db.eq(Schema.mediaFolders.name, finalName),
+          finalParentId === null ? this.db.isNull(Schema.mediaFolders.parentId) : this.db.eq(Schema.mediaFolders.parentId, finalParentId)
         ];
 
-        const [dup]: any = await this.db.find(mediaFolders, {
+        const [dup]: any = await this.db.find(Schema.mediaFolders, {
           where: this.db.and(...conditions),
           limit: 1
         });
@@ -100,7 +100,7 @@ export class MediaFolderController {
       }
 
       const updated = await this.db.update(
-        mediaFolders,
+        Schema.mediaFolders,
         { id: folderId },
         {
           ...(name && { name }),
@@ -120,7 +120,7 @@ export class MediaFolderController {
       let currentId: number | null = Number(id);
 
       while (currentId) {
-        const folder: any = await this.db.findOne(mediaFolders, { id: currentId });
+        const folder: any = await this.db.findOne(Schema.mediaFolders, { id: currentId });
         if (!folder) break;
         folderPath.unshift(folder);
         currentId = folder.parentId;
@@ -136,7 +136,7 @@ export class MediaFolderController {
     const { id } = req.params;
     try {
       // For now, we just delete the folder. Media items with this folderId will have it set to null due to FK constraint.
-      await this.db.delete(mediaFolders, { id: Number(id) });
+      await this.db.delete(Schema.mediaFolders, { id: Number(id) });
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message });

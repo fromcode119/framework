@@ -1,7 +1,7 @@
-import { Logger } from '../../logging';
-import { FromcodePlugin } from '../../types';
-import { PluginSignatureService } from '../../security/plugin-signature-service';
-import { IntegrityService } from '../../security/integrity-service';
+import { Logger } from '@core/logging';
+import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import { PluginSignatureService } from '@core/security/plugin-signature-service';
+import { IntegrityService } from '@core/security/integrity-service';
 
 /**
  * PluginRegistrationSecurityService
@@ -12,7 +12,7 @@ import { IntegrityService } from '../../security/integrity-service';
  * the non-production self-heal re-stamp (which mutates plugin.manifest.checksum).
  */
 export class PluginRegistrationSecurityService {
-  public static async verify(plugin: FromcodePlugin, pluginPath: string | undefined, logger: Logger): Promise<void> {
+  public static async verify(plugin: IFromcodePlugin, pluginPath: string | undefined, logger: Logger): Promise<void> {
     const slug = plugin.manifest.slug;
 
     // Integrity Check.

@@ -1,4 +1,5 @@
-export { CacheFactory } from './cache-factory';
-export type { CacheDriver } from './cache-factory.interfaces';
-export type { CacheDriverCreator } from './cache-factory.types';
-export { CacheManager } from './cache-manager';
+export type { ICacheManager } from '@cache/interfaces/cache-manager.interface';
+export { CacheFactory } from '@cache/cache-factory';
+export type { ICacheDriver } from '@cache/interfaces/cache-driver.interface';
+export type { ICacheDriverCreator } from '@cache/interfaces/cache-driver-creator.interface';
+export { CacheManager } from '@cache/cache-manager';

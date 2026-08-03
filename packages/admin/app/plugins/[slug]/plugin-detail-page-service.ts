@@ -1,17 +1,16 @@
-import type { LoadedPlugin } from '@fromcode119/core/client';
+import type { ILoadedPlugin } from '@fromcode119/core/client';
+import { LoadedPluginHydration } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
-import type { PluginDetailTab } from './plugin-detail-page.types';
-import type {
-  PluginLogEntry,
-  PluginMarketplaceItem,
-  PluginSandboxSettings,
-} from './plugin-detail-page.interfaces';
+import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
+import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log-entry.interface';
+import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
+import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 
 export class PluginDetailPageService {
-  static readonly DEFAULT_SANDBOX_SETTINGS: PluginSandboxSettings = {
+  static readonly DEFAULT_SANDBOX_SETTINGS: IPluginSandboxSettings = {
     enabled: true,
     memoryLimit: 128,
     timeout: 1000,
@@ -19,23 +18,23 @@ export class PluginDetailPageService {
   };
 
   static parseTab(value: string | null): PluginDetailTab {
-    return value === 'settings' || value === 'permissions' || value === 'resources' ? value : 'overview';
+    return PluginDetailTab.resolve(value);
   }
 
-  static async fetchPlugin(slug: string): Promise<LoadedPlugin | null> {
-    return PluginVersionWaitService.fetchInstalledPlugin(slug);
+  static async fetchPlugin(slug: string): Promise<ILoadedPlugin | null> {
+    return LoadedPluginHydration.one(await PluginVersionWaitService.fetchInstalledPlugin(slug));
   }
 
-  static async fetchMarketplaceItem(slug: string): Promise<PluginMarketplaceItem | null> {
+  static async fetchMarketplaceItem(slug: string): Promise<IPluginMarketplaceItem | null> {
     const data = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE);
-    return data.plugins?.find((plugin: PluginMarketplaceItem) => plugin.slug === slug) ?? null;
+    return data.plugins?.find((plugin: IPluginMarketplaceItem) => plugin.slug === slug) ?? null;
   }
 
-  static async fetchLogs(slug: string): Promise<PluginLogEntry[]> {
+  static async fetchLogs(slug: string): Promise<IPluginLogEntry[]> {
     return AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LOGS(slug));
   }
 
-  static createSandboxSettings(plugin: LoadedPlugin): PluginSandboxSettings {
+  static createSandboxSettings(plugin: ILoadedPlugin): IPluginSandboxSettings {
     if (plugin.sandbox === false) {
       return {
         ...PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS,
@@ -59,7 +58,7 @@ export class PluginDetailPageService {
     return PluginInstallOperationService.startMarketplaceInstall(slug);
   }
 
-  static async waitForInstalledVersion(slug: string, targetVersion: string, timeoutMs = 15000): Promise<LoadedPlugin> {
+  static async waitForInstalledVersion(slug: string, targetVersion: string, timeoutMs = 15000): Promise<ILoadedPlugin> {
     return PluginVersionWaitService.waitForInstalledVersion(slug, targetVersion, timeoutMs);
   }
 
@@ -67,7 +66,7 @@ export class PluginDetailPageService {
     await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled });
   }
 
-  static async saveSandbox(slug: string, sandboxSettings: PluginSandboxSettings): Promise<PluginSandboxSettings | false> {
+  static async saveSandbox(slug: string, sandboxSettings: IPluginSandboxSettings): Promise<IPluginSandboxSettings | false> {
     const payload = sandboxSettings.enabled
       ? {
           memoryLimit: sandboxSettings.memoryLimit,

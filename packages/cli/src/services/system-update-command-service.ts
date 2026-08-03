@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { SystemUpdateService } from '@fromcode119/core';
-import { CliUtils } from '../utils';
+import { CliUtils } from '@cli/utils';
 
 /**
  * Terminal download + update for the framework core. `check-update` queries the configured

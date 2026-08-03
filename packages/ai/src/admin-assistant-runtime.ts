@@ -1,38 +1,37 @@
-import type {
-  AdminAssistantRuntimeOptions,
-  AssistantAction,
-  AssistantChatInput,
-  AssistantChatResult,
-  AssistantExecuteInput,
-  AssistantExecuteResult,
-  AssistantSkillDefinition,
-  AssistantToolSummary,
-} from './admin-assistant-runtime/types';
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import type { IAssistantChatInput } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-input.interface';
+import type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
+import type { IAssistantExecuteInput } from '@ai/admin-assistant-runtime/interfaces/assistant-execute-input.interface';
+import type { IAssistantExecuteResult } from '@ai/admin-assistant-runtime/interfaces/assistant-execute-result.interface';
+import type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
+import type { IAssistantToolSummary } from '@ai/admin-assistant-runtime/interfaces/assistant-tool-summary.interface';
 
-import { McpBridgeBuilder } from './admin-assistant-runtime/helpers/mcp-bridge-builder';
-import { ChatRunner } from './admin-assistant-runtime/helpers/chat-runner';
-import { RuntimeMiscHelpers } from './admin-assistant-runtime/helpers/runtime-misc-helpers';
-import { ActionSafetyHelpers } from './admin-assistant-runtime/helpers/action-safety-helpers';
+import { McpBridgeBuilder } from '@ai/admin-assistant-runtime/helpers/mcp-bridge-builder';
+import { ChatRunner } from '@ai/admin-assistant-runtime/helpers/chat-runner';
+import { RuntimeMiscHelpers } from '@ai/admin-assistant-runtime/helpers/runtime-misc-helpers';
+import { ActionSafetyHelpers } from '@ai/admin-assistant-runtime/helpers/action-safety-helpers';
 
 export class AdminAssistantRuntime {
-  constructor(private readonly options: AdminAssistantRuntimeOptions) {}
+  constructor(private readonly options: IAdminAssistantRuntimeOptions) {}
 
-  async listSkills(): Promise<AssistantSkillDefinition[]> {
+  async listSkills(): Promise<IAssistantSkillDefinition[]> {
     const defaults = RuntimeMiscHelpers.defaultSkillCatalog();
     const extra = await Promise.resolve(this.options.resolveSkills?.() || []);
     return RuntimeMiscHelpers.normalizeSkills([...(Array.isArray(extra) ? extra : []), ...defaults]);
   }
 
-  async listTools(dryRun: boolean = true): Promise<AssistantToolSummary[]> {
+  async listTools(dryRun: boolean = true): Promise<IAssistantToolSummary[]> {
     const bridge = await McpBridgeBuilder.build(this.options, dryRun);
     return bridge.listTools();
   }
 
-  sanitizeActions(actions: any[]): AssistantAction[] {
+  sanitizeActions(actions: any[]): IAssistantAction[] {
     return (Array.isArray(actions) ? actions : [])
       .filter((action: any) => action && typeof action === 'object')
       .map((action: any) => ({
-        type: String(action.type || '').trim(),
+        type: AssistantActionType.resolve(action.type),
         collectionSlug: action.collectionSlug ? String(action.collectionSlug) : undefined,
         data: action.data && typeof action.data === 'object' ? action.data : undefined,
         key: action.key ? String(action.key) : undefined,
@@ -41,14 +40,14 @@ export class AdminAssistantRuntime {
         tool: action.tool ? String(action.tool) : undefined,
         input: action.input && typeof action.input === 'object' ? action.input : undefined,
       }))
-      .filter((action: any) => ['create_content', 'update_setting', 'mcp_call'].includes(action.type)) as AssistantAction[];
+      .filter((action: any) => ['create_content', 'update_setting', 'mcp_call'].includes(action.type)) as IAssistantAction[];
   }
 
-  async chat(input: AssistantChatInput): Promise<AssistantChatResult> {
+  async chat(input: IAssistantChatInput): Promise<IAssistantChatResult> {
     return ChatRunner.run(input, this.options);
   }
 
-  async executeActions(input: AssistantExecuteInput): Promise<AssistantExecuteResult> {
+  async executeActions(input: IAssistantExecuteInput): Promise<IAssistantExecuteResult> {
     const actions = this.sanitizeActions(Array.isArray(input?.actions) ? input.actions : []);
     const dryRun = input?.dryRun !== false;
     const context = input?.context || {};

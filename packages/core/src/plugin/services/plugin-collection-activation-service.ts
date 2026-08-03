@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { Logger } from '../../logging';
-import { LoadedPlugin } from '../../types';
-import type { PluginManagerInterface } from '../context/utils.interfaces';
-import { PluginPermissionsService } from '../../security/plugin-permissions-service';
-import { SchemaManager } from '../../database/schema-manager';
-import { Seeder } from '../../database/seeder';
-import { PluginDefaultPageMaterializationRuntimeService } from '../../services/default-page-contract/plugin-default-page-materialization-runtime-service';
+import { Logger } from '@core/logging';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { PluginPermissionsService } from '@core/security/plugin-permissions-service';
+import { PluginPermission } from '@core/security/enums/plugin-permission.enum';
+import { SchemaManager } from '@core/database/schema-manager';
+import { Seeder } from '@core/database/seeder';
+import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
 
 /**
  * PluginCollectionActivationService
@@ -18,7 +19,7 @@ import { PluginDefaultPageMaterializationRuntimeService } from '../../services/d
  */
 export class PluginCollectionActivationService {
   constructor(
-    private manager: PluginManagerInterface,
+    private manager: IPluginManagerInterface,
     private schemaManager: SchemaManager,
     private seeder: Seeder,
     private logger: Logger,
@@ -56,7 +57,7 @@ export class PluginCollectionActivationService {
     }
   }
 
-  public async autoDiscoverCollections(plugin: LoadedPlugin, ctx: any): Promise<void> {
+  public async autoDiscoverCollections(plugin: ILoadedPlugin, ctx: any): Promise<void> {
     if (!plugin.path) return;
     const collectionsDir = path.join(plugin.path, 'src', 'collections');
     if (!fs.existsSync(collectionsDir)) return;
@@ -110,7 +111,7 @@ export class PluginCollectionActivationService {
       .filter(entry => entry.pluginSlug === pluginSlug);
 
     if (pluginCollections.length > 0) {
-      PluginPermissionsService.ensure(pluginSlug, plugin.manifest, 'database:write');
+      PluginPermissionsService.ensure(pluginSlug, plugin.manifest, PluginPermission.DATABASE_WRITE);
       for (const { collection } of pluginCollections) {
         await this.schemaManager.syncCollection(collection);
       }

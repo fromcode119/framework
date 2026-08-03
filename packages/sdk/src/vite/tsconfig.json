@@ -1,0 +1,27 @@
+{
+  // These files are EXCLUDED from `sdk/tsconfig.json` (`"exclude": ["src/vite/**"]`) because they are
+  // Vite build inputs, not part of the SDK's emitted `dist` — the entries are copied verbatim into each
+  // plugin's `src/ui` at build time and compiled there by Vite.
+  //
+  // Excluded, however, meant they belonged to NO program at all: an editor opening `plugin-ui-entry.tsx`
+  // fell back to an inferred project, so the ambient `__plugin*` globals were absent (TS2304) and
+  // `import.meta.glob` was unknown. This config is what the editor picks up for this directory (nearest
+  // tsconfig wins) and what typechecks them on demand. It is intentionally NOT referenced by the sdk
+  // build; it emits nothing.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true
+    // No `paths`: `@fromcode119/sdk` is a workspace symlink in node_modules, so `sdk/react` resolves
+    // through its `exports` map to the BUILT `.d.ts`. Aliasing it to source instead would pull core's
+    // own `@core/*` alias map into this program, which does not exist here (measured: 60+ TS2307).
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

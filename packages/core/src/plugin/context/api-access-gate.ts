@@ -1,19 +1,18 @@
 import type { NextFunction, Request, Response } from 'express';
-import { EnvUtils } from '../../utils/env-utils';
-import { AccessLevel } from './api-access-gate.enums';
-import type { ApiAccessDescriptor, ApiAccessLevel, ApiPermissionCheck } from './api-access-gate.types';
+import { EnvUtils } from '@core/utils/env-utils';
+import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
+import type { IApiAccessDescriptor } from '@core/plugin/context/interfaces/api-access-descriptor.interface';
+import type { IApiPermissionCheck } from '@core/plugin/context/interfaces/api-permission-check.interface';
+import { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
 
 /**
  * Central fail-closed authorization gate for plugin API routes.
  *
  * Every plugin route registers through `ApiContextProxy`, which asks this gate for a guard middleware.
  * A route DECLARES its access by passing an `{ access }` descriptor as the first argument
- * (`context.api.get('/x', { access: 'public' }, handler)`). The levels:
- *   - `public`        — no auth
- *   - `authenticated` — any logged-in user
- *   - `self`          — logged-in user; row-scoping to their own records is the handler's job
- *   - `admin`         — admin role
- *   - `{ permission }`— a specific permission (admins always pass)
+ * (`context.api.get('/x', { access: AccessLevel.PUBLIC }, handler)`). The levels:
+ * The levels are {@link AccessLevel} members; a specific permission is an
+ * {@link ApiPermissionRequirement} (admins always pass).
  * An UNDECLARED route defaults to **admin-only** — so forgetting to declare fails closed, never open.
  *
  * Enforcement is OFF unless `ENFORCE_AUTHZ_GATEWAY=true`, so the gate is completely inert until every
@@ -21,10 +20,10 @@ import type { ApiAccessDescriptor, ApiAccessLevel, ApiPermissionCheck } from './
  * route registration is byte-for-byte unchanged.
  */
 export class ApiAccessGate {
-  private static permissionCheck: ApiPermissionCheck | null = null;
+  private static permissionCheck: IApiPermissionCheck | null = null;
 
   /** Wired by the auth layer at boot so the gate can enforce fine-grained permissions. */
-  static setPermissionChecker(fn: ApiPermissionCheck): void {
+  static setPermissionChecker(fn: IApiPermissionCheck): void {
     ApiAccessGate.permissionCheck = fn;
   }
 
@@ -32,7 +31,7 @@ export class ApiAccessGate {
     return EnvUtils.flag('ENFORCE_AUTHZ_GATEWAY');
   }
 
-  static isDescriptor(value: unknown): value is ApiAccessDescriptor {
+  static isDescriptor(value: unknown): value is IApiAccessDescriptor {
     return !!value && typeof value === 'object' && !Array.isArray(value) && 'access' in value;
   }
 
@@ -40,7 +39,7 @@ export class ApiAccessGate {
    * Build the gate middleware for a route's declared access. Returns null when enforcement is disabled
    * (inert) so the caller registers the route exactly as before.
    */
-  static build(access: ApiAccessLevel | undefined): ((req: Request, res: Response, next: NextFunction) => void) | null {
+  static build(access: AccessLevel | ApiPermissionRequirement | undefined): ((req: Request, res: Response, next: NextFunction) => void) | null {
     if (!ApiAccessGate.enabled()) return null;
     return (req: Request, res: Response, next: NextFunction): void => {
       void ApiAccessGate.evaluate(access, req, res, next);
@@ -48,7 +47,7 @@ export class ApiAccessGate {
   }
 
   private static async evaluate(
-    access: ApiAccessLevel | undefined,
+    access: AccessLevel | ApiPermissionRequirement | undefined,
     req: Request,
     res: Response,
     next: NextFunction,
@@ -67,27 +66,27 @@ export class ApiAccessGate {
     // plugin bundles 401 for anonymous visitors and every client-side plugin feature (cart, banners) breaks.
     if (/\/(?:plugins|themes)\/[^/]+\/ui\//.test(url)) return next();
 
-    const level: ApiAccessLevel = access ?? AccessLevel.Admin;
-    if (level === AccessLevel.Public) return next();
+    const level: AccessLevel | ApiPermissionRequirement = access ?? AccessLevel.ADMIN;
+    if (level === AccessLevel.PUBLIC) return next();
 
     const user = (req as unknown as { user?: { id?: unknown; userId?: unknown; roles?: unknown } }).user;
     if (!user) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    if (level === AccessLevel.Authenticated || level === AccessLevel.Self) return next();
+    if (level === AccessLevel.AUTHENTICATED || level === AccessLevel.SELF) return next();
 
     const roles = Array.isArray(user.roles) ? (user.roles as string[]) : [];
-    if (roles.includes(AccessLevel.Admin)) return next();
+    if (roles.includes(AccessLevel.ADMIN.value)) return next();
 
     // Resolve the permission to check. An explicit `{ permission }` declaration wins; otherwise an
     // UNDECLARED admin route derives a per-plugin permission `<slug>:manage` from the route path, so a
     // scoped operator role (e.g. `mlm:*`, `cms:*`) grants that plugin's admin routes without tagging each
     // one. `<slug>:*` matches `<slug>:manage` via the checker's hierarchical wildcard.
     let permission: string | null = null;
-    if (typeof level === 'object' && level.permission) {
+    if (level instanceof ApiPermissionRequirement) {
       permission = level.permission;
-    } else if (level === AccessLevel.Admin) {
+    } else if (level === AccessLevel.ADMIN) {
       const match = url.match(/\/plugins\/([^/?]+)/);
       permission = match ? `${match[1]}:manage` : null;
     }

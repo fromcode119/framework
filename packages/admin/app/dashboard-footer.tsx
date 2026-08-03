@@ -1,11 +1,13 @@
-import React from 'react';
-import { AppEnv } from '@/lib/env';
-import { AdminConstants } from '@/lib/constants';
-import type { DashboardFooterProps } from './dashboard-footer.interfaces';
+import type { ReactNode } from 'react';
 
-export class DashboardFooter extends React.Component<DashboardFooterProps> {
-  render(): React.ReactNode {
-    const { platformName } = this.props;
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { AppEnv } from '@/lib/env';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+
+export class DashboardFooter extends PureReactor {
+  @prop declare platformName: string;
+
+  render(): ReactNode {
     return (
       <div className="p-6 border-t mt-auto bg-slate-50/50 border-slate-100 dark:bg-slate-950/20 dark:border-slate-800">
         <div className="w-full px-6 lg:px-8">
@@ -14,7 +16,7 @@ export class DashboardFooter extends React.Component<DashboardFooterProps> {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                 <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400 uppercase">
-                  {platformName} Infrastructure // v{AppEnv.APP_VERSION} {AppEnv.APP_CHANNEL}
+                  {this.platformName} Infrastructure // v{AppEnv.APP_VERSION} {AppEnv.APP_CHANNEL}
                 </span>
               </div>
               <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-tight">Connected to distributed cluster node. All systems operational.</p>

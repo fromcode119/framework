@@ -1,1 +1,0 @@
-export type BackupSectionKey = 'core' | 'database' | 'plugins' | 'themes';

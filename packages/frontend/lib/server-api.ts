@@ -2,10 +2,9 @@ import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
 import { cookies } from 'next/headers';
 
-const SERVER_FETCH_TIMEOUT_MS = Number(process.env.SERVER_FETCH_TIMEOUT_MS || 12000);
-const DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';
-
 export class ServerApiUtils {
+  private static readonly SERVER_FETCH_TIMEOUT_MS = Number(process.env.SERVER_FETCH_TIMEOUT_MS || 12000);
+  private static readonly DEBUG_SERVER_FETCH = process.env.DEBUG_SERVER_FETCH === '1';
   static buildInternalApiBaseUrl(): string {
     return String(
       process.env.INTERNAL_API_URL || process.env.API_URL || ServerApiUtils.buildFrontendApiBaseUrl(),
@@ -21,6 +20,12 @@ export class ServerApiUtils {
 
   static buildSystemFrontendPath(): string {
     return SystemConstants.API_PATH.SYSTEM.FRONTEND;
+  }
+
+  /** The same `/system/i18n?locale=…` the browser provider loads, so a server render resolves keys identically. */
+  static buildSystemI18nPath(locale: string): string {
+    const encoded = encodeURIComponent(String(locale || '').trim() || 'en');
+    return `${SystemConstants.API_PATH.SYSTEM.I18N}?locale=${encoded}`;
   }
 
   static buildCollectionLookupPath(
@@ -108,7 +113,7 @@ export class ServerApiUtils {
   static async serverFetchJson(path: string): Promise<unknown> {
     const requestPath = ServerApiUtils.AdminUrlUtils(path);
     if (!requestPath) {
-      if (DEBUG_SERVER_FETCH) {
+      if (ServerApiUtils.DEBUG_SERVER_FETCH) {
         console.warn(`[frontend] Skipping fetch due to invalid path: ${String(path)}`);
       }
       return null;
@@ -120,7 +125,7 @@ export class ServerApiUtils {
 
     for (const prefix of prefixes) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT_MS);
+      const timeout = setTimeout(() => controller.abort(), ServerApiUtils.SERVER_FETCH_TIMEOUT_MS);
       try {
         const url = /^https?:\/\//i.test(requestPath) ? requestPath : `${prefix}${requestPath}`;
         const response = await fetch(url, { cache: 'no-store', signal: controller.signal, headers: forwardedHeaders });
@@ -135,7 +140,7 @@ export class ServerApiUtils {
 
     if (lastError) {
       if (ServerApiUtils.isAbortError(lastError)) {
-        if (DEBUG_SERVER_FETCH) console.warn(`[frontend] Fetch timed out for ${requestPath}`);
+        if (ServerApiUtils.DEBUG_SERVER_FETCH) console.warn(`[frontend] Fetch timed out for ${requestPath}`);
       } else {
         console.error(`[frontend] Failed to fetch ${requestPath}: ${ServerApiUtils.describeError(lastError)}`);
       }
@@ -146,7 +151,7 @@ export class ServerApiUtils {
   static async serverFetchResponse(path: string, requestInit?: RequestInit): Promise<Response | null> {
     const requestPath = ServerApiUtils.AdminUrlUtils(path);
     if (!requestPath) {
-      if (DEBUG_SERVER_FETCH) {
+      if (ServerApiUtils.DEBUG_SERVER_FETCH) {
         console.warn(`[frontend] Skipping response fetch due to invalid path: ${String(path)}`);
       }
       return null;
@@ -159,7 +164,7 @@ export class ServerApiUtils {
 
     for (const prefix of prefixes) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT_MS);
+      const timeout = setTimeout(() => controller.abort(), ServerApiUtils.SERVER_FETCH_TIMEOUT_MS);
       try {
         const url = /^https?:\/\//i.test(requestPath) ? requestPath : `${prefix}${requestPath}`;
         const response = await fetch(url, {
@@ -181,7 +186,7 @@ export class ServerApiUtils {
 
     if (lastError) {
       if (ServerApiUtils.isAbortError(lastError)) {
-        if (DEBUG_SERVER_FETCH) console.warn(`[frontend] Fetch response timed out for ${requestPath}`);
+        if (ServerApiUtils.DEBUG_SERVER_FETCH) console.warn(`[frontend] Fetch response timed out for ${requestPath}`);
       } else {
         console.error(`[frontend] Failed to fetch response ${requestPath}: ${ServerApiUtils.describeError(lastError)}`);
       }
@@ -192,14 +197,14 @@ export class ServerApiUtils {
   static async serverFetchInternalResponse(path: string, requestInit?: RequestInit): Promise<Response | null> {
     const requestPath = ServerApiUtils.AdminUrlUtils(path);
     if (!requestPath) {
-      if (DEBUG_SERVER_FETCH) {
+      if (ServerApiUtils.DEBUG_SERVER_FETCH) {
         console.warn(`[frontend] Skipping internal response fetch due to invalid path: ${String(path)}`);
       }
       return null;
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT_MS);
+    const timeout = setTimeout(() => controller.abort(), ServerApiUtils.SERVER_FETCH_TIMEOUT_MS);
 
     try {
       const baseUrl = ServerApiUtils.buildInternalApiBaseUrl();
@@ -214,7 +219,7 @@ export class ServerApiUtils {
       return response;
     } catch (error) {
       if (ServerApiUtils.isAbortError(error)) {
-        if (DEBUG_SERVER_FETCH) console.warn(`[frontend] Internal response fetch timed out for ${requestPath}`);
+        if (ServerApiUtils.DEBUG_SERVER_FETCH) console.warn(`[frontend] Internal response fetch timed out for ${requestPath}`);
       } else {
         console.error(`[frontend] Failed to fetch internal response ${requestPath}: ${ServerApiUtils.describeError(error)}`);
       }

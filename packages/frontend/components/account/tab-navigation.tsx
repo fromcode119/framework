@@ -1,13 +1,17 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-export class AccountTabNavigation extends React.Component<{
-  tabs?: Array<{ id: string; label: string }> | string[];
-  activeTab?: string;
-  onTabChange?: (id: string) => void;
-  isDark?: boolean;
-}> {
-  render(): React.ReactNode {
-    const { tabs = [], activeTab, onTabChange } = this.props;
+import { PureReactor, prop } from '@fromcode119/reactor';
+
+export class AccountTabNavigation extends PureReactor {
+  @prop declare tabs?: Array<{ id: string; label: string }> | string[];
+  @prop declare activeTab?: string;
+  @prop declare onTabChange?: (id: string) => void;
+  @prop declare isDark?: boolean;
+
+  render(): ReactNode {
+    const tabs = this.tabs ?? [];
+    const activeTab = this.activeTab;
+    const onTabChange = this.onTabChange;
     return (
       <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e2e8f0', marginBottom: '24px' }}>
         {tabs.map((tab: any) => {

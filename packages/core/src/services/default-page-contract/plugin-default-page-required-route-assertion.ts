@@ -1,7 +1,8 @@
-import type {
-  PluginDefaultPageContractMaterializationExecutionReport,
-  ResolvedPluginDefaultPageContract,
-} from '../../types';
+import { PluginDefaultPageContractMaterializationExecutionOutcome } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-execution-outcome.enum';
+import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
+import { PluginDefaultPageContractResolutionStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-status.enum';
+import type { IPluginDefaultPageContractMaterializationExecutionReport } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-execution-report.interface';
+import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
 
 /**
  * Pure assertion logic verifying that every REQUIRED default-page route reconciled
@@ -19,8 +20,8 @@ export class PluginDefaultPageRequiredRouteAssertion {
   }
 
   assertRequiredRouteReconciliation(
-    report: PluginDefaultPageContractMaterializationExecutionReport | null,
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
+    report: IPluginDefaultPageContractMaterializationExecutionReport | null,
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
   ): void {
     const reportByCanonicalKey = new Map((report?.entries || []).map((entry) => [entry.canonicalKey, entry]));
     const failures = resolvedContracts
@@ -37,15 +38,15 @@ export class PluginDefaultPageRequiredRouteAssertion {
   }
 
   private getRequiredRouteFailures(
-    contract: ResolvedPluginDefaultPageContract,
-    reportByCanonicalKey: Map<string, PluginDefaultPageContractMaterializationExecutionReport['entries'][number]>,
-    report: PluginDefaultPageContractMaterializationExecutionReport | null,
+    contract: IResolvedPluginDefaultPageContract,
+    reportByCanonicalKey: Map<string, IPluginDefaultPageContractMaterializationExecutionReport['entries'][number]>,
+    report: IPluginDefaultPageContractMaterializationExecutionReport | null,
   ): string[] {
-    if (!contract.install || contract.status !== 'ready') {
+    if (!contract.install || contract.status !== PluginDefaultPageContractResolutionStatus.READY) {
       return [this.formatRequiredRouteFailure(contract.canonicalKey, contract.reasons, 'contract-not-ready')];
     }
 
-    if (this.isRuntimeParameterizedContract(contract) || contract.materializationMode !== 'singleton-document') {
+    if (this.isRuntimeParameterizedContract(contract) || contract.materializationMode !== PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT) {
       return [];
     }
 
@@ -58,11 +59,11 @@ export class PluginDefaultPageRequiredRouteAssertion {
       return [this.formatRequiredRouteFailure(contract.canonicalKey, [], 'reconciliation-entry-missing')];
     }
 
-    if (entry.executionOutcome === 'applied' || entry.executionOutcome === 'noop') {
+    if (entry.executionOutcome === PluginDefaultPageContractMaterializationExecutionOutcome.APPLIED || entry.executionOutcome === PluginDefaultPageContractMaterializationExecutionOutcome.NOOP) {
       return [];
     }
 
-    return [this.formatRequiredRouteFailure(contract.canonicalKey, entry.reasons, entry.executionOutcome)];
+    return [this.formatRequiredRouteFailure(contract.canonicalKey, entry.reasons, entry.executionOutcome.value)];
   }
 
   private formatRequiredRouteFailure(canonicalKey: string, reasons: string[], fallbackReason: string): string {
@@ -77,8 +78,8 @@ export class PluginDefaultPageRequiredRouteAssertion {
     return `${canonicalKey} (${normalizedReasons.join(', ')})`;
   }
 
-  private isRuntimeParameterizedContract(contract: ResolvedPluginDefaultPageContract): boolean {
-    return contract.materializationMode === 'singleton-document' && this.hasPathParameters(contract.effectiveSlug);
+  private isRuntimeParameterizedContract(contract: IResolvedPluginDefaultPageContract): boolean {
+    return contract.materializationMode === PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT && this.hasPathParameters(contract.effectiveSlug);
   }
 
   private hasPathParameters(value: string): boolean {

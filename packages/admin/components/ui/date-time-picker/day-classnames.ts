@@ -1,10 +1,12 @@
+import { ThemeMode } from '@fromcode119/core/client';
+
 /**
  * Builds the {@link DayPicker} `classNames` map for the date-time picker, themed
  * for light/dark. Extracted verbatim from the picker render to keep the popover
  * component under the file-size limit; the produced styling is identical.
  */
 export class DateTimePickerDayClassNames {
-  static build(theme: string): Record<string, string> {
+  static build(theme: ThemeMode): Record<string, string> {
     return {
       months: "flex flex-col",
       month: "space-y-4",
@@ -20,13 +22,13 @@ export class DateTimePickerDayClassNames {
       week: "",
       day: "h-11 w-11 p-0 text-center align-middle",
       day_button: `flex h-10 w-10 items-center justify-center rounded-xl p-0 font-semibold text-[14px] tracking-tight transition-all duration-150 mx-auto
-        ${theme === 'dark'
+        ${theme === ThemeMode.DARK
           ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-300 [[data-today=true]_&]:font-bold'
           : 'text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-600 [[data-today=true]_&]:font-bold'}`,
-      selected: theme === 'dark'
+      selected: theme === ThemeMode.DARK
         ? "!bg-indigo-500 hover:!bg-indigo-500 shadow-xl shadow-indigo-500/40 ring-2 ring-indigo-400/50 scale-105"
         : "!bg-indigo-600 hover:!bg-indigo-600 shadow-xl shadow-indigo-600/40 ring-2 ring-indigo-500/60 scale-105",
-      today: theme === 'dark'
+      today: theme === ThemeMode.DARK
         ? "ring-2 ring-indigo-400/30"
         : "ring-2 ring-indigo-500/30",
       outside: "pointer-events-none opacity-0",

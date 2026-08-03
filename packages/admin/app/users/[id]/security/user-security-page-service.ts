@@ -1,10 +1,7 @@
-import type {
-  AuthActivityEntry,
-  SecurityUserRecord,
-  UserApiTokenRecord,
-  UserSessionRecord,
-} from './user-security-page.interfaces';
-
+import type { IAuthActivityEntry } from '@/app/users/[id]/security/interfaces/auth-activity-entry.interface';
+import type { ISecurityUserRecord } from '@/app/users/[id]/security/interfaces/security-user-record.interface';
+import type { IUserApiTokenRecord } from '@/app/users/[id]/security/interfaces/user-api-token-record.interface';
+import type { IUserSessionRecord } from '@/app/users/[id]/security/interfaces/user-session-record.interface';
 export class UserSecurityPageService {
   static buildActivityLevelClass(level: string): string {
     if (level === 'ERROR') {
@@ -21,24 +18,24 @@ export class UserSecurityPageService {
     return Number.isNaN(expiresInDays) ? { name: tokenName.trim() } : { expiresInDays, name: tokenName.trim() };
   }
 
-  static extractActivityEntries(response: unknown): AuthActivityEntry[] {
-    const value = response as { docs?: AuthActivityEntry[] } | AuthActivityEntry[] | null;
+  static extractActivityEntries(response: unknown): IAuthActivityEntry[] {
+    const value = response as { docs?: IAuthActivityEntry[] } | IAuthActivityEntry[] | null;
     if (Array.isArray(value)) return value;
     if (value && Array.isArray(value.docs)) return value.docs;
     return [];
   }
 
-  static extractApiTokens(response: unknown): UserApiTokenRecord[] {
-    const value = response as { docs?: UserApiTokenRecord[] } | null;
+  static extractApiTokens(response: unknown): IUserApiTokenRecord[] {
+    const value = response as { docs?: IUserApiTokenRecord[] } | null;
     return Array.isArray(value?.docs) ? value.docs : [];
   }
 
-  static extractSessions(response: unknown): UserSessionRecord[] {
-    const value = response as { docs?: UserSessionRecord[] } | null;
+  static extractSessions(response: unknown): IUserSessionRecord[] {
+    const value = response as { docs?: IUserSessionRecord[] } | null;
     return Array.isArray(value?.docs) ? value.docs : [];
   }
 
-  static filterAuthActivity(email: string, entries: AuthActivityEntry[]): AuthActivityEntry[] {
+  static filterAuthActivity(email: string, entries: IAuthActivityEntry[]): IAuthActivityEntry[] {
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return [];
 
@@ -56,7 +53,7 @@ export class UserSecurityPageService {
     });
   }
 
-  static isAdministrator(user: SecurityUserRecord | null): boolean {
+  static isAdministrator(user: ISecurityUserRecord | null): boolean {
     return Array.isArray(user?.roles) && user.roles.includes('admin');
   }
 

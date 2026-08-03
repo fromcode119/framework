@@ -1,10 +1,10 @@
-import { LoadedPlugin } from '../../types';
-import { Logger } from '../../logging';
-import { MigrationCoordinator } from '../../management/migration-coordinator';
-import { PluginStateService } from './plugin-state-service';
-import { DiscoveryService } from './discovery-service';
-import { LifecycleService } from './lifecycle-service';
-import { PluginState } from './plugin-state.enums';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { Logger } from '@core/logging';
+import { MigrationCoordinator } from '@core/management/migration-coordinator';
+import { PluginStateService } from '@core/plugin/services/plugin-state-service';
+import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { LifecycleService } from '@core/plugin/services/lifecycle-service';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 /**
  * PluginDiscoveryCoordinatorService
@@ -18,7 +18,7 @@ import { PluginState } from './plugin-state.enums';
 export class PluginDiscoveryCoordinatorService {
   constructor(
     private logger: Logger,
-    private plugins: Map<string, LoadedPlugin>,
+    private plugins: Map<string, ILoadedPlugin>,
     private registry: PluginStateService,
     private discovery: DiscoveryService,
     private coordinator: MigrationCoordinator,
@@ -74,6 +74,13 @@ export class PluginDiscoveryCoordinatorService {
           } as any);
         }
       }
+
+      // Final default-page materialization pass. The per-plugin pass (in `register`) can run before the
+      // collection that OWNS pages (CMS's `pages`) is registered, so it skips ("no registered page
+      // collection available") and required contract pages (e.g. /courses/:slug/learn, /instructors/:slug)
+      // never get created. Running once more here — after EVERY plugin in the boot set is registered and its
+      // collections are in the manager — guarantees the pages collection is present so all contracts materialize.
+      await this.lifecycle.materializeDefaultPagesFinalPass();
 
       // One consolidated admin alert for anything held/errored this pass (never mid-loop).
       await this.lifecycle.reportBootPluginHealth();

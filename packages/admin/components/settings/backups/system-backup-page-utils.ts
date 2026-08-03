@@ -1,15 +1,15 @@
+import { RestoreTargetScope } from '@/components/settings/backups/enums/restore-target-scope.enum';
+import { BackupPreset } from '@/components/settings/backups/enums/backup-preset.enum';
+import { BackupSectionKey, BackupCatalogGroupKey, BackupCatalogRootKind } from '@fromcode119/core';
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
-import type {
-  BackupDownloadProgressView,
-  BackupCatalogGroupView,
-  BackupCatalogItemView,
-  RestoreDialogState,
-  SystemBackupListResponseView,
-} from './backups-page-client.interfaces';
-
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import type { IBackupDownloadProgressView } from '@/components/settings/backups/interfaces/backup-download-progress-view.interface';
+import type { IBackupCatalogGroupView } from '@/components/settings/backups/interfaces/backup-catalog-group-view.interface';
+import type { IBackupCatalogItemView } from '@/components/settings/backups/interfaces/backup-catalog-item-view.interface';
+import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
+import type { ISystemBackupListResponseView } from '@/components/settings/backups/interfaces/system-backup-list-response-view.interface';
 export class SystemBackupPageUtils {
-  static createEmptyListResponse(): SystemBackupListResponseView {
+  static createEmptyListResponse(): ISystemBackupListResponseView {
     return {
       groups: [],
       capabilities: {
@@ -19,10 +19,10 @@ export class SystemBackupPageUtils {
     };
   }
 
-  static createInitialRestoreState(): RestoreDialogState {
+  static createInitialRestoreState(): IRestoreDialogState {
     return {
       backup: null,
-      targetScope: 'system',
+      targetScope: RestoreTargetScope.SYSTEM,
       targetSlug: '',
       preview: null,
       confirmationText: '',
@@ -30,53 +30,53 @@ export class SystemBackupPageUtils {
     };
   }
 
-  static createDefaultSections(): ('core' | 'database' | 'plugins' | 'themes')[] {
-    return ['core', 'database', 'plugins', 'themes'];
+  static createDefaultSections(): BackupSectionKey[] {
+    return BackupSectionKey.values() as BackupSectionKey[];
   }
 
-  static applyCreatePreset(value: 'full' | 'core-db' | 'plugins-only' | 'themes-only'): ('core' | 'database' | 'plugins' | 'themes')[] {
-    if (value === 'core-db') return ['core', 'database'];
-    if (value === 'plugins-only') return ['plugins'];
-    if (value === 'themes-only') return ['themes'];
+  static applyCreatePreset(value: BackupPreset): BackupSectionKey[] {
+    if (value === BackupPreset.CORE_DB) return [BackupSectionKey.CORE, BackupSectionKey.DATABASE];
+    if (value === BackupPreset.PLUGINS_ONLY) return [BackupSectionKey.PLUGINS];
+    if (value === BackupPreset.THEMES_ONLY) return [BackupSectionKey.THEMES];
     return this.createDefaultSections();
   }
 
   static toggleSection(
-    sections: ('core' | 'database' | 'plugins' | 'themes')[],
-    value: 'core' | 'database' | 'plugins' | 'themes',
-  ): ('core' | 'database' | 'plugins' | 'themes')[] {
+    sections: BackupSectionKey[],
+    value: BackupSectionKey,
+  ): BackupSectionKey[] {
     return sections.includes(value)
       ? sections.filter((section) => section !== value)
       : [...sections, value].sort((left, right) => this.getSectionSortIndex(left) - this.getSectionSortIndex(right));
   }
 
   static getSectionOptions(): Array<{
-    key: 'core' | 'database' | 'plugins' | 'themes';
+    key: BackupSectionKey;
     label: string;
     description: string;
     helper: string;
   }> {
     return [
       {
-        key: 'core',
+        key: BackupSectionKey.CORE,
         label: 'Core Files',
         description: 'Packages, configs, scripts, docs, tests, and the rest of the framework workspace.',
         helper: 'Use this for code and system configuration rollback.',
       },
       {
-        key: 'database',
+        key: BackupSectionKey.DATABASE,
         label: 'Database',
         description: 'A PostgreSQL dump or SQLite copy when the active environment supports it.',
         helper: 'Use this when you need content and settings state.',
       },
       {
-        key: 'plugins',
+        key: BackupSectionKey.PLUGINS,
         label: 'Plugins',
         description: 'The full plugins directory, including installed plugin code and assets.',
         helper: 'Use this when plugin code changed or needs migration.',
       },
       {
-        key: 'themes',
+        key: BackupSectionKey.THEMES,
         label: 'Themes',
         description: 'The full themes directory, including custom theme source and built assets.',
         helper: 'Use this when frontend presentation changed.',
@@ -84,19 +84,19 @@ export class SystemBackupPageUtils {
     ];
   }
 
-  static describeSections(sections: ('core' | 'database' | 'plugins' | 'themes')[]): string {
+  static describeSections(sections: BackupSectionKey[]): string {
     if (!sections.length) return 'nothing selected';
     return sections.map((section) => this.getSectionLabel(section)).join(', ');
   }
 
-  static getSectionLabel(value: 'core' | 'database' | 'plugins' | 'themes'): string {
-    if (value === 'core') return 'Core Files';
-    if (value === 'database') return 'Database';
-    if (value === 'plugins') return 'Plugins';
+  static getSectionLabel(value: BackupSectionKey): string {
+    if (value === BackupSectionKey.CORE) return 'Core Files';
+    if (value === BackupSectionKey.DATABASE) return 'Database';
+    if (value === BackupSectionKey.PLUGINS) return 'Plugins';
     return 'Themes';
   }
 
-  static createRestoreStateForItem(item: BackupCatalogItemView): RestoreDialogState {
+  static createRestoreStateForItem(item: IBackupCatalogItemView): IRestoreDialogState {
     return {
       backup: item,
       targetScope: this.getTargetScope(item),
@@ -107,23 +107,23 @@ export class SystemBackupPageUtils {
     };
   }
 
-  static getTargetScope(item: BackupCatalogItemView): 'system' | 'plugin' | 'theme' {
-    if (item.group === 'plugins') return 'plugin';
-    if (item.group === 'themes') return 'theme';
-    return 'system';
+  static getTargetScope(item: IBackupCatalogItemView): RestoreTargetScope {
+    if (item.group === BackupCatalogGroupKey.PLUGINS) return RestoreTargetScope.PLUGIN;
+    if (item.group === BackupCatalogGroupKey.THEMES) return RestoreTargetScope.THEME;
+    return RestoreTargetScope.SYSTEM;
   }
 
-  static buildTargetKind(scope: 'system' | 'plugin' | 'theme', slug: string): string {
-    if (scope === 'system') return 'system';
-    return `${scope}:${String(slug || '').trim()}`;
+  static buildTargetKind(scope: RestoreTargetScope, slug: string): string {
+    if (scope === RestoreTargetScope.SYSTEM) return 'system';
+    return `${scope.value}:${String(slug || '').trim()}`;
   }
 
-  static canRestore(item: BackupCatalogItemView): boolean {
-    return item.group === 'system' || item.group === 'plugins' || item.group === 'themes';
+  static canRestore(item: IBackupCatalogItemView): boolean {
+    return item.group === BackupCatalogGroupKey.SYSTEM || item.group === BackupCatalogGroupKey.PLUGINS || item.group === BackupCatalogGroupKey.THEMES;
   }
 
-  static canDelete(item: BackupCatalogItemView): boolean {
-    return item.rootKind === 'backups';
+  static canDelete(item: IBackupCatalogItemView): boolean {
+    return item.rootKind === BackupCatalogRootKind.BACKUPS;
   }
 
   static formatBytes(value: number): string {
@@ -146,41 +146,41 @@ export class SystemBackupPageUtils {
     return date.toLocaleString();
   }
 
-  static totalBackups(groups: BackupCatalogGroupView[]): number {
+  static totalBackups(groups: IBackupCatalogGroupView[]): number {
     return groups.reduce((sum, group) => sum + group.items.length, 0);
   }
 
-  static totalBytes(groups: BackupCatalogGroupView[]): number {
+  static totalBytes(groups: IBackupCatalogGroupView[]): number {
     return groups.reduce(
       (sum, group) => sum + group.items.reduce((groupTotal, item) => groupTotal + item.sizeBytes, 0),
       0,
     );
   }
 
-  static getLatestBackup(groups: BackupCatalogGroupView[]): BackupCatalogItemView | null {
+  static getLatestBackup(groups: IBackupCatalogGroupView[]): IBackupCatalogItemView | null {
     const items = groups.flatMap((group) => group.items);
     if (!items.length) return null;
     return [...items].sort((left, right) => Date.parse(right.modifiedAt) - Date.parse(left.modifiedAt))[0] || null;
   }
 
-  static getGroupDescription(groupKey: BackupCatalogGroupView['key']): string {
-    if (groupKey === 'system') return 'Framework snapshots for full-system rollback and safety checkpoints.';
-    if (groupKey === 'plugins') return 'Plugin-specific archives created during installs, updates, or manual protection.';
-    if (groupKey === 'themes') return 'Theme snapshots captured before overwrite or restore operations.';
-    if (groupKey === 'database') return 'Database-only dumps retained separately from tarball snapshots.';
+  static getGroupDescription(groupKey: IBackupCatalogGroupView['key']): string {
+    if (groupKey === BackupCatalogGroupKey.SYSTEM) return 'Framework snapshots for full-system rollback and safety checkpoints.';
+    if (groupKey === BackupCatalogGroupKey.PLUGINS) return 'Plugin-specific archives created during installs, updates, or manual protection.';
+    if (groupKey === BackupCatalogGroupKey.THEMES) return 'Theme snapshots captured before overwrite or restore operations.';
+    if (groupKey === BackupCatalogGroupKey.DATABASE) return 'Database-only dumps retained separately from tarball snapshots.';
     return 'Site-transfer bundles and related artifacts staged for migration workflows.';
   }
 
-  static getScopeLabel(item: BackupCatalogItemView): string {
-    if (item.group === 'plugins' && item.scopeSlug) return `Plugin: ${item.scopeSlug}`;
-    if (item.group === 'themes' && item.scopeSlug) return `Theme: ${item.scopeSlug}`;
-    if (item.group === 'database') return 'Database';
-    if (item.group === 'transfer') return 'Site Transfer';
+  static getScopeLabel(item: IBackupCatalogItemView): string {
+    if (item.group === BackupCatalogGroupKey.PLUGINS && item.scopeSlug) return `Plugin: ${item.scopeSlug}`;
+    if (item.group === BackupCatalogGroupKey.THEMES && item.scopeSlug) return `Theme: ${item.scopeSlug}`;
+    if (item.group === BackupCatalogGroupKey.DATABASE) return 'Database';
+    if (item.group === BackupCatalogGroupKey.TRANSFER) return 'Site Transfer';
     return 'System';
   }
 
-  static getStorageLabel(item: BackupCatalogItemView): string {
-    return item.rootKind === 'site-transfer' ? 'artifacts/site-transfer' : 'backups';
+  static getStorageLabel(item: IBackupCatalogItemView): string {
+    return item.rootKind === BackupCatalogRootKind.SITE_TRANSFER ? 'artifacts/site-transfer' : 'backups';
   }
 
   static getCreateProgressLabel(percent: number): string {
@@ -242,14 +242,14 @@ export class SystemBackupPageUtils {
     return Number.isInteger(percent) ? `${percent}%` : `${percent.toFixed(1)}%`;
   }
 
-  static getDownloadProgressLabel(progress: BackupDownloadProgressView): string {
+  static getDownloadProgressLabel(progress: IBackupDownloadProgressView): string {
     if (progress.percent === null) {
       return `Downloading ${this.formatBytes(progress.loadedBytes)}...`;
     }
     return `Downloading ${progress.percent}%`;
   }
 
-  static getDownloadProgressDetail(progress: BackupDownloadProgressView): string {
+  static getDownloadProgressDetail(progress: IBackupDownloadProgressView): string {
     if (progress.totalBytes === null) {
       return this.formatBytes(progress.loadedBytes);
     }
@@ -279,7 +279,7 @@ export class SystemBackupPageUtils {
     return filename;
   }
 
-  private static getSectionSortIndex(value: 'core' | 'database' | 'plugins' | 'themes'): number {
-    return ['core', 'database', 'plugins', 'themes'].indexOf(value);
+  private static getSectionSortIndex(value: BackupSectionKey): number {
+    return (BackupSectionKey.values() as BackupSectionKey[]).indexOf(value);
   }
 }

@@ -1,7 +1,7 @@
-import type { RuntimeBridgeInstallArgs } from '../context-runtime-bridge.interfaces';
+import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 
 export class AdminExportSourceBuilder {
-  static build(args: RuntimeBridgeInstallArgs, runtimeRegistry: Record<string, any>): string {
+  static build(args: IRuntimeBridgeInstallArgs, runtimeRegistry: Record<string, any>): string {
     const adminModule =
       runtimeRegistry[args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] ||
       runtimeRegistry[args.RuntimeConstants.MODULE_NAMES.ADMIN] ||

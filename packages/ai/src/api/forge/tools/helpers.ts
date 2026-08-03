@@ -1,14 +1,15 @@
+import { ExtensionArea } from '@ai/api/forge/enums/extension-area.enum';
 import { PluginManager, ThemeManager } from '@fromcode119/core';
 import * as fs from 'fs';
 import * as path from 'path';
-import { AssistantToolingFileHelpers } from './tooling-file-helpers';
-import { AssistantToolingObjectHelpers } from './tooling-object-helpers';
-import { AssistantToolingTextHelpers } from './tooling-text-helpers';
-
-const MAX_TEXT_FILE_BYTES = 1024 * 1024;
-const DEFAULT_PREVIEW_CHARS = 280;
+import { AssistantToolingFileHelpers } from '@ai/api/forge/tools/tooling-file-helpers';
+import { AssistantToolingObjectHelpers } from '@ai/api/forge/tools/tooling-object-helpers';
+import { AssistantToolingTextHelpers } from '@ai/api/forge/tools/tooling-text-helpers';
 
 export class AssistantToolingHelpers {
+  private static readonly MAX_TEXT_FILE_BYTES = 1024 * 1024;
+  private static readonly DEFAULT_PREVIEW_CHARS = 280;
+
   constructor(private readonly manager: PluginManager, private readonly themeManager: ThemeManager) {}
 
   public normalizeSearchText(value: string): string {
@@ -60,7 +61,7 @@ export class AssistantToolingHelpers {
   }
 
   public searchScopeFiles(options: {
-    scope: 'plugins' | 'themes';
+    scope: ExtensionArea;
     query: string;
     slug?: string;
     maxMatches: number;
@@ -129,7 +130,7 @@ export class AssistantToolingHelpers {
     return { matches, totalMatches: matches.length, scannedFiles, truncated };
   }
 
-  public scopeSlugFromPath(scope: 'plugins' | 'themes', filePath: string): string | null {
+  public scopeSlugFromPath(scope: ExtensionArea, filePath: string): string | null {
     const scopeRoot = this.scopeRoot(scope);
     const relative = this.normalizeRelativePath(scopeRoot, filePath);
     if (!relative || relative.startsWith('../')) return null;
@@ -137,7 +138,7 @@ export class AssistantToolingHelpers {
     return slug ? this.toAssistantSlug(slug, '') : null;
   }
 
-  public resolveScopedFilePath(scope: 'plugins' | 'themes', slug: string, filePathInput: string): string {
+  public resolveScopedFilePath(scope: ExtensionArea, slug: string, filePathInput: string): string {
     const scopeRoot = this.scopeRoot(scope);
     let resolvedPath = '';
 
@@ -188,7 +189,7 @@ export class AssistantToolingHelpers {
   } {
     const { filePath, from, to, caseSensitive, dryRun } = options;
     const stat = fs.statSync(filePath);
-    if (!stat.isFile() || stat.size > MAX_TEXT_FILE_BYTES) {
+    if (!stat.isFile() || stat.size > AssistantToolingHelpers.MAX_TEXT_FILE_BYTES) {
       throw new Error('Target file is too large for safe assistant replacement');
     }
     const source = fs.readFileSync(filePath, 'utf8');
@@ -208,8 +209,8 @@ export class AssistantToolingHelpers {
     const replaced = source.replace(pattern, to);
     const fromIndex = source.toLowerCase().indexOf(from.toLowerCase());
     const previewStart = Math.max(0, fromIndex - 80);
-    const beforeSnippet = source.slice(previewStart, Math.min(source.length, previewStart + DEFAULT_PREVIEW_CHARS));
-    const afterSnippet = replaced.slice(previewStart, Math.min(replaced.length, previewStart + DEFAULT_PREVIEW_CHARS));
+    const beforeSnippet = source.slice(previewStart, Math.min(source.length, previewStart + AssistantToolingHelpers.DEFAULT_PREVIEW_CHARS));
+    const afterSnippet = replaced.slice(previewStart, Math.min(replaced.length, previewStart + AssistantToolingHelpers.DEFAULT_PREVIEW_CHARS));
     const plannedBackupPath = this.buildAssistantFileBackupPath(filePath);
     let backupPath: string | undefined;
 
@@ -246,7 +247,7 @@ export class AssistantToolingHelpers {
     );
   }
 
-  private scopeRoot(scope: 'plugins' | 'themes'): string {
+  private scopeRoot(scope: ExtensionArea): string {
     return AssistantToolingFileHelpers.scopeRoot(scope);
   }
 

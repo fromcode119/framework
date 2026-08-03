@@ -1,4 +1,4 @@
-import { MarketplaceClientConstants } from './marketplace-client-constants';
+import { MarketplaceClientConstants } from '@marketplace-client/constants/marketplace-client.constants';
 
 export class MarketplaceUrlService {
   static resolveCatalogUrl(url?: string): string {

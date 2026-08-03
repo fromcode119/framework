@@ -1,11 +1,13 @@
-import type { PluginHealthEntry, PluginHealthEntryInput, PluginHealthReport } from './plugin-health-report.interfaces';
-import { PluginRegistryHealth } from './plugin-health.enums';
-import { PluginHealthBucket } from './plugin-health.enums';
-import { PluginState } from './plugin-state.enums';
+import type { IPluginHealthEntry } from '@core/plugin/services/interfaces/plugin-health-entry.interface';
+import type { IPluginHealthEntryInput } from '@core/plugin/services/interfaces/plugin-health-entry-input.interface';
+import type { IPluginHealthReport } from '@core/plugin/services/interfaces/plugin-health-report.interface';
+import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
+import { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class PluginHealthReportService {
-  static buildReport(inputs: PluginHealthEntryInput[]): PluginHealthReport {
-    const entries: PluginHealthEntry[] = (inputs || []).map((p) => {
+  static buildReport(inputs: IPluginHealthEntryInput[]): IPluginHealthReport {
+    const entries: IPluginHealthEntry[] = (inputs || []).map((p) => {
       const manifestCaps = p.manifestCapabilities || [];
       const approvedCaps = p.approvedCapabilities || [];
       const addedCapabilities = manifestCaps.filter((c) => !approvedCaps.includes(c)).sort();

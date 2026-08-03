@@ -1,4 +1,4 @@
-import { BaseService } from './base-service';
+import { BaseService } from '@core/services/base-service';
 
 /**
  * Content Service.

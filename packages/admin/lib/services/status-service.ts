@@ -1,6 +1,5 @@
-import { BaseService } from './base-service';
-
-type StatusVariant = 'success' | 'warning' | 'error' | 'info' | 'default';
+import { BaseService } from '@/lib/services/base-service';
+import { StatusVariant } from '@/lib/enums/status-variant.enum';
 
 /**
  * Service for resolving status labels, colours, and display variants.
@@ -35,16 +34,16 @@ export class StatusService extends BaseService {
   };
 
   private static readonly STATUS_VARIANTS: Record<string, StatusVariant> = {
-    active: 'success', completed: 'success', published: 'success',
-    shipped: 'success', delivered: 'success', paid: 'success',
-    verified: 'success',
-    pending: 'warning', processing: 'warning', in_transit: 'warning',
-    out_for_delivery: 'warning', partial: 'warning', unpaid: 'warning',
-    overdue: 'warning', unverified: 'warning',
-    cancelled: 'error', failed: 'error', returned: 'error', lost: 'error',
-    voided: 'error', suspended: 'error',
-    draft: 'default', archived: 'default', inactive: 'default',
-    refunded: 'info',
+    active: StatusVariant.SUCCESS, completed: StatusVariant.SUCCESS, published: StatusVariant.SUCCESS,
+    shipped: StatusVariant.SUCCESS, delivered: StatusVariant.SUCCESS, paid: StatusVariant.SUCCESS,
+    verified: StatusVariant.SUCCESS,
+    pending: StatusVariant.WARNING, processing: StatusVariant.WARNING, in_transit: StatusVariant.WARNING,
+    out_for_delivery: StatusVariant.WARNING, partial: StatusVariant.WARNING, unpaid: StatusVariant.WARNING,
+    overdue: StatusVariant.WARNING, unverified: StatusVariant.WARNING,
+    cancelled: StatusVariant.ERROR, failed: StatusVariant.ERROR, returned: StatusVariant.ERROR, lost: StatusVariant.ERROR,
+    voided: StatusVariant.ERROR, suspended: StatusVariant.ERROR,
+    draft: StatusVariant.DEFAULT, archived: StatusVariant.DEFAULT, inactive: StatusVariant.DEFAULT,
+    refunded: StatusVariant.INFO,
   };
 
   private static readonly STATUS_COLORS: Record<string, string> = {
@@ -83,6 +82,6 @@ export class StatusService extends BaseService {
    */
   getStatusVariant(status: unknown): StatusVariant {
     const key = String(status ?? '').toLowerCase().replace(/[-\s]/g, '_');
-    return StatusService.STATUS_VARIANTS[key] ?? 'default';
+    return StatusService.STATUS_VARIANTS[key] ?? StatusVariant.DEFAULT;
   }
 }

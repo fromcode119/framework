@@ -1,4 +1,7 @@
 import { CoreServices, AccountRouteUtils } from '@fromcode119/core';
+import { PluginDefaultPageContractKind } from '@fromcode119/core';
+import { PluginDefaultPageContractMaterializationMode } from '@fromcode119/core';
+import { PluginDefaultPageContractDependency } from '@fromcode119/core';
 
 /**
  * Registers the account page routes at the framework level (namespace/slug `system`), so `/account`
@@ -14,23 +17,23 @@ export class FrameworkAccountPageContractService {
         contracts: [
           {
             key: 'account-index',
-            kind: 'index',
+            kind: PluginDefaultPageContractKind.INDEX,
             defaultSlug: AccountRouteUtils.base(),
             capability: 'frontend',
             recipe: 'account.shell',
-            materializationMode: 'adopt-only',
-            dependencies: ['settings'],
+            materializationMode: PluginDefaultPageContractMaterializationMode.ADOPT_ONLY,
+            dependencies: [PluginDefaultPageContractDependency.SETTINGS],
             adoptionHints: [AccountRouteUtils.base(), AccountRouteUtils.base().replace(/^\//, '')],
             required: true,
           },
           {
             key: 'account-section',
-            kind: 'detail',
+            kind: PluginDefaultPageContractKind.DETAIL,
             defaultSlug: AccountRouteUtils.sectionPattern(),
             capability: 'frontend',
             recipe: 'account.shell',
-            materializationMode: 'singleton-document',
-            dependencies: ['settings'],
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
+            dependencies: [PluginDefaultPageContractDependency.SETTINGS],
             adoptionHints: [AccountRouteUtils.sectionPattern()],
             required: true,
           },

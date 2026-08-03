@@ -1,14 +1,14 @@
 import path from 'path';
 import fs from 'fs';
 import semver from 'semver';
-import { Logger } from '../logging';
-import { ProjectPaths } from '../config/paths';
+import { Logger } from '@core/logging';
+import { ProjectPaths } from '@core/config/paths';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
-import { PlatformSettingsService } from '../management/platform-settings-service';
-import { AppearanceInstallerService } from './appearance-installer-service';
-import type { AppearanceManifest } from './appearance-manifest.interfaces';
-import type { AppearanceSummary } from './appearance-summary.interfaces';
-import type { AppearanceCatalogEntry } from './appearance-catalog-entry.interfaces';
+import { PlatformSettingsService } from '@core/management/platform-settings-service';
+import { AppearanceInstallerService } from '@core/appearance/appearance-installer-service';
+import type { IAppearanceManifest } from '@core/appearance/interfaces/appearance-manifest.interface';
+import type { IAppearanceSummary } from '@core/appearance/interfaces/appearance-summary.interface';
+import type { IAppearanceCatalogEntry } from '@core/appearance/interfaces/appearance-catalog-entry.interface';
 
 /**
  * Manages admin appearances as a SETTINGS concern (distinct from the plugin/theme marketplace UI):
@@ -25,8 +25,8 @@ export class AppearanceManager {
     private readonly appearancesRoot: string = ProjectPaths.getAppearancesDir(),
   ) {}
 
-  list(): AppearanceSummary[] {
-    const items: AppearanceSummary[] = [{ slug: 'default', name: 'Default', version: '', builtIn: true }];
+  list(): IAppearanceSummary[] {
+    const items: IAppearanceSummary[] = [{ slug: 'default', name: 'Default', version: '', builtIn: true }];
     try {
       if (fs.existsSync(this.appearancesRoot)) {
         for (const child of fs.readdirSync(this.appearancesRoot)) {
@@ -59,7 +59,7 @@ export class AppearanceManager {
    * already installed and whether the catalog offers a newer version. Returns [] when the marketplace
    * is disabled or unreachable — the UI then simply shows no "available to install" / update options.
    */
-  async catalog(): Promise<AppearanceCatalogEntry[]> {
+  async catalog(): Promise<IAppearanceCatalogEntry[]> {
     const client = await this.resolveClient();
     if (!client) return [];
     let appearances: Awaited<ReturnType<MarketplaceClient['fetch']>>['appearances'] = [];
@@ -93,14 +93,14 @@ export class AppearanceManager {
     return !!next && !!now && semver.gt(next, now);
   }
 
-  async installFromUrl(url: string): Promise<AppearanceManifest> {
+  async installFromUrl(url: string): Promise<IAppearanceManifest> {
     const manifest = await (await this.getInstaller()).installFromUrl(url);
     // Remember where it came from so the UI can offer a one-click update (re-install).
     this.stampSourceUrl(manifest.slug, url);
     return manifest;
   }
 
-  async installFromZip(filePath: string): Promise<AppearanceManifest> {
+  async installFromZip(filePath: string): Promise<IAppearanceManifest> {
     return (await this.getInstaller()).installFromZip(filePath);
   }
 
@@ -109,7 +109,7 @@ export class AppearanceManager {
    * download URL and unpacks it into the appearances dir. This is how the Settings UI installs a
    * marketplace appearance and how the per-appearance "Update" pulls the catalog's latest version.
    */
-  async installFromCatalog(slug: string): Promise<AppearanceManifest> {
+  async installFromCatalog(slug: string): Promise<IAppearanceManifest> {
     const client = await this.resolveClient();
     if (!client) throw new Error('The marketplace is disabled.');
     const entry = (await client.fetch()).appearances?.find((a) => a.slug === slug);

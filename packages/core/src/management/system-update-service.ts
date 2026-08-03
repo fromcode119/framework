@@ -1,14 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import { BackupService } from './backup-service';
-import { Logger } from '../logging';
+import { BackupService } from '@core/management/backup-service';
+import { Logger } from '@core/logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';
-import { ProjectPaths } from '../config/paths';
-import { SafeArchive } from '../security/safe-archive';
-import { PlatformSettingsService } from './platform-settings-service';
-import { PluginRuntimeRestartService } from '../plugin/services/plugin-runtime-restart-service';
+import { ProjectPaths } from '@core/config/paths';
+import { SafeArchive } from '@core/security/safe-archive';
+import { PlatformSettingsService } from '@core/management/platform-settings-service';
+import { PluginRuntimeRestartService } from '@core/plugin/services/plugin-runtime-restart-service';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });

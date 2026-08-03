@@ -1,9 +1,11 @@
 /** ThemeScaffoldService — creates new theme boilerplate on disk. Extracted from ThemeManager (ARC-007). */
 
 import path from 'path';
+import { SystemConstants } from '@core/constants/system.constants';
 import fs from 'fs';
-import { Logger } from '../logging';
-import type { ScaffoldThemeInput, ScaffoldThemeResult } from './theme-scaffold-service.interfaces';
+import { Logger } from '@core/logging';
+import type { IScaffoldThemeInput } from '@core/theme/interfaces/scaffold-theme-input.interface';
+import type { IScaffoldThemeResult } from '@core/theme/interfaces/scaffold-theme-result.interface';
 
 export class ThemeScaffoldService {
   constructor(
@@ -14,7 +16,7 @@ export class ThemeScaffoldService {
     private readonly activateTheme: (slug: string) => Promise<void>,
   ) {}
 
-  async scaffoldTheme(input: ScaffoldThemeInput): Promise<ScaffoldThemeResult> {
+  async scaffoldTheme(input: IScaffoldThemeInput): Promise<IScaffoldThemeResult> {
     const slug = String(input.slug || '').trim().toLowerCase();
     const name = String(input.name || '').trim();
     const description = String(input.description || '').trim();
@@ -27,7 +29,7 @@ export class ThemeScaffoldService {
     if (this.hasTheme(slug)) throw new Error(`Theme "${slug}" already exists.`);
     if (fs.existsSync(themePath)) throw new Error(`Theme path already exists: ${themePath}`);
 
-    fs.mkdirSync(path.join(themePath, 'ui'), { recursive: true });
+    fs.mkdirSync(path.join(themePath, SystemConstants.THEME_DIR.UI), { recursive: true });
 
     const themeManifest = {
       slug, name, version, description,
@@ -57,8 +59,8 @@ export class ThemeScaffoldService {
     ].join('\n');
 
     fs.writeFileSync(path.join(themePath, 'theme.json'), `${JSON.stringify(themeManifest, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(path.join(themePath, 'ui', 'index.js'), uiEntry, 'utf8');
-    fs.writeFileSync(path.join(themePath, 'ui', 'theme.css'), themeCss, 'utf8');
+    fs.writeFileSync(path.join(themePath, SystemConstants.THEME_DIR.UI, 'index.js'), uiEntry, 'utf8');
+    fs.writeFileSync(path.join(themePath, SystemConstants.THEME_DIR.UI, 'theme.css'), themeCss, 'utf8');
 
     await this.discoverThemes();
 

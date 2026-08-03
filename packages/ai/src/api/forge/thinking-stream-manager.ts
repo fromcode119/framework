@@ -1,3 +1,4 @@
+
 /**
  * Thinking Stream Manager
  *
@@ -5,17 +6,19 @@
  * into the AI decision-making process. Handles real-time thinking display during planning and execution.
  */
 
-import type { ThinkingSegment, ThinkingStream } from './thinking-stream-manager.interfaces';
+import type { IThinkingSegment } from '@ai/api/forge/interfaces/thinking-segment.interface';
+
+import type { IThinkingStream } from '@ai/api/forge/interfaces/thinking-stream.interface';
 
 export class ThinkingStreamManager {
-  private streams: Map<string, ThinkingStream> = new Map();
-  private segmentCallbacks: Map<string, ((segment: ThinkingSegment) => void)[]> = new Map();
+  private streams: Map<string, IThinkingStream> = new Map();
+  private segmentCallbacks: Map<string, ((segment: IThinkingSegment) => void)[]> = new Map();
 
   /**
    * Start a new thinking stream for a session
    */
-  startStream(sessionId: string): ThinkingStream {
-    const stream: ThinkingStream = {
+  startStream(sessionId: string): IThinkingStream {
+    const stream: IThinkingStream = {
       sessionId,
       startTime: Date.now(),
       segments: [],
@@ -37,16 +40,16 @@ export class ThinkingStreamManager {
    */
   addThinkingSegment(
     sessionId: string,
-    phase: ThinkingSegment['phase'],
+    phase: IThinkingSegment['phase'],
     content: string,
-    metadata?: ThinkingSegment['metadata']
-  ): ThinkingSegment {
+    metadata?: IThinkingSegment['metadata']
+  ): IThinkingSegment {
     const stream = this.streams.get(sessionId);
     if (!stream) {
       throw new Error(`No thinking stream found for session ${sessionId}`);
     }
 
-    const segment: ThinkingSegment = {
+    const segment: IThinkingSegment = {
       id: `${sessionId}-${stream.segments.length}-${Date.now()}`,
       timestamp: Date.now(),
       phase,
@@ -59,7 +62,7 @@ export class ThinkingStreamManager {
     // Update phase progress
     const phaseSegments = stream.segments.filter(s => s.phase === phase).length;
     const totalPhaseSegments = Math.max(1, stream.segments.filter(s => s.phase === phase).length);
-    stream.phaseProgress[phase] = Math.min(100, (phaseSegments / totalPhaseSegments) * 100);
+    stream.phaseProgress[phase.value] = Math.min(100, (phaseSegments / totalPhaseSegments) * 100);
 
     // Notify listeners
     this.notifyListeners(sessionId, segment);
@@ -70,7 +73,7 @@ export class ThinkingStreamManager {
   /**
    * Register callback for thinking segments (for real-time UI updates)
    */
-  onThinkingSegment(sessionId: string, callback: (segment: ThinkingSegment) => void): () => void {
+  onThinkingSegment(sessionId: string, callback: (segment: IThinkingSegment) => void): () => void {
     if (!this.segmentCallbacks.has(sessionId)) {
       this.segmentCallbacks.set(sessionId, []);
     }
@@ -91,7 +94,7 @@ export class ThinkingStreamManager {
   /**
    * Complete a thinking stream
    */
-  completeStream(sessionId: string): ThinkingStream | null {
+  completeStream(sessionId: string): IThinkingStream | null {
     const stream = this.streams.get(sessionId);
     if (stream) {
       stream.isComplete = true;
@@ -103,7 +106,7 @@ export class ThinkingStreamManager {
   /**
    * Get thinking stream for session
    */
-  getStream(sessionId: string): ThinkingStream | null {
+  getStream(sessionId: string): IThinkingStream | null {
     return this.streams.get(sessionId) || null;
   }
 
@@ -122,7 +125,7 @@ export class ThinkingStreamManager {
           decision: '⚖️ Deciding:',
           action: '⚡ Acting:',
           verification: '✓ Verifying:',
-        }[segment.phase];
+        }[segment.phase.value];
 
         const confTag = segment.metadata?.confidence
           ? ` [${Math.round(segment.metadata.confidence * 100)}%]`
@@ -154,7 +157,7 @@ export class ThinkingStreamManager {
     };
 
     for (const segment of stream.segments) {
-      phaseBreakdown[segment.phase] = (phaseBreakdown[segment.phase] || 0) + 1;
+      phaseBreakdown[segment.phase.value] = (phaseBreakdown.value[segment.phase.value] || 0) + 1;
     }
 
     const confidences = stream.segments
@@ -185,7 +188,7 @@ export class ThinkingStreamManager {
   /**
    * Notify all listeners of new segment
    */
-  private notifyListeners(sessionId: string, segment: ThinkingSegment): void {
+  private notifyListeners(sessionId: string, segment: IThinkingSegment): void {
     const callbacks = this.segmentCallbacks.get(sessionId);
     if (callbacks) {
       callbacks.forEach(callback => {

@@ -1,8 +1,9 @@
-import type { BrowserCookieOptions } from './browser-state-client.interfaces';
+import type { IBrowserCookieOptions } from '@core/clients/interfaces/browser-cookie-options.interface';
+import { EnvUtils } from '@core/utils/env-utils';
 
 export class BrowserStateClient {
   readQueryParamFromWindow(name: string): string {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return '';
     }
 
@@ -14,7 +15,7 @@ export class BrowserStateClient {
   }
 
   readLocalString(key: string): string {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return '';
     }
 
@@ -22,7 +23,7 @@ export class BrowserStateClient {
   }
 
   readLocalJson<T>(key: string, fallback: T): T {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return fallback;
     }
 
@@ -35,7 +36,7 @@ export class BrowserStateClient {
   }
 
   writeLocalString(key: string, value: string): void {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -43,7 +44,7 @@ export class BrowserStateClient {
   }
 
   writeLocalJson(key: string, value: unknown): void {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -51,7 +52,7 @@ export class BrowserStateClient {
   }
 
   removeLocalValue(key: string): void {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -59,7 +60,7 @@ export class BrowserStateClient {
   }
 
   readSessionJson<T>(key: string, fallback: T): T {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return fallback;
     }
 
@@ -72,7 +73,7 @@ export class BrowserStateClient {
   }
 
   writeSessionJson(key: string, value: unknown): void {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -80,7 +81,7 @@ export class BrowserStateClient {
   }
 
   readCookie(name: string): string {
-    if (typeof document === 'undefined') {
+    if (EnvUtils.isServer()) {
       return '';
     }
 
@@ -100,8 +101,8 @@ export class BrowserStateClient {
     }
   }
 
-  writeCookie(name: string, value: string, options: BrowserCookieOptions = {}): void {
-    if (typeof document === 'undefined') {
+  writeCookie(name: string, value: string, options: IBrowserCookieOptions = {}): void {
+    if (EnvUtils.isServer()) {
       return;
     }
 
@@ -123,7 +124,7 @@ export class BrowserStateClient {
     document.cookie = parts.join('; ');
   }
 
-  clearCookie(name: string, options: BrowserCookieOptions = {}): void {
+  clearCookie(name: string, options: IBrowserCookieOptions = {}): void {
     this.writeCookie(name, '', {
       ...options,
       maxAgeSeconds: 0,

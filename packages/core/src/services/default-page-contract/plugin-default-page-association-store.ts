@@ -1,10 +1,11 @@
-import { SystemConstants } from '../../constants';
-import type {
-  PluginDefaultPageContractBackfillAssociationSnapshot,
-  ResolvedPluginDefaultPageContract,
-} from '../../types';
-import { BaseService } from '../base-service';
-import type { PluginManagerInterface } from '../../plugin/context/utils.interfaces';
+import { SystemConstants } from '@core/constants/system.constants';
+import type { IPluginDefaultPageContractBackfillAssociationSnapshot } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-snapshot.interface';
+import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
+import { BaseService } from '@core/services/base-service';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
+import { PluginDefaultPageContractResolutionStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-status.enum';
+import { PluginDefaultPageContractAssociationPersistStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-association-persist-status.enum';
 
 /**
  * Association-snapshot persistence for the default-page materialization runtime. Reads and
@@ -15,7 +16,7 @@ import type { PluginManagerInterface } from '../../plugin/context/utils.interfac
 export class PluginDefaultPageAssociationStore extends BaseService {
   static readonly ASSOCIATIONS_META_KEY = 'default_page_contract_associations';
 
-  constructor(private readonly manager: PluginManagerInterface) {
+  constructor(private readonly manager: IPluginManagerInterface) {
     super();
   }
 
@@ -23,7 +24,7 @@ export class PluginDefaultPageAssociationStore extends BaseService {
     return 'PluginDefaultPageAssociationStore';
   }
 
-  async loadAssociationSnapshot(): Promise<PluginDefaultPageContractBackfillAssociationSnapshot> {
+  async loadAssociationSnapshot(): Promise<IPluginDefaultPageContractBackfillAssociationSnapshot> {
     const row = await this.manager.db.findOne(SystemConstants.TABLE.META, {
       key: PluginDefaultPageAssociationStore.ASSOCIATIONS_META_KEY,
     });
@@ -31,25 +32,25 @@ export class PluginDefaultPageAssociationStore extends BaseService {
     return parsed || {};
   }
 
-  private parseAssociationSnapshot(value: any): PluginDefaultPageContractBackfillAssociationSnapshot | null {
+  private parseAssociationSnapshot(value: any): IPluginDefaultPageContractBackfillAssociationSnapshot | null {
     if (!value) {
       return null;
     }
 
     if (typeof value === 'object') {
-      return value as PluginDefaultPageContractBackfillAssociationSnapshot;
+      return value as IPluginDefaultPageContractBackfillAssociationSnapshot;
     }
 
     try {
-      return JSON.parse(String(value)) as PluginDefaultPageContractBackfillAssociationSnapshot;
+      return JSON.parse(String(value)) as IPluginDefaultPageContractBackfillAssociationSnapshot;
     } catch {
       return null;
     }
   }
 
   createSiteStateSnapshot(
-    snapshot: PluginDefaultPageContractBackfillAssociationSnapshot,
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
+    snapshot: IPluginDefaultPageContractBackfillAssociationSnapshot,
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
   ) {
     const runtimeParameterizedContracts = new Set(
       resolvedContracts
@@ -62,8 +63,8 @@ export class PluginDefaultPageAssociationStore extends BaseService {
           return null;
         }
 
-        return [canonicalKey, { status: 'ready' as const, prerequisitesReady: true, reasons: ['materialized'] }];
-      }).filter(Boolean) as Array<[string, { status: 'ready'; prerequisitesReady: true; reasons: string[] }]>,
+        return [canonicalKey, { status: PluginDefaultPageContractResolutionStatus.READY, prerequisitesReady: true, reasons: ['materialized'] }];
+      }).filter(Boolean) as Array<[string, { status: PluginDefaultPageContractResolutionStatus; prerequisitesReady: true; reasons: string[] }]>,
     );
 
     return { byCanonicalKey };
@@ -75,16 +76,16 @@ export class PluginDefaultPageAssociationStore extends BaseService {
     const existingPage = snapshot.byPageId?.[String(pageId)];
 
     if (existingCanonical?.pageId === pageId && existingPage?.canonicalKey === canonicalKey) {
-      return { canonicalKey, pageId, status: 'noop' as const };
+      return { canonicalKey, pageId, status: PluginDefaultPageContractAssociationPersistStatus.NOOP };
     }
     if (existingCanonical && String(existingCanonical.pageId) !== String(pageId)) {
-      return { canonicalKey, pageId, status: 'conflict' as const, reason: 'contract-already-associated-to-different-page' };
+      return { canonicalKey, pageId, status: PluginDefaultPageContractAssociationPersistStatus.CONFLICT, reason: 'contract-already-associated-to-different-page' };
     }
     if (existingPage && existingPage.canonicalKey !== canonicalKey) {
-      return { canonicalKey, pageId, status: 'conflict' as const, reason: 'matched-page-already-associated-to-different-contract' };
+      return { canonicalKey, pageId, status: PluginDefaultPageContractAssociationPersistStatus.CONFLICT, reason: 'matched-page-already-associated-to-different-contract' };
     }
 
-    const nextSnapshot: PluginDefaultPageContractBackfillAssociationSnapshot = {
+    const nextSnapshot: IPluginDefaultPageContractBackfillAssociationSnapshot = {
       byCanonicalKey: {
         ...(snapshot.byCanonicalKey || {}),
         [canonicalKey]: { canonicalKey, pageId },
@@ -96,10 +97,10 @@ export class PluginDefaultPageAssociationStore extends BaseService {
     };
     await this.saveAssociationSnapshot(nextSnapshot);
 
-    return { canonicalKey, pageId, status: 'applied' as const };
+    return { canonicalKey, pageId, status: PluginDefaultPageContractAssociationPersistStatus.APPLIED };
   }
 
-  private async saveAssociationSnapshot(snapshot: PluginDefaultPageContractBackfillAssociationSnapshot): Promise<void> {
+  private async saveAssociationSnapshot(snapshot: IPluginDefaultPageContractBackfillAssociationSnapshot): Promise<void> {
     const existing = await this.manager.db.findOne(SystemConstants.TABLE.META, {
       key: PluginDefaultPageAssociationStore.ASSOCIATIONS_META_KEY,
     });
@@ -116,8 +117,8 @@ export class PluginDefaultPageAssociationStore extends BaseService {
     });
   }
 
-  private isRuntimeParameterizedContract(contract: ResolvedPluginDefaultPageContract): boolean {
-    return contract.materializationMode === 'singleton-document' && this.hasPathParameters(contract.effectiveSlug);
+  private isRuntimeParameterizedContract(contract: IResolvedPluginDefaultPageContract): boolean {
+    return contract.materializationMode === PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT && this.hasPathParameters(contract.effectiveSlug);
   }
 
   private hasPathParameters(value: string): boolean {

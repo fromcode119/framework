@@ -1,15 +1,15 @@
-import type { EmailDriver, EmailOptions } from './email-factory.interfaces';
-import type { EmailDriverCreator } from './email-factory.types';
+import type { IEmailDriver } from '@email/interfaces/email-driver.interface';
 
+import type { IEmailDriverCreator } from '@email/interfaces/email-driver-creator.interface';
 
 export class EmailFactory {
-  private static drivers: Map<string, EmailDriverCreator> = new Map();
+  private static drivers: Map<string, IEmailDriverCreator> = new Map();
 
-  static register(name: string, creator: EmailDriverCreator) {
+  static register(name: string, creator: IEmailDriverCreator) {
     this.drivers.set(name, creator);
   }
 
-  static create(name: string, config: any): EmailDriver {
+  static create(name: string, config: any): IEmailDriver {
     if (this.drivers.size === 0) {
       this.registerDefaults();
     }
@@ -23,11 +23,11 @@ export class EmailFactory {
 
   private static registerDefaults() {
     this.register('smtp', (config) => {
-      const { SMTPDriver } = require('./drivers/smtp');
+      const { SMTPDriver } = require('@email/drivers/smtp');
       return new SMTPDriver(config);
     });
     this.register('mock', () => {
-      const { MockEmailDriver } = require('./drivers/mock');
+      const { MockEmailDriver } = require('@email/drivers/mock');
       return new MockEmailDriver();
     });
   }

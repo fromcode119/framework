@@ -1,5 +1,6 @@
 import React from 'react';
-import { RuntimeConstants } from './runtime-constants';
+import { RuntimeConstants } from '@core/constants/runtime.constants';
+import { EnvUtils } from '@core/utils/env-utils';
 
 /**
  * Lazy-loading cache of `publicSettings` from /api/v1/system/frontend.
@@ -43,7 +44,7 @@ export class PublicSettings {
   }
 
   static subscribe(handler: () => void): () => void {
-    if (typeof window === 'undefined') return () => {};
+    if (EnvUtils.isServer()) return () => {};
     PublicSettings.subscribers.add(handler);
     window.addEventListener(RuntimeConstants.FRONTEND.EVENTS.PUBLIC_SETTINGS_LOADED, handler);
     return () => {
@@ -79,13 +80,13 @@ export class PublicSettings {
 
   private static resolveApiBaseUrl(explicit?: string): string {
     if (explicit) return explicit;
-    if (typeof window === 'undefined') return '';
+    if (EnvUtils.isServer()) return '';
     const w = window as any;
     return String(w.FROMCODE_API_URL || w.Fromcode?.apiUrl || w.location?.origin || '').replace(/\/+$/, '');
   }
 
   private static emit(): void {
-    if (typeof window === 'undefined') return;
+    if (EnvUtils.isServer()) return;
     window.dispatchEvent(new Event(RuntimeConstants.FRONTEND.EVENTS.PUBLIC_SETTINGS_LOADED));
   }
 }

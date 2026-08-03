@@ -1,20 +1,18 @@
-import type {
-  PluginDefaultPageContractBackfillAssociationConflicts,
-  PluginDefaultPageContractBackfillAssociationMaps,
-  PluginDefaultPageContractBackfillAssociationRecord,
-  PluginDefaultPageContractBackfillAssociationSnapshot,
-} from '../../types';
-import { BaseService } from '../base-service';
+import type { IPluginDefaultPageContractBackfillAssociationConflicts } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-conflicts.interface';
+import type { IPluginDefaultPageContractBackfillAssociationMaps } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-maps.interface';
+import type { IPluginDefaultPageContractBackfillAssociationRecord } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-record.interface';
+import type { IPluginDefaultPageContractBackfillAssociationSnapshot } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-snapshot.interface';
+import { BaseService } from '@core/services/base-service';
 
 export class PluginDefaultPageBackfillAssociationService extends BaseService {
   get serviceName(): string {
     return 'PluginDefaultPageBackfillAssociationService';
   }
 
-  createMaps(existingAssociations?: PluginDefaultPageContractBackfillAssociationSnapshot): PluginDefaultPageContractBackfillAssociationMaps {
-    const byCanonicalKey = new Map<string, PluginDefaultPageContractBackfillAssociationRecord>();
-    const byPageId = new Map<string, PluginDefaultPageContractBackfillAssociationRecord>();
-    const conflicts: PluginDefaultPageContractBackfillAssociationConflicts = {
+  createMaps(existingAssociations?: IPluginDefaultPageContractBackfillAssociationSnapshot): IPluginDefaultPageContractBackfillAssociationMaps {
+    const byCanonicalKey = new Map<string, IPluginDefaultPageContractBackfillAssociationRecord>();
+    const byPageId = new Map<string, IPluginDefaultPageContractBackfillAssociationRecord>();
+    const conflicts: IPluginDefaultPageContractBackfillAssociationConflicts = {
       canonicalKeys: new Set<string>(),
       pageIds: new Set<string>(),
     };
@@ -49,9 +47,9 @@ export class PluginDefaultPageBackfillAssociationService extends BaseService {
   }
 
   private setCanonicalMapRecord(
-    byCanonicalKey: Map<string, PluginDefaultPageContractBackfillAssociationRecord>,
-    record: PluginDefaultPageContractBackfillAssociationRecord,
-    conflicts: PluginDefaultPageContractBackfillAssociationConflicts,
+    byCanonicalKey: Map<string, IPluginDefaultPageContractBackfillAssociationRecord>,
+    record: IPluginDefaultPageContractBackfillAssociationRecord,
+    conflicts: IPluginDefaultPageContractBackfillAssociationConflicts,
   ): void {
     const existingRecord = byCanonicalKey.get(record.canonicalKey);
 
@@ -70,9 +68,9 @@ export class PluginDefaultPageBackfillAssociationService extends BaseService {
   }
 
   private setPageMapRecord(
-    byPageId: Map<string, PluginDefaultPageContractBackfillAssociationRecord>,
-    record: PluginDefaultPageContractBackfillAssociationRecord,
-    conflicts: PluginDefaultPageContractBackfillAssociationConflicts,
+    byPageId: Map<string, IPluginDefaultPageContractBackfillAssociationRecord>,
+    record: IPluginDefaultPageContractBackfillAssociationRecord,
+    conflicts: IPluginDefaultPageContractBackfillAssociationConflicts,
   ): void {
     const pageIdKey = String(record.pageId);
 
@@ -96,7 +94,7 @@ export class PluginDefaultPageBackfillAssociationService extends BaseService {
     fallbackCanonicalKey: string | undefined,
     pageId: number | string | undefined,
     canonicalKey: string | undefined,
-  ): PluginDefaultPageContractBackfillAssociationRecord | undefined {
+  ): IPluginDefaultPageContractBackfillAssociationRecord | undefined {
     const normalizedCanonicalKey = String(canonicalKey || fallbackCanonicalKey || '').trim();
     const normalizedPageId = this.normalizeOptionalIdentifier(pageId);
 
@@ -120,8 +118,8 @@ export class PluginDefaultPageBackfillAssociationService extends BaseService {
   }
 
   private isSameAssociation(
-    left: PluginDefaultPageContractBackfillAssociationRecord,
-    right: PluginDefaultPageContractBackfillAssociationRecord,
+    left: IPluginDefaultPageContractBackfillAssociationRecord,
+    right: IPluginDefaultPageContractBackfillAssociationRecord,
   ): boolean {
     return left.canonicalKey === right.canonicalKey && String(left.pageId) === String(right.pageId);
   }

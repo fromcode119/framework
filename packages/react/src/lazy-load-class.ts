@@ -1,5 +1,5 @@
 import type React from 'react';
-import { LazyComponentLoaderService } from './lazy-component-loader-service';
+import { LazyComponentLoaderService } from '@react/lazy-component-loader-service';
 
 export class LazyLoadClass {
   protected static readonly moduleImports: Record<string, () => Promise<Record<string, any>>> = {};

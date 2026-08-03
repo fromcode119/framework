@@ -1,13 +1,17 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SecuritySettingsPageUtils } from './security-settings-page-utils';
-import { SecurityDefenseCards } from './security-defense-cards';
-import type { SecurityDashboardProps } from './security-dashboard.interfaces';
+import type { ReactNode } from 'react';
 
-export class SecurityDashboard extends React.Component<SecurityDashboardProps> {
-  render(): React.ReactNode {
-    const { stats } = this.props;
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { Card } from '@/components/ui/view/card.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { SecuritySettingsPageUtils } from '@/app/settings/security/security-settings-page-utils';
+import { SecurityDefenseCards } from '@/app/settings/security/security-defense-cards';
+import { AdminClass } from '@/lib/admin-class';
+
+export class SecurityDashboard extends PureReactor {
+  @prop declare stats: any;
+
+  render(): ReactNode {
+    const stats = this.stats;
     const sandboxHeap = stats?.sandbox?.heap;
     const sandboxUsedMB = SecuritySettingsPageUtils.bytesToMB(sandboxHeap?.used_heap_size);
     const sandboxTotalMB = SecuritySettingsPageUtils.bytesToMB(sandboxHeap?.total_heap_size);
@@ -108,11 +112,11 @@ export class SecurityDashboard extends React.Component<SecurityDashboardProps> {
               This value reports <strong>only isolated-vm sandbox heap memory</strong>.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-500/10 border border-emerald-200/70 dark:border-emerald-500/20">
+              <div className="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-500/10 border border-emerald-200/70 dark:border-emerald-500/20">
                 <p className="text-[10px] font-semibold tracking-wide text-emerald-700 dark:text-emerald-300 uppercase">Included</p>
                 <p className="text-sm mt-2 text-emerald-900 dark:text-emerald-200">V8 isolate heap allocations for sandboxed plugin contexts.</p>
               </div>
-              <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20">
+              <div className="p-4 rounded-xl bg-amber-50/70 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20">
                 <p className="text-[10px] font-semibold tracking-wide text-amber-700 dark:text-amber-300 uppercase">Not Included</p>
                 <ul className="mt-2 text-sm text-amber-900 dark:text-amber-200 space-y-1">
                   <li>full Node process RSS</li>
@@ -127,19 +131,19 @@ export class SecurityDashboard extends React.Component<SecurityDashboardProps> {
         {stats.pluginIsolation && (
           <Card title="Plugin Isolation Coverage">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+              <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
                 <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Total Plugins</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.totalPlugins}</p>
               </div>
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+              <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
                 <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Active Plugins</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.activePlugins}</p>
               </div>
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+              <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
                 <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Sandbox Active</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.sandboxActivePlugins}</p>
               </div>
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
+              <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
                 <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Sandbox Runtime</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.sandboxRuntimeActivePlugins ?? 0}</p>
               </div>

@@ -1,6 +1,6 @@
-import type { DatabaseDialectResolver } from '../database-dialect-resolver.interfaces';
+import type { IDatabaseDialectResolver } from '@database/dialects/interfaces/database-dialect-resolver.interface';
 
-export class MysqlDialectResolver implements DatabaseDialectResolver {
+export class MysqlDialectResolver implements IDatabaseDialectResolver {
   readonly dialect = 'mysql';
 
   matches(connection: string): boolean {

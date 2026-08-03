@@ -1,8 +1,9 @@
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
-import type { IntegrationTypeDefinition } from '../integration-registry.interfaces';
+import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 
 export class CacheIntegrationDefinition {
-  static readonly definition: IntegrationTypeDefinition<CacheManager> = {
+  static readonly definition: IIntegrationTypeDefinition<CacheManager> = {
   key: 'cache',
   label: 'System Cache',
   description: 'Provider used for system-level caching and plugin data storage.',
@@ -29,7 +30,7 @@ export class CacheIntegrationDefinition {
         {
           name: 'url',
           label: 'Redis URL',
-          type: 'text',
+          type: IntegrationConfigFieldType.TEXT,
           required: true,
           placeholder: 'redis://localhost:6379'
         }

@@ -1,3 +1,6 @@
+import { FieldWidth } from '@fromcode119/core/client';
+import { ThemeMode } from '@fromcode119/core/client';
+
 /**
  * Utility class for field rendering operations.
  * Handles text resolution from localized or complex field values.
@@ -66,20 +69,20 @@ export class FieldRendererUtils {
    * Computes the outer wrapper className for a rendered field: the col-span rule
    * (wide controls span the full grid) plus the read-only framed-box styling.
    */
-  static wrapperClassName(field: any, isFieldReadOnly: boolean, theme: 'light' | 'dark'): string {
+  static wrapperClassName(field: any, isFieldReadOnly: boolean, theme: ThemeMode): string {
     const colSpan =
       field.type === 'textarea' ||
       field.type === 'richText' ||
       field.type === 'array' ||
       (field.type === 'relationship' && field.hasMany) ||
       field.type === 'json' ||
-      field.admin?.width === 'full' ||
+      FieldWidth.resolve(field.admin?.width) === FieldWidth.FULL ||
       field.admin?.component === 'TagField' ||
       field.admin?.component === 'Tags'
         ? 'col-span-full' : '';
 
     const readOnlyBox = isFieldReadOnly
-      ? theme === 'dark'
+      ? theme === ThemeMode.DARK
         ? 'rounded-xl border border-slate-800/80 bg-slate-900/20 p-2.5'
         : 'rounded-xl border border-slate-200 bg-slate-50/70 p-2.5'
       : '';

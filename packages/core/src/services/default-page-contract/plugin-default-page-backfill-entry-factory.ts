@@ -1,11 +1,13 @@
-import type {
-  PluginDefaultPageContractBackfillAssociationMaps,
-  PluginDefaultPageContractBackfillAssociationRecord,
-  PluginDefaultPageContractBackfillPlanEntry,
-  ResolvedPluginDefaultPageContract,
-} from '../../types';
-import { BaseService } from '../base-service';
-import { PluginDefaultPageBackfillMatchingService } from './plugin-default-page-backfill-matching-service';
+import type { IPluginDefaultPageContractBackfillAssociationMaps } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-maps.interface';
+import type { IPluginDefaultPageContractBackfillAssociationRecord } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-record.interface';
+import type { IPluginDefaultPageContractBackfillPlanEntry } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-plan-entry.interface';
+import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
+import { BaseService } from '@core/services/base-service';
+import { PluginDefaultPageBackfillMatchingService } from '@core/services/default-page-contract/plugin-default-page-backfill-matching-service';
+import { PluginDefaultPageContractBackfillAction } from '@core/default-page-contract/enums/plugin-default-page-contract-backfill-action.enum';
+import { PluginDefaultPageContractBackfillStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-backfill-status.enum';
+import { PluginDefaultPageContractResolutionStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-status.enum';
+import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
 
 /** Builds a single backfill plan entry from a resolved contract plus candidate-page and
  * association maps. Extracted from PluginDefaultPageBackfillService; behavior is unchanged. */
@@ -19,38 +21,38 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
   }
 
   createEntry(
-    contract: ResolvedPluginDefaultPageContract,
+    contract: IResolvedPluginDefaultPageContract,
     pages: ReturnType<PluginDefaultPageBackfillMatchingService['createCandidatePages']>,
-    associations: PluginDefaultPageContractBackfillAssociationMaps,
-  ): PluginDefaultPageContractBackfillPlanEntry {
+    associations: IPluginDefaultPageContractBackfillAssociationMaps,
+  ): IPluginDefaultPageContractBackfillPlanEntry {
     const lookupCandidates = this.matchingService.buildLookupCandidates(contract);
 
-    if (contract.status === 'skipped') {
-      return this.createBaseEntry(contract, lookupCandidates, 'skipped', 'skipped', undefined, undefined, contract.reasons);
+    if (contract.status === PluginDefaultPageContractResolutionStatus.SKIPPED) {
+      return this.createBaseEntry(contract, lookupCandidates, PluginDefaultPageContractBackfillAction.SKIPPED, PluginDefaultPageContractBackfillStatus.SKIPPED, undefined, undefined, contract.reasons);
     }
 
-    if (contract.status === 'blocked') {
-      return this.createBaseEntry(contract, lookupCandidates, 'blocked', 'blocked', undefined, undefined, contract.reasons);
+    if (contract.status === PluginDefaultPageContractResolutionStatus.BLOCKED) {
+      return this.createBaseEntry(contract, lookupCandidates, PluginDefaultPageContractBackfillAction.BLOCKED, PluginDefaultPageContractBackfillStatus.BLOCKED, undefined, undefined, contract.reasons);
     }
 
     if (this.isRuntimeParameterizedContract(contract)) {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'deferred',
-        'deferred',
+        PluginDefaultPageContractBackfillAction.DEFERRED,
+        PluginDefaultPageContractBackfillStatus.DEFERRED,
         undefined,
         undefined,
         this.createReasons(contract.reasons, 'parameterized-route-deferred'),
       );
     }
 
-    if (contract.materializationMode === 'per-record-document') {
+    if (contract.materializationMode === PluginDefaultPageContractMaterializationMode.PER_RECORD_DOCUMENT) {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'deferred',
-        'deferred',
+        PluginDefaultPageContractBackfillAction.DEFERRED,
+        PluginDefaultPageContractBackfillStatus.DEFERRED,
         undefined,
         undefined,
         this.createReasons(contract.reasons, 'per-record-document-deferred'),
@@ -68,8 +70,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'ambiguous',
-        'ambiguous',
+        PluginDefaultPageContractBackfillAction.AMBIGUOUS,
+        PluginDefaultPageContractBackfillStatus.AMBIGUOUS,
         undefined,
         undefined,
         this.createReasons(contract.reasons, 'multiple-existing-pages-matched'),
@@ -83,11 +85,11 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
         return this.createBaseEntry(
           contract,
           lookupCandidates,
-          'ambiguous',
-          'ambiguous',
+          PluginDefaultPageContractBackfillAction.AMBIGUOUS,
+          PluginDefaultPageContractBackfillStatus.AMBIGUOUS,
           match.matchedPageId,
           undefined,
-          this.createSnapshotConflictReasons(contract.reasons, match.source),
+          this.createSnapshotConflictReasons(contract.reasons, match.source.value),
         );
       }
 
@@ -97,8 +99,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
         return this.createBaseEntry(
           contract,
           lookupCandidates,
-          'ambiguous',
-          'ambiguous',
+          PluginDefaultPageContractBackfillAction.AMBIGUOUS,
+          PluginDefaultPageContractBackfillStatus.AMBIGUOUS,
           match.matchedPageId,
           undefined,
           this.appendReason(
@@ -111,8 +113,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'associate-existing',
-        'safe-to-associate',
+        PluginDefaultPageContractBackfillAction.ASSOCIATE_EXISTING,
+        PluginDefaultPageContractBackfillStatus.SAFE_TO_ASSOCIATE,
         match.matchedPageId,
         undefined,
         this.createReasons(contract.reasons, `matched-by-${match.source}`),
@@ -122,22 +124,22 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
     return this.createBaseEntry(
       contract,
       lookupCandidates,
-      'blocked',
-      'blocked',
+      PluginDefaultPageContractBackfillAction.BLOCKED,
+      PluginDefaultPageContractBackfillStatus.BLOCKED,
       undefined,
       undefined,
-      this.createReasons(contract.reasons, contract.materializationMode === 'adopt-only' ? 'adopt-only-no-match' : 'no-existing-page-match'),
+      this.createReasons(contract.reasons, contract.materializationMode === PluginDefaultPageContractMaterializationMode.ADOPT_ONLY ? 'adopt-only-no-match' : 'no-existing-page-match'),
     );
   }
 
   private createAssociatedEntry(
-    contract: ResolvedPluginDefaultPageContract,
+    contract: IResolvedPluginDefaultPageContract,
     lookupCandidates: string[],
     matches: ReturnType<PluginDefaultPageBackfillMatchingService['findMatches']>,
     pages: ReturnType<PluginDefaultPageBackfillMatchingService['createCandidatePages']>,
-    associations: PluginDefaultPageContractBackfillAssociationMaps,
-    existingAssociation: PluginDefaultPageContractBackfillAssociationRecord,
-  ): PluginDefaultPageContractBackfillPlanEntry {
+    associations: IPluginDefaultPageContractBackfillAssociationMaps,
+    existingAssociation: IPluginDefaultPageContractBackfillAssociationRecord,
+  ): IPluginDefaultPageContractBackfillPlanEntry {
     const associatedPageId = existingAssociation.pageId;
     const associatedPageExists = pages.some((page) => this.isSameIdentifier(page.id, associatedPageId));
     const matchingAssociatedPage = matches.find((match) => this.isSameIdentifier(match.matchedPageId, associatedPageId));
@@ -146,11 +148,11 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'ambiguous',
-        'ambiguous',
+        PluginDefaultPageContractBackfillAction.AMBIGUOUS,
+        PluginDefaultPageContractBackfillStatus.AMBIGUOUS,
         matches.length === 1 ? matches[0]?.matchedPageId : undefined,
         associatedPageId,
-        this.createSnapshotConflictReasons(contract.reasons, matches.length === 1 ? matches[0]?.source : undefined),
+        this.createSnapshotConflictReasons(contract.reasons, matches.length === 1 ? matches[0]?.source?.value : undefined),
       );
     }
 
@@ -158,8 +160,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'already-associated',
-        'already-associated',
+        PluginDefaultPageContractBackfillAction.ALREADY_ASSOCIATED,
+        PluginDefaultPageContractBackfillStatus.ALREADY_ASSOCIATED,
         undefined,
         associatedPageId,
         this.createReasons(contract.reasons, 'already-associated'),
@@ -170,8 +172,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'blocked',
-        'blocked',
+        PluginDefaultPageContractBackfillAction.BLOCKED,
+        PluginDefaultPageContractBackfillStatus.BLOCKED,
         undefined,
         associatedPageId,
         this.createReasons(this.appendReason(contract.reasons, 'associated-page-missing-from-snapshot'), 'associated-page-missing-from-snapshot'),
@@ -187,8 +189,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
       return this.createBaseEntry(
         contract,
         lookupCandidates,
-        'ambiguous',
-        'ambiguous',
+        PluginDefaultPageContractBackfillAction.AMBIGUOUS,
+        PluginDefaultPageContractBackfillStatus.AMBIGUOUS,
         undefined,
         associatedPageId,
         this.createReasons(this.appendReason(reasonsWithSnapshot, 'multiple-existing-pages-matched'), 'multiple-existing-pages-matched'),
@@ -198,8 +200,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
     return this.createBaseEntry(
       contract,
       lookupCandidates,
-      'ambiguous',
-      'ambiguous',
+      PluginDefaultPageContractBackfillAction.AMBIGUOUS,
+      PluginDefaultPageContractBackfillStatus.AMBIGUOUS,
       matches[0]?.matchedPageId,
       associatedPageId,
       this.createReasons(
@@ -210,14 +212,14 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
   }
 
   private createBaseEntry(
-    contract: ResolvedPluginDefaultPageContract,
+    contract: IResolvedPluginDefaultPageContract,
     lookupCandidates: string[],
-    action: PluginDefaultPageContractBackfillPlanEntry['action'],
-    status: PluginDefaultPageContractBackfillPlanEntry['status'],
-    matchedPageId?: PluginDefaultPageContractBackfillPlanEntry['matchedPageId'],
-    existingAssociationPageId?: PluginDefaultPageContractBackfillPlanEntry['existingAssociationPageId'],
+    action: IPluginDefaultPageContractBackfillPlanEntry['action'],
+    status: IPluginDefaultPageContractBackfillPlanEntry['status'],
+    matchedPageId?: IPluginDefaultPageContractBackfillPlanEntry['matchedPageId'],
+    existingAssociationPageId?: IPluginDefaultPageContractBackfillPlanEntry['existingAssociationPageId'],
     reasons?: string[],
-  ): PluginDefaultPageContractBackfillPlanEntry {
+  ): IPluginDefaultPageContractBackfillPlanEntry {
     return {
       canonicalKey: contract.canonicalKey,
       namespace: contract.namespace,
@@ -268,7 +270,7 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
   }
 
   private hasAssociationConflict(
-    associations: PluginDefaultPageContractBackfillAssociationMaps,
+    associations: IPluginDefaultPageContractBackfillAssociationMaps,
     canonicalKey: string,
     pageId?: number | string,
   ): boolean {
@@ -283,8 +285,8 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
     return left !== undefined && right !== undefined && String(left) === String(right);
   }
 
-  private isRuntimeParameterizedContract(contract: ResolvedPluginDefaultPageContract): boolean {
-    return contract.materializationMode === 'singleton-document' && this.hasPathParameters(contract.effectiveSlug);
+  private isRuntimeParameterizedContract(contract: IResolvedPluginDefaultPageContract): boolean {
+    return contract.materializationMode === PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT && this.hasPathParameters(contract.effectiveSlug);
   }
 
   private hasPathParameters(value: string): boolean {

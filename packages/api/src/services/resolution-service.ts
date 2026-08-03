@@ -1,19 +1,13 @@
-import {
-  CoreServices,
-  PluginManager,
-  type ResolvedPluginDefaultPageContract,
-  ThemeManager,
-  SystemConstants,
-  type Collection,
-  PluginState,
-} from '@fromcode119/core';
-import { RESTController } from '../controllers/rest/rest-controller';
-import { ResolutionContractMatchService } from './helpers/resolution-contract-match-service';
-import { ResolutionContractPresentationService } from './helpers/resolution-contract-presentation-service';
-import { ResolutionContractPathService } from './helpers/resolution-contract-path-service';
-import { ResolutionCacheService } from './helpers/resolution-cache-service';
-import { ResolutionCollectionScanService } from './helpers/resolution-collection-scan-service';
-import type { ResolutionScanEntry } from './helpers/resolution-collection-scan-service.interfaces';
+import { CoreServices, PluginManager, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { ResolutionContractMatchService } from '@api/services/helpers/resolution-contract-match-service';
+import { ResolutionContractPresentationService } from '@api/services/helpers/resolution-contract-presentation-service';
+import { ResolutionContractPathService } from '@api/services/helpers/resolution-contract-path-service';
+import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
+import { ResolutionCollectionScanService } from '@api/services/helpers/resolution-collection-scan-service';
+import type { IResolutionScanEntry } from '@api/services/helpers/interfaces/resolution-scan-entry.interface';
+import { PluginDefaultPageContractMaterializationMode } from '@fromcode119/core';
+import { PluginDefaultPageContractResolutionStatus } from '@fromcode119/core';
 
 export class ResolutionService {
   private readonly contractMatcher: ResolutionContractMatchService;
@@ -141,7 +135,7 @@ export class ResolutionService {
 
     const activePlugins = new Set(this.manager.getPlugins().filter(p => p.state === PluginState.ACTIVE).map(p => p.manifest.slug));
     const collections = this.manager.registeredCollections;
-    const entries: ResolutionScanEntry[] = [];
+    const entries: IResolutionScanEntry[] = [];
     for (const { collection, pluginSlug } of collections.values()) {
       if (!collection) continue;
       if (pluginSlug !== 'system' && !activePlugins.has(pluginSlug)) continue;
@@ -201,10 +195,10 @@ export class ResolutionService {
   }
 
   private findResolvedCollection(
-    collections: Map<string, { collection: Collection; pluginSlug: string }>,
+    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
     type: string,
     plugin: string,
-  ): Collection | null {
+  ): ICollection | null {
     for (const { collection, pluginSlug } of collections.values()) {
       if (!collection || pluginSlug !== plugin) {
         continue;
@@ -235,9 +229,9 @@ export class ResolutionService {
 
   private applyExactPageContractPresentation(
     doc: any,
-    collection: Collection,
+    collection: ICollection,
     normalizedInput: string,
-    resolvedContracts: ResolvedPluginDefaultPageContract[],
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
   ): any {
     if (!doc || typeof doc !== 'object') {
       return doc;
@@ -265,14 +259,14 @@ export class ResolutionService {
   }
 
   private isMatchingSingletonContract(
-    contract: ResolvedPluginDefaultPageContract,
+    contract: IResolvedPluginDefaultPageContract,
     normalizedInput: string,
   ): boolean {
-    if (!contract.install || contract.status !== 'ready') {
+    if (!contract.install || contract.status !== PluginDefaultPageContractResolutionStatus.READY) {
       return false;
     }
 
-    if (contract.materializationMode !== 'singleton-document') {
+    if (contract.materializationMode !== PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT) {
       return false;
     }
 

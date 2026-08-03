@@ -1,5 +1,5 @@
-import { AuthEmailTemplateFileService } from './auth-email-template-file-service';
-import { AuthEmailTemplateRenderService } from './auth-email-template-render-service';
+import { AuthEmailTemplateFileService } from '@api/controllers/auth/email-templates/auth-email-template-file-service';
+import { AuthEmailTemplateRenderService } from '@api/controllers/auth/email-templates/auth-email-template-render-service';
 
 export class EmailChangeVerificationTemplate {
   static async build(options: {

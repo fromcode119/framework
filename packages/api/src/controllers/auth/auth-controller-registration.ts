@@ -1,3 +1,5 @@
+import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
+import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 /**
  * AuthControllerRegistration — abstract base with registration, email verification,
  * and frontend context helpers. Extracted from AuthControllerLifecycle (ARC-007).
@@ -6,8 +8,9 @@
 
 import { Request, Response } from 'express';
 import { RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
-import { AuthControllerTokenSupport } from './auth-controller-token-support';
-import type { LoginThrottleSettings, LoginThrottleState } from './auth-controller.interfaces';
+import { AuthControllerTokenSupport } from '@api/controllers/auth/auth-controller-token-support';
+import type { ILoginThrottleSettings } from '@api/controllers/auth/interfaces/login-throttle-settings.interface';
+import type { ILoginThrottleState } from '@api/controllers/auth/interfaces/login-throttle-state.interface';
 
 export abstract class AuthControllerRegistration extends AuthControllerTokenSupport {
   protected sanitizeAuthFlowContext(raw: any): Record<string, any> | undefined {
@@ -45,7 +48,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
       firstName: String(firstName || '').trim() || null, lastName: String(lastName || '').trim() || null
     });
 
-    await this.setUserAccountStatus(newUser.id, 'active');
+    await this.setUserAccountStatus(newUser.id, AccountStatus.ACTIVE);
     await this.setForcePasswordReset(newUser.id, false);
     await this.pushPasswordHistory(newUser.id, hashedPassword);
     await this.upsertMeta(this.getPasswordChangedAtKey(newUser.id), new Date().toISOString());
@@ -68,7 +71,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     const token = String(req.body?.token || req.query?.token || '').trim();
     if (!token) return res.status(400).json({ error: 'Verification token is required' });
     const result = await this.consumeEmailVerificationToken(token);
-    if (!result.ok) return res.status(400).json({ error: result.reason === 'expired' ? 'Verification link has expired. Please request a new one.' : 'Invalid verification token' });
+    if (!result.ok) return res.status(400).json({ error: result.reason === TokenErrorReason.EXPIRED ? 'Verification link has expired. Please request a new one.' : 'Invalid verification token' });
     this.manager.hooks.emit('auth:user:verified', { userId: result.userId, email: result.email, context: result.context });
     await this.manager.writeLog('INFO', `Email verified for user ${result.email}`, 'system', { userId: result.userId, email: result.email, context: result.context }).catch(() => {});
     return res.json({ success: true, message: 'Email verified successfully. You can now sign in.', user: { id: String(result.userId), email: result.email } });
@@ -158,7 +161,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     return RequestSurfaceUtils.isFrontendRequestContext(req);
   }
 
-  protected async getVerificationResendThrottleSettings(): Promise<LoginThrottleSettings> {
+  protected async getVerificationResendThrottleSettings(): Promise<ILoginThrottleSettings> {
     return {
       threshold: 5,
       windowMinutes: 10,
@@ -174,18 +177,18 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     return `auth:verification_resend:${this.normalizeEmail(`${normalizedEmail}|${normalizedIp}`)}`;
   }
 
-  protected isVerificationResendLocked(state: LoginThrottleState): boolean {
+  protected isVerificationResendLocked(state: ILoginThrottleState): boolean {
     return this.isLoginLocked(state);
   }
 
-  protected requiresVerificationResendCaptcha(settings: LoginThrottleSettings): boolean {
+  protected requiresVerificationResendCaptcha(settings: ILoginThrottleSettings): boolean {
     return settings.captchaEnabled;
   }
 
   protected async recordVerificationResendAttempt(
     key: string,
-    settings: LoginThrottleSettings
-  ): Promise<LoginThrottleState> {
+    settings: ILoginThrottleSettings
+  ): Promise<ILoginThrottleState> {
     const state = await this.readLoginThrottleState(key);
     const now = Date.now();
     const windowMs = settings.windowMinutes * 60 * 1000;
@@ -198,7 +201,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
       }
     }
 
-    const payload: LoginThrottleState = {
+    const payload: ILoginThrottleState = {
       count: countAttempts,
       firstFailureAt: countAttempts === 1
         ? new Date(now).toISOString()

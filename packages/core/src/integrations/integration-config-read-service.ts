@@ -7,7 +7,7 @@
  * identical and the manager delegates to this service.
  */
 
-import { IntegrationRegistry } from './integration-registry';
+import { IntegrationRegistry } from '@core/integrations/integration-registry';
 
 export class IntegrationConfigReadService {
   constructor(

@@ -1,6 +1,6 @@
-import { Collection, HookManager, PluginManager, CoreServices } from '@fromcode119/core';
-import { RESTController } from '../controllers/rest/rest-controller';
-import type { ShortcodeDefinition } from './shortcode-service.interfaces';
+import { HookManager, PluginManager, CoreServices } from '@fromcode119/core';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import type { IShortcodeDefinition } from '@api/services/interfaces/shortcode-definition.interface';
 
 export class ShortcodeService {
   constructor(
@@ -8,7 +8,7 @@ export class ShortcodeService {
     private restController: RESTController
   ) {}
 
-  async getRegisteredShortcodes(): Promise<ShortcodeDefinition[]> {
+  async getRegisteredShortcodes(): Promise<IShortcodeDefinition[]> {
     const builtIn = this.getBuiltInShortcodes();
     try {
       const hooks = (this.manager as any)?.hooks as HookManager;
@@ -38,13 +38,13 @@ export class ShortcodeService {
               : []
           };
         })
-        .filter(Boolean) as ShortcodeDefinition[];
+        .filter(Boolean) as IShortcodeDefinition[];
     } catch {
       return builtIn;
     }
   }
 
-  private getBuiltInShortcodes(): ShortcodeDefinition[] {
+  private getBuiltInShortcodes(): IShortcodeDefinition[] {
     return [
       {
         name: 'inject',
@@ -75,7 +75,7 @@ export class ShortcodeService {
 
     const maxShortcodes = Math.min(Math.max(options.maxShortcodes || 20, 1), 100);
     const definitions = await this.getRegisteredShortcodes();
-    const shortcodeMap = new Map<string, ShortcodeDefinition>();
+    const shortcodeMap = new Map<string, IShortcodeDefinition>();
 
     definitions.forEach(def => {
       shortcodeMap.set(def.name, def);

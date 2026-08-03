@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import { BaseController, PluginManager, ThemeManager } from '@fromcode119/core';
-import { RESTController } from '../rest/rest-controller';
-import { SystemAdminController } from './system-admin-controller';
-import { SystemControllerRuntime } from './system-controller-runtime';
-import { SystemIntegrationController } from './system-integration-controller';
-import { SystemRuntimeController } from './system-runtime-controller';
-import { SystemUserController } from './system-user-controller';
-import { SystemPeopleController } from './system-people-controller';
+import { RESTController } from '@api/controllers/rest/rest-controller';
+import { SystemAdminController } from '@api/controllers/system/system-admin-controller';
+import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { SystemIntegrationController } from '@api/controllers/system/system-integration-controller';
+import { SystemRuntimeController } from '@api/controllers/system/system-runtime-controller';
+import { SystemUserController } from '@api/controllers/system/system-user-controller';
+import { SystemPeopleController } from '@api/controllers/system/system-people-controller';
 
 export class SystemController extends BaseController {
   private readonly adminController: SystemAdminController;

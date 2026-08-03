@@ -1,12 +1,14 @@
-import React from 'react';
+import { ReorderDirection } from '@/components/collection/list/enums/reorder-direction.enum';
+import { NotificationType } from '@/components/enums/notification-type.enum';
+import type React from 'react';
 
 import { AdminServices } from '@/lib/admin-services';
 
-import { CollectionListPageService } from './page-service';
-
-const adminServices = AdminServices.getInstance();
+import { CollectionListPageService } from '@/components/collection/list/page-service';
 
 export class CollectionListPageActions {
+  private static readonly adminServices = AdminServices.getInstance();
+
   static toggleColumn({
     columnId,
     pluginSlug,
@@ -21,7 +23,7 @@ export class CollectionListPageActions {
     setVisibleColumnIds((prev) => {
       const next = prev.includes(columnId) ? prev.filter((id) => id !== columnId) : [...prev, columnId];
       if (!next.length) return prev;
-      adminServices.uiPreference.writeCollectionColumns(pluginSlug, resolvedSlug, next);
+      CollectionListPageActions.adminServices.uiPreference.writeCollectionColumns(pluginSlug, resolvedSlug, next);
       return next;
     });
   }
@@ -34,7 +36,7 @@ export class CollectionListPageActions {
     setVisibleColumnIds
   }: {
     columnId: string;
-    direction: 'up' | 'down';
+    direction: ReorderDirection;
     pluginSlug: string;
     resolvedSlug: string;
     setVisibleColumnIds: React.Dispatch<React.SetStateAction<string[]>>;
@@ -43,14 +45,14 @@ export class CollectionListPageActions {
       const idx = prev.indexOf(columnId);
       if (idx === -1) return prev;
       const next = [...prev];
-      if (direction === 'up' && idx > 0) {
+      if (direction === ReorderDirection.UP && idx > 0) {
         [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-      } else if (direction === 'down' && idx < next.length - 1) {
+      } else if (direction === ReorderDirection.DOWN && idx < next.length - 1) {
         [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
       } else {
         return prev;
       }
-      adminServices.uiPreference.writeCollectionColumns(pluginSlug, resolvedSlug, next);
+      CollectionListPageActions.adminServices.uiPreference.writeCollectionColumns(pluginSlug, resolvedSlug, next);
       return next;
     });
   }
@@ -126,7 +128,7 @@ export class CollectionListPageActions {
     setDeleteDialogState: React.Dispatch<React.SetStateAction<{ mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null>>;
     setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
     setQuickEditExpandedId: React.Dispatch<React.SetStateAction<string | null>>;
-    setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: 'success' | 'error'; message: string } | null>>;
+    setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: NotificationType; message: string } | null>>;
     setPage: React.Dispatch<React.SetStateAction<number>>;
     fetchData: (targetPage?: number) => Promise<void>;
   }): Promise<void> {
@@ -170,7 +172,7 @@ export class CollectionListPageActions {
     resolvedSlug: string;
     quickEditExpandedId: string | null;
     setQuickEditExpandedId: React.Dispatch<React.SetStateAction<string | null>>;
-    setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: 'success' | 'error'; message: string } | null>>;
+    setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: NotificationType; message: string } | null>>;
     setQuickEditLoadingId: React.Dispatch<React.SetStateAction<string | null>>;
     setQuickEditData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setQuickEditInitialData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
@@ -190,7 +192,7 @@ export class CollectionListPageActions {
       setQuickEditData(record || {});
       setQuickEditInitialData(record || {});
     } catch (error: any) {
-      setQuickEditStatus({ type: 'error', message: error?.message || 'Failed to load record for quick edit.' });
+      setQuickEditStatus({ type: NotificationType.ERROR, message: error?.message || 'Failed to load record for quick edit.' });
       setQuickEditData(row || {});
       setQuickEditInitialData(row || {});
     } finally {
@@ -215,7 +217,7 @@ export class CollectionListPageActions {
     resolvedSlug: string;
     page: number;
     setQuickEditSavingId: React.Dispatch<React.SetStateAction<string | null>>;
-    setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: 'success' | 'error'; message: string } | null>>;
+    setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: NotificationType; message: string } | null>>;
     setQuickEditInitialData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     fetchData: (targetPage?: number) => Promise<void>;
   }): Promise<void> {
@@ -225,15 +227,15 @@ export class CollectionListPageActions {
     try {
       const payload = CollectionListPageService.resolveQuickEditPayload(quickEditData, quickEditInitialData);
       if (!Object.keys(payload).length) {
-        setQuickEditStatus({ type: 'success', message: 'No changes to save.' });
+        setQuickEditStatus({ type: NotificationType.SUCCESS, message: 'No changes to save.' });
         return;
       }
       await CollectionListPageService.saveQuickEditRecord(resolvedSlug, quickEditExpandedId, payload);
-      setQuickEditStatus({ type: 'success', message: 'Record updated successfully.' });
+      setQuickEditStatus({ type: NotificationType.SUCCESS, message: 'Record updated successfully.' });
       setQuickEditInitialData({ ...quickEditData });
       await fetchData(page);
     } catch (error: any) {
-      setQuickEditStatus({ type: 'error', message: error?.message || 'Failed to save quick edits.' });
+      setQuickEditStatus({ type: NotificationType.ERROR, message: error?.message || 'Failed to save quick edits.' });
     } finally {
       setQuickEditSavingId(null);
     }

@@ -1,27 +1,38 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
-import cron, { ScheduledTask } from 'node-cron';
-import type { SchedulerTaskHandler } from './index.types';
-import type { IQueueManager, SchedulerTask, SchedulerOptions } from './index.interfaces';
+import { ScheduleType } from '@scheduler/enums/schedule-type.enum';
 
+// This package OWNS the enum; core re-exports it to plugins through the SDK.
+export { ScheduleType } from '@scheduler/enums/schedule-type.enum';
+import { IDatabaseManager } from '@fromcode119/database';
+import cron, { ScheduledTask } from 'node-cron';
+import type { ISchedulerTaskHandler } from '@scheduler/interfaces/scheduler-task-handler.interface';
+export type { IQueueManager } from '@scheduler/interfaces/queue-manager.interface';
+
+import type { IQueueManager } from '@scheduler/interfaces/queue-manager.interface';
+
+import type { ISchedulerTask } from '@scheduler/interfaces/scheduler-task.interface';
+
+import type { ISchedulerOptions } from '@scheduler/interfaces/scheduler-options.interface';
 /** Inline scheduler table name — avoids importing from @fromcode119/sdk (circular tsconfig dep). */
-const SCHEDULER_TASKS_TABLE = '_system_scheduler_tasks';
 
 /** Minimal inline logger — avoids importing Logger from @fromcode119/sdk. */
-const logger = {
+
+export class SchedulerService {
+  private static readonly logger = {
   debug: (msg: string) => console.debug('[scheduler]', msg),
   info:  (msg: string) => console.info('[scheduler]', msg),
   warn:  (msg: string) => console.warn('[scheduler]', msg),
   error: (msg: string) => console.error('[scheduler]', msg),
 };
 
-export class SchedulerService {
+  private static readonly SCHEDULER_TASKS_TABLE = '_system_scheduler_tasks';
+
   private db: IDatabaseManager;
   private queueManager?: IQueueManager;
   private pulseInterval: NodeJS.Timeout | null = null;
-  private handlers: Map<string, SchedulerTaskHandler> = new Map();
+  private handlers: Map<string, ISchedulerTaskHandler> = new Map();
   private cronJobs: Map<string, ScheduledTask> = new Map();
 
-  constructor(db: IDatabaseManager, options: SchedulerOptions = {}) {
+  constructor(db: IDatabaseManager, options: ISchedulerOptions = {}) {
     this.db = db;
     this.queueManager = options.queueManager;
   }
@@ -30,20 +41,20 @@ export class SchedulerService {
    * Register a task handler.
    * This is called by plugins during their initialization.
    */
-  registerHandler(name: string, handler: SchedulerTaskHandler) {
+  registerHandler(name: string, handler: ISchedulerTaskHandler) {
     this.handlers.set(name, handler);
-    logger.debug(`Registered scheduler handler: ${name}`);
+    SchedulerService.logger.debug(`Registered scheduler handler: ${name}`);
   }
 
   /**
    * High-level registration: registers both the handler and the schedule.
    */
-  async register(name: string, schedule: string, handler: SchedulerTaskHandler, options: { type?: 'cron' | 'interval', plugin_slug?: string } = {}) {
+  async register(name: string, schedule: string, handler: ISchedulerTaskHandler, options: { type?: ScheduleType, plugin_slug?: string } = {}) {
     this.registerHandler(name, handler);
     await this.scheduleTask({
       name,
       schedule,
-      type: options.type || (schedule.includes(' ') || schedule.startsWith('@') ? 'cron' : 'interval'),
+      type: options.type ? ScheduleType.resolve(options.type) : (schedule.includes(' ') || schedule.startsWith('@') ? ScheduleType.CRON : ScheduleType.INTERVAL),
       plugin_slug: options.plugin_slug
     });
   }
@@ -51,8 +62,8 @@ export class SchedulerService {
   /**
    * Register or update a task schedule in the database
    */
-  async scheduleTask(task: Omit<SchedulerTask, 'handler' | 'is_active'> & { is_active?: boolean }) {
-    const existing = await this.db.find(SCHEDULER_TASKS_TABLE, {
+  async scheduleTask(task: Omit<ISchedulerTask, 'handler' | 'is_active'> & { is_active?: boolean }) {
+    const existing = await this.db.find(SchedulerService.SCHEDULER_TASKS_TABLE, {
       where: { name: task.name },
       limit: 1
     });
@@ -68,19 +79,19 @@ export class SchedulerService {
     };
 
     if (existing.length > 0) {
-      await this.db.update(SCHEDULER_TASKS_TABLE, { name: task.name }, data);
-      logger.debug(`Updated scheduler task schedule: ${task.name}`);
+      await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name: task.name }, data);
+      SchedulerService.logger.debug(`Updated scheduler task schedule: ${task.name}`);
     } else {
-      await this.db.insert(SCHEDULER_TASKS_TABLE, {
+      await this.db.insert(SchedulerService.SCHEDULER_TASKS_TABLE, {
         ...data,
         created_at: new Date(),
-        next_run: task.type === 'interval' ? this.calculateNextRun(task.schedule) : null
+        next_run: ScheduleType.resolve(task.type) === ScheduleType.INTERVAL ? this.calculateNextRun(task.schedule) : null
       });
-      logger.debug(`Scheduled new task: ${task.name}`);
+      SchedulerService.logger.debug(`Scheduled new task: ${task.name}`);
     }
 
     // Refresh the in-memory cron job if applicable
-    if (task.type === 'cron') {
+    if (ScheduleType.resolve(task.type) === ScheduleType.CRON) {
       if (is_active) {
         this.setupCronJob(task.name, task.schedule);
       } else {
@@ -96,7 +107,7 @@ export class SchedulerService {
    * Start the scheduler
    */
   async start(pulseIntervalMs: number = 60000) { // Default 1 minute pulse
-    logger.info(`Scheduler service starting...`);
+    SchedulerService.logger.info(`Scheduler service starting...`);
     
     // 1. Initialize cron jobs from DB
     await this.syncFromDatabase();
@@ -106,7 +117,7 @@ export class SchedulerService {
       this.pulse();
     }, pulseIntervalMs);
 
-    logger.info(`Scheduler service started (Pulse interval: ${pulseIntervalMs}ms)`);
+    SchedulerService.logger.info(`Scheduler service started (Pulse interval: ${pulseIntervalMs}ms)`);
   }
 
   /**
@@ -121,7 +132,7 @@ export class SchedulerService {
       job.stop();
     }
     this.cronJobs.clear();
-    logger.info(`Scheduler service stopped.`);
+    SchedulerService.logger.info(`Scheduler service stopped.`);
   }
 
   /**
@@ -131,7 +142,7 @@ export class SchedulerService {
   async runHandler(name: string, data?: any) {
     const handler = this.handlers.get(name);
     if (!handler) {
-      logger.warn(`No handler registered for task "${name}". Skipping.`);
+      SchedulerService.logger.warn(`No handler registered for task "${name}". Skipping.`);
       return;
     }
     await handler(data);
@@ -141,12 +152,12 @@ export class SchedulerService {
    * Sync active cron tasks from database to memory
    */
   private async syncFromDatabase() {
-    const activeTasks = await this.db.find(SCHEDULER_TASKS_TABLE, {
+    const activeTasks = await this.db.find(SchedulerService.SCHEDULER_TASKS_TABLE, {
       where: { is_active: true }
     });
 
     for (const task of activeTasks) {
-      if (task.type === 'cron') {
+      if (ScheduleType.resolve(task.type) === ScheduleType.CRON) {
         this.setupCronJob(task.name, task.schedule);
       }
     }
@@ -161,7 +172,7 @@ export class SchedulerService {
     }
 
     if (!cron.validate(schedule)) {
-      logger.error(`Invalid cron expression for task "${name}": ${schedule}`);
+      SchedulerService.logger.error(`Invalid cron expression for task "${name}": ${schedule}`);
       return;
     }
 
@@ -170,7 +181,7 @@ export class SchedulerService {
     });
 
     this.cronJobs.set(name, job);
-    logger.debug(`Set up cron job for "${name}": ${schedule}`);
+    SchedulerService.logger.debug(`Set up cron job for "${name}": ${schedule}`);
   }
 
   /**
@@ -178,8 +189,8 @@ export class SchedulerService {
    */
   private async pulse() {
     const now = new Date();
-    const tasks = await this.db.find(SCHEDULER_TASKS_TABLE, {
-      where: { type: 'interval', is_active: true }
+    const tasks = await this.db.find(SchedulerService.SCHEDULER_TASKS_TABLE, {
+      where: { type: ScheduleType.INTERVAL, is_active: true }
     });
 
     for (const task of tasks) {
@@ -190,14 +201,14 @@ export class SchedulerService {
         
         // Calculate next run
         const nextRun = this.calculateNextRun(task.schedule);
-        await this.db.update(SCHEDULER_TASKS_TABLE, { name: task.name }, {
+        await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name: task.name }, {
           last_run: now,
           next_run: nextRun
         });
       } else if (!task.next_run) {
         // First run initialization
         const nextRun = this.calculateNextRun(task.schedule);
-        await this.db.update(SCHEDULER_TASKS_TABLE, { name: task.name }, { next_run: nextRun });
+        await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name: task.name }, { next_run: nextRun });
       }
     }
   }
@@ -208,29 +219,29 @@ export class SchedulerService {
   private async runTask(name: string) {
     const handler = this.handlers.get(name);
     if (!handler) {
-      logger.warn(`No handler registered for task "${name}". Skipping.`);
+      SchedulerService.logger.warn(`No handler registered for task "${name}". Skipping.`);
       return;
     }
 
-    logger.info(`Running task: ${name}`);
+    SchedulerService.logger.info(`Running task: ${name}`);
     
     try {
       if (this.queueManager) {
         // Offload to background queue
         await this.queueManager.addJob('scheduler', name, { taskName: name });
-        logger.debug(`Dispatched task "${name}" to queue.`);
+        SchedulerService.logger.debug(`Dispatched task "${name}" to queue.`);
       } else {
         // Run immediately
         await handler();
       }
 
       // Update last run in DB
-      await this.db.update(SCHEDULER_TASKS_TABLE, { name }, {
+      await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name }, {
         last_run: new Date()
       });
 
     } catch (error: any) {
-      logger.error(`Failed to run task "${name}": ${error.message}`);
+      SchedulerService.logger.error(`Failed to run task "${name}": ${error.message}`);
     }
   }
 

@@ -1,8 +1,8 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
-import { InitialFrameworkSchemaStatements } from './001_core_initial_schema-statements';
+import { DialectHelper } from '@core/database/helpers/dialect';
+import { InitialFrameworkSchemaStatements } from '@core/database/migrations/001_core_initial_schema-statements';
 
-class InitialFrameworkMigration extends BaseMigration {
+export class InitialFrameworkMigration extends BaseMigration {
   readonly version = 1;
   readonly name = 'Initial core framework schema';
 
@@ -45,5 +45,3 @@ class InitialFrameworkMigration extends BaseMigration {
     }
   }
 }
-
-export default new InitialFrameworkMigration();

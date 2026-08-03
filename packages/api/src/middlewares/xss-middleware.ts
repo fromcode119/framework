@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import crypto from 'crypto';
-import { Logger } from '@fromcode119/core';
-import { ApiUrlUtils } from '../utils/url';
-import { BaseMiddleware } from './base-middleware';
+
+import { BaseMiddleware } from '@api/middlewares/base-middleware';
 
 export class XSSMiddleware extends BaseMiddleware {
   async handle(req: Request, res: Response, next: NextFunction): Promise<void> {

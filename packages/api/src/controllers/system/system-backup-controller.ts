@@ -1,7 +1,7 @@
+import { BackupSectionKey } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { BaseController } from '@fromcode119/core';
-import type { RestoreTargetKind } from '@fromcode119/core';
-import { SystemBackupService } from '../../services/system-backup-service';
+import { SystemBackupService } from '@api/services/system-backup-service';
 
 export class SystemBackupController extends BaseController {
   constructor(private readonly service: SystemBackupService) {
@@ -140,15 +140,15 @@ export class SystemBackupController extends BaseController {
     return roles.includes('admin') || permissions.includes('*') || permissions.includes(permission);
   }
 
-  private readTargetKind(value: unknown): RestoreTargetKind {
+  private readTargetKind(value: unknown): string {
     const targetKind = String(value || '').trim();
     if (!targetKind) {
       throw new Error('targetKind is required.');
     }
-    return targetKind as RestoreTargetKind;
+    return targetKind as string;
   }
 
-  private readCreateRequest(body: unknown): { sections?: ('core' | 'database' | 'plugins' | 'themes')[] } {
+  private readCreateRequest(body: unknown): { sections?: BackupSectionKey[] } {
     if (!body || typeof body !== 'object') {
       return {};
     }
@@ -157,7 +157,7 @@ export class SystemBackupController extends BaseController {
     return sections.length ? { sections } : {};
   }
 
-  private readBackupSections(value: unknown): ('core' | 'database' | 'plugins' | 'themes')[] {
+  private readBackupSections(value: unknown): BackupSectionKey[] {
     if (value === undefined) {
       return [];
     }
@@ -165,13 +165,13 @@ export class SystemBackupController extends BaseController {
       throw new Error('sections must be an array.');
     }
 
-    const allowedSections = ['core', 'database', 'plugins', 'themes'];
-    const sections = Array.from(new Set(value.map((entry) => String(entry || '').trim()).filter(Boolean)));
-    if (sections.some((section) => !allowedSections.includes(section))) {
+    const rawSections = Array.from(new Set(value.map((entry) => String(entry || '').trim()).filter(Boolean)));
+    if (rawSections.some((section) => !BackupSectionKey.has(section))) {
       throw new Error('Unsupported backup section selection.');
     }
 
-    return sections as ('core' | 'database' | 'plugins' | 'themes')[];
+    // Hydrate the validated wire strings into enum members (the API boundary).
+    return rawSections.map((section) => BackupSectionKey.resolve(section)!);
   }
 
   private readUploadedBackup(req: Request): { filePath: string; originalFilename: string } {

@@ -1,9 +1,6 @@
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { AppearanceManager, Logger, RouteConstants } from '@fromcode119/core';
-
-const { APPEARANCES_CATALOG, APPEARANCES_INSTALL, APPEARANCES_SLUG } = RouteConstants.SEGMENTS;
-
 /**
  * Admin appearance management — a SETTINGS concern, deliberately separate from the plugin/theme
  * marketplace. Lists available appearances (built-in default + those in the appearances dir),
@@ -27,12 +24,12 @@ export class AppearanceRouter extends BaseRouter {
     }));
 
     // Marketplace catalog merged with install state (+ update-available flags). [] when marketplace is off.
-    this.get(APPEARANCES_CATALOG, this.asyncHandler(async (_req, res) => {
+    this.get(RouteConstants.SEGMENTS.APPEARANCES_CATALOG, this.asyncHandler(async (_req, res) => {
       res.json({ appearances: await this.manager.catalog() });
     }));
 
     // Single install verb: install from the marketplace catalog by `slug`, else from a package `url`.
-    this.post(APPEARANCES_INSTALL, this.asyncHandler(async (req, res) => {
+    this.post(RouteConstants.SEGMENTS.APPEARANCES_INSTALL, this.asyncHandler(async (req, res) => {
       const slug = String(req.body?.slug || '').trim();
       const url = String(req.body?.url || '').trim();
       if (!slug && !url) {
@@ -45,7 +42,7 @@ export class AppearanceRouter extends BaseRouter {
       res.json({ success: true, manifest });
     }));
 
-    this.delete(APPEARANCES_SLUG, this.asyncHandler(async (req, res) => {
+    this.delete(RouteConstants.SEGMENTS.APPEARANCES_SLUG, this.asyncHandler(async (req, res) => {
       this.manager.remove(req.params.slug);
       res.json({ success: true });
     }));

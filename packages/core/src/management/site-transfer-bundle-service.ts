@@ -3,19 +3,17 @@ import os from 'os';
 import path from 'path';
 import { createHash } from 'crypto';
 import * as tar from 'tar';
-import { IDatabaseManager, systemPlugins, systemThemes, eq } from '@fromcode119/database';
-import { ProjectPaths } from '../config/paths';
-import { BackupService } from './backup-service';
-import type {
-  SiteTransferBundleManifest,
-  SiteTransferBundleOptions,
-  SiteTransferBundleResult,
-} from './site-transfer-bundle-service.types';
+import { IDatabaseManager, eq, Schema } from '@fromcode119/database';
+import { ProjectPaths } from '@core/config/paths';
+import { BackupService } from '@core/management/backup-service';
+import type { ISiteTransferBundleManifest } from '@core/management/interfaces/site-transfer-bundle-manifest.interface';
+import type { ISiteTransferBundleOptions } from '@core/management/interfaces/site-transfer-bundle-options.interface';
+import type { ISiteTransferBundleResult } from '@core/management/interfaces/site-transfer-bundle-result.interface';
 
 export class SiteTransferBundleService {
   constructor(private readonly db: IDatabaseManager) {}
 
-  async createBundle(options: SiteTransferBundleOptions = {}): Promise<SiteTransferBundleResult> {
+  async createBundle(options: ISiteTransferBundleOptions = {}): Promise<ISiteTransferBundleResult> {
     const resolvedOptions = this.resolveOptions(options);
     const stagingDirectory = this.createBundleDirectory(resolvedOptions.outputDirectory, resolvedOptions.label);
     const statusPath = path.join(stagingDirectory, 'bundle-status.json');
@@ -64,7 +62,7 @@ export class SiteTransferBundleService {
     }
   }
 
-  private resolveOptions(options: SiteTransferBundleOptions): {
+  private resolveOptions(options: ISiteTransferBundleOptions): {
     outputDirectory: string;
     label: string;
     excludedPaths: string[];
@@ -108,7 +106,7 @@ export class SiteTransferBundleService {
     label: string,
     excludedPaths: string[],
     requiredEnvironmentKeys: string[],
-  ): Promise<SiteTransferBundleManifest> {
+  ): Promise<ISiteTransferBundleManifest> {
     const frameworkPackagePath = path.join(ProjectPaths.getProjectRoot(), 'package.json');
     const frameworkPackage = JSON.parse(fs.readFileSync(frameworkPackagePath, 'utf8')) as { version?: string };
     const activeTheme = await this.readActiveTheme();
@@ -141,7 +139,7 @@ export class SiteTransferBundleService {
   }
 
   private async readActiveTheme(): Promise<{ slug: string | null; version: string | null }> {
-    const rows = await this.db.find(systemThemes, { where: eq(systemThemes.state, 'active') });
+    const rows = await this.db.find(Schema.systemThemes, { where: eq(Schema.systemThemes.state, 'active') });
     const activeTheme = rows[0];
     if (!activeTheme?.slug) {
       return { slug: null, version: null };
@@ -155,9 +153,9 @@ export class SiteTransferBundleService {
   }
 
   private async readActivePlugins(): Promise<Array<{ slug: string; version: string | null }>> {
-    const rows = await this.db.find(systemPlugins, {
-      where: eq(systemPlugins.state, 'active'),
-      orderBy: this.db.asc(systemPlugins.slug),
+    const rows = await this.db.find(Schema.systemPlugins, {
+      where: eq(Schema.systemPlugins.state, 'active'),
+      orderBy: this.db.asc(Schema.systemPlugins.slug),
     });
 
     return rows.map((row) => ({

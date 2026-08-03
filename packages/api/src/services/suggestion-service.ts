@@ -1,12 +1,13 @@
 import { IDatabaseManager, NamingStrategy } from '@fromcode119/database';
-import { Collection, Logger } from '@fromcode119/core';
+import { ICollection, Logger } from '@fromcode119/core';
+import { FieldType } from '@fromcode119/core';
 
 export class SuggestionService {
   private logger = new Logger({ namespace: 'Suggestions' });
 
   constructor(private db: IDatabaseManager) {}
 
-  async getSuggestions(collection: Collection, field: string, q?: string) {
+  async getSuggestions(collection: ICollection, field: string, q?: string) {
     try {
       const config = collection.fields.find(f => f.name === field);
 
@@ -19,7 +20,7 @@ export class SuggestionService {
       const search = String(q || '').trim().toLowerCase();
       const physicalField = SuggestionService.toPhysicalColumnName(field);
 
-      if (config && (config.type === 'json' || config.admin?.component === 'TagField' || config.admin?.component === 'Tags')) {
+      if (config && (config.type === FieldType.JSON || config.admin?.component === 'TagField' || config.admin?.component === 'Tags')) {
         const rows = await this.db.find(tableName, {
           columns: { [physicalField]: true },
           limit: 300

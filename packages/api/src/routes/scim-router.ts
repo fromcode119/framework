@@ -1,19 +1,19 @@
 import express from 'express';
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import { AccessLevel, PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
-import { ScimController } from '../controllers/scim/scim-controller';
-import { ScimTokenService } from '../services/scim-token-service';
-
-const ERROR_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:Error';
+import { ScimController } from '@api/controllers/scim/scim-controller';
+import { ScimTokenService } from '@api/services/scim-token-service';
 
 /**
  * SCIM 2.0 provisioning router, mounted at `/scim/v2`. Authenticated by the SCIM BEARER TOKEN (not the
- * admin session) so an external IdP can call it — hence every route is `AccessLevel.Public` to the
+ * admin session) so an external IdP can call it — hence every route is `AccessLevel.PUBLIC` to the
  * framework session gate, then hard-gated by the token guard below (fail-closed: no configured token =
  * all provisioning rejected). Additive to auth; it never touches login or sessions.
  */
 export class ScimRouter extends BaseRouter {
+  private static readonly ERROR_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:Error';
+
   private readonly controller: ScimController;
   private readonly tokens: ScimTokenService;
 
@@ -27,11 +27,11 @@ export class ScimRouter extends BaseRouter {
     const header = String(req.headers?.authorization || '');
     const token = header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
     if (await this.tokens.matches(token)) { next(); return; }
-    res.status(401).type('application/scim+json').json({ schemas: [ERROR_SCHEMA], status: '401', detail: 'Invalid or missing SCIM bearer token' });
+    res.status(401).type('application/scim+json').json({ schemas: [ScimRouter.ERROR_SCHEMA], status: '401', detail: 'Invalid or missing SCIM bearer token' });
   };
 
   protected registerRoutes(): void {
-    const pub = { access: AccessLevel.Public };
+    const pub = { access: AccessLevel.PUBLIC };
     // IdPs send `application/scim+json`, which the app's global `application/json` parser ignores —
     // parse any *+json (and plain json) body on the SCIM router so req.body is populated.
     this.use(express.json({ type: ['application/json', 'application/scim+json', 'application/*+json'] }));

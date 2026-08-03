@@ -1,8 +1,16 @@
+import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
+import { ResolutionState } from '@ai/admin-assistant-runtime/enums/resolution-state.enum';
+import { BatchState } from '@ai/components/enums/batch-state.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
 /** Orchestrator action utilities. Extracted from orchestrator.ts (ARC-007). */
 
-import type { AssistantAction, AssistantChatResult, AssistantCollectionContext } from '../types';
-import type { RuntimeContext, RuntimeDependencies, RuntimeRetrievalResult } from './types.types';
-import { OrchestratorListingUtils } from './orchestrator-listing-utils';
+import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
+import type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IRuntimeDependencies } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-dependencies.interface';
+import type { IRuntimeRetrievalResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-retrieval-result.interface';
 
 /**
  * Utilities for orchestrator action building, filtering, and finalization.
@@ -12,7 +20,7 @@ export class OrchestratorActionUtils {
   /**
    * Normalize history array from chat input
    */
-  static normalizeHistory(history: any): Array<{ role: 'system' | 'user' | 'assistant'; content: string }> {
+  static normalizeHistory(history: any): Array<{ role: AssistantRole; content: string }> {
     if (!Array.isArray(history)) return [];
     return history
       .filter((msg) => msg && typeof msg === 'object')
@@ -28,8 +36,8 @@ export class OrchestratorActionUtils {
    */
   static chooseDraftTargetCollection(
     message: string,
-    collections: AssistantCollectionContext[],
-  ): { status: 'resolved' | 'unresolved'; target: AssistantCollectionContext | null; candidates: AssistantCollectionContext[] } {
+    collections: IAssistantCollectionContext[],
+  ): { status: ResolutionState; target: IAssistantCollectionContext | null; candidates: IAssistantCollectionContext[] } {
     const text = String(message || '').toLowerCase();
     const candidates = Array.isArray(collections) ? collections : [];
     
@@ -39,16 +47,16 @@ export class OrchestratorActionUtils {
       const shortSlug = String(collection.shortSlug || '').toLowerCase();
       const label = String(collection.label || '').toLowerCase();
       if (text.includes(slug) || text.includes(shortSlug) || text.includes(label)) {
-        return { status: 'resolved', target: collection, candidates };
+        return { status: ResolutionState.RESOLVED, target: collection, candidates };
       }
     }
 
     // If only one candidate, auto-select it
     if (candidates.length === 1) {
-      return { status: 'resolved', target: candidates[0], candidates };
+      return { status: ResolutionState.RESOLVED, target: candidates[0], candidates };
     }
 
-    return { status: 'unresolved', target: null, candidates };
+    return { status: ResolutionState.UNRESOLVED, target: null, candidates };
   }
 
   /**
@@ -76,11 +84,11 @@ export class OrchestratorActionUtils {
   /**
    * Restrict actions to allowed tools based on context
    */
-  static restrictActionsToAllowedTools(actions: AssistantAction[], context: RuntimeContext): AssistantAction[] {
+  static restrictActionsToAllowedTools(actions: IAssistantAction[], context: IRuntimeContext): IAssistantAction[] {
     if (!context.allowedToolSet || context.allowedToolSet.size === 0) return actions;
     
     return actions.filter((action) => {
-      if (action.type !== 'mcp_call') return true;
+      if (action.type !== AssistantActionType.MCP_CALL) return true;
       const tool = String(action.tool || '').trim();
       return !tool || context.allowedToolSet.has(tool);
     });
@@ -89,8 +97,8 @@ export class OrchestratorActionUtils {
   /**
    * Check if action is a file replace action
    */
-  static isFileReplaceAction(action: AssistantAction): boolean {
-    if (action.type !== 'mcp_call') return false;
+  static isFileReplaceAction(action: IAssistantAction): boolean {
+    if (action.type !== AssistantActionType.MCP_CALL) return false;
     const tool = String(action.tool || '');
     return tool.includes('files.replace_text') || tool === 'file_edit' || tool === 'replace_in_file';
   }
@@ -108,7 +116,7 @@ export class OrchestratorActionUtils {
   /**
    * Collect file paths from file actions and retrieval results
    */
-  static collectFileMatchPaths(actions: AssistantAction[], retrieval: RuntimeRetrievalResult | null): string[] {
+  static collectFileMatchPaths(actions: IAssistantAction[], retrieval: IRuntimeRetrievalResult | null): string[] {
     const paths = new Set<string>();
     
     // From actions
@@ -144,7 +152,7 @@ export class OrchestratorActionUtils {
   /**
    * Collect target hints from retrieval results
    */
-  static collectTargetHintsFromRetrieval(retrieval: RuntimeRetrievalResult): string[] {
+  static collectTargetHintsFromRetrieval(retrieval: IRuntimeRetrievalResult): string[] {
     const hints = new Set<string>();
     
     for (const result of retrieval.results) {
@@ -166,7 +174,7 @@ export class OrchestratorActionUtils {
   /**
    * Find inventory followup reply  
    */
-  static findInventoryFollowupReply(message: string, context: RuntimeContext): string | null {
+  static findInventoryFollowupReply(message: string, context: IRuntimeContext): string | null {
     const text = String(message || '').toLowerCase().trim();
     
     // Check for capability questions
@@ -187,21 +195,21 @@ export class OrchestratorActionUtils {
    * Finalize orchestrator result into AssistantChatResult
    */
   static finalize(
-    deps: RuntimeDependencies,
+    deps: IRuntimeDependencies,
     options: {
       planId: string;
       goal: string;
       message: string;
-      actions: AssistantAction[];
+      actions: IAssistantAction[];
       model: string;
       ui: any;
       traces: any[];
       selectedSkill: any;
       sessionId?: string;
       checkpoint?: any;
-      agentMode: 'basic' | 'advanced';
+      agentMode: ContextLevel;
     },
-  ): AssistantChatResult {
+  ): IAssistantChatResult {
     const hasActions = options.actions && options.actions.length > 0;
     
     return {
@@ -218,7 +226,7 @@ export class OrchestratorActionUtils {
       actionBatch: hasActions
         ? {
             id: `batch_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
-            state: 'staged',
+            state: BatchState.STAGED,
             createdAt: Date.now(),
           }
         : undefined,

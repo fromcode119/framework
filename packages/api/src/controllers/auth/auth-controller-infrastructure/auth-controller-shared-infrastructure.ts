@@ -1,17 +1,9 @@
 import { Request } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import {
-  ApplicationUrlUtils,
-  BaseController,
-  CookieConstants,
-  Logger,
-  PluginManager,
-  RequestSurfaceUtils,
-  SystemConstants,
-} from '@fromcode119/core';
+import { ApplicationUrlUtils, BaseController, CookieConstants, Logger, PluginManager, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
 import type { IDatabaseManager } from '@fromcode119/database';
-import { ApiUrlUtils } from '../../../utils/url';
-import { AuthUtils } from '../../../utils/auth';
+import { ApiUrlUtils } from '@api/utils/url';
+import { AuthUtils } from '@api/utils/auth';
 
 export class AuthControllerSharedInfrastructure extends BaseController {
   protected db: IDatabaseManager;

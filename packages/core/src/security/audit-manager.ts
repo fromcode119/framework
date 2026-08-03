@@ -1,6 +1,7 @@
-import { Logger } from '../logging';
-import { IDatabaseManager, sql } from '@fromcode119/database';
-import { SystemConstants } from '../constants';
+import { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
+import { Logger } from '@core/logging';
+import { IDatabaseManager } from '@fromcode119/database';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class AuditManager {
   private logger = new Logger({ namespace: 'Audit' });
@@ -11,17 +12,19 @@ export class AuditManager {
     pluginSlug: string,
     action: string,
     resource: string,
-    status: 'allowed' | 'denied' | 'violation',
+    status: AuditOutcome | string,
     metadata?: any
   ) {
-    this.logger.info(`[${status.toUpperCase()}] Plugin "${pluginSlug}" performed ${action} on ${resource}`);
+    // Plugins are compiled separately and pass the raw wire string, so hydrate at this boundary.
+    const outcome = AuditOutcome.resolve(status);
+    this.logger.info(`[${outcome.value.toUpperCase()}] Plugin "${pluginSlug}" performed ${action} on ${resource}`);
 
     try {
       await this.db.insert(SystemConstants.TABLE.AUDIT_LOGS, {
         plugin_slug: pluginSlug,
         action,
         resource,
-        status,
+        status: outcome.value,
         metadata: metadata ? JSON.stringify(metadata) : null,
         created_at: new Date()
       });

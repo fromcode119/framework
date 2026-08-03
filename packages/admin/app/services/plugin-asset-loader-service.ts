@@ -1,6 +1,7 @@
-import { AdminConstants } from '@/lib/constants';
-import type { AdminPluginMetadata } from '../plugin-loader.interfaces';
-import type { PluginAssetLoaderCallbacks, PluginAssetLoaderContext } from './plugin-asset-loader-service.interfaces';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import { IAdminPluginMetadata } from '@/app/interfaces/admin-plugin-metadata.interface';
+import type { IPluginAssetLoaderCallbacks } from '@/app/services/interfaces/plugin-asset-loader-callbacks.interface';
+import type { IPluginAssetLoaderContext } from '@/app/services/interfaces/plugin-asset-loader-context.interface';
 
 /**
  * Applies plugin admin metadata to the running document: replaces/registers collections,
@@ -12,7 +13,7 @@ export class PluginAssetLoaderService {
   private static loadedPluginEntryUrls = new Set<string>();
   private static loadedPluginCssUrls = new Set<string>();
 
-  static apply(ctx: PluginAssetLoaderContext): void {
+  static apply(ctx: IPluginAssetLoaderContext): void {
     const { plugins, refreshVersion, callbacks } = ctx;
     if (!Array.isArray(plugins)) return;
 
@@ -22,7 +23,7 @@ export class PluginAssetLoaderService {
     PluginAssetLoaderService.importEntries(plugins, callbacks);
   }
 
-  private static applyCollections(plugins: AdminPluginMetadata[], callbacks: PluginAssetLoaderCallbacks): void {
+  private static applyCollections(plugins: IAdminPluginMetadata[], callbacks: IPluginAssetLoaderCallbacks): void {
     const hasCompleteCollectionMetadata = plugins.every((plugin) =>
       plugin?.admin && Array.isArray(plugin.admin.collections)
     );
@@ -46,7 +47,7 @@ export class PluginAssetLoaderService {
     }
   }
 
-  private static injectAssetLinks(plugins: AdminPluginMetadata[]): void {
+  private static injectAssetLinks(plugins: IAdminPluginMetadata[]): void {
     // Pass 1: add all modulepreload and CSS links before any dynamic import.
     // The entryUrl/cssUrl already carry their own `?v=<mtime>` cache-buster from
     // admin-metadata-service, so we do NOT append the volatile refreshVersion — doing
@@ -85,7 +86,7 @@ export class PluginAssetLoaderService {
     }
   }
 
-  private static importEntries(plugins: AdminPluginMetadata[], callbacks: PluginAssetLoaderCallbacks): void {
+  private static importEntries(plugins: IAdminPluginMetadata[], callbacks: IPluginAssetLoaderCallbacks): void {
     // Pass 2: fire all dynamic imports concurrently. Dedupe on the entryUrl (already
     // mtime-versioned) so a bundle is imported at most once per session — a genuine
     // update yields a new entryUrl (new mtime) and re-imports correctly.

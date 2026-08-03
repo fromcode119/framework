@@ -1,6 +1,6 @@
-import { Logger } from '../../logging';
-import { Plugins } from '../../plugins';
-import { PluginState } from './plugin-state.enums';
+import { Logger } from '@core/logging';
+import { Plugins } from '@core/plugins';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 /**
  * PluginManagerShutdownService

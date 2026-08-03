@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { PluginManifest, PluginCapability } from '../types';
-import type { RegistryPlugin, RegistryManifest } from './manifest.types';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
 
 /**
  * Plugin Manifest Schema (Zod)
@@ -146,7 +145,6 @@ export class RegistryPluginSchema {
   });
 }
 
-
 /**
  * Registry Manifest Schema
  * Schema for the main registry.json file
@@ -159,21 +157,20 @@ export class RegistryManifestSchema {
   });
 }
 
-
 export class ManifestValidator {
-  static validate(manifest: unknown): PluginManifest {
-    return PluginManifestSchema.schema.parse(manifest) as unknown as PluginManifest;
+  static validate(manifest: unknown): IPluginManifest {
+    return PluginManifestSchema.schema.parse(manifest) as unknown as IPluginManifest;
   }
 
-  static safeValidate(manifest: unknown): { success: true; data: PluginManifest } | { success: false; errors: z.ZodIssue[] } {
+  static safeValidate(manifest: unknown): { success: true; data: IPluginManifest } | { success: false; errors: z.ZodIssue[] } {
     const result = PluginManifestSchema.schema.safeParse(manifest);
     if (result.success) {
-      return { success: true, data: result.data as unknown as PluginManifest };
+      return { success: true, data: result.data as unknown as IPluginManifest };
     }
     return { success: false, errors: result.error.issues };
   }
 
-  static validateRegistry(manifest: unknown): RegistryManifest {
+  static validateRegistry(manifest: unknown): z.infer<typeof RegistryManifestSchema.schema> {
     return RegistryManifestSchema.schema.parse(manifest);
   }
 }

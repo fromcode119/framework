@@ -1,8 +1,11 @@
-import React from 'react';
+import type React from 'react';
+import { Reactor } from '@fromcode119/reactor';
 import { redirect } from 'next/navigation';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
-// Next.js App Router route page — must be a function component (RSC pages have no class API).
-export default function PluginsPage(): React.ReactNode {
-  redirect(AdminConstants.ROUTES.PLUGINS.INSTALLED);
+/** Admin route. */
+export class PluginsPage extends Reactor {
+  render(): React.ReactNode {
+    redirect(AdminConstants.ROUTES.PLUGINS.INSTALLED);
+  }
 }

@@ -1,14 +1,8 @@
+import type { IDiscoveredSlot } from './interfaces/discovered-slot.interface';
 import type { Plugin } from 'vite';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import type { FromcodeThemeOverridesOptions } from './fromcode-theme-overrides-plugin.interfaces';
-
-const VIRTUAL_MODULE_ID = 'virtual:fromcode/theme-overrides';
-const RESOLVED_VIRTUAL_ID = '\0' + VIRTUAL_MODULE_ID;
-const MANIFEST_FILE = 'overrides.json';
-
-type DiscoveredSlot = { slotKey: string; absolutePath: string };
-type OverrideManifest = Record<string, string>;
+import type { IFromcodeThemeOverridesOptions } from './interfaces/fromcode-theme-overrides-options.interface';
 
 /**
  * Discovers active-theme renderer overrides without reading outside the theme.
@@ -21,16 +15,20 @@ type OverrideManifest = Record<string, string>;
  * Optional `overrides.json` manifests can be added for exceptional mappings.
  */
 export class FromcodeThemeOverridesPlugin {
-  static create(options: FromcodeThemeOverridesOptions): Plugin {
+  private static readonly VIRTUAL_MODULE_ID = 'virtual:fromcode/theme-overrides';
+  private static readonly RESOLVED_VIRTUAL_ID = '\0virtual:fromcode/theme-overrides';
+  private static readonly MANIFEST_FILE = 'overrides.json';
+
+  static create(options: IFromcodeThemeOverridesOptions): Plugin {
     const { themeSlug, priority = 11, entry = 'index.jsx' } = options;
 
     let resolvedSrcDir: string;
     let resolvedCoreDir: string;
     let resolvedPluginsDir: string;
     let resolvedEntryId: string | null = null;
-    let discoveredSlots: DiscoveredSlot[] = [];
+    let discoveredSlots: IDiscoveredSlot[] = [];
 
-    const rescan = (): DiscoveredSlot[] =>
+    const rescan = (): IDiscoveredSlot[] =>
       FromcodeThemeOverridesPlugin.sortSlots([
         ...FromcodeThemeOverridesPlugin.scanManifestOrLiteralRoot(resolvedCoreDir),
         ...FromcodeThemeOverridesPlugin.scanPluginsDir(resolvedPluginsDir),
@@ -54,17 +52,17 @@ export class FromcodeThemeOverridesPlugin {
       handleHotUpdate({ file, server }) {
         if (file.startsWith(resolvedCoreDir) || file.startsWith(resolvedPluginsDir)) {
           discoveredSlots = rescan();
-          const mod = server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
+          const mod = server.moduleGraph.getModuleById(FromcodeThemeOverridesPlugin.RESOLVED_VIRTUAL_ID);
           if (mod) server.moduleGraph.invalidateModule(mod);
         }
       },
 
       resolveId(id) {
-        if (id === VIRTUAL_MODULE_ID) return RESOLVED_VIRTUAL_ID;
+        if (id === FromcodeThemeOverridesPlugin.VIRTUAL_MODULE_ID) return FromcodeThemeOverridesPlugin.RESOLVED_VIRTUAL_ID;
       },
 
       load(id) {
-        if (id !== RESOLVED_VIRTUAL_ID) return;
+        if (id !== FromcodeThemeOverridesPlugin.RESOLVED_VIRTUAL_ID) return;
         if (discoveredSlots.length === 0) {
           return `// fromcode-theme-overrides: no override files found in ${resolvedSrcDir}/overrides\n`;
         }
@@ -73,15 +71,15 @@ export class FromcodeThemeOverridesPlugin {
 
       transform(code, id) {
         if (resolvedEntryId && id === resolvedEntryId) {
-          return `import '${VIRTUAL_MODULE_ID}';\n` + code;
+          return `import '${FromcodeThemeOverridesPlugin.VIRTUAL_MODULE_ID}';\n` + code;
         }
       },
     };
   }
 
-  private static scanPluginsDir(pluginsDir: string): DiscoveredSlot[] {
+  private static scanPluginsDir(pluginsDir: string): IDiscoveredSlot[] {
     const namespaces = FromcodeThemeOverridesPlugin.readDirs(pluginsDir);
-    const results: DiscoveredSlot[] = [];
+    const results: IDiscoveredSlot[] = [];
 
     for (const namespace of namespaces) {
       const namespaceDir = join(pluginsDir, namespace);
@@ -94,20 +92,20 @@ export class FromcodeThemeOverridesPlugin {
     return results;
   }
 
-  private static scanManifestOrLiteralRoot(rootDir: string): DiscoveredSlot[] {
-    const manifestPath = join(rootDir, MANIFEST_FILE);
+  private static scanManifestOrLiteralRoot(rootDir: string): IDiscoveredSlot[] {
+    const manifestPath = join(rootDir, FromcodeThemeOverridesPlugin.MANIFEST_FILE);
     if (existsSync(manifestPath)) return FromcodeThemeOverridesPlugin.scanManifestRoot(rootDir);
     return FromcodeThemeOverridesPlugin.scanLiteralSlotDir(rootDir);
   }
 
-  private static scanManifestRoot(rootDir: string): DiscoveredSlot[] {
-    const manifestPath = join(rootDir, MANIFEST_FILE);
+  private static scanManifestRoot(rootDir: string): IDiscoveredSlot[] {
+    const manifestPath = join(rootDir, FromcodeThemeOverridesPlugin.MANIFEST_FILE);
     if (!existsSync(manifestPath)) return [];
 
     const manifest = FromcodeThemeOverridesPlugin.readManifest(manifestPath);
     const mappedFiles = new Set(Object.keys(manifest));
     const overrideFiles = FromcodeThemeOverridesPlugin.scanOverrideFiles(rootDir, (rel) => !rel.startsWith(`slots${sep}`));
-    const results: DiscoveredSlot[] = [];
+    const results: IDiscoveredSlot[] = [];
 
     for (const overrideFile of overrideFiles) {
       const rel = FromcodeThemeOverridesPlugin.normalizePath(relative(rootDir, overrideFile));
@@ -126,13 +124,13 @@ export class FromcodeThemeOverridesPlugin {
     return results;
   }
 
-  private static readManifest(manifestPath: string): OverrideManifest {
+  private static readManifest(manifestPath: string): Record<string, string> {
     const raw = JSON.parse(readFileSync(manifestPath, 'utf8')) as unknown;
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
       throw new Error(`${manifestPath} must contain a JSON object.`);
     }
 
-    const manifest: OverrideManifest = {};
+    const manifest: Record<string, string> = {};
     for (const [relPath, slotKey] of Object.entries(raw)) {
       if (typeof slotKey !== 'string' || !slotKey.trim()) {
         throw new Error(`${manifestPath} has an invalid slot key for ${relPath}.`);
@@ -142,7 +140,7 @@ export class FromcodeThemeOverridesPlugin {
     return manifest;
   }
 
-  private static scanLiteralSlotDir(rootDir: string): DiscoveredSlot[] {
+  private static scanLiteralSlotDir(rootDir: string): IDiscoveredSlot[] {
     return FromcodeThemeOverridesPlugin.scanOverrideFiles(rootDir).map((absolutePath) => {
       const rel = FromcodeThemeOverridesPlugin.normalizePath(relative(rootDir, absolutePath));
       return {
@@ -204,7 +202,7 @@ export class FromcodeThemeOverridesPlugin {
     return path.split(sep).join('/');
   }
 
-  private static sortSlots(slots: DiscoveredSlot[]): DiscoveredSlot[] {
+  private static sortSlots(slots: IDiscoveredSlot[]): IDiscoveredSlot[] {
     return [...slots].sort((a, b) => {
       const slotComparison = a.slotKey.localeCompare(b.slotKey);
       if (slotComparison !== 0) return slotComparison;
@@ -212,7 +210,7 @@ export class FromcodeThemeOverridesPlugin {
     });
   }
 
-  private static generateVirtualModule(slots: DiscoveredSlot[], themeSlug: string, priority: number): string {
+  private static generateVirtualModule(slots: IDiscoveredSlot[], themeSlug: string, priority: number): string {
     const importLines = slots.map(({ absolutePath }, i) => {
       const importPath = FromcodeThemeOverridesPlugin.normalizePath(absolutePath);
       return `const _slot${i} = () => import('${importPath}');`;

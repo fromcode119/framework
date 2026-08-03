@@ -1,20 +1,27 @@
-import { AssistantConstants } from '../admin-assistant-core';
-import { AssistantIntentUtils } from '../assistant-intent-utils';
-import { AssistantSurfaceUtils } from '../assistant-surface-utils';
-import { AssistantTextUtils } from '../assistant-text-utils';
-import { AdminAssistantMessageService } from './admin-assistant-message-service';
-import { AdminAssistantPageUtils } from './admin-assistant-page-utils';
-import type { AssistantAction, AssistantMessage, UploadedAttachment } from '../admin-assistant-core';
+import { ExecutionKind } from '@ai/enums/assistant-execution-kind.enum';
+import { BatchState } from '@ai/components/enums/batch-state.enum';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import { ChatMode } from '@ai/enums/chat-mode.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
+import { AssistantIntentUtils } from '@ai/assistant-intent-utils';
+import { AssistantSurfaceUtils } from '@ai/assistant-surface-utils';
+import { AssistantTextUtils } from '@ai/assistant-text-utils';
+import { AdminAssistantMessageService } from '@ai/admin-assistant-page/admin-assistant-message-service';
+import { AdminAssistantPageUtils } from '@ai/admin-assistant-page/admin-assistant-page-utils';
+import type { IAssistantAction } from '@ai/interfaces/assistant-action.interface';
+import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
+import type { IUploadedAttachment } from '@ai/interfaces/uploaded-attachment.interface';
 
 export class AdminAssistantPageExecutionService {
-  static shouldAutoApprove(content: string, lastActions: AssistantAction[], selectedActionCount: number, executing: boolean): boolean {
+  static shouldAutoApprove(content: string, lastActions: IAssistantAction[], selectedActionCount: number, executing: boolean): boolean {
     return AssistantIntentUtils.isApprovalPrompt(content) && lastActions.length > 0 && selectedActionCount > 0 && !executing;
   }
 
   static buildChatRequest(params: {
     content: string;
-    messages: AssistantMessage[];
-    attachments: UploadedAttachment[];
+    messages: IAssistantMessage[];
+    attachments: IUploadedAttachment[];
     activeSessionId: string;
     provider: string;
     model: string;
@@ -22,12 +29,12 @@ export class AdminAssistantPageExecutionService {
     skillId: string;
     availableTools: Array<{ tool: string }>;
     selectedTools: string[];
-    chatMode: 'auto' | 'plan' | 'agent';
+    chatMode: ChatMode;
   }): {
     sessionId: string;
-    requestedAgentMode: 'basic' | 'advanced';
+    requestedAgentMode: ContextLevel;
     requestBody: Record<string, any>;
-    userMessage: AssistantMessage;
+    userMessage: IAssistantMessage;
   } {
     const currentAttachments = params.attachments.map((item) => ({ ...item }));
     const attachmentContext = AssistantTextUtils.serializeAttachmentsForModel(currentAttachments);
@@ -36,7 +43,7 @@ export class AdminAssistantPageExecutionService {
     const history = params.messages
       .filter((entry) => entry.role !== 'system')
       .map((entry) => {
-        if (entry.role === 'user' && Array.isArray(entry.attachments) && entry.attachments.length > 0) {
+        if (entry.role === AssistantRole.USER && Array.isArray(entry.attachments) && entry.attachments.length > 0) {
           const serialized = AssistantTextUtils.serializeAttachmentsForModel(entry.attachments);
           return {
             role: entry.role,
@@ -45,25 +52,25 @@ export class AdminAssistantPageExecutionService {
         }
         return { role: entry.role, content: entry.content };
       });
-    const lastAssistantMessage = [...params.messages].reverse().find((entry) => entry.role === 'assistant');
+    const lastAssistantMessage = [...params.messages].reverse().find((entry) => entry.role === AssistantRole.ASSISTANT);
     const pendingCheckpoint =
       lastAssistantMessage?.checkpoint && lastAssistantMessage?.ui?.needsClarification
         ? lastAssistantMessage.checkpoint
         : undefined;
     const requestedAgentMode =
-      params.chatMode === 'plan' || params.chatMode === 'agent'
-        ? 'advanced'
+      params.chatMode === ChatMode.PLAN || params.chatMode === ChatMode.AGENT
+        ? ContextLevel.ADVANCED
         : AssistantIntentUtils.hasPlanningIntent(contentForModel)
-          ? 'advanced'
-          : 'basic';
-    const requestedMaxIterations = requestedAgentMode === 'advanced' ? (params.chatMode === 'agent' ? 12 : 8) : 1;
-    const requestedMaxDurationMs = requestedAgentMode === 'advanced' ? (params.chatMode === 'agent' ? 35000 : 26000) : 12000;
+          ? ContextLevel.ADVANCED
+          : ContextLevel.BASIC;
+    const requestedMaxIterations = requestedAgentMode === ContextLevel.ADVANCED ? (params.chatMode === ChatMode.AGENT ? 12 : 8) : 1;
+    const requestedMaxDurationMs = requestedAgentMode === ContextLevel.ADVANCED ? (params.chatMode === ChatMode.AGENT ? 35000 : 26000) : 12000;
 
     return {
       sessionId,
       requestedAgentMode,
       userMessage: {
-        role: 'user',
+        role: AssistantRole.USER,
         content: params.content,
         attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
       },
@@ -91,18 +98,18 @@ export class AdminAssistantPageExecutionService {
     return api.post(AssistantConstants.ENDPOINTS.CHAT, requestBody);
   }
 
-  static buildAssistantMessage(result: any, model: string, provider: string): AssistantMessage {
+  static buildAssistantMessage(result: any, model: string, provider: string): IAssistantMessage {
     return AdminAssistantMessageService.buildAssistantMessageFromResult(result, model, provider);
   }
 
-  static appendAssistantMessage(messages: AssistantMessage[], assistantMessage: AssistantMessage): AssistantMessage[] {
+  static appendAssistantMessage(messages: IAssistantMessage[], assistantMessage: IAssistantMessage): IAssistantMessage[] {
     return AdminAssistantMessageService.appendAssistantMessage(messages, assistantMessage);
   }
 
   static async executeActions(
     api: any,
     params: {
-      actions: AssistantAction[];
+      actions: IAssistantAction[];
       selectedActionIndexes: number[];
       activeSessionId: string;
       activeBatchId: string;
@@ -129,7 +136,7 @@ export class AdminAssistantPageExecutionService {
 
   static summarizeExecution(result: any, dryRun: boolean): {
     batchId: string;
-    batchState: 'previewed' | 'applied';
+    batchState: BatchState;
     ok: number;
     unchanged: number;
     failed: number;
@@ -144,15 +151,15 @@ export class AdminAssistantPageExecutionService {
             failed: Number(result.executionSummary.failed || 0) || 0,
           }
         : null;
-    const ok = serverSummary?.ok ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'ok').length;
+    const ok = serverSummary?.ok ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === ExecutionKind.OK).length;
     const unchanged =
-      serverSummary?.unchanged ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'skipped').length;
-    const failed = serverSummary?.failed ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === 'failed').length;
+      serverSummary?.unchanged ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === ExecutionKind.SKIPPED).length;
+    const failed = serverSummary?.failed ?? executionItems.filter((item: any) => AssistantSurfaceUtils.resolveExecutionKind(item) === ExecutionKind.FAILED).length;
     const batchId = String(result?.executedBatchId || '').trim();
     const batchState =
-      String(result?.batchState || (dryRun ? 'previewed' : 'applied')).trim().toLowerCase() === 'previewed'
-        ? ('previewed' as const)
-        : ('applied' as const);
+      BatchState.resolve(String(result?.batchState || (dryRun ? BatchState.PREVIEWED.value : BatchState.APPLIED.value)).trim().toLowerCase()) === BatchState.PREVIEWED
+        ? BatchState.PREVIEWED
+        : BatchState.APPLIED;
 
     return {
       batchId,
@@ -166,8 +173,8 @@ export class AdminAssistantPageExecutionService {
     };
   }
 
-  static async uploadAttachments(api: any, files: File[]): Promise<UploadedAttachment[]> {
-    const uploadedItems: UploadedAttachment[] = [];
+  static async uploadAttachments(api: any, files: File[]): Promise<IUploadedAttachment[]> {
+    const uploadedItems: IUploadedAttachment[] = [];
     for (const file of files) {
       const form = new FormData();
       form.append('file', file);

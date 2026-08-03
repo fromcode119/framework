@@ -1,5 +1,5 @@
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 /**
  * Fetches and normalizes the admin dashboard datasets. Each method returns the parsed

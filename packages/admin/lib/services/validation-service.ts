@@ -1,4 +1,4 @@
-import { BaseService } from './base-service';
+import { BaseService } from '@/lib/services/base-service';
 
 /**
  * Service for validation and evaluation logic.

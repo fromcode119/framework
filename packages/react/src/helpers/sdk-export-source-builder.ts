@@ -24,6 +24,14 @@ export class SdkExportSourceBuilder {
     'BrowserStateRuntimeBuilder',
     'SystemAuthClient',
     'SystemAuthSession',
+    // Storefront blocks need light/dark. This list is hand-maintained and IS the frontend's import map
+    // for `@fromcode119/sdk` — a plugin frontend bundle importing a name that is missing here fails to
+    // load with "does not provide an export named …", and the page body renders empty.
+    'ThemeMode',
+    // Plugins declare their own enums as `class X extends Enum`. Without this the bundle fails to load
+    // entirely with "does not provide an export named 'Enum'" — the same failure mode as any other
+    // missing key here, and it takes the whole plugin down, not just the enum.
+    'Enum',
     'Plugins',
     'PluginsFacade',
     'NamespacedPluginsFacade',
@@ -54,9 +62,7 @@ export class SdkExportSourceBuilder {
     'DataSourceConstants',
     'Logger',
     'LogLevel',
-    'EnvConfig',
     'CapabilityRegistry',
-    'IntegrationRegistry',
     'PluginFrontendLayoutRegistrar',
     'ThemeFrontendLayoutRegistrar',
     'ThemeOverrideRegistrar',
@@ -71,14 +77,13 @@ export class SdkExportSourceBuilder {
 
   static build(reactModuleAccessor: string): string {
     const scopedReactModuleAccessor = `(${reactModuleAccessor})`;
-    const reactBridgeAccessor = `${scopedReactModuleAccessor} || window.Fromcode`;
     return (
       SdkExportSourceBuilder.SDK_EXPORT_KEYS
-        // Null-safe Fromcode fallback prevents TypeError if window.Fromcode is not yet set
-        // when this data URL module is evaluated (e.g. timing race during bundle load).
-        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : (window.Fromcode && window.Fromcode.${key});`)
+        // The registry is populated during the pre-boot stub phase, so the accessor resolves before
+        // any bundle imports this module; the null-safe ternary only guards a pathological early eval.
+        .map((key) => `export const ${key} = ${scopedReactModuleAccessor} ? ${scopedReactModuleAccessor}.${key} : undefined;`)
         .join('\n') +
-      `\nexport default ${reactBridgeAccessor};`
+      `\nexport default ${scopedReactModuleAccessor};`
     );
   }
 }

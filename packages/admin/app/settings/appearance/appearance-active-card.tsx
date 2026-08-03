@@ -1,19 +1,31 @@
-import React from 'react';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import type { ReactNode } from 'react';
+
+import { PureReactor, prop } from '@fromcode119/reactor';
 import { FrameworkIcons } from '@fromcode119/react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import type { AppearanceActiveCardProps } from './appearance-active-card.interfaces';
-import type { AppearanceItem } from './appearance-item.interfaces';
+import { Card } from '@/components/ui/view/card.client';
+import { Button } from '@/components/ui/view/button.client';
+import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
+import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
 
 /** The installed appearances (default + installed) with the active radio, update badge, and remove. */
-export class AppearanceActiveCard extends React.Component<AppearanceActiveCardProps> {
+export class AppearanceActiveCard extends PureReactor {
+  @prop declare items: AppearanceItem[];
+  @prop declare catalogBySlug: Record<string, AppearanceCatalogItem>;
+  @prop declare active: string;
+  @prop declare busy: boolean;
+  @prop declare dark: boolean;
+  @prop declare onSwitch: (slug: string) => void;
+  @prop declare onUpdate: (item: AppearanceItem) => void;
+  @prop declare onRemove: (slug: string) => void;
+
   private subtitle(item: AppearanceItem): string {
     if (item.builtIn) return 'Built-in';
     return item.version ? `v${item.version}` : 'Installed';
   }
 
-  render(): React.ReactNode {
-    const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove } = this.props;
+  render(): ReactNode {
+    const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove } = this;
     return (
       <Card title="Active appearance">
         {items.map((it) => {
@@ -41,11 +53,11 @@ export class AppearanceActiveCard extends React.Component<AppearanceActiveCardPr
               {!it.builtIn && (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {canUpdate && (
-                    <Button variant={catalog?.updateAvailable ? 'primary' : 'ghost'} icon={<FrameworkIcons.Refresh size={14} />} onClick={() => onUpdate(it)} disabled={busy}>
+                    <Button variant={catalog?.updateAvailable ? ButtonVariant.PRIMARY : ButtonVariant.GHOST} icon={<FrameworkIcons.Refresh size={14} />} onClick={() => onUpdate(it)} disabled={busy}>
                       {catalog?.updateAvailable ? `Update to v${catalog.version}` : 'Re-install'}
                     </Button>
                   )}
-                  <Button variant="ghost" icon={<FrameworkIcons.Trash size={14} />} onClick={() => onRemove(it.slug)} disabled={busy}>Remove</Button>
+                  <Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Trash size={14} />} onClick={() => onRemove(it.slug)} disabled={busy}>Remove</Button>
                 </div>
               )}
             </div>

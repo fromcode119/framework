@@ -1,11 +1,13 @@
 import { redirect } from 'next/navigation';
-import { AdminConstants } from '@/lib/constants';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
-export default async function ThemeSettingsAliasPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  redirect(AdminConstants.ROUTES.THEMES.SETTINGS_TAB(slug));
+export class ThemeSettingsAliasPageRoute {
+  static async render({
+    params,
+  }: {
+    params: Promise<{ slug: string }>;
+  }) {
+    const { slug } = await params;
+    redirect(AdminConstants.ROUTES.THEMES.SETTINGS_TAB(slug));
+  }
 }

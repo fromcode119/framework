@@ -1,13 +1,14 @@
-import { BaseEntity } from './base-entity';
-import type { Collection, Field } from '../types/schema.interfaces';
-import type { EntityFieldConfig } from '../types/entity-field-config.interfaces';
-import type { EntityFieldsConfig } from '../types/entity-field-config.types';
+import { BaseEntity } from '@core/base/base-entity';
+import type { ICollection } from '@core/interfaces/collection.interface';
+import type { IField } from '@core/interfaces/field.interface';
+import type { IEntityFieldConfig } from '@core/interfaces/entity-field-config.interface';
+import { FieldType } from '@core/enums/field-type.enum';
 
 export abstract class BaseEntityCollection<TRecord extends object> extends BaseEntity<TRecord> {
   abstract readonly slug: string;
   readonly displayName?: string;
 
-  collectionDefinition(): Collection {
+  collectionDefinition(): ICollection {
     return {
       slug: this.slug,
       displayName: this.displayName,
@@ -15,7 +16,7 @@ export abstract class BaseEntityCollection<TRecord extends object> extends BaseE
     };
   }
 
-  private toCollectionField(name: string, config: EntityFieldConfig): Field {
+  private toCollectionField(name: string, config: IEntityFieldConfig): IField {
     return {
       name,
       type: this.toCollectionFieldType(config),
@@ -31,11 +32,15 @@ export abstract class BaseEntityCollection<TRecord extends object> extends BaseE
     };
   }
 
-  private toCollectionFieldType(config: EntityFieldConfig): Field['type'] {
-    if (config.type === 'string') return 'text';
-    if (config.type === 'object') return 'json';
-    if (config.type === 'enum') return 'select';
-    if (config.type === 'raw') return 'json';
-    return config.type as Field['type'];
+  private toCollectionFieldType(config: IEntityFieldConfig): IField['type'] {
+    if (config.type === 'string') return FieldType.TEXT;
+    if (config.type === 'object') return FieldType.JSON;
+    if (config.type === 'enum') return FieldType.SELECT;
+    if (config.type === 'raw') return FieldType.JSON;
+    // `config.type` may already name a FieldType ('number', 'date', …) or be an entity-only coercion
+    // tag ('relationId', 'isoDate', …). Hydrate the former so downstream enum comparisons work; pass
+    // the latter through untouched, exactly as the old blanket cast did.
+    const asFieldType = FieldType.fromValue(String(config.type ?? '').trim()) as FieldType | undefined;
+    return asFieldType ?? (config.type as IField['type']);
   }
 }

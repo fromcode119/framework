@@ -1,54 +1,60 @@
-import { FromcodePlugin, LoadedPlugin, PluginContext, PluginManifest, Collection } from '../types';
-import { SystemConstants } from '../constants';
-import { HookManager } from '../hooks/hook-manager';
-import { QueueManager } from '../queue/queue-manager';
-import { SchemaManager } from '../database/schema-manager';
-import { MigrationManager } from '../database/migration-manager';
-import { Logger } from '../logging';
-import { I18nManager } from '../i18n/i18n-manager';
+import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { PluginContext } from '@core/plugin-context';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { ICollection } from '@core/interfaces/collection.interface';
+
+import { HookManager } from '@core/hooks/hook-manager';
+import { QueueManager } from '@core/queue/queue-manager';
+import { SchemaManager } from '@core/database/schema-manager';
+import { MigrationManager } from '@core/database/migration-manager';
+import { Logger } from '@core/logging';
+import { I18nManager } from '@core/i18n/i18n-manager';
 import { DatabaseFactory, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';
-import { MigrationCoordinator } from '../management/migration-coordinator';
-import { AuditManager } from '../security/audit-manager';
-import { SecurityMonitor } from '../security/security-monitor';
-import { MarketplaceCatalogService } from '../marketplace/marketplace-catalog-service';
-import { PluginContextFactory } from './context';
-import type { PluginInstallProgressReporter } from './plugin-installation.interfaces';
-import type { PluginManagerInterface } from './context/utils.interfaces';
-import { CoreExtensionManager } from '../extensions/extension-manager';
-import { ProjectPaths } from '../config/paths';
+import { MigrationCoordinator } from '@core/management/migration-coordinator';
+import { AuditManager } from '@core/security/audit-manager';
+import { SecurityMonitor } from '@core/security/security-monitor';
+import { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';
+import { PluginContextFactory } from '@core/plugin/context';
+import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { CoreExtensionManager } from '@core/extensions/extension-manager';
+import { ProjectPaths } from '@core/config/paths';
 
 // Services
-import { RuntimeService } from './services/runtime-service';
-import { PluginStateService } from './services/plugin-state-service';
-import { DiscoveryService } from './services/discovery-service';
-import { AdminMetadataService } from './services/admin-metadata-service';
-import { LifecycleService } from './services/lifecycle-service';
-import { MiddlewareManager } from './services/middleware-manager';
-import { WorkflowService } from './services/workflow-service';
-import { WebhookService } from '../webhook/webhook-service';
+import { RuntimeService } from '@core/plugin/services/runtime-service';
+import { PluginStateService } from '@core/plugin/services/plugin-state-service';
+import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { AdminMetadataService } from '@core/plugin/services/admin-metadata-service';
+import { LifecycleService } from '@core/plugin/services/lifecycle-service';
+import { MiddlewareManager } from '@core/plugin/services/middleware-manager';
+import { WorkflowService } from '@core/plugin/services/workflow-service';
+import { WebhookService } from '@core/webhook/webhook-service';
 import { PluginRegistry } from '@fromcode119/plugins';
-import { IntegrationManager } from '../integrations';
-import { Plugins } from '../plugins';
-import { PluginsManagerResolver } from '../plugins-manager-resolver';
-import { PluginTelemetryService } from './services/plugin-telemetry-service';
-import { PluginScaffoldService } from './services/plugin-scaffold-service';
-import { PluginAdminRuntimeService } from './services/plugin-admin-runtime-service';
-import { PluginInstallationService } from './services/plugin-installation-service';
-import { PluginRuntimeStateService } from './services/plugin-runtime-state-service';
-import { PluginManagerInitService } from './services/plugin-manager-init-service';
-import { PluginDiscoveryCoordinatorService } from './services/plugin-discovery-coordinator-service';
-import { PluginManagerShutdownService } from './services/plugin-manager-shutdown-service';
-import { PluginExtensionArchiveInstaller } from './services/plugin-extension-archive-installer';
-import { PluginManagerServiceFactory } from './services/plugin-manager-service-factory';
-import { PluginManagerQueryService } from './services/plugin-manager-query-service';
-import type { ScaffoldPluginInput, ScaffoldPluginResult } from './services/plugin-scaffold-service.interfaces';
+import { IntegrationManager } from '@core/integrations';
+import { Plugins } from '@core/plugins';
+import { PluginsManagerResolver } from '@core/plugins-manager-resolver';
+import { PluginTelemetryService } from '@core/plugin/services/plugin-telemetry-service';
+import { PluginScaffoldService } from '@core/plugin/services/plugin-scaffold-service';
+import { PluginAdminRuntimeService } from '@core/plugin/services/plugin-admin-runtime-service';
+import { PluginInstallationService } from '@core/plugin/services/plugin-installation-service';
+import { PluginRuntimeStateService } from '@core/plugin/services/plugin-runtime-state-service';
+import { PluginManagerInitService } from '@core/plugin/services/plugin-manager-init-service';
+import { PluginDiscoveryCoordinatorService } from '@core/plugin/services/plugin-discovery-coordinator-service';
+import { PluginManagerShutdownService } from '@core/plugin/services/plugin-manager-shutdown-service';
+import { PluginExtensionArchiveInstaller } from '@core/plugin/services/plugin-extension-archive-installer';
+import { PluginManagerServiceFactory } from '@core/plugin/services/plugin-manager-service-factory';
+import { PluginManagerQueryService } from '@core/plugin/services/plugin-manager-query-service';
+import type { IScaffoldPluginInput } from '@core/plugin/services/interfaces/scaffold-plugin-input.interface';
+import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/scaffold-plugin-result.interface';
 
-export class PluginManager implements PluginManagerInterface {
+export class PluginManager implements IPluginManagerInterface {
   public audit: AuditManager;
   public security: SecurityMonitor;
   public marketplace: MarketplaceCatalogService;
-  public plugins: Map<string, LoadedPlugin> = new Map();
+  public plugins: Map<string, ILoadedPlugin> = new Map();
   public apiHost: any = null;
   public hooks: HookManager = new HookManager();
   public db: IDatabaseManager;
@@ -62,7 +68,7 @@ export class PluginManager implements PluginManagerInterface {
   public webhooks: WebhookService;
   public headInjections: Map<string, any[]> = new Map();
   public logger = new Logger({ namespace: 'plugin-manager' });
-  public registeredCollections: Map<string, { collection: Collection; pluginSlug: string }> = new Map();
+  public registeredCollections: Map<string, { collection: ICollection; pluginSlug: string }> = new Map();
   public pluginSettings: Map<string, any> = new Map();
   
   private coordinator: MigrationCoordinator;
@@ -158,15 +164,15 @@ export class PluginManager implements PluginManagerInterface {
 
   async installOrUpdateFromMarketplace(
     slug: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter; version?: string } = {},
-  ): Promise<PluginManifest> {
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; version?: string } = {},
+  ): Promise<IPluginManifest> {
     return this.installation.installOrUpdateFromMarketplace(slug, options);
   }
 
   async installUploadedPluginArchive(
     filePath: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
-  ): Promise<PluginManifest> {
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
+  ): Promise<IPluginManifest> {
     return this.installation.installUploadedPluginArchive(filePath, options);
   }
 
@@ -180,7 +186,7 @@ export class PluginManager implements PluginManagerInterface {
 
   async installExtensionArchive(
     filePath: string,
-    type: 'plugin' | 'theme' | 'core',
+    type: ExtensionScope,
     options: { enable?: boolean; activate?: boolean } = {},
   ): Promise<any> {
     return this.archiveInstaller.installExtensionArchive(filePath, type, options);
@@ -194,9 +200,9 @@ export class PluginManager implements PluginManagerInterface {
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}) { return this.lifecycle.enable(slug, options); }
   async disable(slug: string, options: { persistState?: boolean } = {}) { return this.lifecycle.disable(slug, options); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }
-  async register(plugin: FromcodePlugin, path?: string) { return this.lifecycle.register(plugin, path); }
+  async register(plugin: IFromcodePlugin, path?: string) { return this.lifecycle.register(plugin, path); }
 
-  async scaffoldPlugin(input: ScaffoldPluginInput): Promise<ScaffoldPluginResult> {
+  async scaffoldPlugin(input: IScaffoldPluginInput): Promise<IScaffoldPluginResult> {
     return this.scaffold.scaffoldPlugin(input);
   }
 
@@ -251,13 +257,13 @@ export class PluginManager implements PluginManagerInterface {
     return this.query.getPublicFrontendPluginSettings((slug: string) => this.getPluginSettings(slug));
   }
 
-  async installFromZip(filePath: string, pluginsRoot?: string): Promise<PluginManifest> {
+  async installFromZip(filePath: string, pluginsRoot?: string): Promise<IPluginManifest> {
     return this.discovery.installFromZip(filePath);
   }
 
   async finalizeInstalledPlugin(
     slug: string,
-    options: { enable?: boolean; progressReporter?: PluginInstallProgressReporter } = {},
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<void> {
     await this.installation.finalizeInstalledPlugin(slug, options);
   }
@@ -271,7 +277,7 @@ export class PluginManager implements PluginManagerInterface {
   }
 
   /** Returns plugins in topological order based on their dependencies. */
-  public getSortedPlugins(pluginsToSort?: LoadedPlugin[]): LoadedPlugin[] {
+  public getSortedPlugins(pluginsToSort?: ILoadedPlugin[]): ILoadedPlugin[] {
     return this.query.getSortedPlugins(pluginsToSort);
   }
 
@@ -284,8 +290,8 @@ export class PluginManager implements PluginManagerInterface {
     return this.adminRuntime.getImportMap();
   }
 
-  createContext(plugin: LoadedPlugin): PluginContext { return PluginContextFactory.createPluginContext(plugin, this, this.logger); }
-  getPlugins(): LoadedPlugin[] { return Array.from(this.plugins.values()); }
+  createContext(plugin: ILoadedPlugin): PluginContext { return PluginContextFactory.createPluginContext(plugin, this, this.logger); }
+  getPlugins(): ILoadedPlugin[] { return Array.from(this.plugins.values()); }
   setAuth(auth: any) { this.auth = auth; }
   setApiHost(host: any) { this.apiHost = host; }
 

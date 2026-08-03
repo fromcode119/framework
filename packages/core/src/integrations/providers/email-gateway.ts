@@ -1,8 +1,8 @@
-import { Logger } from '../../logging';
-
-const logger = new Logger({ namespace: 'EmailGateway' });
+import { Logger } from '@core/logging';
 
 export class EmailGateway {
+  private static readonly logger = new Logger({ namespace: 'EmailGateway' });
+
   static normalizeSmtpConfig(input: Record<string, any>) {
     const auth = input?.auth && typeof input.auth === 'object' ? input.auth : {};
     const user = String(input?.user ?? auth.user ?? '').trim();
@@ -27,14 +27,14 @@ export class EmailGateway {
     const requestedProvider = configuredProvider || (process.env.SMTP_HOST ? 'smtp' : 'mock');
 
     if (!['smtp', 'mock'].includes(requestedProvider)) {
-      logger.warn(
+      EmailGateway.logger.warn(
         `Email provider "${requestedProvider}" is not implemented. Falling back to "mock".`
       );
       return { provider: 'mock', config: {} };
     }
 
     if (requestedProvider === 'smtp' && !process.env.SMTP_HOST) {
-      logger.warn('EMAIL_PROVIDER is "smtp" but SMTP_HOST is missing. Falling back to "mock".');
+      EmailGateway.logger.warn('EMAIL_PROVIDER is "smtp" but SMTP_HOST is missing. Falling back to "mock".');
       return { provider: 'mock', config: {} };
     }
 

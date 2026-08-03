@@ -6,15 +6,15 @@
  * @module @fromcode119/api/routers
  */
 
-export { BaseRouter } from './base-router';
+export { BaseRouter } from '@fromcode119/core';
 
 // Re-export all router classes
-export { AuthRouter } from '../routes/auth-router';
-export { CollectionRouter } from '../routes/collection-router';
-export { BaseCollectionRouter } from '../routes/base-collection-router';
-export { PluginRouter } from '../routes/plugins/plugin-router';
-export { PluginAssetRouter } from '../routes/plugins/plugin-asset-router';
-export { MediaRouter } from '../routes/media-router';
-export { ThemeRouter } from '../routes/themes/theme-router';
-export { ThemeAssetRouter } from '../routes/themes/theme-asset-router';
-export { SystemRouter } from '../routes/system-router';
+export { AuthRouter } from '@api/routes/auth-router';
+export { CollectionRouter } from '@api/routes/collection-router';
+export { BaseCollectionRouter } from '@api/routes/base-collection-router';
+export { PluginRouter } from '@api/routes/plugins/plugin-router';
+export { PluginAssetRouter } from '@api/routes/plugins/plugin-asset-router';
+export { MediaRouter } from '@api/routes/media-router';
+export { ThemeRouter } from '@api/routes/themes/theme-router';
+export { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
+export { SystemRouter } from '@api/routes/system-router';

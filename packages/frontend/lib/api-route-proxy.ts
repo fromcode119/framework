@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
-import { ServerApiUtils } from './server-api';
+import { ServerApiUtils } from '@/lib/server-api';
 
 export class ApiRouteProxy {
   static async getResponse(request: Request): Promise<Response> {

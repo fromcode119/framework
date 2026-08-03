@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { runInNewContext } from 'node:vm';
 import { ClientRuntimeConstants } from '@fromcode119/core/client';
-import { ColorSchemeBootScript } from '../lib/color-scheme-boot-script';
+import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
 
 const STORAGE_KEY = ClientRuntimeConstants.FRONTEND.STORAGE_KEYS.COLOR_SCHEME;
 const ATTRIBUTE = ClientRuntimeConstants.FRONTEND.ATTRIBUTES.COLOR_SCHEME;

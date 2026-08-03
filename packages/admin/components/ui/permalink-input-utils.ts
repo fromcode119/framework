@@ -1,6 +1,7 @@
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
-import type { PermalinkInputProps, PermalinkComputed } from './permalink-input.interfaces';
+import type { IPermalinkInputProps } from '@/components/ui/interfaces/permalink-input-props.interface';
+import type { IPermalinkComputed } from '@/components/ui/interfaces/permalink-computed.interface';
 
 /**
  * Derives the permalink preview parts (base URL, prefix, display slug, suffix, custom/absolute
@@ -8,7 +9,7 @@ import type { PermalinkInputProps, PermalinkComputed } from './permalink-input.i
  * Extracted from the component so its file stays under the size limit; logic is unchanged.
  */
 export class PermalinkInputUtils {
-  static compute(props: PermalinkInputProps, settings: Record<string, unknown> | null | undefined): PermalinkComputed {
+  static compute(props: IPermalinkInputProps, settings: Record<string, unknown> | null | undefined): IPermalinkComputed {
     const { value, id, slug, collection, pluginSettings } = props;
 
     const baseUrl = AdminUrlUtils.resolveFrontendBaseUrl(settings);

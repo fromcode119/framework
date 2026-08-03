@@ -1,5 +1,5 @@
 import { ContextBridge, ContextHooks } from '@fromcode119/react';
-import { SettingsFallbackWarningService } from './settings-fallback-warning-service';
+import { SettingsFallbackWarningService } from '@/lib/settings/settings-fallback-warning-service';
 
 export class SettingsRegistrationService {
   static useRegistration(scope: string, pageLabel: string, includeCollectionsFallback = false) {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { CoercionUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
-import { ResolvedDocResponseService } from '../../services/resolved-doc-response-service';
-import { SystemControllerRuntime } from './system-controller-runtime';
+import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
+import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 export class SystemRuntimeController {
   constructor(private readonly runtime: SystemControllerRuntime) {}

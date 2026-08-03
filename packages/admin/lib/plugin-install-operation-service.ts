@@ -1,6 +1,6 @@
 import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants';
-import type { PluginInstallOperation } from './plugin-install-operation.interfaces';
+import { AdminConstants } from '@/lib/constants/admin.constants';
+import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
 
 export class PluginInstallOperationService {
   private static readonly POLL_INTERVAL_MS = 800;
@@ -41,10 +41,10 @@ export class PluginInstallOperationService {
 
   static async waitForCompletion(
     operationId: string,
-    onUpdate?: (operation: PluginInstallOperation) => void,
-  ): Promise<PluginInstallOperation> {
+    onUpdate?: (operation: IPluginInstallOperation) => void,
+  ): Promise<IPluginInstallOperation> {
     const startedAt = Date.now();
-    let lastOperation: PluginInstallOperation | null = null;
+    let lastOperation: IPluginInstallOperation | null = null;
 
     while (Date.now() - startedAt < this.TIMEOUT_MS) {
       try {
@@ -52,7 +52,7 @@ export class PluginInstallOperationService {
           AdminConstants.ENDPOINTS.PLUGINS.INSTALL_OPERATION(operationId),
           { noDedupe: true },
         ) as {
-          operation?: PluginInstallOperation;
+          operation?: IPluginInstallOperation;
         };
 
         const operation = response?.operation;
@@ -92,11 +92,11 @@ export class PluginInstallOperationService {
     throw new Error('Plugin install operation timed out.');
   }
 
-  private static shouldRecoverFromRestart(operation: PluginInstallOperation | null): boolean {
+  private static shouldRecoverFromRestart(operation: IPluginInstallOperation | null): operation is IPluginInstallOperation {
     return operation?.phase === 'restart-required';
   }
 
-  private static async recoverAfterRestart(operation: PluginInstallOperation): Promise<PluginInstallOperation> {
+  private static async recoverAfterRestart(operation: IPluginInstallOperation): Promise<IPluginInstallOperation> {
     const recoveryStartedAt = Date.now();
 
     while (Date.now() - recoveryStartedAt < this.RESTART_RECOVERY_TIMEOUT_MS) {

@@ -1,19 +1,14 @@
 import { Request } from 'express';
 import path from 'path';
-import {
-  PluginManager,
-  ThemeManager,
-} from '@fromcode119/core';
+import { PluginManager, ThemeManager } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core/client';
-import { AssistantCopyUtils } from '../../assistant-copy';
-import {
-  AdminAssistantRuntimeEngine,
-} from '../../admin-assistant-runtime-engine';
+import { AssistantCopyUtils } from '@ai/assistant-copy';
+import { AdminAssistantRuntimeEngine } from '@ai/admin-assistant-runtime-engine';
 import { IDatabaseManager } from '@fromcode119/database';
-import { AssistantManagementToolsService } from './management-tools-service';
-import { AssistantCatalogService } from './catalog-service';
-import { AssistantRuntimeContentResolver } from './runtime-content-resolver';
-import { PluginAssistantDiscoveryService } from './plugin-assistant-discovery-service';
+import { AssistantManagementToolsService } from '@ai/api/forge/management-tools-service';
+import { AssistantCatalogService } from '@ai/api/forge/catalog-service';
+import { AssistantRuntimeContentResolver } from '@ai/api/forge/runtime-content-resolver';
+import { PluginAssistantDiscoveryService } from '@ai/api/forge/plugin-assistant-discovery-service';
 
 export class AssistantRuntimeFactoryService {
   constructor(

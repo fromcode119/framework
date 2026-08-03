@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { CoercionUtils } from '@fromcode119/core';
-import { SystemControllerRuntime } from './system-controller-runtime';
+import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 export class SystemIntegrationController {
   constructor(private readonly runtime: SystemControllerRuntime) {}

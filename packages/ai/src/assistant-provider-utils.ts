@@ -1,4 +1,5 @@
-import type { ConversationMode } from './assistant-core-constants.types';
+import { ChatMode } from '@ai/enums/chat-mode.enum';
+import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 
 export class AssistantProviderUtils {
   private static readonly PROVIDER_OPENAI = 'openai';
@@ -20,35 +21,35 @@ export class AssistantProviderUtils {
   static baseUrlPlaceholder(provider: string): string { return AssistantProviderUtils.providerBaseUrlPlaceholder(provider); }
 
   static providerRequiresApiKey(provider: string): boolean {
-  const key = String(provider || '').trim().toLowerCase();
-  return key === AssistantProviderUtils.PROVIDER_OPENAI || key === AssistantProviderUtils.PROVIDER_ANTHROPIC || key === AssistantProviderUtils.PROVIDER_GEMINI;
+    const key = String(provider || '').trim().toLowerCase();
+    return key === AssistantProviderUtils.PROVIDER_OPENAI || key === AssistantProviderUtils.PROVIDER_ANTHROPIC || key === AssistantProviderUtils.PROVIDER_GEMINI;
   }
 
   static providerApiKeyPlaceholder(provider: string): string {
-  const key = String(provider || '').trim().toLowerCase();
-  if (key === AssistantProviderUtils.PROVIDER_OPENAI) return AssistantProviderUtils.API_KEY_PLACEHOLDER_OPENAI;
-  if (key === AssistantProviderUtils.PROVIDER_ANTHROPIC) return AssistantProviderUtils.API_KEY_PLACEHOLDER_ANTHROPIC;
-  if (key === AssistantProviderUtils.PROVIDER_GEMINI) return AssistantProviderUtils.API_KEY_PLACEHOLDER_GEMINI;
-  return '';
+    const key = String(provider || '').trim().toLowerCase();
+    if (key === AssistantProviderUtils.PROVIDER_OPENAI) return AssistantProviderUtils.API_KEY_PLACEHOLDER_OPENAI;
+    if (key === AssistantProviderUtils.PROVIDER_ANTHROPIC) return AssistantProviderUtils.API_KEY_PLACEHOLDER_ANTHROPIC;
+    if (key === AssistantProviderUtils.PROVIDER_GEMINI) return AssistantProviderUtils.API_KEY_PLACEHOLDER_GEMINI;
+    return '';
   }
 
   static providerBaseUrlPlaceholder(provider: string): string {
-  const key = String(provider || '').trim().toLowerCase();
-  if (key === AssistantProviderUtils.PROVIDER_OLLAMA) return AssistantProviderUtils.BASE_URL_OLLAMA;
-  if (key === AssistantProviderUtils.PROVIDER_ANTHROPIC) return AssistantProviderUtils.BASE_URL_ANTHROPIC;
-  if (key === AssistantProviderUtils.PROVIDER_GEMINI) return AssistantProviderUtils.BASE_URL_GEMINI;
-  return AssistantProviderUtils.BASE_URL_OPENAI;
+    const key = String(provider || '').trim().toLowerCase();
+    if (key === AssistantProviderUtils.PROVIDER_OLLAMA) return AssistantProviderUtils.BASE_URL_OLLAMA;
+    if (key === AssistantProviderUtils.PROVIDER_ANTHROPIC) return AssistantProviderUtils.BASE_URL_ANTHROPIC;
+    if (key === AssistantProviderUtils.PROVIDER_GEMINI) return AssistantProviderUtils.BASE_URL_GEMINI;
+    return AssistantProviderUtils.BASE_URL_OPENAI;
   }
 
-  static conversationModeToChatMode(mode: ConversationMode): 'auto' | 'plan' | 'agent' {
-  if (mode === 'build') return 'plan';
-  if (mode === 'quickfix') return 'agent';
-  return 'auto';
+  static conversationModeToChatMode(mode: ConversationMode): ChatMode {
+    if (mode === ConversationMode.BUILD) return ChatMode.PLAN;
+    if (mode === ConversationMode.QUICKFIX) return ChatMode.AGENT;
+    return ChatMode.AUTO;
   }
 
-  static chatModeToConversationMode(mode: 'auto' | 'plan' | 'agent'): ConversationMode {
-  if (mode === 'plan') return 'build';
-  if (mode === 'agent') return 'quickfix';
-  return 'chat';
+  static chatModeToConversationMode(mode: ChatMode): ConversationMode {
+    if (mode === ChatMode.PLAN) return ConversationMode.BUILD;
+    if (mode === ChatMode.AGENT) return ConversationMode.QUICKFIX;
+    return ConversationMode.CHAT;
   }
 }

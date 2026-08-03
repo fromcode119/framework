@@ -1,9 +1,9 @@
 import { UrlUtils } from '@fromcode119/core/client';
-import { AssistantClient } from '../types.interfaces';
-import type { AnthropicConfig } from './anthropic.types';
+import type { IAssistantClient } from '@ai/interfaces/assistant-client.interface';
+import type { IAnthropicConfig } from '@ai/gateways/interfaces/anthropic-config.interface';
 
 export class AnthropicGateway {
-  static normalizeAnthropicConfig(input: Record<string, any>): AnthropicConfig {
+  static normalizeAnthropicConfig(input: Record<string, any>): IAnthropicConfig {
       return {
         apiKey: String(input?.apiKey || '').trim(),
         model: String(input?.model || 'claude-3-5-sonnet-latest').trim() || 'claude-3-5-sonnet-latest',
@@ -15,7 +15,7 @@ export class AnthropicGateway {
 
   }
 
-  static createAnthropicClient(input: Record<string, any>): AssistantClient {
+  static createAnthropicClient(input: Record<string, any>): IAssistantClient {
       const config = AnthropicGateway.normalizeAnthropicConfig(input);
       if (!config.apiKey) {
         throw new Error('Anthropic API key is required for AI Assistant integration.');

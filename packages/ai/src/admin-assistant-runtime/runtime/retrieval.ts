@@ -1,20 +1,26 @@
-import type { RuntimeContext, RuntimeIntent, RuntimeRetrievalResult, RuntimeToolCall, RuntimeToolResult } from './types.types';
-import { RuntimeUtils } from './types';
-import { RetrievalHelpers } from './helpers/retrieval-helpers';
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
+import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
+import type { IRuntimeRetrievalResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-retrieval-result.interface';
+import type { IRuntimeToolCall } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-call.interface';
+import type { IRuntimeToolResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-result.interface';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import { RetrievalHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/retrieval-helpers';
+import { RuntimeIntentKind } from '@ai/admin-assistant-runtime/runtime/enums/runtime-intent-kind.enum';
 
 export class RetrievalRunner {
   static async runRetrieval(
-  context: RuntimeContext,
-  intent: RuntimeIntent,
-): Promise<RuntimeRetrievalResult> {
+  context: IRuntimeContext,
+  intent: IRuntimeIntent,
+): Promise<IRuntimeRetrievalResult> {
       const availableToolNames = RetrievalHelpers.toolSetFromContext(context);
       const queryHints: string[] = [];
-      const allCalls: RuntimeToolCall[] = [];
-      const allResults: RuntimeToolResult[] = [];
+      const allCalls: IRuntimeToolCall[] = [];
+      const allResults: IRuntimeToolResult[] = [];
       const blocked = new Set<string>();
       let passes = 0;
 
-      if (intent.kind === 'replace_text') {
+      if (intent.kind === RuntimeIntentKind.REPLACE_TEXT) {
         const firstPassCalls = [...RetrievalHelpers.buildReplaceCalls(intent), ...RetrievalHelpers.buildUrlHintCalls(intent)];
         const dedupedFirstPass = Array.from(
           new Map(firstPassCalls.map((call) => [`${call.tool}:${JSON.stringify(call.input || {})}`, call])).values(),
@@ -54,7 +60,7 @@ export class RetrievalRunner {
 
       const matchCount = RetrievalHelpers.totalMatches(allResults);
       return {
-        stage: 'retrieve',
+        stage: RuntimeStage.RETRIEVE,
         confidence: RetrievalHelpers.estimateRetrievalConfidence(matchCount, blocked.size),
         queryHints: Array.from(new Set(queryHints)),
         passes: Math.max(1, passes),
@@ -67,9 +73,9 @@ export class RetrievalRunner {
   }
 
   private static async callToolSafe(
-    context: RuntimeContext,
-    call: RuntimeToolCall,
-  ): Promise<RuntimeToolResult> {
+    context: IRuntimeContext,
+    call: IRuntimeToolCall,
+  ): Promise<IRuntimeToolResult> {
     const normalizedInput = call.input && typeof call.input === 'object' ? { ...call.input } : {};
     try {
       const raw = await context.bridge.call({

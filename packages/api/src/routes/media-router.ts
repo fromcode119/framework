@@ -1,9 +1,9 @@
-import { BaseRouter } from '../routers/base-router';
+import { BaseRouter } from '@fromcode119/core';
 import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
-import { MediaController } from '../controllers/media-controller';
+import { MediaController } from '@api/controllers/media-controller';
 import { RouteConstants } from '@fromcode119/core';
 
 /**

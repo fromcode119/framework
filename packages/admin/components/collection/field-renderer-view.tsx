@@ -1,82 +1,95 @@
-import React from 'react';
-import { AdminServices } from '@/lib/admin-services';
-import { FieldRendererUtils } from './field-renderer-utils';
-import { FieldLocaleSwitcher } from './field-locale-switcher';
-import { FieldRendererHeader } from './field-renderer-header';
-import { FieldControlRenderer } from './field-control-renderer';
-import { FieldRendererFooter } from './field-renderer-footer';
-import type { FieldRendererViewProps, FieldRendererViewState } from './field-renderer-view.interfaces';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactElement, ReactNode, RefObject } from 'react';
 
+import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/reactor';
+import type { Ref } from '@fromcode119/reactor';
+import { AdminServices } from '@/lib/admin-services';
+import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
+import { FieldLocaleSwitcher } from '@/components/collection/field-locale-switcher';
+import { FieldRendererHeader } from '@/components/collection/field-renderer-header';
+import { FieldControlRenderer } from '@/components/collection/field-control-renderer';
+import { FieldRendererFooter } from '@/components/collection/field-renderer-footer';
+import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 /**
  * Hook-free class body of {@link FieldRenderer}. The thin functional shim reads
  * `ContextHooks.usePlugins()` and passes the registry in as `plugins`; this class holds the
  * locale-menu state, the outside-click ref, and the two former `React.useEffect` blocks
- * (reproduced as componentDidMount/componentDidUpdate/componentWillUnmount with change-guards).
+ * (reproduced as `@watch` reactions + a componentDidMount seed and componentWillUnmount cleanup).
  */
-export class FieldRendererView extends React.Component<FieldRendererViewProps, FieldRendererViewState> {
-  private localeMenuRef: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>;
-  private outsideClickAttached = false;
-  private boundOnClickOutside: (event: MouseEvent) => void;
+export class FieldRendererView extends Reactor {
+  @prop declare field: ICollectionField;
+  @prop declare value: any;
+  @prop declare onChange: (value: any) => void;
+  @prop declare theme: ThemeMode;
+  @prop declare collectionSlug: string;
+  @prop declare pluginSettings?: Record<string, any>;
+  @prop declare globalSettings?: Record<string, any>;
+  @prop declare disabled?: boolean;
+  @prop declare isNew?: boolean;
+  @prop declare errors?: string[];
+  @prop declare slugWarning?: string | null;
+  @prop declare slugManuallyEdited?: boolean;
+  @prop declare readOnlyOverrideGranted?: boolean;
+  @prop declare onReadOnlyOverrideRequest?: (field: { name: string; label: string }) => void;
+  @prop declare record?: Record<string, any>;
+  @prop declare onPatch?: (partial: Record<string, any>) => void;
+  /** Plugin registry from `ContextHooks.usePlugins()`, supplied by the thin functional shim. */
+  @prop declare plugins: any;
 
-  constructor(props: FieldRendererViewProps) {
-    super(props);
-    this.state = {
-      activeLocale: this.computeDefaultLocale(props),
-      isLocaleMenuOpen: false,
-    };
-    this.boundOnClickOutside = this.onClickOutside.bind(this);
-    this.updateValue = this.updateValue.bind(this);
-    this.requestReadOnlyOverride = this.requestReadOnlyOverride.bind(this);
-    this.wrapWithReadOnlyOverride = this.wrapWithReadOnlyOverride.bind(this);
-    this.localeSwitcher = this.localeSwitcher.bind(this);
-  }
+  @ref declare private localeMenuRef: Ref<HTMLDivElement>;
+
+  @state activeLocale = this.defaultLocale;
+  @state isLocaleMenuOpen = false;
+
+  private outsideClickAttached = false;
 
   private get localization() {
     return AdminServices.getInstance().localization;
   }
 
-  private getSettings(props: FieldRendererViewProps = this.props): Record<string, any> {
-    return (props.plugins as any)?.settings || {};
+  private get registrySettings(): Record<string, any> {
+    return (this.plugins as any)?.settings || {};
   }
 
-  private computeLocaleRegistry(props: FieldRendererViewProps = this.props): Array<{ code: string; label: string }> {
-    return this.localization.parseLocaleRegistry(this.getSettings(props));
+  private get localeRegistry(): Array<{ code: string; label: string }> {
+    return this.localization.parseLocaleRegistry(this.registrySettings);
   }
 
-  private computeDefaultLocale(props: FieldRendererViewProps = this.props): string {
-    return this.localization.resolveAdminLocale(this.getSettings(props), this.computeLocaleRegistry(props));
+  private get defaultLocale(): string {
+    return this.localization.resolveAdminLocale(this.registrySettings, this.localeRegistry);
   }
 
-  private computeIsLocalizedField(props: FieldRendererViewProps = this.props): boolean {
-    return Boolean(props.field.localized);
+  private get isLocalizedField(): boolean {
+    return Boolean(this.field.localized);
   }
 
   // Effect 1: reset activeLocale to defaultLocale when the current locale is not in the registry.
-  // Original deps: [activeLocale, defaultLocale, isLocalizedField, localeRegistry].
+  // Original deps: [activeLocale, defaultLocale, isLocalizedField, localeRegistry] — mapped to a
+  // `@watch` on the underlying state (activeLocale) + prop (field/plugins) drivers of those values.
+  @watch('activeLocale', 'field', 'plugins')
   private syncActiveLocale(): void {
-    const isLocalizedField = this.computeIsLocalizedField();
-    if (!isLocalizedField) return;
-    const localeRegistry = this.computeLocaleRegistry();
-    const exists = localeRegistry.some((item) => item.code === this.state.activeLocale);
-    if (!exists) this.setState({ activeLocale: this.computeDefaultLocale() });
+    if (!this.isLocalizedField) return;
+    const exists = this.localeRegistry.some((item) => item.code === this.activeLocale);
+    if (!exists) this.activeLocale = this.defaultLocale;
   }
 
   // Effect 2: outside-click listener, gated on [isLocalizedField, isLocaleMenuOpen].
+  @watch('isLocaleMenuOpen', 'field')
   private syncOutsideClickListener(): void {
-    const shouldListen = this.computeIsLocalizedField() && this.state.isLocaleMenuOpen;
+    const shouldListen = this.isLocalizedField && this.isLocaleMenuOpen;
     if (shouldListen && !this.outsideClickAttached) {
-      document.addEventListener('mousedown', this.boundOnClickOutside);
+      document.addEventListener('mousedown', this.onClickOutside);
       this.outsideClickAttached = true;
     } else if (!shouldListen && this.outsideClickAttached) {
-      document.removeEventListener('mousedown', this.boundOnClickOutside);
+      document.removeEventListener('mousedown', this.onClickOutside);
       this.outsideClickAttached = false;
     }
   }
 
-  private onClickOutside(event: MouseEvent): void {
+  @bound private onClickOutside(event: MouseEvent): void {
     if (!this.localeMenuRef.current) return;
     if (!this.localeMenuRef.current.contains(event.target as Node)) {
-      this.setState({ isLocaleMenuOpen: false });
+      this.isLocaleMenuOpen = false;
     }
   }
 
@@ -85,53 +98,24 @@ export class FieldRendererView extends React.Component<FieldRendererViewProps, F
     this.syncOutsideClickListener();
   }
 
-  componentDidUpdate(prevProps: FieldRendererViewProps, prevState: FieldRendererViewState): void {
-    // Effect 1 re-runs when any of its deps change.
-    const isLocalizedField = this.computeIsLocalizedField();
-    const prevIsLocalizedField = this.computeIsLocalizedField(prevProps);
-    const defaultLocale = this.computeDefaultLocale();
-    const prevDefaultLocale = this.computeDefaultLocale(prevProps);
-    const localeRegistry = this.computeLocaleRegistry();
-    const prevLocaleRegistry = this.computeLocaleRegistry(prevProps);
-    const registryChanged =
-      localeRegistry.length !== prevLocaleRegistry.length ||
-      localeRegistry.some((item, i) => item.code !== prevLocaleRegistry[i]?.code);
-    if (
-      this.state.activeLocale !== prevState.activeLocale ||
-      defaultLocale !== prevDefaultLocale ||
-      isLocalizedField !== prevIsLocalizedField ||
-      registryChanged
-    ) {
-      this.syncActiveLocale();
-    }
-
-    // Effect 2 re-runs when [isLocalizedField, isLocaleMenuOpen] change.
-    if (
-      isLocalizedField !== prevIsLocalizedField ||
-      this.state.isLocaleMenuOpen !== prevState.isLocaleMenuOpen
-    ) {
-      this.syncOutsideClickListener();
-    }
-  }
-
   componentWillUnmount(): void {
     if (this.outsideClickAttached) {
-      document.removeEventListener('mousedown', this.boundOnClickOutside);
+      document.removeEventListener('mousedown', this.onClickOutside);
       this.outsideClickAttached = false;
     }
   }
 
   private get label(): string {
-    const { field } = this.props;
+    const { field } = this;
     return field.label || field.name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
   }
 
   private get fieldMarkedReadOnly(): boolean {
-    return Boolean(this.props.field.admin?.readOnly);
+    return Boolean(this.field.admin?.readOnly);
   }
 
   private get readOnlyOverrideDisabled(): boolean {
-    const { field } = this.props;
+    const { field } = this;
     return (
       field.admin?.readOnlyOverride === false ||
       field.admin?.readOnlyOverride === 'never' ||
@@ -144,56 +128,52 @@ export class FieldRendererView extends React.Component<FieldRendererViewProps, F
   }
 
   private get isFieldReadOnly(): boolean {
-    const { disabled = false, readOnlyOverrideGranted = false } = this.props;
-    return Boolean(disabled || (this.fieldMarkedReadOnly && !readOnlyOverrideGranted));
+    return Boolean(this.disabled || (this.fieldMarkedReadOnly && !this.readOnlyOverrideGranted));
   }
 
   private get canRequestReadOnlyOverride(): boolean {
-    const { disabled = false, onReadOnlyOverrideRequest } = this.props;
-    return Boolean(!disabled && this.supportsReadOnlyOverride && this.isFieldReadOnly && onReadOnlyOverrideRequest);
+    return Boolean(!this.disabled && this.supportsReadOnlyOverride && this.isFieldReadOnly && this.onReadOnlyOverrideRequest);
   }
 
   private get componentHandlesLocalization(): boolean {
-    return this.computeIsLocalizedField() && Boolean(this.props.field.admin?.handlesLocalization);
+    return this.isLocalizedField && Boolean(this.field.admin?.handlesLocalization);
   }
 
   private get localizedMap(): Record<string, any> | null {
-    if (!this.computeIsLocalizedField()) return null;
-    return this.localization.toLocaleMap(this.props.value, this.computeDefaultLocale());
+    if (!this.isLocalizedField) return null;
+    return this.localization.toLocaleMap(this.value, this.defaultLocale);
   }
 
   private get currentValue(): any {
-    const { value } = this.props;
-    if (this.componentHandlesLocalization) return value;
-    if (this.computeIsLocalizedField()) return this.localizedMap?.[this.state.activeLocale] ?? '';
-    return value;
+    if (this.componentHandlesLocalization) return this.value;
+    if (this.isLocalizedField) return this.localizedMap?.[this.activeLocale] ?? '';
+    return this.value;
   }
 
-  private updateValue(nextValue: any): void {
+  @bound private updateValue(nextValue: any): void {
     if (this.isFieldReadOnly) return;
 
     if (this.componentHandlesLocalization) {
-      this.props.onChange(nextValue);
+      this.onChange(nextValue);
       return;
     }
 
-    if (!this.computeIsLocalizedField()) {
-      this.props.onChange(nextValue);
+    if (!this.isLocalizedField) {
+      this.onChange(nextValue);
       return;
     }
 
     const nextMap = { ...(this.localizedMap || {}) };
-    nextMap[this.state.activeLocale] = nextValue;
-    this.props.onChange(nextMap);
+    nextMap[this.activeLocale] = nextValue;
+    this.onChange(nextMap);
   }
 
-  private requestReadOnlyOverride(): void {
-    const { onReadOnlyOverrideRequest, field } = this.props;
-    if (!this.canRequestReadOnlyOverride || !onReadOnlyOverrideRequest) return;
-    onReadOnlyOverrideRequest({ name: field.name, label: this.label });
+  @bound private requestReadOnlyOverride(): void {
+    if (!this.canRequestReadOnlyOverride || !this.onReadOnlyOverrideRequest) return;
+    this.onReadOnlyOverrideRequest({ name: this.field.name, label: this.label });
   }
 
-  private wrapWithReadOnlyOverride(node: React.ReactNode, roundedClass: string = 'rounded-lg'): React.ReactNode {
+  @bound private wrapWithReadOnlyOverride(node: ReactNode, roundedClass: string = 'rounded-lg'): ReactNode {
     if (!this.canRequestReadOnlyOverride) return node;
     return (
       <div className="relative">
@@ -210,9 +190,9 @@ export class FieldRendererView extends React.Component<FieldRendererViewProps, F
   }
 
   private get shouldInlineLocaleSwitcher(): boolean {
-    const { field } = this.props;
+    const { field } = this;
     return (
-      this.computeIsLocalizedField() &&
+      this.isLocalizedField &&
       !this.componentHandlesLocalization &&
       !(
         field.type === 'relationship' ||
@@ -230,51 +210,52 @@ export class FieldRendererView extends React.Component<FieldRendererViewProps, F
     );
   }
 
-  private localeSwitcher(compact: boolean = false): React.ReactNode {
-    const { theme } = this.props;
-    const localeRegistry = this.computeLocaleRegistry();
-    const activeLocaleMeta = localeRegistry.find((item) => item.code === this.state.activeLocale) || localeRegistry[0];
+  @bound private toggleLocaleMenu(): void {
+    this.isLocaleMenuOpen = !this.isLocaleMenuOpen;
+  }
+
+  @bound private selectLocale(code: string): void {
+    this.activeLocale = code;
+    this.isLocaleMenuOpen = false;
+  }
+
+  @bound private localeSwitcher(compact: boolean = false): ReactNode {
+    const localeRegistry = this.localeRegistry;
+    const activeLocaleMeta = localeRegistry.find((item) => item.code === this.activeLocale) || localeRegistry[0];
     return (
       <FieldLocaleSwitcher
         compact={compact}
-        theme={theme}
-        activeLocale={this.state.activeLocale}
-        activeLocaleCode={activeLocaleMeta?.code || this.state.activeLocale || 'en'}
+        theme={this.theme}
+        activeLocale={this.activeLocale}
+        activeLocaleCode={activeLocaleMeta?.code || this.activeLocale || 'en'}
         localeRegistry={localeRegistry}
-        isOpen={this.state.isLocaleMenuOpen}
-        onToggle={() => this.setState((prev) => ({ isLocaleMenuOpen: !prev.isLocaleMenuOpen }))}
-        onSelect={(code) => {
-          this.setState({ activeLocale: code, isLocaleMenuOpen: false });
-        }}
-        menuRef={this.localeMenuRef}
+        isOpen={this.isLocaleMenuOpen}
+        onToggle={this.toggleLocaleMenu}
+        onSelect={this.selectLocale}
+        menuRef={this.localeMenuRef as RefObject<HTMLDivElement>}
       />
     );
   }
 
-  render(): React.ReactElement {
-    const {
-      field, theme, collectionSlug, pluginSettings, isNew = false, errors,
-      slugWarning, slugManuallyEdited, readOnlyOverrideGranted = false, record, onPatch, plugins,
-    } = this.props;
-
-    const fieldComponents = (plugins as any).fieldComponents || {};
-    const isLocalizedField = this.computeIsLocalizedField();
-    const defaultLocale = this.computeDefaultLocale();
+  render(): ReactElement {
+    const fieldComponents = (this.plugins as any).fieldComponents || {};
+    const isLocalizedField = this.isLocalizedField;
+    const defaultLocale = this.defaultLocale;
     const currentValue = this.currentValue;
     const label = this.label;
 
-    const resolvedCurrentText = FieldRendererUtils.resolveRenderableText(currentValue, this.state.activeLocale || defaultLocale);
-    const resolvedFieldDescription = FieldRendererUtils.resolveRenderableText(field.admin?.description, this.state.activeLocale || defaultLocale);
+    const resolvedCurrentText = FieldRendererUtils.resolveRenderableText(currentValue, this.activeLocale || defaultLocale);
+    const resolvedFieldDescription = FieldRendererUtils.resolveRenderableText(this.field.admin?.description, this.activeLocale || defaultLocale);
 
     return (
-      <div className={FieldRendererUtils.wrapperClassName(field, this.isFieldReadOnly, theme)}>
+      <div className={FieldRendererUtils.wrapperClassName(this.field, this.isFieldReadOnly, this.theme)}>
         <FieldRendererHeader
-          field={field}
+          field={this.field}
           label={label}
-          theme={theme}
+          theme={this.theme}
           isFieldReadOnly={this.isFieldReadOnly}
           supportsReadOnlyOverride={this.supportsReadOnlyOverride}
-          readOnlyOverrideGranted={readOnlyOverrideGranted}
+          readOnlyOverrideGranted={this.readOnlyOverrideGranted ?? false}
           canRequestReadOnlyOverride={this.canRequestReadOnlyOverride}
           isLocalizedField={isLocalizedField}
           componentHandlesLocalization={this.componentHandlesLocalization}
@@ -284,33 +265,33 @@ export class FieldRendererView extends React.Component<FieldRendererViewProps, F
         />
 
         <FieldControlRenderer
-          field={field}
+          field={this.field}
           currentValue={currentValue}
           resolvedCurrentText={resolvedCurrentText}
           updateValue={this.updateValue}
           wrapWithReadOnlyOverride={this.wrapWithReadOnlyOverride}
-          theme={theme}
-          collectionSlug={collectionSlug}
-          pluginSettings={pluginSettings}
-          globalSettings={this.props.globalSettings}
+          theme={this.theme}
+          collectionSlug={this.collectionSlug}
+          pluginSettings={this.pluginSettings}
+          globalSettings={this.globalSettings}
           fieldComponents={fieldComponents}
           isFieldReadOnly={this.isFieldReadOnly}
-          isNew={isNew}
-          errors={errors}
+          isNew={this.isNew ?? false}
+          errors={this.errors}
           label={label}
-          slugWarning={slugWarning}
-          slugManuallyEdited={slugManuallyEdited}
+          slugWarning={this.slugWarning}
+          slugManuallyEdited={this.slugManuallyEdited}
           isLocalizedField={isLocalizedField}
           shouldInlineLocaleSwitcher={this.shouldInlineLocaleSwitcher}
           localeSwitcher={this.localeSwitcher}
-          record={record}
-          onPatch={onPatch}
+          record={this.record}
+          onPatch={this.onPatch}
         />
 
         <FieldRendererFooter
-          field={field}
+          field={this.field}
           resolvedFieldDescription={resolvedFieldDescription}
-          errors={errors}
+          errors={this.errors}
         />
       </div>
     );

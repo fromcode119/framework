@@ -1,7 +1,7 @@
-import type { AssistantAction } from '../admin-assistant-core';
+import type { IAssistantAction } from '@ai/interfaces/assistant-action.interface';
 
 export class AssistantActionCardUtils {
-  static summarize(action: AssistantAction): { title: string; detail: string } {
+  static summarize(action: IAssistantAction): { title: string; detail: string } {
     if (action.type === 'mcp_call') {
       const tool = String(action.tool || 'action').trim();
       const input = action.input && typeof action.input === 'object' ? action.input : {};

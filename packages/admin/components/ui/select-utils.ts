@@ -1,4 +1,5 @@
-import type { Option, SelectOptionGroup } from './select.interfaces';
+import type { IOption } from '@/components/ui/interfaces/option.interface';
+import type { ISelectOptionGroup } from '@/components/ui/interfaces/select-option-group.interface';
 
 /**
  * Pure helpers for {@link Select}: option-value normalization, search filtering, and
@@ -13,18 +14,18 @@ export class SelectUtils {
       : String(value);
   }
 
-  static findSelected(options: Option[], value: string): Option | undefined {
+  static findSelected(options: IOption[], value: string): IOption | undefined {
     const curVal = SelectUtils.normalizeValue(value);
     return options.find(opt => SelectUtils.normalizeValue(opt.value) === curVal);
   }
 
-  static filter(options: Option[], searchValue: string): Option[] {
+  static filter(options: IOption[], searchValue: string): IOption[] {
     return options.filter(opt =>
       opt.label.toLowerCase().includes(searchValue.toLowerCase())
     );
   }
 
-  static group(filteredOptions: Option[]): SelectOptionGroup[] {
+  static group(filteredOptions: IOption[]): ISelectOptionGroup[] {
     return filteredOptions.reduce((acc, opt) => {
       const groupName = opt.group || 'Options';
       const existingGroup = acc.find((g) => g.name === groupName);
@@ -34,14 +35,14 @@ export class SelectUtils {
         acc.push({ name: groupName, options: [opt] });
       }
       return acc;
-    }, [] as SelectOptionGroup[]);
+    }, [] as ISelectOptionGroup[]);
   }
 
-  static showGroupHeaders(groups: SelectOptionGroup[]): boolean {
+  static showGroupHeaders(groups: ISelectOptionGroup[]): boolean {
     return groups.length > 1 || (groups.length === 1 && groups[0].name !== 'Options');
   }
 
-  static sections(groupOptions: Option[]): SelectOptionGroup[] {
+  static sections(groupOptions: IOption[]): ISelectOptionGroup[] {
     return groupOptions.reduce((acc, opt) => {
       const sectionName = opt.section || '';
       const existing = acc.find((s) => s.name === sectionName);
@@ -51,10 +52,10 @@ export class SelectUtils {
         acc.push({ name: sectionName, options: [opt] });
       }
       return acc;
-    }, [] as SelectOptionGroup[]);
+    }, [] as ISelectOptionGroup[]);
   }
 
-  static showSectionHeaders(sections: SelectOptionGroup[]): boolean {
+  static showSectionHeaders(sections: ISelectOptionGroup[]): boolean {
     return sections.length > 1 || (sections.length === 1 && sections[0].name !== '');
   }
 }

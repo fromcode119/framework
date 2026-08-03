@@ -1,38 +1,38 @@
-import { 
-  PluginContext, 
-  LoadedPlugin, 
-} from '../types';
-import { Logger } from '../logging';
-import type { PluginManagerInterface } from './context/utils.interfaces';
-import { ContextSecurityProxy } from './context/utils';
-import { ApiContextProxy } from './context/api';
-import { DatabaseContextProxy } from './context/database';
-import { IntegrationsContextProxy } from './context/integrations';
-import { JobsContextProxy } from './context/jobs';
-import { SchedulerContextProxy } from './context/scheduler';
-import { CollectionsContextProxy } from './context/collections';
-import { I18nContextProxy } from './context/i18n';
-import { SettingsContextProxy } from './context/settings';
-import { UiContextProxy } from './context/ui';
-import { UsersContextProxy } from './context/users';
-import { PeopleContextProxy } from './context/people';
-import { EntityRecordsContextProxy } from './context/entity-records';
-import { MetaContextProxy } from './context/meta';
-import { MediaContextProxy } from './context/media';
-import { RecordVersionsContextProxy } from './context/record-versions';
-import { RolesContextProxy } from './context/roles';
-import { NotificationsContextProxy } from './context/notifications';
-import { ThemeContextProxy } from './context/theme';
-import { PluginsFacade } from '../plugins-facade';
-import { PluginsManagerResolver } from '../plugins-manager-resolver';
-import { PluginPathContextProxy } from './context/paths';
-import { EntitiesContextProxy } from './context/entities';
-import { PluginState } from './services/plugin-state.enums';
+import { RuntimeModuleKind } from '@core/plugin/services/enums/runtime-module-kind.enum';
+import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+import { PluginContext } from '@core/plugin-context';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { Logger } from '@core/logging';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { ApiContextProxy } from '@core/plugin/context/api';
+import { DatabaseContextProxy } from '@core/plugin/context/database';
+import { IntegrationsContextProxy } from '@core/plugin/context/integrations';
+import { JobsContextProxy } from '@core/plugin/context/jobs';
+import { SchedulerContextProxy } from '@core/plugin/context/scheduler';
+import { CollectionsContextProxy } from '@core/plugin/context/collections';
+import { I18nContextProxy } from '@core/plugin/context/i18n';
+import { SettingsContextProxy } from '@core/plugin/context/settings';
+import { UiContextProxy } from '@core/plugin/context/ui';
+import { UsersContextProxy } from '@core/plugin/context/users';
+import { PeopleContextProxy } from '@core/plugin/context/people';
+import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
+import { MetaContextProxy } from '@core/plugin/context/meta';
+import { MediaContextProxy } from '@core/plugin/context/media';
+import { RecordVersionsContextProxy } from '@core/plugin/context/record-versions';
+import { RolesContextProxy } from '@core/plugin/context/roles';
+import { NotificationsContextProxy } from '@core/plugin/context/notifications';
+import { ThemeContextProxy } from '@core/plugin/context/theme';
+import { PluginsFacade } from '@core/plugins-facade';
+import { PluginsManagerResolver } from '@core/plugins-manager-resolver';
+import { PluginPathContextProxy } from '@core/plugin/context/paths';
+import { EntitiesContextProxy } from '@core/plugin/context/entities';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class PluginContextFactory {
   static createPluginContext(
-  plugin: LoadedPlugin,
-  manager: PluginManagerInterface,
+  plugin: ILoadedPlugin,
+  manager: IPluginManagerInterface,
   rootLogger: Logger
 ): PluginContext {
       const pluginLogger = rootLogger.child(plugin.manifest.slug);
@@ -187,7 +187,7 @@ export class PluginContextFactory {
           optional: optionalDependency,
         },
         extensions: {
-          installArchive: async (input: { filePath: string; type: 'plugin' | 'theme' | 'core'; enable?: boolean; activate?: boolean }) => {
+          installArchive: async (input: { filePath: string; type: ExtensionScope; enable?: boolean; activate?: boolean }) => {
             if (!security.hasCapability('extensions:manage')) {
               security.handleViolation('extensions:manage');
             }
@@ -217,7 +217,7 @@ export class PluginContextFactory {
         },
         ui: UiContextProxy.createUiProxy(plugin, manager),
         runtime: {
-          registerModule: (name: string, config: { keys: string[], type: 'icon' | 'lib' }) => {
+          registerModule: (name: string, config: { keys: string[], type: RuntimeModuleKind }) => {
             manager.runtime.registerModule(name, config);
             rootLogger.info(`Plugin "${plugin.manifest.slug}" registered runtime module bridge: ${name} (${config.type})`);
           }

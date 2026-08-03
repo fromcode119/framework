@@ -1,5 +1,6 @@
 import path from 'path';
-import { SystemConstants } from '../constants';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Framework-owned safety for resolving a public uploads reference to a disk path.
@@ -10,7 +11,7 @@ import { SystemConstants } from '../constants';
 export class MediaPathUtils {
   /** The public mount prefix every upload URL/path starts with (with a trailing slash),
    *  sourced from the canonical storage constant — never a re-hardcoded literal. */
-  static readonly UPLOADS_PREFIX = `${String(SystemConstants.STORAGE.DEFAULT_PUBLIC_URL || '/uploads').replace(/\/+$/, '')}/`;
+  static readonly UPLOADS_PREFIX = `${String(SystemConstants.STORAGE.DEFAULT_PUBLIC_URL).replace(/\/+$/, '')}/`;
 
   /**
    * Resolve a public upload reference (a `/uploads/...` path OR a full
@@ -27,6 +28,28 @@ export class MediaPathUtils {
     const resolved = path.resolve(root, rel);
     // Real confinement: the resolved path must be the root itself or live beneath it.
     if (resolved !== root && !resolved.startsWith(root + path.sep)) return null;
+    return resolved;
+  }
+
+  /**
+   * Resolve a theme UI asset reference to an absolute disk path INSIDE `<themesDir>/<slug>/ui`.
+   * Returns `null` when the input is not a theme asset reference or escapes that directory.
+   *
+   * Same real confinement as {@link resolveSafeUploadDiskPath} — resolve, then prefix-check — so a
+   * traversal in either the slug or the asset path lands outside the root and is rejected.
+   */
+  static resolveSafeThemeAssetDiskPath(themesDir: string, src: unknown): string | null {
+    const pathname = MediaPathUtils.toUploadPathname(src);
+    if (!pathname || pathname.includes('\0')) return null;
+
+    // The matcher is DERIVED from the theme-UI route template, so it tracks the route rather than
+    // repeating it — see ApiPathUtils.themeUiAssetMatcher.
+    const match = pathname.match(ApiPathUtils.themeUiAssetMatcher());
+    if (!match) return null;
+
+    const root = path.resolve(String(themesDir || ''));
+    const resolved = path.resolve(root, match[1], SystemConstants.THEME_DIR.UI, match[2]);
+    if (!resolved.startsWith(root + path.sep)) return null;
     return resolved;
   }
 

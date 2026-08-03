@@ -1,5 +1,6 @@
-import { ApplicationUrlUtils } from './application-url-utils';
-import { RequestSurfaceUtils } from './request-surface-utils';
+import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { RequestSurfaceUtils } from '@core/request-surface-utils';
+import { EnvUtils } from '@core/utils/env-utils';
 
 export class RuntimeLocationUtils {
   static getCurrentPathname(): string {
@@ -51,7 +52,7 @@ export class RuntimeLocationUtils {
   }
 
   private static readCurrentUrl(): URL | null {
-    if (typeof window === 'undefined') {
+    if (EnvUtils.isServer()) {
       return null;
     }
 

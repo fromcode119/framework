@@ -1,7 +1,8 @@
-import { RuntimeConstants } from '@fromcode119/core/client';
 import { cache } from 'react';
-import { FrontendConfigCache } from '../frontend-config-cache';
-import { PageDocPrefetcher } from './page-doc-prefetcher';
+import { RuntimeConstants } from '@fromcode119/core/client';
+
+import { FrontendConfigCache } from '@/lib/frontend-config-cache';
+import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
 
 /**
  * Per-request memoized page-scoped prefetch (React `cache()`), mirroring

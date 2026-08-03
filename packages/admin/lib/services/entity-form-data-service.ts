@@ -1,12 +1,14 @@
+import { EntityParseMode } from '@fromcode119/core/client';
 import { EntityValueParserService } from '@fromcode119/core/client';
-import type { Collection } from '@fromcode119/core/client';
+import type { ICollection } from '@fromcode119/core/client';
+import { FieldType } from '@fromcode119/core';
 
 export class EntityFormDataService {
   private readonly parser = new EntityValueParserService();
   private static readonly READ_ONLY_OVERRIDE_SYSTEM_FIELDS = new Set(['createdAt', 'updatedAt']);
 
   normalizeSubmitPayload(
-    collection: Collection | null | undefined,
+    collection: ICollection | null | undefined,
     payload: Record<string, any>,
     options: { isNew?: boolean } = {},
   ): Record<string, any> {
@@ -16,7 +18,7 @@ export class EntityFormDataService {
 
     const preservedMetadata = this.extractSubmitMetadata(payload);
     const parsed = this.parser.parseCollectionInput(collection, payload, {
-      mode: options.isNew ? 'create' : 'update',
+      mode: options.isNew ? EntityParseMode.CREATE : EntityParseMode.UPDATE,
     });
 
     return {
@@ -26,7 +28,7 @@ export class EntityFormDataService {
     };
   }
 
-  normalizeLoadedRecord(collection: Collection | null | undefined, payload: Record<string, any>): Record<string, any> {
+  normalizeLoadedRecord(collection: ICollection | null | undefined, payload: Record<string, any>): Record<string, any> {
     if (!collection || !payload || typeof payload !== 'object') {
       return payload;
     }
@@ -37,10 +39,10 @@ export class EntityFormDataService {
       if (!fieldName || !(fieldName in nextPayload)) {
         continue;
       }
-      if (field.type !== 'checkbox' && field.type !== 'boolean') {
+      if (field.type !== FieldType.CHECKBOX && field.type !== FieldType.BOOLEAN) {
         continue;
       }
-      const parsed = this.parser.parseCollectionInput(collection, { [fieldName]: nextPayload[fieldName] }, { mode: 'update' });
+      const parsed = this.parser.parseCollectionInput(collection, { [fieldName]: nextPayload[fieldName] }, { mode: EntityParseMode.UPDATE });
       if (Object.prototype.hasOwnProperty.call(parsed.data, fieldName)) {
         nextPayload[fieldName] = parsed.data[fieldName];
       }
@@ -60,7 +62,7 @@ export class EntityFormDataService {
   }
 
   private extractUnlockedSystemFields(
-    collection: Collection,
+    collection: ICollection,
     payload: Record<string, any>,
     preservedMetadata: Record<string, any>,
   ): Record<string, any> {

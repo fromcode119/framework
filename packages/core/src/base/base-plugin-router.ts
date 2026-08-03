@@ -1,8 +1,8 @@
-import type { BasePluginRouterOptions } from './base-plugin-router.interfaces';
-import { BaseRouter } from './base-router';
+import type { IBasePluginRouterOptions } from '@core/base/interfaces/base-plugin-router-options.interface';
+import { BaseRouter } from '@core/base/base-router';
 
 export class BasePluginRouter extends BaseRouter {
-  constructor(private readonly options: BasePluginRouterOptions) {
+  constructor(private readonly options: IBasePluginRouterOptions) {
     super();
   }
 

@@ -1,5 +1,5 @@
-import { SystemConstants } from '../../constants';
-import { PluginConfigValueService } from './plugin-config-value-service';
+import { SystemConstants } from '@core/constants/system.constants';
+import { PluginConfigValueService } from '@core/plugin/services/plugin-config-value-service';
 
 /**
  * Resolves the subset of each active plugin's settings that may be published to the

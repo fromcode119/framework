@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import type { ControllerDeps } from './controller-deps';
+import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 
 /** Handles the assistantModels endpoint logic. */
 export class AssistantModelsHandler {
-  static async handle(req: Request, res: Response, deps: ControllerDeps): Promise<Response> {
+  static async handle(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     const startedAt = Date.now();
     try {
       const provider = String(req.body?.provider || req.query?.provider || '').trim().toLowerCase() || 'openai';

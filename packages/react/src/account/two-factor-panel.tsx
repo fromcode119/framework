@@ -1,29 +1,27 @@
-import React from 'react';
+import { state } from '@fromcode119/reactor';
+import type { IAccountTwoFactorPanelState } from '@react/account/interfaces/account-two-factor-panel-state.interface';
+import type { ReactNode } from 'react';
 import { RouteConstants } from '@fromcode119/core/client';
-import { PluginComponent } from '../plugin-component';
-import { AccountAuthClient } from './auth-client';
-
-interface AccountTwoFactorPanelState {
-  loading: boolean;
-  busy: boolean;
-  enabled: boolean;
-  setupSecret: string;
-  qrCode: string;
-  recoveryCodes: string[];
-  token: string;
-  message: string;
-  isError: boolean;
-}
+import { PluginComponent } from '@react/view/plugin-component.client';
+import { AccountAuthClient } from '@react/account/auth-client';
+import { AccountClass } from '@react/account/account-class';
 
 /** Plugin-owned default Two-Factor section for the framework AccountShell. Shows 2FA status and runs
  * the setup → verify → disable flow against the framework auth API. Registered into `account.panels`. */
-export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknown>, AccountTwoFactorPanelState> {
-  static readonly accountSection = { key: 'two-factor', labelKey: 'account.section.two-factor', priority: 70 };
+export class AccountTwoFactorPanel extends PluginComponent {
+  @state loading: boolean = true;
+  @state busy: boolean = false;
+  @state enabled: boolean = false;
+  @state setupSecret: string = '';
+  @state qrCode: string = '';
+  @state recoveryCodes: string[] = [];
+  @state token: string = '';
+  @state message: string = '';
+  @state isError: boolean = false;
+  static readonly accountSection = { key: 'two-factor', labelKey: 'account.section.two-factor', priority: 70, descriptionKey: 'account.description.two-factor' };
 
   private mounted = false;
-
-  state: AccountTwoFactorPanelState = { loading: true, busy: false, enabled: false, setupSecret: '', qrCode: '', recoveryCodes: [], token: '', message: '', isError: false };
-
+  
   componentDidMount(): void {
     this.mounted = true;
     void this.loadStatus();
@@ -57,10 +55,10 @@ export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknow
   }
 
   private async verify(): Promise<void> {
-    if (!this.state.token) return;
+    if (!this.token) return;
     this.setState({ busy: true, message: '', isError: false });
     try {
-      await this.auth.post(RouteConstants.SEGMENTS.TWO_FACTOR_VERIFY, { token: this.state.token });
+      await this.auth.post(RouteConstants.SEGMENTS.TWO_FACTOR_VERIFY, { token: this.token });
       if (this.mounted) this.setState({ busy: false, enabled: true, setupSecret: '', token: '', isError: false, message: this.t('account.twoFactor.enabledMsg') });
     } catch (error: any) {
       if (this.mounted) this.setState({ busy: false, isError: true, message: AccountAuthClient.errorMessage(error, this.t('account.twoFactor.invalidToken')) });
@@ -77,39 +75,46 @@ export class AccountTwoFactorPanel extends PluginComponent<Record<string, unknow
     }
   }
 
-  render(): React.ReactNode {
-    const { loading, busy, enabled, setupSecret, qrCode, recoveryCodes, token, message, isError } = this.state;
-    const card: React.CSSProperties = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' };
-    const btn = (bg: string, fg: string): React.CSSProperties => ({ padding: '10px 22px', background: bg, color: fg, border: 'none', borderRadius: '999px', fontSize: '14px', fontWeight: 600, cursor: busy ? 'default' : 'pointer' });
-    if (loading) return <div style={card}>{this.t('account.twoFactor.loading')}</div>;
+  render(): ReactNode {
+    const { loading, busy, enabled, setupSecret, qrCode, recoveryCodes, token, message, isError } = this;
+    if (loading) return <div className={AccountClass.of('card')}>{this.t('account.twoFactor.loading')}</div>;
     return (
-      <div style={card}>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 8px' }}>{this.t('account.section.two-factor')}</h2>
-        <p style={{ color: '#475569', fontSize: '14px', margin: '0 0 16px' }}>
-          {enabled ? this.t('account.twoFactor.on') : this.t('account.twoFactor.off')}
-        </p>
-        {message ? <p style={{ color: isError ? '#dc2626' : '#16a34a', fontSize: '13px' }}>{message}</p> : null}
+      <div className={AccountClass.of('card')}>
+        <h2 className={AccountClass.of('h2')}>{this.t('account.section.two-factor')}</h2>
+        <p className={AccountClass.of('muted')}>{enabled ? this.t('account.twoFactor.on') : this.t('account.twoFactor.off')}</p>
+        {message ? <p className={AccountClass.of(isError ? 'error' : 'success')}>{message}</p> : null}
 
         {enabled ? (
-          <button onClick={() => void this.disable()} disabled={busy} style={btn('#fee2e2', '#b91c1c')}>{this.t('account.twoFactor.disable')}</button>
+          <button className={AccountClass.of('btn', 'danger')} onClick={() => void this.disable()} disabled={busy}>
+            {this.t('account.twoFactor.disable')}
+          </button>
         ) : setupSecret ? (
           <div>
-            <p style={{ fontSize: '13px', color: '#475569' }}>{this.t('account.twoFactor.scanKey')}</p>
-            {qrCode ? <img src={qrCode} alt={this.t('account.twoFactor.qrAlt', undefined, 'Two-factor QR code')} style={{ display: 'block', width: '200px', height: '200px', margin: '8px 0', borderRadius: '12px', border: '1px solid #e2e8f0' }} /> : null}
-            <code style={{ display: 'block', wordBreak: 'break-all', background: '#f8fafc', padding: '10px', borderRadius: '8px', fontSize: '12px', margin: '8px 0' }}>{setupSecret}</code>
+            <p className={AccountClass.of('hint')}>{this.t('account.twoFactor.scanKey')}</p>
+            {qrCode ? <img className={AccountClass.of('qr')} src={qrCode} alt={this.t('account.twoFactor.qrAlt', undefined, 'Two-factor QR code')} /> : null}
+            <code className={AccountClass.of('code')}>{setupSecret}</code>
             {recoveryCodes.length ? (
-              <div style={{ margin: '8px 0' }}>
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>{this.t('account.twoFactor.recoveryCodes')}</div>
-                <code style={{ display: 'block', background: '#f8fafc', padding: '10px', borderRadius: '8px', fontSize: '12px' }}>{recoveryCodes.join('  ')}</code>
+              <div className={AccountClass.of('block')}>
+                <div className={AccountClass.of('block-label')}>{this.t('account.twoFactor.recoveryCodes')}</div>
+                <code className={AccountClass.of('code')}>{recoveryCodes.join('  ')}</code>
               </div>
             ) : null}
-            <form onSubmit={(e) => { e.preventDefault(); void this.verify(); }} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <input value={token} onChange={(e) => this.setState({ token: e.target.value })} placeholder={this.t('account.twoFactor.tokenPlaceholder')} autoComplete="one-time-code" inputMode="numeric" style={{ padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '14px' }} />
-              <button type="submit" disabled={busy} style={btn('#1a1a2e', '#fff')}>{this.t('account.twoFactor.verify')}</button>
+            <form className={AccountClass.of('inline-form')} onSubmit={(e) => { e.preventDefault(); void this.verify(); }}>
+              <input
+                className={AccountClass.of('input')}
+                value={token}
+                onChange={(e) => this.setState({ token: e.target.value })}
+                placeholder={this.t('account.twoFactor.tokenPlaceholder')}
+                autoComplete="one-time-code"
+                inputMode="numeric"
+              />
+              <button className={AccountClass.of('btn')} type="submit" disabled={busy}>{this.t('account.twoFactor.verify')}</button>
             </form>
           </div>
         ) : (
-          <button onClick={() => void this.startSetup()} disabled={busy} style={btn('#1a1a2e', '#fff')}>{this.t('account.twoFactor.enable')}</button>
+          <button className={AccountClass.of('btn')} onClick={() => void this.startSetup()} disabled={busy}>
+            {this.t('account.twoFactor.enable')}
+          </button>
         )}
       </div>
     );

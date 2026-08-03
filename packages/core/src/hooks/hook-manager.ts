@@ -1,10 +1,10 @@
-import { HookMessagingAdapter } from './types';
-import { HookAdapterFactory } from './hook-adapter-factory';
-import type { HookHandler } from './hook-manager.types';
+import { IHookMessagingAdapter } from '@core/hooks/interfaces/hook-messaging-adapter.interface';
+import { HookAdapterFactory } from '@core/hooks/hook-adapter-factory';
+import type { IHookHandler } from '@core/hooks/interfaces/hook-handler.interface';
 
 export class HookManager {
-  private handlers: Map<string, Set<HookHandler>> = new Map();
-  private adapter: HookMessagingAdapter;
+  private handlers: Map<string, Set<IHookHandler>> = new Map();
+  private adapter: IHookMessagingAdapter;
 
   constructor(options: { type?: string, redisUrl?: string, namespace?: string } = {}) {
     this.adapter = HookAdapterFactory.create(options.type, options);
@@ -20,7 +20,7 @@ export class HookManager {
   /**
    * Subscribe to an event
    */
-  on(event: string, handler: HookHandler): void {
+  on(event: string, handler: IHookHandler): void {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set());
     }
@@ -30,7 +30,7 @@ export class HookManager {
   /**
    * Unsubscribe from an event
    */
-  off(event: string, handler: HookHandler): void {
+  off(event: string, handler: IHookHandler): void {
     const set = this.handlers.get(event);
     if (set) {
       set.delete(handler);
@@ -41,7 +41,7 @@ export class HookManager {
    * Emit an event (fire and forget)
    */
   emit(event: string, payload: any, skipDistributed: boolean = false): void {
-    const handlersToCall = new Set<HookHandler>();
+    const handlersToCall = new Set<IHookHandler>();
 
     // 0. Catch-all handlers
     const globalHandlers = this.handlers.get('*');
@@ -87,7 +87,7 @@ export class HookManager {
    * This is useful for filters like 'content.render'
    */
   async call<T = any>(event: string, payload: T): Promise<T> {
-    const handlersToCall = new Set<HookHandler>();
+    const handlersToCall = new Set<IHookHandler>();
 
     // Exact match
     const exactHandlers = this.handlers.get(event);

@@ -1,8 +1,6 @@
-import { UserManagementService } from './user-management-service';
-import type { ScimListResponse, ScimUser } from './scim-service.interfaces';
-
-const USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
-const LIST_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:ListResponse';
+import { UserManagementService } from '@api/services/user-management-service';
+import type { IScimListResponse } from '@api/services/interfaces/scim-list-response.interface';
+import type { IScimUser } from '@api/services/interfaces/scim-user.interface';
 
 /**
  * SCIM 2.0 user provisioning — the enterprise IdP (Okta, Entra ID, OneLogin) creates, updates and
@@ -12,16 +10,19 @@ const LIST_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:ListResponse';
  * suspends the account; a hard DELETE removes it.
  */
 export class ScimService {
+  private static readonly USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
+  private static readonly LIST_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:ListResponse';
+
   constructor(private readonly users: UserManagementService) {}
 
-  async list(filter?: string): Promise<ScimListResponse> {
+  async list(filter?: string): Promise<IScimListResponse> {
     const all = await this.users.getUsers();
     const wanted = this.parseUserNameFilter(filter);
     const matched = wanted
       ? all.filter((u: any) => String(u.email || '').toLowerCase() === wanted)
       : all;
     return {
-      schemas: [LIST_SCHEMA],
+      schemas: [ScimService.LIST_SCHEMA],
       totalResults: matched.length,
       startIndex: 1,
       itemsPerPage: matched.length,
@@ -29,18 +30,18 @@ export class ScimService {
     };
   }
 
-  async get(id: string): Promise<ScimUser | null> {
+  async get(id: string): Promise<IScimUser | null> {
     const user = await this.users.getUser(Number(id));
     return user ? this.toScim(user) : null;
   }
 
-  async create(body: any): Promise<ScimUser> {
+  async create(body: any): Promise<IScimUser> {
     const id = await this.users.saveUser(null, this.fromScim(body, null));
     const created = await this.users.getUser(Number(id));
     return this.toScim(created);
   }
 
-  async replace(id: string, body: any): Promise<ScimUser | null> {
+  async replace(id: string, body: any): Promise<IScimUser | null> {
     const existing = await this.users.getUser(Number(id));
     if (!existing) return null;
     await this.users.saveUser(Number(id), this.fromScim(body, existing));
@@ -48,7 +49,7 @@ export class ScimService {
   }
 
   /** SCIM PATCH — the deprovision path. Applies each Operation (active / name / userName). */
-  async patch(id: string, body: any): Promise<ScimUser | null> {
+  async patch(id: string, body: any): Promise<IScimUser | null> {
     const existing = await this.users.getUser(Number(id));
     if (!existing) return null;
     const patch: any = {
@@ -85,9 +86,9 @@ export class ScimService {
     return true;
   }
 
-  private toScim(user: any): ScimUser {
+  private toScim(user: any): IScimUser {
     return {
-      schemas: [USER_SCHEMA],
+      schemas: [ScimService.USER_SCHEMA],
       id: String(user.id),
       userName: String(user.email || ''),
       name: { givenName: String(user.firstName || ''), familyName: String(user.lastName || '') },

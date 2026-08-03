@@ -1,0 +1,98 @@
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
+import { PureReactor, prop } from '@fromcode119/reactor';
+import { FrameworkIcons, Slot } from '@fromcode119/react';
+import { Button } from '@/components/ui/view/button.client';
+
+export class BulkActions extends PureReactor {
+  @prop declare theme: ThemeMode;
+  @prop declare selectedIds: string[];
+  @prop declare statusOptions: { label: string; value: string }[];
+  @prop declare handleBulkStatusChange: (status: string) => void;
+  @prop declare handleExport: (format: ExportFormat, ids?: string[]) => void;
+  @prop declare handleBulkDelete: () => void;
+  @prop declare setSelectedIds: (ids: string[]) => void;
+  // Domain-agnostic: a plugin can contribute its own action on the current selection (e.g. "create X from
+  // selection") via a slot. The framework never knows what — it just forwards the selection + collection.
+  @prop declare collection?: any;
+  @prop declare slotSlug?: string;
+  @prop declare resolvedSlug?: string;
+
+  render(): ReactNode {
+    const {
+      theme,
+      selectedIds,
+      statusOptions,
+      handleBulkStatusChange,
+      handleExport,
+      handleBulkDelete,
+      setSelectedIds,
+      collection,
+      slotSlug,
+      resolvedSlug
+    } = this;
+    if (selectedIds.length === 0) return null;
+
+    return (
+      <div className={`flex items-center flex-wrap gap-1 p-1 rounded-xl animate-in slide-in-from-top-2 duration-300 border shadow-sm ${
+        theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+      }`}>
+        <div className="px-3 py-2 text-xs font-bold tracking-tight text-indigo-500 border-r border-slate-200 dark:border-slate-800 mr-1">
+          {selectedIds.length} Selected
+        </div>
+
+        {statusOptions.length > 0 && (
+          <>
+            <div className="flex items-center gap-1 group/bulk">
+              {statusOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleBulkStatusChange(option.value)}
+                  className={`h-11 px-3 text-[11px] font-bold tracking-tight rounded-xl transition-all ${
+                    theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-500 hover:text-indigo-600'
+                  }`}
+                >
+                  Set {option.label || option.value}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
+          </>
+        )}
+
+        <Button
+          variant={ButtonVariant.SECONDARY}
+          size={FieldSize.SM}
+          className="rounded-xl h-11 px-4 text-[12px] font-bold tracking-tight"
+          icon={<FrameworkIcons.Download size={14} />}
+          onClick={() => handleExport(ExportFormat.JSON, selectedIds)}
+        >
+          Export
+        </Button>
+        <Button
+          variant={ButtonVariant.SECONDARY}
+          size={FieldSize.SM}
+          className="rounded-xl h-11 px-4 text-[12px] font-bold tracking-tight text-rose-500 hover:text-rose-600"
+          icon={<FrameworkIcons.Trash size={14} />}
+          onClick={handleBulkDelete}
+        >
+          Delete
+        </Button>
+        {/* Plugin-contributed actions on the current selection (domain-agnostic — the owning plugin fills it). */}
+        <Slot name={`admin.collection.${slotSlug}.list.bulk.actions`} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
+        <Slot name="admin.collection.list.bulk.actions" props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
+        <button
+          onClick={() => setSelectedIds([])}
+          className="h-11 w-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+          title="Clear selection"
+        >
+          <FrameworkIcons.Close size={16} />
+        </button>
+      </div>
+    );
+  }
+}

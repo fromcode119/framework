@@ -1,6 +1,7 @@
-import type { AssistantCollectionContext } from '../types';
-import { SearchTextHelpers } from './search-text-helpers';
-import { PathObjectHelpers } from './path-object-helpers';
+import { TargetResolution } from '@ai/admin-assistant-runtime/enums/target-resolution.enum';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+import { SearchTextHelpers } from '@ai/admin-assistant-runtime/helpers/search-text-helpers';
+import { PathObjectHelpers } from '@ai/admin-assistant-runtime/helpers/path-object-helpers';
 
 /** Homepage draft scaffold builders extracted from AdminAssistantRuntime. */
 export class HomepageDraftHelpers {
@@ -36,11 +37,11 @@ export class HomepageDraftHelpers {
   }
 
   static resolveExplicitHomepageCollections(
-    message: string, collections: AssistantCollectionContext[],
-  ): AssistantCollectionContext[] {
+    message: string, collections: IAssistantCollectionContext[],
+  ): IAssistantCollectionContext[] {
     const normalizedMessage = SearchTextHelpers.normalizeSearchText(message);
     if (!normalizedMessage) return [];
-    const deduped = new Map<string, AssistantCollectionContext>();
+    const deduped = new Map<string, IAssistantCollectionContext>();
     for (const collection of Array.isArray(collections) ? collections : []) {
       const slug = SearchTextHelpers.normalizeSearchText(collection.slug);
       const shortSlug = SearchTextHelpers.normalizeSearchText(collection.shortSlug);
@@ -51,7 +52,7 @@ export class HomepageDraftHelpers {
   }
 
   static parseExplicitHomepageDraftTarget(
-    message: string, collections: AssistantCollectionContext[],
+    message: string, collections: IAssistantCollectionContext[],
   ): { collectionSlug: string; selector: { id?: string | number; entrySlug?: string; permalink?: string } } | null {
     const explicitCollections = HomepageDraftHelpers.resolveExplicitHomepageCollections(message, collections);
     if (explicitCollections.length !== 1) return null;
@@ -70,7 +71,7 @@ export class HomepageDraftHelpers {
     return { collectionSlug: explicitCollections[0].slug, selector };
   }
 
-  static homepageCandidateCollections(collections: AssistantCollectionContext[]): AssistantCollectionContext[] {
+  static homepageCandidateCollections(collections: IAssistantCollectionContext[]): IAssistantCollectionContext[] {
     return (Array.isArray(collections) ? collections : [])
       .map((collection) => {
         const scope = `${collection.slug} ${collection.shortSlug} ${collection.label}`.toLowerCase();
@@ -87,17 +88,17 @@ export class HomepageDraftHelpers {
   }
 
   static resolveHomepageDraftCollection(
-    message: string, collections: AssistantCollectionContext[],
-  ): { status: 'resolved' | 'missing' | 'ambiguous'; collectionSlug?: string; candidateCollections: string[] } {
+    message: string, collections: IAssistantCollectionContext[],
+  ): { status: TargetResolution; collectionSlug?: string; candidateCollections: string[] } {
     const explicitCollections = HomepageDraftHelpers.resolveExplicitHomepageCollections(message, collections);
     const candidates = (
       explicitCollections.length ? explicitCollections : HomepageDraftHelpers.homepageCandidateCollections(collections)
     ).slice(0, 6);
     const deduped = Array.from(new Map(candidates.map((e) => [e.slug, e])).values());
     const candidateCollections = deduped.map((e) => e.slug);
-    if (!deduped.length) return { status: 'missing', candidateCollections: [] };
-    if (deduped.length === 1) return { status: 'resolved', collectionSlug: deduped[0].slug, candidateCollections };
-    return { status: 'ambiguous', candidateCollections };
+    if (!deduped.length) return { status: TargetResolution.MISSING, candidateCollections: [] };
+    if (deduped.length === 1) return { status: TargetResolution.RESOLVED, collectionSlug: deduped[0].slug, candidateCollections };
+    return { status: TargetResolution.AMBIGUOUS, candidateCollections };
   }
 
   static buildHomepageDraftHandle(now?: () => string): string {
@@ -107,7 +108,7 @@ export class HomepageDraftHelpers {
   }
 
   static buildHomepageDraftPayloadForCollection(
-    collection: AssistantCollectionContext,
+    collection: IAssistantCollectionContext,
     scaffold: { markdown: string; payload: Record<string, any> },
     now?: () => string,
   ): Record<string, any> {

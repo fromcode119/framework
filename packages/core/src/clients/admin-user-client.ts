@@ -1,5 +1,5 @@
-import { ApiPathUtils } from '../api/api-path-utils';
-import { SystemConstants } from '../constants';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class AdminUserClient {
   constructor(

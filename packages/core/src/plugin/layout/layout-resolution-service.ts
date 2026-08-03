@@ -1,12 +1,15 @@
-import type {
-  LayoutDiagnosticEntry,
-  RegisteredPluginLayoutDefinition,
-  RegisteredThemeLayoutDisableDefinition,
-  RegisteredThemeLayoutReplacementDefinition,
-  ResolvedLayout,
-} from '../../types';
-import { ThemeLayoutOverrideRegistryService } from '../../theme/theme-layout-override-registry-service';
-import { PluginLayoutRegistryService } from './plugin-layout-registry-service';
+import { LayoutDiagnosticSeverity } from '@core/layout/enums/layout-diagnostic-severity.enum';
+import { LayoutDiagnosticCode } from '@core/layout/enums/layout-diagnostic-code.enum';
+import { LayoutTargetKind } from '@core/layout/enums/layout-target-kind.enum';
+import { LayoutResolutionSource } from '@core/layout/enums/layout-resolution-source.enum';
+import { LayoutResolutionStatus } from '@core/layout/enums/layout-resolution-status.enum';
+import type { ILayoutDiagnosticEntry } from '@core/layout/interfaces/layout-diagnostic-entry.interface';
+import type { IRegisteredPluginLayoutDefinition } from '@core/layout/interfaces/registered-plugin-layout-definition.interface';
+import type { IRegisteredThemeLayoutDisableDefinition } from '@core/layout/interfaces/registered-theme-layout-disable-definition.interface';
+import type { IRegisteredThemeLayoutReplacementDefinition } from '@core/layout/interfaces/registered-theme-layout-replacement-definition.interface';
+import type { IResolvedLayout } from '@core/layout/interfaces/resolved-layout.interface';
+import { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
+import { PluginLayoutRegistryService } from '@core/plugin/layout/plugin-layout-registry-service';
 
 export class LayoutResolutionService {
   constructor(
@@ -19,10 +22,10 @@ export class LayoutResolutionService {
   }
 
   resolveTarget(
-    targetKind: RegisteredPluginLayoutDefinition['targetKind'],
+    targetKind: IRegisteredPluginLayoutDefinition['targetKind'],
     targetKey: string,
     activeThemeSlug?: string,
-  ): ResolvedLayout {
+  ): IResolvedLayout {
     const normalizedTargetKind = this.normalizeTargetKind(targetKind);
     const normalizedTargetKey = this.normalizeRequiredString(targetKey, 'targetKey');
     const pluginEntry = this.getPluginEntry(normalizedTargetKind, normalizedTargetKey);
@@ -34,7 +37,7 @@ export class LayoutResolutionService {
       return {
         targetKey: normalizedTargetKey,
         targetKind: normalizedTargetKind,
-        status: 'missing',
+        status: LayoutResolutionStatus.MISSING,
         diagnostics,
       };
     }
@@ -44,8 +47,8 @@ export class LayoutResolutionService {
 
     if (disableWinner && pluginEntry.required && !replacementWinner) {
       diagnostics.push(this.createDiagnostic(
-        'required-route-disabled',
-        'error',
+        LayoutDiagnosticCode.REQUIRED_ROUTE_DISABLED,
+        LayoutDiagnosticSeverity.ERROR,
         normalizedTargetKey,
         `[LayoutResolutionService] required ${normalizedTargetKind} target cannot be disabled without a replacement: ${normalizedTargetKey}`,
       ));
@@ -55,8 +58,8 @@ export class LayoutResolutionService {
       return {
         targetKey: normalizedTargetKey,
         targetKind: normalizedTargetKind,
-        status: 'resolved',
-        source: 'theme-replacement',
+        status: LayoutResolutionStatus.RESOLVED,
+        source: LayoutResolutionSource.THEME_REPLACEMENT,
         winner: replacementWinner.component,
         winnerOwner: replacementWinner.themeSlug,
         diagnostics,
@@ -67,7 +70,7 @@ export class LayoutResolutionService {
       return {
         targetKey: normalizedTargetKey,
         targetKind: normalizedTargetKind,
-        status: 'disabled',
+        status: LayoutResolutionStatus.DISABLED,
         diagnostics,
       };
     }
@@ -75,22 +78,22 @@ export class LayoutResolutionService {
     return {
       targetKey: normalizedTargetKey,
       targetKind: normalizedTargetKind,
-      status: 'resolved',
-      source: 'plugin',
+      status: LayoutResolutionStatus.RESOLVED,
+      source: LayoutResolutionSource.PLUGIN,
       winner: pluginEntry.component,
       winnerOwner: `${pluginEntry.namespace}:${pluginEntry.pluginSlug}`,
       diagnostics,
     };
   }
 
-  resolvePageTarget(targetKey: string, activeThemeSlug?: string): ResolvedLayout {
-    return this.resolveTarget('page', targetKey, activeThemeSlug);
+  resolvePageTarget(targetKey: string, activeThemeSlug?: string): IResolvedLayout {
+    return this.resolveTarget(LayoutTargetKind.PAGE, targetKey, activeThemeSlug);
   }
 
   private getPluginEntry(
-    targetKind: RegisteredPluginLayoutDefinition['targetKind'],
+    targetKind: IRegisteredPluginLayoutDefinition['targetKind'],
     targetKey: string,
-  ): RegisteredPluginLayoutDefinition | undefined {
+  ): IRegisteredPluginLayoutDefinition | undefined {
     return this.pluginRegistry
       .listByTargetKind(targetKind)
       .filter((entry) => entry.targetKind === targetKind && entry.targetKey === targetKey)
@@ -98,10 +101,10 @@ export class LayoutResolutionService {
   }
 
   private getThemeDisables(
-    targetKind: RegisteredThemeLayoutDisableDefinition['targetKind'],
+    targetKind: IRegisteredThemeLayoutDisableDefinition['targetKind'],
     targetKey: string,
     activeThemeSlug?: string,
-  ): RegisteredThemeLayoutDisableDefinition[] {
+  ): IRegisteredThemeLayoutDisableDefinition[] {
     return this.themeRegistry
       .listDisables()
       .filter((entry) => entry.targetKind === targetKind && entry.targetKey === targetKey)
@@ -109,10 +112,10 @@ export class LayoutResolutionService {
   }
 
   private getThemeReplacements(
-    targetKind: RegisteredThemeLayoutReplacementDefinition['targetKind'],
+    targetKind: IRegisteredThemeLayoutReplacementDefinition['targetKind'],
     targetKey: string,
     activeThemeSlug?: string,
-  ): RegisteredThemeLayoutReplacementDefinition[] {
+  ): IRegisteredThemeLayoutReplacementDefinition[] {
     return this.themeRegistry
       .listReplacements()
       .filter((entry) => entry.targetKind === targetKind && entry.targetKey === targetKey)
@@ -121,8 +124,8 @@ export class LayoutResolutionService {
 
   private getConflictDiagnostics(
     targetKey: string,
-    entries: RegisteredThemeLayoutReplacementDefinition[],
-  ): LayoutDiagnosticEntry[] {
+    entries: IRegisteredThemeLayoutReplacementDefinition[],
+  ): ILayoutDiagnosticEntry[] {
     if (entries.length < 2) {
       return [];
     }
@@ -135,8 +138,8 @@ export class LayoutResolutionService {
     if (winner.priority === next.priority) {
       return [
         this.createDiagnostic(
-          'theme-replacement-conflict',
-          'error',
+          LayoutDiagnosticCode.THEME_REPLACEMENT_CONFLICT,
+          LayoutDiagnosticSeverity.ERROR,
           targetKey,
           `[LayoutResolutionService] equal-priority theme replacements conflict for ${targetKey}`,
         ),
@@ -147,27 +150,27 @@ export class LayoutResolutionService {
   }
 
   private pickDisableWinner(
-    entries: RegisteredThemeLayoutDisableDefinition[],
-  ): RegisteredThemeLayoutDisableDefinition | undefined {
+    entries: IRegisteredThemeLayoutDisableDefinition[],
+  ): IRegisteredThemeLayoutDisableDefinition | undefined {
     return entries
       .slice()
       .sort((left, right) => right.priority - left.priority || left.canonicalKey.localeCompare(right.canonicalKey))[0];
   }
 
   private pickReplacementWinner(
-    entries: RegisteredThemeLayoutReplacementDefinition[],
-  ): RegisteredThemeLayoutReplacementDefinition | undefined {
+    entries: IRegisteredThemeLayoutReplacementDefinition[],
+  ): IRegisteredThemeLayoutReplacementDefinition | undefined {
     return entries
       .slice()
       .sort((left, right) => right.priority - left.priority || left.canonicalKey.localeCompare(right.canonicalKey))[0];
   }
 
   private createDiagnostic(
-    code: LayoutDiagnosticEntry['code'],
-    severity: LayoutDiagnosticEntry['severity'],
+    code: ILayoutDiagnosticEntry['code'],
+    severity: ILayoutDiagnosticEntry['severity'],
     targetKey: string,
     message: string,
-  ): LayoutDiagnosticEntry {
+  ): ILayoutDiagnosticEntry {
     return { code, severity, targetKey, message };
   }
 
@@ -180,9 +183,9 @@ export class LayoutResolutionService {
   }
 
   private normalizeTargetKind(
-    value: RegisteredPluginLayoutDefinition['targetKind'],
-  ): RegisteredPluginLayoutDefinition['targetKind'] {
-    if (value === 'page' || value === 'block' || value === 'slot') {
+    value: IRegisteredPluginLayoutDefinition['targetKind'],
+  ): IRegisteredPluginLayoutDefinition['targetKind'] {
+    if (value === LayoutTargetKind.PAGE || value === LayoutTargetKind.BLOCK || value === LayoutTargetKind.SLOT) {
       return value;
     }
     throw new Error(`[LayoutResolutionService] unsupported targetKind: ${String(value)}`);

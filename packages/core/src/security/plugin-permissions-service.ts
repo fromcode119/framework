@@ -1,5 +1,5 @@
-import { PluginManifest } from '../types';
-import type { PluginPermission } from './plugin-permissions-service.types';
+import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import { PluginPermission } from '@core/security/enums/plugin-permission.enum';
 
 /**
  * Plugin Permissions Service
@@ -10,11 +10,16 @@ export class PluginPermissionsService {
    * Checks if a plugin has a specific permission
    * Supports wildcards like 'database:*'
    */
-  static hasPermission(manifest: PluginManifest, permission: string): boolean {
+  // Accepts a member OR a raw manifest string; `Enum.toString()` yields the bare value, so one
+  // normalization here keeps every caller free of `.value` plumbing.
+  static hasPermission(manifest: IPluginManifest, permission: PluginPermission | string): boolean {
     const perms = (manifest.permissions || []).map(p => p.toLowerCase());
-    const caps = (manifest.capabilities || []).map(c => c.toLowerCase());
+    // `capabilities` is declared as `(string | PluginCapability)[]`: a manifest is JSON so the values
+    // are strings at runtime, but the type also admits members. `String()` normalizes both — an Enum's
+    // toString() yields its bare value.
+    const caps = (manifest.capabilities || []).map(c => String(c).toLowerCase());
     const allAllowed = [...perms, ...caps];
-    const target = permission.toLowerCase();
+    const target = String(permission).toLowerCase();
 
     if (allAllowed.includes('*')) return true;
     if (allAllowed.includes(target)) return true;
@@ -43,7 +48,7 @@ export class PluginPermissionsService {
    * @param permission - The permission required
    * @throws Error if permission is denied
    */
-  static ensure(pluginSlug: string, manifest: PluginManifest, permission: PluginPermission | string): void {
+  static ensure(pluginSlug: string, manifest: IPluginManifest, permission: PluginPermission | string): void {
     if (!this.hasPermission(manifest, permission)) {
       throw new Error(`Plugin '${pluginSlug}' attempted to access '${permission}' but does not have the required permission in its manifest.`)
     }
@@ -52,7 +57,7 @@ export class PluginPermissionsService {
   /**
    * Filters a list of plugins by those that have a specific permission
    */
-  static filterByPermission(plugins: { slug: string; manifest: PluginManifest }[], permission: PluginPermission | string) {
+  static filterByPermission(plugins: { slug: string; manifest: IPluginManifest }[], permission: PluginPermission | string) {
     return plugins.filter(p => this.hasPermission(p.manifest, permission))
   }
 }

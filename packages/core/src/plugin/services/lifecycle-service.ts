@@ -1,25 +1,29 @@
+import { DependencyIssueKind } from '@core/plugin/services/enums/dependency-issue-kind.enum';
+import { PluginApprovalMode } from '@core/plugin/services/enums/plugin-approval-mode.enum';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../../logging';
-import { LoadedPlugin, FromcodePlugin } from '../../types';
-import { SystemConstants } from '../../constants';
-import type { PluginManagerInterface } from '../context/utils.interfaces';
-import { NotificationsContextProxy } from '../context/notifications';
-import { PluginStateService } from './plugin-state-service';
-import { DiscoveryService } from './discovery-service';
-import { SchemaManager } from '../../database/schema-manager';
+import { Logger } from '@core/logging';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import { SystemConstants } from '@core/constants/system.constants';
+import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { NotificationsContextProxy } from '@core/plugin/context/notifications';
+import { PluginStateService } from '@core/plugin/services/plugin-state-service';
+import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { SchemaManager } from '@core/database/schema-manager';
 
-import { ManifestValidator } from '../../management/manifest';
-import { SandboxManager } from '../../security/sandbox-manager';
-import { Seeder } from '../../database/seeder';
-import { PluginFailureIsolationService } from './plugin-failure-isolation-service';
-import { PluginCollectionActivationService } from './plugin-collection-activation-service';
-import { PluginRegistrationSecurityService } from './plugin-registration-security-service';
-import { PluginCapabilityApprovalPolicy } from './plugin-capability-approval-policy';
-import { PluginRegistryHealth, PluginHeldReason } from './plugin-health.enums';
-import { PluginHealthNotificationTemplateService } from './plugin-health-notification-template-service';
-import type { PluginHealthNotificationData } from './plugin-health-notification-template.interfaces';
-import { PluginHealthReportService } from './plugin-health-report-service';
-import { PluginState } from './plugin-state.enums';
+import { ManifestValidator } from '@core/management/manifest';
+import { SandboxManager } from '@core/security/sandbox-manager';
+import { Seeder } from '@core/database/seeder';
+import { PluginFailureIsolationService } from '@core/plugin/services/plugin-failure-isolation-service';
+import { PluginCollectionActivationService } from '@core/plugin/services/plugin-collection-activation-service';
+import { PluginRegistrationSecurityService } from '@core/plugin/services/plugin-registration-security-service';
+import { PluginCapabilityApprovalPolicy } from '@core/plugin/services/plugin-capability-approval-policy';
+import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
+import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
+import { PluginHealthNotificationTemplateService } from '@core/plugin/services/plugin-health-notification-template-service';
+import type { IPluginHealthNotificationData } from '@core/plugin/services/interfaces/plugin-health-notification-data.interface';
+import { PluginHealthReportService } from '@core/plugin/services/plugin-health-report-service';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -29,7 +33,7 @@ export class LifecycleService {
   private activation: PluginCollectionActivationService;
 
   constructor(
-    private manager: PluginManagerInterface,
+    private manager: IPluginManagerInterface,
     private registry: PluginStateService,
     private discovery: DiscoveryService,
     private schemaManager: SchemaManager
@@ -55,8 +59,8 @@ export class LifecycleService {
 
   /** Decide what to do when a plugin's capabilities drifted from approval: 'auto-approve' (trusted +
    *  opt-in) or 'hold'. Pure wrapper over PluginCapabilityApprovalPolicy for testability. */
-  static resolveDriftAction(slug: string, signatureVerified: boolean): 'auto-approve' | 'hold' {
-    return PluginCapabilityApprovalPolicy.shouldAutoApprove(slug, signatureVerified) ? 'auto-approve' : 'hold';
+  static resolveDriftAction(slug: string, signatureVerified: boolean): PluginApprovalMode {
+    return PluginCapabilityApprovalPolicy.shouldAutoApprove(slug, signatureVerified) ? PluginApprovalMode.AUTO_APPROVE : PluginApprovalMode.HOLD;
   }
 
   /**
@@ -64,7 +68,7 @@ export class LifecycleService {
    * Deliberately returns no markup or copy — `PluginHealthNotificationTemplateService` owns those via
    * Handlebars template files (repo rule: code computes data, template files own the rendering).
    */
-  static summarizeHeldPlugins(plugins: Map<string, LoadedPlugin>): PluginHealthNotificationData | null {
+  static summarizeHeldPlugins(plugins: Map<string, ILoadedPlugin>): IPluginHealthNotificationData | null {
     const flagged = [...plugins.values()].filter(
       (p) => p.healthStatus === PluginRegistryHealth.WARNING || p.healthStatus === PluginRegistryHealth.ERROR || p.state === PluginState.ERROR,
     );
@@ -111,7 +115,17 @@ export class LifecycleService {
     return this.sandbox ? await this.sandbox.getStats() : null;
   }
 
-  async register(plugin: FromcodePlugin, pluginPath?: string): Promise<void> {
+  /**
+   * Final default-page materialization pass, run by the discovery coordinator once EVERY plugin in the boot
+   * set is registered. The per-plugin pass inside {@link register} can execute before the plugin that owns the
+   * `pages` collection (CMS) is registered — it then skips ("no registered page collection available") and
+   * required contract pages never materialize. This pass guarantees the pages collection is present.
+   */
+  public async materializeDefaultPagesFinalPass(): Promise<void> {
+    await this.activation.materializeDefaultPages();
+  }
+
+  async register(plugin: IFromcodePlugin, pluginPath?: string): Promise<void> {
     const slug = plugin.manifest.slug;
     const existingEntry = this.manager.plugins.get(slug);
     
@@ -160,7 +174,7 @@ export class LifecycleService {
       );
       if (diff.changed) {
         const action = LifecycleService.resolveDriftAction(slug, Boolean(saved?.signatureVerified));
-        if (action === 'auto-approve') {
+        if (action === PluginApprovalMode.AUTO_APPROVE) {
           const currentCaps = (plugin.manifest.capabilities as string[]) || [];
           this.logger.warn(
             `Plugin "${slug}" AUTO-APPROVED capability change (added: [${diff.added.join(', ')}], removed: [${diff.removed.join(', ')}]) — AUTO_APPROVE_PLUGIN_CAPABILITIES is on and the plugin is trusted.`,
@@ -189,7 +203,7 @@ export class LifecycleService {
       }
     }
 
-    const loadedPlugin: LoadedPlugin = {
+    const loadedPlugin: ILoadedPlugin = {
       ...plugin,
       instanceId: uuidv4(),
       state: PluginState.INACTIVE,
@@ -282,12 +296,12 @@ export class LifecycleService {
       if (issues.length > 0) {
         if (options.recursive) {
           for (const issue of issues) {
-            if (issue.type === 'inactive') {
+            if (issue.type === DependencyIssueKind.INACTIVE) {
               this.logger.info(`Recursively enabling dependency "${issue.slug}" for "${slug}"...`);
               await this.enable(issue.slug, options);
-            } else if (issue.type === 'missing') {
+            } else if (issue.type === DependencyIssueKind.MISSING) {
               throw new Error(`Dependency "${issue.slug}" is missing and required by "${slug}".`);
-            } else if (issue.type === 'incompatible') {
+            } else if (issue.type === DependencyIssueKind.INCOMPATIBLE) {
               throw new Error(`Incompatible dependency: "${slug}" requires "${issue.slug}" version "${issue.expected}", but found "${issue.actual}".`);
             }
           }

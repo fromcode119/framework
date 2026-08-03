@@ -5,6 +5,7 @@
  * field name normalization and table resolution.
  */
 
-export * from './types';
-export * from './plugin-registry';
+export type { ICollectionQueryBuilder } from '@plugins/interfaces/collection-query-builder.interface';
+export type { IPluginProxy } from '@plugins/interfaces/plugin-proxy.interface';
+export * from '@plugins/plugin-registry';
 
