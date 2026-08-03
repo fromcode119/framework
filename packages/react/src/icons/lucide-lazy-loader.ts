@@ -1,5 +1,6 @@
-/// <reference path="./lucide-dynamic-icon-imports.d.ts" />
 import type React from 'react';
+// Lucide's deep ESM entry ships no declarations. `noImplicitAny` is off for this package, so the
+// import lands as `any` and `thunks` below gives it its real, narrow type — no ambient file needed.
 import dynamicIconImports from 'lucide-react/dist/esm/dynamicIconImports.js';
 
 /**

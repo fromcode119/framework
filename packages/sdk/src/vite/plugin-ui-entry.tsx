@@ -2,8 +2,8 @@ import { ContextBridge, PluginUiRegistrar } from '@fromcode119/sdk/react';
 
 // ADMIN plugin-UI entry. Copied VERBATIM into a plugin's src/ui as `.plugin-entry.tsx` at build time,
 // which is why it carries no relative imports and duplicates the storefront variant: only this one file
-// is copied, so anything it imported from a sibling would not resolve. The `__plugin*` globals are
-// injected by the Vite config's `define` and declared in `plugin-ui-globals.d.ts`.
+// is copied, so anything it imported from a sibling would not resolve. The build-time context is
+// injected by the Vite config's `define` as `globalThis.__fromcodePluginUi`.
 
 /**
  * Discovers and registers a plugin's UI.
@@ -18,6 +18,22 @@ import { ContextBridge, PluginUiRegistrar } from '@fromcode119/sdk/react';
  * the initialiser that reads them.
  */
 export class PluginUiEntry {
+
+  /**
+   * Build-time context injected by the Vite config's `define` as `globalThis.__fromcodePluginUi`.
+   *
+   * Read through a getter rather than three bare `__plugin*` identifiers: those are not declared
+   * anywhere TypeScript can see, so they previously needed an ambient `.d.ts` shipped alongside. A
+   * cast off `globalThis` needs no declaration file and keeps this a single class.
+   */
+  private static get buildContext(): { pluginSlug: string; namespace: string; uiBundle: string } {
+    const injected = ((globalThis as Record<string, unknown>).__fromcodePluginUi ?? {}) as Record<string, unknown>;
+    return {
+      pluginSlug: String(injected.slug ?? ''),
+      namespace: String(injected.namespace ?? ''),
+      uiBundle: String(injected.uiBundle ?? ''),
+    };
+  }
   private static readonly modules = import.meta.glob<Record<string, unknown>>(
     [
       './**/*.{ts,tsx}',
@@ -67,7 +83,7 @@ export class PluginUiEntry {
   }
 
   private static registerComponents(): void {
-    const context = { pluginSlug: __pluginSlug, namespace: __pluginNamespace, uiBundle: __uiBundle };
+    const context = PluginUiEntry.buildContext;
     for (const mod of Object.values(PluginUiEntry.modules)) {
       for (const value of Object.values(mod)) PluginUiRegistrar.register(value, context);
     }

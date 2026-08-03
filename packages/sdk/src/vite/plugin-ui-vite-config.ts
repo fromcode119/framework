@@ -23,9 +23,13 @@ export class PluginUiViteConfig {
       cacheDir: `/tmp/vite-plugin-${process.env.PLUGIN_SLUG || 'x'}-${process.env.UI_BUNDLE || 'admin'}`,
       plugins: [PluginUiCssAsTextPlugin.create(), react({ jsxRuntime: 'automatic' })],
       define: {
-        __pluginNamespace: JSON.stringify(process.env.PLUGIN_NAMESPACE || ''),
-        __pluginSlug: JSON.stringify(process.env.PLUGIN_SLUG || ''),
-        __uiBundle: JSON.stringify(process.env.UI_BUNDLE || 'admin'),
+        // ONE injected object behind a dotted key, so the entry reads it through a class getter
+        // instead of three bare `__plugin*` identifiers that would need an ambient declaration.
+        'globalThis.__fromcodePluginUi': JSON.stringify({
+          namespace: process.env.PLUGIN_NAMESPACE || '',
+          slug: process.env.PLUGIN_SLUG || '',
+          uiBundle: process.env.UI_BUNDLE || 'admin',
+        }),
         'process.env.NODE_ENV': JSON.stringify('production'),
       },
       // Decorators are LEGACY (`experimentalDecorators`), matching reactor's `@prop(target, key)` /
