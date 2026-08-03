@@ -1,6 +1,12 @@
 import type React from 'react';
-// Lucide's deep ESM entry ships no declarations. `noImplicitAny` is off for this package, so the
-// import lands as `any` and `thunks` below gives it its real, narrow type — no ambient file needed.
+// Lucide's deep ESM entry ships no declaration file. Suppressed locally rather than papered over with
+// an ambient `.d.ts`: that file had to sit in `src/`, was swallowed by the `packages/*/src/**/*.d.ts`
+// ignore rule, and so never reached CI — every clean checkout failed with TS6053. The value is given
+// its real, narrow type by `thunks` on the very next line, so nothing is left untyped.
+// `@ts-ignore`, not `@ts-expect-error`: this file is compiled under BOTH react's config
+// (`noImplicitAny: false` -> no error, so `expect-error` itself errors as unused, TS2578) and
+// admin's (`noImplicitAny: true` -> the suppression is required). Only `ts-ignore` satisfies both.
+// @ts-ignore -- untyped deep import; given its real type by `thunks` below.
 import dynamicIconImports from 'lucide-react/dist/esm/dynamicIconImports.js';
 
 /**
