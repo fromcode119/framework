@@ -185,8 +185,18 @@ services:
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
       - NODE_ENV=production
       - PORT=3000
+      - THEMES_DIR=/app/themes
+      - PLUGINS_DIR=/app/plugins
     depends_on:
       - api
+    # The frontend needs the ACTIVE theme's server bundle (`ui-ssr/entry.mjs`) for the layout, and each
+    # plugin's for the storefront surfaces INSIDE it — the cms block flow renders the whole page body,
+    # which is where the LCP element lives. Read-only, and the SAME sources the api already mounts: the
+    # frontend must never write to a theme or plugin. Node resolves the bundles' bare `@fromcode119/*`
+    # imports by walking up to /app/node_modules, which is why the mount paths must be under /app.
+    volumes:
+      - ${SHARED_THEMES_DIR:-../../themes}:/app/themes:ro
+      - ${SHARED_PLUGINS_DIR:-../../plugins}:/app/plugins:ro
     networks:
       - framework
       - proxy
