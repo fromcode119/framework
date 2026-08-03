@@ -82,71 +82,48 @@ ENV API_VERSION_PREFIX=$API_VERSION_PREFIX
 ENV NEXT_PUBLIC_ADMIN_APPEARANCE=$NEXT_PUBLIC_ADMIN_APPEARANCE
 # Verify @fromcode119 workspace symlinks were created by npm install
 RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode119/ && echo "--- Node version ---" && node --version
-# Five separate RUN steps so each process fully releases memory before the
+# Separate RUN steps so each process fully releases memory before the
 # next one starts, and Docker can cache each layer independently.
 # Output written to file then replayed so errors appear at the END of the layer
 # log (Coolify log viewer only shows the tail of each step's output).
 
-# Step 0: Build the reactor package FIRST of all — core (LocaleSwitcher etc.), react (PluginComponent),
-# the AI extension, and admin (AdminComponent) all `extends Reactor`, so its built type declarations must
-# exist before ANY project (including the api graph, which compiles core) is compiled.
-RUN npm run build --workspace=@fromcode119/reactor > /tmp/build-reactor.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-reactor.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:reactor FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
-    echo "=== build:reactor OK ==="
+# The ORDER of these steps is defined ONCE, in the root package.json (build:tooling / build:runtime /
+# build:libs, composed as build:packages). Every consumer that builds this framework from source — this
+# Dockerfile, the marketplace image, CI — calls those scripts. Never inline the sequence again: the
+# marketplace carried a hand-copied `tsc -b <hardcoded list>` that silently went stale when reactor/typor/
+# nextor were added, and its deploys died with 939 "Cannot find module '@fromcode119/reactor'" errors.
 
-# Step 0b: Build the nextor package — its build-time esbuild plugins (UseClientPlugin) are consumed by the
-# ai package's post-build `nextor stamp-client`, which uses nextor's ClientDirectiveStamper
-# directly. It must be compiled before the ai build (Step 4) runs.
-RUN npm run build --workspace=@fromcode119/typor > /tmp/build-typor.log 2>&1; ec=$?; \
-    tail -40 /tmp/build-typor.log; \
-    [ $ec -ne 0 ] && echo "=== build:typor FAILED ===" && exit $ec; \
-    echo "=== build:typor OK ==="
-RUN npm run build --workspace=@fromcode119/nextor > /tmp/build-nextor.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-nextor.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:nextor FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
-    echo "=== build:nextor OK ==="
+# Step 1: reactor → typor → nextor. reactor FIRST of all — core (LocaleSwitcher etc.), react
+# (PluginComponent), the AI extension and admin (AdminComponent) all `extends Reactor`, so its built type
+# declarations must exist before ANY project (including the api graph, which compiles core) is compiled.
+# typor owns the package-private @alias build; nextor's esbuild plugins are consumed by the ai package's
+# post-build `nextor stamp-client` and by admin's `nextor with-middleware`.
+RUN npm run build:tooling > /tmp/build-tooling.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-tooling.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:tooling FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:tooling OK ==="
 
-# Step 1: Build API runtime project graph only.
-# This avoids compiling UI-only transitive packages via shared SDK aliases.
-RUN node packages/typor/dist/typor-cli.cjs build -b packages/api > /tmp/tsc-api.log 2>&1; ec=$?; \
-    cat /tmp/tsc-api.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:api FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
-    echo "=== build:api OK ==="
+# Step 2: API runtime project graph only (avoids compiling UI-only transitive packages via shared SDK
+# aliases), then mirror the api's non-TS assets into dist — `tsc -b` does not copy Handlebars templates.
+RUN npm run build:runtime > /tmp/build-runtime.log 2>&1; ec=$?; \
+    cat /tmp/build-runtime.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:runtime FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:runtime OK ==="
 
-# `tsc -b` compiles TS but does NOT copy non-TS assets, so mirror the api's template files into dist
-# (Handlebars templates for auth emails + the developer portal). Keeps dist self-contained.
-RUN npm run copy:templates --workspace=@fromcode119/api > /tmp/copy-templates.log 2>&1; ec=$?; \
-    cat /tmp/copy-templates.log; \
-    [ $ec -ne 0 ] && echo "=== copy:templates FAILED (exit $ec) ===" && exit $ec; \
-    echo "=== copy:templates OK ==="
+# Step 3: react → sdk → ai. The SDK (and the AI extension) consume react's built type declarations
+# (e.g. PluginContextRegistry), so react must be compiled before sdk.
+RUN npm run build:libs > /tmp/build-libs.log 2>&1; ec=$?; \
+    tail -120 /tmp/build-libs.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:libs FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:libs OK ==="
 
-# Step 2: Build React package — the SDK (and AI extension) consume its built type
-# declarations (e.g. PluginContextRegistry), so react must be compiled before sdk.
-RUN npm run build --workspace=@fromcode119/react > /tmp/build-react.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-react.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:react FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
-    echo "=== build:react OK ==="
-
-# Step 3: Build SDK package used by plugin backend entrypoints at runtime.
-RUN npm run build --workspace=@fromcode119/sdk > /tmp/build-sdk.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-sdk.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:sdk FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
-    echo "=== build:sdk OK ==="
-
-# Step 4: Build AI extension.
-RUN npm run build --workspace=@fromcode119/ai > /tmp/build-ai.log 2>&1; ec=$?; \
-    tail -80 /tmp/build-ai.log; \
-    [ $ec -ne 0 ] && echo "" && echo "=== build:ai FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
-    echo "=== build:ai OK ==="
-
-# Step 5: Build admin UI
+# Step 4: Build admin UI
 RUN npm run build:admin > /tmp/build-admin.log 2>&1; ec=$?; \
     tail -80 /tmp/build-admin.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:admin FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:admin OK ==="
 
-# Step 6: Build frontend
+# Step 5: Build frontend
 RUN npm run build:frontend > /tmp/build-frontend.log 2>&1; ec=$?; \
     tail -80 /tmp/build-frontend.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:frontend FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \

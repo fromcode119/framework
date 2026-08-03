@@ -10,6 +10,7 @@ out/
 
 # Build outputs
 dist/
+dist-packages/
 build/
 *.tsbuildinfo
 packages/*/src/**/*.js
