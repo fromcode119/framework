@@ -83,8 +83,18 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
           return this.state ? this.state[key] : undefined;
         },
         set(this: { state?: Record<string, unknown>; __mounted?: boolean; setState: (s: object) => void }, value: unknown): void {
+          // MOUNTED: go through setState ONLY. Mutating `this.state` first made the change invisible
+          // to `PureReactor.shouldComponentUpdate`, which compares `this.state` with `nextState` —
+          // the in-place write meant they already matched, so with unchanged props it returned false
+          // and the component NEVER RE-RENDERED. `@state` was silently dead on every PureReactor
+          // (a plain Reactor was fine only because it defines no shouldComponentUpdate).
+          if (this.__mounted) {
+            this.setState({ [key]: value });
+            return;
+          }
+          // PRE-MOUNT: no setState available yet, so seed the initial state object directly. This is
+          // what lets a field initialiser (`@state open = false`) route through the accessor.
           (this.state ??= {})[key] = value;
-          if (this.__mounted) this.setState({ [key]: value });
         },
       });
     }

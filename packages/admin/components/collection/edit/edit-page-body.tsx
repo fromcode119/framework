@@ -8,6 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
+import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
 
@@ -15,6 +16,8 @@ export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
   @prop declare slug: string;
   @prop declare id: string;
+  /** Owned by the page view so the header can hold the switch. */
+  @prop declare advancedView: boolean;
 
   render(): ReactNode {
     const { edit, slug, id } = this;
@@ -30,7 +33,14 @@ export class EditPageBody extends PureReactor {
 
     return (
     <div className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-12">
-      <div className="max-w-7xl mx-auto">
+      {/*
+        A real <form> element, purely so password inputs have a form ancestor: Chrome logs
+        "[DOM] Password field is not contained in a form" for every one otherwise, and password
+        managers misbehave. Saving is driven by the header/footer buttons, so submission is
+        prevented here — Enter in a text field previously did nothing and still does nothing.
+        <form> is block-level like the <div> it replaces, so layout is unaffected.
+      */}
+      <form className="max-w-7xl mx-auto" onSubmit={(event) => event.preventDefault()}>
         {status && (
           <div className={`mb-8 p-4 rounded-xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === NotificationType.SUCCESS ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
             <div className={`p-2 rounded-xl ${status.type === NotificationType.SUCCESS ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'}`}>
@@ -45,6 +55,7 @@ export class EditPageBody extends PureReactor {
             </button>
           </div>
         )}
+
 
         <Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 
@@ -66,6 +77,20 @@ export class EditPageBody extends PureReactor {
           </div>
         )}
 
+        {this.advancedView ? (
+          <div className="pb-32">
+            <RecordJsonView
+              formData={formData}
+              setFormData={setFormData}
+              collectionSlug={resolvedSlug || slug}
+              renderedFieldNames={[
+                ...standardMainFieldSections,
+                ...fullWidthMainFieldSections,
+                ...sidebarFieldSections,
+              ].flatMap((section: any) => (section?.fields || []).map((field: any) => String(field?.name || '')))}
+            />
+          </div>
+        ) : (
         <div className="flex items-start gap-3">
           <EditPageSectionNav sections={navSections} theme={theme} />
           <div className={`flex-1 grid grid-cols-1 ${renderSidebar ? 'lg:grid-cols-3' : ''} gap-8 pb-32`}>
@@ -123,9 +148,11 @@ export class EditPageBody extends PureReactor {
           )}
           </div>
         </div>
+        )}
 
         <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />
-      </div>
+
+      </form>
     </div>
     );
   }

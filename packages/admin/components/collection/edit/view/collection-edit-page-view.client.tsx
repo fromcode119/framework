@@ -28,6 +28,8 @@ export class CollectionEditPageView extends Reactor {
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
   @state deleting = false;
   @state showDeleteConfirm = false;
+  /** Form vs JSON view. Lives here so the HEADER can own the switch and the BODY can obey it. */
+  @state advancedView = false;
   @state readOnlyOverrideFields: Record<string, true> = {};
   @state readOnlyOverridePassword = '';
   @state readOnlyOverrideTarget: { name: string; label: string } | null = null;
@@ -94,9 +96,10 @@ export class CollectionEditPageView extends Reactor {
           formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
           statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} handleInputChange={edit.handleInputChange}
           handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
+          advancedView={this.advancedView} setAdvancedView={(next: boolean) => { this.advancedView = next; }}
         />
 
-        <EditPageBody edit={edit} slug={slug} id={id} />
+        <EditPageBody edit={edit} slug={slug} id={id} advancedView={this.advancedView} />
 
         <RevisionModal
           selectedRevision={edit.selectedRevision} setSelectedRevision={edit.setSelectedRevision}

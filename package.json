@@ -21,6 +21,8 @@
     "check:sdk-boundary": "node packages/archor/dist/archor-cli.cjs sdk-boundary",
     "check:plugin-ui-hookfree": "node packages/archor/dist/archor-cli.cjs plugin-ui-hookfree",
     "check:db-find-where": "node packages/archor/dist/archor-cli.cjs db-find-where",
+    "check:block-field-conformance": "node packages/archor/dist/archor-cli.cjs block-field-conformance",
+    "check:block-field-conformance:error": "BLOCK_CONFORMANCE_MODE=error node packages/archor/dist/archor-cli.cjs block-field-conformance",
     "check:appearance-boundary": "node packages/archor/dist/archor-cli.cjs appearance-boundary",
     "check:framework-oop": "TYPOR_COMPONENT_BASES=AdminComponent,PluginComponent,ThemeComponent node packages/archor/dist/archor-cli.cjs oop-guard",
     "check:framework-oop:error": "TYPOR_COMPONENT_BASES=AdminComponent,PluginComponent,ThemeComponent FRAMEWORK_OOP_MODE=error node packages/archor/dist/archor-cli.cjs oop-guard",

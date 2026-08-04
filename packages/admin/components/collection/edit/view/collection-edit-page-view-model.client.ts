@@ -22,7 +22,18 @@ export class CollectionEditPageViewModelBuilder {
       readOnlyOverrideTarget: s.readOnlyOverrideTarget, setReadOnlyOverrideTarget: (v) => self.updateState('readOnlyOverrideTarget', v),
       readOnlyOverridePasswordTarget: s.readOnlyOverridePasswordTarget, setReadOnlyOverridePasswordTarget: (v) => self.updateState('readOnlyOverridePasswordTarget', v),
       readOnlyOverrideVerifying: s.readOnlyOverrideVerifying,
-      formData: s.formData, setFormData: (v) => self.updateState('formData', v),
+      // `setFormData` is handed to plugin slot/field components, whose prop type is React's
+      // `Dispatch<SetStateAction<Record<string, any>>>` — so they legitimately call it with an UPDATER
+      // FUNCTION (`setFormData(prev => ({ ...prev, x }))`). Passing that straight to `updateState`
+      // stored the FUNCTION as `formData`; every field then read from a function (no own keys) and the
+      // whole form rendered blank. On the orders screen `EcommerceOrderSyncStatus` does exactly this,
+      // which is why orders came up empty while collections without such a component were fine.
+      // NOTE: the `typeof v === 'function'` test is not a defensive contract guard — `SetStateAction`
+      // is a value|updater union, so discriminating it is the contract.
+      formData: s.formData,
+      setFormData: (v) => self.setState((prev: any) => ({
+        formData: typeof v === 'function' ? (v as (p: any) => any)(prev.formData) : v,
+      })),
       handleSubmit: (e, summary) => CollectionEditPageHandlers.handleSubmit(self, e, summary),
       saving: s.saving, fieldErrors: s.fieldErrors,
       resolvedTitleValue: d.resolvedTitleValue, slugManuallyEdited: s.slugManuallyEdited, slugWarning: s.slugWarning,

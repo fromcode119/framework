@@ -30,6 +30,9 @@ export class EditHeader extends PureReactor {
   @prop declare handleSubmit: (e: any, summary: string) => void;
   @prop declare saving: boolean;
   @prop declare setShowDeleteConfirm: (val: boolean) => void;
+  /** Form vs JSON view — owned by the page view, switched from here. */
+  @prop declare advancedView: boolean;
+  @prop declare setAdvancedView: (value: boolean) => void;
 
   get collectionLabel(): string {
     return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
@@ -72,6 +75,8 @@ export class EditHeader extends PureReactor {
   changeSummary,
   formData,
   setFormData,
+  advancedView,
+  setAdvancedView,
   getPreviewUrl,
   showPreview,
   statusOptions,
@@ -159,6 +164,26 @@ export class EditHeader extends PureReactor {
                 />
               </div>
             )}
+
+            {/* Form vs JSON lives in the header with the other view controls (Preview, status).
+                It first sat alone above the form, floating and out of place. Sized h-10 like every
+                other header control so it reads as one row. */}
+            <div className="inline-flex h-10 items-center rounded-[var(--radius)] border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-950">
+              <button
+                type="button"
+                onClick={() => setAdvancedView(false)}
+                className={`h-8 rounded-[var(--radius)] px-3 text-[10px] font-bold uppercase tracking-wide transition-colors ${!advancedView ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              >
+                Form
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdvancedView(true)}
+                className={`h-8 rounded-[var(--radius)] px-3 text-[10px] font-bold uppercase tracking-wide transition-colors ${advancedView ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              >
+                JSON
+              </button>
+            </div>
 
             <Slot
               name={`admin.collection.${slug}.edit.header.actions`}

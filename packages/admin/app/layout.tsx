@@ -38,7 +38,11 @@ export class RootLayout extends Reactor {
           <link rel="icon" href={this.faviconPath} />
           <link rel="shortcut icon" href={this.faviconPath} />
           <link rel="apple-touch-icon" href={this.appleIconPath} />
-          {/* PWA: standalone iOS install + the web app manifest. */}
+          {/* PWA: standalone iOS install + the web app manifest.
+              `mobile-web-app-capable` is the standard tag; `apple-mobile-web-app-capable` is the
+              legacy iOS-only spelling that Chrome now logs a deprecation warning for. Both are kept:
+              older iOS Safari still reads only the apple- prefixed one. */}
+          <meta name="mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
           <meta name="apple-mobile-web-app-title" content={AppEnv.APP_NAME} />

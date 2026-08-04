@@ -6,6 +6,7 @@ import { ClientViewMoveCommand } from './client-view-move-command';
 import { ComponentMigrationCommand } from './component-migration-command';
 import { ConventionGuardCommand } from './convention-guard-command';
 import { CoreBoundaryCommand } from './core-boundary-command';
+import { BlockFieldConformanceCommand } from './block-field-conformance-command';
 import { DbFindWhereCommand } from './db-find-where-command';
 import { ImportsCommand } from './imports-command';
 import { InterfacePrefixCommand } from './interface-prefix-command';
@@ -34,6 +35,7 @@ export class ArchorCli {
     ['convention-guard', ConventionGuardCommand],
     ['core-boundary', CoreBoundaryCommand],
     ['db-find-where', DbFindWhereCommand],
+    ['block-field-conformance', BlockFieldConformanceCommand],
     ['imports', ImportsCommand],
     ['interface-prefix', InterfacePrefixCommand],
     ['oop-guard', OopGuardCommand],

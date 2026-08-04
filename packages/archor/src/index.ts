@@ -1,4 +1,5 @@
 export { SdkBoundaryGuard } from './sdk-boundary-guard';
+export { BlockFieldConformanceGuard } from './block-field-conformance-guard';
 export { DbFindWhereGuard } from './db-find-where-guard';
 export { PluginArchitectureGuard } from './plugin-architecture-guard';
 export { CoreBoundaryAudit } from './core-boundary-audit';
