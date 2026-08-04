@@ -51,13 +51,13 @@ export class EditFooter extends PureReactor {
           <div className="flex items-center gap-6">
             <Button
               variant={ButtonVariant.GHOST}
-              className="rounded-xl px-6 text-[10px] font-bold uppercase tracking-wide text-slate-400"
+              className="px-6 text-[10px] font-bold uppercase tracking-wide text-slate-400"
               onClick={this.onDiscard}
             >
               Discard Changes
             </Button>
             <Button
-              className="rounded-xl px-12 shadow-2xl shadow-indigo-600/30 text-[10px] font-bold uppercase tracking-wide py-4.5"
+              className="px-12 shadow-2xl shadow-indigo-600/30 text-[10px] font-bold uppercase tracking-wide py-4.5"
               onClick={this.onCommit}
               isLoading={this.saving}
               icon={<FrameworkIcons.Save size={16} strokeWidth={3} />}

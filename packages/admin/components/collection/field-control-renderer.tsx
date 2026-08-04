@@ -19,6 +19,7 @@ import { FieldCustomComponent } from '@/components/collection/field-custom-compo
 import { FieldSelectControl } from '@/components/collection/field-select-control';
 import { FieldTextInput } from '@/components/collection/field-text-input';
 import { FieldTextualControl } from '@/components/collection/field-textual-control';
+import { TextualFieldKind } from '@/components/collection/enums/textual-field-kind.enum';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 
 export class FieldControlRenderer extends PureReactor {
@@ -121,7 +122,7 @@ export class FieldControlRenderer extends PureReactor {
         )
       ) : (field.type === 'textarea' || field.type === 'richText') ? (
         <FieldTextualControl
-          kind="textarea"
+          kind={TextualFieldKind.TEXTAREA}
           field={field}
           currentValue={currentValue}
           resolvedCurrentText={resolvedCurrentText}
@@ -136,7 +137,7 @@ export class FieldControlRenderer extends PureReactor {
         />
       ) : field.type === 'json' ? (
         <FieldTextualControl
-          kind="json"
+          kind={TextualFieldKind.JSON}
           field={field}
           currentValue={currentValue}
           resolvedCurrentText={resolvedCurrentText}
@@ -164,7 +165,7 @@ export class FieldControlRenderer extends PureReactor {
         )
       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
         <FieldTextualControl
-          kind="password"
+          kind={TextualFieldKind.PASSWORD}
           field={field}
           currentValue={currentValue}
           resolvedCurrentText={resolvedCurrentText}

@@ -136,7 +136,7 @@ export class EditHeader extends PureReactor {
                 href={getPreviewUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`box-border appearance-none h-10 px-4 rounded-lg outline-none border transition-all duration-200 shadow-sm inline-flex items-center justify-center gap-2 leading-none text-[10px] font-semibold ${
+                className={`box-border appearance-none h-10 px-4 rounded-[var(--radius)] outline-none border transition-all duration-200 shadow-sm inline-flex items-center justify-center gap-2 leading-none text-[10px] font-semibold ${
                   theme === ThemeMode.DARK 
                     ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white focus:border-indigo-500 focus:ring-0'
                     : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'
@@ -155,7 +155,7 @@ export class EditHeader extends PureReactor {
                   searchable={false}
                   size={FieldSize.MD}
                   className="w-full md:w-64 lg:w-72"
-                  triggerClassName="h-10 px-4 text-sm font-bold rounded-xl"
+                  triggerClassName="h-10 px-4 text-sm font-bold rounded-[var(--radius)]"
                 />
               </div>
             )}
@@ -171,7 +171,7 @@ export class EditHeader extends PureReactor {
              
             {!hideHeaderPrimaryAction && (
               <Button 
-                className="h-10 px-6 rounded-lg font-semibold text-[10px] shadow-lg shadow-indigo-600/20" 
+                className="h-10 px-6 font-semibold text-[10px] shadow-lg shadow-indigo-600/20" 
                 onClick={this.onSave}
                 isLoading={saving}
                 icon={<FrameworkIcons.Save size={14} />}
@@ -183,7 +183,7 @@ export class EditHeader extends PureReactor {
             {!isNew && (
               <button 
                 onClick={this.onDelete}
-                className={`h-10 w-10 inline-flex items-center justify-center rounded-lg border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === ThemeMode.DARK ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
+                className={`h-10 w-10 inline-flex items-center justify-center rounded-[var(--radius)] border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === ThemeMode.DARK ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
               >
                 <FrameworkIcons.Trash size={16} />
               </button>

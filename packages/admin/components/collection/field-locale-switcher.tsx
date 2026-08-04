@@ -24,7 +24,7 @@ export class FieldLocaleSwitcher extends PureReactor {
         <button
           type="button"
           onClick={onToggle}
-          className={`inline-flex items-center gap-1.5 rounded-lg border font-semibold tracking-wide transition-all ${
+          className={`inline-flex items-center gap-1.5 rounded-[var(--radius)] border font-semibold tracking-wide transition-all ${
             compact ? 'h-7 px-2 text-[10px]' : 'px-2.5 py-1 text-[10px]'
           } ${
             theme === ThemeMode.DARK
@@ -52,7 +52,7 @@ export class FieldLocaleSwitcher extends PureReactor {
                   key={locale.code}
                   type="button"
                   onClick={() => onSelect(locale.code)}
-                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
+                  className={`w-full text-left px-2.5 py-2 rounded-[var(--radius)] text-xs font-medium transition-colors flex items-center justify-between ${
                     isActive
                       ? 'bg-indigo-600 text-white'
                       : theme === ThemeMode.DARK

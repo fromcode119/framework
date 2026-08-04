@@ -6,6 +6,14 @@ import { Input } from '@/components/ui/view/input.client';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 
 export class FieldTextualControl extends PureReactor {
+  /**
+   * MUST be a `TextualFieldKind` MEMBER, never the raw string.
+   * Callers previously passed JSX string literals (`kind="textarea"`), so every
+   * `kind === TextualFieldKind.TEXTAREA` comparison was string-vs-Enum-instance — always false —
+   * and EVERY textarea/json field fell through to the password fallback below (rendering
+   * `type="password"` with a `••••••••` placeholder). `next build` sets `ignoreBuildErrors`, so
+   * the type mismatch never surfaced.
+   */
   @prop declare kind: TextualFieldKind;
   @prop declare field: ICollectionField;
   @prop declare currentValue: any;

@@ -5,7 +5,11 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
  */
 export class UiFieldUtils {
   static readonly COMMON = {
-    radius: 'rounded-lg',
+    // ONE radius token for every control. `Button` renders `rounded-[var(--radius)]` (.75rem), so a
+    // hardcoded `rounded-lg` (.5rem) here made every input/select visibly rounder-or-flatter than the
+    // button sitting next to it (Save vs the Published dropdown were 8px vs 12px at the same height).
+    // Anything that needs a different radius must change `--radius`, not re-hardcode a Tailwind step.
+    radius: 'rounded-[var(--radius)]',
     radiusInner: 'rounded-md',
     transition: 'transition-all duration-200',
     shadow: 'shadow-sm',
