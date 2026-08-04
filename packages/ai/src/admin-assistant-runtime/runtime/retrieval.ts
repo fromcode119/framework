@@ -4,7 +4,7 @@ import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfa
 import type { IRuntimeRetrievalResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-retrieval-result.interface';
 import type { IRuntimeToolCall } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-call.interface';
 import type { IRuntimeToolResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-result.interface';
-import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/runtime-utils';
 import { RetrievalHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/retrieval-helpers';
 import { RuntimeIntentKind } from '@ai/admin-assistant-runtime/runtime/enums/runtime-intent-kind.enum';
 

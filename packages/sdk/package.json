@@ -66,7 +66,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src/vite"
   ],
   "scripts": {
     "build": "node ../typor/dist/typor-cli.cjs build -b",

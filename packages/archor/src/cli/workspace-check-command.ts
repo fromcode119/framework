@@ -26,7 +26,12 @@ export class WorkspaceCheckCommand extends ArchorCommand {
    * 848. With the syntax repaired and the theme `@theme` alias taught to the checker, this is the first
    * honest count — not a regression.
    */
-  static readonly BASELINES: Readonly<Record<string, number>> = { plugins: 119, themes: 19, appearance: 0 };
+  /**
+   * `plugins` lowered 119 → 118 when the `.types.ts` sweep converted logistics' duplicated
+   * provider-state unions into shared reactor `Enum` classes: the enum's declared type made one
+   * previously-invisible mismatch a compile error the conversion then fixed.
+   */
+  static readonly BASELINES: Readonly<Record<string, number>> = { plugins: 118, themes: 19, appearance: 0 };
 
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();

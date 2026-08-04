@@ -1,5 +1,5 @@
 import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
-import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/runtime-utils';
 import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
 import type { IRuntimeRetrievalResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-retrieval-result.interface';
 import { ActionHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/action-helpers';

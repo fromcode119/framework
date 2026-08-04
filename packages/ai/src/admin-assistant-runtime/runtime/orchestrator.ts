@@ -3,7 +3,7 @@ import type { IAssistantChatInput } from '@ai/admin-assistant-runtime/interfaces
 import type { IAssistantChatResult } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-result.interface';
 
 import { IntentClassifier } from '@ai/admin-assistant-runtime/runtime/intent-classifier';
-import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/runtime-utils';
 import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
 import type { IRuntimeDependencies } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-dependencies.interface';
 import { WorkspaceMapService } from '@ai/admin-assistant-runtime/runtime/workspace-map';

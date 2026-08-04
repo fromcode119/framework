@@ -17,7 +17,7 @@ import type { IAssistantPlanArtifact } from '@ai/admin-assistant-runtime/interfa
 import type { IAssistantSessionCheckpoint } from '@ai/admin-assistant-runtime/interfaces/assistant-session-checkpoint.interface';
 import type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
 import type { IAssistantUiHints } from '@ai/admin-assistant-runtime/interfaces/assistant-ui-hints.interface';
-import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/runtime-utils';
 
 export class ResponseBuilder {
   static stripBannedOpener(value: string): string {

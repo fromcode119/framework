@@ -1,6 +1,6 @@
 import { AssistantActionType } from '@ai/admin-assistant-runtime/enums/assistant-action-type.enum';
 import type { IAssistantAction } from '@ai/admin-assistant-runtime/interfaces/assistant-action.interface';
-import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/runtime-utils';
 import type { IRuntimeRetrievalResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-retrieval-result.interface';
 import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
 

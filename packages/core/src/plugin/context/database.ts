@@ -4,6 +4,7 @@ import { sql, eq, and, or } from 'drizzle-orm';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { EnumValueCoercion } from '@core/plugin/context/enum-value-coercion';
 import { RateLimiter } from '@core/security/rate-limiter';
 import { SystemConstants } from '@core/constants/system.constants';
 
@@ -124,7 +125,11 @@ export class DatabaseContextProxy {
                   + '— allowed because ENFORCE_PLUGIN_DB_ISOLATION=false. Migrate to the namespace API / dedicated context API, then re-enable isolation.',
                 );
               }
-              const out = fn.apply(this, args);
+              // A reactor Enum member is an object and SQL binding does not stringify it, so an Enum
+              // passed in a payload or a `where` would reach the driver as an object. Coerced here —
+              // the one point every plugin DB call passes through — rather than at ~1,500 call sites
+              // that tsc cannot police. See EnumValueCoercion.
+              const out = fn.apply(this, EnumValueCoercion.coerceArguments(args));
               if (shouldDenormalize) {
                 if (out && typeof out.then === 'function') {
                   return out.then(DatabaseContextProxy.denormalizeResult);

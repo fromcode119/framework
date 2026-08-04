@@ -2,7 +2,7 @@ import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interf
 import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
 import type { IRuntimeToolCall } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-call.interface';
 import type { IRuntimeToolResult } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-tool-result.interface';
-import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/types';
+import { RuntimeUtils } from '@ai/admin-assistant-runtime/runtime/runtime-utils';
 
 /**
  * Retrieval utilities for AI runtime
