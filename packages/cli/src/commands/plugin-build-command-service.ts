@@ -173,7 +173,7 @@ export class PluginBuildCommandService {
             path.join(uiDir, 'main.js')
           ].filter(p => fs.existsSync(p));
           if (entryPoints.length === 0) {
-            console.error(chalk.red(CliUtils.t('cli.build.no_entry', { dir: uiDir, extra: ', main.ts/js' })));
+            console.error(chalk.red(CliUtils.t('cli.build.noEntry', { dir: uiDir, extra: ', main.ts/js' })));
             return;
           }
           const outDir = uiDir;

@@ -3,6 +3,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { SystemConstants } from '@core/constants/system.constants';
 import { PluginConfigValueService } from '@core/plugin/services/plugin-config-value-service';
 import { SecretService } from '@core/security/secret-service';
+import { PluginSettingsKeyMigrationService } from '@core/plugin/services/plugin-settings-key-migration-service';
 
 export class SettingsContextProxy {
   static createSettingsProxy(
@@ -15,8 +16,14 @@ export class SettingsContextProxy {
         },
         get: async () => {
           const stored = await manager.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: plugin.manifest.slug });
-          const storedSettings = PluginConfigValueService.getSettings(stored?.settings);
+          const rawSettings = PluginConfigValueService.getSettings(stored?.settings);
           const schema = manager.getPluginSettings(plugin.manifest.slug);
+
+          // Resolve legacy (snake_case) stored keys onto the names the plugin declares today. Done
+          // HERE, at read time, so the right value comes back on the very first get() — a plugin that
+          // reads its settings during boot must not race a background cleanup write.
+          const reconciled = PluginSettingsKeyMigrationService.reconcile(rawSettings, schema);
+          const storedSettings = reconciled.settings;
 
           if (schema && schema.fields) {
             const defaults: Record<string, any> = {};
