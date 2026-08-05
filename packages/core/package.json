@@ -5,37 +5,31 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./utils": {
-      "development": "./src/utils/index.ts",
       "import": "./dist/utils/index.js",
       "require": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
     },
     "./shared": {
-      "development": "./src/shared.ts",
       "import": "./dist/shared.js",
       "require": "./dist/shared.js",
       "types": "./dist/shared.d.ts"
     },
     "./client": {
-      "development": "./src/client.ts",
       "import": "./dist/client.js",
       "require": "./dist/client.js",
       "types": "./dist/client.d.ts"
     },
     "./route-constants": {
-      "development": "./src/constants/route.constants.ts",
       "import": "./dist/constants/route.constants.js",
       "require": "./dist/constants/route.constants.js",
       "types": "./dist/constants/route.constants.d.ts"
     },
     "./api-version-defaults": {
-      "development": "./src/constants/api-version-defaults.constants.ts",
       "import": "./dist/constants/api-version-defaults.constants.js",
       "require": "./dist/constants/api-version-defaults.constants.js",
       "types": "./dist/constants/api-version-defaults.constants.d.ts"

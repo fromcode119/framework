@@ -51,8 +51,15 @@ export class BlockFieldConformanceGuard {
           const fake = [...written].filter(
             (key) => !read.has(key) && !BlockFieldConformanceGuard.IGNORED_KEYS.has(key),
           );
+          const rendererSrc = BlockFieldConformanceGuard.read(rendererFile);
+          const fallbacks = BlockFieldConformanceGuard.fallbackKeys(rendererSrc);
+          const groups = BlockFieldConformanceGuard.aliasGroups(rendererSrc);
+          const covered = (key: string): boolean =>
+            written.has(key)
+            || fallbacks.has(key)
+            || groups.some((group) => group.has(key) && [...group].some((alias) => written.has(alias)));
           const missing = [...read].filter(
-            (key) => !written.has(key) && !BlockFieldConformanceGuard.IGNORED_KEYS.has(key),
+            (key) => !covered(key) && !BlockFieldConformanceGuard.IGNORED_KEYS.has(key),
           );
           const rel = path.relative(repoRoot, blockFile);
           if (fake.length) {
@@ -98,6 +105,10 @@ export class BlockFieldConformanceGuard {
       const keys = new Set(
         [...chunk.matchAll(/updateData\(\s*['"]([A-Za-z0-9_]+)['"]/g)].map((match) => match[1]),
       );
+      // Keys the editor READS count as covered too. An editor commonly shows a legacy fallback
+      // (`value={data?.productSlug || data?.slug}`) without ever writing the old name; reporting that
+      // as MISSING is noise, and noise is how a check gets ignored.
+      for (const read of chunk.matchAll(/\bdata\s*\??\.\s*([A-Za-z0-9_]+)/g)) keys.add(read[1]);
       const hasDynamicCall = /updateData\(\s*[A-Za-z_$][A-Za-z0-9_$]*\s*,/.test(chunk);
       if (hasDynamicCall) {
         for (const arrayLiteral of chunk.matchAll(/\[\s*((?:['"][A-Za-z0-9_]+['"]\s*,\s*)+['"][A-Za-z0-9_]+['"])\s*\]/g)) {
@@ -143,6 +154,44 @@ export class BlockFieldConformanceGuard {
   /** `data?.key` / `data.key` reads in a renderer. */
   private static readKeys(src: string): Set<string> {
     return new Set([...src.matchAll(/\bdata\s*\??\.\s*([A-Za-z0-9_]+)/g)].map((match) => match[1]));
+  }
+
+  /**
+   * Fallback aliases: `data?.heading || data?.title` means `title` is a LEGACY SPELLING of `heading`,
+   * not a second thing to edit. Giving both a control is the clutter this check is meant to prevent,
+   * so a later term counts as covered whenever an earlier one in the same chain is.
+   * Returns alias -> primary.
+   */
+  /**
+   * Alias GROUPS from `a || b || c` chains. Coverage applies to the whole group: if ANY spelling has
+   * a control, the value is editable, so none of the others is "missing". Chains run both ways in
+   * practice — `data?.href || data?.ctaHref` has the editor writing the SECOND term — so keying only
+   * off the first would report a working control as a gap.
+   */
+  private static aliasGroups(src: string): Array<Set<string>> {
+    const groups: Array<Set<string>> = [];
+    for (const chain of src.matchAll(
+      /\bdata\s*\??[.[][A-Za-z0-9_?.\[\]']*(?:\s*\|\|\s*data\s*\??\.\s*[A-Za-z0-9_]+)+/g,
+    )) {
+      const keys = new Set([...chain[0].matchAll(/data\s*\??\.\s*([A-Za-z0-9_]+)/g)].map((m) => m[1]));
+      if (keys.size > 1) groups.push(keys);
+    }
+    return groups;
+  }
+
+  private static fallbackKeys(src: string): Set<string> {
+    const fallbacks = new Set<string>();
+    // Any `data...` expression (possibly nested/indexed) followed by `|| data?.key` terms. Every
+    // trailing term is a FALLBACK: something else is the primary source, so it needs no control of
+    // its own. Covers flat aliases (`data?.heading || data?.title`) and nested primaries alike
+    // (`data?.left?.heading || data?.leftHeading`,
+    //  `data?.paragraphs?.[0]?.text || data?.description`).
+    for (const chain of src.matchAll(
+      /\bdata\s*\??[.[][A-Za-z0-9_?.\[\]']*((?:\s*\|\|\s*data\s*\??\.\s*[A-Za-z0-9_]+)+)/g,
+    )) {
+      for (const rest of chain[1].matchAll(/data\s*\??\.\s*([A-Za-z0-9_]+)/g)) fallbacks.add(rest[1]);
+    }
+    return fallbacks;
   }
 
   /** Renderer files indexed by normalised basename, so `custom-vision-board` matches `custom-visionBoard`. */

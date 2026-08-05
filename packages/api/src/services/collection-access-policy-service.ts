@@ -79,6 +79,15 @@ export class CollectionAccessPolicyService {
     req: any,
     action: WriteOperation,
   ): Promise<void> {
+    // A collection that DISABLES an operation in `api: { create/update/delete }` is stating a
+    // structural fact about itself, not a permission — so it holds for everyone, admins included.
+    // These flags were stored at registration and consulted NOWHERE, which made every
+    // `api: { create: false }` a decorative promise: an append-only audit log was fully editable and
+    // deletable through the REST API by anyone who could reach it.
+    if (this.isOperationDisabled(collection, action)) {
+      this.throwOperationDisabled(collection, action);
+    }
+
     const accessResult = await this.evaluateAccess(collection.access?.[action.value], req);
     if (accessResult === true || this.isConstraint(accessResult)) {
       return;
@@ -119,6 +128,23 @@ export class CollectionAccessPolicyService {
   private throwAuthError(req: any, message: string): never {
     const error = new Error(message) as Error & { statusCode?: number };
     error.statusCode = req?.user ? 403 : 401;
+    throw error;
+  }
+
+  /** True when the collection explicitly turns this operation off via its `api` declaration. */
+  private isOperationDisabled(collection: ICollection, action: WriteOperation): boolean {
+    return (collection.api as Record<string, boolean> | undefined)?.[action.value] === false;
+  }
+
+  /**
+   * 405, not 403: the operation does not exist for this collection at all, for any caller. A 403
+   * would suggest a different user could do it.
+   */
+  private throwOperationDisabled(collection: ICollection, action: WriteOperation): never {
+    const error = new Error(
+      `Collection "${collection.slug}" does not support ${action.value}.`,
+    ) as Error & { statusCode?: number };
+    error.statusCode = 405;
     throw error;
   }
 }

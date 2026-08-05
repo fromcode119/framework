@@ -7,6 +7,13 @@ export { BasePluginRouter, BaseRouter, BaseController, AccessLevel, EnvConfig, E
 
 export type { IBasePluginRouterOptions, IPluginHealthBuildOptions, IPluginHealthIdentity, IPluginHealthProbeResult, IPluginHealthResponse, IPluginHealthRouteHandlerOptions, PluginHealthStatus, IRequestStore } from '@fromcode119/core';
 
+// Server-only core services must be REGISTERED before `CoreServices.defaultPageContracts` (and the
+// other server-side registries) can be reached. `ServerCoreServices.register()` is called explicitly
+// at API boot and is deliberately not a barrel side effect, so anything running outside the API —
+// a plugin's own test suite, a script — has to call it too. Without this export the only way to do
+// that was importing `@fromcode119/core` directly, which the SDK boundary forbids for plugins.
+export { ServerCoreServices } from '@fromcode119/core';
+
 export { PluginRegistry } from '@fromcode119/plugins';
 export { MediaImageOptimizer } from '@fromcode119/media';
 export type { IMediaImageOptimizationOptions, IMediaImageOptimizationResult } from '@fromcode119/media';

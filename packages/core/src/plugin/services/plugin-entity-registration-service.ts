@@ -115,7 +115,23 @@ export class PluginEntityRegistrationService {
     }
   }
 
+  /**
+   * Injects the permalink override fields — but ONLY for collections the admin will actually show a
+   * permalink panel for.
+   *
+   * The admin decides that with `supportsPreview()`: a slug field AND `admin.preview !== false`.
+   * Injection used to check the slug alone, so 17 collections that opt out of preview (mlm tiers,
+   * logistics shipping methods/zones, finance payment methods, forms, …) received a `customPermalink`
+   * — `unique: true`, so a real unique index — plus `disablePermalink`, with no UI anywhere to reach
+   * either. Matching the admin's rule here means a permalink field can no longer exist without a way
+   * to set it. Checked before changing: NO row in ANY table has a `custom_permalink` value, so
+   * nothing depends on the fields these collections were being given.
+   */
   private ensurePermalinkFields(collection: ICollection): void {
+    if ((collection.admin as { preview?: boolean } | undefined)?.preview === false) {
+      return;
+    }
+
     if (!collection.fields.find((field) => field.name === 'customPermalink')) {
       collection.fields.push({
         name: 'customPermalink',
