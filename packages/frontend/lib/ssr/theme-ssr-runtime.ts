@@ -109,6 +109,14 @@ export class ThemeSsrRuntime {
    * visible as the design changing after load: with `SettingsContext` absent the storefront painted an
    * "add to cart" button on a store whose settings have `allowAddToCart: false`, and dropped it a second
    * later. Keep this list in step with `present()`.
+   *
+   * `PluginRuntimeContext` is the same class of bug and was missing for the same reason. Every hook-free
+   * plugin UI class (`PluginComponent`) declares it as its `contextType` and reads `this.t` off it; the
+   * browser mounts it via `PluginRuntimeProvider` inside `RootProvider`, but nothing mounted it here. So
+   * server-side `this.context` was undefined and `this.t` fell back to identity, printing RAW KEYS into
+   * the HTML — `aria-label="ecommerce.collection.loading"` shipped on every storefront page's first
+   * paint. It takes a value shaped like `PluginRuntimeValue`, and its provider is reached through
+   * `.context` (a reactor `Context`), not the `.Context` the framework's own context objects expose.
    */
   provide(tree: unknown, values: {
     context: unknown;
@@ -119,11 +127,19 @@ export class ThemeSsrRuntime {
     menuItems: unknown;
     collections: unknown;
     pluginState: unknown;
+    pluginRuntime: unknown;
   }): unknown {
     const fc = this.frameworkReact;
     const { createElement } = this.react;
     const wrap = (Context: { Context: { Provider: unknown } }, value: unknown, child: unknown) =>
       createElement(Context.Context.Provider, { value }, child);
+
+    // Innermost, so it sees the same values every other provider publishes.
+    const withPluginRuntime = createElement(
+      fc.PluginRuntimeContext.context.Provider,
+      { value: values.pluginRuntime },
+      tree,
+    );
 
     return wrap(fc.SlotsContext, values.slots,
       wrap(fc.OverridesContext, values.overrides,
@@ -132,7 +148,7 @@ export class ThemeSsrRuntime {
             wrap(fc.CollectionsContext, values.collections,
               wrap(fc.MenuContext, values.menuItems,
                 wrap(fc.SettingsContext, values.settings,
-                  createElement(fc.PluginContextRegistry.Context.Provider, { value: values.context }, tree))))))));
+                  createElement(fc.PluginContextRegistry.Context.Provider, { value: values.context }, withPluginRuntime))))))));
   }
 
   private static installResolveHook(frameworkRequire: NodeRequire): void {

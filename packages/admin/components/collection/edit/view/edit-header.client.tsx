@@ -30,9 +30,6 @@ export class EditHeader extends PureReactor {
   @prop declare handleSubmit: (e: any, summary: string) => void;
   @prop declare saving: boolean;
   @prop declare setShowDeleteConfirm: (val: boolean) => void;
-  /** Form vs JSON view — owned by the page view, switched from here. */
-  @prop declare advancedView: boolean;
-  @prop declare setAdvancedView: (value: boolean) => void;
 
   get collectionLabel(): string {
     return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
@@ -75,8 +72,6 @@ export class EditHeader extends PureReactor {
   changeSummary,
   formData,
   setFormData,
-  advancedView,
-  setAdvancedView,
   getPreviewUrl,
   showPreview,
   statusOptions,
@@ -90,7 +85,7 @@ export class EditHeader extends PureReactor {
 
   return (
     <div data-edit-header className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+      <div className="w-full px-6 lg:px-8 py-4">
         <div className="flex items-center gap-2 mb-2">
           <Link 
             href={`/${pluginSlug}/${slug}`}
@@ -159,32 +154,15 @@ export class EditHeader extends PureReactor {
                   options={statusOptions}
                   searchable={false}
                   size={FieldSize.MD}
-                  className="w-full md:w-64 lg:w-72"
+                  className="w-full md:w-40 lg:w-44"
                   triggerClassName="h-10 px-4 text-sm font-bold rounded-[var(--radius)]"
                 />
               </div>
             )}
 
-            {/* Form vs JSON lives in the header with the other view controls (Preview, status).
-                It first sat alone above the form, floating and out of place. Sized h-10 like every
-                other header control so it reads as one row. */}
-            <div className="inline-flex h-10 items-center rounded-[var(--radius)] border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-950">
-              <button
-                type="button"
-                onClick={() => setAdvancedView(false)}
-                className={`h-8 rounded-[var(--radius)] px-3 text-[10px] font-bold uppercase tracking-wide transition-colors ${!advancedView ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                Form
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdvancedView(true)}
-                className={`h-8 rounded-[var(--radius)] px-3 text-[10px] font-bold uppercase tracking-wide transition-colors ${advancedView ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-              >
-                JSON
-              </button>
-            </div>
-
+            {/* Form vs JSON used to sit here. It moved to EditViewModeRail: this row is a plugin
+                extension point (the Slots below), so its contents vary per collection and per installed
+                plugin — a core view-mode switch must not compete with actions it does not control. */}
             <Slot
               name={`admin.collection.${slug}.edit.header.actions`}
               props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}

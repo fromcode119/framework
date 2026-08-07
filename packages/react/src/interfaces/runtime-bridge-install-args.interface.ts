@@ -60,9 +60,13 @@ export interface IRuntimeBridgeInstallArgs {
   AccountShellSkeleton: any;
   AccountShellPlaceholder: any;
   AccountClass: any;
+  /** The AuthMode Enum. A VALUE the theme reads at class-init — must be on the bridge, not lazy. */
+  AuthMode: any;
   AuthShell: any;
   RecordsHub: any;
   // reactor's OOP surface, handed to plugin/theme bundles so they never import @fromcode119/reactor
+  /** reactor's raw React namespace. Listed in SDK_REACT_EXPORT_KEYS, so it MUST be supplied here too. */
+  ReactPrimitives: any;
   Reactor: any;
   PureReactor: any;
   Provider: any;

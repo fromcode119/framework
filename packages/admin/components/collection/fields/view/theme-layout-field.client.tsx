@@ -24,7 +24,8 @@ export class ThemeLayoutField extends Reactor {
 
   @state options: IThemeLayoutOption[] = [];
   @state layoutInfoByValue: Record<string, IThemeLayoutOption> = {};
-  @state runtimeDefaultLayout = 'DefaultLayout';
+  /** Empty until the active theme declares one — the framework never invents a layout name. */
+  @state runtimeDefaultLayout = '';
   @state loading = true;
 
   private active = true;
@@ -45,7 +46,7 @@ export class ThemeLayoutField extends Reactor {
     try {
       const metadata = await ContextBridge.getFrontendMetadata();
       const rawLayouts = metadata?.activeTheme?.layouts;
-      const inferredDefault = String(metadata?.activeTheme?.defaultLayout || '').trim() || 'DefaultLayout';
+      const inferredDefault = String(metadata?.activeTheme?.defaultLayout || '').trim();
       if (!this.active) return;
 
       const layouts: IThemeLayoutOption[] = Array.isArray(rawLayouts)

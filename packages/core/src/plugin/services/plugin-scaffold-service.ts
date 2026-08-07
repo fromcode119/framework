@@ -15,6 +15,16 @@ export class PluginScaffoldService {
     private readonly enable: (slug: string) => Promise<void>,
   ) {}
 
+  /** `my-plugin` → `MyPluginPlugin` — the entry class name for a scaffolded plugin. */
+  private static toClassName(slug: string): string {
+    const pascal = slug
+      .split(/[^a-zA-Z0-9]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join('');
+    return pascal.endsWith('Plugin') ? pascal : `${pascal}Plugin`;
+  }
+
   async scaffoldPlugin(input: IScaffoldPluginInput): Promise<IScaffoldPluginResult> {
     const slug = String(input.slug || '').trim().toLowerCase();
     const name = String(input.name || '').trim();
@@ -34,24 +44,26 @@ export class PluginScaffoldService {
 
     const manifest = {
       slug, name, version, description,
-      main: 'index.js',
       capabilities: ['api', 'hooks', 'ui'],
       ui: { entry: 'index.js' },
     };
 
+    // A plugin entry is a CLASS whose statics carry the lifecycle contract.
+    const className = PluginScaffoldService.toClassName(slug);
     const pluginMain = [
       "'use strict';", '',
-      'module.exports = {',
-      '  async onInit(context) {',
+      `class ${className} {`,
+      '  static async onInit(context) {',
       `    context.logger.info('${name} initialized.');`,
-      '  },',
-      '  async onEnable(context) {',
+      '  }', '',
+      '  static async onEnable(context) {',
       `    context.logger.info('${name} enabled.');`,
-      '  },',
-      '  async onDisable(context) {',
+      '  }', '',
+      '  static async onDisable(context) {',
       `    context.logger.info('${name} disabled.');`,
-      '  },',
-      '};', '',
+      '  }',
+      '}', '',
+      `module.exports = { ${className} };`, '',
     ].join('\n');
 
     const uiEntry = [

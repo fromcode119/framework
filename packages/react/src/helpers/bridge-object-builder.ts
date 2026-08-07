@@ -1,7 +1,7 @@
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 import { AdminComponentRegistry } from '@react/admin-component-registry';
 import { AsyncDataController } from '@react/async-data-controller';
-import { AdminGlobalClient, AdminResourceClient, AdminSdkClient, AdminUserClient, ApplicationUrlUtils, ApiPathUtils, ApiQueryUtils, ApiRequestError, ApiRequestService, ApiScopeClient, BaseController, BaseRepository, BaseService, BrowserStateClient, BrowserStateRuntimeBuilder, CapabilityRegistry, ClientRuntimeConstants, CollectionScopeClient, CollectionUtils, CoercionUtils, InteractiveCanvas, LiveBlocks, LocalizedField, PublicSettings, CoreServices, CookieConstants, DataSourceConstants, FormatUtils, HookEventUtils, LocalizationUtils, Logger, LogLevel, MeasurementSystemUtils, MediaRelationService, MiddlewareStage, NamespacedPluginsFacade, NumberUtils, PaginationUtils, PluginFrontendLayoutRegistrar, PluginCapability, PluginDefinitionUtils, Plugins, PluginsFacade, PluginsRegistry, PublicAssetUrlUtils, PublicRouteConstants, RecordVersions, RelationUtils, RouteConstants, AccountRouteUtils, RouteUtils, RuntimeBridge, RuntimeLocationUtils, RuntimeConstants, SettingsScopeClient, SdkClient, ShortcodeUtils, StringUtils, SystemAuthClient, SystemAuthSession, ThemeMode, SystemConstants, ThemeFrontendLayoutRegistrar, UrlUtils, ApiVersionUtils, WidgetViewport } from '@fromcode119/core/client';
+import { AccountRouteUtils, AdminGlobalClient, AdminResourceClient, AdminSdkClient, AdminUserClient, ApiPathUtils, ApiQueryUtils, ApiRequestError, ApiRequestService, ApiScopeClient, ApiVersionUtils, ApplicationUrlUtils, BaseController, BaseRepository, BaseService, BrowserStateClient, BrowserStateRuntimeBuilder, CapabilityRegistry, ClientRuntimeConstants, CoercionUtils, CollectionScopeClient, CollectionUtils, CookieConstants, CoreServices, DataSourceConstants, FormatUtils, HookEventUtils, InteractiveCanvas, LayoutTargetKind, LiveBlocks, LocalizationUtils, LocalizedField, LogLevel, Logger, MeasurementSystemUtils, MediaRelationService, MiddlewareStage, NamespacedPluginsFacade, NumberUtils, PaginationUtils, PluginCapability, PluginFrontendLayoutRegistrar, Plugins, PluginsFacade, PluginsRegistry, PublicAssetUrlUtils, PublicRouteConstants, PublicSettings, RecordVersions, RelationUtils, RouteConstants, RouteUtils, RuntimeBridge, RuntimeConstants, RuntimeLocationUtils, SdkClient, SettingsScopeClient, ShortcodeUtils, StringUtils, SystemAuthClient, SystemAuthSession, SystemConstants, ThemeFrontendLayoutRegistrar, ThemeMode, UrlUtils, WidgetViewport } from '@fromcode119/core/client';
 import { ContextBridge } from '@react/context-bridge';
 import { PluginUiRegistrar } from '@react/plugin-ui-registrar';
 import { ContextHooks } from '@react/context-hooks/context-hooks';
@@ -45,8 +45,10 @@ export class BridgeObjectBuilder {
       AccountShellSkeleton: args.AccountShellSkeleton,
       AccountShellPlaceholder: args.AccountShellPlaceholder,
       AccountClass: args.AccountClass,
+      AuthMode: args.AuthMode,
       AuthShell: args.AuthShell,
       RecordsHub: args.RecordsHub,
+      ReactPrimitives: args.ReactPrimitives,
       Reactor: args.Reactor,
       PureReactor: args.PureReactor,
       Provider: args.Provider,
@@ -144,7 +146,6 @@ export class BridgeObjectBuilder {
       PaginationUtils,
       RelationUtils,
       ShortcodeUtils,
-      PluginDefinitionUtils,
       RuntimeBridge,
       CoreServices,
       MediaRelationService,
@@ -161,6 +162,7 @@ export class BridgeObjectBuilder {
       CapabilityRegistry,
       PluginFrontendLayoutRegistrar,
       ThemeFrontendLayoutRegistrar,
+      LayoutTargetKind,
       ThemeOverrideRegistrar,
       RecordVersions,
       PluginCapability,

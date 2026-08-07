@@ -1,6 +1,6 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/reactor';
 
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 
@@ -29,8 +29,13 @@ export class CollectionEditPageView extends Reactor {
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
   @state deleting = false;
   @state showDeleteConfirm = false;
-  /** Form vs JSON view. Lives here so the HEADER can own the switch and the BODY can obey it. */
+  /** Form vs JSON view. Owned here; switched from the body's EditViewModeRail. */
   @state advancedView = false;
+
+  @bound private setAdvancedView(next: boolean): void {
+    this.advancedView = next;
+  }
+
   @state readOnlyOverrideFields: Record<string, true> = {};
   @state readOnlyOverridePassword = '';
   @state readOnlyOverrideTarget: { name: string; label: string } | null = null;
@@ -103,10 +108,12 @@ export class CollectionEditPageView extends Reactor {
           formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
           statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} handleInputChange={edit.handleInputChange}
           handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
-          advancedView={this.advancedView} setAdvancedView={(next: boolean) => { this.advancedView = next; }}
         />
 
-        <EditPageBody edit={edit} slug={slug} id={id} advancedView={this.advancedView} />
+        <EditPageBody
+          edit={edit} slug={slug} id={id}
+          advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
+        />
 
         <RevisionModal
           selectedRevision={edit.selectedRevision} setSelectedRevision={edit.setSelectedRevision}

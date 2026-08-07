@@ -76,8 +76,12 @@ export class ThemeServerRenderer {
     if (!runtime) return null;
 
     const layouts = ThemeServerRegistry.layoutsFor(themeSlug);
-    const layoutName = ResolvedContentShape.resolveLayoutName(content as Record<string, unknown> | null) || 'DefaultLayout';
-    const Layout = layouts[layoutName] || layouts.DefaultLayout;
+    // The theme DECLARES its default layout (theme.json `defaultLayout`); the framework does not guess a
+    // name. This used to fall back to a hardcoded 'DefaultLayout' that no theme declares — it only ever
+    // resolved because a theme aliased that literal onto a real layout behind the operator's back.
+    const declaredDefault = String((config.activeTheme as Record<string, unknown> | null)?.defaultLayout || '');
+    const layoutName = ResolvedContentShape.resolveLayoutName(content as Record<string, unknown> | null) || declaredDefault;
+    const Layout = layouts[layoutName] || (declaredDefault ? layouts[declaredDefault] : undefined);
     if (!Layout) return null;
 
     const [serverTranslations, prefetched] = await Promise.all([translationsRequest, prefetchRequest]);
@@ -95,6 +99,17 @@ export class ThemeServerRenderer {
         menuItems: contextValue.menuItems,
         collections: contextValue.collections,
         pluginState: { pluginState: contextValue.pluginState, setPluginState: () => undefined },
+        // The server twin of what `PluginRuntimeProvider.read()` publishes in the browser. Shape must
+        // track `PluginRuntimeValue`: `plugins` is the plugin-context registry value (what
+        // `ContextHooks.usePlugins()` returns), `globalSettings` the settings context.
+        pluginRuntime: {
+          plugins: contextValue,
+          translation: { t: contextValue.t, locale, setLocale: () => undefined },
+          globalSettings: contextValue.settings,
+          collections: contextValue.collections,
+          locale,
+          api: null,
+        },
       },
     );
 

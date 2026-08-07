@@ -42,6 +42,7 @@ export type { ILoggerOptions } from '@core/interfaces/logger-options.interface';
 export { SystemConstants } from '@core/constants/system.constants';
 export { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
 export { CookieConstants } from '@core/constants/cookie.constants';
+export { CookieSameSite } from '@core/clients/enums/cookie-same-site.enum';
 export { AppPathConstants } from '@core/constants/app-path.constants';
 export { RuntimeConstants } from '@core/constants/runtime.constants';
 export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
@@ -88,7 +89,6 @@ export type { IShortcodeCatalogItem } from '@core/interfaces/shortcode-catalog-i
 export type { IShortcodeCatalogResponse } from '@core/interfaces/shortcode-catalog-response.interface';
 export { RuntimeBridge } from '@core/runtime-bridge';
 export type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
-export { PluginDefinitionUtils } from '@core/plugin-definition-utils';
 export type { IPluginManifestInput } from '@core/interfaces/plugin-manifest-input.interface';
 export type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';
 export { PluginHealthResponseBuilder } from '@core/plugin-health-response-builder';

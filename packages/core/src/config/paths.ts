@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Shared utility for resolving system paths across the framework core and CLI.
@@ -93,6 +94,22 @@ export class ProjectPaths {
 
       return path.resolve(root, 'themes');
 
+  }
+
+  /**
+   * The uploads directory, resolved against the PROJECT ROOT — never against `process.cwd()`.
+   *
+   * `STORAGE_UPLOAD_DIR` is set to a RELATIVE value (`./public/uploads`) in the shipped compose file,
+   * while the api process runs with cwd `/app/packages/api`. Any consumer that used the env value
+   * directly therefore resolved to `/app/packages/api/public/uploads`, which does not exist — the cms
+   * image optimizer 404'd on EVERY image on the site while the static `/uploads` route (which resolves
+   * correctly) served the same files fine. Three call sites had three different resolutions of this one
+   * setting; this is the single one.
+   */
+  static getUploadsDir(): string {
+      const root = ProjectPaths.getProjectRoot();
+      const configured = String(process.env[SystemConstants.STORAGE.UPLOAD_DIR_ENV] || '').trim();
+      return ProjectPaths.resolveFromRoot(root, configured || SystemConstants.STORAGE.DEFAULT_UPLOADS_SUBDIR);
   }
 
   static getAppearancesDir(): string {

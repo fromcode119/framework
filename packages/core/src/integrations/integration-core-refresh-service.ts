@@ -1,3 +1,4 @@
+import { ProjectPaths } from '@core/config/paths';
 import path from 'path';
 import { EmailFactory, EmailManager } from '@fromcode119/email';
 import type { IEmailDriver } from '@fromcode119/email';
@@ -62,7 +63,7 @@ export class IntegrationCoreRefreshService {
     } catch (error: any) {
       this.logger.error(`Failed to initialize storage integration: ${error.message}. Falling back to default local driver.`);
       // Fallback to local driver to prevent system-wide crashes
-      const uploadDir = process.env.STORAGE_UPLOAD_DIR || path.resolve(this.projectRoot, 'public/uploads');
+      const uploadDir = ProjectPaths.getUploadsDir();
       const publicUrl = process.env.STORAGE_PUBLIC_URL || '/uploads';
       return { storage: new MediaManager(StorageFactory.create('local', { uploadDir, publicUrlBase: publicUrl })), resolved: null };
     }

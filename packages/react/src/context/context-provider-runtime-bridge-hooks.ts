@@ -3,7 +3,8 @@ import React from 'react';
 // reactor is the OOP base layer; plugins may only import @fromcode119/sdk, so its surface is
 // republished through this bridge. Imported statically — a require() here is interop-shimmed by
 // Turbopack in the browser bundle and broke module evaluation.
-import { Reactor, PureReactor, Provider, Bridge, Enum, Context, prop, state, bound, watch, ref } from '@fromcode119/reactor';
+import { Reactor, PureReactor, Provider, Bridge, Enum, Context, ReactPrimitives, prop, state, bound, watch, ref } from '@fromcode119/reactor';
+import { AuthMode } from '@react/auth/enums/auth-mode.enum';
 import { ApiPathUtils, ApiScopeClient, ApiVersionUtils, CoercionUtils, CollectionUtils, FormatUtils, HookEventUtils, LocalizationUtils, NumberUtils, PaginationUtils, PluginFrontendRuntimeUtils, RelationUtils, RuntimeConstants, StringUtils } from '@fromcode119/core/client';
 import { BrowserLocalization } from '@react/browser-localization';
 import { CollectionQueryUtils } from '@react/collection-queries';
@@ -265,8 +266,10 @@ export class ContextProviderRuntimeBridgeHooks {
         AccountSection,
         AccountSectionIcons,
         AccountClass,
+        AuthMode,
         AuthShell,
         RecordsHub,
+        ReactPrimitives,
         Reactor,
         PureReactor,
         Provider,

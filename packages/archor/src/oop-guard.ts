@@ -53,9 +53,9 @@ export class OopGuard {
    */
   static readonly VIOLATION_BASELINE: Record<string, number> = {
     framework: 0,
-    plugins: 46,
-    themes: 19,
-    appearance: 1,
+    plugins: 2,
+    themes: 1,
+    appearance: 0,
   };
 
   /**
@@ -74,8 +74,8 @@ export class OopGuard {
    */
   static readonly TYPES_FILE_BASELINE: Record<string, number> = {
     framework: 0,
-    plugins: 72,
-    themes: 6,
+    plugins: 0,
+    themes: 0,
     appearance: 0,
   };
 
@@ -83,8 +83,8 @@ export class OopGuard {
     framework: 0,
     // Re-set when `isTypeLevelOnly` was retired: the bucket now counts EVERY module-level `type`, not
     // only object shapes and string unions, so these are the same debt measured more strictly.
-    plugins: 191,
-    themes: 37,
+    plugins: 0,
+    themes: 0,
     appearance: 1,
   };
 
@@ -181,16 +181,18 @@ export class OopGuard {
   /**
    * Files whose default export is a CONTRACT someone else reads, not debt.
    *
-   *  - `plugins/<slug>/index.ts` — a plugin ships exactly ONE `export default
-   *    PluginDefinitionUtils.define({...})`; that single default IS the plugin manifest contract.
    *  - `*.config.ts` / `*.config.mjs` — vitest/vite/next read the module's default export. No build
    *    step of ours runs over a tool config, so nothing could generate it.
    *  - `seed.ts` — the seed runner loads the default export the same way.
+   *
+   * `plugins/<slug>/index.ts` USED to be excused here, for the retired
+   * `export default PluginDefinitionUtils.define({...})` entry shape. That shape is gone: a plugin entry
+   * is now a plain `export class <Name>Plugin` whose statics carry the contract, and core's
+   * `PluginModuleResolverService` lifts them. A default export in a plugin entry is debt again.
    */
   private static ownsItsDefaultExport(rel: string): boolean {
     const path = rel.replace(/\\/g, '/');
-    return /(^|\/)plugins\/[^/]+\/index\.ts$/.test(path)
-      || /\.config\.(ts|mjs|js)$/.test(path)
+    return /\.config\.(ts|mjs|js)$/.test(path)
       || /(^|\/)seed\.ts$/.test(path);
   }
 

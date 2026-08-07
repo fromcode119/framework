@@ -24,9 +24,19 @@ export abstract class PluginComponent<P = Record<string, unknown>, S = Record<st
     return this.context?.plugins;
   }
 
-  /** Translation function (falls back to identity when no provider is present). */
+  /**
+   * Translation function.
+   *
+   * The no-provider fallback honours the caller's `defaultValue`. It used to be `(key) => key`, which
+   * DISCARDED the third argument every call site passes — so a missing `PluginRuntimeProvider` did not
+   * degrade to readable English, it printed the raw key into the DOM. That is exactly what shipped on
+   * the storefront: SSR never mounted the provider, and `aria-label="ecommerce.collection.loading"`
+   * went out in the HTML on first paint. The provider gap is fixed in `ThemeSsrRuntime.provide`; this
+   * makes the failure mode legible rather than user-visible if it ever recurs.
+   */
   protected get t(): ITranslationContextValue['t'] {
-    return this.context?.translation?.t ?? ((key: string) => key);
+    return this.context?.translation?.t
+      ?? ((key: string, _params?: Record<string, unknown>, defaultValue?: string) => defaultValue || key);
   }
 
   protected get globalSettings(): Record<string, any> {

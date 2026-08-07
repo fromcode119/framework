@@ -11,6 +11,15 @@ import { ThemeSsrShell } from '@/app/components/view/theme-ssr-shell.client';
 import { ServerMarkupHandoff } from '@/app/components/view/server-markup-handoff.client';
 
 export class DynamicContentClient extends Reactor {
+
+  /**
+   * The layout name the ACTIVE THEME declares for pages that name none (theme.json `defaultLayout`).
+   * Empty when the theme declares nothing — the framework never invents a layout name, because a
+   * guessed one silently renders a different design than the admin says is selected.
+   */
+  private get declaredDefaultLayout(): string {
+    return String((this.context?.activeTheme as Record<string, unknown> | null)?.defaultLayout || '');
+  }
   static contextType = PluginContextRegistry.Context;
   declare context: IPluginContextValue | null;
 
@@ -36,8 +45,8 @@ export class DynamicContentClient extends Reactor {
    */
   private get serverMarkupStillNeeded(): boolean {
     const themeLayouts = this.themeLayouts;
-    const selectedLayoutName = ResolvedContentShape.resolveLayoutName(this.normalizedContent) || 'DefaultLayout';
-    if (!themeLayouts?.[selectedLayoutName] && !themeLayouts?.DefaultLayout) return true;
+    const selectedLayoutName = ResolvedContentShape.resolveLayoutName(this.normalizedContent) || this.declaredDefaultLayout;
+    if (!themeLayouts?.[selectedLayoutName] && !themeLayouts?.[this.declaredDefaultLayout]) return true;
     if (!this.ssrRendersContentSlot) return false;
     return !this.context?.slots?.[DynamicContentClient.CONTENT_SLOT]?.length;
   }
@@ -50,10 +59,10 @@ export class DynamicContentClient extends Reactor {
 
   private get layoutComponent(): ComponentType<any> {
     const themeLayouts = this.themeLayouts;
-    const selectedLayoutName = ResolvedContentShape.resolveLayoutName(this.normalizedContent) || 'DefaultLayout';
+    const selectedLayoutName = ResolvedContentShape.resolveLayoutName(this.normalizedContent) || this.declaredDefaultLayout;
     return (
       themeLayouts?.[selectedLayoutName] ||
-      themeLayouts?.DefaultLayout ||
+      themeLayouts?.[this.declaredDefaultLayout] ||
       PassthroughLayout
     );
   }

@@ -1,4 +1,4 @@
-import { Children, Fragment, Suspense, createElement, forwardRef, isValidElement, lazy, memo } from 'react';
+import { Children, Fragment, Suspense, cloneElement, createElement, forwardRef, isValidElement, lazy, memo } from 'react';
 
 /**
  * The React values that have no OOP form, surfaced from ONE place.
@@ -22,6 +22,7 @@ export class ReactPrimitives {
   static readonly Suspense = Suspense;
   static readonly lazy = lazy;
   static readonly createElement = createElement;
+  static readonly cloneElement = cloneElement;
   static readonly Children = Children;
   static readonly isValidElement = isValidElement;
   static readonly memo = memo;

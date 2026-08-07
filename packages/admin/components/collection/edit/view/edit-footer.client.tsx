@@ -44,7 +44,13 @@ export class EditFooter extends PureReactor {
           ? 'bg-slate-950/80 border-slate-800/50 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]'
           : 'bg-white/80 border-slate-100 shadow-lg'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-3 pl-20 lg:pl-64">
+        {/* Two nested boxes, deliberately. This bar is `fixed`, so it escapes the content column and has
+            to clear the sidebar itself — that is the OUTER pl-20/lg:pl-64. The page gutter then has to
+            sit INSIDE that offset, because Tailwind emits `pl-*` after `px-*`: put both on one element
+            and `pl-64` overrides the `px-8` gutter, leaving this bar flush at the sidebar edge while the
+            header and body above it start a further 32px in. */}
+        <div className="pl-20 lg:pl-64">
+        <div className="w-full px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-3">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
               {/* Was "Persistence Layer // <slug>" — internal jargon that told an editor nothing.
@@ -85,6 +91,7 @@ export class EditFooter extends PureReactor {
               {this.isNew ? 'Create Entry' : 'Commit Changes'}
             </Button>
           </div>
+        </div>
         </div>
       </div>
     );

@@ -54,6 +54,16 @@ export class PluginScaffoldCommandService {
       });
   }
 
+  /** `my-plugin` → `MyPluginPlugin` — the entry class name for a scaffolded plugin. */
+  private static toClassName(slug: string): string {
+    const pascal = slug
+      .split(/[^a-zA-Z0-9]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join('');
+    return pascal.endsWith('Plugin') ? pascal : `${pascal}Plugin`;
+  }
+
   private static async writeScaffoldFiles(
     pluginPath: string,
     pluginName: string,
@@ -71,15 +81,15 @@ export class PluginScaffoldCommandService {
       name: pluginName,
       version: '1.0.0',
       category,
-      main: 'index.js',
       capabilities: ['api', 'admin', 'ui', 'database', 'hooks', 'i18n']
     };
     await fs.writeJson(path.join(pluginPath, 'manifest.json'), manifest, { spaces: 2 });
 
-    // 2. index.js
+    // 2. index.js — a plugin entry is a CLASS whose statics carry the lifecycle contract.
+    const className = PluginScaffoldCommandService.toClassName(slug);
     const indexJs = `
-module.exports = {
-  async onInit(context) {
+class ${className} {
+  static async onInit(context) {
     const { logger } = context;
     logger.info("${pluginName} Plugin Initialized!");
 
@@ -90,14 +100,18 @@ module.exports = {
 
     // Example translation loading from ./i18n/*.json
     context.i18n.registerTranslations();
-  },
-  async onEnable(context) {
+  }
+
+  static async onEnable(context) {
     context.logger.info("${pluginName} Plugin Enabled!");
-  },
-  async onDisable(context) {
+  }
+
+  static async onDisable(context) {
     context.logger.info("${pluginName} Plugin Disabled!");
   }
-};
+}
+
+module.exports = { ${className} };
 `;
     await fs.writeFile(path.join(pluginPath, 'index.js'), indexJs.trim() + '\n');
 

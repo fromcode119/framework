@@ -92,7 +92,6 @@ export type { IPaginationInput, IPaginationMeta } from '@fromcode119/core/client
 export { RelationUtils } from '@fromcode119/core/client';
 export { ShortcodeUtils } from '@fromcode119/core/client';
 export type { IRenderShortcodesPayload, IRenderShortcodesResponse, IShortcodeCatalogItem, IShortcodeCatalogResponse } from '@fromcode119/core/client';
-export { PluginDefinitionUtils } from '@fromcode119/core/client';
 export type { IPluginManifestInput, IThemeManifestInput } from '@fromcode119/core/client';
 export { PluginHealthResponseBuilder } from '@fromcode119/core/client';
 export type { IPluginHealthBuildOptions, IPluginHealthIdentity, IPluginHealthResponse } from '@fromcode119/core/client';
@@ -109,7 +108,7 @@ export type { IFrontendRuntimeMetadata } from '@fromcode119/core/client';
 // ── Constants ─────────────────────────────────────────────────────────────────
 export { SystemConstants } from '@fromcode119/core/client';
 export { ClientRuntimeConstants } from '@fromcode119/core/client';
-export { CookieConstants } from '@fromcode119/core/client';
+export { CookieConstants, CookieSameSite } from '@fromcode119/core/client';
 export { RuntimeConstants } from '@fromcode119/core/client';
 export { RouteConstants } from '@fromcode119/core/client';
 export { AccountRouteUtils } from '@fromcode119/core/client';
@@ -139,7 +138,7 @@ export type { IRegisteredWidgetDefinition, IWidgetDefinitionInput, IWidgetSettin
 export { WidgetViewport } from '@fromcode119/core/client';
 export type { IIntegrationTypeDefinition } from '@fromcode119/core/client';
 export type { IPluginApiResolver } from '@fromcode119/core/client';
-export type { IPluginDefaultPageContractIdentity, IPluginDefaultPageContract, IPluginDefaultPageContractRegistration, IRegisteredPluginDefaultPageContract, IThemeDefaultPageContractOverride, ILayoutDiagnosticEntry, ILayoutOwnerIdentity, IPluginLayoutDefinition, IPluginLayoutRegistration, IRegisteredPluginLayoutDefinition, IRegisteredThemeLayoutDisableDefinition, IRegisteredThemeLayoutReplacementDefinition, IResolvedLayout, IThemeLayoutDisableDefinition, IThemeLayoutOverrideRegistration, IThemeLayoutReplacementDefinition, IPluginFrontendLayoutRegistrarOptions, IThemeFrontendLayoutRegistrarOptions } from '@fromcode119/core/client';
+export type { IPluginDefaultPageContractIdentity, IPluginDefaultPageContract, IPluginDefaultPageContractRegistration, IRegisteredPluginDefaultPageContract, IThemeDefaultPageContractOverride, ILayoutDiagnosticEntry, ILayoutOwnerIdentity, IPluginLayoutDefinition, IPluginLayoutRegistration, IRegisteredPluginLayoutDefinition, IRegisteredThemeLayoutDisableDefinition, IRegisteredThemeLayoutReplacementDefinition, IResolvedLayout, IThemeLayoutDisableDefinition, IThemeLayoutOverrideRegistration, IThemeLayoutReplacementDefinition, IPluginFrontendLayoutRegistrarOptions, IThemeFrontendLayoutRegistrarOptions, IPluginFrontendLayoutRegistration, IThemeFrontendLayoutRegistration } from '@fromcode119/core/client';
 // RequestContextUtils / RequestStore intentionally omitted — server-only (AsyncLocalStorage),
 // must not be bundled into client-side builds. Use @fromcode119/sdk/server.
 export { RecordVersions } from '@fromcode119/core/client';
@@ -164,6 +163,7 @@ export type { PluginContext, IFromcodePlugin, ILoadedPlugin } from '@fromcode119
 // ── Theme Registration & Style Variant Types ─────────────────────────────────
 export type { IThemeStyleVariant } from '@sdk/types/interfaces/theme-style-variant.interface';
 export type { IThemeRegistration } from '@sdk/types/interfaces/theme-registration.interface';
+export type { ITranslateFn } from '@sdk/types/interfaces/translate-fn.interface';
 
 // Server-safe reactor primitives. `Enum` has no React dependency, so backend plugin code can
 // use it — unlike `@fromcode119/sdk/react`, which cannot load under Node (it requires CSS).

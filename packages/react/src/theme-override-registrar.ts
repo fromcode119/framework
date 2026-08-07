@@ -23,23 +23,27 @@ export class ThemeOverrideRegistrar {
 
   /**
    * Single entry point. The framework owns NO plugin knowledge here — the caller supplies the
-   * `slotPrefix` (the rendering host's block-slot namespace) and `blockTypeAliases`; both are data,
-   * not framework constants. The theme passes ONE flat `import.meta.glob` of its renderer roots and
-   * lists nothing per-override. Renderers are discovered by a SLUG-FREE convention:
+   * `slotPrefix` (the rendering host's block-slot namespace), which is data, not a framework constant.
+   * The theme passes ONE flat `import.meta.glob` of its renderer roots and lists nothing per-override.
+   * Renderers are discovered by a SLUG-FREE convention:
    *  - A file is a block renderer IFF its path contains a `/blocks/` segment. Everything else in
    *    the glob (sub-components, page overrides) lives outside `blocks/` and is imported directly.
-   *  - Block type = filename minus a trailing `-renderer`, normalized through `blockTypeAliases`
-   *    (e.g. `rich-content` → `richContent`); unknown types pass through.
+   *  - Block type = filename minus a trailing `-renderer`. The FILENAME IS THE TYPE, exactly — the
+   *    same string the page stores and the plugin registry declares. There is no mapping step.
    *  - Slot key = `${slotPrefix}${type}`.
    *  - Priority: a file under an `/overrides/` segment overrides a plugin-provided renderer
    *    (`OVERRIDE_PRIORITY`); otherwise it is one of the theme's own blocks (`BASE_PRIORITY`).
    * Drop a renderer into any `blocks/` directory and it registers itself — no framework/theme edit.
+   *
+   * A `blockTypeAliases` parameter used to normalize `rawType` here, plus a loop that registered every
+   * alias against the canonical slot. Its only caller stopped passing a map once block ids were made to
+   * agree across storage, registry, definition and filename, which left a parameter nothing wrote — so
+   * it is gone. If two names for one block ever seem necessary again, rename the block instead.
    */
   static registerThemeBlockRenderers(
     themeSlug: string,
     modules: Record<string, () => Promise<unknown>>,
     slotPrefix: string,
-    blockTypeAliases: Record<string, string> = {},
   ): void {
     const prefix = String(slotPrefix || '');
     if (!prefix) return;
@@ -50,19 +54,9 @@ export class ThemeOverrideRegistrar {
       if (!/(?:^|\/)blocks\//.test(path)) continue;
       const name = (path.split('/').pop() || '').replace(/\.tsx$/, '');
       if (!name || name.startsWith('_')) continue;
-      const rawType = name.replace(/-renderer$/, '');
-      const canonical = blockTypeAliases[rawType] || rawType;
+      const type = name.replace(/-renderer$/, '');
       const bucket = path.includes('/overrides/') ? overrides : base;
-      bucket[`${prefix}${canonical}`] = ThemeOverrideRegistrar.normalizeLoader(loader);
-    }
-
-    // Expand each alias to its canonical slot so blocks stored under any legacy/kebab type resolve.
-    for (const [alias, canonical] of Object.entries(blockTypeAliases)) {
-      if (alias === canonical) continue;
-      for (const bucket of [base, overrides]) {
-        const canonicalSlot = bucket[`${prefix}${canonical}`];
-        if (canonicalSlot && !bucket[`${prefix}${alias}`]) bucket[`${prefix}${alias}`] = canonicalSlot;
-      }
+      bucket[`${prefix}${type}`] = ThemeOverrideRegistrar.normalizeLoader(loader);
     }
 
     if (Object.keys(base).length > 0) {

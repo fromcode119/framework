@@ -30,7 +30,7 @@
     },
     "./slot": {
       "types": "./dist/slot.d.ts",
-      "development": "./src/slot.tsx",
+      "development": "./src/slot.ts",
       "import": "./dist/slot.js",
       "require": "./dist/slot.js"
     },
@@ -42,7 +42,7 @@
     },
     "./context/view/plugins-provider.client": {
       "types": "./dist/context/view/plugins-provider.client.d.ts",
-      "development": "./src/context/view/plugins-provider.client.tsx",
+      "development": "./src/context/view/plugins-provider.client.ts",
       "import": "./dist/context/view/plugins-provider.client.js",
       "require": "./dist/context/view/plugins-provider.client.js"
     },
@@ -60,13 +60,13 @@
     },
     "./view/override.client": {
       "types": "./dist/view/override.client.d.ts",
-      "development": "./src/view/override.client.tsx",
+      "development": "./src/view/override.client.ts",
       "import": "./dist/view/override.client.js",
       "require": "./dist/view/override.client.js"
     },
     "./view/plugin-runtime-provider.client": {
       "types": "./dist/view/plugin-runtime-provider.client.d.ts",
-      "development": "./src/view/plugin-runtime-provider.client.tsx",
+      "development": "./src/view/plugin-runtime-provider.client.ts",
       "import": "./dist/view/plugin-runtime-provider.client.js",
       "require": "./dist/view/plugin-runtime-provider.client.js"
     },

@@ -114,7 +114,6 @@ export { RuntimeBridge } from '@core/runtime-bridge';
 export type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
 export { BasePluginRouter } from '@core/base/base-plugin-router';
 export type { IBasePluginRouterOptions } from '@core/base/interfaces/base-plugin-router-options.interface';
-export { PluginDefinitionUtils } from '@core/plugin-definition-utils';
 export { ManifestNormalizer } from '@core/manifest-normalizer';
 export type { IPluginManifestInput } from '@core/interfaces/plugin-manifest-input.interface';
 export type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';

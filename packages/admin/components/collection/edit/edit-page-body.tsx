@@ -9,6 +9,7 @@ import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
+import { EditViewModeRail } from '@/components/collection/edit/view/edit-view-mode-rail.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
 
@@ -16,8 +17,9 @@ export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
   @prop declare slug: string;
   @prop declare id: string;
-  /** Owned by the page view so the header can hold the switch. */
+  /** Owned by the page view; switched from the view-mode rail this body renders. */
   @prop declare advancedView: boolean;
+  @prop declare setAdvancedView: (next: boolean) => void;
 
   render(): ReactNode {
     const { edit, slug, id } = this;
@@ -32,7 +34,7 @@ export class EditPageBody extends PureReactor {
     } = edit;
 
     return (
-    <div className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-12">
+    <div className="flex-1 w-full px-6 lg:px-8 py-6">
       {/*
         A real <form> element, purely so password inputs have a form ancestor: Chrome logs
         "[DOM] Password field is not contained in a form" for every one otherwise, and password
@@ -40,7 +42,7 @@ export class EditPageBody extends PureReactor {
         prevented here — Enter in a text field previously did nothing and still does nothing.
         <form> is block-level like the <div> it replaces, so layout is unaffected.
       */}
-      <form className="max-w-7xl mx-auto" onSubmit={(event) => event.preventDefault()}>
+      <form onSubmit={(event) => event.preventDefault()}>
         {status && (
           <div className={`mb-8 p-4 rounded-xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === NotificationType.SUCCESS ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
             <div className={`p-2 rounded-xl ${status.type === NotificationType.SUCCESS ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'}`}>
@@ -77,6 +79,11 @@ export class EditPageBody extends PureReactor {
           </div>
         )}
 
+        {/* The view-mode rail sits OUTSIDE the branch so it is in the same place in both modes — the
+            way back from JSON has to be where the way in was. */}
+        <div className="flex items-start gap-3">
+        <EditViewModeRail advancedView={this.advancedView} setAdvancedView={this.setAdvancedView} />
+        <div className="min-w-0 flex-1">
         {this.advancedView ? (
           <div className="pb-32">
             <RecordJsonView
@@ -149,6 +156,8 @@ export class EditPageBody extends PureReactor {
           </div>
         </div>
         )}
+        </div>
+        </div>
 
         <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 

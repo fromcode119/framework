@@ -7,6 +7,8 @@ import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { ProjectPaths } from '@core/config/paths';
 import { ManifestNormalizer } from '@core/manifest-normalizer';
 import { PluginDependencyInstallerService } from '@core/plugin/services/plugin-dependency-installer-service';
+import { PluginModuleResolverService } from '@core/plugin/services/plugin-module-resolver-service';
+import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 
 /**
  * PluginDirectoryScannerService
@@ -144,6 +146,11 @@ export class PluginDirectoryScannerService {
               manifest.slug = manifest.slug.toLowerCase();
             }
 
+            // Fill the build-output paths (server entry, UI bundles, migrations dir) from the package
+            // layout so a manifest never has to restate what the build already decided. Anything the
+            // manifest declares explicitly is left untouched.
+            PluginPackageLayout.resolve(pluginPath, manifest);
+
             // Validate manifest structure early
             const validation = PluginDirectoryScannerService.manifestSchema.safeParse(manifest);
             if (!validation.success) {
@@ -163,7 +170,7 @@ export class PluginDirectoryScannerService {
             }
             seenSlugs.add(manifest.slug);
 
-            let mainFile = manifest.main || manifest.entry || 'index.js';
+            let mainFile = manifest.main || manifest.entry || PluginPackageLayout.SERVER_ENTRY;
             let indexPath = path.join(pluginPath, mainFile);
 
             if (mainFile.endsWith('.js')) {
@@ -191,16 +198,20 @@ export class PluginDirectoryScannerService {
                 // Always load plugin module so lifecycle hooks remain available.
                 // Sandbox mode controls runtime isolation policy, not module metadata availability.
                 const rawModule = await this.loadPluginModule(indexPath);
-                const pluginModule = (rawModule && rawModule.default)
-                  ? { ...rawModule.default, ...rawModule }
-                  : rawModule;
+                const pluginModule = PluginModuleResolverService.resolve(rawModule);
+
+                // An inline-manifest plugin (a `static manifest` on the entry class) REPLACES the disk
+                // manifest in the spread below, so the layout resolved above would be dropped. Resolve
+                // against whichever manifest actually wins; resolve() only fills absent values, so
+                // running it again over the disk manifest is a no-op.
+                const effectiveManifest = PluginPackageLayout.resolve(pluginPath, pluginModule.manifest || manifest);
 
                 if (shouldSandbox) {
                   this.logger.info(`Staging sandboxed plugin: ${manifest.slug}`);
                   discovered.push({
                     plugin: {
-                      manifest,
                       ...pluginModule,
+                      manifest: effectiveManifest,
                       isSandboxed: true,
                       entryPath: indexPath
                     },
@@ -208,7 +219,7 @@ export class PluginDirectoryScannerService {
                   });
                 } else {
                   discovered.push({
-                    plugin: { manifest, ...pluginModule },
+                    plugin: { ...pluginModule, manifest: effectiveManifest },
                     path: pluginPath
                   });
                 }

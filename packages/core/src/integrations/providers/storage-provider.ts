@@ -1,3 +1,4 @@
+import { ProjectPaths } from '@core/config/paths';
 import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import { MediaManager, StorageFactory } from '@fromcode119/media';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
@@ -14,7 +15,7 @@ export class StorageIntegrationDefinition {
     const config: Record<string, any> = {};
 
     if (driver === 'local') {
-      config.uploadDir = process.env.STORAGE_UPLOAD_DIR || 'public/uploads';
+      config.uploadDir = ProjectPaths.getUploadsDir();
       config.publicUrlBase = process.env.STORAGE_PUBLIC_URL || '/uploads';
     } else if (driver === 's3') {
       config.region = process.env.STORAGE_S3_REGION || 'auto';

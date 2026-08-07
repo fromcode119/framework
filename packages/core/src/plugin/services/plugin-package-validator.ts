@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 
 export class PluginPackageValidator {
   static validateInstalledPackage(packageRoot: string, manifest: IPluginManifest): void {
@@ -10,7 +11,9 @@ export class PluginPackageValidator {
   }
 
   private static validateServerEntry(packageRoot: string, manifest: IPluginManifest): void {
-    const entryFile = String(manifest.main || 'index.js').trim();
+    // NOT resolved through PluginPackageLayout.resolve() on purpose: the conventional server entry is
+    // unconditional, so a source-only archive (index.ts, no index.js) still fails here as it must.
+    const entryFile = String(manifest.main || PluginPackageLayout.SERVER_ENTRY).trim();
     if (!entryFile) {
       return;
     }
@@ -35,13 +38,15 @@ export class PluginPackageValidator {
     const uiRecord = manifest.ui && typeof manifest.ui === 'object'
       ? manifest.ui as Record<string, unknown>
       : null;
+    // Same reason as migrations: the conventional bundle names are no longer restated per manifest, so
+    // an archive that ships them must still be checked for the compiled artifact.
     const uiEntries = [
-      String(uiRecord?.entry || '').trim(),
-      String(uiRecord?.frontendEntry || '').trim(),
+      String(uiRecord?.entry || (PluginPackageLayout.hasUiAsset(packageRoot, PluginPackageLayout.UI_ENTRY) ? PluginPackageLayout.UI_ENTRY : '')).trim(),
+      String(uiRecord?.frontendEntry || (PluginPackageLayout.hasUiAsset(packageRoot, PluginPackageLayout.FRONTEND_ENTRY) ? PluginPackageLayout.FRONTEND_ENTRY : '')).trim(),
     ].filter(Boolean);
 
     for (const uiEntry of uiEntries) {
-      const uiPath = path.resolve(packageRoot, 'src', 'ui', uiEntry);
+      const uiPath = path.resolve(packageRoot, PluginPackageLayout.UI_DIR, uiEntry);
       if (fs.existsSync(uiPath)) {
         continue;
       }
@@ -59,7 +64,12 @@ export class PluginPackageValidator {
   }
 
   private static validateMigrations(packageRoot: string, manifest: IPluginManifest): void {
-    const migrationsDirName = String(manifest?.migrations || '').trim();
+    // A manifest no longer restates the conventional migrations directory, so fall back to it when the
+    // archive actually ships one — otherwise a packaged plugin's migrations would go unvalidated.
+    const migrationsDirName = String(
+      manifest?.migrations
+      || (PluginPackageLayout.hasMigrations(packageRoot) ? PluginPackageLayout.MIGRATIONS_DIR : '')
+    ).trim();
     if (!migrationsDirName) {
       return;
     }

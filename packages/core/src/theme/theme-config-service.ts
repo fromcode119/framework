@@ -50,7 +50,11 @@ export class ThemeConfigService {
     const themeAny = theme as any;
     if (themeAny?.runtimeModules) Object.assign(finalModules, themeAny.runtimeModules);
     return {
-      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', variables, ui: theme.ui, layouts: theme.layouts, slots: theme.slots || [], overrides: (theme as any).overrides || [] },
+      // `defaultLayout` is the theme's own declaration of which layout a page gets when it names
+      // none. Without it here the frontend and the admin both fell back to a hardcoded
+      // 'DefaultLayout' literal that no theme declares — the admin then reported
+      // "LAYOUT NOT FOUND IN THEME" for a layout that silently worked via a theme-side alias.
+      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', variables, ui: theme.ui, layouts: theme.layouts, defaultLayout: (theme as any).defaultLayout || '', slots: theme.slots || [], overrides: (theme as any).overrides || [] },
       runtimeModules: finalModules,
       cssVariables: this.generateCssVariables(variables),
     };

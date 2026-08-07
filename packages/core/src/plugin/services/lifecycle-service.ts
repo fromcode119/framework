@@ -24,6 +24,7 @@ import { PluginHealthNotificationTemplateService } from '@core/plugin/services/p
 import type { IPluginHealthNotificationData } from '@core/plugin/services/interfaces/plugin-health-notification-data.interface';
 import { PluginHealthReportService } from '@core/plugin/services/plugin-health-report-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -409,6 +410,6 @@ export class LifecycleService {
     this.manager.plugins.delete(slug);
     this.manager.middlewares.unregisterByPlugin(slug);
 
-    this.activation.cleanupAfterDelete(slug, pluginPath, plugin?.manifest.main || 'index.js');
+    this.activation.cleanupAfterDelete(slug, pluginPath, plugin?.manifest.main || PluginPackageLayout.SERVER_ENTRY);
   }
 }

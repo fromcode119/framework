@@ -31,6 +31,7 @@ export class ReactExportSourceBuilder {
     'AccountShellSkeleton',
     'AccountShellPlaceholder',
     'AccountClass',
+    'AuthMode',
     'AuthShell',
     'RecordsHub',
     'RootFramework',

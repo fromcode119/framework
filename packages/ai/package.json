@@ -5,22 +5,22 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts"
     },
     "./runtime": {
-      "development": "./src/admin-assistant-runtime.ts",
       "import": "./dist/admin-assistant-runtime.js",
       "require": "./dist/admin-assistant-runtime.js",
-      "types": "./dist/admin-assistant-runtime.d.ts"
+      "types": "./dist/admin-assistant-runtime.d.ts",
+      "development": "./src/admin-assistant-runtime.ts"
     },
     "./admin": {
-      "development": "./src/admin-extension.ts",
       "import": "./dist/admin-extension.js",
       "require": "./dist/admin-extension.js",
-      "types": "./dist/admin-extension.d.ts"
+      "types": "./dist/admin-extension.d.ts",
+      "development": "./src/admin-extension.ts"
     }
   },
   "files": [

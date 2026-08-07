@@ -37,6 +37,7 @@ export { AccountShellSkeleton } from '@react/account/account-shell-skeleton';
 export { AccountShellPlaceholder } from '@react/account/account-shell-placeholder';
 export { AccountClass } from '@react/account/account-class';
 export { AuthShell } from '@react/auth/auth-shell';
+export { AuthMode } from '@react/auth/enums/auth-mode.enum';
 export { Override } from '@react/view/override.client';
 export { RecordsHub } from '@react/records-hub';
 export type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';

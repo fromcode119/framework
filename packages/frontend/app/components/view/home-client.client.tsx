@@ -11,6 +11,15 @@ import { ThemeSsrShell } from '@/app/components/view/theme-ssr-shell.client';
 import { ServerMarkupHandoff } from '@/app/components/view/server-markup-handoff.client';
 
 export class HomeClient extends Reactor {
+
+  /**
+   * The layout name the ACTIVE THEME declares for pages that name none (theme.json `defaultLayout`).
+   * Empty when the theme declares nothing — the framework never invents a layout name, because a
+   * guessed one silently renders a different design than the admin says is selected.
+   */
+  private get declaredDefaultLayout(): string {
+    return String((this.context?.activeTheme as Record<string, unknown> | null)?.defaultLayout || '');
+  }
   /** Product name used when a page has no title of its own. */
   private static readonly FRAMEWORK_TITLE = 'Atlantis';
 
@@ -62,7 +71,7 @@ export class HomeClient extends Reactor {
 
   /** See the same getter on `DynamicContentClient` — swapping early blanks the body for a beat. */
   private get serverMarkupStillNeeded(): boolean {
-    if (!this.context?.themeLayouts?.DefaultLayout) return true;
+    if (!this.context?.themeLayouts?.[this.declaredDefaultLayout]) return true;
     if (!this.ssrRendersContentSlot) return false;
     return !this.context?.slots?.[HomeClient.CONTENT_SLOT]?.length;
   }
@@ -89,10 +98,10 @@ export class HomeClient extends Reactor {
     const normalizedContent = ResolvedContentShape.normalize((this.initialContent as Record<string, unknown> | null) || null);
 
     if (normalizedContent) {
-      const selectedLayoutName = ResolvedContentShape.resolveLayoutName(normalizedContent) || 'DefaultLayout';
+      const selectedLayoutName = ResolvedContentShape.resolveLayoutName(normalizedContent) || this.declaredDefaultLayout;
       const LayoutComponent =
         themeLayouts?.[selectedLayoutName] ||
-        themeLayouts?.DefaultLayout ||
+        themeLayouts?.[this.declaredDefaultLayout] ||
         PassthroughLayout;
       const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, normalizedContent);
 

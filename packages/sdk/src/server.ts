@@ -3,7 +3,7 @@
 // These exports transitively depend on express, fs, path, or server-only @fromcode119/* packages.
 export { APIServer } from '@fromcode119/api';
 export { AuthManager } from '@fromcode119/auth';
-export { BasePluginRouter, BaseRouter, BaseController, AccessLevel, EnvConfig, EnvUtils, PluginHealthResponseBuilder, PluginHealthRouteHandler, PluginManager, Plugins, ThemeManager, Logger, ProjectPaths, IntegrationManager, RequestContextUtils, PluginDefinitionUtils, MediaPathUtils } from '@fromcode119/core';
+export { BasePluginRouter, BaseRouter, BaseController, AccessLevel, EnvConfig, EnvUtils, PluginHealthResponseBuilder, PluginHealthRouteHandler, PluginManager, Plugins, ThemeManager, Logger, ProjectPaths, IntegrationManager, RequestContextUtils, MediaPathUtils } from '@fromcode119/core';
 
 export type { IBasePluginRouterOptions, IPluginHealthBuildOptions, IPluginHealthIdentity, IPluginHealthProbeResult, IPluginHealthResponse, IPluginHealthRouteHandlerOptions, PluginHealthStatus, IRequestStore } from '@fromcode119/core';
 
